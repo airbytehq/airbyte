@@ -18,12 +18,12 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: updated_at
     cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%SZ'
-    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_datetime:
       type: MinMaxDatetime
       datetime: "{{ config['begin_time'] if config['begin_time'] else (now_utc() - duration('P5Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_time_option:
       type: RequestOption
       inject_into: request_parameter
@@ -35,7 +35,7 @@ definitions:
     end_datetime:
       type: MinMaxDatetime
       datetime: "{{ config['end_time'] if config['end_time'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-      datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   streams:
     accounts:
       type: DeclarativeStream
@@ -45,7 +45,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: accounts
           http_method: GET
           request_parameters:
@@ -68,14 +68,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/accounts"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     account_coupon_redemptions:
       type: DeclarativeStream
       name: account_coupon_redemptions
@@ -84,7 +84,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /accounts/{{ stream_partition['account_id'] }}/coupon_redemptions
           http_method: GET
           request_parameters:
@@ -107,8 +107,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -116,13 +116,13 @@ definitions:
                 parent_key: id
                 partition_field: account_id
                 stream:
-                  $ref: '#/definitions/streams/accounts'
+                  $ref: "#/definitions/streams/accounts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/account_coupon_redemptions"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     account_notes:
       type: DeclarativeStream
       name: account_notes
@@ -131,7 +131,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /accounts/{{ stream_partition['account_id'] }}/notes
           http_method: GET
           request_parameters:
@@ -154,8 +154,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -163,13 +163,13 @@ definitions:
                 parent_key: id
                 partition_field: account_id
                 stream:
-                  $ref: '#/definitions/streams/accounts'
+                  $ref: "#/definitions/streams/accounts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/account_notes"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
         cursor_field: created_at
     add_ons:
       type: DeclarativeStream
@@ -179,7 +179,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /add_ons
           http_method: GET
           request_parameters:
@@ -202,14 +202,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/add_ons"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     billing_infos:
       type: DeclarativeStream
       name: billing_infos
@@ -218,7 +218,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /accounts/{{ stream_partition['account_id'] }}/billing_infos
           http_method: GET
           request_parameters:
@@ -241,8 +241,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -250,13 +250,13 @@ definitions:
                 parent_key: id
                 partition_field: account_id
                 stream:
-                  $ref: '#/definitions/streams/accounts'
+                  $ref: "#/definitions/streams/accounts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/billing_infos"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     coupons:
       type: DeclarativeStream
       name: coupons
@@ -265,7 +265,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: coupons
           http_method: GET
           request_parameters:
@@ -288,14 +288,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/coupons"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     credit_payments:
       type: DeclarativeStream
       name: credit_payments
@@ -304,7 +304,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: credit_payments
           http_method: GET
           request_parameters:
@@ -327,21 +327,21 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/credit_payments"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     export_dates:
       type: DeclarativeStream
       name: export_dates
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: export_dates
           http_method: GET
           request_headers:
@@ -365,7 +365,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: invoices
           http_method: GET
           request_parameters:
@@ -388,14 +388,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/invoices"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     line_items:
       type: DeclarativeStream
       name: line_items
@@ -404,7 +404,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: line_items
           http_method: GET
           request_parameters:
@@ -427,14 +427,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/line_items"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     measured_units:
       type: DeclarativeStream
       name: measured_units
@@ -443,7 +443,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: measured_units
           http_method: GET
           request_parameters:
@@ -466,14 +466,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/measured_units"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     plans:
       type: DeclarativeStream
       name: plans
@@ -482,7 +482,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: plans
           http_method: GET
           request_parameters:
@@ -505,14 +505,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/plans"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     shipping_addresses:
       type: DeclarativeStream
       name: shipping_addresses
@@ -521,7 +521,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /accounts/{{ stream_partition['account_id'] }}/shipping_addresses
           http_method: GET
           request_parameters:
@@ -544,8 +544,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -553,13 +553,13 @@ definitions:
                 parent_key: id
                 partition_field: account_id
                 stream:
-                  $ref: '#/definitions/streams/accounts'
+                  $ref: "#/definitions/streams/accounts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/shipping_addresses"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     shipping_methods:
       type: DeclarativeStream
       name: shipping_methods
@@ -568,7 +568,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: shipping_methods
           http_method: GET
           request_parameters:
@@ -591,14 +591,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/shipping_methods"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     subscriptions:
       type: DeclarativeStream
       name: subscriptions
@@ -607,7 +607,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: subscriptions
           http_method: GET
           request_parameters:
@@ -630,14 +630,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/subscriptions"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     transactions:
       type: DeclarativeStream
       name: transactions
@@ -646,7 +646,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: transactions
           http_method: GET
           request_parameters:
@@ -669,14 +669,14 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/transactions"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
     unique_coupons:
       type: DeclarativeStream
       name: unique_coupons
@@ -685,7 +685,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /coupons/{{ stream_partition['coupon_id'] }}/unique_coupon_codes
           http_method: GET
           request_parameters:
@@ -708,8 +708,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 200
-            cursor_value: '{{ response.next }}'
-            stop_condition: '{{ response.has_more is false }}'
+            cursor_value: "{{ response.next }}"
+            stop_condition: "{{ response.has_more is false }}"
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
@@ -717,9 +717,9 @@ definitions:
                 parent_key: id
                 partition_field: coupon_id
                 stream:
-                  $ref: '#/definitions/streams/coupons'
+                  $ref: "#/definitions/streams/coupons"
                   retriever:
-                    $ref: '#/definitions/streams/coupons/retriever'
+                    $ref: "#/definitions/streams/coupons/retriever"
                     record_selector:
                       $ref: "#/definitions/record_selector"
                       record_filter:
@@ -729,33 +729,33 @@ definitions:
         schema:
           $ref: "#/schemas/unique_coupons"
       incremental_sync:
-        $ref: '#/definitions/incremental_sync'
+        $ref: "#/definitions/incremental_sync"
   base_requester:
     type: HttpRequester
     url_base: https://v3.recurly.com
     authenticator:
       type: BasicHttpAuthenticator
-      username: '{{ config[''api_key''] }}'
-      password: ''
+      username: "{{ config['api_key'] }}"
+      password: ""
 
 streams:
-  - $ref: '#/definitions/streams/accounts'
-  - $ref: '#/definitions/streams/account_coupon_redemptions'
-  - $ref: '#/definitions/streams/account_notes'
-  - $ref: '#/definitions/streams/add_ons'
-  - $ref: '#/definitions/streams/billing_infos'
-  - $ref: '#/definitions/streams/coupons'
-  - $ref: '#/definitions/streams/credit_payments'
-  - $ref: '#/definitions/streams/export_dates'
-  - $ref: '#/definitions/streams/invoices'
-  - $ref: '#/definitions/streams/line_items'
-  - $ref: '#/definitions/streams/measured_units'
-  - $ref: '#/definitions/streams/plans'
-  - $ref: '#/definitions/streams/shipping_addresses'
-  - $ref: '#/definitions/streams/shipping_methods'
-  - $ref: '#/definitions/streams/subscriptions'
-  - $ref: '#/definitions/streams/transactions'
-  - $ref: '#/definitions/streams/unique_coupons'
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/account_coupon_redemptions"
+  - $ref: "#/definitions/streams/account_notes"
+  - $ref: "#/definitions/streams/add_ons"
+  - $ref: "#/definitions/streams/billing_infos"
+  - $ref: "#/definitions/streams/coupons"
+  - $ref: "#/definitions/streams/credit_payments"
+  - $ref: "#/definitions/streams/export_dates"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/line_items"
+  - $ref: "#/definitions/streams/measured_units"
+  - $ref: "#/definitions/streams/plans"
+  - $ref: "#/definitions/streams/shipping_addresses"
+  - $ref: "#/definitions/streams/shipping_methods"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/transactions"
+  - $ref: "#/definitions/streams/unique_coupons"
 
 spec:
   type: Spec
@@ -781,7 +781,7 @@ spec:
           ISO8601 timestamp from which the replication from Recurly API will
           start from.
         examples:
-          - '2021-12-01T00:00:00'
+          - "2021-12-01T00:00:00"
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
         order: 1
       end_time:
@@ -790,113 +790,113 @@ spec:
           ISO8601 timestamp to which the replication from Recurly API will stop.
           Records after that date won't be imported.
         examples:
-          - '2021-12-01T00:00:00'
+          - "2021-12-01T00:00:00"
         pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
         order: 2
 
 schemas:
   accounts:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       id:
         description: Unique identifier of the account
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       object:
         description: Type of object
         type:
-          - 'null'
+          - "null"
           - string
       hosted_login_token:
         description: Token for hosted login functionality
         type:
-          - 'null'
+          - "null"
           - string
       code:
         description: Unique code assigned to the account
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       parent_account_id:
         description: ID of the parent account
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       bill_to:
         description: The billing details
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 6
       state:
         description: State/province of the account address
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       username:
         description: Username of the account holder
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       email:
         description: Email address of the account holder
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       cc_emails:
         description: Email addresses for carbon copy (CC)
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       preferred_locale:
         description: Preferred language/locale of the account holder
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 12
       first_name:
         description: First name of the account holder
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       last_name:
         description: Last name of the account holder
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       company:
         description: Company associated with the account
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 50
       vat_number:
         description: VAT (Value Added Tax) number of the account
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 20
       tax_exempt:
         description: Flag indicating if the account is tax exempt
         type:
-          - 'null'
+          - "null"
           - boolean
       exemption_certificate:
         description: Exemption certificate details
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 30
       address:
@@ -936,75 +936,75 @@ schemas:
           country:
             type: string
             title: Country
-            description: 'Country, 2-letter ISO 3166-1 alpha-2 code.'
+            description: "Country, 2-letter ISO 3166-1 alpha-2 code."
             maxLength: 2
           geo_code:
             description: Geographical coordinates of the address
             type:
-              - 'null'
+              - "null"
               - string
       custom_fields:
         description: Custom fields associated with the account
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           additionalProperties: true
       has_live_subscription:
         description: Flag indicating if the account has a live subscription
         type:
-          - 'null'
+          - "null"
           - boolean
       has_active_subscription:
         description: Flag indicating if the account has an active subscription
         type:
-          - 'null'
+          - "null"
           - boolean
       has_future_subscription:
         description: Flag indicating if the account has a future subscription
         type:
-          - 'null'
+          - "null"
           - boolean
       has_canceled_subscription:
         description: Flag indicating if the account has a canceled subscription
         type:
-          - 'null'
+          - "null"
           - boolean
       has_paused_subscription:
         description: Flag indicating if the account has a paused subscription
         type:
-          - 'null'
+          - "null"
           - boolean
       has_past_due_invoice:
         description: Flag indicating if the account has a past due invoice
         type:
-          - 'null'
+          - "null"
           - boolean
       dunning_campaign_id:
         description: Campaign ID for dunning management
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       created_at:
         description: Date and time when the account was created
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updated_at:
         description: Date and time when the account was last updated
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deleted_at:
         description: Date and time when the account was deleted
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       billing_info:
@@ -1013,48 +1013,48 @@ schemas:
       external_accounts:
         description: External accounts associated with the account
         type:
-          - 'null'
+          - "null"
           - array
         items:
           $ref: external_accounts.json
       invoice_template_id:
         description: ID of the invoice template used
         type:
-          - 'null'
+          - "null"
           - string
       override_business_entity_id:
         description: ID for overriding business entity
         type:
-          - 'null'
+          - "null"
           - string
       preferred_time_zone:
         description: Preferred time zone of the account holder
         type:
-          - 'null'
+          - "null"
           - string
       shipping_addresses:
         description: Addresses for shipping
         type:
-          - 'null'
+          - "null"
           - array
         items:
           $ref: shipping_addresses.json
 
   account_coupon_redemptions:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       id:
         description: The unique identifier for the redemption
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       object:
         description: The type of object this represents
         type:
-          - 'null'
+          - "null"
           - string
       account:
         description: The account associated with the coupon redemption
@@ -1062,7 +1062,7 @@ schemas:
       subscription_id:
         description: The subscription associated with the redemption
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       coupon:
@@ -1071,41 +1071,41 @@ schemas:
       state:
         description: The current state of the redemption
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       currency:
         description: The currency in which the redemption was made
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 3
       discounted:
         description: The amount discounted by the coupon
         type:
-          - 'null'
+          - "null"
           - number
       created_at:
         description: The date and time when the redemption was created
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updated_at:
         description: The date and time when the redemption was last updated
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       removed_at:
         description: The date and time when the redemption was removed (if applicable)
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
 
   account_notes:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
@@ -1115,9 +1115,9 @@ schemas:
         maxLength: 13
         readOnly: true
       object:
-        description: 'Represents the object type, in this case, ''note''.'
+        description: "Represents the object type, in this case, 'note'."
         type:
-          - 'null'
+          - "null"
           - string
       account_id:
         description: The unique identifier of the account associated with this note.
@@ -1129,7 +1129,7 @@ schemas:
       message:
         description: The content or message of the note.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 2048
       created_at:
@@ -1139,7 +1139,7 @@ schemas:
         readOnly: true
 
   add_ons:
-    $schema: 'http://json-schema.org/schema#'
+    $schema: "http://json-schema.org/schema#"
     additionalProperties: true
     type: object
     properties:
@@ -1173,19 +1173,19 @@ schemas:
         maxLength: 255
       add_on_type:
         type:
-          - 'null'
+          - "null"
           - string
         title: Add-on Type
-        description: 'Whether the add-on type is fixed, or usage-based.'
+        description: "Whether the add-on type is fixed, or usage-based."
         maxLength: 256
       usage_type:
         type: string
         title: Usage Type
-        description: 'Type of usage, returns usage type if `add_on_type` is `usage`.'
+        description: "Type of usage, returns usage type if `add_on_type` is `usage`."
         maxLength: 256
       usage_percentage:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Usage Percentage
@@ -1194,7 +1194,7 @@ schemas:
           up to 4 decimal places. A value between 0.0 and 100.0.
       measured_unit_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Measured Unit ID
         description: >-
@@ -1203,7 +1203,7 @@ schemas:
         maxLength: 13
       accounting_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Accounting code
         description: >-
@@ -1245,7 +1245,7 @@ schemas:
         minimum: 0
       tax_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Tax code
         description: >-
@@ -1255,7 +1255,7 @@ schemas:
         maxLength: 50
       display_quantity:
         type:
-          - 'null'
+          - "null"
           - boolean
         title: Display quantity?
         description: >-
@@ -1263,13 +1263,13 @@ schemas:
           add-on.
       default_quantity:
         type:
-          - 'null'
+          - "null"
           - integer
         title: Default quantity
         description: Default quantity for the hosted pages.
       optional:
         type:
-          - 'null'
+          - "null"
           - boolean
         title: Optional
         description: >-
@@ -1282,7 +1282,7 @@ schemas:
         description: This is only present when `type=fixed`.
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             currency:
@@ -1297,7 +1297,7 @@ schemas:
               description: Value of the fixed discount that this coupon applies.
       tier_type:
         type:
-          - 'null'
+          - "null"
           - string
         title: Tier type
         description: >
@@ -1325,14 +1325,14 @@ schemas:
         title: Last updated at
         readOnly: true
       deleted_at:
-        description: 'The date and time when the add-on was deleted, if applicable.'
+        description: "The date and time when the add-on was deleted, if applicable."
         type: string
         format: date-time
         title: Deleted at
         readOnly: true
 
   billing_infos:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
@@ -1342,7 +1342,7 @@ schemas:
         readOnly: true
       object:
         type:
-          - 'null'
+          - "null"
           - string
       account_id:
         type: string
@@ -1350,17 +1350,17 @@ schemas:
         readOnly: true
       first_name:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 50
       last_name:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 50
       company:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 100
       address:
@@ -1368,52 +1368,52 @@ schemas:
         properties:
           phone:
             type:
-              - 'null'
+              - "null"
               - string
             title: Phone number
             maxLength: 256
           street1:
             type:
-              - 'null'
+              - "null"
               - string
             title: Street 1
             maxLength: 256
           street2:
             type:
-              - 'null'
+              - "null"
               - string
             title: Street 2
             maxLength: 256
           city:
             type:
-              - 'null'
+              - "null"
               - string
             title: City
             maxLength: 256
           region:
             type:
-              - 'null'
+              - "null"
               - string
             title: State/Province
             description: State or province.
             maxLength: 256
           postal_code:
             type:
-              - 'null'
+              - "null"
               - string
             title: Zip/Postal code
             description: Zip or postal code.
             maxLength: 256
           country:
             type:
-              - 'null'
+              - "null"
               - string
             title: Country
-            description: 'Country, 2-letter ISO 3166-1 alpha-2 code.'
+            description: "Country, 2-letter ISO 3166-1 alpha-2 code."
             maxLength: 2
       vat_number:
         type:
-          - 'null'
+          - "null"
           - string
         description: >-
           Customer's VAT number (to avoid having the VAT applied). This is only used
@@ -1426,24 +1426,24 @@ schemas:
         type: object
         properties:
           card_type:
-            description: 'Visa, MasterCard, American Express, Discover, JCB, etc.'
+            description: "Visa, MasterCard, American Express, Discover, JCB, etc."
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           object:
             type:
-              - 'null'
+              - "null"
               - string
           first_six:
             type:
-              - 'null'
+              - "null"
               - string
             description: Credit card number's first six digits.
             maxLength: 6
           last_four:
             type:
-              - 'null'
+              - "null"
               - string
             description: >-
               Credit card number's last four digits. Will refer to bank account if
@@ -1451,25 +1451,25 @@ schemas:
             maxLength: 4
           last_two:
             type:
-              - 'null'
+              - "null"
               - string
             description: The IBAN bank account's last two digits.
             maxLength: 2
           exp_month:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Expiration month.
             maxLength: 2
           exp_year:
             type:
-              - 'null'
+              - "null"
               - integer
             description: Expiration year.
             maxLength: 4
           gateway_token:
             type:
-              - 'null'
+              - "null"
               - string
             description: >-
               A token used in place of a credit card in order to perform
@@ -1477,7 +1477,7 @@ schemas:
             maxLength: 50
           cc_bin_country:
             type:
-              - 'null'
+              - "null"
               - string
             description: >-
               The 2-letter ISO 3166-1 alpha-2 country code associated with the
@@ -1486,13 +1486,13 @@ schemas:
             maxLength: 256
           gateway_code:
             type:
-              - 'null'
+              - "null"
               - string
             description: An identifier for a specific payment gateway.
             maxLength: 13
           billing_agreement_id:
             type:
-              - 'null'
+              - "null"
               - string
             description: >-
               Billing Agreement identifier. Only present for Amazon or Paypal
@@ -1500,19 +1500,19 @@ schemas:
             maxLength: 256
           name_on_account:
             type:
-              - 'null'
+              - "null"
               - string
             description: The name associated with the bank account.
             maxLength: 256
           account_type:
             description: The bank account type. Only present for ACH payment methods.
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           routing_number:
             type:
-              - 'null'
+              - "null"
               - string
             description: >-
               The bank account's routing number. Only present for ACH payment
@@ -1520,13 +1520,13 @@ schemas:
             maxLength: 256
           routing_number_bank:
             type:
-              - 'null'
+              - "null"
               - string
             description: The bank name of this routing number.
             maxLength: 256
       fraud:
         type:
-          - 'null'
+          - "null"
           - object
         title: Fraud information
         description: Most recent fraud result.
@@ -1534,14 +1534,14 @@ schemas:
         properties:
           score:
             type:
-              - 'null'
+              - "null"
               - integer
             title: Kount score
           decision:
             title: Kount decision
             maxLength: 10
             type:
-              - 'null'
+              - "null"
               - string
           risk_rules_triggered:
             type: object
@@ -1570,104 +1570,104 @@ schemas:
         readOnly: true
       updated_by:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           ip:
             type:
-              - 'null'
+              - "null"
               - string
           country:
             type:
-              - 'null'
+              - "null"
               - string
 
   coupons:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       object:
         type:
-          - 'null'
+          - "null"
           - string
       code:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       name:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       state:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       max_redemptions:
         type:
-          - 'null'
+          - "null"
           - number
       max_redemptions_per_account:
         type:
-          - 'null'
+          - "null"
           - number
       unique_coupon_codes_count:
         type:
-          - 'null'
+          - "null"
           - number
       unique_code_template:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       unique_coupon_code:
         $ref: unique_coupons.json
       duration:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       temporal_amount:
         type:
-          - 'null'
+          - "null"
           - number
       temporal_unit:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       free_trial_unit:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       free_trial_amount:
         type:
-          - 'null'
+          - "null"
           - number
       applies_to_all_plans:
         type:
-          - 'null'
+          - "null"
           - boolean
       applies_to_all_items:
         type:
-          - 'null'
+          - "null"
           - boolean
       applies_to_non_plan_charges:
         type:
-          - 'null'
+          - "null"
           - boolean
       plans:
         type:
-          - 'null'
+          - "null"
           - array
         title: Plans
         description: >-
@@ -1692,7 +1692,7 @@ schemas:
               maxLength: 13
       items:
         type:
-          - 'null'
+          - "null"
           - array
         title: Items
         description: |
@@ -1700,7 +1700,7 @@ schemas:
           `null` if `applies_to_all_items=true`.
         items:
           type:
-            - 'null'
+            - "null"
             - object
           title: Item mini details
           description: Just the important parts.
@@ -1712,12 +1712,12 @@ schemas:
               readOnly: true
       redemption_resource:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       discount:
         type:
-          - 'null'
+          - "null"
           - object
         description: |
           Details of the discount a coupon applies. Will contain a `type`
@@ -1734,7 +1734,7 @@ schemas:
             description: This is only present when `type=fixed`.
             items:
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 currency:
@@ -1764,42 +1764,42 @@ schemas:
                   property
       coupon_type:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       hosted_page_description:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       invoice_description:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       redeem_by:
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       created_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updated_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       expired_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
 
   credit_payments:
-    $schema: 'http://json-schema.org/schema#'
+    $schema: "http://json-schema.org/schema#"
     additionalProperties: true
     type: object
     properties:
@@ -1837,7 +1837,7 @@ schemas:
       applied_to_invoice:
         description: Details about the invoice to which the credit payment is applied.
         type:
-          - 'null'
+          - "null"
           - object
         title: Invoice mini details
         properties:
@@ -1854,7 +1854,7 @@ schemas:
       original_invoice:
         description: Details about the original invoice for which the credit payment is made.
         type:
-          - 'null'
+          - "null"
           - object
         title: Invoice mini details
         properties:
@@ -1882,7 +1882,7 @@ schemas:
         description: Total credit payment amount applied to the charge invoice.
       original_credit_payment_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Original Credit Payment ID
         description: >-
@@ -1892,7 +1892,7 @@ schemas:
       refund_transaction:
         description: Details about the refund transaction associated with the credit payment.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
@@ -1922,38 +1922,38 @@ schemas:
       voided_at:
         description: The date and time when the credit payment was voided.
         type:
-          - 'null'
+          - "null"
           - string
         title: Voided at
         format: date-time
         readOnly: true
 
   export_dates:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       dates:
         description: List of export dates
         type:
-          - 'null'
+          - "null"
           - array
         items:
           description: Date of the export
           type:
-            - 'null'
+            - "null"
             - string
           maxLength: 256
 
   invoices:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       id:
         description: The unique ID of the invoice.
         type:
-          - 'null'
+          - "null"
           - string
         title: Invoice ID
         readOnly: true
@@ -1961,23 +1961,23 @@ schemas:
       uuid:
         description: The universally unique identifier (UUID) of the invoice.
         type:
-          - 'null'
+          - "null"
           - string
       object:
-        description: 'The type of object, in this case, an invoice.'
+        description: "The type of object, in this case, an invoice."
         type:
-          - 'null'
+          - "null"
           - string
       type:
         title: Invoice type
-        description: 'Invoices are either charge, credit, or legacy invoices.'
+        description: "Invoices are either charge, credit, or legacy invoices."
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       origin:
         type:
-          - 'null'
+          - "null"
           - string
         title: Origin
         description: The event that created the invoice.
@@ -1986,7 +1986,7 @@ schemas:
         description: The current state of the invoice.
         title: Invoice state
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       account:
@@ -1994,7 +1994,7 @@ schemas:
         $ref: account_details.json
       billing_info_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Billing info ID
         description: >-
@@ -2006,7 +2006,7 @@ schemas:
         maxLength: 256
       subscription_ids:
         type:
-          - 'null'
+          - "null"
           - array
         title: Subscription IDs
         description: >-
@@ -2014,13 +2014,13 @@ schemas:
           these are their IDs.
         items:
           type:
-            - 'null'
+            - "null"
             - string
           title: Subscription ID
           maxLength: 13
       previous_invoice_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Previous invoice ID
         description: >-
@@ -2029,7 +2029,7 @@ schemas:
         maxLength: 13
       number:
         type:
-          - 'null'
+          - "null"
           - string
         title: Invoice number
         description: >-
@@ -2040,7 +2040,7 @@ schemas:
         maxLength: 256
       collection_method:
         type:
-          - 'null'
+          - "null"
           - string
         title: Collection method
         description: >-
@@ -2053,7 +2053,7 @@ schemas:
         maxLength: 256
       po_number:
         type:
-          - 'null'
+          - "null"
           - string
         title: Purchase order number
         description: >-
@@ -2062,7 +2062,7 @@ schemas:
         maxLength: 50
       net_terms:
         type:
-          - 'null'
+          - "null"
           - integer
         title: Net terms
         description: >-
@@ -2076,129 +2076,129 @@ schemas:
       address:
         description: The address details related to the invoice recipient.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           name_on_account:
             description: The name on the account.
             type:
-              - 'null'
+              - "null"
               - string
             title: Name on account
             maxLength: 256
           company:
             description: The company name in the address.
             type:
-              - 'null'
+              - "null"
               - string
             title: Company
             maxLength: 256
           phone:
             description: The phone number associated with the address.
             type:
-              - 'null'
+              - "null"
               - string
             title: Phone number
             maxLength: 256
           street1:
             description: The first line of the street address.
             type:
-              - 'null'
+              - "null"
               - string
             title: Street 1
             maxLength: 256
           street2:
             description: The second line of the street address.
             type:
-              - 'null'
+              - "null"
               - string
             title: Street 2
             maxLength: 256
           city:
             description: The city in the address.
             type:
-              - 'null'
+              - "null"
               - string
             title: City
             maxLength: 256
           region:
             type:
-              - 'null'
+              - "null"
               - string
             title: State/Province
             description: State or province.
             maxLength: 256
           postal_code:
             type:
-              - 'null'
+              - "null"
               - string
             title: Zip/Postal code
             description: Zip or postal code.
             maxLength: 256
           country:
             type:
-              - 'null'
+              - "null"
               - string
             title: Country
-            description: 'Country, 2-letter ISO 3166-1 alpha-2 code.'
+            description: "Country, 2-letter ISO 3166-1 alpha-2 code."
             maxLength: 2
           first_name:
             description: The first name of the recipient.
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           last_name:
             description: The last name of the recipient.
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
       shipping_address:
         description: The shipping address details for the invoice delivery.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             description: The ID of the shipping address.
             type:
-              - 'null'
+              - "null"
               - string
             title: Shipping Address ID
             maxLength: 13
             readOnly: true
       currency:
         type:
-          - 'null'
+          - "null"
           - string
         title: Currency
         description: 3-letter ISO 4217 currency code.
         maxLength: 3
       discount:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Discount
         description: Total discounts applied to this invoice.
       subtotal:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Subtotal
-        description: 'The summation of charges and credits, before discounts and taxes.'
+        description: "The summation of charges and credits, before discounts and taxes."
       tax:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Tax
         description: The total tax on this invoice.
       total:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Total
@@ -2207,7 +2207,7 @@ schemas:
           discounts, credits, and tax.
       refundable_amount:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Refundable amount
@@ -2216,14 +2216,14 @@ schemas:
           invoices.
       paid:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Paid
         description: The total amount of successful payments transaction on this invoice.
       balance:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Balance
@@ -2231,13 +2231,13 @@ schemas:
       tax_info:
         description: Tax information related to the invoice.
         type:
-          - 'null'
+          - "null"
           - object
         title: Tax info
         properties:
           type:
             type:
-              - 'null'
+              - "null"
               - string
             title: Type
             description: >-
@@ -2247,7 +2247,7 @@ schemas:
             maxLength: 256
           region:
             type:
-              - 'null'
+              - "null"
               - string
             title: Region
             description: >-
@@ -2258,7 +2258,7 @@ schemas:
           rate:
             description: The tax rate applied to the invoice.
             type:
-              - 'null'
+              - "null"
               - number
             format: float
             title: Rate
@@ -2275,7 +2275,7 @@ schemas:
               properties:
                 type:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   title: Type
                   description: >-
@@ -2284,7 +2284,7 @@ schemas:
                   maxLength: 256
                 region:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                   title: Region
                   description: >-
@@ -2294,14 +2294,14 @@ schemas:
                   maxLength: 256
                 rate:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                   format: float
                   title: Rate
                   description: Provides the tax rate for the region.
                 tax:
                   type:
-                    - 'null'
+                    - "null"
                     - number
                   format: float
                   title: Tax
@@ -2309,11 +2309,11 @@ schemas:
       used_tax_service:
         description: Indicates if a tax service was used for the invoice.
         type:
-          - 'null'
+          - "null"
           - boolean
       vat_number:
         type:
-          - 'null'
+          - "null"
           - string
         title: VAT number
         description: >-
@@ -2323,7 +2323,7 @@ schemas:
         maxLength: 20
       vat_reverse_charge_notes:
         type:
-          - 'null'
+          - "null"
           - string
         title: VAT reverse charge notes
         description: >-
@@ -2336,7 +2336,7 @@ schemas:
         maxLength: 1024
       terms_and_conditions:
         type:
-          - 'null'
+          - "null"
           - string
         title: Terms and conditions
         description: >-
@@ -2346,7 +2346,7 @@ schemas:
         maxLength: 16384
       customer_notes:
         type:
-          - 'null'
+          - "null"
           - string
         title: Customer notes
         description: >-
@@ -2356,7 +2356,7 @@ schemas:
       line_items:
         description: The line items included in the invoice.
         type:
-          - 'null'
+          - "null"
           - array
         title: Line Items
         items:
@@ -2364,17 +2364,17 @@ schemas:
       has_more_line_items:
         description: Indicates if there are more line items in the invoice.
         type:
-          - 'null'
+          - "null"
           - boolean
       transactions:
         description: The transactions associated with the invoice.
         type:
-          - 'null'
+          - "null"
           - array
         title: Transactions
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             id:
@@ -2392,12 +2392,12 @@ schemas:
       credit_payments:
         description: The credit payments related to the invoice.
         type:
-          - 'null'
+          - "null"
           - array
         title: Credit payments
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             id:
@@ -2415,7 +2415,7 @@ schemas:
       created_at:
         description: The date and time when the invoice was created.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         title: Created at
@@ -2423,28 +2423,28 @@ schemas:
       updated_at:
         description: The date and time when the invoice was last updated.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         title: Last updated at
         readOnly: true
       due_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         title: Due at
         description: Date invoice is due. This is the date the net terms are reached.
       closed_at:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         title: Closed at
         description: Date invoice was marked paid or failed.
       dunning_campaign_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Dunning Campaign ID
         description: >-
@@ -2456,24 +2456,24 @@ schemas:
       dunning_events_sent:
         description: The number of dunning events sent for the invoice.
         type:
-          - 'null'
+          - "null"
           - integer
       final_dunning_event:
         description: The final dunning event related to the invoice if applicable.
         type:
-          - 'null'
+          - "null"
           - boolean
       business_entity_id:
         description: The business entity ID linked to the invoice.
         type:
-          - 'null'
+          - "null"
           - string
 
   line_items:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type:
-      - 'null'
+      - "null"
       - object
     title: Line item
     properties:
@@ -2483,7 +2483,7 @@ schemas:
         maxLength: 13
       object:
         type:
-          - 'null'
+          - "null"
           - string
       uuid:
         type: string
@@ -2501,7 +2501,7 @@ schemas:
         maxLength: 256
       item_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Item Code
         description: >-
@@ -2510,7 +2510,7 @@ schemas:
         maxLength: 50
       item_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Item ID
         description: >-
@@ -2519,7 +2519,7 @@ schemas:
         maxLength: 13
       external_sku:
         type:
-          - 'null'
+          - "null"
           - string
         title: External SKU
         description: >-
@@ -2528,7 +2528,7 @@ schemas:
         maxLength: 50
       revenue_schedule_type:
         type:
-          - 'null'
+          - "null"
           - string
         title: Revenue schedule type
         maxLength: 256
@@ -2542,7 +2542,7 @@ schemas:
         maxLength: 256
       legacy_category:
         type:
-          - 'null'
+          - "null"
           - string
         title: Legacy category
         description: >
@@ -2569,14 +2569,14 @@ schemas:
         description: The UUID of the account responsible for originating the line item.
       subscription_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Subscription ID
-        description: 'If the line item is a charge or credit for a subscription, this is its ID.'
+        description: "If the line item is a charge or credit for a subscription, this is its ID."
         maxLength: 13
       plan_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Plan ID
         description: >-
@@ -2585,7 +2585,7 @@ schemas:
         maxLength: 13
       plan_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Plan code
         description: >-
@@ -2594,28 +2594,28 @@ schemas:
         maxLength: 50
       add_on_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Add-on ID
         description: If the line item is a charge or credit for an add-on this is its ID.
         maxLength: 13
       add_on_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Add-on code
-        description: 'If the line item is a charge or credit for an add-on, this is its code.'
+        description: "If the line item is a charge or credit for an add-on, this is its code."
         maxLength: 50
       invoice_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Invoice ID
         description: Once the line item has been invoiced this will be the invoice's ID.
         maxLength: 13
       invoice_number:
         type:
-          - 'null'
+          - "null"
           - string
         title: Invoice number
         description: >-
@@ -2627,7 +2627,7 @@ schemas:
         maxLength: 256
       previous_line_item_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Previous line item ID
         description: >-
@@ -2636,7 +2636,7 @@ schemas:
         maxLength: 13
       original_line_item_invoice_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Original line item's invoice ID
         description: >-
@@ -2670,7 +2670,7 @@ schemas:
         maxLength: 50
       credit_reason_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Credit reason code
         description: The reason the credit was given when line item is `type=credit`.
@@ -2685,7 +2685,7 @@ schemas:
         type: number
         format: float
         title: Total after discounts and taxes
-        description: '`(quantity * unit_amount) - (discount + tax)`'
+        description: "`(quantity * unit_amount) - (discount + tax)`"
       description:
         type: string
         title: Description
@@ -2704,28 +2704,28 @@ schemas:
         type: number
         format: float
         title: Unit amount
-        description: 'Positive amount for a charge, negative amount for a credit.'
+        description: "Positive amount for a charge, negative amount for a credit."
       unit_amount_decimal:
         type:
-          - 'null'
+          - "null"
           - string
         title: Unit amount decimal
-        description: 'Positive amount for a charge, negative amount for a credit.'
+        description: "Positive amount for a charge, negative amount for a credit."
       subtotal:
         type: number
         format: float
         title: Total before discounts and taxes
-        description: '`quantity * unit_amount`'
+        description: "`quantity * unit_amount`"
       discount:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Discount
         description: The discount applied to the line item.
       tax:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Tax
@@ -2733,7 +2733,7 @@ schemas:
       taxable:
         type: boolean
         title: Taxable?
-        description: '`true` if the line item is taxable, `false` if it is not.'
+        description: "`true` if the line item is taxable, `false` if it is not."
       tax_exempt:
         type: boolean
         title: Tax exempt?
@@ -2744,7 +2744,7 @@ schemas:
           post-tax. Pre-tax discounts should use the Coupons feature.
       tax_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Tax code
         description: >-
@@ -2756,7 +2756,7 @@ schemas:
         $ref: tax_info.json
       proration_rate:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Proration rate
@@ -2772,7 +2772,7 @@ schemas:
         title: Refund?
       refunded_quantity:
         type:
-          - 'null'
+          - "null"
           - integer
         title: Refunded Quantity
         description: >-
@@ -2780,14 +2780,14 @@ schemas:
           the total quantity refunded (possibly over multiple refunds).
       credit_applied:
         type:
-          - 'null'
+          - "null"
           - number
         format: float
         title: Credit Applied
         description: The amount of credit from this line item that was applied to the invoice.
       shipping_address:
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
@@ -2797,7 +2797,7 @@ schemas:
             readOnly: true
       start_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         title: Start date
@@ -2807,27 +2807,27 @@ schemas:
           specific date.
       end_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
         title: End date
-        description: 'If this date is provided, it indicates the end of a time range.'
+        description: "If this date is provided, it indicates the end of a time range."
       custom_fields:
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             name:
               type:
-                - 'null'
+                - "null"
                 - string
             value:
               type:
-                - 'null'
+                - "null"
                 - string
       created_at:
         type: string
@@ -2841,245 +2841,245 @@ schemas:
         description: When the line item was last changed.
 
   measured_units:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       id:
         description: Unique identifier for the measured unit
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       object:
-        description: 'Type of object, in this case, ''measured_unit'''
+        description: "Type of object, in this case, 'measured_unit'"
         type:
-          - 'null'
+          - "null"
           - string
       name:
         description: Internal name used to identify the measured unit
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       display_name:
         description: Human-readable name used for display purposes
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 255
       state:
         description: Current state of the measured unit
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 255
       description:
         description: Description of the measured unit
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       created_at:
         description: Timestamp indicating when the measured unit was created
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updated_at:
         description: Timestamp indicating when the measured unit was last updated
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deleted_at:
         description: Timestamp indicating when the measured unit was deleted (if applicable)
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
 
   plans:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       id:
         description: Unique identifier of the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       object:
         description: Indicates the type of object which in this case is 'plan'.
         type:
-          - 'null'
+          - "null"
           - string
       code:
         description: Unique identifier code for the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       state:
         description: The current state of the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       name:
         description: Name of the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       description:
         description: Description of the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       interval_unit:
         description: Unit of the billing interval for the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       interval_length:
         description: Length of the billing interval for the plan.
         type:
-          - 'null'
+          - "null"
           - number
       trial_unit:
         description: Unit of the trial period for the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       trial_length:
         description: Length of the trial period for the plan.
         type:
-          - 'null'
+          - "null"
           - number
       trial_requires_billing_info:
         description: Determines if billing information is required for the trial.
         type:
-          - 'null'
+          - "null"
           - boolean
       total_billing_cycles:
         description: Total number of billing cycles the plan will run for.
         type:
-          - 'null'
+          - "null"
           - number
       auto_renew:
         description: Indicates whether the plan should automatically renew.
         type:
-          - 'null'
+          - "null"
           - boolean
       pricing_model:
         description: The pricing model used for the plan.
         type:
-          - 'null'
+          - "null"
           - string
       ramp_intervals:
         description: Specifies ramp intervals for the plan.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             starting_billing_cycle:
               description: The starting billing cycle for the ramp interval.
               type:
-                - 'null'
+                - "null"
                 - integer
             currencies:
               description: Contains currencies information within the ramp intervals.
               type:
-                - 'null'
+                - "null"
                 - array
               items:
                 type:
-                  - 'null'
+                  - "null"
                   - object
                 properties:
                   currency:
                     description: Currency code for the interval.
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   unit_amount:
                     description: Unit amount for the currency in the interval.
                     type:
-                      - 'null'
+                      - "null"
                       - number
       custom_fields:
         description: Includes any custom fields associated with the plan.
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             name:
               description: Name of the custom field.
               type:
-                - 'null'
+                - "null"
                 - string
             value:
               description: Value of the custom field.
               type:
-                - 'null'
+                - "null"
                 - string
       accounting_code:
         description: The accounting code associated with the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       revenue_schedule_type:
         description: Type of revenue schedule for the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       setup_fee_revenue_schedule_type:
         description: Revenue schedule type for the setup fee.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       setup_fee_accounting_code:
         description: The accounting code associated with the setup fee.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       avalara_transaction_type:
         description: The Avalara transaction type used for tax calculation.
         type:
-          - 'null'
+          - "null"
           - number
       avalara_service_type:
         description: The Avalara service type used for tax calculation.
         type:
-          - 'null'
+          - "null"
           - number
       tax_code:
         description: Tax code used for the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       tax_exempt:
         description: Determines if the plan is tax exempt.
         type:
-          - 'null'
+          - "null"
           - boolean
       currencies:
         description: Contains information about the currencies supported by the plan.
@@ -3120,60 +3120,60 @@ schemas:
               URL to redirect when a user successfully completes hosted page
               process.
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 2048
           cancel_url:
             description: URL to redirect when a user cancels during hosted page process.
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 2048
           bypass_confirmation:
             description: Determines if confirmation is bypassed on hosted pages.
             type:
-              - 'null'
+              - "null"
               - boolean
           display_quantity:
             description: Determines if quantity is displayed on hosted pages.
             type:
-              - 'null'
+              - "null"
               - boolean
       allow_any_item_on_subscriptions:
         description: Determines if any item can be added to subscriptions using this plan.
         type:
-          - 'null'
+          - "null"
           - boolean
       dunning_campaign_id:
         description: ID of the dunning campaign associated with the plan.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       created_at:
         description: Timestamp indicating when the plan was created.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updated_at:
         description: Timestamp indicating when the plan was last updated.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       deleted_at:
         description: Timestamp indicating when the plan was deleted.
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
 
   shipping_addresses:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type:
-      - 'null'
+      - "null"
       - object
     properties:
       id:
@@ -3183,7 +3183,7 @@ schemas:
         readOnly: true
       object:
         type:
-          - 'null'
+          - "null"
           - string
       account_id:
         type: string
@@ -3231,10 +3231,10 @@ schemas:
       country:
         type: string
         maxLength: 50
-        description: 'Country, 2-letter ISO 3166-1 alpha-2 code.'
+        description: "Country, 2-letter ISO 3166-1 alpha-2 code."
       geo_code:
         type:
-          - 'null'
+          - "null"
           - string
       created_at:
         type: string
@@ -3248,7 +3248,7 @@ schemas:
         readOnly: true
 
   shipping_methods:
-    $schema: 'http://json-schema.org/schema#'
+    $schema: "http://json-schema.org/schema#"
     additionalProperties: true
     type: object
     properties:
@@ -3309,75 +3309,75 @@ schemas:
         readOnly: true
 
   subscriptions:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type: object
     properties:
       id:
         description: Unique identifier for the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       object:
         description: Indicates the type of object (subscription).
         type:
-          - 'null'
+          - "null"
           - string
       uuid:
         description: Universally unique identifier for the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 32
       account:
         description: Information about the associated account for the subscription
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 13
           object:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           email:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
           company:
             type:
-              - 'null'
+              - "null"
               - string
           parent_account_id:
             type:
-              - 'null'
+              - "null"
               - string
           bill_to:
             type:
-              - 'null'
+              - "null"
               - string
           dunning_campaign_id:
             type:
-              - 'null'
+              - "null"
               - string
       plan:
         description: Information about the plan associated with the subscription
@@ -3385,44 +3385,44 @@ schemas:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 13
           object:
             type:
-              - 'null'
+              - "null"
               - string
           code:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           name:
             type:
-              - 'null'
+              - "null"
               - string
       state:
-        description: 'Current state of the subscription (e.g., active, cancelled).'
+        description: "Current state of the subscription (e.g., active, cancelled)."
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       shipping:
         description: Information about the shipping associated with the subscription
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           object:
             type:
-              - 'null'
+              - "null"
               - string
           address:
             $ref: shipping_addresses.json
           method:
             description: Information about the shipping method
             type:
-              - 'null'
+              - "null"
               - object
             properties:
               id:
@@ -3432,19 +3432,19 @@ schemas:
                 maxLength: 13
               object:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               code:
                 type:
-                  - 'null'
+                  - "null"
                   - string
               name:
                 type:
-                  - 'null'
+                  - "null"
                   - string
           amount:
             type:
-              - 'null'
+              - "null"
               - number
       coupon_redemptions:
         description: Details of any coupons redeemed for the subscription.
@@ -3452,7 +3452,7 @@ schemas:
       pending_change:
         description: Information about any pending changes to the subscription
         type:
-          - 'null'
+          - "null"
           - object
         title: Subscription Change
         properties:
@@ -3497,140 +3497,140 @@ schemas:
       current_period_started_at:
         description: Timestamp when the current period started
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       current_period_ends_at:
         description: Timestamp when the current period ends
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       current_term_started_at:
         description: Timestamp when the current term started
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       current_term_ends_at:
         description: Timestamp when the current term ends
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       trial_started_at:
         description: Timestamp when the trial period started
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       trial_ends_at:
         description: Timestamp when the trial period ends
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       remaining_billing_cycles:
         description: Number of billing cycles remaining before subscription ends.
         type:
-          - 'null'
+          - "null"
           - number
       total_billing_cycles:
         description: Total number of billing cycles for the subscription.
         type:
-          - 'null'
+          - "null"
           - number
       renewal_billing_cycles:
         description: Number of billing cycles in the renewal period.
         type:
-          - 'null'
+          - "null"
           - number
       auto_renew:
         description: Flag indicating whether the subscription auto renews.
         type:
-          - 'null'
+          - "null"
           - boolean
       ramp_intervals:
         description: Information about any ramp intervals associated with the subscription
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             starting_billing_cycle:
               type:
-                - 'null'
+                - "null"
                 - integer
             remaining_billing_cycles:
               type:
-                - 'null'
+                - "null"
                 - integer
             starting_on:
               description: Timestamp when the ramp interval starts
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             ending_on:
               description: Timestamp when the ramp interval ends
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             unit_amount:
               type:
-                - 'null'
+                - "null"
                 - number
       paused_at:
         description: Timestamp when the subscription was paused
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       remaining_pause_cycles:
         description: Number of pause cycles remaining for the subscription.
         type:
-          - 'null'
+          - "null"
           - number
       currency:
         description: Currency used for billing the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 3
       revenue_schedule_type:
         description: Type of revenue schedule for the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       unit_amount:
         description: Amount charged per unit for the subscription.
         type:
-          - 'null'
+          - "null"
           - number
       tax_inclusive:
         description: Flag indicating if taxes are included in the total amount.
         type:
-          - 'null'
+          - "null"
           - boolean
       quantity:
         description: Number of units or items included in the subscription.
         type:
-          - 'null'
+          - "null"
           - number
       add_ons:
         description: Any additional services or items added to the subscription.
         type:
-          - 'null'
+          - "null"
           - array
         title: Add-ons
         items:
           type:
-            - 'null'
+            - "null"
             - object
           title: Subscription Add-on
           description: This links an Add-on to a specific Subscription.
@@ -3647,17 +3647,17 @@ schemas:
       add_ons_total:
         description: Total amount charged for the additional services or items.
         type:
-          - 'null'
+          - "null"
           - number
       subtotal:
         description: Subtotal amount before taxes and additional charges.
         type:
-          - 'null'
+          - "null"
           - number
       tax:
         description: Total tax amount applied to the subscription.
         type:
-          - 'null'
+          - "null"
           - number
       tax_info:
         description: Details of the tax information for the subscription.
@@ -3665,163 +3665,163 @@ schemas:
       total:
         description: Total amount including taxes and additional charges.
         type:
-          - 'null'
+          - "null"
           - number
       collection_method:
         description: Method used for collecting payments for the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       po_number:
         description: Purchase order number associated with the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       net_terms:
         description: Number of net terms for payment.
         type:
-          - 'null'
+          - "null"
           - number
       net_terms_type:
-        description: 'Type of net terms (e.g., days).'
+        description: "Type of net terms (e.g., days)."
         type:
-          - 'null'
+          - "null"
           - string
       terms_and_conditions:
         description: Terms and conditions agreed upon for the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 16384
       customer_notes:
         description: Any notes or comments added by the customer.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       expiration_reason:
         description: Reason for the subscription expiration.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       custom_fields:
         description: Custom fields associated with the subscription
         type:
-          - 'null'
+          - "null"
           - array
         items:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             name:
               type:
-                - 'null'
+                - "null"
                 - string
             value:
               type:
-                - 'null'
+                - "null"
                 - string
       created_at:
         description: Timestamp when the subscription was created
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updated_at:
         description: Timestamp when the subscription was last updated
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       activated_at:
         description: Timestamp when the subscription was activated
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       canceled_at:
         description: Timestamp when the subscription was canceled
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       expires_at:
         description: Timestamp when the subscription expires
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       bank_account_authorized_at:
         description: Timestamp when bank account authorization occurred
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       gateway_code:
         description: Code associated with the payment gateway used for processing payments.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       billing_info_id:
         description: ID of the billing information associated with the subscription.
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       active_invoice_id:
         description: ID of the active invoice associated with the subscription.
         type:
-          - 'null'
+          - "null"
           - string
       started_with_gift:
         description: Indicates if the subscription started with a gift or promotion.
         type:
-          - 'null'
+          - "null"
           - boolean
       converted_at:
         description: Timestamp when the subscription was converted
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       action_result:
         description: Result of the action performed on the subscription.
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
 
   transactions:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     type: object
     additionalProperties: true
     properties:
       id:
         description: Unique identifier for the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       object:
         description: Type of object (transaction)
         type:
-          - 'null'
+          - "null"
           - string
       uuid:
         description: Universally unique identifier for the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 32
       original_transaction_id:
-        description: 'ID of the original transaction, if applicable'
+        description: "ID of the original transaction, if applicable"
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 13
       account:
@@ -3830,114 +3830,114 @@ schemas:
       invoice:
         description: Details of the invoice associated with the transaction
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 13
           number:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           business_entity_id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
       voided_by_invoice:
         description: Details of the invoice that voided the transaction
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 13
           object:
             type:
-              - 'null'
+              - "null"
               - string
           number:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           business_entity_id:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           state:
             type:
-              - 'null'
+              - "null"
               - string
       subscription_ids:
         description: List of subscription IDs associated with the transaction
         type: array
         items:
           type:
-            - 'null'
+            - "null"
             - string
           maxLength: 13
       type:
         description: Type of transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       origin:
         description: Source or origin of the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       currency:
         description: Currency used for the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 3
       amount:
         description: Amount of the transaction
         type:
-          - 'null'
+          - "null"
           - number
       status:
         description: Current status of the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       success:
         description: Indicates the success status of the transaction
         type:
-          - 'null'
+          - "null"
           - boolean
       backup_payment_method_used:
         description: Indicates whether a backup payment method was used
         type:
-          - 'null'
+          - "null"
           - boolean
       refunded:
         description: Indicates whether the transaction has been refunded
         type:
-          - 'null'
+          - "null"
           - boolean
       billing_address:
         description: Billing address details of the transaction
@@ -3945,57 +3945,57 @@ schemas:
         properties:
           first_name:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           last_name:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           phone:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           street1:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           street2:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           city:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           region:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           postal_code:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           country:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           geo_code:
             type:
-              - 'null'
+              - "null"
               - string
       collection_method:
         description: Method used to collect the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       payment_method:
@@ -4004,113 +4004,113 @@ schemas:
         properties:
           object:
             type:
-              - 'null'
+              - "null"
               - string
           card_type:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           first_six:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 6
           last_four:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 4
           last_two:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 2
           exp_month:
             type:
-              - 'null'
+              - "null"
               - number
           exp_year:
             type:
-              - 'null'
+              - "null"
               - number
           gateway_token:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           cc_bin_country:
             type:
-              - 'null'
+              - "null"
               - string
           gateway_code:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           billing_agreement_id:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           name_on_account:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           account_type:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           routing_number:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           routing_number_bank:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 256
           username:
             type:
-              - 'null'
+              - "null"
               - string
       ip_address_v4:
         description: IPv4 address of the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       ip_address_country:
         description: Country of the IP address used for the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       status_code:
         description: Status code of the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       status_message:
         description: Message related to the status of the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       customer_message:
         description: Message for the customer related to the transaction
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 1024
       customer_message_locale:
         description: Locale of the customer message
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 12
       payment_gateway:
@@ -4119,49 +4119,49 @@ schemas:
         properties:
           id:
             type:
-              - 'null'
+              - "null"
               - string
             maxLength: 13
           object:
             type:
-              - 'null'
+              - "null"
               - string
           type:
             type:
-              - 'null'
+              - "null"
               - string
           name:
             type:
-              - 'null'
+              - "null"
               - string
       gateway_message:
         description: Message returned by the payment gateway
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       gateway_reference:
         description: Reference number provided by the payment gateway
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       gateway_approval_code:
         description: Approval code provided by the payment gateway
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       gateway_response_code:
         description: Response code from the payment gateway
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       gateway_response_time:
         description: Time taken for the payment gateway to respond
         type:
-          - 'null'
+          - "null"
           - number
       gateway_response_values:
         description: Additional values in the gateway response
@@ -4169,96 +4169,96 @@ schemas:
       cvv_check:
         description: Result of the CVV check
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       avs_check:
         description: Result of the Address Verification System check
         type:
-          - 'null'
+          - "null"
           - string
         maxLength: 256
       created_at:
         description: Date and time when the transaction was created
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       updated_at:
         description: Date and time of the last update to the transaction
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       voided_at:
         description: Date and time when the transaction was voided
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       collected_at:
         description: Date and time when the transaction was collected
         type:
-          - 'null'
+          - "null"
           - string
         format: date-time
       action_result:
         description: Result of the action taken for the transaction
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
       vat_number:
         description: VAT number associated with the transaction
         type:
-          - 'null'
+          - "null"
           - string
       fraud_info:
         description: Information related to fraud check for the transaction
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           object:
             type:
-              - 'null'
+              - "null"
               - string
           score:
             type:
-              - 'null'
+              - "null"
               - integer
           decision:
             type:
-              - 'null'
+              - "null"
               - string
           reference:
             type:
-              - 'null'
+              - "null"
               - string
           risk_rules_triggered:
             type:
-              - 'null'
+              - "null"
               - array
             items:
               description: Details of individual risk rules triggered
               type:
-                - 'null'
+                - "null"
                 - object
               properties:
                 code:
                   type:
-                    - 'null'
+                    - "null"
                     - string
                 message:
                   type:
-                    - 'null'
+                    - "null"
                     - string
 
   unique_coupons:
-    $schema: 'http://json-schema.org/draft-07/schema#'
+    $schema: "http://json-schema.org/draft-07/schema#"
     additionalProperties: true
     type:
-      - 'null'
+      - "null"
       - object
     description: A unique coupon code for a bulk coupon.
     properties:
@@ -4276,14 +4276,14 @@ schemas:
         maxLength: 256
       state:
         type:
-          - 'null'
+          - "null"
           - string
         title: State
         description: Indicates if the unique coupon code is redeemable or why not.
         maxLength: 256
       bulk_coupon_id:
         type:
-          - 'null'
+          - "null"
           - string
         title: Bulk Coupon ID
         description: The Coupon ID of the parent Bulk Coupon
@@ -4291,7 +4291,7 @@ schemas:
         maxLength: 13
       bulk_coupon_code:
         type:
-          - 'null'
+          - "null"
           - string
         title: Bulk Coupon code
         description: The Coupon code of the parent Bulk Coupon
@@ -4308,7 +4308,7 @@ schemas:
         readOnly: true
       redeemed_at:
         type:
-          - 'null'
+          - "null"
           - string
         title: Redeemed at
         description: The date and time the unique coupon code was redeemed.
@@ -4316,7 +4316,7 @@ schemas:
         readOnly: true
       expired_at:
         type:
-          - 'null'
+          - "null"
           - string
         title: Expired at
         description: >-
