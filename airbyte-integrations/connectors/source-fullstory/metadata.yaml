@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 263fd456-02d1-4a26-a35e-52ccaedad778
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-fullstory
   githubIssueLabel: source-fullstory
   icon: fullstory.svg

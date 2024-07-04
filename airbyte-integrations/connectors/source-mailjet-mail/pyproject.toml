@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.4"
+version = "0.1.7"
 name = "source-mailjet-mail"
 description = "Source implementation for Mailjet Mail."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,12 +17,12 @@ include = "source_mailjet_mail"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-mailjet-mail = "source_mailjet_mail.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-pytest = "^6.1"
-pytest-mock = "^3.6.1"
+requests-mock = "*"
+pytest = "*"
+pytest-mock = "*"

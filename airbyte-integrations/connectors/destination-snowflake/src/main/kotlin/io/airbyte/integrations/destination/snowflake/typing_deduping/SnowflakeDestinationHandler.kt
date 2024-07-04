@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.commons.json.Jsons.emptyObject
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.Array
@@ -25,7 +26,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
@@ -86,22 +86,24 @@ class SnowflakeDestinationHandler(
     @Throws(Exception::class)
     private fun getInitialRawTableState(
         id: StreamId,
-        destinationSyncMode: DestinationSyncMode
+        suffix: String,
     ): InitialRawTableStatus {
-        // Short-circuit for overwrite, table will be truncated anyway
-        if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-            return InitialRawTableStatus(
-                rawTableExists = false,
-                hasUnprocessedRecords = false,
-                maxProcessedTimestamp = Optional.empty()
-            )
-        }
+        val rawTableName = id.rawName + suffix
         val tableExists =
             database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
-                LOGGER.info("Retrieving table from Db metadata: {} {}", id.rawNamespace, id.rawName)
+                LOGGER.info(
+                    "Retrieving table from Db metadata: {} {}",
+                    id.rawNamespace,
+                    rawTableName
+                )
                 try {
                     val rs =
-                        databaseMetaData.getTables(databaseName, id.rawNamespace, id.rawName, null)
+                        databaseMetaData.getTables(
+                            databaseName,
+                            id.rawNamespace,
+                            rawTableName,
+                            null
+                        )
                     // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
                     // interpreted as uppercase
                     // in db metadata calls. check for both
@@ -109,7 +111,7 @@ class SnowflakeDestinationHandler(
                         databaseMetaData.getTables(
                             databaseName,
                             id.rawNamespace.uppercase(),
-                            id.rawName.uppercase(),
+                            rawTableName.uppercase(),
                             null
                         )
                     rs.next() || rsUppercase.next()
@@ -139,7 +141,7 @@ class SnowflakeDestinationHandler(
                                     StringSubstitutor(
                                             java.util.Map.of(
                                                 "raw_table",
-                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE)
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
                                             )
                                         )
                                         .replace(
@@ -195,7 +197,7 @@ class SnowflakeDestinationHandler(
                                     StringSubstitutor(
                                             java.util.Map.of(
                                                 "raw_table",
-                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE)
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
                                             )
                                         )
                                         .replace(
@@ -295,7 +297,7 @@ class SnowflakeDestinationHandler(
             "VARIANT" == existingTable.columns[abMetaColumnName]!!.type
     }
 
-    fun isAirbyteGenerationIdColumnMatch(existingTable: TableDefinition): Boolean {
+    private fun isAirbyteGenerationIdColumnMatch(existingTable: TableDefinition): Boolean {
         val abGenerationIdColumnName: String =
             JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase(Locale.getDefault())
         return existingTable.columns.containsKey(abGenerationIdColumnName) &&
@@ -397,8 +399,12 @@ class SnowflakeDestinationHandler(
                             !existingSchemaMatchesStreamConfig(streamConfig, existingTable!!)
                         isFinalTableEmpty = hasRowCount && tableRowCounts[namespace]!![name] == 0
                     }
-                    val initialRawTableState =
-                        getInitialRawTableState(streamConfig.id, streamConfig.destinationSyncMode)
+                    val initialRawTableState = getInitialRawTableState(streamConfig.id, "")
+                    val tempRawTableState =
+                        getInitialRawTableState(
+                            streamConfig.id,
+                            AbstractStreamOperation.TMP_TABLE_SUFFIX
+                        )
                     val destinationState =
                         destinationStates.getOrDefault(
                             streamConfig.id.asPair(),
@@ -408,6 +414,7 @@ class SnowflakeDestinationHandler(
                         streamConfig,
                         isFinalTablePresent,
                         initialRawTableState,
+                        tempRawTableState,
                         isSchemaMismatch,
                         isFinalTableEmpty,
                         destinationState
@@ -474,6 +481,10 @@ class SnowflakeDestinationHandler(
         } catch (e: Exception) {
             throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
         }
+    }
+
+    fun query(sql: String): List<JsonNode> {
+        return database.queryJsons(sql)
     }
 
     companion object {

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dc98a6ad-2dd1-47b6-9529-2ec35820f9c6
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-callrail
   githubIssueLabel: source-callrail
   icon: callrail.svg

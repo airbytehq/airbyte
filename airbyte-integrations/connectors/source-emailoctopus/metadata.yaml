@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-emailoctopus
   documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
   githubIssueLabel: source-emailoctopus

@@ -13,6 +13,7 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ### Installing the connector
 From this connector directory, run:
+
 ```bash
 poetry install --with dev
 ```
@@ -59,6 +60,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 ```
 
 ### Running our CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
 ```bash
 airbyte-ci connectors --name=source-datadog test
@@ -83,7 +85,6 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
     - bump the `dockerImageTag` value in in `metadata.yaml`
     - bump the `version` value in `pyproject.toml`
-3. Make sure the `metadata.yaml` content is up to date.
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/datadog.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.

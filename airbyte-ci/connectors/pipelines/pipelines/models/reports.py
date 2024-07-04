@@ -61,6 +61,10 @@ class Report:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.FAILURE]
 
     @property
+    def considered_failed_steps(self) -> List[StepResult]:
+        return [step_result for step_result in self.failed_steps if step_result.consider_in_overall_status]
+
+    @property
     def successful_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SUCCESS]
 
@@ -70,7 +74,7 @@ class Report:
 
     @property
     def success(self) -> bool:
-        return len(self.failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
+        return len(self.considered_failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
 
     @property
     def run_duration(self) -> timedelta:

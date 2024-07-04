@@ -22,7 +22,7 @@ poetry install --with dev
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/senseforce)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_senseforce/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
+See `integration_tests/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-senseforce spec
 poetry run source-senseforce check --config secrets/config.json
 poetry run source-senseforce discover --config secrets/config.json
-poetry run source-senseforce read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-senseforce read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests

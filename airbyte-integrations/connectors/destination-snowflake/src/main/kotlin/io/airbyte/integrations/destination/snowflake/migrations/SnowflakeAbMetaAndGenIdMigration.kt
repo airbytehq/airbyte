@@ -25,18 +25,11 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
         stream: StreamConfig,
         state: DestinationInitialStatus<SnowflakeState>
     ): Migration.MigrationResult<SnowflakeState> {
-        if (state.destinationState.isAirbyteMetaPresentInRaw) {
-            log.info {
-                "Skipping airbyte_meta/generation_id migration for ${stream.id.originalNamespace}.${stream.id.originalName} " +
-                    "because previous destination state has isAirbyteMetaPresent"
-            }
-            return Migration.MigrationResult(state.destinationState, false)
-        }
-
         if (!state.initialRawTableStatus.rawTableExists) {
             // The raw table doesn't exist. No migration necessary. Update the state.
             log.info {
-                "Skipping airbyte_meta/generation_id migration for ${stream.id.originalNamespace}.${stream.id.originalName} because the raw table doesn't exist"
+                "Skipping airbyte_meta/generation_id migration for ${stream.id.originalNamespace}.${stream.id.originalName} " +
+                    "because the raw table doesn't exist for sync mode ${stream.destinationSyncMode}"
             }
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
@@ -129,6 +122,14 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
                 true
             )
+        } else if (!state.isFinalTablePresent) {
+            log.info {
+                "skipping migration of generation_id for table ${stream.id.finalNamespace}.${stream.id.finalName} because final table doesn't exist"
+            }
+        } else {
+            log.info {
+                "skipping migration of generation_id for table ${stream.id.finalNamespace}.${stream.id.finalName} because schemas match"
+            }
         }
 
         // Final table is untouched, so we don't need to fetch the initial status
