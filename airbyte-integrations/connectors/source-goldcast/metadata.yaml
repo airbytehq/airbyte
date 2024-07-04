@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - customapi.goldcast.io
   registries:
     oss:
       enabled: true
@@ -25,7 +25,7 @@ data:
   icon: goldcast.svg
   license: MIT
   name: Goldcast
-  releaseDate: TODO
+  releaseDate: 2024-07-04
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/goldcast
