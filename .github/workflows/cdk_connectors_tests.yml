@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v4
       - id: changes
         uses: dorny/paths-filter@v2
-        run: echo "false" >> "$GITHUB_OUTPUT"
+        run: echo "python_cdk=false" >> "$GITHUB_OUTPUT"
       # The Connector CI Tests is a status check emitted by airbyte-ci
       # We make it pass once we have determined that there are no changes to the connectors
       - name: "Skip Connectors CI tests"
