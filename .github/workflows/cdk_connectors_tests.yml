@@ -12,6 +12,10 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  # TODO remove `push`. It is only for test purposes
+  push:
+    branches:
+      - "issue-8447/add-github-ci-check"
   pull_request:
     types:
       - opened
@@ -47,7 +51,7 @@ jobs:
           --header 'content-type: application/json' \
           --data '{
             "state": "success",
-            "context": "Connectors CI tests", TODO this seems to rely on GITHUB_GLOBAL_CONTEXT_FOR_TESTS
+            "context": "Connectors CI tests",
             "target_url": "${{ github.event.workflow_run.html_url }}"
             }' \
 
