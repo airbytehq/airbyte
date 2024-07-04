@@ -7,7 +7,7 @@ from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteS
 
 class ConfiguredAirbyteStreamBuilder:
     def __init__(self) -> None:
-        self._stream = {
+        self._stream: Dict[str, Any] = {
             "stream": {
                 "name": "any name",
                 "json_schema": {},
