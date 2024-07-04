@@ -6,14 +6,14 @@ import logging
 import multiprocessing
 import time
 from collections.abc import Iterable, Iterator
-from multiprocessing import Event, Queue
+from multiprocessing import Queue
 from typing import List
 
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.pool_manager import PoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -44,7 +44,7 @@ class ConcurrentSource:
         is_single_threaded = initial_number_of_partitions_to_generate == 1 and num_workers == 1
         too_many_generator = not is_single_threaded and initial_number_of_partitions_to_generate >= num_workers
         assert not too_many_generator, "It is required to have more workers than threads generating partitions"
-        pool = ThreadPoolManager(
+        pool = PoolManager(
             concurrent.futures.ProcessPoolExecutor(max_workers=num_workers),
             logger,
         )
@@ -52,7 +52,7 @@ class ConcurrentSource:
 
     def __init__(
         self,
-        pool: ThreadPoolManager,
+        pool: PoolManager,
         logger: logging.Logger,
         slice_logger: SliceLogger = DebugSliceLogger(),
         message_repository: MessageRepository = InMemoryMessageRepository(),
@@ -153,7 +153,7 @@ class ConcurrentSource:
         )
 
         workers = [
-            ThreadPoolManager.start_thread(self._keep_cleaning_partitions, generated_partitions, readable_partitions, complete_event),
+            PoolManager.start_thread(self._keep_cleaning_partitions, generated_partitions, readable_partitions, complete_event),
             self._pool.submit(
                 self._keep_handling_items, readable_partitions, complete_partitions, complete_event, concurrent_stream_processor
             ),

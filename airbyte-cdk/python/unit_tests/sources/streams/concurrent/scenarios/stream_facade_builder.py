@@ -15,7 +15,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.pool_manager import PoolManager
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.source import TState
@@ -45,7 +45,7 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
         input_state: Optional[List[Mapping[str, Any]]] = _NO_STATE,
     ):
         self._message_repository = InMemoryMessageRepository()
-        threadpool_manager = ThreadPoolManager(threadpool, streams[0].logger)
+        threadpool_manager = PoolManager(threadpool, streams[0].logger)
         concurrent_source = ConcurrentSource(threadpool_manager, streams[0].logger, NeverLogSliceLogger(), self._message_repository)
         super().__init__(concurrent_source)
         self._streams = streams

@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.pool_manager import PoolManager
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -21,7 +21,7 @@ _A_STREAM_NAME = "a_stream_name"
 class PartitionEnqueuerTest(unittest.TestCase):
     def setUp(self) -> None:
         self._queue: Queue[QueueItem] = Queue()
-        self._thread_pool_manager = Mock(spec=ThreadPoolManager)
+        self._thread_pool_manager = Mock(spec=PoolManager)
         self._thread_pool_manager.prune_to_validate_has_reached_futures_limit.return_value = False
         self._partition_generator = PartitionEnqueuer(self._queue)
 

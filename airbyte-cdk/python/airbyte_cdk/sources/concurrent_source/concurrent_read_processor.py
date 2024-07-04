@@ -11,7 +11,7 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.pool_manager import PoolManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
@@ -33,7 +33,7 @@ class ConcurrentReadProcessor:
         generated_partitions: Queue,
         readable_partitions: Queue,
         complete_event: multiprocessing.Event,
-        thread_pool_manager: ThreadPoolManager,
+        thread_pool_manager: PoolManager,
         logger: logging.Logger,
         slice_logger: SliceLogger,
         message_repository: MessageRepository,

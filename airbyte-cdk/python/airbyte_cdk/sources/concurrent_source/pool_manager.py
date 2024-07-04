@@ -4,11 +4,12 @@
 import logging
 import multiprocessing
 import threading
+from collections.abc import Callable
 from concurrent.futures import Future, ProcessPoolExecutor
-from typing import Any, Callable, List, Optional
+from typing import Any, List, Optional
 
 
-class ThreadPoolManager:
+class PoolManager:
     """
     Wrapper to abstract away the threadpool and the logic to wait for pending tasks to be completed.
     """

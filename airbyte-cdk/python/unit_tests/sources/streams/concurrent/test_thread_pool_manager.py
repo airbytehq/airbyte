@@ -5,13 +5,13 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from unittest import TestCase
 from unittest.mock import Mock
 
-from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
+from airbyte_cdk.sources.concurrent_source.pool_manager import PoolManager
 
 
 class ThreadPoolManagerTest(TestCase):
     def setUp(self):
         self._threadpool = Mock(spec=ThreadPoolExecutor)
-        self._thread_pool_manager = ThreadPoolManager(self._threadpool, Mock(), max_concurrent_tasks=1)
+        self._thread_pool_manager = PoolManager(self._threadpool, Mock(), max_concurrent_tasks=1)
         self._fn = lambda x: x
         self._arg = "arg"
 
