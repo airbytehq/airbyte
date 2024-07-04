@@ -49,15 +49,10 @@ class CatalogBuilder:
         ...
 
     @overload
-    def with_stream(self, name: str, sync_mode: SyncMode, json_schema: Dict[str, Any]) -> "CatalogBuilder":
+    def with_stream(self, name: str, sync_mode: SyncMode) -> "CatalogBuilder":
         ...
 
-    def with_stream(
-        self,
-        name: Union[str, ConfiguredAirbyteStreamBuilder],
-        sync_mode: Union[SyncMode, None] = None,
-        json_schema: Union[Dict[str, Any], None] = None,
-    ) -> "CatalogBuilder":
+    def with_stream(self, name: Union[str, ConfiguredAirbyteStreamBuilder], sync_mode: Union[SyncMode, None] = None) -> "CatalogBuilder":
         # As we are introducing a fully fledge ConfiguredAirbyteStreamBuilder, we would like to deprecate the previous interface
         # with_stream(str, SyncMode)
 
@@ -66,7 +61,7 @@ class CatalogBuilder:
         builder = (
             name_or_builder
             if isinstance(name_or_builder, ConfiguredAirbyteStreamBuilder)
-            else ConfiguredAirbyteStreamBuilder().with_name(name_or_builder).with_sync_mode(sync_mode).with_json_schema(json_schema or {})
+            else ConfiguredAirbyteStreamBuilder().with_name(name_or_builder).with_sync_mode(sync_mode)
         )
         self._streams.append(builder)
         return self
