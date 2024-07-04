@@ -3,13 +3,13 @@
 #
 
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.entrypoint_wrapper import get_catalog, read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
@@ -57,6 +57,12 @@ def _create_catalog(names_and_sync_modes: List[tuple[str, SyncMode]]) -> Configu
         catalog_builder.with_stream(name=stream_name, sync_mode=sync_mode)
     return catalog_builder.build()
 
+
+def _create_catalog_with_configured_schema(names_and_sync_modes: List[tuple[str, SyncMode, str: Any]]) -> ConfiguredAirbyteCatalog:
+    catalog_builder = CatalogBuilder()
+    for stream_name, sync_mode, json_schema in names_and_sync_modes:
+        catalog_builder.with_stream(name=stream_name, sync_mode=sync_mode, json_schema=json_schema)
+    return catalog_builder.build()
 
 def _create_justice_songs_request() -> RequestBuilder:
     return RequestBuilder.justice_songs_endpoint()
@@ -156,6 +162,43 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob()
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 0.0
+
+    @HttpMocker()
+    def test_resumable_full_refresh_sync_with_configured_schema(self, http_mocker):
+        config = {}
+
+        http_mocker.get(
+            _create_justice_songs_request().build(),
+            _create_response(pagination_has_more=False).with_record(record=_create_record("justice_songs")).build(),
+        )
+
+
+        source = SourceFixture()
+        json_schema: Dict[str:any] = {
+            "properties":
+                    {"id":
+                        {
+                            "description" : "id",
+                            "type" : "string"
+                        }
+            }
+        }
+        catalog = _create_catalog_with_configured_schema([("justice_songs", SyncMode.full_refresh, json_schema)])
+        actual_messages = read(source, config=config, catalog=catalog)
+
+        assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
+        assert len(actual_messages.records) == 1
+        assert len(actual_messages.state_messages) == 2
+        validate_message_order([Type.RECORD, Type.STATE, Type.STATE], actual_messages.records_and_state_messages)
+        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob()
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 1.0
+        assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob()
+        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 0.0
+
+        entrypoint_catalog = get_catalog(config=config ,catalog=catalog)
+        assert entrypoint_catalog["streams"][0]["stream"]["json_schema"] == json_schema
 
     @HttpMocker()
     def test_resumable_full_refresh_second_attempt(self, http_mocker):
