@@ -1,4 +1,4 @@
-name: CDK - Connectors Tests
+name: CDK Changes - Connectors Tests
 
 concurrency:
   # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
@@ -51,7 +51,7 @@ jobs:
           --header 'content-type: application/json' \
           --data '{
             "state": "success",
-            "context": "Connectors CI tests",
+            "context": "CDK Changes - Connectors Tests",
             "target_url": "${{ github.event.workflow_run.html_url }}"
             }' \
 
@@ -101,4 +101,4 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
-          subcommand: "connectors --execute-timeout=18000 --name source-shopify  test"
+          subcommand: "connectors --execute-timeout=18000 --global-status-check-context='CDK Changes - Connectors Tests' - --name source-shopify  test"
