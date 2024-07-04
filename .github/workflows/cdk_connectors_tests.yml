@@ -72,19 +72,9 @@ jobs:
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
             ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
-      - name: Extract branch name [WORKFLOW DISPATCH]
-        shell: bash
-        if: github.event_name == 'workflow_dispatch'
-        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-        id: extract_branch
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
-        if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
         run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
-      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
-        id: fetch_last_commit_id_wd
-        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
       - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/run-airbyte-ci
