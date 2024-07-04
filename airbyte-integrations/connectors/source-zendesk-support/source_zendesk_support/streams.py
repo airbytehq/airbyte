@@ -412,7 +412,7 @@ class SourceZendeskSupportFullRefreshStream(BaseSourceZendeskSupportStream):
         return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {"page[size]": self.page_size}
+        params = {"page[size]": self.page_size} if self.page_size else {}
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -837,7 +837,7 @@ class Tags(SourceZendeskSupportFullRefreshStream):
 
 class SlaPolicies(SourceZendeskSupportFullRefreshStream):
     """SlaPolicies stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/sla_policies/"""
-
+    page_size = None
     def path(self, *args, **kwargs) -> str:
         return "slas/policies.json"
 
@@ -848,6 +848,7 @@ class Brands(SourceZendeskSupportFullRefreshStream):
 
 class CustomRoles(SourceZendeskSupportFullRefreshStream):
     """CustomRoles stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles"""
+    page_size = None
 
 
 class Schedules(SourceZendeskSupportFullRefreshStream):
