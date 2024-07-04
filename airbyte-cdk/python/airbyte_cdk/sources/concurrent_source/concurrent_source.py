@@ -3,8 +3,11 @@
 #
 import concurrent
 import logging
-from queue import Queue
-from typing import Iterable, Iterator, List
+import multiprocessing
+import time
+from collections.abc import Iterable, Iterator
+from multiprocessing import Event, Queue
+from typing import List
 
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
@@ -13,8 +16,6 @@ from airbyte_cdk.sources.concurrent_source.stream_thread_exception import Stream
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
-from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
@@ -43,17 +44,15 @@ class ConcurrentSource:
         is_single_threaded = initial_number_of_partitions_to_generate == 1 and num_workers == 1
         too_many_generator = not is_single_threaded and initial_number_of_partitions_to_generate >= num_workers
         assert not too_many_generator, "It is required to have more workers than threads generating partitions"
-        threadpool = ThreadPoolManager(
-            concurrent.futures.ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="workerpool"),
+        pool = ThreadPoolManager(
+            concurrent.futures.ProcessPoolExecutor(max_workers=num_workers),
             logger,
         )
-        return ConcurrentSource(
-            threadpool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds
-        )
+        return ConcurrentSource(pool, logger, slice_logger, message_repository, initial_number_of_partitions_to_generate, timeout_seconds)
 
     def __init__(
         self,
-        threadpool: ThreadPoolManager,
+        pool: ThreadPoolManager,
         logger: logging.Logger,
         slice_logger: SliceLogger = DebugSliceLogger(),
         message_repository: MessageRepository = InMemoryMessageRepository(),
@@ -68,12 +67,59 @@ class ConcurrentSource:
         :param initial_number_partitions_to_generate: The initial number of concurrent partition generation tasks. Limiting this number ensures will limit the latency of the first records emitted. While the latency is not critical, emitting the records early allows the platform and the destination to process them as early as possible.
         :param timeout_seconds: The maximum number of seconds to wait for a record to be read from the queue. If no record is read within this time, the source will stop reading and return.
         """
-        self._threadpool = threadpool
+        self._pool = pool
         self._logger = logger
         self._slice_logger = slice_logger
         self._message_repository = message_repository
         self._initial_number_partitions_to_generate = initial_number_partitions_to_generate
         self._timeout_seconds = timeout_seconds
+
+    def _keep_cleaning_partitions(
+        self,
+        generated_partitions: Queue,
+        readable_partitions: Queue,
+        complete_event: multiprocessing.Event,
+        sleep_time_in_seconds: float = 0.1,
+    ) -> None:
+        while not complete_event.is_set() or not generated_partitions.empty():
+            try:
+                partition = generated_partitions.get()
+
+                # Adding partitions to the queue generates futures. To avoid having too many futures, we throttle here. We understand that
+                # we might add more futures than the limit by throttling in the threads while it is the main thread that actual adds the
+                # future but we expect the delta between the max futures length and the actual to be small enough that it would not be an
+                # issue. We do this in the threads because we want the main thread to always be processing QueueItems as if it does not, the
+                # queue size could grow and generating OOM issues.
+                #
+                # Also note that we do not expect this to create deadlocks where all worker threads wait because we have less
+                # PartitionEnqueuer threads than worker threads.
+                #
+                # Also note that prune_to_validate_has_reached_futures_limit has a lock while pruning which might create a bottleneck in
+                # terms of performance.
+                while self._pool.prune_to_validate_has_reached_futures_limit():
+                    time.sleep(sleep_time_in_seconds)
+
+                readable_partitions.put(partition)
+            except Exception as ex:
+                self._logger.exception(f"An error {ex} occurred while keeping partitions clean. Partition: {partition}")
+
+    def _keep_handling_items(
+        self,
+        readable_partitions: Queue,
+        complete_partitions: Queue,
+        complete_event: multiprocessing.Event,
+        concurrent_stream_processor: ConcurrentReadProcessor,
+    ) -> None:
+        while not complete_event.is_set() or not readable_partitions.empty():
+            try:
+                airbyte_message_or_record_or_exception = readable_partitions.get()
+                for message in self._handle_item(
+                    airbyte_message_or_record_or_exception,
+                    concurrent_stream_processor,
+                ):
+                    complete_partitions.put(message)
+            except Exception as ex:
+                self._logger.exception(f"An error {ex} occurred while handling items.")
 
     def read(
         self,
@@ -90,26 +136,38 @@ class ConcurrentSource:
         # threads generating partitions that than are max number of workers. If it weren't the case, we could have threads only generating
         # partitions which would fill the queue. This number is arbitrarily set to 10_000 but will probably need to be changed given more
         # information and might even need to be configurable depending on the source
-        queue: Queue[QueueItem] = Queue(maxsize=10_000)
+        generated_partitions: Queue = Queue(maxsize=10_000)
+        readable_partitions: Queue = Queue(maxsize=10_000)
+        complete_partitions: Queue = Queue(maxsize=10_000)
+        complete_event = multiprocessing.Event()
+
         concurrent_stream_processor = ConcurrentReadProcessor(
             stream_instances_to_read_from,
-            PartitionEnqueuer(queue, self._threadpool),
-            self._threadpool,
+            generated_partitions,
+            readable_partitions,
+            complete_event,
+            self._pool,
             self._logger,
             self._slice_logger,
             self._message_repository,
-            PartitionReader(queue),
         )
+
+        workers = [
+            ThreadPoolManager.start_thread(self._keep_cleaning_partitions, generated_partitions, readable_partitions, complete_event),
+            self._pool.submit(
+                self._keep_handling_items, readable_partitions, complete_partitions, complete_event, concurrent_stream_processor
+            ),
+        ]
 
         # Enqueue initial partition generation tasks
         yield from self._submit_initial_partition_generators(concurrent_stream_processor)
 
         # Read from the queue until all partitions were generated and read
-        yield from self._consume_from_queue(
-            queue,
-            concurrent_stream_processor,
-        )
-        self._threadpool.check_for_errors_and_shutdown()
+        while not complete_event.is_set() or not complete_partitions.empty():
+            message = complete_partitions.get()
+            yield message
+
+        self._pool.check_for_errors_and_shutdown()
         self._logger.info("Finished syncing")
 
     def _submit_initial_partition_generators(self, concurrent_stream_processor: ConcurrentReadProcessor) -> Iterable[AirbyteMessage]:
@@ -117,20 +175,6 @@ class ConcurrentSource:
             status_message = concurrent_stream_processor.start_next_partition_generator()
             if status_message:
                 yield status_message
-
-    def _consume_from_queue(
-        self,
-        queue: Queue[QueueItem],
-        concurrent_stream_processor: ConcurrentReadProcessor,
-    ) -> Iterable[AirbyteMessage]:
-        while airbyte_message_or_record_or_exception := queue.get():
-            yield from self._handle_item(
-                airbyte_message_or_record_or_exception,
-                concurrent_stream_processor,
-            )
-            if concurrent_stream_processor.is_done() and queue.empty():
-                # all partitions were generated and processed. we're done here
-                break
 
     def _handle_item(
         self,

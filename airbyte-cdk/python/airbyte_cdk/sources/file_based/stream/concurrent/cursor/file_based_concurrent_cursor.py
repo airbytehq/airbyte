@@ -60,6 +60,21 @@ class FileBasedConcurrentCursor(AbstractConcurrentFileBasedCursor):
         self._prev_cursor_value = self._compute_prev_sync_cursor(stream_state)
         self._sync_start = self._compute_start_time()
 
+
+    def __getstate__(self) -> dict[str, Any]:
+        state = self.__dict__.copy()
+        # Remove the unpicklable entries.
+        del state["_state_lock"]
+        del state["_pending_files_lock"]
+        return state
+
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        self.__dict__.update(state)
+        self._state_lock = RLock()
+        self._pending_files_lock = RLock()
+
+
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._state

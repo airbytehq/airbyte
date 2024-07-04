@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+from multiprocessing import Queue, Event
+import multiprocessing
 from typing import Dict, Iterable, List, Optional, Set
 
 from airbyte_cdk.exception_handler import generate_failed_streams_error_message
@@ -16,7 +18,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionE
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
@@ -28,12 +30,13 @@ class ConcurrentReadProcessor:
     def __init__(
         self,
         stream_instances_to_read_from: List[AbstractStream],
-        partition_enqueuer: PartitionEnqueuer,
+        generated_partitions: Queue,
+        readable_partitions: Queue,
+        complete_event: multiprocessing.Event,
         thread_pool_manager: ThreadPoolManager,
         logger: logging.Logger,
         slice_logger: SliceLogger,
         message_repository: MessageRepository,
-        partition_reader: PartitionReader,
     ):
         """
         This class is responsible for handling items from a concurrent stream read process.
@@ -52,13 +55,14 @@ class ConcurrentReadProcessor:
             self._streams_to_running_partitions[stream.name] = set()
             self._record_counter[stream.name] = 0
         self._thread_pool_manager = thread_pool_manager
-        self._partition_enqueuer = partition_enqueuer
+        self._partition_enqueuer = PartitionEnqueuer(generated_partitions)
+        self._complete_event = complete_event
         self._stream_instances_to_start_partition_generation = stream_instances_to_read_from
         self._streams_currently_generating_partitions: List[str] = []
         self._logger = logger
         self._slice_logger = slice_logger
         self._message_repository = message_repository
-        self._partition_reader = partition_reader
+        self._readable_partitions = readable_partitions
         self._streams_done: Set[str] = set()
         self._exceptions_per_stream_name: dict[str, List[Exception]] = {}
 
@@ -89,7 +93,7 @@ class ConcurrentReadProcessor:
         self._streams_to_running_partitions[stream_name].add(partition)
         if self._slice_logger.should_log_slice_message(self._logger):
             self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
-        self._thread_pool_manager.submit(self._partition_reader.process_partition, partition)
+        self._thread_pool_manager.submit(PartitionReader.process_partition, partition, self._readable_partitions)
 
     def on_partition_complete_sentinel(self, sentinel: PartitionCompleteSentinel) -> Iterable[AirbyteMessage]:
         """
@@ -214,3 +218,6 @@ class ConcurrentReadProcessor:
             AirbyteStreamStatus.INCOMPLETE if self._exceptions_per_stream_name.get(stream_name, []) else AirbyteStreamStatus.COMPLETE
         )
         yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), stream_status)
+
+        if all([self._is_stream_done(stream_name) for stream_name in self._stream_name_to_instance.keys()]):
+            self._complete_event.set()

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from queue import Queue
+from multiprocessing import Queue
 
 from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -12,16 +12,8 @@ class PartitionReader:
     """
     Generates records from a partition and puts them in a queue.
     """
-
-    _IS_SUCCESSFUL = True
-
-    def __init__(self, queue: Queue[QueueItem]) -> None:
-        """
-        :param queue: The queue to put the records in.
-        """
-        self._queue = queue
-
-    def process_partition(self, partition: Partition) -> None:
+    @staticmethod
+    def process_partition(partition: Partition, queue: Queue) -> None:
         """
         Process a partition and put the records in the output queue.
         When all the partitions are added to the queue, a sentinel is added to the queue to indicate that all the partitions have been generated.
@@ -35,8 +27,8 @@ class PartitionReader:
         """
         try:
             for record in partition.read():
-                self._queue.put(record)
-            self._queue.put(PartitionCompleteSentinel(partition, self._IS_SUCCESSFUL))
+                queue.put(record)
+            queue.put(PartitionCompleteSentinel(partition, is_successful=True))
         except Exception as e:
-            self._queue.put(StreamThreadException(e, partition.stream_name()))
-            self._queue.put(PartitionCompleteSentinel(partition, not self._IS_SUCCESSFUL))
+            queue.put(StreamThreadException(e, partition.stream_name()))
+            queue.put(PartitionCompleteSentinel(partition, is_successful=False))

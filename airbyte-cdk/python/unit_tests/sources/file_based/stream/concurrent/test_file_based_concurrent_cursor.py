@@ -2,6 +2,7 @@
 
 
 from datetime import datetime
+import pickle
 from typing import Any, Dict, List, MutableMapping, Optional, Tuple
 from unittest.mock import MagicMock
 
@@ -11,6 +12,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.concurrent.adapters import FileBasedStreamPartition
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
+from airbyte_cdk.sources.message.repository import NoopMessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from freezegun import freeze_time
 
@@ -28,8 +30,8 @@ def _make_cursor(input_state: Optional[MutableMapping[str, Any]]) -> FileBasedCo
         stream_config,
         stream.name,
         None,
-        input_state,
-        MagicMock(),
+        input_state or {},
+        NoopMessageRepository(),
         ConnectorStateManager(
             stream_instance_map={stream.name: stream},
             state=[AirbyteStateMessage.parse_obj(input_state)] if input_state is not None else None,
@@ -37,6 +39,13 @@ def _make_cursor(input_state: Optional[MutableMapping[str, Any]]) -> FileBasedCo
         CursorField(FileBasedConcurrentCursor.CURSOR_FIELD),
     )
     return cursor
+
+
+def test_pickle() -> None:
+    cursor = _make_cursor({"history": {"a.csv": "2021-01-01T00:00:00.000000Z"}, "_ab_source_file_last_modified": "2021-01-01T00:00:00.000000Z_a.csv"})
+    pickled_cursor = pickle.dumps(cursor)
+    unpickled_cursor = pickle.loads(pickled_cursor)
+    assert unpickled_cursor.state == cursor.state
 
 
 @pytest.mark.parametrize(

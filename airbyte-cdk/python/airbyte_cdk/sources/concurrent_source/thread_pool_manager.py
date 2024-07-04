@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+import multiprocessing
 import threading
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ProcessPoolExecutor
 from typing import Any, Callable, List, Optional
 
 
@@ -16,7 +17,7 @@ class ThreadPoolManager:
 
     def __init__(
         self,
-        threadpool: ThreadPoolExecutor,
+        threadpool: ProcessPoolExecutor,
         logger: logging.Logger,
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
     ):
@@ -25,14 +26,22 @@ class ThreadPoolManager:
         :param logger: The logger to use
         :param max_concurrent_tasks: The maximum number of tasks that can be pending at the same time
         """
-        self._threadpool = threadpool
+        self._pool = threadpool
         self._logger = logger
         self._max_concurrent_tasks = max_concurrent_tasks
         self._futures: List[Future[Any]] = []
-        self._lock = threading.Lock()
+        self._lock = multiprocessing.Lock()
         self._most_recently_seen_exception: Optional[Exception] = None
 
         self._logging_threshold = max_concurrent_tasks * 2
+
+
+    @staticmethod
+    def start_thread(target: Callable[..., Any], *args: Any) -> threading.Thread:
+        t = threading.Thread(target=target, args=args)
+        t.start()
+        return t
+
 
     def prune_to_validate_has_reached_futures_limit(self) -> bool:
         self._prune_futures(self._futures)
@@ -40,8 +49,9 @@ class ThreadPoolManager:
             self._logger.warning(f"ThreadPoolManager: The list of futures is getting bigger than expected ({len(self._futures)})")
         return len(self._futures) >= self._max_concurrent_tasks
 
-    def submit(self, function: Callable[..., Any], *args: Any) -> None:
-        self._futures.append(self._threadpool.submit(function, *args))
+    def submit(self, function: Callable[..., Any], *args: Any) -> Future[Any]:
+        self._futures.append(self._pool.submit(function, *args))
+        return self._futures[-1]
 
     def _prune_futures(self, futures: List[Future[Any]]) -> None:
         """
@@ -74,7 +84,7 @@ class ThreadPoolManager:
     def _shutdown(self) -> None:
         # Without a way to stop the threads that have already started, this will not stop the Python application. We are fine today with
         # this imperfect approach because we only do this in case of `self._most_recently_seen_exception` which we don't expect to happen
-        self._threadpool.shutdown(wait=False, cancel_futures=True)
+        self._pool.shutdown(wait=False, cancel_futures=True)
 
     def is_done(self) -> bool:
         return all([f.done() for f in self._futures])

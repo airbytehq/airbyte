@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import unittest
-from queue import Queue
+from multiprocessing import Queue
 from typing import Callable, Iterable, List
 from unittest.mock import Mock, patch
 
@@ -23,7 +23,7 @@ class PartitionEnqueuerTest(unittest.TestCase):
         self._queue: Queue[QueueItem] = Queue()
         self._thread_pool_manager = Mock(spec=ThreadPoolManager)
         self._thread_pool_manager.prune_to_validate_has_reached_futures_limit.return_value = False
-        self._partition_generator = PartitionEnqueuer(self._queue, self._thread_pool_manager)
+        self._partition_generator = PartitionEnqueuer(self._queue)
 
     @patch("airbyte_cdk.sources.streams.concurrent.partition_enqueuer.time.sleep")
     def test_given_no_partitions_when_generate_partitions_then_do_not_wait(self, mocked_sleep):
@@ -57,7 +57,7 @@ class PartitionEnqueuerTest(unittest.TestCase):
 
         self._partition_generator.generate_partitions(stream)
 
-        assert mocked_sleep.call_count == 2
+        assert mocked_sleep.call_count == 0
 
     def test_given_exception_when_generate_partitions_then_return_exception_and_sentinel(self):
         stream = Mock(spec=AbstractStream)
