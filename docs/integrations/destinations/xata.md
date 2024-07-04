@@ -35,6 +35,9 @@ In order to connect, you need:
 
 ## CHANGELOG
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                        |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------- |
 | 0.1.6 | 2024-06-25 | [40497](https://github.com/airbytehq/airbyte/pull/40497) | Update dependencies |
@@ -44,3 +47,5 @@ In order to connect, you need:
 | 0.1.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector           |
 | 0.1.1   | 2023-06-21 | [#27542](https://github.com/airbytehq/airbyte/pull/27542) | Mark api_key as Airbyte Secret |
 | 0.1.0   | 2023-06-14 | [#24192](https://github.com/airbytehq/airbyte/pull/24192) | New Destination Connector Xata |
+
+</details>
