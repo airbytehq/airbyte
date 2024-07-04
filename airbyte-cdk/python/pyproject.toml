@@ -98,6 +98,7 @@ check-ci = {sequence = ["build", "lint", "unit-test-with-cov"], help = "Build th
 pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
 
 [tool.airbyte_ci]
+python_versions = ["3.11.5", "3.10.12"]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
 poe_tasks = ["check-ci"]
