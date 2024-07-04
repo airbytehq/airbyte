@@ -300,9 +300,9 @@ class CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec(CheckDocumentatio
         "The user facing connector documentation should update `Prerequisites`"
         " section with description for all required fields from source specification. "
         "Having described all required fields in a one place helps Airbyte users easily set up the source connector. \n"
-        f"If spec has required credentials/access_token/refresh_toke etc, "
-        f'check searches for one of ["account", "auth", "credentials", "access", "client"] words. '
-        f"No need to add credentials/access_token/refresh_toke etc to the section"
+        "If spec has required credentials/access_token/refresh_token etc, "
+        'check searches for one of ["account", "auth", "credentials", "access", "client"] words. '
+        "No need to add credentials/access_token/refresh_token etc to the section"
     )
 
     PREREQUISITES = "Prerequisites"
@@ -473,9 +473,9 @@ class CheckSourceSectionContent(CheckDocumentationContent):
         if len(actual_contents) > 1:
             return [f"Expected only one header {header}. Please rename duplicate."]
 
-        actual = actual_contents[0]
-        actual = replace_connector_specific_urls_from_section(actual)[: len(expected)]
-        if actual != expected:
+        actual = replace_connector_specific_urls_from_section(actual_contents[0])
+        # actual connector doc can have imports etc. in this section
+        if expected not in actual:
             errors = list(ndiff(actual.splitlines(keepends=True), expected.splitlines(keepends=True)))
 
         return errors

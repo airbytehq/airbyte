@@ -1,5 +1,4 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-from pathlib import Path
 
 from connectors_qa.checks.documentation import documentation
 from connectors_qa.models import CheckStatus

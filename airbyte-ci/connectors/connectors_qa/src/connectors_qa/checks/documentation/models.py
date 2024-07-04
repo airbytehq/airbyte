@@ -125,7 +125,7 @@ class DocumentationContent(Content):
 
 
 class TemplateContent(Content):
-    template_file = "template.md"
+    template_file = "template.md.j2"
     template_folder = Path(__file__).parent / "templates/"
 
     def __init__(self, connector_name: str):

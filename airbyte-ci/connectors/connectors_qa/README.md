@@ -110,7 +110,9 @@ poe lint
 
 ### 1.5.0
 
-Added `CheckDocumentationHeaders`, `CheckDocumentationDescriptions`, `CheckDocumentationLinks` checks that verifies that documentation file follow standard template.
+Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`, 
+`CheckSourceSectionContent`, `CheckForAirbyteCloudSectionContent`, `CheckForAirbyteOpenSectionContent`, `CheckSupportedSyncModesSectionContent`, 
+`CheckTutorialsSectionContent`, `CheckChangelogSectionContent` checks that verifies that documentation file follow standard template.
 
 ### 1.4.0
 
