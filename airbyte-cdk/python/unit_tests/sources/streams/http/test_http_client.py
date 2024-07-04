@@ -265,6 +265,7 @@ def test_raises_backoff_exception_with_response_with_unmapped_error(mocker, back
         http_client._send(prepared_request, {})
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_send_request_given_retry_response_action_retries_and_returns_valid_response():
     mocked_session = MagicMock(spec=requests.Session)
     valid_response = MagicMock(spec=requests.Response)
@@ -361,8 +362,8 @@ def test_send_handles_response_action_given_session_send_raises_request_exceptio
         assert e.failure_type == error_resolution.failure_type
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_send_request_given_request_exception_and_retry_response_action_retries_and_returns_valid_response():
-
     mocked_session = MagicMock(spec=requests.Session)
 
     def update_response(*args, **kwargs):
@@ -414,8 +415,8 @@ def test_disable_retries():
         assert mocked_send.call_count == 1
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_default_max_retries():
-
     class BackoffStrategy:
         def backoff_time(self, *args, **kwargs):
             return 0.001
@@ -435,8 +436,8 @@ def test_default_max_retries():
         assert mocked_send.call_count == 6
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_backoff_strategy_max_retries():
-
     class BackoffStrategy:
         def backoff_time(self, *args, **kwargs):
             return 0.001
@@ -458,6 +459,7 @@ def test_backoff_strategy_max_retries():
         assert mocked_send.call_count == retries + 1
 
 
+@pytest.mark.usefixtures("mock_sleep")
 def test_backoff_strategy_max_time():
     error_handler = HttpStatusErrorHandler(logger=MagicMock(), error_mapping={requests.RequestException: ErrorResolution(ResponseAction.RETRY, FailureType.system_error, "test retry message")}, max_retries=10, max_time=timedelta(seconds=2))
 
