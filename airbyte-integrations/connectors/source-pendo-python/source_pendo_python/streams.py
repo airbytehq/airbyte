@@ -116,7 +116,7 @@ class PendoAggregationStream(PendoPythonStream):
 class PendoTimeSeriesAggregationStream(PendoPythonStream):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
     MAX_DAYS = -730  # Two Years TODO : Start the window relative to the ingest start date.
-    DAY_PAGE_SIZE = 21
+    DAY_PAGE_SIZE = 5  # 5 days per page  
     current_day = MAX_DAYS
 
     @property
@@ -166,6 +166,10 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream):
         else:
             request_body["request"]["pipeline"][0]["source"]["timeSeries"]["first"] = f"now() {next_page_token} * 24*60*60*1000"
 
+        print(f'\n')
+        print(f'Current Day: {self.current_day}')
+        print(f'Next Page Token: {next_page_token}')
+        print(f'Request Body: {request_body}')
         return request_body
 
 
@@ -403,7 +407,7 @@ class PageEvents(PendoTimeSeriesAggregationStream):
         next_page_token: int = None,
     ) -> Optional[Mapping[str, Any]]:
         source = {
-            "pageEvents": None,
+            "pageEvents": {"appId": "expandAppIds(\"*\")"},
             "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"},
         }
         return self.build_request_body("page-events", source, next_page_token)
@@ -418,7 +422,7 @@ class FeatureEvents(PendoTimeSeriesAggregationStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: int = None,
     ) -> Optional[Mapping[str, Any]]:
-        source = {"featureEvents": None, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
+        source = {"featureEvents": {"appId": "expandAppIds(\"*\")"}, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
 
         return self.build_request_body("feature_events", source, next_page_token)
 
@@ -432,6 +436,6 @@ class GuideEvents(PendoTimeSeriesAggregationStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: int = None,
     ) -> Optional[Mapping[str, Any]]:
-        source = {"guideEvents": None, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
+        source = {"guideEvents": {"appId": "expandAppIds(\"*\")"}, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
 
         return self.build_request_body("guide_events", source, next_page_token)
