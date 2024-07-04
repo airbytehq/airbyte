@@ -21,7 +21,7 @@ airbyte-cdk = "^0.50"
 braintree = "^4.28.0"
 
 [tool.poetry.scripts]
-source-exchange-rates = "source_braintree.run:run"
+source-braintree = "source_braintree.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.2"
