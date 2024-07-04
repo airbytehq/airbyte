@@ -29,6 +29,8 @@ LOGGING_CONFIG = {
 }
 
 
+print("adding code to trigger the CI check")
+
 def init_logger(name: Optional[str] = None) -> logging.Logger:
     """Initial set up of logger"""
     logger = logging.getLogger(name)
