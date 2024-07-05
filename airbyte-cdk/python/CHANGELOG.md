@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
+## 2.2.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
 ## 2.1.0
 Add with_json_schema method to ConfiguredAirbyteStreamBuilder
 
