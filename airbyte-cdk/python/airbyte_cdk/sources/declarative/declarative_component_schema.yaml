@@ -2565,20 +2565,11 @@ interpolation:
       description: Converts a datetime or a datetime-string to the specified format.
       arguments:
         datetime: The datetime object or a string to convert. If datetime is a string, it must be formatted as ISO8601.
-        format: The datetime format.
+        format: The datetime format
       return_type: str
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-    - title: Format Datetime String
-      description: Converts a datetime-string from the specified format to datetime.
-      arguments:
-        datetime: The datetime string to convert.
-        format: The datetime format.
-      return_type: datetime
-      examples:
-        - "{{ format_datetime_string(config['start_time'], '%Y-%m-%d') }}"
-        - "{{ format_datetime_string(config['start_date'], '%a, %d %b %Y %H:%M:%S %z') }}"
   filters:
     - title: Hash
       description: Convert the specified value to a hashed string.
