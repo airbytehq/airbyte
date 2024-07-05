@@ -9,8 +9,8 @@ from typing import Dict, Optional, Tuple
 import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
 
 if typing.TYPE_CHECKING:
@@ -47,7 +47,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             if not is_available:
                 reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
             return is_available, reason
-        except MessageRepresentationAirbyteTracedErrors as error:
+        except AirbyteTracedException as error:
             return False, error.message
 
         try:
@@ -61,7 +61,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             if not is_available:
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
-        except MessageRepresentationAirbyteTracedErrors as error:
+        except AirbyteTracedException as error:
             return False, error.message
 
     def handle_http_error(
