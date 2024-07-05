@@ -311,6 +311,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------| ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.4.19  | 2024-07-04 | [40208](https://github.com/airbytehq/airbyte/pull/40208) | Start using the new error Postgres source error handler that comes with a new error translation layer.                                          | 
 | 3.4.18  | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349)   | Full refresh stream sending internal count metadata.                                                                                            |
 | 3.4.17  | 2024-06-13 | [39460](https://github.com/airbytehq/airbyte/pull/39460) | Bump postgres JDBC driver version                                                                                                                                          |
 | 3.4.16  | 2024-05-29 | [39474](https://github.com/airbytehq/airbyte/pull/39474) | Adopt latest CDK.                                                                                                                                                          |
