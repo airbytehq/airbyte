@@ -65,7 +65,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @cache
-    def list_files(self, number_of_files: Optional[int] = None) -> List[RemoteFile]:
+    def list_files(self) -> List[RemoteFile]:
         """
         List the first `number_of_files` files if `number_of_files` is defined, otherwise
         list all files that belong to the stream.
@@ -74,10 +74,10 @@ class AbstractFileBasedStream(Stream):
         This means we won't pick up changes to the files during a sync. This method uses the
         get_files method which is implemented by the concrete stream class.
         """
-        return list(self.get_files(number_of_files=number_of_files))
+        return list(self.get_files())
 
     @abstractmethod
-    def get_files(self, number_of_files: Optional[int] = None) -> Iterable[RemoteFile]:
+    def get_files(self) -> Iterable[RemoteFile]:
         """
         List the first `number_of_files` files if `number_of_files` is defined, otherwise
         list all files that belong to the stream as defined by the stream's globs.

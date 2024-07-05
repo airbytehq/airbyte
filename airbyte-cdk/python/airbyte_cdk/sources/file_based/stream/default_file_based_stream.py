@@ -190,28 +190,32 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         elif self.config.schemaless:
             return schemaless_schema
         else:
-            if self.config.files_to_read_for_schema_discovery:
+            files = self.list_files()
+            first_n_files = len(files)
+
+            if self.config.resent_n_files_to_read_for_schema_discovery:
                 self.logger.info(
                     msg=(
-                        f"Only first {self.config.files_to_read_for_schema_discovery} files will be used to infer schema "
+                        f"Only first {self.config.resent_n_files_to_read_for_schema_discovery} files will be used to infer schema "
                         f"for stream {self.name} due to limitation in config."
                     )
                 )
+                first_n_files = self.config.resent_n_files_to_read_for_schema_discovery
 
-            files = self.list_files(number_of_files=self.config.files_to_read_for_schema_discovery)
-            total_n_files = len(files)
-
-        if total_n_files == 0:
+        if first_n_files == 0:
             self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
             return schemaless_schema
 
         max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
-        if total_n_files > max_n_files_for_schema_inference:
+
+        if first_n_files > max_n_files_for_schema_inference:
             # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
             self.logger.warning(
-                msg=f"Refusing to infer schema for all {total_n_files} files; using {max_n_files_for_schema_inference} files."
+                msg=f"Refusing to infer schema for {first_n_files} files; using {max_n_files_for_schema_inference} files."
             )
+            first_n_files = max_n_files_for_schema_inference
+
+        files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:first_n_files]
 
         inferred_schema = self.infer_schema(files)
 
