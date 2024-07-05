@@ -311,6 +311,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |---------| ---------- | -------------------------------------------------------- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.24  | 2024-07-05 | [40716](https://github.com/airbytehq/airbyte/pull/40716) | Fix typo in connector specification |
 | 3.4.23  | 2024-07-01 | [40757](https://github.com/airbytehq/airbyte/pull/40757) | Rollback 3.4.22.                                                                                                                                                          |
 | 3.4.21  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat.                                                                                                                                                      |
 | 3.4.20  | 2024-06-23 | [40559](https://github.com/airbytehq/airbyte/pull/40559) | Remove strict check for stream states of unknown types                                                                                                                    |
