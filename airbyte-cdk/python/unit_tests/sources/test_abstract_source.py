@@ -1819,8 +1819,14 @@ def test_read_nonexistent_stream_emit_incomplete_stream_status(mocker, remove_st
 
     expected = _fix_emitted_at([as_stream_status("this_stream_doesnt_exist_in_the_source", AirbyteStreamStatus.INCOMPLETE)])
 
+    expected_error_message = "The stream 'this_stream_doesnt_exist_in_the_source' in your connection configuration was not found in the " \
+                             "source. Refresh the schema in your replication settings and remove this stream from future sync attempts."
+
     with pytest.raises(AirbyteTracedException) as exc_info:
         messages = [remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
         messages = _fix_emitted_at(messages)
 
         assert messages == expected
+
+    assert expected_error_message in exc_info.value.message
+    assert exc_info.value.failure_type == FailureType.config_error

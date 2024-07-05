@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 from unittest.mock import Mock
@@ -14,15 +13,11 @@ from airbyte_cdk.models import (
     AirbyteRecordMessage,
     AirbyteStream,
     AirbyteStreamStatus,
-    AirbyteStreamStatusTraceMessage,
-    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     FailureType,
-    StreamDescriptor,
     SyncMode,
-    TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
