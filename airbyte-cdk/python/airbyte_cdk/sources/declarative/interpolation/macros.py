@@ -126,15 +126,5 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
     return dt_datetime.strftime(format)
 
 
-def format_datetime_string(dt: str, format: str) -> datetime.datetime:
-    """
-    Converts string to datetime based on input format
-
-    Usage:
-    `"{{ format_datetime_string(config.start_date, '%a, %d %b %Y %H:%M:%S %z') }}"`
-    """
-    return datetime.datetime.strptime(dt, format)
-
-
-_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime, format_datetime_string]
+_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
 macros = {f.__name__: f for f in _macros_list}
