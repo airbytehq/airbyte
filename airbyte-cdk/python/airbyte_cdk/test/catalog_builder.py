@@ -1,13 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import List, Union, overload
+from typing import Any, Dict, List, Union, overload
 
 from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 
 
 class ConfiguredAirbyteStreamBuilder:
     def __init__(self) -> None:
-        self._stream = {
+        self._stream: Dict[str, Any] = {
             "stream": {
                 "name": "any name",
                 "json_schema": {},
@@ -30,6 +30,10 @@ class ConfiguredAirbyteStreamBuilder:
     def with_primary_key(self, pk: List[List[str]]) -> "ConfiguredAirbyteStreamBuilder":
         self._stream["primary_key"] = pk
         self._stream["stream"]["source_defined_primary_key"] = pk  # type: ignore  # we assume that self._stream["stream"] is a Dict[str, Any]
+        return self
+
+    def with_json_schema(self, json_schema: Dict[str, Any]) -> "ConfiguredAirbyteStreamBuilder":
+        self._stream["stream"]["json_schema"] = json_schema
         return self
 
     def build(self) -> ConfiguredAirbyteStream:
