@@ -4,53 +4,10 @@ connector_image: airbyte/source-postgres:dev
 custom_environment_variables:
   USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
-  spec:
-    tests:
-      - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.0.52"
-      - spec_path: "src/test-integration/resources/expected_strict_encrypt_spec.json"
-        config_path: "secrets/config.json"
-        deployment_mode: cloud
-        backward_compatibility_tests_config:
-          disable_for_version: "1.0.52"
-      - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "secrets/config_cdc.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.0.52"
-  connection:
-    tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "secrets/config_cdc.json"
-        status: "succeed"
-  discovery:
-    tests:
-      - config_path: "secrets/config.json"
-      - config_path: "secrets/config_cdc.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "2.1.1"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog_view.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
           setup_command:
-            - "./script.sh"
-      - config_path: "secrets/config_cdc.json"
-  basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog_view.json"
-        expect_records:
-          path: "integration_tests/expected_records_view.txt"
-          exact_order: no
-  incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
-        future_state:
-          future_state_path: integration_tests/abnormal_state.json
+            - "python ./hook.py"

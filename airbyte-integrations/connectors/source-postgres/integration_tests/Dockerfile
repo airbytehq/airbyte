@@ -1,14 +1,22 @@
 # Use a base image with PostgreSQL client
-FROM ubuntu:latest
+FROM python:3.9-slim
 
-# Install any additional packages if needed
 RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/* \
+
+WORKDIR /usr/src/app
 
 # Copy the script to the container
-COPY script.sh .
-COPY init.sql .
+COPY seed/hook.py .
+COPY seed/requirement.txt .
+
+RUN ls .
+
+RUN pip install --no-cache-dir -r ./requirement.txt
+
+EXPOSE 80
 
 # Give execution rights to the script
-RUN chmod +x script.sh
+RUN chmod +x ./hook.py
