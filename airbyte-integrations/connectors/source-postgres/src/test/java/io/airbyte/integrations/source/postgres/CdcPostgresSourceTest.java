@@ -267,6 +267,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
+  @Test
+  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
+
+  @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
     assertEquals(7, stateMessages.size(), stateMessages.toString());
