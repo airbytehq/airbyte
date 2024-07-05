@@ -134,7 +134,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                 incremental_dependency = parent_stream_config.incremental_dependency
 
                 stream_slices_for_parent = []
-                previous_partition = None
+                previous_associated_slice = None
                 for parent_record in parent_stream.read_stateless():
                     parent_partition = None
                     parent_associated_slice = None
@@ -154,9 +154,9 @@ class SubstreamPartitionRouter(PartitionRouter):
                         pass
                     else:
                         if incremental_dependency:
-                            if previous_partition is None:
-                                previous_partition = parent_associated_slice
-                            elif previous_partition != parent_associated_slice:
+                            if previous_associated_slice is None:
+                                previous_associated_slice = parent_associated_slice
+                            elif previous_associated_slice != parent_associated_slice:
                                 # Update the parent state, as parent stream read all record for current slice and state
                                 # is already updated.
                                 #
@@ -175,7 +175,7 @@ class SubstreamPartitionRouter(PartitionRouter):
 
                                 # Reset stream_slices_for_parent after we've flushed parent records for the previous parent slice
                                 stream_slices_for_parent = []
-                                previous_partition = parent_associated_slice
+                                previous_associated_slice = parent_associated_slice
                         stream_slices_for_parent.append(
                             StreamSlice(
                                 partition={partition_field: partition_value, "parent_slice": parent_partition or {}}, cursor_slice={}
