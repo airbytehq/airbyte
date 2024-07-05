@@ -3,12 +3,12 @@
 #
 
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, SyncMode, Type
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.catalog_builder import ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -51,11 +51,13 @@ class RequestBuilder:
         )
 
 
-def _create_catalog(names_and_sync_modes: List[tuple[str, SyncMode]]) -> ConfiguredAirbyteCatalog:
-    catalog_builder = CatalogBuilder()
-    for stream_name, sync_mode in names_and_sync_modes:
-        catalog_builder.with_stream(name=stream_name, sync_mode=sync_mode)
-    return catalog_builder.build()
+def _create_catalog(names_and_sync_modes: List[tuple[str, SyncMode, Dict[str, Any]]]) -> ConfiguredAirbyteCatalog:
+    stream_builder = ConfiguredAirbyteStreamBuilder()
+    streams = []
+    for stream_name, sync_mode, json_schema in names_and_sync_modes:
+        streams.append(stream_builder.with_name(stream_name).with_sync_mode(sync_mode).with_json_schema(json_schema or {}))
+
+    return ConfiguredAirbyteCatalog(streams=list(map(lambda builder: builder.build(), streams)))
 
 
 def _create_justice_songs_request() -> RequestBuilder:
@@ -138,7 +140,7 @@ class ResumableFullRefreshStreamTest(TestCase):
         )
 
         source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh)]))
+        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh, {})]))
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
         assert len(actual_messages.records) == 5
@@ -185,7 +187,7 @@ class ResumableFullRefreshStreamTest(TestCase):
         )
 
         source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh)]), state=state)
+        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh, {})]), state=state)
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
         assert len(actual_messages.records) == 8
@@ -221,7 +223,7 @@ class ResumableFullRefreshStreamTest(TestCase):
         http_mocker.get(_create_justice_songs_request().with_page(2).build(), _create_response().with_status_code(status_code=400).build())
 
         source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh)]), expecting_exception=True)
+        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh, {})]), expecting_exception=True)
 
         status_messages = actual_messages.get_stream_statuses("justice_songs")
         assert status_messages[-1] == AirbyteStreamStatus.INCOMPLETE
