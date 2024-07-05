@@ -658,7 +658,9 @@ class LiveTests(Step):
                 )
                 .with_secret_variable(
                     "CI_GITHUB_ACCESS_TOKEN",
-                    dagger.Secret(dagger.Doc(self.context.ci_github_access_token.value if self.context.ci_github_access_token else "")),
+                    self.context.dagger_client.set_secret(
+                        self.context.ci_github_access_token.value if self.context.ci_github_access_token else ""
+                    ),
                 )
                 .with_exec(
                     [

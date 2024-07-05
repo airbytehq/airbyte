@@ -216,7 +216,7 @@ def prepare_container_for_poe_tasks(
                 ]
             )
             .with_secret_variable(
-                "CI_GITHUB_ACCESS_TOKEN", dagger.Doc(dagger.Secret(pipeline_context_params["ci_github_access_token"].value))
+                "CI_GITHUB_ACCESS_TOKEN", dagger_client.set_secret(pipeline_context_params["ci_github_access_token"].value)
             )
             .with_exec(
                 [
