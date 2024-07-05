@@ -1102,6 +1102,19 @@ definitions:
               partition_field: account_sid
               stream:
                 $ref: "#/definitions/streams/Accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_created
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_created"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_updated
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_updated"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1169,6 +1182,25 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_created
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_created"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_updated
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_updated"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_sent
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_sent"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1357,6 +1389,19 @@ definitions:
               partition_field: account_sid
               stream:
                 $ref: "#/definitions/streams/Accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_created
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_created"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_updated
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_updated"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1492,6 +1537,19 @@ definitions:
               partition_field: user_sid
               stream:
                 $ref: "#/definitions/streams/Users"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_created
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_created"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_updated
+              value: '{% set datetime_rfc2822 = format_datetime_string(record["date_updated"], "%a, %d %b %Y %H:%M:%S %z") %}{% set formatted_datetime = format_datetime(datetime_rfc2822, "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
