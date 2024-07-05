@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "id": "id",
+      "biography": "A biography.",
+      "ig_id": 32847564,
+      "followers_count": 1230,
+      "follows_count": 15,
+      "media_count": 260,
+      "name": "name",
+      "profile_picture_url": "https://fakea.fbcdn.net/v/t51.23478885-15/",
+      "username": "username",
+      "website": "https://www.fake-site.io/"
+    }
+  ]
+}

@@ -8,15 +8,19 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, MutableMapping
 from dataclasses import dataclass, field
 from enum import Enum
+from functools import cache
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 import _collections_abc
 import dagger
 import requests
 from airbyte_protocol.models import AirbyteCatalog  # type: ignore
 from airbyte_protocol.models import AirbyteMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStateMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStreamStatusTraceMessage  # type: ignore
 from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
+from airbyte_protocol.models import TraceType  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from genson import SchemaBuilder  # type: ignore
 from live_tests.commons.backends import DuckDbBackend, FileBackend
@@ -329,6 +333,23 @@ class ExecutionResult:
                 if message.type is AirbyteMessageType.RECORD:
                     yield message
 
+    def get_states_per_stream(self, stream: str) -> Dict[str, List[AirbyteStateMessage]]:
+        self.logger.info(f"Reading state messages for stream {stream}")
+        states = defaultdict(list)
+        for message in self.airbyte_messages:
+            if message.type is AirbyteMessageType.STATE:
+                states[message.state.stream.stream_descriptor.name].append(message.state)
+        return states
+
+    def get_status_messages_per_stream(self, stream: str) -> Dict[str, List[AirbyteStreamStatusTraceMessage]]:
+        self.logger.info(f"Reading state messages for stream {stream}")
+        statuses = defaultdict(list)
+        for message in self.airbyte_messages:
+            if message.type is AirbyteMessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS:
+                statuses[message.trace.stream_status.stream_descriptor.name].append(message.trace.stream_status)
+        return statuses
+
+    @cache
     def get_message_count_per_type(self) -> dict[AirbyteMessageType, int]:
         message_count: dict[AirbyteMessageType, int] = defaultdict(int)
         for message in self.airbyte_messages:
@@ -420,6 +441,9 @@ class ExecutionResult:
             self.logger.error(f"Failed to update {self.connector_under_test.name} configuration on actor {self.actor_id}: {e}")
             self.logger.error(f"Response: {response.text}")
         self.logger.info(f"Updated configuration for {self.connector_under_test.name}, actor {self.actor_id}")
+
+    def __hash__(self):
+        return hash(self.connector_under_test.version)
 
 
 @dataclass(kw_only=True)

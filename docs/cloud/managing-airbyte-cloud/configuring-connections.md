@@ -2,7 +2,7 @@
 products: all
 ---
 
-# Configuring Connections
+# Data Transfer Options
 
 A connection links a source to a destination and defines how your data will sync. After you have created a connection, you can modify any of the configuration settings or stream settings.
 
@@ -32,7 +32,7 @@ You can configure the following settings:
 | [Schedule Type](/using-airbyte/core-concepts/sync-schedules.md)                               | How often data syncs (can be scheduled, cron, API-triggered or manual) |
 | [Destination Namespace](/using-airbyte/core-concepts/namespaces.md)                           | Where the replicated data is written to in the destination             |
 | Destination Stream Prefix                                                                     | A prefix added to each table name in the destination                   |
-| [Detect and propagate schema changes](/cloud/managing-airbyte-cloud/manage-schema-changes.md) | How Airbyte handles schema changes in the source                       |
+| [Detect and propagate schema changes](using-airbyte/schema-change-management.md) | How Airbyte handles schema changes in the source                       |
 | [Connection Data Residency](/cloud/managing-airbyte-cloud/manage-data-residency.md)           | Where data will be processed (Cloud only)                              |
 
 ## Modify Streams

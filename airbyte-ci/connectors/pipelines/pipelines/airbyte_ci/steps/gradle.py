@@ -142,13 +142,13 @@ class GradleTask(Step, ABC):
         )
 
         # Augment the base container with S3 build cache secrets when available.
-        if self.context.s3_build_cache_access_key_id_secret:
+        if self.context.s3_build_cache_access_key_id:
             gradle_container_base = gradle_container_base.with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret
+                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id.as_dagger_secret(self.dagger_client)
             )
-            if self.context.s3_build_cache_secret_key_secret:
+            if self.context.s3_build_cache_secret_key:
                 gradle_container_base = gradle_container_base.with_secret_variable(
-                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret
+                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key.as_dagger_secret(self.dagger_client)
                 )
 
         # Running a gradle task like "help" with these arguments will trigger updating all dependencies.
@@ -196,7 +196,7 @@ class GradleTask(Step, ABC):
         # From this point on, we add layers which are task-dependent.
         if self.mount_connector_secrets:
             secrets_dir = f"{self.context.connector.code_directory}/secrets"
-            gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir))
+            gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir, self.secrets))
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
             gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)

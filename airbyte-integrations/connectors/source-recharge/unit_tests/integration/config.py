@@ -27,5 +27,9 @@ class ConfigBuilder:
         self._config["start_date"] = dt.datetime.strptime(start_date, DATE_TIME_FORMAT).strftime(DATE_TIME_FORMAT)
         return self
 
+    def with_access_token(self, access_token: str) -> ConfigBuilder:
+        self._config["access_token"] = access_token
+        return self
+
     def build(self) -> MutableMapping[str, Any]:
         return self._config

@@ -5,7 +5,7 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
+from airbyte_cdk import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from source_gcs.legacy_config_transformer import LegacyConfigTransformer
 from source_gcs.spec import SourceGCSSpec
