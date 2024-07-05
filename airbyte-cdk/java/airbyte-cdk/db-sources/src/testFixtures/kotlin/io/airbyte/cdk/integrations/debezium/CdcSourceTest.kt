@@ -61,8 +61,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                             )
                             .withSourceDefinedPrimaryKey(
                                 java.util.List.of(java.util.List.of(COL_ID)),
-                            )
-                            .withIsResumable(true),
+                            ),
                     ),
                 )
 
@@ -689,8 +688,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )
-                        .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID)))
-                        .withIsResumable(true),
+                        .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID))),
                 )
         airbyteStream.syncMode = SyncMode.FULL_REFRESH
 
@@ -772,7 +770,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
             val recordMessages2 = extractRecordMessages(actualRecords2)
             val stateMessages2 = extractStateMessages(actualRecords2)
-            stateMessages2.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
 
             assertExpectedStateMessagesFromIncrementalSync(stateMessages2)
             assertExpectedStateMessageCountMatches(stateMessages2, 1)
@@ -829,7 +826,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
             val recordMessages2 = extractRecordMessages(actualRecords2)
             val stateMessages2 = extractStateMessages(actualRecords2)
-            stateMessages2.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
 
             assertExpectedRecords(
                 (MODEL_RECORDS_2 + listOf(puntoRecord)).toSet(),
@@ -909,8 +905,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         )
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
-                        )
-                        .withIsResumable(false),
+                        ),
                 )
         airbyteStream.syncMode = SyncMode.FULL_REFRESH
 
@@ -937,7 +932,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             stateMessages1,
             MODEL_RECORDS.size.toLong() + MODEL_RECORDS_2.size.toLong()
         )
-        stateMessages1.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
         assertExpectedRecords(
             (MODEL_RECORDS_2 + MODEL_RECORDS).toSet(),
             recordMessages1,
@@ -956,7 +950,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         val recordMessages2 = extractRecordMessages(actualRecords2)
         val stateMessages2 = extractStateMessages(actualRecords2)
-        stateMessages2.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
 
         assertExpectedStateMessageCountMatches(stateMessages2, 1 + MODEL_RECORDS_2.size.toLong())
         assertExpectedRecords(
@@ -1377,8 +1370,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
                         .withSupportedSyncModes(
                             Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL),
                         )
-                        .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID)))
-                        .withIsResumable(true),
+                        .withSourceDefinedPrimaryKey(java.util.List.of(java.util.List.of(COL_ID))),
                 )
         airbyteStream.syncMode = SyncMode.FULL_REFRESH
 

@@ -68,7 +68,8 @@ public class CtidGlobalStateManager extends CtidStateManager {
       }
 
       if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        if (configuredAirbyteStream.getStream().getIsResumable()) {
+        if (fileNodeHandler.hasFileNode(
+            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()))) {
           this.resumableFullRefreshStreams.add(pair);
         } else {
           this.nonResumableFullRefreshStreams.add(pair);
@@ -143,14 +144,10 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   }
 
-  private boolean isIncrementalStream(final AirbyteStreamNameNamespacePair pair) {
-    return !resumableFullRefreshStreams.contains(pair) && !nonResumableFullRefreshStreams.contains(pair);
-  }
-
   @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     // Only incremental streams can be transformed into the next phase.
-    if (isIncrementalStream(pair)) {
+    if (!resumableFullRefreshStreams.contains(pair)) {
       streamsThatHaveCompletedSnapshot.add(pair);
     }
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
