@@ -183,7 +183,6 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         self._stream_reader.get_matching_files.return_value = files
         self._stream.config.resent_n_files_to_read_for_schema_discovery = 3
 
-
         schema = self._stream.get_json_schema()
 
         assert schema == {
