@@ -3,7 +3,8 @@
   "type": "object",
   "properties": {
     "accountIds": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {"type": "string"}
     },
     "browserTime": {
       "type": ["null", "integer"]
