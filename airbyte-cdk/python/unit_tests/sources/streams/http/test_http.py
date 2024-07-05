@@ -10,7 +10,7 @@ from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -816,6 +816,27 @@ def test_substream_with_resumable_full_refresh_parent():
     ]
 
     parent_stream = StubParentResumableFullRefreshStream(record_pages=parent_pages)
+    substream = StubHttpSubstream(parent=parent_stream)
+
+    actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]
+    assert actual_slices == expected_slices
+
+
+def test_substream_skips_non_record_messages():
+    expected_slices = [
+        {"parent": {"id": "abc"}},
+        {"parent": {"id": "def"}},
+        {"parent": {"id": "ghi"}},
+    ]
+
+    parent_records = [
+        {"id": "abc"},
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="should_not_be_parent_record")),
+        {"id": "def"},
+        {"id": "ghi"},
+    ]
+
+    parent_stream = StubParentHttpStream(records=parent_records)
     substream = StubHttpSubstream(parent=parent_stream)
 
     actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]

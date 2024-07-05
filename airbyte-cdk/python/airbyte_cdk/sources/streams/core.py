@@ -156,6 +156,7 @@ class Stream(ABC):
         except AttributeError:
             pass
 
+        should_checkpoint = bool(state_manager)
         checkpoint_reader = self._get_checkpoint_reader(
             logger=logger, cursor_field=cursor_field, sync_mode=sync_mode, stream_state=stream_state
         )
@@ -193,7 +194,7 @@ class Stream(ABC):
 
                     checkpoint_interval = self.state_checkpoint_interval
                     checkpoint = checkpoint_reader.get_checkpoint()
-                    if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None and state_manager:
+                    if should_checkpoint and checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
                         airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
                         yield airbyte_state_message
 
@@ -201,21 +202,18 @@ class Stream(ABC):
                         break
             self._observe_state(checkpoint_reader)
             checkpoint_state = checkpoint_reader.get_checkpoint()
-            if state_manager and checkpoint_state is not None:
+            if should_checkpoint and checkpoint_state is not None:
                 airbyte_state_message = self._checkpoint_state(checkpoint_state, state_manager=state_manager)
                 yield airbyte_state_message
 
             next_slice = checkpoint_reader.next()
 
         checkpoint = checkpoint_reader.get_checkpoint()
-        if state_manager and checkpoint is not None:
+        if should_checkpoint and checkpoint is not None:
             airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
 
-    def read_stateless(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
-        self,
-        connector_state_manager=None,
-    ) -> Iterable[StreamData]:
+    def read_stateless(self) -> Iterable[StreamData]:
         """
         Helper method that performs a full refresh read on a stream and emits records. If the parent stream supports
         incremental, this operation does not update the stream's internal state (if it uses the modern state setter/getter)
@@ -237,7 +235,7 @@ class Stream(ABC):
             logger=self.logger,
             slice_logger=DebugSliceLogger(),
             stream_state={},
-            state_manager=connector_state_manager,
+            state_manager=None,
             internal_config=InternalConfig(),
         )
 

@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, 
 import dpath
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -134,13 +133,11 @@ class SubstreamPartitionRouter(PartitionRouter):
                 partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
                 incremental_dependency = parent_stream_config.incremental_dependency
 
-                connector_state_manager = (
-                    ConnectorStateManager(stream_instance_map={parent_stream.name: parent_stream}) if incremental_dependency else None
-                )
-
                 stream_slices_for_parent = []
-                for parent_record in parent_stream.read_stateless(connector_state_manager=connector_state_manager):
+                previous_partition = None
+                for parent_record in parent_stream.read_stateless():
                     parent_partition = None
+                    parent_associated_slice = None
                     # Skip non-records (eg AirbyteLogMessage)
                     if isinstance(parent_record, AirbyteMessage):
                         if parent_record.type == MessageType.RECORD:
@@ -149,19 +146,43 @@ class SubstreamPartitionRouter(PartitionRouter):
                             continue
                     elif isinstance(parent_record, Record):
                         parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
+                        parent_associated_slice = parent_record.associated_slice
                         parent_record = parent_record.data
                     try:
                         partition_value = dpath.get(parent_record, parent_field)
                     except KeyError:
                         pass
                     else:
+                        if incremental_dependency:
+                            if previous_partition is None:
+                                previous_partition = parent_associated_slice
+                            elif previous_partition != parent_associated_slice:
+                                # Update the parent state, as parent stream read all record for current slice and state
+                                # is already updated.
+                                #
+                                # When the associated slice of the current record of the parent stream changes, this
+                                # indicates the parent stream has finished processing the current slice and has moved onto
+                                # the next. When this happens, we should update the partition router's current state and
+                                # flush the previous set of collected records and start a new set
+                                #
+                                # Note: One tricky aspect to take note of here is that parent_stream.state will actually
+                                # fetch state of the stream of the previous record's slice NOT the current record's slice.
+                                # This is because in the retriever, we only update stream state after yielding all the
+                                # records. And since we are in the middle of the current slice, parent_stream.state is
+                                # still set to the previous state.
+                                self._parent_state[parent_stream.name] = parent_stream.state
+                                yield from stream_slices_for_parent
+
+                                # Reset stream_slices_for_parent after we've flushed parent records for the previous parent slice
+                                stream_slices_for_parent = []
+                                previous_partition = parent_associated_slice
                         stream_slices_for_parent.append(
                             StreamSlice(
                                 partition={partition_field: partition_value, "parent_slice": parent_partition or {}}, cursor_slice={}
                             )
                         )
 
-                # update the parent state, as parent stream read all record for current slice and state is already updated
+                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
                 if incremental_dependency:
                     self._parent_state[parent_stream.name] = parent_stream.state
 

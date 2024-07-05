@@ -13,12 +13,14 @@ from urllib.parse import urljoin
 
 import requests
 import requests_cache
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.types import Record
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
@@ -525,5 +527,13 @@ class HttpSubStream(HttpStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for record in self.parent.read_stateless():
-            yield {"parent": record}
+        for parent_record in self.parent.read_stateless():
+            # Skip non-records (eg AirbyteLogMessage)
+            if isinstance(parent_record, AirbyteMessage):
+                if parent_record.type == MessageType.RECORD:
+                    parent_record = parent_record.record.data
+                else:
+                    continue
+            elif isinstance(parent_record, Record):
+                parent_record = parent_record.data
+            yield {"parent": parent_record}
