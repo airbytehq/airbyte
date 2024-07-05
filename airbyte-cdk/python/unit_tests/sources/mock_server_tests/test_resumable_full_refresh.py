@@ -3,12 +3,12 @@
 #
 
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 from unittest import TestCase
 
 import freezegun
 from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, SyncMode, Type
-from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
+from airbyte_cdk.test.catalog_builder import ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -58,6 +58,7 @@ def _create_catalog(names_and_sync_modes: List[tuple[str, SyncMode, str: Any]]) 
         streams.append(stream_builder.with_name(stream_name).with_sync_mode(sync_mode).with_json_schema(json_schema or {}))
 
     return ConfiguredAirbyteCatalog(streams=list(map(lambda builder: builder.build(), streams)))
+
 
 def _create_justice_songs_request() -> RequestBuilder:
     return RequestBuilder.justice_songs_endpoint()
