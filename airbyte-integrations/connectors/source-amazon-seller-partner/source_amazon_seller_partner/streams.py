@@ -365,7 +365,12 @@ class ReportsAmazonSPStream(Stream, ABC):
             #     payload,
             # )
             # update to api 2021-06-30
-            document = requests.get(payload.get("url")).content.decode("iso-8859-1")
+            content = requests.get(payload.get("url")).content
+            
+            if "compressionAlgorithm" in payload:
+                document = zlib.decompress(content, 15 + 32).decode("iso-8859-1")
+            else:
+                document = content.decode("iso-8859-1")
             
         results = []
 
@@ -422,6 +427,7 @@ class ReportsAmazonSPStream(Stream, ABC):
                 params=self.request_params(),
             )
             response = self._send_request(request)
+
             yield from self.parse_response(response)
         elif is_fatal:
             raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
