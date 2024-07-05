@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime, timezone
-from typing import Any, List, Optional
+from typing import Dict, Any, List, Optional
 from unittest import TestCase
 
 import freezegun
@@ -51,7 +51,7 @@ class RequestBuilder:
         )
 
 
-def _create_catalog(names_and_sync_modes: List[tuple[str, SyncMode, str: Any]]) -> ConfiguredAirbyteCatalog:
+def _create_catalog(names_and_sync_modes: List[tuple[str, SyncMode, Dict[str, Any]]]) -> ConfiguredAirbyteCatalog:
     stream_builder = ConfiguredAirbyteStreamBuilder()
     streams = []
     for stream_name, sync_mode, json_schema in names_and_sync_modes:
