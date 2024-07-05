@@ -112,9 +112,9 @@ class EngagesHttpRequester(MixpanelHttpRequester):
     ) -> MutableMapping[str, Any]:
         params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if "start_time" in stream_slice:
-            params["where"] = f'properties["$last_seen"] > "{stream_slice["start_time"]}"'
+            params["where"] = f'properties["$last_seen"] >= "{stream_slice["start_time"]}"'
         elif "start_date" in self.config:
-            params["where"] = f'properties["$last_seen"] > "{self.config["start_date"]}"'
+            params["where"] = f'properties["$last_seen"] >= "{self.config["start_date"]}"'
         return params
 
 
