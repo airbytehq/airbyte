@@ -27,7 +27,7 @@ Let's define the stream schema in `source-exchange-rates-tutorial/source_exchang
 You can download the JSON file describing the output schema with all currencies [here](./exchange_rates_schema.json) for convenience and place it in `schemas/`.
 
 ```bash
-curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docs/connector-development/tutorials/cdk-tutorial-python-http/exchange_rates_schema.json > source_exchange_rates_tutorial/schemas/rates.json
+curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docs/connector-development/config-based/tutorial/exchange_rates_schema.json > source_exchange_rates_tutorial/schemas/rates.json
 ```
 
 We can also delete the boilerplate schema files
