@@ -31,7 +31,7 @@ def test_macros_export(test_name, fn_name, found_in_macros):
     "test_name, input_value, format, expected_output",
     [
         ("test_datetime_string_to_date", "2022-01-01T01:01:01Z", "%Y-%m-%d", None, "2022-01-01"),
-        ("test_date_string_to_date", "2022-01-01", "%Y-%m-%d", "2022-01-01"),
+        ("test_date_string_to_date", "2022-01-01", "%Y-%m-%d", None, "2022-01-01"),
         ("test_datetime_string_to_date", "2022-01-01T00:00:00Z", "%Y-%m-%d", None, "2022-01-01"),
         ("test_datetime_with_tz_string_to_date", "2022-01-01T00:00:00Z", "%Y-%m-%d", None, "2022-01-01"),
         ("test_datetime_string_to_datetime", "2022-01-01T01:01:01Z", "%Y-%m-%dT%H:%M:%SZ", None, "2022-01-01T01:01:01Z"),
@@ -43,7 +43,7 @@ def test_macros_export(test_name, fn_name, found_in_macros):
 )
 def test_format_datetime(test_name, input_value, format, input_format, expected_output):
     format_datetime = macros["format_datetime"]
-    assert format_datetime(input_value, format) == expected_output
+    assert format_datetime(input_value, format, input_format) == expected_output
 
 
 @pytest.mark.parametrize(
