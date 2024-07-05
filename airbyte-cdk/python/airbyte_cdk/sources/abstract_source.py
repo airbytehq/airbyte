@@ -109,9 +109,9 @@ class AbstractSource(Source, ABC):
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
-                is_stream_exist = True
+                is_stream_exist = bool(stream_instance)
                 try:
-                    if not stream_instance:
+                    if not is_stream_exist:
                         if not self.raise_exception_on_missing_stream:
                             yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                             continue
@@ -123,7 +123,6 @@ class AbstractSource(Source, ABC):
 
                         # Use configured_stream as stream_instance to support references in error handling.
                         stream_instance = configured_stream.stream
-                        is_stream_exist = False
 
                         raise AirbyteTracedException(
                             message="A stream listed in your configuration was not found in the source. Please check the logs for more "
