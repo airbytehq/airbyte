@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -19,7 +19,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -35,7 +35,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -50,7 +50,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -66,7 +66,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -80,7 +80,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -94,7 +94,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -108,7 +108,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -123,7 +123,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -139,7 +139,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -155,7 +155,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -169,7 +169,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },
@@ -184,7 +184,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "https://airbyte.io/": {
+        "sc-domain:airbyte.io": {
           "web": { "date": "2050-08-28" },
           "news": { "date": "2050-08-28" },
           "image": { "date": "2050-08-28" },

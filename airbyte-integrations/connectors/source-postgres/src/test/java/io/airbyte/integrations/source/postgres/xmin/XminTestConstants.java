@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStateStats;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
@@ -70,6 +71,20 @@ public class XminTestConstants {
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, recordValue))));
+  }
+
+  public static AirbyteMessage createStateMessage1WithCount(final double count) {
+    return new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()
+                .withStreamDescriptor(
+                    new StreamDescriptor()
+                        .withName(PAIR1.getName())
+                        .withNamespace(PAIR1.getNamespace()))
+                .withStreamState(new ObjectMapper().valueToTree(XMIN_STATUS1)))
+            .withSourceStats(new AirbyteStateStats().withRecordCount(count)));
   }
 
 }

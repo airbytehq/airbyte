@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "ad_group.id": {
+      "description": "The ID of the Ad Group to which the ad belongs.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.id": {
+      "description": "The ID of the Ad associated with the Ad Group Ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.resource_name": {
+      "description": "The resource name of the Ad associated with the Ad Group Ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad_label.resource_name": {
+      "description": "The resource name of the Ad Group Ad Label.",
       "type": ["null", "string"]
     },
     "label.name": {
+      "description": "The name of the label associated with the Ad Group Ad.",
       "type": ["null", "string"]
     },
     "label.resource_name": {
+      "description": "The resource name of the label associated with the Ad Group Ad.",
       "type": ["null", "string"]
     },
     "label.id": {
+      "description": "The ID of the label associated with the Ad Group Ad.",
       "type": ["null", "integer"]
     }
   }

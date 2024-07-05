@@ -161,6 +161,7 @@ def _install_python_dependencies_from_poetry(
     pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
     poetry_install_cmd = ["poetry", "install"]
+    poetry_check_cmd = ["poetry", "check"]
     if not install_root_package:
         poetry_install_cmd += ["--no-root"]
     if additional_dependency_groups:
@@ -168,7 +169,12 @@ def _install_python_dependencies_from_poetry(
             poetry_install_cmd += ["--with", group]
     else:
         poetry_install_cmd += ["--only", "main"]
-    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_cmd)
+    return (
+        container.with_exec(pip_install_poetry_cmd)
+        .with_exec(poetry_disable_virtual_env_cmd)
+        .with_exec(poetry_check_cmd)
+        .with_exec(poetry_install_cmd)
+    )
 
 
 async def with_installed_python_package(
@@ -242,9 +248,9 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         context.logger.info(f"Mounting CDK from {directory_to_mount}")
 
         # Install the airbyte-cdk package from the local directory
-        # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
+        # We use `--force-reinstall` to use local CDK with the latest updates and dependencies
         connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
-            ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True
+            ["pip", "install", "--force-reinstall", f"/{path_to_cdk}"], skip_entrypoint=True
         )
 
     return connector_container

@@ -1,0 +1,343 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountId": {
+      "description": "The unique identifier of the Bing Ads account",
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "description": "The time period in date format",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "AccountName": {
+      "description": "The name of the Bing Ads account",
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "description": "The account number associated with the Bing Ads account",
+      "type": ["null", "string"]
+    },
+    "AdGroupName": {
+      "description": "The name of the ad group",
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "description": "The unique identifier of the ad group",
+      "type": ["null", "integer"]
+    },
+    "CampaignStatus": {
+      "description": "The status of the campaign",
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "description": "The status of the Bing Ads account",
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "description": "The status of the ad group",
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "description": "The network where the ad was displayed",
+      "type": ["null", "string"]
+    },
+    "AdId": {
+      "description": "The unique identifier of the ad",
+      "type": ["null", "integer"]
+    },
+    "CampaignId": {
+      "description": "The unique identifier of the campaign",
+      "type": ["null", "integer"]
+    },
+    "CampaignName": {
+      "description": "The name of the campaign",
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "description": "The currency code used",
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "description": "The type of device used",
+      "type": ["null", "string"]
+    },
+    "Language": {
+      "description": "The language used",
+      "type": ["null", "string"]
+    },
+    "MerchantProductId": {
+      "description": "The unique identifier of the product",
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "description": "The title of the ad or product",
+      "type": ["null", "string"]
+    },
+    "Condition": {
+      "description": "The condition of the product",
+      "type": ["null", "string"]
+    },
+    "Brand": {
+      "description": "The brand associated with the product",
+      "type": ["null", "string"]
+    },
+    "Price": {
+      "description": "The price of the product",
+      "type": ["null", "number"]
+    },
+    "Impressions": {
+      "description": "The total number of impressions",
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "description": "The total number of clicks",
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "description": "The click-through rate",
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "description": "The average cost per click",
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "description": "The total spend",
+      "type": ["null", "number"]
+    },
+    "Conversions": {
+      "description": "The total number of conversions",
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "description": "The overall conversion rate",
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "description": "The total revenue generated",
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "description": "The revenue per conversion",
+      "type": ["null", "number"]
+    },
+    "SellerName": {
+      "description": "The name of the seller",
+      "type": ["null", "string"]
+    },
+    "OfferLanguage": {
+      "description": "The language of the product offer",
+      "type": ["null", "string"]
+    },
+    "CountryOfSale": {
+      "description": "The country where the purchase was made",
+      "type": ["null", "string"]
+    },
+    "AdStatus": {
+      "description": "The status of the ad",
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "description": "The distribution network where the ad was displayed",
+      "type": ["null", "string"]
+    },
+    "ClickTypeId": {
+      "description": "The unique identifier of the click type",
+      "type": ["null", "string"]
+    },
+    "TotalClicksOnAdElements": {
+      "description": "The total number of clicks on ad elements",
+      "type": ["null", "number"]
+    },
+    "ClickType": {
+      "description": "The type of click",
+      "type": ["null", "string"]
+    },
+    "ReturnOnAdSpend": {
+      "description": "The return on ad spend",
+      "type": ["null", "number"]
+    },
+    "BidStrategyType": {
+      "description": "The type of bid strategy used",
+      "type": ["null", "string"]
+    },
+    "LocalStoreCode": {
+      "description": "The local store code",
+      "type": ["null", "string"]
+    },
+    "StoreId": {
+      "description": "The unique identifier of the store",
+      "type": ["null", "string"]
+    },
+    "AssistedClicks": {
+      "description": "The number of assisted clicks",
+      "type": ["null", "string"]
+    },
+    "AssistedConversions": {
+      "description": "The total number of assisted conversions",
+      "type": ["null", "string"]
+    },
+    "AllConversions": {
+      "description": "The total number of all conversions",
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "description": "The total revenue for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "description": "The conversion rate for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "description": "The cost per conversion for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "description": "The return on ad spend for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "description": "The revenue per conversion for all conversions",
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "description": "The cost per conversion",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "description": "The total number of view-through conversions",
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "description": "The goal associated with the conversion",
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "description": "The type of goal",
+      "type": ["null", "string"]
+    },
+    "ProductBought": {
+      "description": "The product bought",
+      "type": ["null", "string"]
+    },
+    "QuantityBought": {
+      "description": "The quantity of the product bought",
+      "type": ["null", "string"]
+    },
+    "AverageCpm": {
+      "description": "The average cost per thousand impressions",
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "description": "The total number of qualified conversions",
+      "type": ["null", "number"]
+    },
+    "AssistedConversionsQualified": {
+      "description": "The total number of qualified assisted conversions",
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversionsQualified": {
+      "description": "The total number of qualified view-through conversions",
+      "type": ["null", "number"]
+    },
+    "ProductBoughtTitle": {
+      "description": "The title of the product bought",
+      "type": ["null", "string"]
+    },
+    "GTIN": {
+      "description": "The Global Trade Item Number",
+      "type": ["null", "string"]
+    },
+    "MPN": {
+      "description": "The Manufacturer Part Number",
+      "type": ["null", "string"]
+    },
+    "ViewThroughRevenue": {
+      "description": "The revenue from view-through conversions",
+      "type": ["null", "number"]
+    },
+    "Sales": {
+      "description": "The total number of sales",
+      "type": ["null", "integer"]
+    },
+    "CostPerSale": {
+      "description": "The cost per sale",
+      "type": ["null", "number"]
+    },
+    "RevenuePerSale": {
+      "description": "The revenue per sale",
+      "type": ["null", "number"]
+    },
+    "Installs": {
+      "description": "The total number of installs",
+      "type": ["null", "integer"]
+    },
+    "CostPerInstall": {
+      "description": "The cost per install",
+      "type": ["null", "number"]
+    },
+    "RevenuePerInstall": {
+      "description": "The revenue per install",
+      "type": ["null", "number"]
+    },
+    "CampaignType": {
+      "description": "The type of campaign",
+      "type": ["null", "string"]
+    },
+    "AssetGroupId": {
+      "description": "The unique identifier of the asset group",
+      "type": ["null", "string"]
+    },
+    "AssetGroupName": {
+      "description": "The name of the asset group",
+      "type": ["null", "string"]
+    },
+    "AssetGroupStatus": {
+      "description": "The status of the asset group",
+      "type": ["null", "string"]
+    },
+    "CustomLabel0": {
+      "description": "Custom label 0",
+      "type": ["null", "string"]
+    },
+    "CustomLabel1": {
+      "description": "Custom label 1",
+      "type": ["null", "string"]
+    },
+    "CustomLabel2": {
+      "description": "Custom label 2",
+      "type": ["null", "string"]
+    },
+    "CustomLabel3": {
+      "description": "Custom label 3",
+      "type": ["null", "string"]
+    },
+    "CustomLabel4": {
+      "description": "Custom label 4",
+      "type": ["null", "string"]
+    },
+    "ProductType1": {
+      "description": "Product Type 1",
+      "type": ["null", "string"]
+    },
+    "ProductType2": {
+      "description": "Product Type 2",
+      "type": ["null", "string"]
+    },
+    "ProductType3": {
+      "description": "Product Type 3",
+      "type": ["null", "string"]
+    },
+    "ProductType4": {
+      "description": "Product Type 4",
+      "type": ["null", "string"]
+    },
+    "ProductType5": {
+      "description": "Product Type 5",
+      "type": ["null", "string"]
+    }
+  }
+}

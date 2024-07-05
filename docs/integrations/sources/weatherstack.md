@@ -10,30 +10,40 @@ This source currently has four streams: `current`, `historical`, `forecast`, and
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync - (append only) | Yes |
-| Incremental - Append Sync | Yes |
-| Namespaces | No |
+| Feature                           | Supported? |
+| :-------------------------------- | :--------- |
+| Full Refresh Sync - (append only) | Yes        |
+| Incremental - Append Sync         | Yes        |
+| Namespaces                        | No         |
 
 ## Getting started
 
 ### Requirements
 
-* An Weatherstack API key
-* A city or zip code location for which you want to get weather data
-* A historical date to enable the api stream to gather data for a specific date
+- An Weatherstack API key
+- A city or zip code location for which you want to get weather data
+- A historical date to enable the api stream to gather data for a specific date
 
 ### Setup guide
 
 Visit the [Wetherstack](https://weatherstack.com/) to create a user account and obtain an API key. The current and forecast streams are available with the free plan.
 
 ## Rate limiting
+
 The free plan allows 250 calls per month, you won't get beyond these limits with existing Airbyte's sync frequencies.
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.5 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 0.1.4 | 2024-06-25 | [40414](https://github.com/airbytehq/airbyte/pull/40414) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40086](https://github.com/airbytehq/airbyte/pull/40086) | Update dependencies |
+| 0.1.2 | 2024-06-06 | [39190](https://github.com/airbytehq/airbyte/pull/39190) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1 | 2024-05-20 | [38438](https://github.com/airbytehq/airbyte/pull/38438) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-09-08 | [16473](https://github.com/airbytehq/airbyte/pull/16473) | Initial release |
 
+</details>

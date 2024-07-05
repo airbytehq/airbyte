@@ -8,14 +8,12 @@ from .base_request_builder import AmazonAdsBaseRequestBuilder
 class SponsoredBrandsRequestBuilder(AmazonAdsBaseRequestBuilder):
     @classmethod
     def ad_groups_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, limit: Optional[int] = 100, start_index: Optional[int] = 0
+        cls, client_id: str, client_access_token: str, profile_id: str
     ) -> "SponsoredBrandsRequestBuilder":
-        return cls("sb/adGroups") \
+        return cls("sb/v4/adGroups/list") \
             .with_client_id(client_id) \
             .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_limit(limit) \
-            .with_start_index(start_index)
+            .with_profile_id(profile_id)
 
     @classmethod
     def keywords_endpoint(
@@ -30,19 +28,18 @@ class SponsoredBrandsRequestBuilder(AmazonAdsBaseRequestBuilder):
 
     @classmethod
     def campaigns_endpoint(
-        cls, client_id: str, client_access_token: str, profile_id: str, limit: Optional[int] = 100, start_index: Optional[int] = 0
+        cls, client_id: str, client_access_token: str, profile_id: str
     ) -> "SponsoredBrandsRequestBuilder":
-        return cls("sb/campaigns") \
+        return cls("sb/v4/campaigns/list") \
             .with_client_id(client_id) \
             .with_client_access_token(client_access_token) \
-            .with_profile_id(profile_id) \
-            .with_limit(limit) \
-            .with_start_index(start_index)
+            .with_profile_id(profile_id)
 
     def __init__(self, resource: str) -> None:
         super().__init__(resource)
         self._limit: Optional[int] = None
         self._start_index: Optional[int] = None
+        self._body: dict = None
 
     @property
     def query_params(self) -> Dict[str, Any]:
@@ -55,7 +52,7 @@ class SponsoredBrandsRequestBuilder(AmazonAdsBaseRequestBuilder):
 
     @property
     def request_body(self) ->Optional[str]:
-        return None
+        return self._body
 
     def with_limit(self, limit: int) -> "SponsoredBrandsRequestBuilder":
         self._limit: int = limit
@@ -63,4 +60,8 @@ class SponsoredBrandsRequestBuilder(AmazonAdsBaseRequestBuilder):
 
     def with_start_index(self, offset: int) -> "SponsoredBrandsRequestBuilder":
         self._start_index: int = offset
+        return self
+
+    def with_request_body(self, body: dict) -> "SponsoredBrandsRequestBuilder":
+        self._body: dict = body
         return self

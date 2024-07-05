@@ -1,119 +1,156 @@
 {
   "properties": {
     "sid": {
+      "description": "The unique identifier for the call.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the call record was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the call record was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "parent_call_sid": {
+      "description": "The SID of the parent call if this call is part of a conference.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account associated with the call.",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "The phone number that received the call.",
       "type": ["null", "string"]
     },
     "to_formatted": {
+      "description": "The formatted version of the 'to' phone number.",
       "type": ["null", "string"]
     },
     "from": {
+      "description": "The phone number that made the call.",
       "type": ["null", "string"]
     },
     "from_formatted": {
+      "description": "The formatted version of the 'from' phone number.",
       "type": ["null", "string"]
     },
     "phone_number_sid": {
+      "description": "The SID of the phone number used for the call.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the call, such as 'completed' or 'in-progress'.",
       "type": ["null", "string"]
     },
     "start_time": {
+      "description": "The date and time when the call started.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "end_time": {
+      "description": "The date and time when the call ended.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "The duration of the call in seconds.",
       "type": ["null", "integer"]
     },
     "price": {
+      "description": "The cost of the call.",
       "type": ["null", "number"]
     },
     "price_unit": {
+      "description": "The currency unit of the call cost.",
       "type": ["null", "string"]
     },
     "direction": {
+      "description": "The direction of the call, either 'inbound' or 'outbound'.",
       "type": ["null", "string"]
     },
     "answered_by": {
+      "description": "The name of the entity or system that answered the call.",
       "type": ["null", "string"]
     },
     "annotation": {
+      "description": "Any additional notes or context added to the call.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API used for this call.",
       "type": ["null", "string"]
     },
     "forwarded_from": {
+      "description": "The phone number that initiated the call forwarding.",
       "type": ["null", "string"]
     },
     "group_sid": {
+      "description": "The unique identifier of the call group to which this call belongs.",
       "type": ["null", "string"]
     },
     "caller_name": {
+      "description": "The name of the caller as supplied by the caller ID service.",
       "type": ["null", "string"]
     },
     "queue_time": {
+      "description": "The time the call spent in a queue before being answered.",
       "type": ["null", "integer"]
     },
     "trunk_sid": {
+      "description": "The unique identifier of the trunk used for the call.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI for this call record.",
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains URIs for related subresources such as recordings or notifications.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "recordings": {
+          "description": "URI for call recordings related to this call.",
           "type": ["null", "string"]
         },
         "notifications": {
+          "description": "URI for call notifications related to this call.",
           "type": ["null", "string"]
         },
         "feedback": {
+          "description": "URI for call feedback related to this call.",
           "type": ["null", "string"]
         },
         "payments": {
+          "description": "URI for call payments related to this call.",
           "type": ["null", "string"]
         },
         "siprec": {
+          "description": "URI for call SIP recording related to this call.",
           "type": ["null", "string"]
         },
         "events": {
+          "description": "URI for call events related to this call.",
           "type": ["null", "string"]
         },
         "feedback_summaries": {
+          "description": "URI for call feedback summaries related to this call.",
           "type": ["null", "string"]
         },
         "streams": {
+          "description": "URI for call streams related to this call.",
           "type": ["null", "string"]
         },
         "user_defined_message_subscriptions": {
+          "description": "URI for user-defined message subscriptions related to this call.",
           "type": ["null", "string"]
         },
         "user_defined_messages": {
+          "description": "URI for user-defined messages related to this call.",
           "type": ["null", "string"]
         }
       }

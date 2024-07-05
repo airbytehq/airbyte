@@ -42,6 +42,7 @@ DOCKER_REGISTRY_MIRROR_URL = os.getenv("DOCKER_REGISTRY_MIRROR_URL")
 DOCKER_REGISTRY_ADDRESS = "docker.io"
 DOCKER_VAR_LIB_VOLUME_NAME = "docker-cache"
 GIT_IMAGE = "alpine/git:latest"
+GIT_DIRECTORY_ROOT_PATH = ".git"
 GRADLE_CACHE_PATH = "/root/.gradle/caches"
 GRADLE_BUILD_CACHE_PATH = f"{GRADLE_CACHE_PATH}/build-cache-1"
 GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH = "/root/gradle_dependency_cache"
@@ -62,6 +63,7 @@ STORAGE_DRIVER = "fuse-overlayfs"
 SETUP_PY_FILE_PATH = "setup.py"
 DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://upload.pypi.org/legacy/"
 DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL = "https://pypi.org/pypi"
+MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS = "airbyte-connector-testing-secret-store"
 
 
 class CIContext(str, Enum):
@@ -88,6 +90,7 @@ class ContextState(Enum):
 class INTERNAL_TOOL_PATHS(str, Enum):
     CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
     CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
+    CONNECTORS_QA = "airbyte-ci/connectors/connectors_qa"
     METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"
 
 

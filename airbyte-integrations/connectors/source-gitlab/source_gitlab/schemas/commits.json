@@ -3,44 +3,56 @@
   "type": "object",
   "properties": {
     "project_id": {
+      "description": "ID of the project to which the commit belongs.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "Unique identifier of the commit.",
       "type": ["null", "string"]
     },
     "short_id": {
+      "description": "Shortened version of the commit's unique identifier.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the commit record was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "parent_ids": {
+      "description": "Array of unique identifiers of parent commits if the commit has multiple parents.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "title": {
+      "description": "Title or summary of the commit message.",
       "type": ["null", "string"]
     },
     "message": {
+      "description": "Description or text message associated with the commit.",
       "type": ["null", "string"]
     },
     "author_name": {
+      "description": "Name of the author who created the commit.",
       "type": ["null", "string"]
     },
     "author_email": {
+      "description": "Email of the author who created the commit.",
       "type": ["null", "string"]
     },
     "authored_date": {
+      "description": "Date and time when the commit was authored.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "extended_trailers": {
+      "description": "Additional information or metadata added to the commit. Eg: 'Cc' field for carbon copy email addresses.",
       "type": ["null", "object"],
       "properties": {
         "Cc": {
+          "description": "Carbon copy email addresses associated with the commit.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
@@ -49,31 +61,40 @@
       }
     },
     "committer_name": {
+      "description": "Name of the committer who committed the changes.",
       "type": ["null", "string"]
     },
     "committer_email": {
+      "description": "Email of the committer who committed the changes.",
       "type": ["null", "string"]
     },
     "committed_date": {
+      "description": "Date and time when the commit was committed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "trailers": {
+      "description": "Metadata information provided below the commit message.",
       "type": ["null", "object"]
     },
     "web_url": {
+      "description": "URL link to view the commit details in a web browser.",
       "type": ["null", "string"]
     },
     "stats": {
+      "description": "Statistics related to the commit changes like additions, deletions, and total changes.",
       "type": ["null", "object"],
       "properties": {
         "additions": {
+          "description": "Number of lines added in the commit.",
           "type": ["null", "integer"]
         },
         "deletions": {
+          "description": "Number of lines deleted in the commit.",
           "type": ["null", "integer"]
         },
         "total": {
+          "description": "Total number of lines changed in the commit.",
           "type": ["null", "integer"]
         }
       }

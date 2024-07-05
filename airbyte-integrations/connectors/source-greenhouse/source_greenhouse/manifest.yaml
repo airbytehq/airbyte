@@ -1,9 +1,6 @@
-version: "0.29.0"
+version: "0.70.0"
 
 definitions:
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_greenhouse/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
@@ -54,8 +51,6 @@ definitions:
     $parameters:
       name: "applications"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -83,38 +78,760 @@ definitions:
       class_name: source_greenhouse.components.GreenHouseSlicer
       request_cursor_field: "created_after"
       cursor_field: "applied_at"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          status:
+            description: Status of the application.
+            type: string
+          source:
+            description: Source of the application.
+            type: object
+            properties:
+              public_name:
+                description: Public name of the application source.
+                type: string
+              id:
+                description: ID of the application source.
+                type: integer
+          rejection_reason:
+            description: Reason for the application rejection.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the rejection reason.
+                type:
+                  - "null"
+                  - integer
+              name:
+                description: Name of the rejection reason.
+                type:
+                  - "null"
+                  - string
+              type:
+                description: Type of rejection reason.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  id:
+                    description: ID of the rejection reason type.
+                    type:
+                      - "null"
+                      - integer
+                  name:
+                    description: Name of the rejection reason type.
+                    type:
+                      - "null"
+                      - string
+          rejection_details:
+            description: Details related to the application rejection.
+            type:
+              - "null"
+              - object
+            properties:
+              custom_fields:
+                description: Custom fields related to rejection.
+                type:
+                  - "null"
+                  - object
+              keyed_custom_fields:
+                description: Keyed custom fields related to rejection.
+                type:
+                  - "null"
+                  - object
+          rejected_at:
+            description: Timestamp when the application was rejected.
+            type:
+              - "null"
+              - string
+          prospective_office:
+            description: Prospective office for the candidate.
+            type:
+              - "null"
+              - string
+          prospective_department:
+            description: Prospective department for the candidate.
+            type:
+              - "null"
+              - string
+          prospect_detail:
+            description: Details related to the application prospect.
+            type: object
+            properties:
+              prospect_stage:
+                description: Stage of the prospect.
+                type:
+                  - "null"
+                  - string
+              prospect_pool:
+                description: Pool the prospect belongs to.
+                type:
+                  - "null"
+                  - string
+              prospect_owner:
+                description: Information about the owner of the prospect.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    description: Name of the prospect owner.
+                    type: string
+                  id:
+                    description: Unique identifier for the prospect owner.
+                    type: integer
+          prospect:
+            description: Status of the application prospect.
+            type: boolean
+          location:
+            description: Location related to the application.
+            type:
+              - "null"
+              - string
+          last_activity_at:
+            description: Timestamp of the last activity on the application.
+            type: string
+          jobs:
+            description: Jobs applied for by the candidate.
+            type: array
+          id:
+            description: Unique identifier for the application.
+            type: integer
+          current_stage:
+            description: Current stage of the application process.
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Name of the current stage.
+                type: string
+              id:
+                description: ID of the current stage.
+                type: integer
+          credited_to:
+            description: Information about the employee who credited the application.
+            type: object
+            properties:
+              name:
+                description: Full name of the employee.
+                type:
+                  - "null"
+                  - string
+              last_name:
+                description: Last name of the employee.
+                type:
+                  - "null"
+                  - string
+              id:
+                description: ID of the employee.
+                type: integer
+              first_name:
+                description: First name of the employee.
+                type:
+                  - "null"
+                  - string
+              employee_id:
+                description: Unique identifier for the employee.
+                type:
+                  - "null"
+                  - string
+          candidate_id:
+            description: Unique identifier for the candidate.
+            type: integer
+          attachments:
+            description: Attachments uploaded with the application.
+            type: array
+          applied_at:
+            description: Timestamp when the candidate applied.
+            type: string
+          answers:
+            description: Answers provided in the application.
+            type: array
   candidates_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "candidates"
       path: "candidates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          website_addresses:
+            description: List of candidate's website addresses
+            type: array
+          updated_at:
+            description: Date and time of last update
+            type: string
+          title:
+            description: Candidate's title (e.g., Mr., Mrs., Dr.)
+            type:
+              - "null"
+              - string
+          tags:
+            description: Tags associated with the candidate
+            type: array
+          social_media_addresses:
+            description: Candidate's social media addresses
+            type: array
+          recruiter:
+            description: Recruiter assigned to the candidate
+            type:
+              - "null"
+              - string
+          photo_url:
+            description: URL of the candidate's profile photo
+            type:
+              - "null"
+              - string
+          phone_numbers:
+            description: Candidate's phone numbers
+            type: array
+          last_name:
+            description: Candidate's last name
+            type: string
+          last_activity:
+            description: Details of the last activity related to the candidate
+            type: string
+          is_private:
+            description: Indicates if the candidate's data is private
+            type: boolean
+          id:
+            description: Candidate's ID
+            type: integer
+          first_name:
+            description: Candidate's first name
+            type: string
+          employments:
+            description: List of candidate's employments
+            type: array
+          email_addresses:
+            description: Candidate's email addresses
+            type: array
+          educations:
+            description: List of candidate's educations
+            type: array
+          created_at:
+            description: Date and time of creation
+            type: string
+          coordinator:
+            description: Coordinator assigned to the candidate
+            type:
+              - "null"
+              - string
+          company:
+            description: Company where the candidate is associated
+            type:
+              - "null"
+              - string
+          can_email:
+            description: Indicates if candidate can be emailed
+            type: boolean
+          attachments:
+            description: Attachments related to the candidate
+            type: array
+          applications:
+            description: An array of all applications made by candidates.
+            type: array
+            items:
+              description: Details of an individual application.
+              type: object
+              properties:
+                status:
+                  description: Status of the application
+                  type: string
+                source:
+                  description: Source of application
+                  type: object
+                  properties:
+                    public_name:
+                      description: Public name of the application source
+                      type: string
+                    id:
+                      description: ID of the application source
+                      type: integer
+                rejection_reason:
+                  description: Reason for rejection
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: ID of the rejection reason
+                      type:
+                        - "null"
+                        - integer
+                    name:
+                      description: Name of the rejection reason
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      description: Type of rejection reason
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        id:
+                          description: ID of the rejection reason type
+                          type:
+                            - "null"
+                            - integer
+                        name:
+                          description: Name of the rejection reason type
+                          type:
+                            - "null"
+                            - string
+                rejection_details:
+                  description: Details of the rejection
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    custom_fields:
+                      description: Custom fields related to rejection
+                      type:
+                        - "null"
+                        - object
+                    keyed_custom_fields:
+                      description: Keyed custom fields related to rejection
+                      type:
+                        - "null"
+                        - object
+                rejected_at:
+                  description: Date and time of rejection
+                  type:
+                    - "null"
+                    - string
+                prospective_office:
+                  description: Prospective office location of the candidate
+                  type:
+                    - "null"
+                    - string
+                prospective_department:
+                  description: Prospective department of the candidate
+                  type:
+                    - "null"
+                    - string
+                prospect_detail:
+                  description: Details of the prospect status
+                  type: object
+                  properties:
+                    prospect_stage:
+                      description: Stage of the prospect in the recruitment process
+                      type:
+                        - "null"
+                        - string
+                    prospect_pool:
+                      description: Pool where the prospect belongs
+                      type:
+                        - "null"
+                        - string
+                    prospect_owner:
+                      description: ID and name of the prospect owner
+                      type:
+                        - "null"
+                        - object
+                      properties:
+                        name:
+                          type: string
+                        id:
+                          type: integer
+                prospect:
+                  description: Indicates if the applicant is a prospect
+                  type: boolean
+                location:
+                  description: Candidate's location
+                  type:
+                    - "null"
+                    - string
+                last_activity_at:
+                  description: Date and time of the last activity
+                  type: string
+                jobs:
+                  description: List of jobs applied for by the candidate
+                  type: array
+                id:
+                  description: ID of the application
+                  type: integer
+                current_stage:
+                  description: The current stage of the application process.
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    name:
+                      description: Name of the current stage in the application process
+                      type: string
+                    id:
+                      description: ID of the current stage in the application process
+                      type: integer
+                credited_to:
+                  description: The user who should be credited for this application.
+                  type: object
+                  properties:
+                    name:
+                      description: Full name of the employee who credited the candidate
+                      type:
+                        - "null"
+                        - string
+                    last_name:
+                      description: Last name of the employee who credited the candidate
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: ID of the credited employee
+                      type: integer
+                    first_name:
+                      description: First name of the employee who credited the candidate
+                      type:
+                        - "null"
+                        - string
+                    employee_id:
+                      description: ID of the employee who credited the candidate
+                      type:
+                        - "null"
+                        - string
+                candidate_id:
+                  description: ID of the candidate
+                  type: integer
+                attachments:
+                  description: Attachments submitted by the candidate
+                  type: array
+                applied_at:
+                  description: Date and time when candidate applied
+                  type: string
+                answers:
+                  description: Candidate's answers in the application
+                  type: array
+          application_ids:
+            description: List of application IDs
+            type: array
+            items:
+              type: integer
+          addresses:
+            description: Candidate's addresses
+            type: array
+          custom_fields:
+            description: Custom fields associated with the candidate
+            properties: {}
+            additionalProperties: true
+            type:
+              - "null"
+              - object
+          keyed_custom_fields:
+            description: Keyed custom fields associated with the candidate
+            properties: {}
+            additionalProperties: true
+            type:
+              - "null"
+              - object
   close_reasons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "close_reasons"
       path: "close_reasons"
     primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the close reason.
+            type: integer
+          name:
+            description: The name or description of the close reason.
+            type: string
   degrees_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "degrees"
       path: "degrees"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the greenhouse record
+            type: integer
+          name:
+            description: Name of the degrees data
+            type: string
+          priority:
+            description: Priority level of the degrees data for sorting
+            type: integer
+          external_id:
+            description:
+              Unique identifier for the greenhouse record in an external
+              system
+            type:
+              - "null"
+              - string
   departments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "departments"
       path: "departments"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique ID of this department.
+            type: integer
+          name:
+            description: Name of the department.
+            type: string
+          parent_id:
+            description: Unique ID of the parent department of this department.
+            type:
+              - "null"
+              - integer
+          parent_department_external_id:
+            description: External ID of the parent department of this department.
+            type:
+              - "null"
+              - string
+          child_ids:
+            description: Unique IDs of child departments associated with this department.
+            type: array
+          child_department_external_ids:
+            description: External IDs of child departments associated with this department.
+            type: array
+          external_id:
+            description: External ID of this department.
+            type:
+              - "null"
+              - string
   jobs_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "jobs"
       path: "jobs"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique ID of the job
+            type: integer
+          name:
+            description: Name of the job
+            type: string
+          requisition_id:
+            description: ID associated with the job requisition
+            type: string
+          notes:
+            description: Additional notes or comments about the job
+            type:
+              - "null"
+              - string
+          confidential:
+            description: Indicates if the job details are confidential
+            type: boolean
+          is_template:
+            description: Indicates if the job is a template
+            type: boolean
+          copied_from_id:
+            description: The ID of the job from which this job was copied
+            type:
+              - "null"
+              - integer
+          status:
+            description: Current status of the job
+            type: string
+          created_at:
+            description: The date and time the job was created
+            type: string
+          opened_at:
+            description: The date and time the job was opened
+            type: string
+          closed_at:
+            description: The date and time the job was closed
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The date and time the job was last updated
+            type: string
+          departments:
+            description: Departments associated with the job
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique ID of the department
+                  type: integer
+                name:
+                  description: Name of the department
+                  type: string
+                parent_id:
+                  description: ID of the parent department
+                  type:
+                    - "null"
+                    - integer
+                parent_department_external_id:
+                  description: External ID of the parent department
+                  type:
+                    - "null"
+                    - string
+                child_ids:
+                  description: IDs of child departments
+                  type: array
+                child_department_external_ids:
+                  description: External IDs of child departments
+                  type: array
+                external_id:
+                  description: External ID of the department
+                  type:
+                    - "null"
+                    - string
+          offices:
+            description: Offices associated with the job
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique ID of the office
+                  type: integer
+                name:
+                  description: Name of the office
+                  type: string
+                location:
+                  description: Location details of the office
+                  type: object
+                  properties:
+                    name:
+                      description: Name of the office location
+                      type:
+                        - "null"
+                        - string
+                primary_contact_user_id:
+                  description: ID of the primary contact user
+                  type: integer
+                parent_id:
+                  description: ID of the parent office
+                  type:
+                    - "null"
+                    - integer
+                parent_office_external_id:
+                  description: External ID of the parent office
+                  type:
+                    - "null"
+                    - string
+                child_ids:
+                  description: IDs of child offices
+                  type: array
+                child_office_external_ids:
+                  description: External IDs of child offices
+                  type: array
+                external_id:
+                  description: External ID of the office
+                  type:
+                    - "null"
+                    - string
+          hiring_team:
+            description: Members of the hiring team for the job
+            type: object
+            properties:
+              hiring_managers:
+                description: Managers responsible for the hiring decisions
+                type: array
+              recruiters:
+                description: Recruiters handling the job requirements
+                type: array
+              coordinators:
+                description: Coordinators involved in the hiring process
+                type: array
+              sourcers:
+                description: Sourcers responsible for finding suitable candidates
+                type: array
+          custom_fields:
+            description: Custom fields related to the job
+            type:
+              - "null"
+              - object
+            properties:
+              employment_type:
+                description: Type of employment associated with the job
+                type:
+                  - "null"
+                  - string
+          keyed_custom_fields:
+            description: Keyed custom fields related to the job
+            type: object
+            properties:
+              employment_type:
+                description: Type of employment associated with the job
+                type: object
+                properties:
+                  name:
+                    description: Name of the employment type field
+                    type: string
+                  type:
+                    description: Data type of the employment type field
+                    type: string
+                  value:
+                    description: Value of the employment type field
+                    type:
+                      - "null"
+                      - string
+          openings:
+            description: Openings associated with the job
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique ID of the opening
+                  type: integer
+                opening_id:
+                  description: ID of the opening
+                  type: string
+                status:
+                  description: Status of the opening
+                  type: string
+                opened_at:
+                  description: The date and time the opening was created
+                  type: string
+                closed_at:
+                  description: The date and time the opening was closed
+                  type:
+                    - "null"
+                    - string
+                application_id:
+                  description: ID of the job application
+                  type:
+                    - "null"
+                    - integer
+                close_reason:
+                  description: Reason for closing the opening
+                  type:
+                    - "null"
+                    - string
   jobs_openings_stream:
     $parameters:
       name: "jobs_openings"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -126,6 +843,124 @@ definitions:
           - stream: "#/definitions/jobs_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the job opening.
+            type: integer
+          opening_id:
+            description: The unique identifier for the job opening.
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the job opening.
+            type:
+              - "null"
+              - string
+          opened_at:
+            description: The date and time when the job opening was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          closed_at:
+            description: The date and time when the job opening was closed.
+            type:
+              - "null"
+              - string
+            format: date-time
+          application_id:
+            description: The unique identifier for the job application.
+            type:
+              - "null"
+              - integer
+          close_reason:
+            description: Reason for closing the job opening.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier for the close reason.
+                type:
+                  - "null"
+                  - integer
+              name:
+                description: The name or description of the close reason.
+                type:
+                  - "null"
+                  - string
+          custom_fields:
+            description: Custom fields associated with the job opening.
+            type:
+              - "null"
+              - object
+            properties:
+              employment_type:
+                description: Type of employment for the job.
+                type:
+                  - "null"
+                  - string
+              maximum_budget:
+                description: The maximum budget assigned for the job.
+                type:
+                  - "null"
+                  - string
+          keyed_custom_fields:
+            description:
+              Custom fields with key-value pairs associated with the job
+              opening.
+            type:
+              - "null"
+              - object
+            properties:
+              employment_type:
+                description: Type of employment associated with the job opening.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    description: The name or description of the employment type.
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    description: The type of employment value.
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    description: The value of the employment type.
+                    type:
+                      - "null"
+                      - string
+              budget:
+                description: Budget information for the job.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  name:
+                    description: The name or description of the budget.
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    description: The type of budget value.
+                    type:
+                      - "null"
+                      - string
+                  value:
+                    description: The value of the budget.
+                    type:
+                      - "null"
+                      - string
   applications_demographics_answers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -143,6 +978,55 @@ definitions:
       stream_slice_field: "parent_id"
       cursor_field: "updated_at"
       parent_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the demographic answer record
+            type:
+              - "null"
+              - integer
+          free_form_text:
+            description: Any additional free form text provided as part of the answer
+            type:
+              - "null"
+              - string
+          application_id:
+            description:
+              Unique identifier for the application associated with the
+              demographic answer
+            type:
+              - "null"
+              - integer
+          demographic_question_id:
+            description: Unique identifier for the demographic question answered
+            type:
+              - "null"
+              - integer
+          demographic_answer_option_id:
+            description:
+              Unique identifier for the selected answer option for the
+              demographic question
+            type:
+              - "null"
+              - integer
+          created_at:
+            description: Timestamp indicating when the demographic answer was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description:
+              Timestamp indicating when the demographic answer was last
+              updated
+            type:
+              - "null"
+              - string
+            format: date-time
   applications_interviews_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -160,22 +1044,359 @@ definitions:
       stream_slice_field: "parent_id"
       cursor_field: "updated_at"
       parent_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the interview data.
+            type: integer
+          application_id:
+            description: Unique identifier for the job application.
+            type:
+              - "null"
+              - integer
+          external_event_id:
+            description: ID of the external event associated with the interview.
+            type:
+              - "null"
+              - string
+          start:
+            description: Details about the start time of the interview.
+            type:
+              - "null"
+              - object
+            properties:
+              date_time:
+                description: Start date and time of the interview.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          end:
+            description: Details about the end time of the interview.
+            type:
+              - "null"
+              - object
+            properties:
+              date_time:
+                description: End date and time of the interview.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          location:
+            description: Location where the interview takes place.
+            type:
+              - "null"
+              - string
+          video_conferencing_url:
+            description: URL for the video conferencing platform used for the interview.
+            type:
+              - "null"
+              - string
+          status:
+            description: Status of the interview (e.g., scheduled, completed).
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Date and time when the application interview data was created.
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description:
+              Date and time when the application interview data was last
+              updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+          interview:
+            description: Details of the interview such as type or category.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the interview type.
+                type:
+                  - "null"
+                  - integer
+              name:
+                description: Name or title of the interview.
+                type:
+                  - "null"
+                  - string
+          organizer:
+            description: Details of the organizer or coordinator of the interview.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the organizer.
+                type:
+                  - "null"
+                  - integer
+              first_name:
+                description: First name of the organizer.
+                type:
+                  - "null"
+                  - string
+              last_name:
+                description: Last name of the organizer.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Full name of the organizer.
+                type:
+                  - "null"
+                  - string
+              employee_id:
+                description: Employee ID of the organizer.
+                type:
+                  - "null"
+                  - string
+          interviewers:
+            description: List of interviewers participating in the interview panel.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the interviewer.
+                  type:
+                    - "null"
+                    - integer
+                employee_id:
+                  description: Employee ID of the interviewer.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the interviewer.
+                  type:
+                    - "null"
+                    - string
+                email:
+                  description: Email of the interviewer.
+                  type:
+                    - "null"
+                    - string
+                response_status:
+                  description:
+                    Status of the interviewer's response (e.g., confirmed,
+                    pending).
+                  type:
+                    - "null"
+                    - string
+                scorecard_id:
+                  description:
+                    Unique identifier for the interviewer's scorecard,
+                    if applicable.
+                  type:
+                    - "null"
+                    - integer
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "custom_fields"
       path: "custom_fields"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the custom field.
+            type: integer
+          name:
+            description: Name of the custom field.
+            type:
+              - "null"
+              - string
+          active:
+            description:
+              Indicates whether the custom field is currently active or
+              not.
+            type:
+              - "null"
+              - boolean
+          field_type:
+            description: Type of the custom field (text, dropdown, etc.).
+            type:
+              - "null"
+              - string
+          priority:
+            description: Priority of the custom field.
+            type:
+              - "null"
+              - integer
+          value_type:
+            description: Type of values accepted by the custom field.
+            type:
+              - "null"
+              - string
+          private:
+            description: Indicates if the custom field is for private use only.
+            type:
+              - "null"
+              - boolean
+          required:
+            description: Denotes whether the custom field is required or not.
+            type:
+              - "null"
+              - boolean
+          require_approval:
+            description:
+              Specifies if approval is required for changes to the custom
+              field.
+            type:
+              - "null"
+              - boolean
+          trigger_new_version:
+            description:
+              Indicates if a new version should be triggered upon changes
+              to the custom field.
+            type:
+              - "null"
+              - boolean
+          name_key:
+            description: Key associated with the name of the custom field.
+            type:
+              - "null"
+              - string
+          description:
+            description: Description of the custom field.
+            type:
+              - "null"
+              - string
+          expose_in_job_board_api:
+            description:
+              Specifies if the custom field should be exposed in the job
+              board API.
+            type:
+              - "null"
+              - boolean
+          api_only:
+            description: Denotes if the custom field is used only in API requests.
+            type:
+              - "null"
+              - boolean
+          offices:
+            description: Offices related to the custom field.
+            type:
+              - "null"
+              - array
+          departments:
+            description: Departments associated with the custom field.
+            type:
+              - "null"
+              - array
+          template_token_string:
+            description: Token string used in templates for the custom field.
+            type:
+              - "null"
+              - string
+          custom_field_options:
+            description: List of custom field options available for selection.
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier of the custom field option.
+                  type: integer
+                name:
+                  description: Name of the custom field option.
+                  type: string
+                priority:
+                  description: Priority of the custom field option.
+                  type: integer
+                external_id:
+                  description: External identifier of the custom field option.
+                  type:
+                    - "null"
+                    - string
   questions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "demographics_questions"
       path: "demographics/questions"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the demographic question.
+            type: integer
+          active:
+            description:
+              Specifies if the demographic question is currently active
+              or not.
+            type:
+              - "null"
+              - boolean
+          demographic_question_set_id:
+            description:
+              The ID of the demographic question set this question belongs
+              to.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name or title of the demographic question.
+            type:
+              - "null"
+              - string
+          translations:
+            description:
+              An array of translations for the demographic question's name
+              in different languages.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                language:
+                  description: The language code for the translation.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description:
+                    The translated name of the demographic question in
+                    the specified language.
+                  type:
+                    - "null"
+                    - string
+          required:
+            description: Indicates if the demographic question is required to be answered.
+            type:
+              - "null"
+              - boolean
   demographics_answers_answer_options_stream:
     $parameters:
       name: "demographics_answers_answer_options"
       primary_key: "id"
-      schema_loader:
-        $ref: "#/definitions/schema_loader"
       retriever:
         $ref: "#/definitions/retriever"
         requester:
@@ -187,17 +1408,98 @@ definitions:
             - stream: "#/definitions/questions_stream"
               parent_key: "id"
               partition_field: "parent_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of this demographic answer option.
+            type: integer
+          free_form:
+            description:
+              Specifies if the answer option allows for free-form input
+              in addition to predefined options.
+            type:
+              - "null"
+              - boolean
+          active:
+            description:
+              Indicates whether this demographic answer option is active
+              or not.
+            type:
+              - "null"
+              - boolean
+          name:
+            description: The name or label of the demographic answer option.
+            type:
+              - "null"
+              - string
+          demographic_question_id:
+            description:
+              The unique identifier of the demographic question associated
+              with this answer option.
+            type:
+              - "null"
+              - integer
+          translations:
+            description:
+              List of translations for the name of the demographic answer
+              option in different languages.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                language:
+                  description: The language code of the translation.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description:
+                    The translated name of the demographic answer option
+                    in the respective language.
+                  type:
+                    - "null"
+                    - string
   demographics_question_sets_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "demographics_question_sets"
       path: "demographics/question_sets"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the demographics question set
+            type: integer
+          title:
+            description: Title of the demographics question set
+            type:
+              - "null"
+              - string
+          description:
+            description: A brief description of the demographics question set
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates if the demographics question set is currently active
+            type:
+              - "null"
+              - boolean
   demographics_question_sets_questions_stream:
     $parameters:
       name: "demographics_question_sets_questions"
       primary_key: "id"
-      schema_loader:
-        $ref: "#/definitions/schema_loader"
       retriever:
         $ref: "#/definitions/retriever"
         requester:
@@ -209,21 +1511,440 @@ definitions:
             - stream: "#/definitions/demographics_question_sets_stream"
               parent_key: "id"
               partition_field: "parent_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the question.
+            type: integer
+          active:
+            description: Specifies if the question is active or not.
+            type:
+              - "null"
+              - boolean
+          demographic_question_set_id:
+            description:
+              Unique identifier of the demographic question set to which
+              this question belongs.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the question.
+            type:
+              - "null"
+              - string
+          translations:
+            description:
+              An array of questions related to demographics in multiple
+              languages.
+            type:
+              - "null"
+              - array
+            items:
+              description: The details of a single question in a particular language.
+              type:
+                - "null"
+                - object
+              properties:
+                language:
+                  description: Specifies the language of the translation.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Translated name of the question for the specified language.
+                  type:
+                    - "null"
+                    - string
+          required:
+            description: Indicates if this question is mandatory to answer.
+            type:
+              - "null"
+              - boolean
   interviews_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "interviews"
       path: "scheduled_interviews"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the interview
+            type: integer
+          application_id:
+            description:
+              The unique identifier for the job application associated
+              with the interview
+            type:
+              - "null"
+              - integer
+          external_event_id:
+            description: The identifier for the external event related to the interview
+            type:
+              - "null"
+              - string
+          start:
+            description: The start date and time of the interview
+            type:
+              - "null"
+              - object
+            properties:
+              date_time:
+                description: The start date and time of the interview
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          end:
+            description: The end date and time of the interview
+            type:
+              - "null"
+              - object
+            properties:
+              date_time:
+                description: The end date and time of the interview
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          location:
+            description: The physical or virtual location of the interview
+            type:
+              - "null"
+              - string
+          video_conferencing_url:
+            description:
+              The URL for the video conferencing platform used for the
+              interview
+            type:
+              - "null"
+              - string
+          status:
+            description: The status of the interview (e.g., scheduled, completed)
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the interview was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: The date and time when the interview was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          interview:
+            description: Details about the interview such as type or purpose
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier for the interview
+                type:
+                  - "null"
+                  - integer
+              name:
+                description: The name or title of the interview
+                type:
+                  - "null"
+                  - string
+          organizer:
+            description: Information about the individual organizing the interview
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier for the organizer
+                type:
+                  - "null"
+                  - integer
+              first_name:
+                description: The first name of the organizer
+                type:
+                  - "null"
+                  - string
+              last_name:
+                description: The last name of the organizer
+                type:
+                  - "null"
+                  - string
+              name:
+                description: The full name of the organizer
+                type:
+                  - "null"
+                  - string
+              employee_id:
+                description: The employee identifier of the organizer
+                type:
+                  - "null"
+                  - string
+          interviewers:
+            description: Information about the individuals conducting the interview
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier for the interviewer
+                  type:
+                    - "null"
+                    - integer
+                employee_id:
+                  description: The employee identifier of the interviewer
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name of the interviewer
+                  type:
+                    - "null"
+                    - string
+                email:
+                  description: The email address of the interviewer
+                  type:
+                    - "null"
+                    - string
+                response_status:
+                  description:
+                    The response status of the interviewer (e.g., accepted,
+                    declined)
+                  type:
+                    - "null"
+                    - string
+                scorecard_id:
+                  description:
+                    The identifier of the scorecard associated with the
+                    interviewer's evaluation
+                  type:
+                    - "null"
+                    - integer
   job_posts_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "job_posts"
       path: "job_posts"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the job post.
+            type: integer
+          active:
+            description: Flag indicating if the job post is active or not.
+            type: boolean
+          live:
+            description: Flag indicating if the job post is live or not.
+            type: boolean
+          first_published_at:
+            description: Date and time when the job post was first published.
+            type:
+              - "null"
+              - string
+          title:
+            description: Title or headline of the job post.
+            type: string
+          location:
+            description: Details about the job post location.
+            type: object
+            properties:
+              id:
+                description: Unique identifier of the location.
+                type: integer
+              name:
+                description: Name of the location.
+                type: string
+              office_id:
+                description: ID of the office associated with the location.
+                type:
+                  - "null"
+                  - integer
+              job_post_location_type:
+                description: The type of job post location (e.g., remote, on-site).
+                type: object
+                properties:
+                  id:
+                    description: Unique identifier of the location type.
+                    type: integer
+                  name:
+                    description: Name of the location type.
+                    type: string
+          internal:
+            description: Flag indicating if the job post is internal or not.
+            type: boolean
+          external:
+            description: Flag indicating if the job post is external or not.
+            type: boolean
+          job_id:
+            description: ID of the job associated with the job post.
+            type: integer
+          content:
+            description: Content or description of the job post.
+            type: string
+          internal_content:
+            description: Internal content or description of the job post.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: Date and time when the job post was last updated.
+            type: string
+          created_at:
+            description: Date and time when the job post was created.
+            type: string
+          demographic_question_set_id:
+            description:
+              ID of the demographic question set associated with the job
+              post.
+            type:
+              - "null"
+              - integer
+          questions:
+            description: List of questions related to the job post.
+            type: array
+            items:
+              description: A single question object within the questions list.
+              type: object
+              properties:
+                required:
+                  description: Flag indicating if the question is required or not.
+                  type:
+                    - boolean
+                    - "null"
+                private:
+                  description: Flag indicating if the question is private or not.
+                  type: boolean
+                label:
+                  description: Label or title of the question.
+                  type: string
+                name:
+                  description: Name of the question.
+                  type: string
+                type:
+                  description: Type of the question (e.g., text, dropdown, etc).
+                  type: string
+                values:
+                  description: Possible values/options for the question.
+                  type: array
+                description:
+                  description: Description of the question.
+                  type:
+                    - "null"
+                    - string
   job_stages_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "job_stages"
       path: "job_stages"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the job stage
+            type: integer
+          name:
+            description: The name of the job stage
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the job stage was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: The timestamp when the job stage was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          job_id:
+            description: The identifier of the job associated with the job stage
+            type:
+              - "null"
+              - integer
+          priority:
+            description: The priority level of the job stage
+            type:
+              - "null"
+              - integer
+          interviews:
+            description: Details of interviews associated with the job stage
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  description: The unique identifier of the interview
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  description: The name of the interview
+                  type:
+                    - "null"
+                    - string
+                schedulable:
+                  description: Flag indicating if the interview is schedulable
+                  type:
+                    - "null"
+                    - boolean
+                estimated_minutes:
+                  description: The estimated duration of the interview in minutes
+                  type:
+                    - "null"
+                    - integer
+                default_interviewer_users:
+                  description: The default interviewer users for the interview
+                  type:
+                    - "null"
+                    - array
+                interview_kit:
+                  description: Details of the interview kit used for the interview
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier of the interview kit
+                      type:
+                        - "null"
+                        - integer
+                    content:
+                      description: Content of the interview kit
+                      type:
+                        - "null"
+                        - string
+                    questions:
+                      description: Questions included in the interview kit
+                      type:
+                        - "null"
+                        - array
   jobs_stages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -242,42 +1963,633 @@ definitions:
       stream_slice_field: "parent_id"
       cursor_field: "updated_at"
       parent_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the job stage
+            type: integer
+          name:
+            description: The name of the job stage
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the job stage was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: The date and time when the job stage was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+          job_id:
+            description: The unique identifier of the job associated with this stage
+            type:
+              - "null"
+              - integer
+          priority:
+            description: The priority level of this job stage
+            type:
+              - "null"
+              - integer
+          interviews:
+            description: Array of interview details associated with this job stage
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+              properties:
+                id:
+                  description:
+                    The unique identifier for the interview associated
+                    with this stage
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  description:
+                    The name of the interview associated with this job
+                    stage
+                  type:
+                    - "null"
+                    - string
+                schedulable:
+                  description: Flag indicating if the interview can be scheduled
+                  type:
+                    - "null"
+                    - boolean
+                estimated_minutes:
+                  description: The estimated duration of the interview in minutes
+                  type:
+                    - "null"
+                    - integer
+                default_interviewer_users:
+                  description:
+                    The default users assigned as interviewers for this
+                    stage
+                  type:
+                    - "null"
+                    - array
+                interview_kit:
+                  description: Details of the interview kit required for this stage
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description: The unique identifier for the interview kit
+                      type:
+                        - "null"
+                        - integer
+                    content:
+                      description: The content of the interview kit
+                      type:
+                        - "null"
+                        - string
+                    questions:
+                      description: Array of questions included in the interview kit
+                      type:
+                        - "null"
+                        - array
   offers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "offers"
       path: "offers"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the offer
+            type: integer
+          version:
+            description: Version of the offer data
+            type: integer
+          application_id:
+            description:
+              Unique identifier for the application associated with the
+              offer
+            type: integer
+          created_at:
+            description: Timestamp indicating when the offer was created
+            type: string
+          updated_at:
+            description: Timestamp indicating when the offer was last updated
+            type: string
+          sent_at:
+            description: Timestamp indicating when the offer was sent
+            type:
+              - "null"
+              - string
+          resolved_at:
+            description: Timestamp indicating when the offer was resolved
+            type:
+              - "null"
+              - string
+          starts_at:
+            description: Timestamp indicating when the offer starts
+            type: string
+          status:
+            description: Status of the offer
+            type: string
+          job_id:
+            description: Unique identifier for the job associated with the offer
+            type: integer
+          candidate_id:
+            description: Unique identifier for the candidate associated with the offer
+            type: integer
+          opening:
+            description: Details about the job opening
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the opening
+                type: integer
+              opening_id:
+                description:
+                  Unique identifier for the opening associated with the
+                  offer
+                type: string
+              status:
+                description: Status of the opening
+                type: string
+              opened_at:
+                description: Timestamp indicating when the opening was opened
+                type: string
+              closed_at:
+                description: Timestamp indicating when the opening was closed
+                type:
+                  - "null"
+                  - string
+              application_id:
+                description: Unique identifier for the opening application
+                type:
+                  - "null"
+                  - integer
+              close_reason:
+                description: Reason for closing the opening
+                type:
+                  - "null"
+                  - string
+          custom_fields:
+            description: Additional custom fields related to the offer
+            type:
+              - "null"
+              - object
+            properties:
+              employment_type:
+                description: Type of employment associated with the offer
+                type:
+                  - "null"
+                  - string
+          keyed_custom_fields:
+            description: Keyed custom fields associated with the offer
+            type: object
+            properties:
+              employment_type:
+                description: Type of employment for the offer
+                type: object
+                properties:
+                  name:
+                    description: Name of the custom employment field
+                    type: string
+                  type:
+                    description: Type of the custom employment field
+                    type: string
+                  value:
+                    description: Value of the custom employment field
+                    type: string
   rejection_reasons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "rejection_reasons"
       path: "rejection_reasons"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the rejection reason.
+            type: integer
+          name:
+            description: The name of the rejection reason.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of rejection reason
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the type of rejection reason.
+                type:
+                  - "null"
+                  - integer
+              name:
+                description: The name of the type of rejection reason.
+                type:
+                  - "null"
+                  - string
   scorecards_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "scorecards"
       path: "scorecards"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the scorecard.
+            type: integer
+          updated_at:
+            description: The timestamp when the scorecard was last updated.
+            type: string
+          created_at:
+            description: The timestamp when the scorecard was created.
+            type: string
+          interview:
+            description: Details about the interview related to the scorecard.
+            type: string
+          interview_step:
+            description: Details about the interview step associated with the scorecard
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the interview step.
+                type: integer
+              name:
+                description: The name or title of the interview step.
+                type: string
+          candidate_id:
+            description:
+              The unique identifier of the candidate for whom the scorecard
+              is created.
+            type: integer
+          application_id:
+            description:
+              The unique identifier of the job application associated with
+              the scorecard data.
+            type: integer
+          interviewed_at:
+            description: The timestamp when the candidate was interviewed.
+            type: string
+          submitted_by:
+            description: Details of the user who submitted the scorecard
+            type: object
+            properties:
+              id:
+                description:
+                  The unique identifier of the employee who submitted the
+                  scorecard.
+                type: integer
+              first_name:
+                description: The first name of the employee who submitted the scorecard.
+                type: string
+              last_name:
+                description: The last name of the employee who submitted the scorecard.
+                type: string
+              name:
+                description: The full name of the employee who submitted the scorecard.
+                type: string
+              employee_id:
+                description:
+                  The unique identifier of the employee who submitted the
+                  scorecard.
+                type:
+                  - "null"
+                  - string
+          interviewer:
+            description: Information about the interviewer who conducted the assessment
+            type: object
+            properties:
+              id:
+                description: The unique identifier of the interviewer.
+                type: integer
+              first_name:
+                description: The first name of the interviewer.
+                type: string
+              last_name:
+                description: The last name of the interviewer.
+                type: string
+              name:
+                description: The full name of the interviewer.
+                type: string
+              employee_id:
+                description:
+                  The unique identifier of the employee who conducted the
+                  interview.
+                type:
+                  - "null"
+                  - string
+          submitted_at:
+            description: The timestamp when the scorecard was submitted.
+            type: string
+          overall_recommendation:
+            description:
+              The overall recommendation for the candidate based on the
+              scorecard evaluation.
+            type: string
+          attributes:
+            description: Information about the attributes related to the scorecard
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  description: The name of the attribute being rated.
+                  type: string
+                type:
+                  description:
+                    The type of attribute being rated (e.g., technical
+                    skills, communication skills).
+                  type: string
+                note:
+                  description: Any additional notes or comments related to the attribute.
+                  type:
+                    - "null"
+                    - string
+                rating:
+                  description: The rating given to the attribute.
+                  type: string
+          ratings:
+            description: Ratings given for each question in the scorecard
+            type: object
+            properties:
+              definitely_not:
+                description:
+                  The rating indicating the candidate is definitely not
+                  suitable for the role.
+                type: array
+              no:
+                description: The rating indicating a negative evaluation of the candidate.
+                type: array
+              mixed:
+                description:
+                  The rating indicating there are mixed opinions about
+                  the candidate.
+                type: array
+              yes:
+                description: The rating indicating a positive evaluation of the candidate.
+                type: array
+              strong_yes:
+                description:
+                  The rating indicating a strong positive evaluation of
+                  the candidate.
+                type: array
+          questions:
+            description: List of questions included in the scorecard
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: The unique identifier of the question.
+                  type:
+                    - "null"
+                    - integer
+                question:
+                  description: The question being asked during the interview.
+                  type: string
+                answer:
+                  description: The answer provided for a specific question.
+                  type: string
   sources_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "sources"
       path: "sources"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the source.
+            type: integer
+          name:
+            description: The name of the source.
+            type:
+              - "null"
+              - string
+          type:
+            description: Type of the data source
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier for the type of the source.
+                type:
+                  - "null"
+                  - integer
+              name:
+                description: The name of the type of the source.
+                type:
+                  - "null"
+                  - string
   users_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "users"
       path: "users"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the user.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The full name of the user.
+            type:
+              - "null"
+              - string
+          first_name:
+            description: The first name of the user.
+            type:
+              - "null"
+              - string
+          last_name:
+            description: The last name of the user.
+            type:
+              - "null"
+              - string
+          primary_email_address:
+            description: The primary email address of the user.
+            type:
+              - "null"
+              - string
+          updated_at:
+            description: The date and time when the user account was last updated.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the user account was created.
+            type:
+              - "null"
+              - string
+          disabled:
+            description: Indicates whether the user account is disabled.
+            type:
+              - "null"
+              - boolean
+          site_admin:
+            description: Indicates whether the user is a site administrator.
+            type:
+              - "null"
+              - boolean
+          emails:
+            description: Email addresses of the users
+            type:
+              - "null"
+              - array
+            items:
+              description: Email addresses associated with the user.
+              type:
+                - "null"
+                - string
+          employee_id:
+            description: Employee identifier for the user.
+            type:
+              - "null"
+              - string
+          linked_candidate_ids:
+            description: IDs of candidates linked to the user.
+            type:
+              - "null"
+              - array
+          departments:
+            description: List of departments associated with users
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the department.
+                  type: integer
+                name:
+                  description: The name of the department.
+                  type: string
+                parent_id:
+                  description: ID of the parent department.
+                  type:
+                    - "null"
+                    - integer
+                parent_department_external_id:
+                  description: External ID of the parent department.
+                  type:
+                    - "null"
+                    - string
+                child_ids:
+                  description: IDs of child departments under this department.
+                  type: array
+                child_department_external_ids:
+                  description: External IDs of child departments under this department.
+                  type: array
+                external_id:
+                  description: External ID of the department.
+                  type:
+                    - "null"
+                    - string
+          offices:
+            description: List of office locations where users are based
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the office.
+                  type: integer
+                name:
+                  description: The name of the office.
+                  type: string
+                location:
+                  description: Geographical location details of the office
+                  type: object
+                  properties:
+                    name:
+                      description: The location name of the office.
+                      type:
+                        - "null"
+                        - string
+                primary_contact_user_id:
+                  description: ID of the primary contact user for the office.
+                  type: integer
+                parent_id:
+                  description: ID of the parent office.
+                  type:
+                    - "null"
+                    - integer
+                parent_office_external_id:
+                  description: External ID of the parent office.
+                  type:
+                    - "null"
+                    - string
+                child_ids:
+                  description: IDs of child offices under this office.
+                  type: array
+                child_office_external_ids:
+                  description: External IDs of child offices under this office.
+                  type: array
+                external_id:
+                  description: External ID of the office.
+                  type:
+                    - "null"
+                    - string
   user_roles_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "user_roles"
       path: "user_roles"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the user role.
+            type:
+              - "null"
+              - integer
+          type:
+            description: The type or category of the user role.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the user role.
+            type:
+              - "null"
+              - string
   user_permissions_stream:
     $parameters:
       name: "user_permissions"
     primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/no_pagination_retriever"
       requester:
@@ -289,21 +2601,152 @@ definitions:
           - stream: "#/definitions/users_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the user permission data
+            type:
+              - "null"
+              - integer
+          job_id:
+            description:
+              Identifier for the job associated with the user permission
+              data
+            type:
+              - "null"
+              - integer
+          user_role_id:
+            description:
+              Identifier for the user role associated with the user permission
+              data
+            type:
+              - "null"
+              - integer
   demographics_answers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "demographics_answers"
       path: "demographics/answers"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: The unique identifier of the demographic answer
+            type:
+              - "null"
+              - integer
+          free_form_text:
+            description: Any additional free-form text provided as part of the answer
+            type:
+              - "null"
+              - string
+          application_id:
+            description:
+              The unique identifier of the application associated with
+              the demographic answer
+            type:
+              - "null"
+              - integer
+          demographic_question_id:
+            description:
+              The identifier of the demographic question to which the answer
+              belongs
+            type:
+              - "null"
+              - integer
+          demographic_answer_option_id:
+            description:
+              The identifier of the answer option chosen for the demographic
+              question
+            type:
+              - "null"
+              - integer
+          created_at:
+            description: The date and time when the demographic answer was created
+            type:
+              - "null"
+              - string
+            format: date-time
+          updated_at:
+            description: The date and time when the demographic answer was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
   demographics_answer_options_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "demographics_answer_options"
       path: "demographics/answer_options"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the demographic answer option.
+            type: integer
+          free_form:
+            description:
+              Specifies if the answer option allows for a free-form text
+              input.
+            type:
+              - "null"
+              - boolean
+          active:
+            description:
+              Indicates if the demographic answer option is currently active
+              or not.
+            type:
+              - "null"
+              - boolean
+          name:
+            description: The name or label of the demographic answer option.
+            type:
+              - "null"
+              - string
+          demographic_question_id:
+            description:
+              The ID of the demographic question associated with this answer
+              option.
+            type:
+              - "null"
+              - integer
+          translations:
+            description:
+              Array of translations for the answer option names in different
+              languages.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                language:
+                  description: The language code of the translated name.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description:
+                    The translated name of the answer option in the specified
+                    language.
+                  type:
+                    - "null"
+                    - string
   activity_feed_stream:
     $parameters:
       name: "activity_feed"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/no_pagination_retriever"
       requester:
@@ -315,12 +2758,235 @@ definitions:
           - stream: "#/definitions/candidates_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          notes:
+            description: List of notes or comments added in the greenhouse
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the note.
+                  type:
+                    - "null"
+                    - integer
+                created_at:
+                  description: The timestamp when the note was created.
+                  type:
+                    - "null"
+                    - string
+                body:
+                  description: The content or text of the note.
+                  type:
+                    - "null"
+                    - string
+                user:
+                  description: User who added the note
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description:
+                        The unique identifier of the user who created the
+                        note.
+                      type:
+                        - "null"
+                        - integer
+                    first_name:
+                      description: The first name of the user who created the note.
+                      type:
+                        - "null"
+                        - string
+                    last_name:
+                      description: The last name of the user who created the note.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: The full name of the user who created the note.
+                      type:
+                        - "null"
+                        - string
+                    employee_id:
+                      description: The employee ID of the user who created the note.
+                      type:
+                        - "null"
+                        - string
+                private:
+                  description: Indicates if the note is private or not.
+                  type:
+                    - "null"
+                    - boolean
+                visiblity:
+                  description: The visibility settings of the note.
+                  type:
+                    - "null"
+                    - string
+                visibility:
+                  description: The visibility settings of the note.
+                  type:
+                    - "null"
+                    - string
+          emails:
+            description: List of emails related to greenhouse communication
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the email.
+                  type:
+                    - "null"
+                    - integer
+                created_at:
+                  description: The timestamp when the email was created.
+                  type:
+                    - "null"
+                    - string
+                subject:
+                  description: The subject or topic of the email.
+                  type:
+                    - "null"
+                    - string
+                body:
+                  description: The content or body of the email.
+                  type:
+                    - "null"
+                    - string
+                to:
+                  description: The email address of the recipient.
+                  type:
+                    - "null"
+                    - string
+                from:
+                  description: The email address of the sender.
+                  type:
+                    - "null"
+                    - string
+                cc:
+                  description: The list of email addresses in the CC field.
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - string
+                user:
+                  description: User associated with the email
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description:
+                        The unique identifier of the user who sent the
+                        email.
+                      type:
+                        - "null"
+                        - integer
+                    first_name:
+                      description: The first name of the user who sent the email.
+                      type:
+                        - "null"
+                        - string
+                    last_name:
+                      description: The last name of the user who sent the email.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: The full name of the user who sent the email.
+                      type:
+                        - "null"
+                        - string
+                    employee_id:
+                      description: The employee ID of the user who sent the email.
+                      type:
+                        - "null"
+                        - string
+          activities:
+            description: List of activities recorded in the greenhouse
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: The unique identifier of the activity.
+                  type:
+                    - "null"
+                    - integer
+                created_at:
+                  description: The timestamp when the activity was created.
+                  type:
+                    - "null"
+                    - string
+                subject:
+                  description: The subject or topic of the activity.
+                  type:
+                    - "null"
+                    - string
+                body:
+                  description: The content or description of the activity.
+                  type:
+                    - "null"
+                    - string
+                user:
+                  description: User associated with the activity
+                  type:
+                    - "null"
+                    - object
+                  properties:
+                    id:
+                      description:
+                        The unique identifier of the user performing the
+                        activity.
+                      type:
+                        - "null"
+                        - integer
+                    first_name:
+                      description: The first name of the user performing the activity.
+                      type:
+                        - "null"
+                        - string
+                    last_name:
+                      description: The last name of the user performing the activity.
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: The full name of the user performing the activity.
+                      type:
+                        - "null"
+                        - string
+                    employee_id:
+                      description: The employee ID of the user performing the activity.
+                      type:
+                        - "null"
+                        - string
   approvals_stream:
     $parameters:
       name: "approvals"
       primary_key: "id"
-    schema_loader:
-      $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/no_pagination_retriever"
       requester:
@@ -332,6 +2998,138 @@ definitions:
           - stream: "#/definitions/jobs_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier of the approval request
+            type:
+              - "null"
+              - integer
+          offer_id:
+            description: Identifier of the offer associated with this approval request
+            type:
+              - "null"
+              - integer
+          sequential:
+            description:
+              Flag indicating whether the approvals are required in a sequential
+              order
+            type: boolean
+          version:
+            description: Version of the approval request
+            type:
+              - "null"
+              - integer
+          approval_type:
+            description: The type of approval required for the request
+            type:
+              - "null"
+              - string
+          approval_status:
+            description: The status of the approval (e.g. pending, approved, rejected)
+            type:
+              - "null"
+              - string
+          job_id:
+            description: Identifier of the job associated with this approval request
+            type:
+              - "null"
+              - integer
+          requested_by_user_id:
+            description: User ID who requested this approval
+            type:
+              - "null"
+              - integer
+          approver_groups:
+            description: List of groups of approvers with specific requirements
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier of the approver group
+                  type:
+                    - "null"
+                    - integer
+                approvals_required:
+                  description: The number of approvals required from this group
+                  type:
+                    - "null"
+                    - integer
+                created_at:
+                  description: Timestamp when this group was created
+                  type:
+                    - "null"
+                    - string
+                resolved_at:
+                  description: Timestamp when the approval group status was resolved
+                  type:
+                    - "null"
+                    - string
+                priority:
+                  description: Priority level of the approval group
+                  type:
+                    - "null"
+                    - integer
+                job_id:
+                  description:
+                    Identifier of the job associated with this approval
+                    group
+                  type:
+                    - "null"
+                    - integer
+                offer_id:
+                  description:
+                    Identifier of the offer associated with this approval
+                    group
+                  type:
+                    - integer
+                    - "null"
+                approvers:
+                  description: List of approvers within this group
+                  type:
+                    - "null"
+                    - array
+                  items:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      id:
+                        description: Unique identifier of the approver
+                        type:
+                          - "null"
+                          - integer
+                      name:
+                        description: Name of the approver
+                        type:
+                          - "null"
+                          - string
+                      employee_id:
+                        description: Employee ID of the approver
+                        type:
+                          - "null"
+                          - string
+                      email_addresses:
+                        description: Email addresses of the approver
+                        type:
+                          - "null"
+                          - array
+                        items:
+                          type:
+                            - "null"
+                            - string
   disciplines_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -340,6 +3138,28 @@ definitions:
     retriever:
       $ref: "#/definitions/no_pagination_retriever"
       requester: "#/definitions/requester"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the discipline
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the discipline
+            type:
+              - "null"
+              - string
+          priority:
+            description: Priority level of the discipline
+            type:
+              - "null"
+              - integer
   schools_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -348,6 +3168,28 @@ definitions:
     retriever:
       $ref: "#/definitions/no_pagination_retriever"
       requester: "#/definitions/requester"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the school.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the school.
+            type:
+              - "null"
+              - string
+          priority:
+            description: Priority level of the school.
+            type:
+              - "null"
+              - integer
   eeoc_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -366,21 +3208,292 @@ definitions:
       class_name: source_greenhouse.components.GreenHouseSlicer
       request_cursor_field: "submitted_after"
       cursor_field: "submitted_at"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          application_id:
+            description: Unique identifier for the job application
+            type:
+              - "null"
+              - integer
+          candidate_id:
+            description: Unique identifier for the candidate applying for the job
+            type:
+              - "null"
+              - integer
+          race:
+            description: The racial or ethnic background of the individual.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the race
+                type:
+                  - "null"
+                  - integer
+              description:
+                description: Description of the candidate's race
+                type:
+                  - "null"
+                  - string
+          gender:
+            description: The gender of the individual.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the gender
+                type:
+                  - "null"
+                  - integer
+              description:
+                description: Description of the candidate's gender
+                type:
+                  - "null"
+                  - string
+          veteran_status:
+            description: The veteran status of the individual.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the veteran status
+                type:
+                  - "null"
+                  - integer
+              message:
+                description: Message related to the candidate's veteran status
+                type:
+                  - "null"
+                  - string
+          disability_status:
+            description: The individual's disability status, if any.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the disability status
+                type:
+                  - "null"
+                  - integer
+              description:
+                description: Description of the candidate's disability status
+                type:
+                  - "null"
+                  - string
+          submitted_at:
+            description: Timestamp when the data was submitted
+            type:
+              - "null"
+              - string
   email_templates_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "email_templates"
       path: "email_templates"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the email template.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name or title of the email template.
+            type:
+              - "null"
+              - string
+          description:
+            description: Brief description of the email template and its purpose.
+            type:
+              - "null"
+              - string
+          default:
+            description: Flag indicating if the template is the default one to use.
+            type:
+              - "null"
+              - boolean
+          updated_at:
+            description: Timestamp indicating when the email template was last updated.
+            type:
+              - "null"
+              - string
+          created_at:
+            description: Timestamp indicating when the email template was created.
+            type:
+              - "null"
+              - string
+          type:
+            description:
+              Type or category of the email template (e.g., welcome email,
+              newsletter).
+            type:
+              - "null"
+              - string
+          from:
+            description: Email address or name of the sender for the email template.
+            type:
+              - "null"
+              - string
+          cc:
+            description: List of email addresses to be CC'd when using the template.
+            type:
+              - "null"
+              - array
+            items:
+              description: Email address in the CC list.
+              type:
+                - "null"
+                - string
+          body:
+            description: The main content body of the email template.
+            type:
+              - "null"
+              - string
+          html_body:
+            description: HTML formatted content of the email template.
+            type:
+              - "null"
+              - string
+          user:
+            description: User associated with the email template (creator or owner).
+            type:
+              - "null"
+              - string
   offices_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "offices"
       path: "offices"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for this office in the API system
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the office
+            type:
+              - "null"
+              - string
+          location:
+            description: Location details of this office
+            type:
+              - "null"
+              - object
+            properties:
+              name:
+                description: Name of the location where the office is situated
+                type:
+                  - "null"
+                  - string
+          primary_contact_user_id:
+            description: User ID of the primary contact person for this office
+            type:
+              - "null"
+              - integer
+          parent_id:
+            description: ID of the parent office, if this office is a branch office
+            type:
+              - "null"
+              - integer
+          parent_office_external_id:
+            description: External ID of the parent office in the external system
+            type:
+              - "null"
+              - string
+          child_ids:
+            description: IDs of child offices associated with this office
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - integer
+          child_office_external_ids:
+            description: External IDs of child offices associated with this office
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          external_id:
+            description: Unique identifier for this office in the external system
+            type:
+              - "null"
+              - string
   prospect_pools_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "prospect_pools"
       path: "prospect_pools"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the prospect pool.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the prospect pool.
+            type:
+              - "null"
+              - string
+          active:
+            description: Indicates whether the prospect pool is active or not.
+            type:
+              - "null"
+              - boolean
+          prospect_stages:
+            description: List of prospect stages associated with the prospect pool.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the prospect stage.
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  description: The name of the prospect stage.
+                  type:
+                    - "null"
+                    - string
   tags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -390,6 +3503,23 @@ definitions:
       $ref: "#/definitions/no_pagination_retriever"
       requester: "#/definitions/requester"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier for the tag.
+            type:
+              - "null"
+              - integer
+          name:
+            description: The name of the tag.
+            type:
+              - "null"
+              - string
 streams:
   - "#/definitions/applications_stream"
   - "#/definitions/applications_demographics_answers_stream"

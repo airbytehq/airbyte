@@ -305,6 +305,12 @@ def transform_col_names(record: Dict, dict_keys: list = []) -> Mapping[str, Any]
     return record
 
 
+def transform_pivot_values(record: Dict) -> Mapping[str, Any]:
+    pivot_values = record.get("pivotValues", [])
+    record["string_of_pivot_values"] = ",".join(pivot_values)
+    return record
+
+
 def transform_data(records: List) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
@@ -322,6 +328,9 @@ def transform_data(records: List) -> Iterable[Mapping]:
 
         if "variables" in record:
             record = transform_variables(record)
+
+        if "pivotValues" in record:
+            record = transform_pivot_values(record)
 
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
 

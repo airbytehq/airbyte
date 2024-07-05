@@ -18,7 +18,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_protocol.models import AirbyteStateBlob, AirbyteStreamState, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from integration.config import ConfigBuilder
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
@@ -230,7 +230,9 @@ class IncrementalTest(TestCase):
             _a_response().with_record(_a_record().with_cursor(cursor_value)).build(),
         )
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
-        assert output.most_recent_state == {"events": {"created": int(_NOW.timestamp())}}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(created=int(_NOW.timestamp()))
 
     @HttpMocker()
     def test_given_state_when_read_then_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
@@ -270,7 +272,9 @@ class IncrementalTest(TestCase):
             StateBuilder().with_stream_state("events", {"created": more_recent_than_record_cursor}).build()
         )
 
-        assert output.most_recent_state == {"events": {"created": more_recent_than_record_cursor}}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(created=more_recent_than_record_cursor)
 
     def _read(self, config: ConfigBuilder, state: Optional[Dict[str, Any]], expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.incremental, state, expecting_exception)

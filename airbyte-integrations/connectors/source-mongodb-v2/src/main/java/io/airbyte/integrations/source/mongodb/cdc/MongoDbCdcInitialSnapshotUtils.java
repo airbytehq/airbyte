@@ -9,10 +9,12 @@ import static io.airbyte.cdk.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
 import com.google.common.collect.Sets;
 import com.mongodb.client.MongoClient;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
+import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -38,6 +40,9 @@ public class MongoDbCdcInitialSnapshotUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitialSnapshotUtils.class);
 
   private static final Predicate<ConfiguredAirbyteStream> SYNC_MODE_FILTER = c -> SyncMode.INCREMENTAL.equals(c.getSyncMode());
+  private static final Map<SyncMode, List<InitialSnapshotStatus>> syncModeToStatusValidationMap = Map.of(
+      SyncMode.INCREMENTAL, List.of(InitialSnapshotStatus.IN_PROGRESS, InitialSnapshotStatus.COMPLETE),
+      SyncMode.FULL_REFRESH, List.of(InitialSnapshotStatus.FULL_REFRESH));
 
   /**
    * Returns the list of configured Airbyte streams that need to perform the initial snapshot portion
@@ -119,7 +124,8 @@ public class MongoDbCdcInitialSnapshotUtils {
   }
 
   private static void estimateInitialSnapshotSyncSize(final MongoClient mongoClient, final ConfiguredAirbyteStream stream) {
-    final Optional<MongoUtil.CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(mongoClient, stream);
+    final Optional<MongoUtil.CollectionStatistics> collectionStatistics =
+        MongoUtil.getCollectionStatistics(mongoClient.getDatabase(stream.getStream().getNamespace()), stream);
     collectionStatistics.ifPresent(c -> {
       AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * c.size().longValue(),
           AirbyteEstimateTraceMessage.Type.STREAM, c.count().longValue(), stream.getStream().getName(), stream.getStream().getNamespace());
@@ -127,6 +133,20 @@ public class MongoDbCdcInitialSnapshotUtils {
           .info(String.format(
               "Estimate for table: %s.%s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
               stream.getStream().getNamespace(), stream.getStream().getName(), c.count(), c.size(), c.count(), c.size()));
+    });
+  }
+
+  private static boolean isValidInitialSnapshotStatus(final SyncMode syncMode, final MongoDbStreamState state) {
+    return syncModeToStatusValidationMap.get(syncMode).contains(state.status());
+  }
+
+  public static void validateStateSyncMode(final MongoDbStateManager stateManager, final List<ConfiguredAirbyteStream> streams) {
+    streams.forEach(stream -> {
+      final var existingState = stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace());
+      if (existingState.isPresent() && !isValidInitialSnapshotStatus(stream.getSyncMode(), existingState.get())) {
+        throw new ConfigErrorException("Stream " + stream.getStream().getName() + " is " + stream.getSyncMode() + " but the saved status "
+            + existingState.get().status() + " doesn't match. Please reset this stream");
+      }
     });
   }
 

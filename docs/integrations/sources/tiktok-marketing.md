@@ -66,7 +66,7 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-|:------------------------------------------| ------------ |--------------------------------------------| :---------- |
+| :---------------------------------------- | :----------- | :----------------------------------------- |:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -85,10 +85,10 @@ To access the Sandbox environment:
 | CampaignsReportsDaily                     | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
 | CampaignsReportsLifetime                  | Prod,Sandbox | campaign_id                                | No          |
 | CreativeAssetsImages                      | Prod,Sandbox | image_id                                   | Yes         |
-| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | Yes         |
+| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | No          |
 | CreativeAssetsPortfolios                  | Prod,Sandbox | creative_portfolio_id                      | No          |
 | CreativeAssetsVideos                      | Prod,Sandbox | video_id                                   | Yes         |
-| AdvertiserIds                             | Prod         | advertiser_id                              | Yes         |
+| AdvertiserIds                             | Prod         | advertiser_id                              | No          |
 | AdvertisersAudienceReportsDaily           | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
 | AdvertisersAudienceReportsByCountryDaily  | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
 | AdvertisersAudienceReportsByPlatformDaily | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
@@ -121,9 +121,20 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
-| 3.9.3 | 2024-02-12 | [35161](https://github.com/airbytehq/airbyte/pull/35161) | Manage dependencies with Poetry. |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.0.0   | 2024-07-01 | [38316](https://github.com/airbytehq/airbyte/pull/38316) | Migration to low-code CDK; Support include deleted statuses for Ads, Ad Groups and Campaign streams.        |
+| 3.9.10  | 2024-06-25 | [40373](https://github.com/airbytehq/airbyte/pull/40373) | Update dependencies                                                                                         |
+| 3.9.9   | 2024-06-22 | [40133](https://github.com/airbytehq/airbyte/pull/40133) | Update dependencies                                                                                         |
+| 3.9.8   | 2024-06-06 | [39253](https://github.com/airbytehq/airbyte/pull/39253) | [autopull] Upgrade base image to v1.2.2                                                                     |
+| 3.9.7   | 2024-05-15 | [38250](https://github.com/airbytehq/airbyte/pull/38250) | Replace AirbyteLogger with logging.Logger and upgrade to latest base image                                  |
+| 3.9.6   | 2024-04-19 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Updating to 0.80.0 CDK                                                                                      |
+| 3.9.5   | 2024-04-12 | [36665](https://github.com/airbytehq/airbyte/pull/36665) | Schema descriptions                                                                                         |
+| 3.9.4   | 2024-03-20 | [36302](https://github.com/airbytehq/airbyte/pull/36302) | Don't extract state from the latest record if stream doesn't have a cursor_field                            |
+| 3.9.3   | 2024-02-12 | [35161](https://github.com/airbytehq/airbyte/pull/35161) | Manage dependencies with Poetry.                                                                            |
 | 3.9.2   | 2023-11-02 | [32091](https://github.com/airbytehq/airbyte/pull/32091) | Fix incremental syncs; update docs; fix field type of `preview_url_expire_time` to `date-time`.             |
 | 3.9.1   | 2023-10-25 | [31812](https://github.com/airbytehq/airbyte/pull/31812) | Update `support level` in `metadata`, removed duplicated `tracking_pixel_id` field from `Ads` stream schema |
 | 3.9.0   | 2023-10-23 | [31623](https://github.com/airbytehq/airbyte/pull/31623) | Add AdsAudienceReportsByProvince stream and expand base report metrics                                      |
@@ -134,7 +145,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 | 3.5.0   | 2023-10-16 | [31445](https://github.com/airbytehq/airbyte/pull/31445) | Apply minimum date restrictions                                                                             |
 | 3.4.1   | 2023-08-04 | [29083](https://github.com/airbytehq/airbyte/pull/29083) | Added new `is_smart_performance_campaign` property to `ad groups` stream schema                             |
 | 3.4.0   | 2023-07-13 | [27910](https://github.com/airbytehq/airbyte/pull/27910) | Added `include_deleted` config param - include deleted `ad_groups`, `ad`, `campaigns` to reports            |
-| 3.3.1   | 2023-07-06 | [25423](https://github.com/airbytehq/airbyte/pull/25423) | add new fields to ad reports streams                                                                        |
+| 3.3.1   | 2023-07-06 | [25423](https://github.com/airbytehq/airbyte/pull/25423) | Add new fields to ad reports streams                                                                        |
 | 3.3.0   | 2023-07-05 | [27988](https://github.com/airbytehq/airbyte/pull/27988) | Add `category_exclusion_ids` field to `ad_groups` schema.                                                   |
 | 3.2.1   | 2023-05-26 | [26569](https://github.com/airbytehq/airbyte/pull/26569) | Fixed syncs with `advertiser_id` provided in input configuration                                            |
 | 3.2.0   | 2023-05-25 | [26565](https://github.com/airbytehq/airbyte/pull/26565) | Change default value for `attribution window` to 3 days; add min/max validation                             |
@@ -159,12 +170,14 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 | 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                                     |
 | 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                                 |
 | 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                                            |
-| 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                                   |
-| 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | fixed spec descriptions and documentation                                                                   |
-| 0.1.6   | 2022-04-19 | [11378](https://github.com/airbytehq/airbyte/pull/11378) | updated logic for stream initializations, fixed errors in schemas, updated SAT and unit tests               |
+| 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | Updated spec descriptions                                                                                   |
+| 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | Fixed spec descriptions and documentation                                                                   |
+| 0.1.6   | 2022-04-19 | [11378](https://github.com/airbytehq/airbyte/pull/11378) | Updated logic for stream initializations, fixed errors in schemas, updated SAT and unit tests               |
 | 0.1.5   | 2022-02-17 | [10398](https://github.com/airbytehq/airbyte/pull/10398) | Add Audience reports                                                                                        |
 | 0.1.4   | 2021-12-30 | [7636](https://github.com/airbytehq/airbyte/pull/7636)   | Add OAuth support                                                                                           |
 | 0.1.3   | 2021-12-10 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                                                    |
 | 0.1.2   | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292)   | Support reports                                                                                             |
 | 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                             |
 | 0.1.0   | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887)   | Release TikTok Marketing CDK Connector                                                                      |
+
+</details>

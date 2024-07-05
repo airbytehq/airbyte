@@ -82,7 +82,7 @@ class IncrementalSingleSlice(Cursor):
         self._state[self.cursor_field.eval(self.config)] = latest_record[self.cursor_field.eval(self.config)]
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
-        yield {}
+        yield StreamSlice(partition={}, cursor_slice={})
 
     def should_be_synced(self, record: Record) -> bool:
         """
@@ -170,7 +170,7 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
         # check if state is empty ->
         if not stream_state.get(self.parent_cursor_field):
             # yield empty slice for complete fetch of items stream
-            yield {}
+            yield StreamSlice(partition={}, cursor_slice={})
             return
 
         all_ids = set()
@@ -200,11 +200,11 @@ class IncrementalSubstreamSlicer(IncrementalSingleSlice):
 
                         # yield slice with desired number of ids
                         if self.nested_items_per_page == len(slice_ids):
-                            yield {self.substream_slice_field: slice_ids}
+                            yield StreamSlice(partition={self.substream_slice_field: slice_ids}, cursor_slice={})
                             slice_ids = list()
         # yield leftover ids if any left
         if slice_ids:
-            yield {self.substream_slice_field: slice_ids}
+            yield StreamSlice(partition={self.substream_slice_field: slice_ids}, cursor_slice={})
 
         # If the parent slice contains no records
         if empty_parent_slice:

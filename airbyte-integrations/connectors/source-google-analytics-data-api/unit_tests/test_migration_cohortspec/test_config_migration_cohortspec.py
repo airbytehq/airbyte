@@ -32,7 +32,8 @@ def test_migrate_config(capsys):
     # migrate the test_config
     migration_instance.migrate(SOURCE_INPUT_ARGS, SOURCE)
 
-    control_msg = json.loads(capsys.readouterr().out)
+    what = capsys.readouterr().out
+    control_msg = json.loads(what)
     assert control_msg["type"] == Type.CONTROL.value
     assert control_msg["control"]["type"] == OrchestratorType.CONNECTOR_CONFIG.value
 

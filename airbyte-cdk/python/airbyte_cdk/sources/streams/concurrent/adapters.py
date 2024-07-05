@@ -8,10 +8,11 @@ import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode, Type
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
@@ -21,7 +22,7 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     StreamAvailable,
     StreamUnavailable,
 )
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
@@ -38,7 +39,7 @@ This module contains adapters to help enabling concurrency on Stream objects wit
 """
 
 
-@deprecated("This class is experimental. Use at your own risk.")
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
     """
     The StreamFacade is a Stream that wraps an AbstractStream and exposes it as a Stream.
@@ -77,7 +78,7 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
                 partition_generator=StreamPartitionGenerator(
                     stream,
                     message_repository,
-                    SyncMode.full_refresh if isinstance(cursor, NoopCursor) else SyncMode.incremental,
+                    SyncMode.full_refresh if isinstance(cursor, FinalStateCursor) else SyncMode.incremental,
                     [cursor_field] if cursor_field is not None else None,
                     state,
                     cursor,
@@ -116,29 +117,13 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
         self._slice_logger = slice_logger
         self._logger = logger
 
-    def read_full_refresh(
+    def read(
         self,
-        cursor_field: Optional[List[str]],
-        logger: logging.Logger,
-        slice_logger: SliceLogger,
-    ) -> Iterable[StreamData]:
-        """
-        Read full refresh. Delegate to the underlying AbstractStream, ignoring all the parameters
-        :param cursor_field: (ignored)
-        :param logger: (ignored)
-        :param slice_logger: (ignored)
-        :return: Iterable of StreamData
-        """
-        yield from self._read_records()
-
-    def read_incremental(
-        self,
-        cursor_field: Optional[List[str]],
+        configured_stream: ConfiguredAirbyteStream,
         logger: logging.Logger,
         slice_logger: SliceLogger,
         stream_state: MutableMapping[str, Any],
         state_manager: ConnectorStateManager,
-        per_stream_state_enabled: bool,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
         yield from self._read_records()
@@ -342,7 +327,7 @@ class StreamPartitionGenerator(PartitionGenerator):
             )
 
 
-@deprecated("This class is experimental. Use at your own risk.")
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy

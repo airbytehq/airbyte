@@ -17,21 +17,22 @@ public class MsSQLContainerFactory extends ContainerFactory<MSSQLServerContainer
     imageName = imageName.asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server");
     var container = new MSSQLServerContainer<>(imageName).acceptLicense();
     container.addEnv("MSSQL_MEMORY_LIMIT_MB", "384");
+    withNetwork(container);
     return container;
   }
 
   /**
    * Create a new network and bind it to the container.
    */
-  public void withNetwork(MSSQLServerContainer<?> container) {
+  public static void withNetwork(MSSQLServerContainer<?> container) {
     container.withNetwork(Network.newNetwork());
   }
 
-  public void withAgent(MSSQLServerContainer<?> container) {
+  public static void withAgent(MSSQLServerContainer<?> container) {
     container.addEnv("MSSQL_AGENT_ENABLED", "True");
   }
 
-  public void withSslCertificates(MSSQLServerContainer<?> container) {
+  public static void withSslCertificates(MSSQLServerContainer<?> container) {
     // yes, this is uglier than sin. The reason why I'm doing this is because there's no command to
     // reload a SqlServer config. So I need to create all the necessary files before I start the
     // SQL server. Hence this horror

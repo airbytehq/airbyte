@@ -1,4 +1,4 @@
-version: 0.51.2
+version: 2.0.0
 type: DeclarativeSource
 
 check:
@@ -49,8 +49,8 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       page_size: 500
-      cursor_value: "{{ (last_records|last)['id'] }}"
-      stop_condition: "{{ not last_records }}"
+      cursor_value: "{{ last_record['id'] }}"
+      stop_condition: "{{ last_page_size == 0 }}"
   board_id_partition_router:
     - type: CustomPartitionRouter
       class_name: source_trello.components.OrderIdsPartitionRouter

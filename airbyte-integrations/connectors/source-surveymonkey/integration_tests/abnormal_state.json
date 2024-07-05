@@ -9,22 +9,243 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "306079584": { "date_modified": "2023-01-19T10:17:18+00:00" },
-        "307785429": { "date_modified": "2023-01-19T10:59:43+00:00" },
-        "307785444": { "date_modified": "2023-01-19T10:00:19+00:00" },
-        "307785394": { "date_modified": "2023-01-19T10:00:59+00:00" },
-        "307785402": { "date_modified": "2023-01-19T10:01:31+00:00" },
-        "307785408": { "date_modified": "2023-01-19T10:02:08+00:00" },
-        "307785448": { "date_modified": "2023-01-19T10:02:49+00:00" },
-        "307784834": { "date_modified": "2023-01-19T10:03:45+00:00" },
-        "307784863": { "date_modified": "2023-01-19T10:04:29+00:00" },
-        "307784846": { "date_modified": "2023-01-19T10:05:05+00:00" },
-        "307784856": { "date_modified": "2023-01-19T10:05:44+00:00" },
-        "307785388": { "date_modified": "2023-01-19T10:06:20+00:00" },
-        "307785415": { "date_modified": "2023-01-19T10:06:43+00:00" }
+      "stream_descriptor": {
+        "name": "survey_responses"
       },
-      "stream_descriptor": { "name": "survey_responses" }
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "survey_id": "306079584"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:31"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785429"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:32"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785444"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:33"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785394"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:34"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785402"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:36"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785408"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:37"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784834"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:38"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785448"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:40"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784863"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:41"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784846"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:42"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784856"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:43"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785388"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:45"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785415"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:46"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "510388524"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:48"
+            }
+          }
+        ]
+      }
+    },
+    "data": {
+      "survey_responses": {
+        "states": [
+          {
+            "partition": {
+              "survey_id": "306079584"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:31"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785429"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:32"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785444"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:33"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785394"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:34"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785402"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:36"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785408"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:37"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784834"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:38"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785448"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:40"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784863"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:41"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784846"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:42"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784856"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:43"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785388"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:45"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785415"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:46"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "510388524"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:48"
+            }
+          }
+        ]
+      }
     }
   }
 ]

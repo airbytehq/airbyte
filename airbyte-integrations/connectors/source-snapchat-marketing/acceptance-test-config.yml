@@ -20,9 +20,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         empty_streams:
           - name: "adaccounts_stats_lifetime"
             bypass_reason: "The data changes from sync to sync"
@@ -32,7 +30,6 @@ acceptance_tests:
             bypass_reason: "The data changes from sync to sync"
           - name: "campaigns_stats_lifetime"
             bypass_reason: "The data changes from sync to sync"
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

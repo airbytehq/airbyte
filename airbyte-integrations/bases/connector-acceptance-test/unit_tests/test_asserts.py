@@ -73,7 +73,7 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0) for record in records]
 
-    streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns=False)
+    streams_with_errors = verify_records_schema(records, configured_catalog)
     errors = [error.message for error in streams_with_errors["my_stream"].values()]
 
     assert "my_stream" in streams_with_errors
@@ -85,57 +85,6 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
         "None is not of type 'string'",
         "1.0 is not of type 'null', 'integer'",
     ]
-
-
-@pytest.mark.parametrize(
-    "json_schema, record, should_fail",
-    [
-        ({"type": "object", "properties": {"a": {"type": "string"}}}, {"a": "str", "b": "extra_string"}, True),
-        (
-            {"type": "object", "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"]}}},
-            {"a": "str", "some_obj": {"b": "extra_string"}},
-            False,
-        ),
-        (
-            {
-                "type": "object",
-                "properties": {"a": {"type": "string"}, "some_obj": {"type": ["null", "object"], "properties": {"a": {"type": "string"}}}},
-            },
-            {"a": "str", "some_obj": {"a": "str", "b": "extra_string"}},
-            True,
-        ),
-        (
-            {"type": "object", "properties": {"a": {"type": "string"}, "b": {"type": "array", "items": {"type": "object"}}}},
-            {"a": "str", "b": [{"a": "extra_string"}]},
-            False,
-        ),
-        (
-            {
-                "type": "object",
-                "properties": {
-                    "a": {"type": "string"},
-                    "b": {"type": "array", "items": {"type": "object", "properties": {"a": {"type": "string"}}}},
-                },
-            },
-            {"a": "str", "b": [{"a": "string", "b": "extra_string"}]},
-            True,
-        ),
-    ],
-    ids=[
-        "simple_schema_and_record_with_extra_property",
-        "schema_with_object_without_properties_and_record_with_object_with_property",
-        "schema_with_object_with_properties_and_record_with_object_with_extra_property",
-        "schema_with_array_of_objects_without_properties_and_record_with_array_of_objects_with_property",
-        "schema_with_array_of_objects_with_properties_and_record_with_array_of_objects_with_extra_property",
-    ],
-)
-def test_verify_records_schema_with_fail_on_extra_columns(configured_catalog: ConfiguredAirbyteCatalog, json_schema, record, should_fail):
-    """Test that fail_on_extra_columns works correctly with nested objects, array of objects"""
-    configured_catalog.streams[0].stream.json_schema = json_schema
-    records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0)]
-    streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns=True)
-    errors = [error.message for error in streams_with_errors["my_stream"].values()]
-    assert errors if should_fail else not errors
 
 
 @pytest.mark.parametrize(
@@ -165,7 +114,7 @@ def test_verify_records_schema_with_fail_on_extra_columns(configured_catalog: Co
 )
 def test_validate_records_format(record, configured_catalog, valid):
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0)]
-    streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns=False)
+    streams_with_errors = verify_records_schema(records, configured_catalog)
     if valid:
         assert not streams_with_errors
     else:

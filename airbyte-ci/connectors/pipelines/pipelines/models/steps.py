@@ -19,6 +19,8 @@ from dagger import Client, Container, DaggerError
 from pipelines import main_logger
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
+from pipelines.models.artifacts import Artifact
+from pipelines.models.secrets import Secret
 
 if TYPE_CHECKING:
     from typing import Any, ClassVar, Optional, Union
@@ -73,7 +75,8 @@ class Result:
     stdout: Optional[str] = None
     report: Optional[str] = None
     exc_info: Optional[Exception] = None
-    output_artifact: Any = None
+    output: Any = None
+    artifacts: List[Artifact] = field(default_factory=list)
 
     @property
     def success(self) -> bool:
@@ -85,6 +88,7 @@ class StepResult(Result):
     """A dataclass to capture the result of a step."""
 
     step: Step
+    consider_in_overall_status: bool = True
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
@@ -198,8 +202,9 @@ class Step(ABC):
     retry_delay = timedelta(seconds=10)
     accept_extra_params: bool = False
 
-    def __init__(self, context: PipelineContext) -> None:  # noqa D107
+    def __init__(self, context: PipelineContext, secrets: List[Secret] | None = None) -> None:  # noqa D107
         self.context = context
+        self.secrets = secrets if secrets else []
         self.retry_count = 0
         self.started_at: Optional[datetime] = None
         self.stopped_at: Optional[datetime] = None
@@ -387,7 +392,7 @@ class Step(ABC):
         else:
             return StepStatus.FAILURE
 
-    async def get_step_result(self, container: Container) -> StepResult:
+    async def get_step_result(self, container: Container, *args: Any, **kwargs: Any) -> StepResult:
         """Concurrent retrieval of exit code, stdout and stdout of a container.
 
         Create a StepResult object from these objects.
@@ -404,7 +409,7 @@ class Step(ABC):
             status=self.get_step_status_from_exit_code(exit_code),
             stderr=stderr,
             stdout=stdout,
-            output_artifact=container,
+            output=container,
         )
 
     def _get_timed_out_step_result(self) -> StepResult:

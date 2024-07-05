@@ -5,11 +5,14 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_linkedin_ads/spec.json"
+      - spec_path: "source_linkedin_ads/spec.yaml"
         config_path: "secrets/config_oauth.json"
   connection:
     tests:
       - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+        timeout_seconds: 60
+      - config_path: "secrets/config_multiple_account_ids.json"
         status: "succeed"
         timeout_seconds: 60
       - config_path: "integration_tests/invalid_config.json"
@@ -27,20 +30,6 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
         fail_on_extra_columns: true
         timeout_seconds: 3600
-        ignored_fields:
-          campaign_groups:
-            - name: "lastModified"
-              bypass_reason: "Volatile data"
-          ad_campaign_analytics:
-            - name: "costInLocalCurrency"
-              bypass_reason: "Data changes too often"
-            - name: "costInUsd"
-              bypass_reason: "Data changes too often"
-          ad_creative_analytics:
-            - name: "costInLocalCurrency"
-              bypass_reason: "Data changes too often"
-            - name: "costInUsd"
-              bypass_reason: "Data changes too often"
   incremental:
     tests:
       - config_path: "secrets/config_oauth.json"

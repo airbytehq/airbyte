@@ -22,7 +22,7 @@ and instantiate the object from the resulting mapping
 
 If the component definition is a mapping with neither a "class_name" nor a "type" field,
 the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor type hints.
-If the type hint is an interface present in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py,
+If the type hint is an interface present in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py),
 then the factory will create an object of its default implementation.
 
 If the component definition is a list, then the factory will iterate over the elements of the list,
@@ -57,9 +57,9 @@ This can be used to avoid repetitions.
 Schema:
 
 ```yaml
-  "$parameters":
-    type: object
-    additionalProperties: true
+"$parameters":
+  type: object
+  additionalProperties: true
 ```
 
 Example:
@@ -308,9 +308,9 @@ When you receive this error, you can address this by defining the missing field 
 1. Given the connection config and an optional stream state, the `PartitionRouter` computes the partitions that should be routed to read data.
 2. Iterate over all the partitions defined by the stream's partition router.
 3. For each partition,
-    1. Submit a request to the partner API as defined by the requester
-    2. Select the records from the response
-    3. Repeat for as long as the paginator points to a next page
+   1. Submit a request to the partner API as defined by the requester
+   2. Select the records from the response
+   3. Repeat for as long as the paginator points to a next page
 
 [connector-flow](./assets/connector-flow.png)
 

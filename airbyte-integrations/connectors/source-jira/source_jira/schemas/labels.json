@@ -2,6 +2,7 @@
   "type": ["object", "null"],
   "properties": {
     "label": {
+      "description": "The label associated with the issue in Jira.",
       "type": ["string", "null"]
     }
   }

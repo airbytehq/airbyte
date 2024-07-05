@@ -105,7 +105,9 @@ class VectaraWriter:
     def _get_document_title(self, record: AirbyteRecordMessage) -> str:
         title = "Untitled"
         if self.title_field:
-            title = dpath.util.get(record.data, self.title_field)
+            found_title = dpath.util.values(record.data, self.title_field, separator=".")
+            if found_title:
+                title = found_title[0]
         return title
 
     def _get_stream_id(self, record: AirbyteRecordMessage) -> str:

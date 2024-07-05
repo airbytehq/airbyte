@@ -2,4 +2,5 @@
 !Dockerfile
 !main.py
 !destination_pinecone
-!setup.py
+!pyproject.toml
+!poetry.lock

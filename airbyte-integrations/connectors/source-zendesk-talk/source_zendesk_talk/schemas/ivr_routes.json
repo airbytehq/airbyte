@@ -3,30 +3,39 @@
   "type": "object",
   "properties": {
     "action": {
+      "description": "The action to be taken when this IVR route is triggered.",
       "type": ["null", "string"]
     },
     "greeting": {
+      "description": "The message or greeting played to the caller when this IVR route is entered.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the IVR route.",
       "type": ["null", "integer"]
     },
     "ivr_id": {
+      "description": "The ID of the IVR associated with this route.",
       "type": ["null", "integer"]
     },
     "ivr_menu_id": {
+      "description": "The ID of the IVR menu associated with this route.",
       "type": ["null", "integer"]
     },
     "keypress": {
+      "description": "The keypress required to trigger this IVR route.",
       "type": ["null", "string"]
     },
     "option_text": {
+      "description": "The text displayed for the option linked to this IVR route.",
       "type": ["null", "string"]
     },
     "options": {
+      "description": "The list of options available for this IVR route.",
       "type": ["null", "object"]
     },
     "overflow_options": {
+      "description": "The additional options presented when the IVR menu overflows.",
       "type": ["null", "array"]
     }
   }

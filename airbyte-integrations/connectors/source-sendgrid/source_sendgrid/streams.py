@@ -6,9 +6,9 @@ import math
 import os
 import time
 import zlib
-from abc import ABC, abstractmethod
+from abc import ABC
 from contextlib import closing
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 from urllib.parse import urlparse
 
 import pandas as pd
@@ -23,7 +23,7 @@ from requests import codes, exceptions
 
 
 class SendgridStream(HttpStream, ABC):
-    url_base = "https://api.sendgrid.com/v3/"
+    url_base = "https://api.sendgrid.com/"
     primary_key = "id"
     limit = 50
     data_field = None
@@ -43,143 +43,7 @@ class SendgridStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        json_response = response.json()
-        records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-
-        if records is not None:
-            for record in records:
-                yield record
-        else:
-            # TODO sendgrid's API is sending null responses at times. This seems like a bug on the API side, so we're adding
-            #  log statements to help reproduce and prevent the connector from failing.
-            err_msg = (
-                f"Response contained no valid JSON data. Response body: {response.text}\n"
-                f"Response status: {response.status_code}\n"
-                f"Response body: {response.text}\n"
-                f"Response headers: {response.headers}\n"
-                f"Request URL: {response.request.url}\n"
-                f"Request body: {response.request.body}\n"
-            )
-            # do NOT print request headers as it contains auth token
-            self.logger.info(err_msg)
-
-    def should_retry(self, response: requests.Response) -> bool:
-        """Override to provide skip the stream possibility"""
-
-        status = response.status_code
-        if status in self.permission_error_codes.keys():
-            for message in response.json().get("errors", []):
-                if message.get("message") == self.permission_error_codes.get(status):
-                    self.logger.error(
-                        f"Stream `{self.name}` is not available, due to subscription plan limitations or perrmission issues. Skipping."
-                    )
-                    setattr(self, "raise_on_http_errors", False)
-                    return False
-        return 500 <= response.status_code < 600
-
-
-class SendgridStreamOffsetPagination(SendgridStream):
-    offset = 0
-
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params["limit"] = self.limit
-        if next_page_token:
-            params.update(**next_page_token)
-        return params
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        stream_data = response.json()
-        if self.data_field:
-            stream_data = stream_data[self.data_field]
-        if len(stream_data) < self.limit:
-            return
-        self.offset += self.limit
-        return {"offset": self.offset}
-
-
-class SendgridStreamIncrementalMixin(HttpStream, ABC):
-    cursor_field = "created"
-
-    def __init__(self, start_time: Optional[str], **kwargs):
-        super().__init__(**kwargs)
-        self._start_time = start_time or 0
-        if isinstance(self._start_time, str):
-            self._start_time = int(pendulum.parse(self._start_time).timestamp())
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
-
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state)
-        start_time = self._start_time
-        if stream_state.get(self.cursor_field):
-            start_time = stream_state[self.cursor_field]
-        params.update({"start_time": start_time, "end_time": pendulum.now().int_timestamp})
-        return params
-
-
-class SendgridStreamMetadataPagination(SendgridStream):
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {}
-        if not next_page_token:
-            params = {"page_size": self.limit}
-        return params
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        next_page_url = response.json()["_metadata"].get("next", False)
-        if next_page_url:
-            return {"next_page_url": next_page_url.replace(self.url_base, "")}
-
-    @staticmethod
-    @abstractmethod
-    def initial_path() -> str:
-        """
-        :return: initial path for the API endpoint if no next metadata url found
-        """
-
-    def path(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
-        if next_page_token:
-            return next_page_token["next_page_url"]
-        return self.initial_path()
-
-
-class Scopes(SendgridStream):
-    def path(self, **kwargs) -> str:
-        return "scopes"
-
-
-class Lists(SendgridStreamMetadataPagination):
-    data_field = "result"
-
-    @staticmethod
-    def initial_path() -> str:
-        return "marketing/lists"
-
-
-class Campaigns(SendgridStreamMetadataPagination):
-    data_field = "result"
-
-    @staticmethod
-    def initial_path() -> str:
-        return "marketing/campaigns"
+        pass  # not actually used because Contacts does read_records
 
 
 class Contacts(SendgridStream):
@@ -190,11 +54,11 @@ class Contacts(SendgridStream):
     encoding = "utf-8"
 
     def path(self, **kwargs) -> str:
-        return "marketing/contacts/exports"
+        return "v3/marketing/contacts/exports"
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, stream: bool = False, enable_auth: bool = True):
-        headers = self.authenticator.get_auth_header() if enable_auth else None
+        headers = self._session.auth.get_auth_header() if enable_auth else None
         response = self._session.request(method, url=url, headers=headers, stream=stream)
         if response.status_code not in [200, 202]:
             self.logger.error(f"error body: {response.text}")
@@ -295,11 +159,16 @@ class Contacts(SendgridStream):
 
         url_parsed = urlparse(url)
         tmp_file = os.path.realpath(os.path.basename(url_parsed.path[1:-5]))
-        with closing(self._send_http_request("GET", f"{url}", stream=True, enable_auth=False)) as response, open(
-            tmp_file, "wb"
-        ) as data_file:
+        download_session = requests.get(f"{url}", stream=True)
+        with closing(download_session) as response, open(tmp_file, "wb") as data_file:
             for chunk in response.iter_content(chunk_size=chunk_size):
-                data_file.write(decompressor.decompress(chunk))
+                try:
+                    # see if it's compressed. we are seeing some that are not all of a sudden.
+                    # but let's also guard against the case where sendgrid changes it back.
+                    data_file.write(decompressor.decompress(chunk))
+                except zlib.error as e:
+                    # it's not actually compressed!
+                    data_file.write(chunk)
         # check the file exists
         if os.path.isfile(tmp_file):
             return tmp_file, self.encoding
@@ -328,95 +197,3 @@ class Contacts(SendgridStream):
         finally:
             # remove binary tmp file, after data is read
             os.remove(path)
-
-
-class StatsAutomations(SendgridStreamMetadataPagination):
-    data_field = "results"
-
-    @staticmethod
-    def initial_path() -> str:
-        return "marketing/stats/automations"
-
-
-class Segments(SendgridStream):
-    data_field = "results"
-
-    def path(self, **kwargs) -> str:
-        return "marketing/segments"
-
-
-class SingleSends(SendgridStreamMetadataPagination):
-    """
-    https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats
-    """
-
-    data_field = "results"
-
-    @staticmethod
-    def initial_path() -> str:
-        return "marketing/stats/singlesends"
-
-
-class Templates(SendgridStreamMetadataPagination):
-    data_field = "result"
-
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
-        params["generations"] = "legacy,dynamic"
-        return params
-
-    @staticmethod
-    def initial_path() -> str:
-        return "templates"
-
-
-class GlobalSuppressions(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
-    primary_key = "email"
-
-    def path(self, **kwargs) -> str:
-        return "suppression/unsubscribes"
-
-
-class SuppressionGroups(SendgridStream):
-    def path(self, **kwargs) -> str:
-        return "asm/groups"
-
-
-class SuppressionGroupMembers(SendgridStreamOffsetPagination):
-    primary_key = "group_id"
-
-    def path(self, **kwargs) -> str:
-        return "asm/suppressions"
-
-
-class Blocks(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
-    primary_key = "email"
-
-    def path(self, **kwargs) -> str:
-        return "suppression/blocks"
-
-
-class Bounces(SendgridStream, SendgridStreamIncrementalMixin):
-    primary_key = "email"
-
-    def path(self, **kwargs) -> str:
-        return "suppression/bounces"
-
-
-class InvalidEmails(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
-    primary_key = "email"
-
-    def path(self, **kwargs) -> str:
-        return "suppression/invalid_emails"
-
-
-class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin):
-    primary_key = "email"
-
-    def path(self, **kwargs) -> str:
-        return "suppression/spam_reports"
-
-
-class UnsubscribeGroups(SendgridStream):
-    def path(self, **kwargs) -> str:
-        return "asm/groups"

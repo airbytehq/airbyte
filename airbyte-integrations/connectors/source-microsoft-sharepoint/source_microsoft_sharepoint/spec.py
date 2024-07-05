@@ -32,7 +32,7 @@ class OAuthCredentials(BaseModel):
         description="Client Secret of your Microsoft developer application",
         airbyte_secret=True,
     )
-    refresh_token: str = Field(
+    refresh_token: Optional[str] = Field(
         title="Refresh Token",
         description="Refresh Token of your Microsoft developer application",
         airbyte_secret=True,
@@ -86,8 +86,19 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
         order=0,
     )
 
+    search_scope: str = Field(
+        title="Search Scope",
+        description="Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both.",
+        default="ALL",
+        enum=["ACCESSIBLE_DRIVES", "SHARED_ITEMS", "ALL"],
+        order=3,
+    )
+
     folder_path: str = Field(
-        title="Folder Path", description="Path to folder of the Microsoft SharePoint drive where the file(s) exist.", order=3
+        title="Folder Path",
+        description="Path to a specific folder within the drives to search for files. Leave empty to search all folders of the drives. This does not apply to shared items.",
+        order=4,
+        default=".",
     )
 
     @classmethod

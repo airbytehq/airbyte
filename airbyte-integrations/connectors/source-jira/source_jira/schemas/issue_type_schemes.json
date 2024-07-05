@@ -3,24 +3,24 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
-      "description": "The ID of the issue type scheme."
+      "description": "The unique identifier for the issue type scheme.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the issue type scheme."
+      "description": "The name given to the issue type scheme.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description of the issue type scheme."
+      "description": "A brief description of the issue type scheme.",
+      "type": "string"
     },
     "defaultIssueTypeId": {
-      "type": "string",
-      "description": "The ID of the default issue type of the issue type scheme."
+      "description": "The ID of the default issue type associated with the issue type scheme.",
+      "type": "string"
     },
     "isDefault": {
-      "type": "boolean",
-      "description": "Whether the issue type scheme is the default."
+      "description": "Indicates whether the issue type scheme is set as the default.",
+      "type": "boolean"
     }
   },
   "additionalProperties": true,

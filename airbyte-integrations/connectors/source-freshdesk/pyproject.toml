@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "3.0.7"
+version = "3.1.1"
 name = "source-freshdesk"
 description = "Source implementation for Freshdesk."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -18,7 +18,7 @@ include = "source_freshdesk"
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
 backoff = "==1.10.0"
-airbyte-cdk = "==0.58.7"
+airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
 source-freshdesk = "source_freshdesk.run:run"

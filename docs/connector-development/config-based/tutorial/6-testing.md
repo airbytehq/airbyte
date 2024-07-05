@@ -30,12 +30,12 @@ and `integration_tests/abnormal_state.json` with
 You can run the [acceptance tests](https://github.com/airbytehq/airbyte/blob/master/docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md#L1) with the following commands using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1):
 
 ```bash
-airbyte-ci connectors --use-remote-secrets=false --name source-exchange-rates-tutorial test
+airbyte-ci connectors --use-remote-secrets=false --name source-exchange-rates-tutorial test --only-step=acceptance
 ```
 
 ## Next steps:
 
-Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte).
+Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/operator-guides/using-custom-connectors).
 
 ## Read more:
 

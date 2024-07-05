@@ -3,53 +3,39 @@
   "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
-    "dataSensitivity": {
-      "type": ["null", "string"]
-    },
     "updatedByUserId": {
+      "description": "The unique identifier of the user who made the update",
       "type": ["null", "number"]
-    },
-    "requestId": {
-      "type": ["null", "string"]
-    },
-    "source": {
-      "type": ["null", "string"]
-    },
-    "portalId": {
-      "type": ["null", "number"]
-    },
-    "isDeleted": {
-      "type": ["null", "boolean"]
     },
     "timestamp": {
-      "type": ["null", "number"]
+      "description": "The date and time when the property was updated",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
     },
     "property": {
-      "type": ["null", "string"]
-    },
-    "persistenceTimestamp": {
-      "type": ["null", "number"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "sourceVid": {
-      "type": ["null", "array"]
-    },
-    "useTimestampAsPersistenceTimestamp": {
-      "type": ["null", "boolean"]
-    },
-    "sourceMetadata": {
+      "description": "The name of the property that was updated",
       "type": ["null", "string"]
     },
     "dealId": {
-      "type": ["null", "number"]
+      "description": "The unique identifier of the deal associated with this property history",
+      "type": ["null", "string"]
+    },
+    "sourceType": {
+      "description": "The type of source that triggered this update",
+      "type": ["null", "string"]
     },
     "sourceId": {
+      "description": "The unique identifier of the source of this update",
       "type": ["null", "string"]
     },
     "value": {
+      "description": "The new value of the property",
       "type": ["null", "string"]
+    },
+    "archived": {
+      "description": "Indicates if the deal property history is archived",
+      "type": ["null", "boolean"]
     }
   }
 }

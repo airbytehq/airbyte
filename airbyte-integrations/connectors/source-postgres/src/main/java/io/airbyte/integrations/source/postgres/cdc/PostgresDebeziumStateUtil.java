@@ -84,7 +84,8 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
                                   final JsonNode cdcState,
                                   final JsonNode config) {
     final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty());
-    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog);
+    final DebeziumPropertiesManager debeziumPropertiesManager =
+        new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog, Collections.emptyList());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     return parseSavedOffset(debeziumProperties);
   }
@@ -100,6 +101,7 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
 
     final LogSequenceNumber logSequenceNumber = LogSequenceNumber.valueOf(savedOffset.getAsLong());
 
+    LOGGER.info("Committing upto LSN: {}", savedOffset.getAsLong());
     try (final BaseConnection pgConnection = (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig)) {
       ChainedLogicalStreamBuilder streamBuilder = pgConnection
           .getReplicationAPI()

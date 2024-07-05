@@ -3,43 +3,55 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the milestone.",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Internal identifier for the milestone.",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "Identifier of the project that the milestone belongs to.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "The title or name of the milestone.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief summary or goal of the milestone.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "Current state of the milestone (e.g., open, closed).",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the milestone was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the milestone was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "due_date": {
+      "description": "The target date for completion of the milestone.",
       "type": ["null", "string"],
       "format": "date"
     },
     "start_date": {
+      "description": "The date when work on the milestone is scheduled to start.",
       "type": ["null", "string"],
       "format": "date"
     },
     "expired": {
+      "description": "Indicates if the milestone has expired or not.",
       "type": ["null", "boolean"]
     },
     "web_url": {
+      "description": "URL to access the milestone on the web platform.",
       "type": ["null", "string"]
     }
   }

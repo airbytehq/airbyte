@@ -708,30 +708,6 @@ def test_read_incremental_with_records_start_date(config):
     [
         (
             ["enabled", "archived", "paused"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            None,
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            None,
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
             SponsoredDisplayCampaigns,
         ),
         (
@@ -752,6 +728,46 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
     params = stream.request_params(stream_state=None, stream_slice=None, next_page_token=None)
     if "stateFilter" in params:
         assert params["stateFilter"] == ",".join(state_filter)
+    else:
+        assert state_filter is None
+
+@pytest.mark.parametrize(
+    "state_filter, stream_class",
+    [
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            None,
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            None,
+            SponsoredProductCampaigns,
+        ),
+    ],
+)
+def test_sponsored_brand_and_products_streams_state_filter(mocker, config, state_filter, stream_class):
+    profiles = make_profiles()
+    mocker.patch.object(stream_class, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
+
+    stream = stream_class(config, profiles)
+    request_body = stream.request_body_json(stream_state=None, stream_slice=None, next_page_token=None)
+    if "stateFilter" in request_body:
+        assert request_body["stateFilter"]["include"] == state_filter
     else:
         assert state_filter is None
 

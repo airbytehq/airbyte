@@ -191,12 +191,57 @@ def test_value_dictionary() -> None:
     assert py_value == {"indices": [0, 1, 2, 0, 1], "values": ["apple", "banana", "cherry"]}
 
 
-def test_value_none_binary() -> None:
-    none_binary_scalar = pa.scalar(None, type=pa.binary())
-    try:
-        ParquetParser._to_output_value(none_binary_scalar, _default_parquet_format)
-    except AttributeError:
-        assert False, "`None` type binary should be handled properly"
+@pytest.mark.parametrize(
+    "parquet_type, parquet_format",
+    [
+        pytest.param(pa.bool_(), _default_parquet_format, id="test_parquet_bool"),
+        pytest.param(pa.int8(), _default_parquet_format, id="test_parquet_int8"),
+        pytest.param(pa.int16(), _default_parquet_format, id="test_parquet_int16"),
+        pytest.param(pa.int32(), _default_parquet_format, id="test_parquet_int32"),
+        pytest.param(pa.int64(), _default_parquet_format, id="test_parquet_int64"),
+        pytest.param(pa.uint8(), _default_parquet_format, id="test_parquet_uint8"),
+        pytest.param(pa.uint16(), _default_parquet_format, id="test_parquet_uint16"),
+        pytest.param(pa.uint32(), _default_parquet_format, id="test_parquet_uint32"),
+        pytest.param(pa.uint64(), _default_parquet_format, id="test_parquet_uint64"),
+        pytest.param(pa.float16(), _default_parquet_format, id="test_parquet_float16"),
+        pytest.param(pa.float32(), _default_parquet_format, id="test_parquet_float32"),
+        pytest.param(pa.float64(), _default_parquet_format, id="test_parquet_float64"),
+        pytest.param(pa.time32("s"), _default_parquet_format, id="test_parquet_time32s"),
+        pytest.param(pa.time32("ms"), _default_parquet_format, id="test_parquet_time32ms"),
+        pytest.param(pa.time64("us"), _default_parquet_format, id="test_parquet_time64us"),
+        pytest.param(pa.time64("ns"), _default_parquet_format, id="test_parquet_time64ns"),
+        pytest.param(pa.timestamp("s"), _default_parquet_format, id="test_parquet_timestamps_s"),
+        pytest.param(pa.timestamp("ms"), _default_parquet_format, id="test_parquet_timestamp_ms"),
+        pytest.param(pa.timestamp("s", "utc"), _default_parquet_format, id="test_parquet_timestamps_s_with_tz"),
+        pytest.param(pa.timestamp("ms", "est"), _default_parquet_format, id="test_parquet_timestamps_ms_with_tz"),
+        pytest.param(pa.date32(), _default_parquet_format, id="test_parquet_date32"),
+        pytest.param(pa.date64(), _default_parquet_format, id="test_parquet_date64"),
+        pytest.param(pa.duration("s"), _default_parquet_format, id="test_duration_s"),
+        pytest.param(pa.duration("ms"), _default_parquet_format, id="test_duration_ms"),
+        pytest.param(pa.duration("us"), _default_parquet_format, id="test_duration_us"),
+        pytest.param(pa.duration("ns"), _default_parquet_format, id="test_duration_ns"),
+        pytest.param(pa.month_day_nano_interval(), _default_parquet_format, id="test_parquet_month_day_nano_interval"),
+        pytest.param(pa.binary(), _default_parquet_format, id="test_binary"),
+        pytest.param(pa.binary(2), _default_parquet_format, id="test_fixed_size_binary"),
+        pytest.param(pa.string(), _default_parquet_format, id="test_parquet_string"),
+        pytest.param(pa.utf8(), _default_parquet_format, id="test_utf8"),
+        pytest.param(pa.large_binary(), _default_parquet_format, id="test_large_binary"),
+        pytest.param(pa.large_string(), _default_parquet_format, id="test_large_string"),
+        pytest.param(pa.large_utf8(), _default_parquet_format, id="test_large_utf8"),
+        pytest.param(pa.dictionary(pa.int32(), pa.string()), _default_parquet_format, id="test_dictionary"),
+        pytest.param(pa.struct([pa.field("field", pa.int32())]), _default_parquet_format, id="test_struct"),
+        pytest.param(pa.list_(pa.int32()), _default_parquet_format, id="test_list"),
+        pytest.param(pa.large_list(pa.int32()), _default_parquet_format, id="test_large_list"),
+        pytest.param(pa.decimal128(2), _default_parquet_format, id="test_decimal128"),
+        pytest.param(pa.decimal256(2), _default_parquet_format, id="test_decimal256"),
+        pytest.param(pa.decimal128(2), _decimal_as_float_parquet_format, id="test_decimal128_as_float"),
+        pytest.param(pa.decimal256(2), _decimal_as_float_parquet_format, id="test_decimal256_as_float"),
+        pytest.param(pa.map_(pa.int32(), pa.int32()), _default_parquet_format, id="test_map"),
+        pytest.param(pa.null(), _default_parquet_format, id="test_null"),
+    ])
+def test_null_value_does_not_throw(parquet_type, parquet_format) -> None:
+    pyarrow_value = pa.scalar(None, type=parquet_type)
+    assert ParquetParser._to_output_value(pyarrow_value, parquet_format) is None
 
 
 @pytest.mark.parametrize(

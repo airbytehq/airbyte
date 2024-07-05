@@ -9,16 +9,17 @@ glassfish_version = "2.31"
 hikaricp = "5.0.1"
 jmh = "1.36"
 jooq = "3.13.4"
-junit-jupiter = "5.9.1"
-kotlin = "1.9.0"
+junit-bom = "5.10.1"
+kotlin = "1.9.23"
 log4j = "2.21.1"
 lombok = "1.18.30"
-postgresql = "42.6.0"
+postgresql = "42.6.2"
 reactor = "3.5.2"
 segment = "2.1.1"
 slf4j = "2.0.9"
 temporal = "1.17.0"
 debezium = "2.4.0.Final"
+mockito-version = "5.11.0"
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
@@ -70,15 +71,11 @@ jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
 jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
-junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter", version = "2.0.1" }
-junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "5.1.0" }
 kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.5" }
 kotlinx-cli-jvm = { module = "org.jetbrains.kotlinx:kotlinx-cli-jvm", version = "0.3.5" }
-launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }
+launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "7.2.6" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 log4j-slf4j2-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
@@ -87,7 +84,6 @@ log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j
 log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 micrometer-statsd = { module = "io.micrometer:micrometer-registry-statsd", version = "1.9.3" }
-mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "5.10.0" }
 mockk = { module = "io.mockk:mockk", version = "1.13.3" }
 mongo-driver-sync = { module = "org.mongodb:mongodb-driver-sync", version = "4.10.2" }
 otel-bom = { module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0" }
@@ -117,7 +113,6 @@ debezium-postgres = { module = "io.debezium:debezium-connector-postgres", versio
 apache = ["apache-commons", "apache-commons-lang"]
 datadog = ["datadog-trace-api", "datadog-trace-ot"]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
-junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
 log4j = ["log4j-api", "log4j-core", "log4j-slf4j-impl", "log4j-slf4j2-impl", "log4j-web"]
 slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 temporal = ["temporal-sdk", "temporal-serviceclient"]

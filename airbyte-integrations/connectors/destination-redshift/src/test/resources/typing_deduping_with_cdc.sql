@@ -18,6 +18,7 @@ insert into "test_schema"."users_finalunittest" (
     "_ab_cdc_deleted_at",
     "_airbyte_raw_id",
     "_airbyte_extracted_at",
+    "_airbyte_generation_id",
     "_airbyte_meta"
 )
 with
@@ -44,8 +45,9 @@ with
             cast("_airbyte_data"."_ab_cdc_deleted_at" as timestamp with time zone) as "_ab_cdc_deleted_at",
             "_airbyte_raw_id",
             "_airbyte_extracted_at",
+            "_airbyte_generation_id",
             OBJECT(
-                    'errors',
+                'changes',
                     ARRAY_CONCAT(
                             ARRAY_CONCAT(
                                     ARRAY_CONCAT(
@@ -61,85 +63,95 @@ with
                                                                                                                     ARRAY_CONCAT(
                                                                                                                             ARRAY_CONCAT(
                                                                                                                                     ARRAY_CONCAT(
+                                                                                                                                            ARRAY_CONCAT(
+                                                                                                                                                    CASE WHEN (
+                                                                                                                                                            "_airbyte_data"."id1" is not null
+                                                                                                                                                                and "id1" is null
+                                                                                                                                                            ) THEN ARRAY(JSON_PARSE('{"field": "id1", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END ,
+                                                                                                                                                    CASE WHEN (
+                                                                                                                                                            "_airbyte_data"."id2" is not null
+                                                                                                                                                                and "id2" is null
+                                                                                                                                                            ) THEN ARRAY(JSON_PARSE('{"field": "id2", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
+                                                                                                                                            ),
                                                                                                                                             CASE WHEN (
-                                                                                                                                                "_airbyte_data"."id1" is not null
-                                                                                                                                                    and "id1" is null
-                                                                                                                                                ) THEN ARRAY('Problem with `id1`') ELSE ARRAY() END ,
-                                                                                                                                            CASE WHEN (
-                                                                                                                                                "_airbyte_data"."id2" is not null
-                                                                                                                                                    and "id2" is null
-                                                                                                                                                ) THEN ARRAY('Problem with `id2`') ELSE ARRAY() END
+                                                                                                                                                    "_airbyte_data"."updated_at" is not null
+                                                                                                                                                        and "updated_at" is null
+                                                                                                                                                    ) THEN ARRAY(JSON_PARSE('{"field": "updated_at", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                                                                                     ),
                                                                                                                                     CASE WHEN (
-                                                                                                                                        "_airbyte_data"."updated_at" is not null
-                                                                                                                                            and "updated_at" is null
-                                                                                                                                        ) THEN ARRAY('Problem with `updated_at`') ELSE ARRAY() END
+                                                                                                                                            "_airbyte_data"."struct" is not null
+                                                                                                                                                and "struct" is null
+                                                                                                                                            ) THEN ARRAY(JSON_PARSE('{"field": "struct", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                                                                             ),
                                                                                                                             CASE WHEN (
-                                                                                                                                "_airbyte_data"."struct" is not null
-                                                                                                                                    and "struct" is null
-                                                                                                                                ) THEN ARRAY('Problem with `struct`') ELSE ARRAY() END
+                                                                                                                                    "_airbyte_data"."array" is not null
+                                                                                                                                        and "array" is null
+                                                                                                                                    ) THEN ARRAY(JSON_PARSE('{"field": "array", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                                                                     ),
                                                                                                                     CASE WHEN (
-                                                                                                                        "_airbyte_data"."array" is not null
-                                                                                                                            and "array" is null
-                                                                                                                        ) THEN ARRAY('Problem with `array`') ELSE ARRAY() END
+                                                                                                                            "_airbyte_data"."string" is not null
+                                                                                                                                and "string" is null
+                                                                                                                            ) THEN ARRAY(JSON_PARSE('{"field": "string", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                                                             ),
                                                                                                             CASE WHEN (
-                                                                                                                "_airbyte_data"."string" is not null
-                                                                                                                    and "string" is null
-                                                                                                                ) THEN ARRAY('Problem with `string`') ELSE ARRAY() END
+                                                                                                                    "_airbyte_data"."number" is not null
+                                                                                                                        and "number" is null
+                                                                                                                    ) THEN ARRAY(JSON_PARSE('{"field": "number", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                                                     ),
                                                                                                     CASE WHEN (
-                                                                                                        "_airbyte_data"."number" is not null
-                                                                                                            and "number" is null
-                                                                                                        ) THEN ARRAY('Problem with `number`') ELSE ARRAY() END
+                                                                                                            "_airbyte_data"."integer" is not null
+                                                                                                                and "integer" is null
+                                                                                                            ) THEN ARRAY(JSON_PARSE('{"field": "integer", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                                             ),
                                                                                             CASE WHEN (
-                                                                                                "_airbyte_data"."integer" is not null
-                                                                                                    and "integer" is null
-                                                                                                ) THEN ARRAY('Problem with `integer`') ELSE ARRAY() END
+                                                                                                    "_airbyte_data"."boolean" is not null
+                                                                                                        and "boolean" is null
+                                                                                                    ) THEN ARRAY(JSON_PARSE('{"field": "boolean", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                                     ),
                                                                                     CASE WHEN (
-                                                                                        "_airbyte_data"."boolean" is not null
-                                                                                            and "boolean" is null
-                                                                                        ) THEN ARRAY('Problem with `boolean`') ELSE ARRAY() END
+                                                                                            "_airbyte_data"."timestamp_with_timezone" is not null
+                                                                                                and "timestamp_with_timezone" is null
+                                                                                            ) THEN ARRAY(JSON_PARSE('{"field": "timestamp_with_timezone", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                             ),
                                                                             CASE WHEN (
-                                                                                "_airbyte_data"."timestamp_with_timezone" is not null
-                                                                                    and "timestamp_with_timezone" is null
-                                                                                ) THEN ARRAY('Problem with `timestamp_with_timezone`') ELSE ARRAY() END
+                                                                                    "_airbyte_data"."timestamp_without_timezone" is not null
+                                                                                        and "timestamp_without_timezone" is null
+                                                                                    ) THEN ARRAY(JSON_PARSE('{"field": "timestamp_without_timezone", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                                     ),
                                                                     CASE WHEN (
-                                                                        "_airbyte_data"."timestamp_without_timezone" is not null
-                                                                            and "timestamp_without_timezone" is null
-                                                                        ) THEN ARRAY('Problem with `timestamp_without_timezone`') ELSE ARRAY() END
+                                                                            "_airbyte_data"."time_with_timezone" is not null
+                                                                                and "time_with_timezone" is null
+                                                                            ) THEN ARRAY(JSON_PARSE('{"field": "time_with_timezone", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                             ),
                                                             CASE WHEN (
-                                                                "_airbyte_data"."time_with_timezone" is not null
-                                                                    and "time_with_timezone" is null
-                                                                ) THEN ARRAY('Problem with `time_with_timezone`') ELSE ARRAY() END
+                                                                    "_airbyte_data"."time_without_timezone" is not null
+                                                                        and "time_without_timezone" is null
+                                                                    ) THEN ARRAY(JSON_PARSE('{"field": "time_without_timezone", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                                     ),
                                                     CASE WHEN (
-                                                        "_airbyte_data"."time_without_timezone" is not null
-                                                            and "time_without_timezone" is null
-                                                        ) THEN ARRAY('Problem with `time_without_timezone`') ELSE ARRAY() END
+                                                            "_airbyte_data"."date" is not null
+                                                                and "date" is null
+                                                            ) THEN ARRAY(JSON_PARSE('{"field": "date", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                             ),
                                             CASE WHEN (
-                                                "_airbyte_data"."date" is not null
-                                                    and "date" is null
-                                                ) THEN ARRAY('Problem with `date`') ELSE ARRAY() END
+                                                    "_airbyte_data"."unknown" is not null
+                                                        and "unknown" is null
+                                                    ) THEN ARRAY(JSON_PARSE('{"field": "unknown", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                                     ),
                                     CASE WHEN (
-                                        "_airbyte_data"."unknown" is not null
-                                            and "unknown" is null
-                                        ) THEN ARRAY('Problem with `unknown`') ELSE ARRAY() END
+                                            "_airbyte_data"."_ab_cdc_deleted_at" is not null
+                                                and "_ab_cdc_deleted_at" is null
+                                            ) THEN ARRAY(JSON_PARSE('{"field": "_ab_cdc_deleted_at", "change": "NULLED", "reason": "DESTINATION_TYPECAST_ERROR"}')) ELSE ARRAY() END
                             ),
                             CASE WHEN (
-                                "_airbyte_data"."_ab_cdc_deleted_at" is not null
-                                    and "_ab_cdc_deleted_at" is null
-                                ) THEN ARRAY('Problem with `_ab_cdc_deleted_at`') ELSE ARRAY() END
-                    )
+                                "_airbyte_meta" is not null
+                                    and IS_OBJECT("_airbyte_meta")
+                                    and "_airbyte_meta"."changes" is not null
+                                    and IS_ARRAY("_airbyte_meta"."changes")
+                                ) THEN "_airbyte_meta"."changes" ELSE ARRAY() END
+                    ),
+                'sync_id',
+                "_airbyte_meta"."sync_id"
             ) as "_airbyte_meta"
         from "test_schema"."users_raw"
         where (
@@ -183,6 +195,7 @@ select
     "_ab_cdc_deleted_at",
     "_airbyte_raw_id",
     "_airbyte_extracted_at",
+    "_airbyte_generation_id",
     "_airbyte_meta"
 from "numbered_rows"
 where "row_number" = 1;

@@ -32,9 +32,10 @@ def command_check(source: Source, config):
 
 def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any], cursor_field: List[str] = None):
     res = []
+    stream_instance.state = stream_state
     slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=stream_state)
     for slice in slices:
-        records = stream_instance.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=stream_state)
+        records = stream_instance.read_records(sync_mode=SyncMode.incremental,  cursor_field=cursor_field, stream_slice=slice, stream_state=stream_state)
         for record in records:
             stream_state = stream_instance.get_updated_state(stream_state, record)
             res.append(record)

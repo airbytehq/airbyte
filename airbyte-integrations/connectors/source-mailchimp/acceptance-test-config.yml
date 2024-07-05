@@ -12,12 +12,9 @@ acceptance_tests:
         # for auth with oauth2 token
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
       - config_path: "integration_tests/invalid_config_apikey.json"
         status: "failed"
-      - config_path: "integration_tests/invalid_config_oauth.json"
-        status: "failed"
+        timeout_seconds: 420
   discovery:
     tests:
       # for auth with API token
@@ -33,25 +30,15 @@ acceptance_tests:
         empty_streams:
           - name: "automations"
             bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
-      - config_path: "secrets/config_oauth.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          extra_records: True
-        fail_on_extra_columns: false
-        empty_streams:
-          - name: "automations"
-            bypass_reason: "Cannot seed in free sandbox account, need to upgrade to paid account."
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
-          future_state_path: "integration_tests/state.json"
+          future_state_path: "integration_tests/abnormal_state.json"
   # Email activities stream has working campaigns with email newsletters.
   # Due to this sequential_reads test could be failed.
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"
-      - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog_without_email_activities.json"

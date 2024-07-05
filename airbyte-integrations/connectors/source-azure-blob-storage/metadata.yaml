@@ -1,18 +1,24 @@
 data:
+  allowedHosts:
+    hosts:
+      - "${azure_blob_storage_account_name}.blob.core.windows.net"
+      - "${azure_blob_storage_endpoint}"
+      - "login.microsoftonline.com/${credentials.tenant_id}/oauth2/v2.0/token"
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 400
+    sl: 200
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.4.4
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
   license: MIT
+  maxSecondsBetweenMessages: 1
   name: Azure Blob Storage
   remoteRegistries:
     pypi:
@@ -23,8 +29,165 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   tags:
     - language:python
+    - cdk:python-file-based
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_AVRO__CREDS
+          fileName: avro_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_CUSTOM_ENCODING__CREDS
+          fileName: csv_custom_encoding_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_CUSTOM_FORMAT_ENCODING__CREDS
+          fileName: csv_custom_format_encoding_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_NO_HEADER_CONFIG__CREDS
+          fileName: csv_no_header_config_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_NO_HEADER__CREDS
+          fileName: csv_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_SKIP_ROWS_NO_HEADER__CREDS
+          fileName: csv_skip_rows_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_SKIP_ROWS__CREDS
+          fileName: csv_skip_rows_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_USER_SCHEMA__CREDS
+          fileName: csv_user_schema_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_WITH_NULLS__CREDS
+          fileName: csv_with_nulls_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_WITH_NULL_BOOLS__CREDS
+          fileName: csv_with_null_bools_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_JSONL_NEWLINES__CREDS
+          fileName: jsonl_newlines_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_JSONL__CREDS
+          fileName: jsonl_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_PARQUET__CREDS
+          fileName: parquet_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_UNSTRUCTURED__CREDS
+          fileName: unstructured_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_AVRO__CREDS
+          fileName: avro_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_CUSTOM_ENCODING__CREDS
+          fileName: csv_custom_encoding_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_CUSTOM_FORMAT_ENCODING__CREDS
+          fileName: csv_custom_format_encoding_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_NO_HEADER_CONFIG__CREDS
+          fileName: csv_no_header_config_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_NO_HEADER__CREDS
+          fileName: csv_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_SKIP_ROWS_NO_HEADER__CREDS
+          fileName: csv_skip_rows_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_SKIP_ROWS__CREDS
+          fileName: csv_skip_rows_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_USER_SCHEMA__CREDS
+          fileName: csv_user_schema_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_WITH_NULLS__CREDS
+          fileName: csv_with_nulls_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_CSV_WITH_NULL_BOOLS__CREDS
+          fileName: csv_with_null_bools_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_JSONL_NEWLINES__CREDS
+          fileName: jsonl_newlines_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_JSONL__CREDS
+          fileName: jsonl_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_PARQUET__CREDS
+          fileName: parquet_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE_UNSTRUCTURED__CREDS
+          fileName: unstructured_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-AZURE-BLOB-STORAGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

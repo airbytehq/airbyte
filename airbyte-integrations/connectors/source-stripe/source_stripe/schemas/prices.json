@@ -5,88 +5,115 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the price.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object, in this case, 'price'.",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Indicates if the price is currently active or not.",
       "type": ["null", "boolean"]
     },
     "billing_scheme": {
+      "description": "Defines how the price interacts with the subscription's billing periods.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp representing when the price was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp representing when the price was last updated.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the price.",
       "type": ["null", "string"]
     },
     "custom_unit_amount": {
+      "description": "Custom unit amount for the price if set.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the price is in live mode.",
       "type": ["null", "boolean"]
     },
     "lookup_key": {
+      "description": "A reference key for the price used in lookup.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Custom metadata associated with the price.",
       "type": ["null", "object"],
       "properties": {
         "nickname": {
+          "description": "User-defined nickname for the price.",
           "type": ["null", "string"]
         }
       }
     },
     "nickname": {
+      "description": "User-defined nickname for the price.",
       "type": ["null", "string"]
     },
     "product": {
+      "description": "The product associated with the price.",
       "type": ["null", "string"]
     },
     "recurring": {
+      "description": "Recurring billing details for the price.",
       "type": ["null", "object"],
       "properties": {
         "aggregate_usage": {
+          "description": "Specifies usage aggregation for the price if multiple subscriptions exist.",
           "type": ["null", "string"]
         },
         "interval": {
+          "description": "Specifies how often the price should be billed.",
           "type": ["null", "string"]
         },
         "interval_count": {
+          "description": "The number of intervals between each subscription billing.",
           "type": ["null", "number"]
         },
         "trial_period_days": {
+          "description": "Number of days of trial period for the price.",
           "type": ["null", "string"]
         },
         "usage_type": {
+          "description": "Specifies usage type for the price.",
           "type": ["null", "string"]
         }
       }
     },
     "tax_behavior": {
+      "description": "Specifies the tax behavior for the price.",
       "type": ["null", "string"]
     },
     "tiers_mode": {
+      "description": "Specifies pricing tiers mode for the price.",
       "type": ["null", "string"]
     },
     "transform_quantity": {
+      "description": "Specifies how the quantity should be transformed before calculating the price.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Indicates the type of the price.",
       "type": ["null", "string"]
     },
     "unit_amount": {
+      "description": "Unit amount for the price.",
       "type": ["null", "number"]
     },
     "unit_amount_decimal": {
+      "description": "Unit amount in decimal format for the price.",
       "type": ["null", "string"]
     },
     "is_deleted": {
+      "description": "Indicates if the price has been deleted.",
       "type": ["null", "boolean"]
     }
   }

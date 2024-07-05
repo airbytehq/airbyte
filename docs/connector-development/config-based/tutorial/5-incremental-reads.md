@@ -10,7 +10,7 @@ We'll now add a `start_date` property to the connector.
 First we'll update the spec block in `source_exchange_rates_tutorial/manifest.yaml`
 
 ```yaml
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -76,11 +76,12 @@ definitions:
 You can test these changes by executing the `read` operation:
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 By reading the output record, you should see that we read historical data instead of the latest exchange rate.
 For example:
+
 > "historical": true, "base": "USD", "date": "2022-07-18"
 
 The connector will now always read data for the start date, which is not exactly what we want.
@@ -156,7 +157,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: [ ]
+      field_path: []
   requester:
     url_base: "https://api.apilayer.com"
     http_method: "GET"
@@ -202,7 +203,7 @@ streams:
 check:
   stream_names:
     - "rates"
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -240,7 +241,7 @@ spec:
 Running the `read` operation will now read all data for all days between start_date and now:
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 The operation should now output more than one record:
@@ -261,10 +262,7 @@ This can be achieved by updating the catalog to run in incremental mode (`integr
       "stream": {
         "name": "rates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
@@ -295,7 +293,7 @@ We can simulate incremental syncs by creating a state file containing the last s
 Running the `read` operation will now only read data for dates later than the given state:
 
 ```bash
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
+poetry run source-exchange-rates-tutorial read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/sample_state.json
 ```
 
 There shouldn't be any data read if the state is today's date:

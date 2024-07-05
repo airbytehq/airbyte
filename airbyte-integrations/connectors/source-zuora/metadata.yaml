@@ -16,13 +16,14 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-zuora
-  registries: # Removed from registries due to LEGACY STATE
+  registries:
     cloud:
       enabled: false
     oss:
       enabled: false
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: archived
   tags:
     - language:python
+    - cdk:python
 metadataSpecVersion: "1.0"

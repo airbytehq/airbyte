@@ -1,0 +1,24 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "credits_ledger_entries",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "customer_id": "hHQF5BT5jtyj9r7V",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "created_at": "2122-03-19T17:12:45+00:00"
+            }
+          }
+        ]
+      }
+    }
+  }
+]

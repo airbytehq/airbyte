@@ -3,17 +3,21 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier for the line item.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the line item was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the line item was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates whether the line item is archived or not.",
       "type": ["null", "boolean"]
     }
   }

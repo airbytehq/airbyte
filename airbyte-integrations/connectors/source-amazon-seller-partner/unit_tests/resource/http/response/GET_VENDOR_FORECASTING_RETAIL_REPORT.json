@@ -1,0 +1,31 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_VENDOR_FORECASTING_REPORT",
+    "reportOptions": {
+      "sellingProgram": "RETAIL"
+    },
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "forecastByAsin": [
+    {
+      "forecastGenerationDate": "2021-06-06",
+      "asin": "B123456789",
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "meanForecastUnits": 3.1,
+      "p70ForecastUnits": 3.9,
+      "p80ForecastUnits": 30.3,
+      "p90ForecastUnits": 300.7
+    },
+    {
+      "forecastGenerationDate": "2021-06-06",
+      "asin": "B123456789",
+      "startDate": "2021-06-13",
+      "endDate": "2021-06-19",
+      "meanForecastUnits": 3.1,
+      "p70ForecastUnits": 3.9,
+      "p80ForecastUnits": 30.3,
+      "p90ForecastUnits": 300.7
+    }
+  ]
+}

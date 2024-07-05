@@ -52,6 +52,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "attached_item" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
       "stream_descriptor": { "name": "hosted_page" }
     }
   },

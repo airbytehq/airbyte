@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 import anyio
 import asyncclick as click
 import asyncer
-from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, Platform, Secret
+from dagger import Client, Config, Container, Directory, ExecError, File, ImageLayerCompression, Platform, Secret
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
 DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
@@ -352,4 +353,25 @@ def java_log_scrub_pattern(secrets_to_mask: List[str]) -> str:
             "}": "&#125;",
             ":": "&#58;",
         },
+    )
+
+
+def dagger_directory_as_zip_file(dagger_client: Client, directory: Directory, directory_name: str) -> File:
+    """Compress a directory and return a File object representing the zip file.
+
+    Args:
+        dagger_client (Client): The dagger client.
+        directory (Path): The directory to compress.
+        directory_name (str): The name of the directory.
+
+    Returns:
+        File: The File object representing the zip file.
+    """
+    return (
+        dagger_client.container()
+        .from_("alpine:3.19.1")
+        .with_exec(sh_dash_c(["apk update", "apk add zip"]))
+        .with_mounted_directory(f"/{directory_name}", directory)
+        .with_exec(["zip", "-r", "/zipped.zip", f"/{directory_name}"])
+        .file("/zipped.zip")
     )

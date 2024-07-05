@@ -1,0 +1,7 @@
+{
+  "title": "Vendor Forecasting Fresh Report",
+  "description": "A report with forward looking mean, P70, P80, and P90 weekly customer demand forecasts. Data is reported at the ASIN level for the most recent weekly forecast generation date.",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": { "$ref": "GET_VENDOR_FORECASTING_REPORT.json" }
+}

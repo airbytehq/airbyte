@@ -24,22 +24,53 @@ acceptance_tests:
       - config_path: secrets/config.json
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_records: yes
         empty_streams:
+          - name: product_dimension_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: audience_performance_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: audience_performance_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: audience_performance_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: audience_performance_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
+          - name: goals_and_funnels_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign, testing in integration test"
           - name: account_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: ad_group_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: ad_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: campaign_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: campaign_impression_performance_report_hourly
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
           - name: keyword_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: geographic_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: age_gender_audience_report_hourly
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
           - name: search_query_performance_report_hourly
@@ -54,31 +85,6 @@ acceptance_tests:
             bypass_reason: "Can not populate; new campaign with link to app needed; feature is not available yet"
           - name: app_install_ad_labels
             bypass_reason: "Can not populate; depends on stream app_install_ads"
-          ####          TODO: remove *_report_monthly after all become populated on December, 1
-          - name: account_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: ad_group_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: ad_group_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: ad_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: campaign_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: campaign_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: keyword_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: geographic_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: age_gender_audience_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: search_query_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: user_location_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-          - name: account_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
             ### For stream below start date in config is not relevant, empty data
           - name: keyword_labels
             bypass_reason: "This stream is tested without start date"
@@ -90,513 +96,96 @@ acceptance_tests:
             bypass_reason: "This stream is tested without start date"
           - name: campaign_labels
             bypass_reason: "This stream is tested without start date"
-        ignored_fields:
-          ads:
-            - name: Descriptions/AssetLink/*/AssetPerformanceLabel
-              bypass_reason: "This field indicates the asset's performance and is dynamically updated by the API."
-            - name: Headlines/AssetLink/*/AssetPerformanceLabel
-              bypass_reason: "This field indicates the asset's performance and is dynamically updated by the API."
-          account_impression_performance_report_weekly:
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressionsPercent
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: ConversionRate
-              bypass_reason: "dynamic field"
-            - name: LowQualityClicksPercent
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressions
-              bypass_reason: "dynamic field"
-            - name: ReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AllConversionRate
-              bypass_reason: "dynamic field"
-            - name: AllReturnOnAdSpend
-              bypass_reason: "dynamic field"
-          age_gender_audience_report_daily:
-            - name: Impressions
-              bypass_reason: "dynamic field"
-          age_gender_audience_report_weekly:
-            - name: Impressions
-              bypass_reason: "dynamic field"
-          keyword_performance_report_weekly:
-            - name: Mainline1Bid
-              bypass_reason: "dynamic field"
-            - name: MainlineBid
-              bypass_reason: "dynamic field"
-            - name: FirstPageBid
-              bypass_reason: "dynamic field"
-          campaign_impression_performance_report_weekly:
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressions
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressionsPercent
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: LowQualityClicksPercent
-              bypass_reason: "dynamic field"
-            - name: ReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AllReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-          campaign_performance_report_weekly:
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: DeviceType
-              bypass_reason: "dynamic field"
-            - name: DeviceOS
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressions
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: ReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AllReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: LowQualityClicksPercent
-              bypass_reason: "dynamic field"
-          ad_group_impression_performance_report_weekly:
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: DeviceType
-              bypass_reason: "dynamic field"
-            - name: HistoricalQualityScore
-              bypass_reason: "dynamic field"
-            - name: HistoricalExpectedCtr
-              bypass_reason: "dynamic field"
-            - name: HistoricalAdRelevance
-              bypass_reason: "dynamic field"
-            - name: HistoricalLandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: ConversionRate
-              bypass_reason: "dynamic field"
-            - name: ReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AllConversionRate
-              bypass_reason: "dynamic field"
-            - name: AllReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-          ad_group_performance_report_weekly:
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: AllReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AllConversionRate
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: ConversionRate
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-          ad_performance_report_daily:
-            - name: TimePeriod
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionRatePercent
-              bypass_reason: "dynamic field"
-            - name: AdDistribution
-              bypass_reason: "dynamic field"
-            - name: DeviceType
-              bypass_reason: "dynamic field"
-            - name: Language
-              bypass_reason: "dynamic field"
-            - name: Network
-              bypass_reason: "dynamic field"
-            - name: DeviceOS
-              bypass_reason: "dynamic field"
-            - name: TopVsOther
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-          ad_performance_report_weekly:
-            - name: TimePeriod
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionRatePercent
-              bypass_reason: "dynamic field"
-            - name: AdDistribution
-              bypass_reason: "dynamic field"
-            - name: DeviceType
-              bypass_reason: "dynamic field"
-            - name: Language
-              bypass_reason: "dynamic field"
-            - name: Network
-              bypass_reason: "dynamic field"
-            - name: DeviceOS
-              bypass_reason: "dynamic field"
-            - name: TopVsOther
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Spent
-              bypass_reason: "dynamic field"
-            - name: ReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AllReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: ConversionRate
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: AllConversions
-              bypass_reason: "dynamic field"
-            - name: AllConversionRate
-              bypass_reason: "dynamic field"
-            - name: AllRevenue
-              bypass_reason: "dynamic field"
-          ad_group_performance_report_daily:
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: HistoricalQualityScore
-              bypass_reason: "dynamic field"
-            - name: HistoricalExpectedCtr
-              bypass_reason: "dynamic field"
-            - name: HistoricalAdRelevance
-              bypass_reason: "dynamic field"
-            - name: HistoricalLandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-          budget_summary_report:
-            - name: Date
-              bypass_reason: "dynamic field"
-            - name: MonthlyBudget
-              bypass_reason: "dynamic field"
-            - name: DailySpend
-              bypass_reason: "dynamic field"
-            - name: MonthToDateSpend
-              bypass_reason: "dynamic field"
-          campaign_impression_performance_report_daily:
-            - name: AdDistribution
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressions
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressionsPercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionLostToBudgetPercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionLostToRankAggPercent
-              bypass_reason: "dynamic field"
-            - name: HistoricalQualityScore
-              bypass_reason: "dynamic field"
-            - name: HistoricalExpectedCtr
-              bypass_reason: "dynamic field"
-            - name: HistoricalAdRelevance
-              bypass_reason: "dynamic field"
-            - name: HistoricalLandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: ExactMatchImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: TopImpressionShareLostToRankPercent
-              bypass_reason: "dynamic field"
-            - name: TopImpressionShareLostToBudgetPercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionShareLostToRankPercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionShareLostToBudgetPercent
-              bypass_reason: "dynamic field"
-            - name: TopImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionRatePercent
-              bypass_reason: "dynamic field"
-            - name: TopImpressionRatePercent
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: LowQualityClicksPercent
-              bypass_reason: "dynamic field"
-            - name: LowQualityClicks
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: LowQualityGeneralClicks
-              bypass_reason: "dynamic field"
-          account_performance_report_daily:
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-          account_performance_report_weekly:
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: ReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: ConversionRate
-              bypass_reason: "dynamic field"
-            - name: LowQualityClicksPercent
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-          account_impression_performance_report_daily:
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: LowQualityImpressionsPercent
-              bypass_reason: "dynamic field"
-            - name: ExactMatchImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: TopImpressionShareLostToRankPercent
-              bypass_reason: "dynamic field"
-            - name: TopImpressionShareLostToBudgetPercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionShareLostToRankPercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionShareLostToBudgetPercent
-              bypass_reason: "dynamic field"
-            - name: TopImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: AbsoluteTopImpressionRatePercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionLostToBudgetPercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionLostToRankAggPercent
-              bypass_reason: "dynamic field"
-          ad_group_impression_performance_report_daily:
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: HistoricalQualityScore
-              bypass_reason: "dynamic field"
-            - name: HistoricalExpectedCtr
-              bypass_reason: "dynamic field"
-            - name: HistoricalAdRelevance
-              bypass_reason: "dynamic field"
-            - name: HistoricalLandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: ImpressionSharePercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionLostToBudgetPercent
-              bypass_reason: "dynamic field"
-            - name: ImpressionLostToRankAggPercent
-              bypass_reason: "dynamic field"
-            - name: ExactMatchImpressionSharePercent
-              bypass_reason: "dynamic field"
-          campaign_performance_report_daily:
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: HistoricalQualityScore
-              bypass_reason: "dynamic field"
-            - name: HistoricalExpectedCtr
-              bypass_reason: "dynamic field"
-            - name: HistoricalAdRelevance
-              bypass_reason: "dynamic field"
-            - name: HistoricalLandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: LandingPageExperience
-              bypass_reason: "dynamic field"
-          keyword_performance_report_daily:
-            - name: Language
-              bypass_reason: "dynamic field"
-            - name: Network
-              bypass_reason: "dynamic field"
-            - name: DeviceOS
-              bypass_reason: "dynamic field"
-            - name: TopVsOther
-              bypass_reason: "dynamic field"
-            - name: Impressions
-              bypass_reason: "dynamic field"
-            - name: Clicks
-              bypass_reason: "dynamic field"
-            - name: Ctr
-              bypass_reason: "dynamic field"
-            - name: Spend
-              bypass_reason: "dynamic field"
-            - name: ReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: AllReturnOnAdSpend
-              bypass_reason: "dynamic field"
-            - name: ConversionRate
-              bypass_reason: "dynamic field"
-            - name: AverageCpc
-              bypass_reason: "dynamic field"
-            - name: AverageCpm
-              bypass_reason: "dynamic field"
-            - name: AllConversionRate
-              bypass_reason: "dynamic field"
-            - name: Mainline1Bid
-              bypass_reason: "dynamic field"
-            - name: MainlineBid
-              bypass_reason: "dynamic field"
-            - name: HistoricalExpectedCtr
-              bypass_reason: "dynamic field"
-            - name: HistoricalAdRelevance
-              bypass_reason: "dynamic field"
-            - name: HistoricalLandingPageExperience
-              bypass_reason: "dynamic field"
-            - name: HistoricalQualityScore
-              bypass_reason: "dynamic field"
-            - name: FirstPageBid
-              bypass_reason: "dynamic field"
         timeout_seconds: 9000
       - config_path: secrets/config_no_date.json
         expect_records:
           path: "integration_tests/expected_records_no_start_date.jsonl"
-          extra_records: yes
         empty_streams:
+          - name: product_dimension_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_dimension_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_hourly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_daily
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_weekly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: product_search_query_performance_report_monthly
+            bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
+          - name: audience_performance_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: audience_performance_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: audience_performance_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: audience_performance_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_daily
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_hourly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_weekly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
+          - name: goals_and_funnels_report_monthly
+            bypass_reason: "Test Account doesn't have audiences associated with any ad groups in the campaign."
           - name: app_install_ads
-            bypass_reason: "Can not populate; new campaign with link to app needed; feature is not available yet"
+            bypass_reason: "Can not populate; new campaign with link to app needed; feature is not available yet. Testing in integration tests."
           - name: app_install_ad_labels
-            bypass_reason: "Can not populate; depends on stream app_install_ads"
+            bypass_reason: "Can not populate; depends on stream app_install_ads. Testing in integration tests."
           - name: age_gender_audience_report_hourly
-            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: user_location_performance_report_hourly
-            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: account_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: account_impression_performance_report_hourly
-            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: campaign_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: ad_group_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: ad_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: ad_group_impression_performance_report_hourly
-            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: keyword_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: geographic_performance_report_hourly
-            bypass_reason: "Hourly reports are disabled, because sync is too long"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: campaign_impression_performance_report_hourly
-            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
           - name: search_query_performance_report_hourly
-            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
-          ####          TODO: remove *_report_monthly after all become populated on December, 1
+            bypass_reason: "Hourly reports are disabled, because sync is too long. Testing in integration tests."
+          #### Streams below sync takes a lot of time if start date is not provided
           - name: account_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: ad_group_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: ad_group_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: ad_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: campaign_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: campaign_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: keyword_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: geographic_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: age_gender_audience_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: search_query_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: user_location_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
+            bypass_reason: "This stream is tested with config with start date"
           - name: account_impression_performance_report_monthly
-            bypass_reason: "Campaign is still in progress"
-            #### Streams below sync takes a lot of time if start date is not provided
+            bypass_reason: "This stream is tested with config with start date"
           - name: ad_groups
             bypass_reason: "This stream is tested with config with start date"
           - name: ads
@@ -655,19 +244,6 @@ acceptance_tests:
             bypass_reason: "This stream is tested with config with start date"
           - name: account_impression_performance_report_weekly
             bypass_reason: "This stream is tested with config with start date"
-        ignored_fields:
-          campaign_labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
-          keyword_labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
-          ad_group_labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
-          labels:
-            - name: Modified Time
-              bypass_reason: "dynamic field"
         timeout_seconds: 9000
   full_refresh:
     tests:

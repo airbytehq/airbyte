@@ -9,6 +9,7 @@ from typing import Iterable, Iterator, List
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
+from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -123,11 +124,6 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         while airbyte_message_or_record_or_exception := queue.get():
-            try:
-                self._threadpool.shutdown_if_exception()
-            except Exception as exception:
-                concurrent_stream_processor.on_exception(exception)
-
             yield from self._handle_item(
                 airbyte_message_or_record_or_exception,
                 concurrent_stream_processor,
@@ -142,7 +138,7 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         # handle queue item and call the appropriate handler depending on the type of the queue item
-        if isinstance(queue_item, Exception):
+        if isinstance(queue_item, StreamThreadException):
             yield from concurrent_stream_processor.on_exception(queue_item)
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
             yield from concurrent_stream_processor.on_partition_generation_completed(queue_item)

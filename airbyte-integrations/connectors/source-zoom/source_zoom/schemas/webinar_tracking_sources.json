@@ -3,23 +3,22 @@
   "type": "object",
   "properties": {
     "webinar_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "registration_count": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "source_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tracking_url": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "visitor_count": {
-      "type": "number"
+      "type": ["null", "number"]
     }
-  },
-  "required": []
+  }
 }

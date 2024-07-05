@@ -1,42 +1,53 @@
-[
-  {
-    "campaignId": 1,
-    "name": "string",
-    "budget": 0,
-    "budgetType": "lifetime",
-    "startDate": "string",
-    "endDate": "string",
-    "state": "enabled",
-    "servingStatus": "asinNotBuyable",
-    "portfolioId": 0,
-    "bidOptimization": true,
-    "bidMultiplier": 0,
-    "bidAdjustments": [
-      {
-        "bidAdjustmentPredicate": "placementGroupHome",
-        "bidAdjustmentPercent": 50
+{
+  "campaigns": [
+    {
+      "budgetType": "DAILY",
+      "ruleBasedBudget": {
+        "isProcessing": true,
+        "applicableRuleName": "string",
+        "value": 0.1,
+        "applicableRuleId": "string"
       },
-      {
-        "bidAdjustmentPredicate": "placementGroupDetailPage",
-        "bidAdjustmentPercent": 50
+      "brandEntityId": "string",
+      "isMultiAdGroupsEnabled": true,
+      "goal": "string",
+      "bidding": {
+        "bidOptimization": true,
+        "bidAdjustmentsByShopperSegment": [
+          {
+            "percentage": 900,
+            "shopperSegment": "NEW_TO_BRAND_PURCHASE"
+          }
+        ],
+        "bidAdjustmentsByPlacement": [
+          {
+            "percentage": -99,
+            "placement": "HOME"
+          }
+        ],
+        "bidOptimizationStrategy": "MAXIMIZE_IMMEDIATE_SALES"
       },
-      {
-        "bidAdjustmentPredicate": "placementGroupOther",
-        "bidAdjustmentPercent": 50
+      "endDate": "string",
+      "campaignId": "string",
+      "productLocation": "SOLD_ON_AMAZON",
+      "tags": {
+        "property1": "string",
+        "property2": "string"
+      },
+      "portfolioId": "string",
+      "costType": "string",
+      "smartDefault": ["string"],
+      "name": "string",
+      "state": "ENABLED",
+      "startDate": "string",
+      "budget": 0.1,
+      "extendedData": {
+        "servingStatus": "ADVERTISER_STATUS_ENABLED",
+        "lastUpdateDate": 0,
+        "servingStatusDetails": ["string"],
+        "creationDate": 0
       }
-    ],
-    "adFormat": "productCollection",
-    "creative": {
-      "brandName": "string",
-      "brandLogoAssetID": "string",
-      "brandLogoUrl": "string",
-      "headline": "string",
-      "asins": ["string"],
-      "shouldOptimizeAsins": false
-    },
-    "landingPage": {
-      "pageType": "productList",
-      "url": "string"
     }
-  }
-]
+  ],
+  "totalCount": 100
+}
