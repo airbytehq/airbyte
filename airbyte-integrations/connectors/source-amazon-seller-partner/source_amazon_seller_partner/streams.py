@@ -409,6 +409,15 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                     "Try to grant required permissions/scopes or re-authenticate."
                 )
                 return []
+
+            errors = " ".join([er.get("message", "") for er in e.response.json().get("errors", [])])
+            if "does not support account ID of type class com.amazon.partner.account.id.VendorGroupId." in errors:
+                logger.warning(
+                    f"The endpoint {e.response.url} returned {e.response.status_code}: {errors}. "
+                    "This is most likely due to account type (Vendor) on the credentials in use. "
+                    "Try to re-authenticate with Seller account type and sync again."
+                )
+                return []
             raise e
 
         # create and retrieve the report
@@ -448,7 +457,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             if stream_slice and "dataStartTime" in stream_slice:
                 exception_message += (
                     f" for period {stream_slice['dataStartTime']}-{stream_slice['dataEndTime']}. "
-                    f"This will be read during the next sync. Error: {error_response}"
+                    f"This will be read during the next sync. Report ID: {report_id}."
+                    f" Error: {error_response}"
                 )
             raise AirbyteTracedException(internal_message=exception_message)
         elif processing_status == ReportProcessingStatus.CANCELLED:

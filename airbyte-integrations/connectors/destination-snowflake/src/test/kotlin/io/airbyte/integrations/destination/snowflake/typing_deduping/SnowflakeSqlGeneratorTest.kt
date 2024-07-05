@@ -92,6 +92,9 @@ class SnowflakeSqlGeneratorTest {
                 ConfiguredAirbyteStream()
                     .withSyncMode(SyncMode.INCREMENTAL)
                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                    .withGenerationId(0)
+                    .withMinimumGenerationId(0)
+                    .withSyncId(0)
                     .withStream(
                         AirbyteStream()
                             .withName("foo")
