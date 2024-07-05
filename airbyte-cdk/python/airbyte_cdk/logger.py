@@ -28,8 +28,6 @@ LOGGING_CONFIG = {
     },
 }
 
-print("TEST: triggering the build")
-
 
 def init_logger(name: Optional[str] = None) -> logging.Logger:
     """Initial set up of logger"""
