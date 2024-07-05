@@ -3761,6 +3761,9 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created_at
       datetime_format: "%Y-%m-%d %H:%M:%S"
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%S"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -9309,12 +9312,12 @@ streams:
                     type:
                       - "null"
                       - string
-                    format: date-time
+                    format: date
                   billing_period_start_date:
                     type:
                       - "null"
                       - string
-                    format: date-time
+                    format: date
           subscription_id:
             type:
               - "null"
@@ -9749,6 +9752,9 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created_at
       datetime_format: "%Y-%m-%d %H:%M:%S"
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%S"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
@@ -9818,11 +9824,16 @@ streams:
             type:
               - "null"
               - number
+          billing_period_end_date:
+            type:
+              - "null"
+              - string
+            format: date
           billing_period_start_date:
             type:
               - "null"
               - string
-            format: date-time
+            format: date
           created_at:
             type:
               - string
@@ -9923,7 +9934,7 @@ streams:
             type:
               - "null"
               - string
-            format: date-time
+            format: date
           payment_method_token:
             type:
               - "null"
@@ -15234,12 +15245,12 @@ streams:
                           type:
                             - "null"
                             - string
-                          format: date-time
+                          format: date
                         billing_period_start_date:
                           type:
                             - "null"
                             - string
-                          format: date-time
+                          format: date
                 subscription_id:
                   type:
                     - "null"
@@ -15691,6 +15702,9 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: created_at
       datetime_format: "%Y-%m-%d %H:%M:%S"
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S"
+        - "%Y-%m-%dT%H:%M:%S"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
