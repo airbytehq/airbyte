@@ -21,7 +21,7 @@ from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_step
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
-    from typing import Iterable, List, Optional
+    from typing import Any, Iterable, List, Optional
 
     from anyio import Semaphore
 
@@ -456,3 +456,11 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
             context.report = report
 
     return report
+
+
+async def run_connector_migration_to_poetry_pipeline_wrapper(context: ConnectorContext, semaphore: Semaphore, *args: Any) -> Report:
+    """
+    Wrapper for running the connector migration to poetry pipeline,
+    allowing it to match the expected signature for run_connectors_pipelines without accepting any additional arguments.
+    """
+    return await run_connector_migration_to_poetry_pipeline(context, semaphore)
