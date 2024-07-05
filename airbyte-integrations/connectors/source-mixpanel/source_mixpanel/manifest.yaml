@@ -166,10 +166,17 @@ definitions:
     primary_key: distinct_id
     $parameters:
       name: engage
-      path: 2.0/engage
       field_path: results
     retriever:
-      $ref: "#/definitions/retriever"
+      type: SimpleRetriever
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.EngagesHttpRequester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
+        path: 2.0/engage
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          $ref: "#/definitions/default_error_handler"
       paginator:
         $ref: "#/definitions/paginator"
       record_selector:
