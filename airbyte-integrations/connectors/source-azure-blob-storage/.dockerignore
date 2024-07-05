@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!main.py
-!source_azure_blob_storage
-!setup.py
-!secrets
