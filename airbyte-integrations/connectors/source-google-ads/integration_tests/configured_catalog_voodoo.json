@@ -1,35 +1,67 @@
 {
   "streams": [
     {
-      "stream" : {
-        "name" : "ad_group_ad_asset_view",
-        "json_schema" : {},
-        "supported_sync_modes" : [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor" : true,
-        "default_cursor_field" : [
-          "segments.date"
-        ],
-        "source_defined_primary_key" : [
-          [
-            "asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.ad.id",
-            "segments.date"
-          ]
-        ]
+      "stream": {
+        "name": "ad_group",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode" : "incremental",
-      "destination_sync_mode" : "overwrite",
-      "cursor_field" : [
-        "segments.date"
-      ],
-      "primary_key" : [
-        [
-          "asset.id", "customer.id", "campaign.id", "ad_group.id", "ad_group_ad.ad.id",
-          "segments.date"
-        ]
-      ]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_group_ad",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "campaign",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "campaign_budget",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "campaign_criterion",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "customer",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_group_ad_asset_view",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

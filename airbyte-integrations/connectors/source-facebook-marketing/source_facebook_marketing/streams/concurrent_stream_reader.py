@@ -5,7 +5,7 @@ import threading
 import typing
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import Callable, ClassVar, Dict, List, Mapping, Any
+from typing import Callable, ClassVar, Dict, List, Mapping, Any, Optional
 
 from airbyte_cdk.models import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
@@ -51,7 +51,7 @@ class MessageFail(Message):
 
 @dataclass(eq=False)
 class MessageSlice(Message):
-    slice: Mapping[str, Any] | None
+    slice: Optional[Mapping[str, Any]]
 
 
 @dataclass(eq=False)
