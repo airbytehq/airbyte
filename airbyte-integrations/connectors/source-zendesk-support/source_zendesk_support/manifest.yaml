@@ -117,7 +117,7 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: "{{ response['links']['next'] }}"
-      stop_condition: "{{ last_page_size == 0 }}"
+      stop_condition: "{{ not response['meta']['has_more'] }}"
       page_size: 100
     page_token_option:
       type: RequestPath
@@ -131,7 +131,10 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: '{{ response.get("after_url") }}'
-      stop_condition: "{{ last_page_size == 0 }}"
+      # there is a `end_of_stream` property inside the `response`,
+      # we should use it, instead of relying on `last_page_size`,
+      # which could be `[]` but, `end_of_stream == false` and `after_url != null`
+      stop_condition: '{{ response.get("end_of_stream") }}'
       page_size: 100
     page_token_option:
       type: RequestPath
