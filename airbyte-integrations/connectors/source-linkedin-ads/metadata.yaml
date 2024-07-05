@@ -7,11 +7,11 @@ data:
       - linkedin.com
       - api.linkedin.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 1.0.1
+  dockerImageTag: 2.1.3
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -48,6 +48,23 @@ data:
               - "ad_member_seniority_analytics"
               - "ad_member_region_analytics"
               - "ad_member_company_analytics"
+      2.0.0:
+        message: This upgrade changes primary key for *-analytics streams from pivotValues[array of strings] to string_of_pivot_values[string] so that it is compatible with more destination types.
+        upgradeDeadline: "2024-05-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ad_campaign_analytics"
+              - "ad_creative_analytics"
+              - "ad_impression_device_analytics"
+              - "ad_member_company_size_analytics"
+              - "ad_member_country_analytics"
+              - "ad_member_job_function_analytics"
+              - "ad_member_job_title_analytics"
+              - "ad_member_industry_analytics"
+              - "ad_member_seniority_analytics"
+              - "ad_member_region_analytics"
+              - "ad_member_company_analytics"
   suggestedStreams:
     streams:
       - accounts
@@ -61,4 +78,28 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-LINKEDIN_ADS_OAUTH2_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINKEDIN_ADS_OAUTH2_MULTIPLE_IDS__CREDS
+          fileName: config_multiple_account_ids.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINKEDIN_ADS_OLD_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINKEDIN_ADS_TOKEN_CREDS
+          fileName: config_token.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -23,12 +23,12 @@ import kotlin.math.max
  * airbyte namespace.
  */
 data class StreamId(
-    val finalNamespace: String?,
-    val finalName: String?,
-    val rawNamespace: String?,
-    val rawName: String?,
-    val originalNamespace: String?,
-    val originalName: String?
+    val finalNamespace: String,
+    val finalName: String,
+    val rawNamespace: String,
+    val rawName: String,
+    val originalNamespace: String,
+    val originalName: String,
 ) {
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a

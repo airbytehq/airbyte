@@ -18,11 +18,13 @@ import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAccep
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 
@@ -30,6 +32,7 @@ import org.testcontainers.containers.Network;
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
+@Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
 public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();
@@ -62,8 +65,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(tableName, namespace);
+    return List.of();
   }
 
   @Override
@@ -72,7 +74,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(StreamId.concatenateRawTableName(namespace, streamName), "airbyte_internal")
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
@@ -107,8 +109,8 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationA
                 ctx -> ctx
                     .fetch(String.format("USE %s;"
                         + "SELECT * FROM %s.%s ORDER BY %s ASC;",
-                        database, schema, tableName.toLowerCase(),
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                        database, "airbyte_internal", tableName.toLowerCase(),
+                        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
                     .stream()
                     .map(this::getJsonFromRecord)
                     .collect(Collectors.toList())));

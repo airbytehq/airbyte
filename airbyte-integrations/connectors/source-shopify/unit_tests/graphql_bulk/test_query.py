@@ -201,9 +201,20 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                                                 fields=[
                                                                   "__typename",
                                                                   "id",
-                                                                  Field(name="available"),
                                                                   Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
-                                                                  Field(name="updatedAt")
+                                                                  Field(name="updatedAt"),
+                                                                  Query(
+                                                                        name="quantities", 
+                                                                        arguments=[
+                                                                            Argument(name="names", value=['"available"', '"incoming"', '"committed"', '"damaged"', '"on_hand"', '"quality_control"', '"reserved"', '"safety_stock"'])
+                                                                        ], 
+                                                                        fields=[
+                                                                            "id",
+                                                                            "name",
+                                                                            "quantity",
+                                                                            "updatedAt",
+                                                                        ],
+                                                                    )
                                                                 ]
                                                             )
                                                         ]

@@ -3,63 +3,63 @@
   "type": "object",
   "properties": {
     "baseUrl": {
-      "type": "string",
-      "description": "The base URL of the Jira instance."
+      "description": "The base URL of the Jira instance.",
+      "type": "string"
     },
     "version": {
-      "type": "string",
-      "description": "The version of Jira."
+      "description": "The version of Jira.",
+      "type": "string"
     },
     "versionNumbers": {
-      "type": "array",
       "description": "The major, minor, and revision version numbers of the Jira version.",
+      "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "deploymentType": {
-      "type": "string",
-      "description": "The type of server deployment. This is always returned as *Cloud*."
+      "description": "The type of server deployment. This is always returned as *Cloud*.",
+      "type": "string"
     },
     "buildNumber": {
-      "type": "integer",
-      "description": "The build number of the Jira version."
+      "description": "The build number of the Jira version.",
+      "type": "integer"
     },
     "buildDate": {
-      "type": "string",
       "description": "The timestamp when the Jira version was built.",
+      "type": "string",
       "format": "date-time"
     },
     "serverTime": {
-      "type": "string",
       "description": "The time in Jira when this request was responded to.",
+      "type": "string",
       "format": "date-time"
     },
     "scmInfo": {
-      "type": "string",
-      "description": "The unique identifier of the Jira version."
+      "description": "The unique identifier of the Jira version.",
+      "type": "string"
     },
     "serverTitle": {
-      "type": "string",
-      "description": "The name of the Jira instance."
+      "description": "The name of the Jira instance.",
+      "type": "string"
     },
     "healthChecks": {
-      "type": "array",
       "description": "Jira instance health check results. Deprecated and no longer returned.",
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "description": "The name of the Jira health check item."
+            "description": "The name of the Jira health check item.",
+            "type": "string"
           },
           "description": {
-            "type": "string",
-            "description": "The description of the Jira health check item."
+            "description": "The description of the Jira health check item.",
+            "type": "string"
           },
           "passed": {
-            "type": "boolean",
-            "description": "Whether the Jira health check item passed or failed."
+            "description": "Whether the Jira health check item passed or failed.",
+            "type": "boolean"
           }
         }
       }

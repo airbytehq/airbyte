@@ -19,15 +19,16 @@ import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFact
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.sql.Timestamp
 import java.util.*
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericDatumWriter
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
+
+private val LOGGER = KotlinLogging.logger {}
 
 class GcsAvroWriter
 @JvmOverloads
@@ -61,18 +62,15 @@ constructor(
                         false,
                         true
                     )
-        LOGGER.info("Avro schema for stream {}: {}", stream.name, schema!!.toString(false))
+        LOGGER.info { "Avro schema for stream ${stream.name}: ${schema!!.toString(false)}" }
 
         val outputFilename: String = getOutputFilename(uploadTimestamp, FileUploadFormat.AVRO)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
 
-        LOGGER.info(
-            "Full GCS path for stream '{}': {}/{}",
-            stream.name,
-            config.bucketName,
-            outputPath
-        )
+        LOGGER.info {
+            "Full GCS path for stream '${stream.name}': ${config.bucketName}/$outputPath"
+        }
 
         this.avroRecordFactory = AvroRecordFactory(schema, converter)
         this.uploadManager =
@@ -120,7 +118,5 @@ constructor(
     override val fileFormat: FileUploadFormat
         get() = FileUploadFormat.AVRO
 
-    companion object {
-        protected val LOGGER: Logger = LoggerFactory.getLogger(GcsAvroWriter::class.java)
-    }
+    companion object {}
 }

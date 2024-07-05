@@ -3,12 +3,15 @@
   "type": "object",
   "properties": {
     "deleted_at": {
+      "description": "Timestamp indicating when the criterion was deleted.",
       "type": ["null", "string"]
     },
     "change_status.last_change_date_time": {
+      "description": "The date and time of the last change made to the criterion.",
       "type": ["null", "string"]
     },
     "campaign_criterion.resource_name": {
+      "description": "The resource name of the criterion.",
       "type": ["null", "string"]
     },
     "campaign_criterion.display_name": {
@@ -21,6 +24,7 @@
       "type": ["null", "string"]
     },
     "campaign_criterion.campaign": {
+      "description": "The specific campaign this criterion is targeting.",
       "type": ["null", "string"]
     },
     "campaign_criterion.criterion_id": {
@@ -72,6 +76,7 @@
       "type": ["null", "string"]
     },
     "campaign_criterion.age_range.type": {
+      "description": "The age range targeting type for the criterion.",
       "type": ["null", "string"]
     },
     "campaign_criterion.gender.type": {
@@ -198,6 +203,5 @@
     "campaign.id": {
       "type": ["null", "string"]
     }
-
   }
 }

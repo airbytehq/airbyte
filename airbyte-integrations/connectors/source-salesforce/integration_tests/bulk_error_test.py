@@ -89,7 +89,7 @@ def test_failed_jobs_with_successful_switching(caplog, input_sandbox_config, str
                 "id": "fake_id",
             },
         )
-        m.register_uri("GET", job_matcher, json={"state": "Failed", "errorMessage": "unknown error"})
+        m.register_uri("GET", job_matcher, json={"state": "Failed", "errorMessage": "unknown error", "id": "fake_id"})
         m.register_uri("DELETE", job_matcher, json={})
         with caplog.at_level(logging.WARNING):
             loaded_record_ids = set(

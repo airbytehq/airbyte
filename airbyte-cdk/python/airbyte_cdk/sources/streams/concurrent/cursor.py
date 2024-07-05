@@ -7,7 +7,7 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams import FULL_REFRESH_SENTINEL_STATE_KEY
+from airbyte_cdk.sources.streams import NO_CURSOR_STATE_KEY
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import AbstractStreamStateConverter
@@ -107,7 +107,7 @@ class FinalStateCursor(Cursor):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {FULL_REFRESH_SENTINEL_STATE_KEY: True}
+        return {NO_CURSOR_STATE_KEY: True}
 
     def observe(self, record: Record) -> None:
         pass

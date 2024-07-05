@@ -3,7 +3,6 @@
 #
 
 import csv
-import datetime
 import json
 import re
 from abc import ABC
@@ -13,11 +12,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
@@ -134,7 +134,7 @@ class IncrementalMarketoStream(MarketoStream):
 
         end_date = pendulum.parse(self.end_date) if self.end_date else pendulum.now()
         while start_date < end_date:
-            # the amount of days for each data-chunk begining from start_date
+            # the amount of days for each data-chunk beginning from start_date
             end_date_slice = start_date.add(days=self.window_in_days)
 
             date_slice = {"startAt": to_datetime_str(start_date), "endAt": to_datetime_str(end_date_slice)}
@@ -143,11 +143,6 @@ class IncrementalMarketoStream(MarketoStream):
             start_date = end_date_slice
 
         return date_slices
-
-
-class SemiIncrementalMarketoStream(IncrementalMarketoStream):
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
-        return [None]
 
 
 class MarketoExportBase(IncrementalMarketoStream):
@@ -443,118 +438,6 @@ class Activities(MarketoExportBase):
         return schema
 
 
-class ActivityTypes(MarketoStream):
-    """
-    Return list of all activity types.
-    API Docs: https://developers.marketo.com/rest-api/lead-database/activities/#describe
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "rest/v1/activities/types.json"
-
-
-class Programs(IncrementalMarketoStream):
-    """
-    Return list of all programs.
-    API Docs: https://developers.marketo.com/rest-api/assets/programs/#by_date_range
-    """
-
-    cursor_field = "updatedAt"
-    page_size = 200
-
-    def __init__(self, config: Mapping[str, Any]):
-        super().__init__(config)
-        self.offset = 0
-
-    def path(self, **kwargs) -> str:
-        return f"rest/asset/v1/{self.name}.json"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        data = response.json().get(self.data_field)
-
-        if data:
-            self.offset += self.page_size + 1
-            return {"offset": self.offset}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        """
-        Programs are queryable via their updatedAt time but require and
-        end date as well. As there is no max time range for the query,
-        query from the bookmark value until current.
-        """
-
-        params = super().request_params(next_page_token, stream_state=stream_state, stream_slice=stream_slice)
-        params.update(
-            {
-                "maxReturn": self.page_size,
-                "earliestUpdatedAt": stream_slice["startAt"],
-                "latestUpdatedAt": stream_slice["endAt"],
-            }
-        )
-
-        return params
-
-    def normalize_datetime(self, dt: str, format="%Y-%m-%dT%H:%M:%SZ%z"):
-        """
-        Convert '2018-09-07T17:37:18Z+0000' -> '2018-09-07T17:37:18Z'
-        """
-        try:
-            res = datetime.datetime.strptime(dt, format)
-        except ValueError:
-            self.logger.warning("date-time field in unexpected format: '%s'", dt)
-            return dt
-        return to_datetime_str(res)
-
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[MutableMapping]:
-        for record in super().parse_response(response, stream_state, **kwargs):
-            # delete +00:00 part from the end of createdAt and updatedAt
-            record["updatedAt"] = self.normalize_datetime(record["updatedAt"])
-            record["createdAt"] = self.normalize_datetime(record["createdAt"])
-            yield record
-
-
-class Campaigns(SemiIncrementalMarketoStream):
-    """
-    Return list of all campaigns.
-    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Campaigns/getCampaignsUsingGET
-    """
-
-
-class Lists(SemiIncrementalMarketoStream):
-    """
-    Return list of all lists.
-    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
-    """
-
-
-class Segmentations(MarketoStream):
-    """
-    This stream is similar to Programs but don't support to filter using created or update at parameters
-    API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET
-    """
-
-    page_size = 200
-    offset = 0
-
-    def __init__(self, config: Mapping[str, Any]):
-        super().__init__(config)
-
-    def path(self, **kwargs) -> str:
-        return "rest/asset/v1/segmentation.json"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        data = response.json().get(self.data_field)
-
-        if data:
-            self.offset += self.page_size + 1
-            return {"offset": self.offset}
-
-
 class MarketoAuthenticator(Oauth2Authenticator):
     def __init__(self, config):
         super().__init__(
@@ -567,8 +450,8 @@ class MarketoAuthenticator(Oauth2Authenticator):
     def get_refresh_request_params(self) -> Mapping[str, Any]:
         payload: MutableMapping[str, Any] = {
             "grant_type": "client_credentials",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
+            "client_id": self.get_client_id(),
+            "client_secret": self.get_client_secret(),
         }
 
         return payload
@@ -578,7 +461,7 @@ class MarketoAuthenticator(Oauth2Authenticator):
         Returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="GET", url=self.token_refresh_endpoint, params=self.get_refresh_request_params())
+            response = requests.request(method="GET", url=self.get_token_refresh_endpoint(), params=self.get_refresh_request_params())
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
@@ -586,41 +469,34 @@ class MarketoAuthenticator(Oauth2Authenticator):
             raise Exception(f"Error while refreshing access token: {e}") from e
 
 
-class SourceMarketo(AbstractSource):
+class SourceMarketo(YamlDeclarativeSource):
     """
-    Source Marketo fetch data of personalized multi-channel programs and campaigns to prospects and customers.
+    Source Marketo fetch data of personalized multichannel programs and campaigns to prospects and customers.
     """
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        Testing connection availability for the connector by granting the credentials.
-        """
+    def __init__(self) -> None:
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
-        try:
-            url = f"{config['domain_url']}/rest/v1/leads/describe"
-
-            authenticator = MarketoAuthenticator(config)
-
-            session = requests.get(url, headers=authenticator.get_auth_header())
-            session.raise_for_status()
-
-            return True, None
-        except requests.exceptions.RequestException as e:
-            return False, repr(e)
+    def _get_declarative_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        return super().streams(config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["authenticator"] = MarketoAuthenticator(config)
 
-        streams = [ActivityTypes(config), Segmentations(config), Campaigns(config), Leads(config), Lists(config), Programs(config)]
+        streams = self._get_declarative_streams(config)
+        streams.append(Leads(config))
+        activity_types_stream = [stream for stream in streams if stream.name == "activity_types"][0]
 
-        # create dynamically activities by activity type id
-        for activity in ActivityTypes(config).read_records(sync_mode=None):
-            stream_name = f"activities_{clean_string(activity['name'])}"
+        # dynamically create activities by activity type id
+        try:
+            for activity in activity_types_stream.read_records(sync_mode=None):
+                stream_name = f"activities_{clean_string(activity['name'])}"
+                stream_class = type(stream_name, (Activities,), {"activity": activity})
 
-            stream_class = type(stream_name, (Activities,), {"activity": activity})
-
-            # instantiate a stream with config
-            stream_instance = stream_class(config)
-            streams.append(stream_instance)
+                # instantiate a stream with config
+                stream_instance = stream_class(config)
+                streams.append(stream_instance)
+        except ReadException as e:
+            self.logger.warning(f"An error occurred while creating activity streams: {repr(e)}")
 
         return streams

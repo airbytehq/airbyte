@@ -333,7 +333,10 @@ poetry run source-survey-monkey-demo read --config secrets/config.json --catalog
 The connector should've successfully read records.
 
 ```json
-{ "type": "LOG", "log": { "level": "INFO", "message": "Read 14 records from surveys stream" } }
+{
+  "type": "LOG",
+  "log": { "level": "INFO", "message": "Read 14 records from surveys stream" }
+}
 ```
 
 You can also pass in the `--debug` flag to see the real requests and responses sent and received.

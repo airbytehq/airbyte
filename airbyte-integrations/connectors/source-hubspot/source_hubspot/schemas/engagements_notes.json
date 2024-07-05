@@ -3,249 +3,324 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the engagement note",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Represents the properties associated with the engagement note",
       "type": "object",
       "properties": {
         "hs_all_assigned_business_unit_ids": {
+          "description": "Business unit ids assigned to the note",
           "type": ["null", "string"]
         },
         "hs_at_mentioned_owner_ids": {
+          "description": "Owner ids mentioned in the note",
           "type": ["null", "string"]
         },
         "hs_attachment_ids": {
+          "description": "Attachment ids linked to the note",
           "type": ["null", "string"]
         },
         "hs_body_preview": {
+          "description": "Preview of the note body",
           "type": ["null", "string"]
         },
         "hs_body_preview_html": {
+          "description": "HTML version of the note body preview",
           "type": ["null", "string"]
         },
         "hs_body_preview_is_truncated": {
+          "description": "Indicates if the body preview is truncated",
           "type": ["null", "boolean"]
         },
         "hs_created_by": {
+          "description": "User who created the note",
           "type": ["null", "number"]
         },
         "hs_created_by_user_id": {
+          "description": "User id of the creator",
           "type": ["null", "number"]
         },
         "hs_createdate": {
+          "description": "Date and time of note creation",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_engagement_source": {
+          "description": "Source of the engagement",
           "type": ["null", "string"]
         },
         "hs_engagement_source_id": {
+          "description": "ID of the engagement source",
           "type": ["null", "string"]
         },
         "hs_follow_up_action": {
+          "description": "Follow-up action specified in the note",
           "type": ["null", "string"]
         },
         "hs_gdpr_deleted": {
+          "description": "Indicates if the note is GDPR deleted",
           "type": ["null", "boolean"]
         },
         "hs_lastmodifieddate": {
+          "description": "Date and time of the last modification",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_merged_object_ids": {
+          "description": "IDs of objects merged in the note",
           "type": ["null", "string"]
         },
         "hs_modified_by": {
+          "description": "User who last modified the note",
           "type": ["null", "number"]
         },
         "hs_note_body": {
+          "description": "Body content of the note",
           "type": ["null", "string"]
         },
         "hs_object_id": {
+          "description": "ID of the note object",
           "type": ["null", "number"]
         },
         "hs_product_name": {
+          "description": "Product name associated with the note",
           "type": ["null", "string"]
         },
         "hs_queue_membership_ids": {
+          "description": "Queue membership IDs related to the note",
           "type": ["null", "string"]
         },
         "hs_timestamp": {
+          "description": "Timestamp of the note",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_unique_creation_key": {
+          "description": "Unique key for note creation",
           "type": ["null", "string"]
         },
         "hs_unique_id": {
+          "description": "Unique ID of the note",
           "type": ["null", "string"]
         },
         "hs_updated_by_user_id": {
+          "description": "User ID who last updated the note",
           "type": ["null", "number"]
         },
         "hs_user_ids_of_all_notification_followers": {
+          "description": "User IDs of all notification followers",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_unfollowers": {
+          "description": "User IDs of all notification unfollowers",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_owners": {
+          "description": "User IDs of all owners",
           "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
+          "description": "Date when owner was assigned",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hubspot_owner_id": {
+          "description": "Owner ID of the note",
           "type": ["null", "string"]
         },
         "hubspot_team_id": {
+          "description": "Team ID associated with the note",
           "type": ["null", "string"]
         },
         "hs_all_owner_ids": {
+          "description": "All owner ids associated with the note",
           "type": ["null", "string"]
         },
         "hs_all_team_ids": {
+          "description": "All team ids associated with the note",
           "type": ["null", "string"]
         },
         "hs_all_accessible_team_ids": {
+          "description": "All team ids that have access to the note",
           "type": ["null", "string"]
         }
       }
     },
     "properties_hs_all_assigned_business_unit_ids": {
+      "description": "Business unit ids assigned to the note",
       "type": ["null", "string"]
     },
     "properties_hs_at_mentioned_owner_ids": {
+      "description": "Owner ids mentioned in the note",
       "type": ["null", "string"]
     },
     "properties_hs_attachment_ids": {
+      "description": "Attachment ids linked to the note",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview": {
+      "description": "Preview of the note body",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview_html": {
+      "description": "HTML version of the note body preview",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview_is_truncated": {
+      "description": "Indicates if the body preview is truncated",
       "type": ["null", "boolean"]
     },
     "properties_hs_created_by": {
+      "description": "User who created the note",
       "type": ["null", "number"]
     },
     "properties_hs_created_by_user_id": {
+      "description": "User id of the creator",
       "type": ["null", "number"]
     },
     "properties_hs_createdate": {
+      "description": "Date and time of note creation",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_engagement_source": {
+      "description": "Source of the engagement",
       "type": ["null", "string"]
     },
     "properties_hs_engagement_source_id": {
+      "description": "ID of the engagement source",
       "type": ["null", "string"]
     },
     "properties_hs_follow_up_action": {
+      "description": "Follow-up action specified in the note",
       "type": ["null", "string"]
     },
     "properties_hs_gdpr_deleted": {
+      "description": "Indicates if the note is GDPR deleted",
       "type": ["null", "boolean"]
     },
     "properties_hs_lastmodifieddate": {
+      "description": "Date and time of the last modification",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_merged_object_ids": {
+      "description": "IDs of objects merged in the note",
       "type": ["null", "string"]
     },
     "properties_hs_modified_by": {
+      "description": "User who last modified the note",
       "type": ["null", "number"]
     },
     "properties_hs_note_body": {
+      "description": "Body content of the note",
       "type": ["null", "string"]
     },
     "properties_hs_object_id": {
+      "description": "ID of the note object",
       "type": ["null", "number"]
     },
     "properties_hs_product_name": {
+      "description": "Product name associated with the note",
       "type": ["null", "string"]
     },
     "properties_hs_queue_membership_ids": {
+      "description": "Queue membership IDs related to the note",
       "type": ["null", "string"]
     },
     "properties_hs_timestamp": {
+      "description": "Timestamp of the note",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_unique_creation_key": {
+      "description": "Unique key for note creation",
       "type": ["null", "string"]
     },
     "properties_hs_unique_id": {
+      "description": "Unique ID of the note",
       "type": ["null", "string"]
     },
     "properties_hs_updated_by_user_id": {
+      "description": "User ID who last updated the note",
       "type": ["null", "number"]
     },
     "properties_hs_user_ids_of_all_notification_followers": {
+      "description": "User IDs of all notification followers",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "description": "User IDs of all notification unfollowers",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_owners": {
+      "description": "User IDs of all owners",
       "type": ["null", "string"]
     },
     "properties_hubspot_owner_assigneddate": {
+      "description": "Date when owner was assigned to the note",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hubspot_owner_id": {
+      "description": "Owner ID of the note",
       "type": ["null", "string"]
     },
     "properties_hubspot_team_id": {
+      "description": "Team ID associated with the note",
       "type": ["null", "string"]
     },
     "properties_hs_all_owner_ids": {
+      "description": "All owner ids associated with the note",
       "type": ["null", "string"]
     },
     "properties_hs_all_team_ids": {
+      "description": "All team ids associated with the note",
       "type": ["null", "string"]
     },
     "properties_hs_all_accessible_team_ids": {
+      "description": "All team ids that have access to the note",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the note was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Date and time when the note was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the note has been archived",
       "type": ["null", "boolean"]
     },
     "contacts": {
+      "description": "Contacts associated with the engagement note",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "deals": {
+      "description": "Deals associated with the engagement note",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "companies": {
+      "description": "Companies associated with the engagement note",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "tickets": {
+      "description": "Tickets associated with the engagement note",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

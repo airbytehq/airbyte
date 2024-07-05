@@ -30,7 +30,7 @@ abstract class DebeziumPropertiesManager(
         props.setProperty("max.batch.size", "2048")
         props.setProperty("max.queue.size", "8192")
 
-        props.setProperty("errors.max.retries", "5")
+        props.setProperty("errors.max.retries", "0")
         // This property must be strictly less than errors.retry.delay.max.ms
         // (https://github.com/debezium/debezium/blob/bcc7d49519a4f07d123c616cfa45cd6268def0b9/debezium-core/src/main/java/io/debezium/util/DelayStrategy.java#L135)
         props.setProperty("errors.retry.delay.initial.ms", "299")

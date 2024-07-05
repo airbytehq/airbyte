@@ -1,17 +1,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import logging
 import os
 import re
 import shutil
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import dagger
 import docker  # type: ignore
 import pytest
 from mitmproxy import http, io  # type: ignore
 from mitmproxy.addons.savehar import SaveHar  # type: ignore
+from slugify import slugify
 
 
 async def get_container_from_id(dagger_client: dagger.Client, container_id: str) -> dagger.Container:
@@ -96,10 +98,9 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     # If a container_id.txt file is available, we'll use it to load the connector container
     # We use a txt file as container ids can be too long to be passed as env vars
     # It's used for dagger-in-dagger use case with airbyte-ci, when the connector container is built via an upstream dagger operation
-    connector_container_id_path = Path("/tmp/container_id.txt")
-    if connector_container_id_path.exists():
-        # If the CONNECTOR_CONTAINER_ID env var is set, we'll use it to load the connector container
-        return await get_container_from_id(dagger_client, connector_container_id_path.read_text())
+    container_id_path = Path(f"/tmp/{slugify(image_name_with_tag)}_container_id.txt")
+    if container_id_path.exists():
+        return await get_container_from_id(dagger_client, container_id_path.read_text())
 
     # If the CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH env var is set, we'll use it to import the connector image from the tarball
     if connector_image_tarball_path := os.environ.get("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH"):
@@ -114,7 +115,7 @@ async def get_connector_container(dagger_client: dagger.Client, image_name_with_
     return await get_container_from_dockerhub_image(dagger_client, image_name_with_tag)
 
 
-def sh_dash_c(lines: List[str]) -> List[str]:
+def sh_dash_c(lines: list[str]) -> list[str]:
     """Wrap sequence of commands in shell for safe usage of dagger Container's with_exec method."""
     return ["sh", "-c", " && ".join(["set -o xtrace"] + lines)]
 
@@ -125,7 +126,7 @@ def clean_up_artifacts(directory: Path, logger: logging.Logger) -> None:
         logger.info(f"🧹 Test artifacts cleaned up from {directory}")
 
 
-def get_http_flows_from_mitm_dump(mitm_dump_path: Path) -> List[http.HTTPFlow]:
+def get_http_flows_from_mitm_dump(mitm_dump_path: Path) -> list[http.HTTPFlow]:
     """Get http flows from a mitmproxy dump file.
 
     Args:

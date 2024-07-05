@@ -12,13 +12,13 @@ from source_amazon_seller_partner.streams import AnalyticsStream, IncrementalAna
 
 
 class SomeAnalyticsStream(AnalyticsStream):
-    name = "GET_ANALYTICS_STREAM"
+    report_name = "GET_ANALYTICS_STREAM"
     result_key = "result_key"
     availability_sla_days = 3
 
 
 class SomeIncrementalAnalyticsStream(IncrementalAnalyticsStream):
-    name = "GET_INCREMENTAL_ANALYTICS_STREAM"
+    report_name = "GET_INCREMENTAL_ANALYTICS_STREAM"
     result_key = "result_key"
     availability_sla_days = 3
     cursor_field = "endDate"

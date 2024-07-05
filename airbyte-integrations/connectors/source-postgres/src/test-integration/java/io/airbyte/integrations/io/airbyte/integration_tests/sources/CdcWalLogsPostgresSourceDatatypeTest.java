@@ -36,7 +36,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   @Override
   protected void postSetup() throws Exception {
     final Database database = setupDatabase();
-    for (final TestDataHolder test : getTestDataHolders()) {
+    for (final TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
         ctx.fetch(test.getCreateSqlQuery());
         return null;
@@ -56,7 +56,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync should not be null");
     }
-    for (final TestDataHolder test : getTestDataHolders()) {
+    for (final TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
         test.getInsertSqlQueries().forEach(ctx::fetch);
         return null;

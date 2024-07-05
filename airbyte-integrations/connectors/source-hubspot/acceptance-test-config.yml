@@ -19,8 +19,10 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: secrets/config_oauth.json
+        # Added missing types to the `Workflows` stream schema
+        # it's a neccessary change
         backward_compatibility_tests_config:
-          disable_for_version: 1.9.0
+          disable_for_version: "4.2.2"
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json

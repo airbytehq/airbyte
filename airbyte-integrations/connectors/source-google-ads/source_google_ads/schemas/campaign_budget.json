@@ -3,63 +3,83 @@
   "type": "object",
   "properties": {
     "customer.id": {
+      "description": "The ID of the customer associated with the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign associated with the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.aligned_bidding_strategy_id": {
+      "description": "The ID of the bidding strategy aligned with the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.amount_micros": {
+      "description": "The amount in micros (millionths of the currency unit) for the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.delivery_method": {
+      "description": "The delivery method of the campaign budget (ACCELERATED or STANDARD).",
       "type": ["null", "string"]
     },
     "campaign_budget.explicitly_shared": {
+      "description": "Indicates whether the budget is explicitly shared among multiple campaigns.",
       "type": ["null", "boolean"]
     },
     "campaign_budget.has_recommended_budget": {
+      "description": "Indicates if there is a recommended budget for the campaign budget.",
       "type": ["null", "boolean"]
     },
     "campaign_budget.id": {
+      "description": "The ID of the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.name": {
+      "description": "The name of the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.period": {
+      "description": "The time period covered by the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.recommended_budget_amount_micros": {
+      "description": "The recommended amount in micros for the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_clicks": {
+      "description": "Estimated change in weekly clicks if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_cost_micros": {
+      "description": "Estimated change in weekly cost in micros if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_interactions": {
+      "description": "Estimated change in weekly interactions if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_views": {
+      "description": "Estimated change in weekly views if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.reference_count": {
+      "description": "The count of references to the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.resource_name": {
+      "description": "The resource name of the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.status": {
+      "description": "The status of the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.total_amount_micros": {
+      "description": "The total amount in micros of the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.type": {
+      "description": "The type of the campaign budget.",
       "type": ["null", "string"]
     }
   }

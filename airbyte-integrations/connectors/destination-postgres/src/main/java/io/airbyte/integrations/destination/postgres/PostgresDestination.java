@@ -73,7 +73,7 @@ public class PostgresDestination extends AbstractJdbcDestination<PostgresState> 
     // Adding 60 seconds to connection timeout, for ssl connections, default 10 seconds is not enough
     return builder.withConnectionTimeout(Duration.ofSeconds(60))
         .withConnectionInitSql("""
-                               CREATE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
+                               CREATE OR REPLACE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
                                  LANGUAGE plpgsql AS
                                $func$
                                BEGIN

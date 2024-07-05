@@ -98,9 +98,15 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 1.6.1   | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream|
+| 1.6.4   | 2024-06-12 | [30315](https://github.com/airbytehq/airbyte/pull/30315) | Fix `customer` stream pagination limit                                    |
+| 1.6.3   | 2024-06-14 | [39377](https://github.com/airbytehq/airbyte/pull/39377) | Add error handlers, migrate to inline schemas, move spec to manifest      |
+| 1.6.2   | 2024-05-03 | [37800](https://github.com/airbytehq/airbyte/pull/37800) | Migrate to Poetry. Replace custom components with default classes         |
+| 1.6.1   | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream                 |
 | 1.6.0   | 2023-10-18 | [31115](https://github.com/airbytehq/airbyte/pull/31115) | Add `customer_id` field to `Payments` and `Orders` streams                |
 | 1.5.0   | 2023-10-16 | [31045](https://github.com/airbytehq/airbyte/pull/31045) | Added New Stream bank_accounts                                            |
 | 1.4.0   | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty                                                    |
@@ -120,3 +126,5 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                           |
 | 0.1.1   | 2021-07-09 | [4645](https://github.com/airbytehq/airbyte/pull/4645)   | Update \_send_request method due to Airbyte CDK changes                   |
 | 0.1.0   | 2021-06-30 | [4439](https://github.com/airbytehq/airbyte/pull/4439)   | Initial release supporting the Square API                                 |
+
+</details>

@@ -6,19 +6,19 @@ This source can sync data from the [Rocket.chat API](https://developer.rocket.ch
 
 ## This Source Supports the Following Streams
 
-* teams
-* rooms
-* channels
-* roles
-* subscriptions
-* users
+- teams
+- rooms
+- channels
+- roles
+- subscriptions
+- users
 
 ### Features
 
 | Feature | Supported?\(Yes/No\) | Notes |
-| :--* | :--* | :--* |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| :--_ | :--_ | :--\* |
+| Full Refresh Sync | Yes | |
+| Incremental Sync | No | |
 
 ### Performance considerations
 
@@ -36,6 +36,6 @@ You need to setup a personal access token within the Rocket.chat workspace, see 
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                       |
-| :-----* | :--------* | :-------------------------------------------------------* | :----------------------------------------*    |
-| 0.1.0   | 2022-10-29 | [#18635](https://github.com/airbytehq/airbyte/pull/18635) | 🎉 New Source: Rocket.chat API [low-code CDK] |
+| Version | Date | Pull Request | Subject |
+| :-----_ | :--------_ | :-------------------------------------------------------_ | :----------------------------------------_ |
+| 0.1.0 | 2022-10-29 | [#18635](https://github.com/airbytehq/airbyte/pull/18635) | 🎉 New Source: Rocket.chat API [low-code CDK] |

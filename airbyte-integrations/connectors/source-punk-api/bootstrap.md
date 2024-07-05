@@ -1,7 +1,7 @@
 # Punk-API
 
 The connector uses the v2 API documented here: https://punkapi.com/documentation/v2 . It is
-straightforward HTTP REST API with API authentication. 
+straightforward HTTP REST API with API authentication.
 
 ## API key
 
@@ -27,8 +27,8 @@ Just pass the dummy API key and optional parameter for establishing the connecti
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-4. Enter your dummy `api_key`.
-5. Enter the params configuration if needed: ID (Optional)
-6. Click **Set up source**.
+3. Enter your dummy `api_key`.
+4. Enter the params configuration if needed: ID (Optional)
+5. Click **Set up source**.
 
- * We use only GET methods, towards the beers endpoints which is straightforward
+- We use only GET methods, towards the beers endpoints which is straightforward

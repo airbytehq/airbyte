@@ -47,6 +47,17 @@ def test_check_type(record, types, expected) -> None:
                 "admin_graphql_api_id": "gid://shopify/Metafield/123",
                 "__parentId": "gid://shopify/Order/102030",
             },
+        ),
+        (
+            {
+                "alias_to_id_field": "gid://shopify/Metafield/123",
+                "__parentId": "gid://shopify/Order/102030",
+            },
+            # should be emitted `as is`, because the `id` field in not present
+            {
+                "alias_to_id_field": "gid://shopify/Metafield/123",
+                "__parentId": "gid://shopify/Order/102030",
+            },
         )
     ],
 )

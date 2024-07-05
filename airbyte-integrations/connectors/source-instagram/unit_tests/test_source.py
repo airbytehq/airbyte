@@ -3,7 +3,8 @@
 #
 
 
-from airbyte_cdk.logger import AirbyteLogger
+import logging
+
 from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
@@ -14,7 +15,7 @@ from airbyte_cdk.models import (
 )
 from source_instagram.source import SourceInstagram
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def test_check_connection_ok(api, some_config):

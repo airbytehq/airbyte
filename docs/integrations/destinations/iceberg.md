@@ -59,6 +59,9 @@ specify the target size of compacted Iceberg data file.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------- |
 | 0.1.6   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846) | Remove duplicate S3 Region                                 |
@@ -68,3 +71,5 @@ specify the target size of compacted Iceberg data file.
 | 0.1.2   | 2023-07-14 | [28345](https://github.com/airbytehq/airbyte/pull/28345)  | Trigger rebuild of image                                   |
 | 0.1.1   | 2023-02-27 | [23201](https://github.com/airbytehq/airbyte/pull/23301)  | Bump Iceberg library to 1.1.0                              |
 | 0.1.0   | 2022-11-01 | [18836](https://github.com/airbytehq/airbyte/pull/18836)  | Initial Commit                                             |
+
+</details>

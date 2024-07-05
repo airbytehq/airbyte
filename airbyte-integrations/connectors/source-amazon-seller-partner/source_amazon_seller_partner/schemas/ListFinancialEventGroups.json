@@ -5,62 +5,79 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "FinancialEventGroupId": {
+      "description": "The unique identifier for the financial event group.",
       "type": ["null", "string"]
     },
     "ProcessingStatus": {
+      "description": "The processing status of the financial event group.",
       "type": ["null", "string"]
     },
     "FundTransferStatus": {
+      "description": "The status of the fund transfer.",
       "type": ["null", "string"]
     },
     "OriginalTotal": {
+      "description": "Represents the original total amount in the default currency for the financial event group.",
       "type": ["null", "object"],
       "properties": {
         "CurrencyCode": {
+          "description": "The currency code for the original total amount.",
           "type": ["null", "string"]
         },
         "CurrencyAmount": {
+          "description": "The original total amount in the original currency.",
           "type": ["null", "number"]
         }
       }
     },
     "ConvertedTotal": {
+      "description": "Represents the total amount converted to a different currency within the financial event group.",
       "type": ["null", "object"],
       "properties": {
         "CurrencyCode": {
+          "description": "The currency code for the converted total amount.",
           "type": ["null", "string"]
         },
         "CurrencyAmount": {
+          "description": "The total amount converted to a specific currency.",
           "type": ["null", "number"]
         }
       }
     },
     "FundTransferDate": {
+      "description": "The date the fund transfer occurred.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "TraceId": {
+      "description": "The unique identifier used for tracing the financial event group.",
       "type": ["null", "string"]
     },
     "AccountTail": {
+      "description": "The last digits of the account number associated with the financial event group.",
       "type": ["null", "string"]
     },
     "BeginningBalance": {
+      "description": "Represents the initial balance at the beginning of the financial event group.",
       "type": ["null", "object"],
       "properties": {
         "CurrencyCode": {
+          "description": "The currency code for the beginning balance.",
           "type": ["null", "string"]
         },
         "CurrencyAmount": {
+          "description": "The initial balance amount before any financial event occurred.",
           "type": ["null", "number"]
         }
       }
     },
     "FinancialEventGroupStart": {
+      "description": "The start datetime of the financial event group.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "FinancialEventGroupEnd": {
+      "description": "The end datetime of the financial event group.",
       "type": ["null", "string"],
       "format": "date-time"
     }

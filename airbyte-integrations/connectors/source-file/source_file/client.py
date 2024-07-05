@@ -362,6 +362,9 @@ class Client:
             elif self._reader_format == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
                 yield reader(fp, **reader_options)
+            elif self._reader_format == "parquet":
+                reader_options["engine"] = "fastparquet"
+                yield reader(fp, **reader_options)
             elif self._reader_format == "excel":
                 # Use openpyxl to read new-style Excel (xlsx) file; return to pandas for others
                 try:
@@ -420,7 +423,7 @@ class Client:
                     df = self.load_yaml(fp)
                     columns = fields.intersection(set(df.columns)) if fields else df.columns
                     df = df.where(pd.notnull(df), None)
-                    yield from df[columns].to_dict(orient="records")
+                    yield from df[list(columns)].to_dict(orient="records")
                 else:
                     fields = set(fields) if fields else None
                     if self.binary_source:

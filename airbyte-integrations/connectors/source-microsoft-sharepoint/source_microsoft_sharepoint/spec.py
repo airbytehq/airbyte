@@ -32,7 +32,7 @@ class OAuthCredentials(BaseModel):
         description="Client Secret of your Microsoft developer application",
         airbyte_secret=True,
     )
-    refresh_token: str = Field(
+    refresh_token: Optional[str] = Field(
         title="Refresh Token",
         description="Refresh Token of your Microsoft developer application",
         airbyte_secret=True,

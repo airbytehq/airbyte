@@ -82,9 +82,10 @@ class SlackStream(HttpStream, ABC):
 class ChanneledStream(SlackStream, ABC):
     """Slack stream with channel filter"""
 
-    def __init__(self, channel_filter: List[str] = [], join_channels: bool = False, **kwargs):
+    def __init__(self, channel_filter: List[str] = [], join_channels: bool = False, include_private_channels: bool = False, **kwargs):
         self.channel_filter = channel_filter
         self.join_channels = join_channels
+        self.include_private_channels = include_private_channels
         self.kwargs = kwargs
         super().__init__(**kwargs)
 
@@ -118,7 +119,7 @@ class Channels(ChanneledStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["types"] = "public_channel"
+        params["types"] = "public_channel,private_channel" if self.include_private_channels == True else "public_channel"
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
@@ -179,7 +180,7 @@ class IncrementalMessageStream(ChanneledStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         current_stream_state[self.cursor_field] = max(
-            latest_record[self.cursor_field], current_stream_state.get(self.cursor_field, self._start_ts)
+            latest_record[self.cursor_field], float(current_stream_state.get(self.cursor_field, self._start_ts))
         )
 
         return current_stream_state
@@ -249,14 +250,16 @@ class Threads(IncrementalMessageStream):
         """
 
         stream_state = stream_state or {}
-        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
+        channels_stream = Channels(
+            authenticator=self._session.auth, channel_filter=self.channel_filter, include_private_channels=self.include_private_channels
+        )
 
         if self.cursor_field in stream_state:
             # Since new messages can be posted to threads continuously after the parent message has been posted,
             # we get messages from the latest date
             # found in the state minus X days to pick up any new messages in threads.
             # If there is state always use lookback
-            messages_start_date = pendulum.from_timestamp(stream_state[self.cursor_field]) - self.messages_lookback_window
+            messages_start_date = pendulum.from_timestamp(float(stream_state[self.cursor_field])) - self.messages_lookback_window
         else:
             # If there is no state i.e: this is the first sync then there is no use for lookback, just get messages
             # from the default start date

@@ -12,6 +12,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.testutils.ContainerFactory.NamedContainerModifier;
 import io.airbyte.cdk.testutils.TestDatabase;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -416,6 +417,12 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
       }
     }
 
+  }
+
+  @Override
+  public void close() {
+    MssqlDebeziumStateUtil.disposeInitialState();
+    super.close();
   }
 
 }

@@ -35,11 +35,10 @@ public class BigQuerySqlGeneratorTest {
 
   @Test
   void columnCollision() {
-    final CatalogParser parser = new CatalogParser(generator);
+    final CatalogParser parser = new CatalogParser(generator, "default_ns");
     assertEquals(
         new StreamConfig(
             new StreamId("bar", "foo", "airbyte_internal", "bar_raw__stream_foo", "bar", "foo"),
-            SyncMode.INCREMENTAL,
             DestinationSyncMode.APPEND,
             emptyList(),
             Optional.empty(),
@@ -50,7 +49,7 @@ public class BigQuerySqlGeneratorTest {
                 put(new ColumnId("current_date_1", "current_date", "current_date_1"), AirbyteProtocolType.INTEGER);
               }
 
-            }),
+            }, 0, 0, 0),
         parser.toStreamConfig(new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)

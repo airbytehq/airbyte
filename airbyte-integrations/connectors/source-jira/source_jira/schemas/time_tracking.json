@@ -4,16 +4,16 @@
   "type": "object",
   "properties": {
     "key": {
-      "type": "string",
-      "description": "The key for the time tracking provider. For example, *JIRA*."
+      "description": "The key associated with the time tracking provider.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the time tracking provider. For example, *JIRA provided time tracking*."
+      "description": "The name of the time tracking provider.",
+      "type": "string"
     },
     "url": {
+      "description": "The URL of the configuration page for the time tracking provider app. This property is only returned if the `adminPageKey` property is set in the module descriptor of the time tracking provider app.",
       "type": "string",
-      "description": "The URL of the configuration page for the time tracking provider app. For example, */example/config/url*. This property is only returned if the `adminPageKey` property is set in the module descriptor of the time tracking provider app.",
       "readOnly": true
     }
   },

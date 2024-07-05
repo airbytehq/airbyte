@@ -32,19 +32,19 @@ public class BigQueryV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefin
   }
 
   @Override
-  protected boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig) {
-    final var dataset = bq.getDataset(streamConfig.id().rawNamespace());
+  public boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig) {
+    final var dataset = bq.getDataset(streamConfig.getId().getRawNamespace());
     return dataset != null && dataset.exists();
   }
 
   @Override
-  protected Optional<TableDefinition> getTableIfExists(String namespace, String tableName) {
+  public Optional<TableDefinition> getTableIfExists(String namespace, String tableName) {
     Table table = bq.getTable(TableId.of(namespace, tableName));
     return table != null && table.exists() ? Optional.of(table.getDefinition()) : Optional.empty();
   }
 
   @Override
-  protected boolean schemaMatchesExpectation(TableDefinition existingTable, Collection<String> expectedColumnNames) {
+  public boolean schemaMatchesExpectation(TableDefinition existingTable, Collection<String> expectedColumnNames) {
     Set<String> existingSchemaColumns = Optional.ofNullable(existingTable.getSchema())
         .map(schema -> schema.getFields().stream()
             .map(Field::getName)
@@ -56,10 +56,11 @@ public class BigQueryV1V2Migrator extends BaseDestinationV1V2Migrator<TableDefin
   }
 
   @Override
-  protected NamespacedTableName convertToV1RawName(StreamConfig streamConfig) {
+  @SuppressWarnings("deprecation")
+  public NamespacedTableName convertToV1RawName(StreamConfig streamConfig) {
     return new NamespacedTableName(
-        this.nameTransformer.getNamespace(streamConfig.id().originalNamespace()),
-        this.nameTransformer.getRawTableName(streamConfig.id().originalName()));
+        this.nameTransformer.getNamespace(streamConfig.getId().getOriginalNamespace()),
+        this.nameTransformer.getRawTableName(streamConfig.getId().getOriginalName()));
   }
 
 }

@@ -85,7 +85,8 @@
           "type": "string",
           "pattern": "^[0-9]*$"
         },
-        "examples": [["1738294", "5729978930"]]
+        "examples": [["1738294", "5729978930"]],
+        "uniqueItems": true
       },
       "date_ranges_start_date": {
         "type": "string",

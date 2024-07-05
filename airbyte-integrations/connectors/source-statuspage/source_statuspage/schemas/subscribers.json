@@ -22,7 +22,7 @@
     },
     "endpoint": {
       "type": ["null", "string"],
-      "example": "http://example.com/",
+      "example": "https://example.com/",
       "description": "The URL where a webhook subscriber elects to receive updates."
     },
     "phone_number": {
@@ -76,5 +76,5 @@
     }
   },
   "description": "Get an incident subscriber",
-  "$schema": "http://json-schema.org/schema#"
+  "$schema": "https://json-schema.org/schema#"
 }

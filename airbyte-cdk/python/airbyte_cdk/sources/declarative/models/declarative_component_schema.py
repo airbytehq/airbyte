@@ -937,6 +937,11 @@ class DatetimeBasedCursor(BaseModel):
         description='A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.',
         title='Whether the target API is formatted as a data feed',
     )
+    is_client_side_incremental: Optional[bool] = Field(
+        None,
+        description='If the target API endpoint does not take cursor values to filter records and returns all records anyway, the connector with this cursor will filter out records locally, and only emit new records from the last sync, hence incremental. This means that all records would be read from the API, but only new records will be emitted to the destination.',
+        title='Whether the target API does not support filtering and returns all data (the cursor filters records in the client instead of the API side)',
+    )
     lookback_window: Optional[str] = Field(
         None,
         description='Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.',
@@ -1086,7 +1091,7 @@ class DeclarativeSource(BaseModel):
     type: Literal['DeclarativeSource']
     check: CheckStream
     streams: List[DeclarativeStream]
-    version: str
+    version: str = Field(..., description='The version of the CDK used to build and test the source.')
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None

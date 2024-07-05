@@ -13,7 +13,11 @@ jobs:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
-    if: ${{ github.repository == 'airbytehq/airbyte' }}
+    if: ${{ github.event.pull_request.head.repo.fork == false }}
+    # This workflow cannot run on forks, as the fork's github token does not have `read:org`
+    # permissions, which are required to check the user's team membership. We assume that a
+    # review on a fork's PR is always required from one or more connector teams and/or support.
+
     steps:
       - name: Check contributor team membership
         uses: tspascoal/get-user-teams-membership@v3

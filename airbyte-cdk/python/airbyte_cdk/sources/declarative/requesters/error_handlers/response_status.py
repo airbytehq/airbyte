@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Final, Optional, Union
+from typing import Any, Final, Optional, Union
 
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 
@@ -27,7 +27,7 @@ class ResponseStatus:
         self._error_message = error_message
 
     @property
-    def action(self):
+    def action(self) -> Union[ResponseAction, str]:
         """The ResponseAction to execute when a response matches the filter"""
         return self._action
 
@@ -51,12 +51,12 @@ class ResponseStatus:
         """
         return ResponseStatus(ResponseAction.RETRY, retry_in)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not other:
             return not self
-        return self.action == other.action and self.retry_in == other.retry_in
+        return bool(self.action == other.action and self.retry_in == other.retry_in)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash([self.action, self.retry_in])
 
 
