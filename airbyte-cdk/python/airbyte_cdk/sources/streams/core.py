@@ -7,7 +7,7 @@ import logging
 import typing
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
@@ -15,6 +15,8 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.checkpoint import (
     CheckpointMode,
     CheckpointReader,
+    Cursor,
+    CursorBasedCheckpointReader,
     FullRefreshCheckpointReader,
     IncrementalCheckpointReader,
     ResumableFullRefreshCheckpointReader,
@@ -103,6 +105,8 @@ class Stream(ABC):
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
+    _configured_json_schema: Optional[Dict[str, Any]] = None
+
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self) -> logging.Logger:
@@ -141,6 +145,7 @@ class Stream(ABC):
     ) -> Iterable[StreamData]:
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
+        self.configured_json_schema = configured_stream.stream.json_schema
 
         # WARNING: When performing a read() that uses incoming stream state, we MUST use the self.state that is defined as
         # opposed to the incoming stream_state value. Because some connectors like ones using the file-based CDK modify
@@ -235,8 +240,7 @@ class Stream(ABC):
             name=self.name,
             json_schema=dict(self.get_json_schema()),
             supported_sync_modes=[SyncMode.full_refresh],
-            # todo: This field doesn't exist yet, but it will in https://github.com/airbytehq/airbyte-protocol/pull/73
-            # is_resumable=self.is_resumable,
+            is_resumable=self.is_resumable,
         )
 
         if self.namespace:
@@ -384,6 +388,14 @@ class Stream(ABC):
         """
         return {}
 
+    def get_cursor(self) -> Optional[Cursor]:
+        """
+        A Cursor is an interface that a stream can implement to manage how its internal state is read and updated while
+        reading records. Historically, Python connectors had no concept of a cursor to manage state. Python streams need
+        need to define a cursor implementation and override this method to manage state through a Cursor.
+        """
+        return None
+
     def _get_checkpoint_reader(
         self,
         logger: logging.Logger,
@@ -392,7 +404,19 @@ class Stream(ABC):
         stream_state: MutableMapping[str, Any],
     ) -> CheckpointReader:
         checkpoint_mode = self._checkpoint_mode
+        cursor = self.get_cursor()
+        if cursor:
+            slices = self.stream_slices(
+                cursor_field=cursor_field,
+                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+                stream_state=stream_state,
+            )
+            return CursorBasedCheckpointReader(
+                stream_slices=slices, cursor=cursor, read_state_from_cursor=checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH
+            )
         if checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
+            # Resumable full refresh readers rely on the stream state dynamically being updated during pagination and does
+            # not iterate over a static set of slices.
             return ResumableFullRefreshCheckpointReader(stream_state=stream_state)
         else:
             slices = self.stream_slices(
@@ -481,3 +505,16 @@ class Stream(ABC):
         #  to reduce changes right now and this would span concurrent as well
         state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)
+
+    @property
+    def configured_json_schema(self) -> Optional[Dict[str, Any]]:
+        """
+        This property is set from the read method.
+
+        :return Optional[Dict]: JSON schema from configured catalog if provided, otherwise None.
+        """
+        return self._configured_json_schema
+
+    @configured_json_schema.setter
+    def configured_json_schema(self, json_schema: Dict[str, Any]) -> None:
+        self._configured_json_schema = json_schema

@@ -5,9 +5,10 @@ package io.airbyte.integrations.base.destination.typing_deduping
 
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : DestinationV1V2Migrator {
     @Throws(Exception::class)
@@ -16,19 +17,18 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
         destinationHandler: DestinationHandler<*>,
         streamConfig: StreamConfig
     ) {
-        LOGGER.info(
-            "Assessing whether migration is necessary for stream {}",
-            streamConfig.id.finalName
-        )
+        LOGGER.info {
+            "Assessing whether migration is necessary for stream ${streamConfig.id.finalName}"
+        }
+
         if (shouldMigrate(streamConfig)) {
-            LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id.finalName)
+            LOGGER.info { "Starting v2 Migration for stream ${streamConfig.id.finalName}" }
             migrate(sqlGenerator, destinationHandler, streamConfig)
-            LOGGER.info(
-                "V2 Migration completed successfully for stream {}",
-                streamConfig.id.finalName
-            )
+            LOGGER.info {
+                "V2 Migration completed successfully for stream ${streamConfig.id.finalName}"
+            }
         } else {
-            LOGGER.info("No Migration Required for stream: {}", streamConfig.id.finalName)
+            LOGGER.info { "No Migration Required for stream: ${streamConfig.id.finalName}" }
         }
     }
 
@@ -41,22 +41,19 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
     @Throws(Exception::class)
     fun shouldMigrate(streamConfig: StreamConfig): Boolean {
         val v1RawTable = convertToV1RawName(streamConfig)
-        LOGGER.info(
-            "Checking whether v1 raw table {} in dataset {} exists",
-            v1RawTable.tableName,
-            v1RawTable.namespace
-        )
+        LOGGER.info {
+            "Checking whether v1 raw table ${v1RawTable.tableName} in dataset ${v1RawTable.namespace} exists"
+        }
         val syncModeNeedsMigration =
             isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode)
         val noValidV2RawTableExists = !doesValidV2RawTableAlreadyExist(streamConfig)
         val aValidV1RawTableExists =
             doesValidV1RawTableExist(v1RawTable.namespace, v1RawTable.tableName)
-        LOGGER.info(
-            "Migration Info: Required for Sync mode: {}, No existing v2 raw tables: {}, A v1 raw table exists: {}",
-            syncModeNeedsMigration,
-            noValidV2RawTableExists,
-            aValidV1RawTableExists
-        )
+        LOGGER.info {
+            "Migration Info: Required for Sync mode: $syncModeNeedsMigration, " +
+                "No existing v2 raw tables: $noValidV2RawTableExists, " +
+                "A v1 raw table exists: $aValidV1RawTableExists"
+        }
         return syncModeNeedsMigration && noValidV2RawTableExists && aValidV1RawTableExists
     }
 
@@ -118,15 +115,19 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
         if (
             !(schemaMatchesExpectation(
                 existingV2AirbyteRawTable,
-                JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META
+                JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META,
             ) ||
                 schemaMatchesExpectation(
                     existingV2AirbyteRawTable,
-                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
+                ) ||
+                schemaMatchesExpectation(
+                    existingV2AirbyteRawTable,
+                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITH_GENERATION,
                 ))
         ) {
             throw UnexpectedSchemaException(
-                "Destination V2 Raw Table does not match expected Schema"
+                "Destination V2 Raw Table does not match expected Schema",
             )
         }
     }
@@ -219,9 +220,4 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      * @return the valid v1 name and namespace for the same stream
      */
     abstract fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName
-
-    companion object {
-        protected val LOGGER: Logger =
-            LoggerFactory.getLogger(BaseDestinationV1V2Migrator::class.java)
-    }
 }

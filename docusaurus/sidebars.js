@@ -4,6 +4,7 @@ const {
   parseMarkdownContentTitle,
   parseFrontMatter,
 } = require("@docusaurus/utils");
+const { type } = require("os");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -112,7 +113,7 @@ const sourceMongoDB = {
     {
       type: "doc",
       label: "Migration Guide",
-      id: "integrations/sources/mongodb-v2/mongodb-v2-migrations",
+      id: "integrations/sources/mongodb-v2-migrations",
     },
     {
       type: "doc",
@@ -178,16 +179,15 @@ const sectionHeader = (title) => ({
 
 const buildAConnector = {
   type: "category",
-  label: "Build a Connector",
+  label: "Building Connectors",
+  link: {
+    type: "doc",
+    id: "connector-development/README",
+  },
   items: [
     {
-      type: "doc",
-      label: "Overview",
-      id: "connector-development/README",
-    },
-    {
       type: "category",
-      label: "Connector Builder",
+      label: "No-Code Connector Builder",
       items: [
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/connector-builder-compatibility",
@@ -208,10 +208,10 @@ const buildAConnector = {
     },
     {
       type: "category",
-      label: "Low-code connector development",
+      label: "Low-Code CDK",
       items: [
         {
-          label: "Low-code CDK Intro",
+          label: "Low-Code CDK Intro",
           type: "doc",
           id: "connector-development/config-based/low-code-cdk-overview",
         },
@@ -262,7 +262,7 @@ const buildAConnector = {
 
     {
       type: "category",
-      label: "Connector Development Kit",
+      label: "Python CDK",
       link: {
         type: "doc",
         id: "connector-development/cdk-python/README",
@@ -275,6 +275,29 @@ const buildAConnector = {
         "connector-development/cdk-python/http-streams",
         "connector-development/cdk-python/python-concepts",
         "connector-development/cdk-python/stream-slices",
+        {
+          type: "category",
+          label: "Tutorials",
+          items: [
+            "connector-development/tutorials/cdk-speedrun",
+            {
+              type: "category",
+              label: "Python CDK: Creating a Python Source",
+              items: [
+                "connector-development/tutorials/custom-python-connector/getting-started",
+                "connector-development/tutorials/custom-python-connector/environment-setup",
+                "connector-development/tutorials/custom-python-connector/reading-a-page",
+                "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
+                "connector-development/tutorials/custom-python-connector/check-and-error-handling",
+                "connector-development/tutorials/custom-python-connector/discover",
+                "connector-development/tutorials/custom-python-connector/incremental-reads",
+                "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
+                "connector-development/tutorials/custom-python-connector/concurrency",
+              ],
+            },
+            
+          ],
+        },
       ],
     },
     {
@@ -286,29 +309,6 @@ const buildAConnector = {
       },
       items: [
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
-      ],
-    },
-    {
-      type: "category",
-      label: "Tutorials",
-      items: [
-        "connector-development/tutorials/cdk-speedrun",
-        {
-          type: "category",
-          label: "Python CDK: Creating a Python Source",
-          items: [
-            "connector-development/tutorials/custom-python-connector/getting-started",
-            "connector-development/tutorials/custom-python-connector/environment-setup",
-            "connector-development/tutorials/custom-python-connector/reading-a-page",
-            "connector-development/tutorials/custom-python-connector/reading-multiple-pages",
-            "connector-development/tutorials/custom-python-connector/check-and-error-handling",
-            "connector-development/tutorials/custom-python-connector/discover",
-            "connector-development/tutorials/custom-python-connector/incremental-reads",
-            "connector-development/tutorials/custom-python-connector/reading-from-a-subresource",
-            "connector-development/tutorials/custom-python-connector/concurrency",
-          ],
-        },
-        "connector-development/tutorials/building-a-java-destination",
       ],
     },
     "connector-development/connector-specification-reference",
@@ -396,11 +396,6 @@ const deployAirbyte = {
   items: [
     {
       type: "doc",
-      label: "Quickstart",
-      id: "deploying-airbyte/quickstart",
-    },
-    {
-      type: "doc",
       label: "Using docker compose",
       id: "deploying-airbyte/docker-compose",
     },
@@ -452,6 +447,37 @@ const deployAirbyte = {
   ],
 };
 
+const connectionConfigurations = {
+  type: "category",
+  label: "Data Transfer Options",
+  link: {
+    type: "doc",
+    id: "cloud/managing-airbyte-cloud/configuring-connections",
+  },
+  items: [
+    "using-airbyte/core-concepts/sync-schedules",
+    "using-airbyte/core-concepts/namespaces",
+    { 
+      type: "doc",
+      id: "using-airbyte/schema-change-management",
+    },
+    {
+      type: "category",
+      label: "Sync Modes",
+      link: {
+        type: "doc",
+        id: "using-airbyte/core-concepts/sync-modes/README",
+      },
+      items: [
+        "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
+        "using-airbyte/core-concepts/sync-modes/incremental-append",
+        "using-airbyte/core-concepts/sync-modes/full-refresh-append",
+        "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+      ],
+    },
+    ],
+    };
+
 const understandingAirbyte = {
   type: "category",
   label: "Understand Airbyte",
@@ -473,70 +499,43 @@ const understandingAirbyte = {
 
 module.exports = {
   docs: [
-    sectionHeader("Airbyte Connectors"),
-    connectorCatalog,
-    buildAConnector,
-    "integrations/connector-support-levels",
-    sectionHeader("Using Airbyte"),
+    sectionHeader("Getting Started"),
+    {
+      type: "doc",
+        id: "using-airbyte/getting-started/readme",
+    },
+    {
+        type: "doc",
+        id: "using-airbyte/core-concepts/readme",
+    },
+    {
+      type: "doc",
+      label: "Quickstart",
+      id: "using-airbyte/getting-started/oss-quickstart",
+    },
     {
       type: "category",
-      label: "Getting Started",
-      link: {
-        type: "doc",
-        id: "using-airbyte/getting-started/readme",
-      },
+      label: "Moving Data",
       items: [
-        "using-airbyte/core-concepts/readme",
         "using-airbyte/getting-started/add-a-source",
         "using-airbyte/getting-started/add-a-destination",
         "using-airbyte/getting-started/set-up-a-connection",
       ],
     },
+    sectionHeader("Airbyte Connectors"),
+    connectorCatalog,
+    buildAConnector,
+    "integrations/connector-support-levels",
+    sectionHeader("Using Airbyte"),
+    connectionConfigurations,
+    { 
+      type: "doc",
+      id: "using-airbyte/core-concepts/typing-deduping",
+    },
     {
       type: "category",
-      label: "Configuring Connections",
-      link: {
-        type: "doc",
-        id: "cloud/managing-airbyte-cloud/configuring-connections",
-      },
-      items: [
-        "using-airbyte/core-concepts/sync-schedules",
-        "using-airbyte/core-concepts/namespaces",
-        {
-          type: "category",
-          label: "Sync Modes",
-          link: {
-            type: "doc",
-            id: "using-airbyte/core-concepts/sync-modes/README",
-          },
-          items: [
-            "using-airbyte/core-concepts/sync-modes/incremental-append-deduped",
-            "using-airbyte/core-concepts/sync-modes/incremental-append",
-            "using-airbyte/core-concepts/sync-modes/full-refresh-append",
-            "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
-          ],
-        },
-        {
-          type: "category",
-          label: "Typing and Deduping",
-          link: {
-            type: "doc",
-            id: "using-airbyte/core-concepts/typing-deduping",
-          },
-          items: ["using-airbyte/core-concepts/basic-normalization"],
-        },
-        "using-airbyte/schema-change-management",
-        {
-          type: "category",
-          label: "Transformations",
-          items: [
-            "cloud/managing-airbyte-cloud/dbt-cloud-integration",
-            "operator-guides/transformation-and-normalization/transformations-with-sql",
-            "operator-guides/transformation-and-normalization/transformations-with-dbt",
-            "operator-guides/transformation-and-normalization/transformations-with-airbyte",
-          ],
-        },
-      ],
+      label: "Transformations",
+      items: ["cloud/managing-airbyte-cloud/dbt-cloud-integration"],
     },
     {
       type: "category",
@@ -545,7 +544,8 @@ module.exports = {
         "cloud/managing-airbyte-cloud/review-connection-status",
         "cloud/managing-airbyte-cloud/review-sync-history",
         "operator-guides/browsing-output-logs",
-        "operator-guides/reset",
+        "operator-guides/clear",
+        "operator-guides/refreshes",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
@@ -561,10 +561,16 @@ module.exports = {
       items: [
         "enterprise-setup/implementation-guide",
         "enterprise-setup/api-access-config",
+        "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
       ],
     },
     "operator-guides/upgrading-airbyte",
+    {
+      type: "doc",
+      label: "Managing Connector Updates",
+      id: "managing-airbyte/connector-updates",
+    },
     {
       type: "category",
       label: "Configuring Airbyte",
@@ -578,6 +584,7 @@ module.exports = {
         "operator-guides/telemetry",
       ],
     },
+    
     {
       type: "category",
       label: "Access Management",
@@ -596,7 +603,18 @@ module.exports = {
             },
           ],
         },
-      ],
+        {
+          type: "category",
+          label: "Role-Based Access Control (RBAC)",
+          link: {
+            type: "doc",
+            id: "access-management/rbac",
+          },
+          items: [
+            {type: "doc", id: "access-management/role-mapping"},
+          ],
+        },
+      ]
     },
     {
       type: "category",
@@ -675,6 +693,8 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/june_2024",
+        "release_notes/may_2024",
         "release_notes/april_2024",
         "release_notes/march_2024",
         "release_notes/february_2024",
@@ -701,3 +721,10 @@ module.exports = {
     },
   ],
 };
+
+// Any temporarily archived content should be added here with a comment
+// to indicate when it was archived and why.
+// You can still view docs that are not linked to in the sidebar. 
+
+// Java Destination template is not currently available for use
+// "connector-development/tutorials/building-a-java-destination",

@@ -1,1 +1,1 @@
-{"_AIRBYTE_EXTRACTED_AT": "1970-01-01T00:00:02.000000000Z", "_AIRBYTE_META":{"errors":[]}, "ID1": 1, "ID2": 200, "UPDATED_AT": "2001-01-02T00:00:00.000000000Z", "NAME": "Someone completely different v2"}
+{"_AIRBYTE_EXTRACTED_AT": "1970-01-01T00:00:02.000000000Z", "_AIRBYTE_META": {"changes":[],"sync_id":42}, "_AIRBYTE_GENERATION_ID": 43, "ID1": 1, "ID2": 200, "UPDATED_AT": "2001-01-02T00:00:00.000000000Z", "NAME": "Someone completely different v2"}

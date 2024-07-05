@@ -4,6 +4,7 @@ from .AirbyteInternal import *
 from .AllowedHosts import *
 from .ConnectorBuildOptions import *
 from .ConnectorMetadataDefinitionV0 import *
+from .ConnectorMetrics import *
 from .ConnectorPackageInfo import *
 from .ConnectorRegistryDestinationDefinition import *
 from .ConnectorRegistrySourceDefinition import *

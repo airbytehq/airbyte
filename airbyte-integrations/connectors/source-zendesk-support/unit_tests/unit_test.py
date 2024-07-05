@@ -5,6 +5,7 @@
 
 import calendar
 import copy
+import logging
 import re
 from datetime import datetime
 from unittest.mock import Mock, patch
@@ -15,7 +16,6 @@ import pendulum
 import pytest
 import pytz
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
@@ -175,7 +175,7 @@ def test_check(response, start_date, check_passed):
     config = copy.deepcopy(TEST_CONFIG)
     config["start_date"] = start_date
     with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        ok, _ = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=config)
+        ok, _ = SourceZendeskSupport().check_connection(logger=logging.Logger, config=config)
         assert check_passed == ok
         if ok:
             mock_method.assert_called()
@@ -190,7 +190,7 @@ def test_check(response, start_date, check_passed):
             403,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
             ],
             None,
         ),
@@ -199,7 +199,7 @@ def test_check(response, start_date, check_passed):
             404,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 404 and error message None. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
             ],
             "Not Found",
         ),

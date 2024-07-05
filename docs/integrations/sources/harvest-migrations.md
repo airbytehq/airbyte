@@ -29,4 +29,4 @@ To clear your data for the impacted streams, follow the steps below:
 2. Select the **Status** tab.
    1. In the **Enabled streams** list, click the three dots on the right side of the stream and select **Clear Data**.
 
-After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).

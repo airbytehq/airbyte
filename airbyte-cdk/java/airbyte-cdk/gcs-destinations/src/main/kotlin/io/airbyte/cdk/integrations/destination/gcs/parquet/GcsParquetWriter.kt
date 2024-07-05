@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.destination.s3.parquet.UploadParquetFormatCon
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.net.URI
 import java.sql.Timestamp
@@ -27,9 +28,9 @@ import org.apache.hadoop.fs.Path
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.util.HadoopOutputFile
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
+
+private val LOGGER = KotlinLogging.logger {}
 
 class GcsParquetWriter(
     config: GcsDestinationConfig,
@@ -48,19 +49,14 @@ class GcsParquetWriter(
         val outputFilename: String =
             BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, FileUploadFormat.PARQUET)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
-        LOGGER.info(
-            "Storage path for stream '{}': {}/{}",
-            stream.name,
-            config.bucketName,
-            outputPath
-        )
+        LOGGER.info { "Storage path for stream '${stream.name}': ${config.bucketName}/$outputPath" }
 
         fileLocation =
             String.format("s3a://%s/%s/%s", config.bucketName, outputPrefix, outputFilename)
         val uri = URI(fileLocation)
         val path = Path(uri)
 
-        LOGGER.info("Full GCS path for stream '{}': {}", stream.name, path)
+        LOGGER.info { "Full GCS path for stream '${stream.name}': $path" }
 
         val formatConfig = config.formatConfig as UploadParquetFormatConfig
         val hadoopConfig = getHadoopConfig(config)
@@ -93,13 +89,13 @@ class GcsParquetWriter(
     @Throws(IOException::class)
     override fun close(hasFailed: Boolean) {
         if (hasFailed) {
-            LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.name)
+            LOGGER.warn { "Failure detected. Aborting upload of stream '${stream.name}'..." }
             parquetWriter.close()
-            LOGGER.warn("Upload of stream '{}' aborted.", stream.name)
+            LOGGER.warn { "Upload of stream '${stream.name}' aborted." }
         } else {
-            LOGGER.info("Uploading remaining data for stream '{}'.", stream.name)
+            LOGGER.info { "Uploading remaining data for stream '${stream.name}'." }
             parquetWriter.close()
-            LOGGER.info("Upload completed for stream '{}'.", stream.name)
+            LOGGER.info { "Upload completed for stream '${stream.name}'." }
         }
     }
 
@@ -107,7 +103,7 @@ class GcsParquetWriter(
         get() = FileUploadFormat.PARQUET
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(GcsParquetWriter::class.java)
+
         private val MAPPER = ObjectMapper()
 
         fun getHadoopConfig(config: GcsDestinationConfig): Configuration {

@@ -1,28 +1,28 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-mailerlite:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_mailerlite/spec.yaml"
+    tests:
+      - spec_path: "source_mailerlite/spec.yaml"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.0 # The forms_popup and forms_promotion has schema changes from strings to booleans
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
-  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-  #      expect_records:
-  #        path: "integration_tests/expected_records.jsonl"
-  #        exact_order: no
-  # incremental: # TODO if your connector does not implement incremental sync, remove this block
-  #   - config_path: "secrets/config.json"
-  #     configured_catalog_path: "integration_tests/configured_catalog.json"
-  #     future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"

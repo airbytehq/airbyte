@@ -37,7 +37,12 @@ interface SerializableBuffer : AutoCloseable {
      * @throws Exception
      */
     @Throws(Exception::class)
-    fun accept(recordString: String, airbyteMetaString: String, emittedAt: Long): Long
+    fun accept(
+        recordString: String,
+        airbyteMetaString: String,
+        generationId: Long,
+        emittedAt: Long
+    ): Long
 
     /** Flush a buffer implementation. */
     @Throws(Exception::class) fun flush()

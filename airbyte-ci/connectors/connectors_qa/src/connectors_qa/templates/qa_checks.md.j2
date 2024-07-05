@@ -13,6 +13,7 @@ They are by no mean replacing the need for a manual review of the connector code
 _Applies to the following connector types: {{ ', '.join(check.applies_to_connector_types) }}_
 _Applies to the following connector languages: {{ ', '.join(check.applies_to_connector_languages) }}_
 _Applies to connector with {{ ', '.join(check.applies_to_connector_support_levels) if check.applies_to_connector_support_levels else 'any' }} support level_
+_Applies to connector with {{ ', '.join(check.applies_to_connector_cloud_usage) if check.applies_to_connector_cloud_usage else 'any' }} Airbyte usage level_
 
 {{ check.description }}
 {% endfor %}

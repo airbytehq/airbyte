@@ -3,7 +3,7 @@
 #
 
 import copy
-import json
+from enum import EnumMeta
 from typing import TypeVar
 
 import mergedeep
@@ -55,3 +55,15 @@ def default_none_to_dict(value, key, obj):
 
     if value is None:
         obj[key] = {}
+
+
+class CaseInsensitveKeys(EnumMeta):
+    """A metaclass for creating enums with case-insensitive keys."""
+
+    def __getitem__(cls, item):
+        try:
+            return super().__getitem__(item)
+        except:
+            for key in cls._member_map_:
+                if key.casefold() == item.casefold():
+                    return super().__getitem__(key)

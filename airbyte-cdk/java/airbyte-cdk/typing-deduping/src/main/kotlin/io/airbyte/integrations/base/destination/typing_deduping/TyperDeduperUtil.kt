@@ -13,7 +13,6 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.ExecutorService
-import java.util.stream.Collectors.toMap
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -46,21 +45,10 @@ object TyperDeduperUtil {
             // Execute the migration on all streams in parallel
             val futures:
                 Map<StreamId, CompletionStage<Migration.MigrationResult<DestinationState>>> =
-                currentStates
-                    .stream()
-                    .collect(
-                        toMap(
-                            { it.streamConfig.id },
-                            { initialState ->
-                                runMigrationsAsync(
-                                    executorService,
-                                    destinationHandler,
-                                    migration,
-                                    initialState
-                                )
-                            }
-                        )
-                    )
+                currentStates.associate {
+                    it.streamConfig.id to
+                        runMigrationsAsync(executorService, destinationHandler, migration, it)
+                }
             val migrationResultFutures =
                 CompletableFutures.allOf(futures.values.toList()).toCompletableFuture().join()
             getResultsOrLogAndThrowFirst(
