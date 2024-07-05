@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
 ## 2.0.0
 Update  dependency to pydantic v2, and  dependency to pydantic v2 models. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
 
