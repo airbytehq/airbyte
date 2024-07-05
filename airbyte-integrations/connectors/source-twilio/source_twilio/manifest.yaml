@@ -460,12 +460,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_generated
         cursor_datetime_formats:
-          - '%Y-%m-%dT%H:%M:%SZ'
-        datetime_format: '%Y-%m-%d'
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           field_name: StartDate=
@@ -476,8 +476,8 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -625,12 +625,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: end_time
         cursor_datetime_formats:
-          - '%a, %d %b %Y %H:%M:%S %z'
-        datetime_format: '%Y-%m-%d'
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           field_name: EndTime>
@@ -641,8 +641,8 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -692,12 +692,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - '%a, %d %b %Y %H:%M:%S %z'
-        datetime_format: '%Y-%m-%d'
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           field_name: DateCreated>
@@ -708,8 +708,8 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -902,12 +902,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - '%a, %d %b %Y %H:%M:%S %z'
-        datetime_format: '%Y-%m-%d'
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           field_name: DateCreated>
@@ -918,8 +918,8 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1151,12 +1151,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_sent
         cursor_datetime_formats:
-          - '%a, %d %b %Y %H:%M:%S %z'
-        datetime_format: '%Y-%m-%d'
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           field_name: DateSent>
@@ -1167,8 +1167,8 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1226,12 +1226,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - '%a, %d %b %Y %H:%M:%S %z'
-        datetime_format: '%Y-%m-%d'
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           field_name: DateCreated>
@@ -1242,8 +1242,8 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1294,12 +1294,12 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: start_date
         cursor_datetime_formats:
-          - '%a, %d %b %Y %H:%M:%S %z'
-        datetime_format: '%Y-%m-%d'
+          - "%a, %d %b %Y %H:%M:%S %z"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: '{{ config["start_date"] }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
           field_name: StartDate>
@@ -1310,8 +1310,8 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
-          datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1764,7 +1764,6 @@ schemas:
           - sid
   Addresses:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -1853,7 +1852,6 @@ schemas:
           - sid
   Available Phone Number Countries:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       beta:
@@ -1900,7 +1898,6 @@ schemas:
           - string
   Available Phone Numbers Local:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       address_requirements:
@@ -1994,7 +1991,6 @@ schemas:
           - string
   Available Phone Numbers Mobile:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       address_requirements:
@@ -2088,7 +2084,6 @@ schemas:
           - string
   Available Phone Numbers Toll-Free:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       address_requirements:
@@ -2184,7 +2179,6 @@ schemas:
           - string
   Incoming Phone Numbers:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -2405,7 +2399,6 @@ schemas:
           - string
   Keys:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       date_created:
@@ -2432,7 +2425,6 @@ schemas:
           - string
   Flows:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -2494,7 +2486,6 @@ schemas:
           - integer
   Step:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -2572,7 +2563,6 @@ schemas:
           - string
   Alerts:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -2655,7 +2645,6 @@ schemas:
           - string
   Applications:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -2777,7 +2766,6 @@ schemas:
       - sid
   Dependent Phone Numbers:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -2939,7 +2927,6 @@ schemas:
       - sid
   Calls:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -3137,7 +3124,6 @@ schemas:
       - sid
   Conferences:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -3218,7 +3204,6 @@ schemas:
       - sid
   Conference Participants:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -3418,7 +3403,6 @@ schemas:
           - string
   Recordings:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -3557,7 +3541,6 @@ schemas:
       - sid
   Services:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -3732,7 +3715,6 @@ schemas:
           - string
   Verify Services:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -3925,7 +3907,6 @@ schemas:
       - sid
   Roles:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -3983,7 +3964,6 @@ schemas:
       - sid
   Transcriptions:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4000,8 +3980,7 @@ schemas:
           - string
       date_created:
         description: The date and time when the transcription was created.
-        format: date-time        
-        datetime_format: '%a, %d %b %Y %H:%M:%S %z'
+        format: date-time
         type:
           - "null"
           - string
@@ -4062,7 +4041,6 @@ schemas:
       - sid
   Trunks:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4198,7 +4176,6 @@ schemas:
       - sid
   Queues:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4266,7 +4243,6 @@ schemas:
       - sid
   Messages:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4440,7 +4416,6 @@ schemas:
           - string
   Usage Records:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4580,7 +4555,6 @@ schemas:
       - start_date
   Usage Triggers:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4670,7 +4644,6 @@ schemas:
       - sid
   Conversations:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4748,7 +4721,6 @@ schemas:
       - sid
   Conversation Participants:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4833,7 +4805,6 @@ schemas:
       - sid
   Conversation Messages:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -4988,7 +4959,6 @@ schemas:
       - sid
   Users:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       account_sid:
@@ -5068,7 +5038,6 @@ schemas:
       - sid
   User Conversations:
     type: object
-    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       attributes:
