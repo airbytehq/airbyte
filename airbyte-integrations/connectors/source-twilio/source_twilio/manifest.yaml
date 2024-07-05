@@ -460,7 +460,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_generated
         cursor_datetime_formats:
-          - '%a, %d %b %Y %H:%M:%S %z'
+          - '%Y-%m-%dT%H:%M:%SZ'
         datetime_format: '%Y-%m-%d'
         start_datetime:
           type: MinMaxDatetime
@@ -1469,7 +1469,7 @@ definitions:
       type: DeclarativeStream
       name: user_conversations
       primary_key:
-        - account_sid
+        - conversation_sid
       retriever:
         type: SimpleRetriever
         requester:
@@ -1482,7 +1482,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - conversations
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -3999,7 +4000,8 @@ schemas:
           - string
       date_created:
         description: The date and time when the transcription was created.
-        format: date-time
+        format: date-time        
+        datetime_format: '%a, %d %b %Y %H:%M:%S %z'
         type:
           - "null"
           - string
@@ -5069,13 +5071,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      account_sid:
-        description:
-          The unique identifier of the Twilio account the conversation belongs
-          to.
-        type:
-          - "null"
-          - string
       attributes:
         description: Additional metadata or attributes associated with the conversation.
         type:
@@ -5116,13 +5111,6 @@ schemas:
         type:
           - "null"
           - string
-      last_read_message_index:
-        description:
-          The index of the last message in the conversation that has been read
-          by the user.
-        type:
-          - "null"
-          - integer
       links:
         description: Contains links related to the user conversation data.
         properties:
@@ -5149,27 +5137,6 @@ schemas:
         type:
           - "null"
           - string
-      timers:
-        description: Contains timers or time-related information for the user conversation.
-        properties:
-          chat_service_sid:
-            description: Additional timer related to the chat service.
-            type:
-              - "null"
-              - string
-        type:
-          - "null"
-          - object
-      unique_name:
-        description: A unique name assigned to the conversation.
-        type:
-          - "null"
-          - string
-      unread_messages_count:
-        description: The count of unread messages in the conversation.
-        type:
-          - "null"
-          - integer
       url:
         description: The URL to access the conversation details.
         type:

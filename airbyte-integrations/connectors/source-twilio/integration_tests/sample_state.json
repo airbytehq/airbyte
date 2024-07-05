@@ -1,78 +1,167 @@
 [
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "end_time": "2022-06-11T00:00:00Z"
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "calls",
+          "namespace": null
+        },
+        "stream_state": {
+          "states": [
+            {
+              "partition": {
+                "account_sid": "ACdade166c12e160e9ed0a6088226718fb",
+                "parent_slice": {}
+              },
+              "cursor": {
+                "end_time": "Tue, 25 Jun 2024 20:19:28 +0000"
+              }
+            }
+          ]
+        }
       },
-      "stream_descriptor": {
-        "name": "calls"
+      "sourceStats": {
+        "recordCount": 0.0
       }
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_updated": "2020-01-01T00:00:00Z"
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "conferences",
+          "namespace": null
+        },
+        "stream_state": {
+          "states": [
+            {
+              "partition": {
+                "account_sid": "ACdade166c12e160e9ed0a6088226718fb",
+                "parent_slice": {}
+              },
+              "cursor": {
+                "date_created": "Tue, 25 Jun 2024 20:19:17 +0000"
+              }
+            }
+          ]
+        }
       },
-      "stream_descriptor": {
-        "name": "conferences"
+      "sourceStats": {
+        "recordCount": 11.0
       }
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_created": "2020-01-01T00:00:00Z"
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "recordings",
+          "namespace": null
+        },
+        "stream_state": {
+          "states": [
+            {
+              "partition": {
+                "account_sid": "ACdade166c12e160e9ed0a6088226718fb",
+                "parent_slice": {}
+              },
+              "cursor": {
+                "date_created": "Mon, 10 Jun 2024 19:10:08 +0000"
+              }
+            }
+          ]
+        }
       },
-      "stream_descriptor": {
-        "name": "recordings"
+      "sourceStats": {
+        "recordCount": 0.0
       }
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_sent": "2020-01-01T00:00:00Z"
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "messages",
+          "namespace": null
+        },
+        "stream_state": {
+          "states": [
+            {
+              "partition": {
+                "account_sid": "ACdade166c12e160e9ed0a6088226718fb",
+                "parent_slice": {}
+              },
+              "cursor": {
+                "date_sent": "Wed, 08 May 2024 23:28:12 +0000"
+              }
+            }
+          ]
+        }
       },
-      "stream_descriptor": {
-        "name": "messages"
+      "sourceStats": {
+        "recordCount": 0.0
       }
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_created": "2020-01-01T00:00:00Z"
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "message_media",
+          "namespace": null
+        },
+        "stream_state": {
+          "states": []
+        }
       },
-      "stream_descriptor": {
-        "name": "message_media"
+      "sourceStats": {
+        "recordCount": 0.0
       }
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "start_date": "2020-01-01"
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "usage_records",
+          "namespace": null
+        },
+        "stream_state": {
+          "states": []
+        }
       },
-      "stream_descriptor": {
-        "name": "usage_records"
+      "sourceStats": {
+        "recordCount": 443.0
       }
     }
   },
   {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": {
-        "date_updated": "2020-01-01T00:00:00Z"
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "alerts",
+          "namespace": null
+        },
+        "stream_state": {
+          "date_generated": "2024-06-21T21:27:56Z"
+        }
       },
-      "stream_descriptor": {
-        "name": "alerts"
+      "sourceStats": {
+        "recordCount": 1.0
       }
     }
   }
