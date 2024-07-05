@@ -1,33 +1,42 @@
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
+  allowedHosts:
+    hosts:
+      - "cloudtrail.*.amazonaws.com"
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-07-30"
+        message:
+          "The verison migrates the Aws CloudTrail connector to the low-code framework for greater maintainability.
+          !! Important: The management_events stream changed it's EventTime field from integer to float.
+          The `start_date` parameter is now optional and the connector now takes current date as default start date "
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-aws-cloudtrail
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
-  dockerImageTag: 0.1.11
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-aws-cloudtrail
-  documentationUrl: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
   githubIssueLabel: source-aws-cloudtrail
-  icon: awscloudtrail.svg
+  icon: aws-cloudtrail.svg
   license: MIT
-  name: AWS CloudTrail
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  name: Aws Cloudtrail
   releaseStage: alpha
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-aws-cloudtrail
+  releaseDate: 2021-06-23
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/aws-cloudtrail
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests

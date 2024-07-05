@@ -12,7 +12,7 @@ from typing import Dict, List
 
 from dagger import Client as DaggerClient
 from dagger import Secret as DaggerSecret
-from google.cloud import secretmanager_v1
+from google.cloud import secretmanager_v1  # type: ignore
 from google.oauth2 import service_account  # type: ignore
 
 

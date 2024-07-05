@@ -4,6 +4,7 @@
 import base64
 import hashlib
 import json
+import re
 from typing import Any, Optional
 
 
@@ -105,5 +106,15 @@ def string(value: Any) -> str:
     return ret
 
 
-_filters_list = [hash, base64encode, base64decode, string]
+def regex_search(value: str, regex: str) -> str:
+    """
+    Match a regular expression against a string and return the first match group if it exists.
+    """
+    match = re.search(regex, value)
+    if match and len(match.groups()) > 0:
+        return match.group(1)
+    return ""
+
+
+_filters_list = [hash, base64encode, base64decode, string, regex_search]
 filters = {f.__name__: f for f in _filters_list}

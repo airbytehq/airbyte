@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-smaily
   githubIssueLabel: source-smaily
   icon: smaily.svg

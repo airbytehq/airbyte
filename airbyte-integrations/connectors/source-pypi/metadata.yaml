@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 88ecd3a8-5f5b-11ed-9b6a-0242ac120002
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-pypi
   documentationUrl: https://docs.airbyte.com/integrations/sources/pypi
   githubIssueLabel: source-pypi

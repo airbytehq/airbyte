@@ -32,6 +32,8 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.7 | 2024-06-25 | [40402](https://github.com/airbytehq/airbyte/pull/40402) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [40010](https://github.com/airbytehq/airbyte/pull/40010) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39165](https://github.com/airbytehq/airbyte/pull/39165) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-05-28 | [38730](https://github.com/airbytehq/airbyte/pull/38730) | Make compatible with builder. |
 | 0.1.3 | 2024-04-19 | [37195](https://github.com/airbytehq/airbyte/pull/37195) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

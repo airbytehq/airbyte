@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f96bb511-5e3c-48fc-b408-547953cd81a4
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/source-launchdarkly
   githubIssueLabel: source-launchdarkly
   icon: launchdarkly.svg
