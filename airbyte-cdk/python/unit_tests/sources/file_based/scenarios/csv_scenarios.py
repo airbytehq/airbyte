@@ -421,7 +421,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                 },
                                 "resent_n_files_to_read_for_schema_discovery": {
                                     "title": "Files To Read For Schema Discover",
-                                    "description": "The number of files which will be used to discover the schema for this stream.",
+                                    "description": "The number of resent files which will be used to discover the schema for this stream.",
                                     "exclusiveMinimum": 0,
                                     "type": "integer",
                                 }
@@ -863,7 +863,7 @@ multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
                         ("val11c", "val12c", "val13c", "val14c"),
                         ("val21c", "val22c", "val23c", "val24c"),
                     ],
-                    "last_modified": "2023-06-05T03:54:07.000Z",
+                    "last_modified": "2023-06-06T03:54:07.000Z",
                 },
             }
         )
@@ -880,6 +880,7 @@ multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
                             "col1": {"type": ["null", "string"]},
                             "col2": {"type": ["null", "string"]},
                             "col3": {"type": ["null", "string"]},
+                            "col4": {"type": ["null", "string"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},
                         },
@@ -937,7 +938,8 @@ multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
                     "col1": "val11c",
                     "col2": "val12c",
                     "col3": "val13c",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "col4": "val14c",
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
                     "_ab_source_file_url": "c.csv",
                 },
                 "stream": "stream1",
@@ -947,7 +949,8 @@ multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
                     "col1": "val21c",
                     "col2": "val22c",
                     "col3": "val23c",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "col4": "val24c",
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
                     "_ab_source_file_url": "c.csv",
                 },
                 "stream": "stream1",
