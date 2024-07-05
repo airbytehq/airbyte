@@ -43,11 +43,13 @@ The NASA connector should not run into NASA API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
-| 0.2.3 | 2024-06-15 | [39498](https://github.com/airbytehq/airbyte/pull/39498) | Make compatible with builder                 |
-| 0.2.2 | 2024-06-06 | [39218](https://github.com/airbytehq/airbyte/pull/39218) | [autopull] Upgrade base image to v1.2.2      |
-| 0.2.1 | 2024-05-21 | [38520](https://github.com/airbytehq/airbyte/pull/38520) | [autopull] base image + poetry + up_to_date  |
-| 0.2.0 | 2023-10-10 | [31051](https://github.com/airbytehq/airbyte/pull/31051) | Migrate to lowcode                           |
-| 0.1.1 | 2023-02-13 | [22934](https://github.com/airbytehq/airbyte/pull/22934) | Specified date formatting in specification   |
-| 0.1.0 | 2022-10-24 | [18394](https://github.com/airbytehq/airbyte/pull/18394) | 🎉 New Source: NASA APOD                     |
+| 0.2.5 | 2024-06-25 | [40416](https://github.com/airbytehq/airbyte/pull/40416) | Update dependencies |
+| 0.2.4 | 2024-06-22 | [40114](https://github.com/airbytehq/airbyte/pull/40114) | Update dependencies |
+| 0.2.3 | 2024-06-15 | [39498](https://github.com/airbytehq/airbyte/pull/39498) | Make compatible with builder |
+| 0.2.2 | 2024-06-06 | [39218](https://github.com/airbytehq/airbyte/pull/39218) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.1 | 2024-05-21 | [38520](https://github.com/airbytehq/airbyte/pull/38520) | [autopull] base image + poetry + up_to_date |
+| 0.2.0 | 2023-10-10 | [31051](https://github.com/airbytehq/airbyte/pull/31051) | Migrate to lowcode |
+| 0.1.1 | 2023-02-13 | [22934](https://github.com/airbytehq/airbyte/pull/22934) | Specified date formatting in specification |
+| 0.1.0 | 2022-10-24 | [18394](https://github.com/airbytehq/airbyte/pull/18394) | 🎉 New Source: NASA APOD |
 
 </details>

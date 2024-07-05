@@ -18,7 +18,7 @@ class TestEvaluationMode(Enum):
     tests only.
 
     The diagnostic mode can be made available to a test using the @pytest.mark.allow_diagnostic_mode decorator,
-    and passing in the --validation-test-mode=diagnostic flag.
+    and passing in the --test-evaluation-mode=diagnostic flag.
     """
 
     DIAGNOSTIC = "diagnostic"

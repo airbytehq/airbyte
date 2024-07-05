@@ -216,6 +216,7 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
+            LOGGER.error(e) { "caught exception!" }
             if (exceptionHandler != null)
                 exceptionHandler.handleException(e, parsed.command, outputRecordCollector)
             else {

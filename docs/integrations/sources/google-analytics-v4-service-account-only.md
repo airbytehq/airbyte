@@ -8,6 +8,12 @@ This connector supports Universal Analytics properties through the [Reporting AP
 
 </HideInUI>
 
+:::danger
+
+Google Analytics Universal Analytics Source Connector will be deprecated due to the deprecation of the Google Analytics Universal Analytics API by Google. This deprecation is scheduled by Google on July 1, 2024 (see Google's Documentation for more details). Transition to the Google Analytics 4 (GA4) Source Connector by July 1, 2024, to continue accessing your analytics data.
+
+:::
+
 :::caution
 
 **The Google Analytics (Universal Analytics) connector will be deprecated soon.**
@@ -267,7 +273,8 @@ The Google Analytics connector should not run into the "requests per 100 seconds
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                  |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
+|:--------|:-----------| :------------------------------------------------------- |:-----------------------------------------|
+| 0.1.0   | 2024-07-01 | [40244](https://github.com/airbytehq/airbyte/pull/40244) | Deprecate the connector                  |
 | 0.0.2   | 2024-04-19 | [37432](https://github.com/airbytehq/airbyte/pull/36267) | Fix empty response error for test stream |
 | 0.0.1   | 2024-01-29 | [34323](https://github.com/airbytehq/airbyte/pull/34323) | Initial Release                          |
 
