@@ -4,32 +4,52 @@ import TabItem from '@theme/TabItem';
 
 # Deploying Airbyte
 
-The Airbyte platform is a sophisticated data integration platform that is built to handle large 
-amounts of data movement. If you are looking for a more streamlined way to run Airbyte connectors
-you can visit the [PyAibyte](#using-airbyte/pyairbyte/getting-started) documentation. If you are 
-looking to quickly deploy Airbyte on your local machine you can visit the 
-[Quickstart](#deploying-airbyte/quickstart) guide.
+The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement. If setting up an Airbyte server does not fit your usecase needs (ie. You're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](./using-airbyte/pyairbyte/getting-started) documentation useful. To quickly deploy Airbyte on your local machine you can visit the 
+[Quickstart](./using-airbyte/getting-started/oss-quickstart) guide.
 
 ## Understanding the Airbyte Deployment
 
-Airbyte is a platform that is built to be deployed in a cloud environment. The platform has been 
-built on top of Kubernetes. The recommended way of deploying Airbyte is to use Helm and the 
-documented Helm chart values. The Helm chart is available in the Airbyte repository here: #TODO
+Airbyte is built to be deployed on top of Kubernetes in a cloud environment. We recommend deploying Airbyte using Helm and the documented Helm chart values. Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information.
 
-The [Ingrastructure](#deploying-airbyte/infrastructure) section describes the Airbyte's recommended
-way to setup the needed Cloud Infrastructure for each supported platform. These guides will help you
-setup the necessary infrastructure for deploying Airbyte, but you are not required to follow these
-guides and Airbyte tries to be as flexible as possible to fit into your existing infrastructure.
+The [Infrastructure](#deploying-airbyte/infrastructure) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order  to fit into your existing infrastructure.
 
 ## Integrations
 
-The Airbyte platform has been built to integrate into your Cloud infrastructure. You can 
+The Airbyte platform is built to integrate with your existing cloud infrastructure. You can 
 configure various components of the platform to suit your needs. This includes an object store,
 such as S3 or GCS for storing logs and state, a database for externalizing state, and a secret 
 manager for keep your secrets secure. Each of these integrations can be configured to suit your 
 needs. Their configuration is described in the [Integrations](#deploying-airbyte/integrations) 
-section. Each of these integrations has a longer description of why you would want to configure
-the integration, as well as, how to configure the integration.
+section. Each of these integrations has its own section where you'll find an explanation of the rationale for why it's useful to configure the integration. There, you'll also find details about how to configure the integration.
+
+<details>
+<summary> Integration Section Links </summary>
+
+- [State and Logging Storage](./deploying-airbyte/integrations/storage)
+- [Secret Management](./deploying-airbyte/integrations/secrets)
+- [External Database](./deploying-airbyte/integrations/database)
+- [Monitoring](./deploying-airbyte/integrations/monitoring)
+- [Ingress](./deploying-airbyte/integrations/ingress)
+
+</details>
+
+<!--
+##TODO
+
+## Tools 
+
+### Required Tools
+
+Helm
+
+Kubectl
+
+### Optional Tools
+
+K9s
+
+Stern -->
+
 
 ## Preconfiguring Kubernetes Secrets
 
@@ -37,12 +57,10 @@ We use a secret to pull values out of it should look like this:
 
 While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
 
-
-<details>
-<summary>airbyte-config-secrets</summary>
-
 <Tabs>
 <TabItem value="S3" label="S3" default>
+
+**Option 1: create a `values.yaml` file**
 
 ```yaml
 apiVersion: v1
@@ -78,6 +96,8 @@ stringData:
   aws-secret-manager-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
 ```
+
+**Option 2: Create the secret in the CLI**
 
 You can also use `kubectl` to create the secret directly from the CLI:
 
@@ -116,7 +136,7 @@ stringData:
   license-key: ## e.g. xxxxx.yyyyy.zzzzz
 
   # Database Secrets
-  database-host: ## e.g. database.internla
+  database-host: ## e.g. database.internal
   database-port: ## e.g. 5432
   database-name: ## e.g. airbyte
   database-user: ## e.g. airbyte
@@ -152,20 +172,3 @@ kubectl create secret generic airbyte-config-secrets \
 
 </TabItem>
 </Tabs>
-</details>
-
-
-## Tools 
-
-### Required Tools
-
-Helm
-
-Kubectl
-
-### Optional Tools
-
-K9s
-
-Stern
-
