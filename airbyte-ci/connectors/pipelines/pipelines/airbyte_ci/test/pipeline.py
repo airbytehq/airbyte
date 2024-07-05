@@ -215,7 +215,9 @@ def prepare_container_for_poe_tasks(
                     "https://github.com/airbytehq/airbyte-platform-internal.git",
                 ]
             )
-            .with_secret_variable("CI_GITHUB_ACCESS_TOKEN", dagger.Secret(pipeline_context_params["ci_github_access_token"].value))
+            .with_secret_variable(
+                "CI_GITHUB_ACCESS_TOKEN", dagger.Doc(dagger.Secret(pipeline_context_params["ci_github_access_token"].value))
+            )
             .with_exec(
                 [
                     "/bin/sh",
