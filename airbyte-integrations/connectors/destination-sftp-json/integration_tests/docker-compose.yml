@@ -1,0 +1,9 @@
+version: "3"
+services:
+  sftp:
+    image: atmoz/sftp
+    ports:
+      - "2222:22"
+    volumes:
+      - /tmp/upload:/home/user1/upload
+    command: user1:abc123:::upload
