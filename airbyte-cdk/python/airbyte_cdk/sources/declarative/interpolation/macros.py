@@ -5,7 +5,7 @@
 import builtins
 import datetime
 import typing
-from typing import Union
+from typing import Optional, Union
 
 import isodate
 import pytz
@@ -107,7 +107,7 @@ def duration(datestring: str) -> Union[datetime.timedelta, isodate.Duration]:
     return parse_duration(datestring)  # type: ignore # mypy thinks this returns Any for some reason
 
 
-def format_datetime(dt: Union[str, datetime.datetime], format: str, input_format: str = None) -> str:
+def format_datetime(dt: Union[str, datetime.datetime], format: str, input_format: Optional[str] = None) -> str:
     """
     Converts datetime to another format
 
