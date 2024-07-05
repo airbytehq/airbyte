@@ -9,18 +9,24 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateIterator;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateEmitFrequency;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.integrations.source.mongodb.MongoUtil.CollectionStatistics;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.bson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +37,6 @@ import org.slf4j.LoggerFactory;
 public class InitialSnapshotHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialSnapshotHandler.class);
-  private static final int DEFAULT_CHUNK_SIZE = 1_000_000;
 
   /**
    * For each given stream configured as incremental sync it will output an iterator that will
@@ -42,13 +47,16 @@ public class InitialSnapshotHandler {
                                                                   final List<ConfiguredAirbyteStream> streams,
                                                                   final MongoDbStateManager stateManager,
                                                                   final MongoDatabase database,
-                                                                  final MongoDbSourceConfig config) {
+                                                                  final MongoDbSourceConfig config,
+                                                                  final boolean decorateWithStartedStatus,
+                                                                  final boolean decorateWithCompletedStatus) {
     final boolean isEnforceSchema = config.getEnforceSchema();
     final var checkpointInterval = config.getCheckpointInterval();
     return streams
         .stream()
         .map(airbyteStream -> {
           final var collectionName = airbyteStream.getStream().getName();
+          final var namespace = airbyteStream.getStream().getNamespace();
           final var collection = database.getCollection(collectionName);
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
@@ -68,11 +76,27 @@ public class InitialSnapshotHandler {
           final Optional<MongoDbStreamState> existingState =
               stateManager.getStreamState(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
 
-          final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema, DEFAULT_CHUNK_SIZE);
+          final Optional<CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(database, airbyteStream);
+          final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema,
+              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream));
           final var stateIterator =
               new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));
-          return AutoCloseableIterators.fromIterator(stateIterator, recordIterator::close, null);
+          final var iterator = AutoCloseableIterators.fromIterator(stateIterator, recordIterator::close, null);
+
+          List<AutoCloseableIterator<AirbyteMessage>> itList = Stream.of(iterator).collect(Collectors.toList());
+          if (decorateWithStartedStatus) {
+            itList.addFirst(new StreamStatusTraceEmitterIterator(
+                new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace),
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
+          }
+
+          if (decorateWithCompletedStatus) {
+            itList.addLast(new StreamStatusTraceEmitterIterator(
+                new AirbyteStreamStatusHolder(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(collectionName, namespace),
+                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
+          }
+          return (itList.size() == 1) ? iterator : AutoCloseableIterators.concatWithEagerClose(itList);
         })
         .toList();
   }

@@ -3,69 +3,91 @@
   "type": "object",
   "properties": {
     "customer.auto_tagging_enabled": {
+      "description": "Indicates whether auto-tagging is enabled for the customer",
       "type": ["null", "boolean"]
     },
     "customer.call_reporting_setting.call_conversion_action": {
+      "description": "The call conversion action associated with the customer's call reporting setting",
       "type": ["null", "string"]
     },
     "customer.call_reporting_setting.call_conversion_reporting_enabled": {
+      "description": "Indicates whether call conversion reporting is enabled",
       "type": ["null", "boolean"]
     },
     "customer.call_reporting_setting.call_reporting_enabled": {
+      "description": "Indicates whether call reporting is enabled for the customer",
       "type": ["null", "boolean"]
     },
     "customer.conversion_tracking_setting.conversion_tracking_id": {
+      "description": "The conversion tracking ID set for the customer",
       "type": ["null", "integer"]
     },
     "customer.conversion_tracking_setting.cross_account_conversion_tracking_id": {
+      "description": "The cross-account conversion tracking ID set for the customer",
       "type": ["null", "integer"]
     },
     "customer.currency_code": {
+      "description": "The currency code used for the customer",
       "type": ["null", "string"]
     },
     "customer.descriptive_name": {
+      "description": "The descriptive name of the customer account",
       "type": ["null", "string"]
     },
     "customer.final_url_suffix": {
+      "description": "The final URL suffix for the customer",
       "type": ["null", "string"]
     },
     "customer.has_partners_badge": {
+      "description": "Indicates whether the customer has a partners badge",
       "type": ["null", "boolean"]
     },
     "customer.id": {
+      "description": "The unique identifier of the customer",
       "type": ["null", "integer"]
     },
     "customer.manager": {
+      "description": "The manager associated with the customer",
       "type": ["null", "boolean"]
     },
     "customer.optimization_score": {
+      "description": "The optimization score of the customer",
       "type": ["null", "number"]
     },
     "customer.optimization_score_weight": {
+      "description": "The weight of the optimization score for the customer",
       "type": ["null", "number"]
     },
     "customer.pay_per_conversion_eligibility_failure_reasons": {
+      "description": "The reasons for pay per conversion eligibility failure",
       "type": ["null", "array"],
       "items": {
+        "description": "Reason for pay per conversion eligibility failure",
         "type": "string"
       }
     },
     "customer.remarketing_setting.google_global_site_tag": {
+      "description": "The Google global site tag set for customer's remarketing",
       "type": ["null", "string"]
     },
     "customer.resource_name": {
+      "description": "The resource name of the customer",
       "type": ["null", "string"]
     },
     "customer.test_account": {
+      "description": "Indicates whether the customer account is a test account",
       "type": ["null", "boolean"]
     },
     "customer.time_zone": {
+      "description": "The time zone set for the customer account",
       "type": ["null", "string"]
     },
     "customer.tracking_url_template": {
+      "description": "The tracking URL template for the customer",
       "type": ["null", "string"]
     },
     "segments.date": {
+      "description": "The date segment format",
       "type": ["null", "string"],
       "format": "date"
     }

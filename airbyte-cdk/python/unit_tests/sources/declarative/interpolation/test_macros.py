@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.interpolation.macros import macros
         ("test_max", "max", True),
         ("test_day_delta", "day_delta", True),
         ("test_format_datetime", "format_datetime", True),
+        ("test_format_datetime_string", "format_datetime_string", True),
         ("test_duration", "duration", True),
         ("test_not_a_macro", "thisisnotavalidmacro", False),
     ],
@@ -46,6 +47,18 @@ def test_format_datetime(test_name, input_value, format, expected_output):
 
 
 @pytest.mark.parametrize(
+    "test_name, input_value, format, expected_output",
+    [
+        ("test_datetime_iso", "2022-01-01T01:01:01Z", "%Y-%m-%dT%H:%M:%SZ", datetime.datetime(2022, 1, 1, 1, 1, 1)),
+        ("test_datetime_iso", "Sat, 01 Jan 2022 01:01:01 +0000", "%a, %d %b %Y %H:%M:%S %z", datetime.datetime(2022, 1, 1, 1, 1, 1, tzinfo=datetime.timezone.utc)),
+    ],
+)
+def test_format_datetime_string(test_name, input_value, format, expected_output):
+    format_datetime_string = macros["format_datetime_string"]
+    assert format_datetime_string(input_value, format) == expected_output
+
+
+@pytest.mark.parametrize(
     "test_name, input_value, expected_output",
     [("test_one_day", "P1D", datetime.timedelta(days=1)), ("test_6_days_23_hours", "P6DT23H", datetime.timedelta(days=6, hours=23))],
 )
@@ -71,3 +84,10 @@ def test_timestamp(test_name, input_value, expected_output):
     timestamp_function = macros["timestamp"]
     actual_output = timestamp_function(input_value)
     assert actual_output == expected_output
+
+
+def test_utc_datetime_to_local_timestamp_conversion():
+    """
+    This test ensures correct timezone handling independent of the timezone of the system on which the sync is running.
+    """
+    assert macros["format_datetime"](dt="2020-10-01T00:00:00Z", format="%s") == "1601510400"

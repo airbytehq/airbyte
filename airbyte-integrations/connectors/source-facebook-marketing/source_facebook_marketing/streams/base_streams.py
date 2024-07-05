@@ -275,7 +275,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         """Additional filters associated with state if any set"""
 
         state_value = stream_state.get(self.cursor_field)
-        if stream_state:
+        if stream_state and state_value:
             filter_value = pendulum.parse(state_value)
         elif self._start_date:
             filter_value = self._start_date
@@ -335,7 +335,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         for account_id in self._account_ids:
             cursor_value = transformed_state.get(account_id, {}).get(self.cursor_field)
             if cursor_value is not None:
-                self._cursor_values[account_id] = pendulum.parse(cursor_value)
+                self._cursor_values[account_id] = cursor_value
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Don't have classic cursor filtering"""
@@ -366,7 +366,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
             max_cursor_value = None
             for record in records_iter:
-                record_cursor_value = pendulum.parse(record[self.cursor_field])
+                record_cursor_value = record[self.cursor_field]
                 if account_cursor and record_cursor_value < account_cursor:
                     break
 

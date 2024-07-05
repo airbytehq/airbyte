@@ -24,17 +24,18 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Strategy:
  *
@@ -50,10 +51,10 @@ import org.slf4j.LoggerFactory
  * to the database (regardless of how few are left)
  */
 object JdbcBufferedConsumerFactory {
-    private val LOGGER: Logger = LoggerFactory.getLogger(JdbcBufferedConsumerFactory::class.java)
 
     const val DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH = 25 * 1024 * 1024L
 
+    /** @param parsedCatalog Nullable for v1 destinations. Required for v2 destinations. */
     fun createAsync(
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
@@ -61,13 +62,20 @@ object JdbcBufferedConsumerFactory {
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
-        defaultNamespace: String?,
+        defaultNamespace: String,
         typerDeduper: TyperDeduper,
         dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
         optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
+        parsedCatalog: ParsedCatalog? = null
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs =
-            createWriteConfigs(namingResolver, config, catalog, sqlOperations.isSchemaRequired)
+            createWriteConfigs(
+                namingResolver,
+                config,
+                catalog,
+                sqlOperations.isSchemaRequired,
+                parsedCatalog
+            )
         return AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
@@ -77,8 +85,7 @@ object JdbcBufferedConsumerFactory {
                 optimalBatchSizeBytes
             ),
             catalog,
-            BufferManager((Runtime.getRuntime().maxMemory() * 0.2).toLong()),
-            Optional.ofNullable(defaultNamespace),
+            BufferManager(defaultNamespace, (Runtime.getRuntime().maxMemory() * 0.2).toLong()),
             FlushFailure(),
             Executors.newFixedThreadPool(2),
             AirbyteMessageDeserializer(dataTransformer)
@@ -89,7 +96,8 @@ object JdbcBufferedConsumerFactory {
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog?,
-        schemaRequired: Boolean
+        schemaRequired: Boolean,
+        parsedCatalog: ParsedCatalog?
     ): List<WriteConfig> {
         if (schemaRequired) {
             Preconditions.checkState(
@@ -97,11 +105,16 @@ object JdbcBufferedConsumerFactory {
                 "jdbc destinations must specify a schema."
             )
         }
-        return catalog!!
-            .streams
-            .stream()
-            .map(toWriteConfig(namingResolver, config, schemaRequired))
-            .collect(Collectors.toList())
+        return if (parsedCatalog == null) {
+            catalog!!
+                .streams
+                .map { toWriteConfig(namingResolver, config, schemaRequired).apply(it) }
+                .toList()
+        } else {
+            parsedCatalog.streams
+                .map { parsedStreamToWriteConfig(namingResolver).apply(it) }
+                .toList()
+        }
     }
 
     private fun toWriteConfig(
@@ -145,8 +158,29 @@ object JdbcBufferedConsumerFactory {
                     tableName,
                     syncMode
                 )
-            LOGGER.info("Write config: {}", writeConfig)
+            LOGGER.info { "Write config: $writeConfig" }
             writeConfig
+        }
+    }
+
+    private fun parsedStreamToWriteConfig(
+        namingResolver: NamingConventionTransformer
+    ): Function<StreamConfig, WriteConfig> {
+        return Function { streamConfig: StreamConfig ->
+            // TODO We should probably replace WriteConfig with StreamConfig?
+            // The only thing I'm not sure about is the tmpTableName thing,
+            // but otherwise it's a strict improvement (avoids people accidentally
+            // recomputing the table names, instead of just treating the output of
+            // CatalogParser as canonical).
+            WriteConfig(
+                streamConfig.id.originalName,
+                streamConfig.id.originalNamespace,
+                streamConfig.id.rawNamespace,
+                @Suppress("deprecation")
+                namingResolver.getTmpTableName(streamConfig.id.rawNamespace),
+                streamConfig.id.rawName,
+                streamConfig.destinationSyncMode,
+            )
         }
     }
 
@@ -160,7 +194,7 @@ object JdbcBufferedConsumerFactory {
     private fun getOutputSchema(
         stream: AirbyteStream,
         defaultDestSchema: String,
-        namingResolver: NamingConventionTransformer
+        namingResolver: NamingConventionTransformer,
     ): String {
         return if (isDestinationV2) {
             namingResolver.getNamespace(
@@ -195,20 +229,16 @@ object JdbcBufferedConsumerFactory {
     ): OnStartFunction {
         return OnStartFunction {
             typerDeduper.prepareSchemasAndRunMigrations()
-            LOGGER.info(
-                "Preparing raw tables in destination started for {} streams",
-                writeConfigs.size
-            )
+            LOGGER.info {
+                "Preparing raw tables in destination started for ${writeConfigs.size} streams"
+            }
             val queryList: MutableList<String> = ArrayList()
             for (writeConfig in writeConfigs) {
                 val schemaName = writeConfig.outputSchemaName
                 val dstTableName = writeConfig.outputTableName
-                LOGGER.info(
-                    "Preparing raw table in destination started for stream {}. schema: {}, table name: {}",
-                    writeConfig.streamName,
-                    schemaName,
-                    dstTableName
-                )
+                LOGGER.info {
+                    "Preparing raw table in destination started for stream ${writeConfig.streamName}. schema: $schemaName, table name: $dstTableName"
+                }
                 sqlOperations.createSchemaIfNotExists(database, schemaName)
                 sqlOperations.createTableIfNotExists(database, schemaName, dstTableName)
                 when (writeConfig.syncMode) {
@@ -225,7 +255,7 @@ object JdbcBufferedConsumerFactory {
                 }
             }
             sqlOperations.executeTransaction(database, queryList)
-            LOGGER.info("Preparing raw tables in destination completed.")
+            LOGGER.info { "Preparing raw tables in destination completed." }
             typerDeduper.prepareFinalTables()
         }
     }
@@ -252,8 +282,10 @@ object JdbcBufferedConsumerFactory {
             records: List<PartialAirbyteMessage> ->
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
-                    "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
-                    Jsons.serialize(catalog)
+                    "Message contained record from a stream that was not in the catalog. \ncatalog: %s, \nstream identifier: %s\nkeys: %s",
+                    Jsons.serialize(catalog),
+                    pair,
+                    pairToWriteConfig.keys
                 )
             }
             val writeConfig = pairToWriteConfig.getValue(pair)

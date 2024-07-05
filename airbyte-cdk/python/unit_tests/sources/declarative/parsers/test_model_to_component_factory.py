@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 import freezegun
 import pytest
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
@@ -22,7 +23,8 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -46,7 +48,12 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers import (
+    CartesianProductStreamSlicer,
+    ListPartitionRouter,
+    SinglePartitionRouter,
+    SubstreamPartitionRouter,
+)
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -55,7 +62,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
@@ -71,11 +77,12 @@ from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRe
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
+from airbyte_protocol.models import FailureType
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
@@ -229,7 +236,7 @@ spec:
 
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
     assert isinstance(stream.retriever.record_selector.extractor.decoder, JsonDecoder)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["lists"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor._field_path] == ["lists"]
 
     assert isinstance(stream.retriever.record_selector.record_filter, RecordFilter)
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
@@ -535,7 +542,7 @@ def test_datetime_based_cursor():
 
     assert isinstance(stream_slicer, DatetimeBasedCursor)
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer._cursor_field.string == "created"
+    assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.cursor_granularity == "PT0.000001S"
     assert stream_slicer._lookback_window.string == "P5D"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
@@ -651,12 +658,143 @@ list_stream:
     assert isinstance(datetime_stream_slicer._end_datetime, MinMaxDatetime)
     assert datetime_stream_slicer._end_datetime.datetime.string == "{{ config['end_time'] }}"
     assert datetime_stream_slicer.step == "P10D"
-    assert datetime_stream_slicer._cursor_field.string == "created"
+    assert datetime_stream_slicer.cursor_field.string == "created"
 
     list_stream_slicer = stream.retriever.stream_slicer._partition_router
     assert isinstance(list_stream_slicer, ListPartitionRouter)
     assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
     assert list_stream_slicer._cursor_field.string == "a_key"
+
+
+def test_resumable_full_refresh_stream():
+    content = """
+decoder:
+  type: JsonDecoder
+extractor:
+  type: DpathExtractor
+  decoder: "#/decoder"
+selector:
+  type: RecordSelector
+  record_filter:
+    type: RecordFilter
+    condition: "{{ record['id'] > stream_state['id'] }}"
+metadata_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: page_size
+    page_token_option:
+      type: RequestPath
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response._metadata.next }}"
+      page_size: 10
+requester:
+  type: HttpRequester
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['apikey'] }}"
+  request_parameters:
+    unit: "day"
+retriever:
+  paginator:
+    type: NoPagination
+partial_stream:
+  type: DeclarativeStream
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
+list_stream:
+  $ref: "#/partial_stream"
+  $parameters:
+    name: "lists"
+    extractor:
+      $ref: "#/extractor"
+      field_path: ["{{ parameters['name'] }}"]
+  name: "lists"
+  primary_key: "id"
+  retriever:
+    $ref: "#/retriever"
+    requester:
+      $ref: "#/requester"
+      path: "{{ next_page_token['next_page_url'] }}"
+    paginator:
+      $ref: "#/metadata_paginator"
+    record_selector:
+      $ref: "#/selector"
+  transformations:
+    - type: AddFields
+      fields:
+      - path: ["extra"]
+        value: "{{ response.to_add }}"
+check:
+  type: CheckStream
+  stream_names: ["list_stream"]
+spec:
+  type: Spec
+  documentation_url: https://airbyte.com/#yaml-from-manifest
+  connection_specification:
+    title: Test Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: false
+    properties:
+      api_key:
+        type: string
+        airbyte_secret: true
+        title: API Key
+        description: Test API Key
+        order: 0
+  advanced_auth:
+    auth_flow_type: "oauth2.0"
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    resolved_manifest["type"] = "DeclarativeSource"
+    manifest = transformer.propagate_types_and_parameters("", resolved_manifest, {})
+
+    stream_manifest = manifest["list_stream"]
+    assert stream_manifest["type"] == "DeclarativeStream"
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
+
+    assert isinstance(stream, DeclarativeStream)
+    assert stream.primary_key == "id"
+    assert stream.name == "lists"
+    assert stream._stream_cursor_field.string == ""
+
+    assert isinstance(stream.retriever, SimpleRetriever)
+    assert stream.retriever.primary_key == stream.primary_key
+    assert stream.retriever.name == stream.name
+
+    assert isinstance(stream.retriever.record_selector, RecordSelector)
+
+    assert isinstance(stream.retriever.stream_slicer, ResumableFullRefreshCursor)
+    assert isinstance(stream.retriever.cursor, ResumableFullRefreshCursor)
+
+    assert isinstance(stream.retriever.paginator, DefaultPaginator)
+    assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
+    assert stream.retriever.paginator.page_size_option.field_name.eval(input_config) == "page_size"
+    assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
+    assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
+    assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com/v3/"
+    assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
+
+    assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
+    assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.string == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy._cursor_value.default == "{{ response._metadata.next }}"
+    assert stream.retriever.paginator.pagination_strategy.page_size == 10
+
+    checker = factory.create_component(model_type=CheckStreamModel, component_definition=manifest["check"], config=input_config)
+
+    assert isinstance(checker, CheckStream)
+    streams_to_check = checker.stream_names
+    assert len(streams_to_check) == 1
+    assert list(streams_to_check)[0] == "list_stream"
 
 
 def test_incremental_data_feed():
@@ -731,6 +869,156 @@ incremental_sync:
         )
 
 
+def test_client_side_incremental():
+    content = """
+selector:
+  type: RecordSelector
+  extractor:
+      type: DpathExtractor
+      field_path: ["extractor_path"]
+requester:
+  type: HttpRequester
+  name: "{{ parameters['name'] }}"
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+list_stream:
+  type: DeclarativeStream
+  incremental_sync:
+    type: DatetimeBasedCursor
+    $parameters:
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    cursor_field: "created"
+    is_client_side_incremental: true
+  retriever:
+    type: SimpleRetriever
+    name: "{{ parameters['name'] }}"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response._metadata.next }}"
+        page_size: 10
+    requester:
+      $ref: "#/requester"
+      path: "/"
+    record_selector:
+      $ref: "#/selector"
+  $parameters:
+    name: "lists"
+    """
+
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["list_stream"], {})
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
+
+    assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
+
+
+def test_client_side_incremental_with_partition_router():
+    content = """
+selector:
+  type: RecordSelector
+  extractor:
+      type: DpathExtractor
+      field_path: ["extractor_path"]
+requester:
+  type: HttpRequester
+  name: "{{ parameters['name'] }}"
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+schema_loader:
+  file_path: "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml"
+  name: "{{ parameters['stream_name'] }}"
+retriever:
+  requester:
+    type: "HttpRequester"
+    path: "kek"
+  record_selector:
+    extractor:
+      field_path: []
+stream_A:
+  type: DeclarativeStream
+  name: "A"
+  primary_key: "id"
+  $parameters:
+    retriever: "#/retriever"
+    url_base: "https://airbyte.io"
+    schema_loader: "#/schema_loader"
+list_stream:
+  type: DeclarativeStream
+  incremental_sync:
+    type: DatetimeBasedCursor
+    $parameters:
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    cursor_field: "created"
+    is_client_side_incremental: true
+  retriever:
+    type: SimpleRetriever
+    name: "{{ parameters['name'] }}"
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - stream: "#/stream_A"
+          parent_key: id
+          partition_field: id
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response._metadata.next }}"
+        page_size: 10
+    requester:
+      $ref: "#/requester"
+      path: "/"
+    record_selector:
+      $ref: "#/selector"
+  $parameters:
+    name: "lists"
+    """
+
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["list_stream"], {})
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
+
+    assert isinstance(stream.retriever.record_selector.record_filter, ClientSideIncrementalRecordFilterDecorator)
+    assert isinstance(stream.retriever.record_selector.record_filter._per_partition_cursor, PerPartitionCursor)
+
+
+def test_given_data_feed_and_client_side_incremental_then_raise_error():
+    content = """
+incremental_sync:
+  type: DatetimeBasedCursor
+  $parameters:
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+  start_datetime: "{{ config['start_time'] }}"
+  cursor_field: "created"
+  is_data_feed: true
+  is_client_side_incremental: true
+  """
+
+    parsed_incremental_sync = YamlDeclarativeSource._parse(content)
+    resolved_incremental_sync = resolver.preprocess_manifest(parsed_incremental_sync)
+    datetime_based_cursor_definition = transformer.propagate_types_and_parameters("", resolved_incremental_sync["incremental_sync"], {})
+
+    with pytest.raises(ValueError) as e:
+        factory.create_component(
+            model_type=DatetimeBasedCursorModel, component_definition=datetime_based_cursor_definition, config=input_config
+        )
+    assert e.value.args[0] == "`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them."
+
+
 @pytest.mark.parametrize(
     "test_name, record_selector, expected_runtime_selector",
     [("test_static_record_selector", "result", "result"), ("test_options_record_selector", "{{ parameters['name'] }}", "lists")],
@@ -760,7 +1048,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in selector.extractor.field_path] == [expected_runtime_selector]
+    assert [fp.eval(input_config) for fp in selector.extractor._field_path] == [expected_runtime_selector]
     assert isinstance(selector.record_filter, RecordFilter)
     assert selector.record_filter.condition == "{{ record['id'] > stream_state['id'] }}"
 
@@ -947,6 +1235,42 @@ requester:
     }
 
 
+def test_given_composite_error_handler_does_not_match_response_then_fallback_on_default_error_handler(requests_mock):
+    content = """
+requester:
+  type: HttpRequester
+  path: "/v3/marketing/lists"
+  $parameters:
+    name: 'lists'
+  url_base: "https://api.sendgrid.com"
+  error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        response_filters:
+          - type: HttpResponseFilter
+            action: FAIL
+            http_codes:
+              - 500
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
+    http_requester = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name"
+    )
+    requests_mock.get(
+        "https://api.sendgrid.com/v3/marketing/lists", status_code=401
+    )
+
+    with pytest.raises(AirbyteTracedException) as exception:
+        http_requester.send_request()
+
+    # The default behavior when we don't know about an error is to return a system_error.
+    # Here, we can confirm that we return a config_error which means we picked up the default error mapper
+    assert exception.value.failure_type == FailureType.config_error
+
+
 @pytest.mark.parametrize(
     "input_config, expected_authenticator_class",
     [
@@ -1094,7 +1418,7 @@ def test_config_with_defaults():
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["result"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor._field_path] == ["result"]
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
@@ -1760,25 +2084,6 @@ def test_simple_retriever_emit_log_messages():
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
     assert connector_builder_factory._message_repository._log_level == Level.DEBUG
-
-
-def test_ignore_retry():
-    requester_model = {
-        "type": "HttpRequester",
-        "name": "list",
-        "url_base": "orange.com",
-        "path": "/v1/api",
-    }
-
-    connector_builder_factory = ModelToComponentFactory(disable_retries=True)
-    requester = connector_builder_factory.create_component(
-        model_type=HttpRequesterModel,
-        component_definition=requester_model,
-        config={},
-        name="Test",
-    )
-
-    assert requester.max_retries == 0
 
 
 def test_create_page_increment():

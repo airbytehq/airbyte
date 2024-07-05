@@ -13,20 +13,18 @@ import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
  * [AirbyteMessage] for processing
@@ -41,7 +39,6 @@ open class SerialStagingConsumerFactory {
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
         purgeStagingData: Boolean,
-        typerDeduperValve: TypeAndDedupeOperationValve,
         typerDeduper: TyperDeduper,
         parsedCatalog: ParsedCatalog,
         defaultNamespace: String?,
@@ -71,8 +68,6 @@ open class SerialStagingConsumerFactory {
                     stagingOperations,
                     writeConfigs,
                     catalog,
-                    typerDeduperValve,
-                    typerDeduper
                 )
             ),
             GeneralStagingFunctions.onCloseFunction(
@@ -89,8 +84,6 @@ open class SerialStagingConsumerFactory {
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(SerialStagingConsumerFactory::class.java)
 
         // using a random string here as a placeholder for the moment.
         // This would avoid mixing data in the staging area between different syncs (especially if
@@ -126,10 +119,10 @@ open class SerialStagingConsumerFactory {
             parsedCatalog: ParsedCatalog,
             useDestinationsV2Columns: Boolean
         ): List<WriteConfig> {
-            return catalog.streams
-                .stream()
-                .map(toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns))
-                .collect(Collectors.toList())
+            return catalog.streams.map {
+                toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns)
+                    .apply(it)
+            }
         }
 
         private fun toWriteConfig(
@@ -150,7 +143,7 @@ open class SerialStagingConsumerFactory {
                 val tableName: String?
                 if (useDestinationsV2Columns) {
                     val streamId = parsedCatalog.getStream(abStream.namespace, streamName).id
-                    outputSchema = streamId.rawNamespace!!
+                    outputSchema = streamId.rawNamespace
                     tableName = streamId.rawName
                 } else {
                     outputSchema =
@@ -171,7 +164,7 @@ open class SerialStagingConsumerFactory {
                         syncMode,
                         SYNC_DATETIME
                     )
-                LOGGER.info("Write config: {}", writeConfig)
+                LOGGER.info { "Write config: $writeConfig" }
                 writeConfig
             }
         }

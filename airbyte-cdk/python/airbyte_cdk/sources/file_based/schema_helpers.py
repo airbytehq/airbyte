@@ -117,14 +117,18 @@ def _is_valid_type(t: JsonSchemaSupportedType) -> bool:
 
 
 def _choose_wider_type(key: str, t1: Mapping[str, Any], t2: Mapping[str, Any]) -> Mapping[str, Any]:
-    if (t1["type"] == "array" or t2["type"] == "array") and t1 != t2:
+    t1_type = t1["type"]
+    t2_type = t2["type"]
+
+    if (t1_type == "array" or t2_type == "array") and t1 != t2:
         raise SchemaInferenceError(
             FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
             details="Cannot merge schema for unequal array types.",
             key=key,
             detected_types=f"{t1},{t2}",
         )
-    elif (t1["type"] == "object" or t2["type"] == "object") and t1 != t2:
+    # Schemas can still be merged if a key contains a null value in either t1 or t2, but it is still an object
+    elif (t1_type == "object" or t2_type == "object") and t1_type != "null" and t2_type != "null" and t1 != t2:
         raise SchemaInferenceError(
             FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
             details="Cannot merge schema for unequal object types.",
@@ -132,8 +136,8 @@ def _choose_wider_type(key: str, t1: Mapping[str, Any], t2: Mapping[str, Any]) -
             detected_types=f"{t1},{t2}",
         )
     else:
-        comparable_t1 = get_comparable_type(TYPE_PYTHON_MAPPING[t1["type"]][0])  # accessing the type_mapping value
-        comparable_t2 = get_comparable_type(TYPE_PYTHON_MAPPING[t2["type"]][0])  # accessing the type_mapping value
+        comparable_t1 = get_comparable_type(TYPE_PYTHON_MAPPING[t1_type][0])  # accessing the type_mapping value
+        comparable_t2 = get_comparable_type(TYPE_PYTHON_MAPPING[t2_type][0])  # accessing the type_mapping value
         if not comparable_t1 and comparable_t2:
             raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=key, detected_types=f"{t1},{t2}")
         return max(

@@ -48,8 +48,12 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| 0.3.6 | 2024-06-29 | [40011](https://github.com/airbytehq/airbyte/pull/40011) | Update dependencies |
 | 0.3.5 | 2024-04-19 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Updating to 0.80.0 CDK |
 | 0.3.4 | 2024-04-18 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Manage dependencies with Poetry. |
 | 0.3.3 | 2024-04-15 | [37131](https://github.com/airbytehq/airbyte/pull/37131) | Base image migration: remove Dockerfile and use the python-connector-base image |
@@ -63,3 +67,5 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 | 0.1.3 | 2021-08-26 | [5465](https://github.com/airbytehq/airbyte/pull/5465) | Add the end_date option for limitation of the amount of synced data |
 | 0.1.2 | 2021-08-23 | [1111](https://github.com/airbytehq/airbyte/pull/1111) | Add `order_items` stream |
 | 0.1.0 | 2021-06-08 | [4574](https://github.com/airbytehq/airbyte/pull/4574) | Initial Release |
+
+</details>

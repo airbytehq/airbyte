@@ -16,7 +16,6 @@ This upgrade will ignore any existing raw tables and will not migrate any data t
 For each stream, you should perform the following query to migrate the data from the old raw table
 to the new raw table:
 
-
 ```sql
 -- assumes your schema was 'default'
 -- replace `{{stream_name}}` with replace your stream name
@@ -42,6 +41,7 @@ FROM airbyte._airbyte_raw_{{stream_name}}
 **Airbyte will not delete any of your v1 data.**
 
 ### Schema and the Internal Schema
+
 We have split the raw and final tables into their own schemas. For the Microsoft SQL Server destination, this means that
 we will only write into the raw table which will live in the `airbyte_internal` schema.
 The tables written into this schema will be prefixed with either the default database provided in

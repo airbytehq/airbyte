@@ -8,10 +8,23 @@ from typing import Any, Mapping, Optional, Tuple, Type
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 from jinja2 import meta
 from jinja2.exceptions import UndefinedError
-from jinja2.sandbox import Environment
+from jinja2.sandbox import SandboxedEnvironment
+
+
+class StreamPartitionAccessEnvironment(SandboxedEnvironment):
+    """
+    Currently, source-jira is setting an attribute to StreamSlice specific to its use case which because of the PerPartitionCursor is set to
+    StreamSlice._partition but not exposed through StreamSlice.partition. This is a patch to still allow source-jira to have access to this
+    parameter
+    """
+
+    def is_safe_attribute(self, obj: Any, attr: str, value: Any) -> bool:
+        if attr in ["_partition"]:
+            return True
+        return super().is_safe_attribute(obj, attr, value)  # type: ignore  # for some reason, mypy says 'Returning Any from function declared to return "bool"'
 
 
 class JinjaInterpolation(Interpolation):
@@ -49,7 +62,7 @@ class JinjaInterpolation(Interpolation):
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
     def __init__(self) -> None:
-        self._environment = Environment()
+        self._environment = StreamPartitionAccessEnvironment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 
@@ -84,7 +97,7 @@ class JinjaInterpolation(Interpolation):
                     return self._literal_eval(result, valid_types)
             else:
                 # If input is not a string, return it as is
-                raise Exception(f"Expected a string. got {input_str}")
+                raise Exception(f"Expected a string, got {input_str}")
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string

@@ -13,17 +13,17 @@ import io.airbyte.cdk.db.AbstractDatabase
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.util.MoreIterators
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.Spliterators.AbstractSpliterator
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import org.bson.BsonDocument
 import org.bson.Document
 import org.bson.conversions.Bson
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class MongoDatabase(connectionString: String, databaseName: String) :
     AbstractDatabase(), AutoCloseable {
@@ -37,10 +37,10 @@ class MongoDatabase(connectionString: String, databaseName: String) :
             mongoClient = MongoClients.create(this.connectionString)
             database = mongoClient.getDatabase(databaseName)
         } catch (e: MongoConfigurationException) {
-            LOGGER.error(e.message, e)
+            LOGGER.error(e) { e.message }
             throw ConnectionErrorException(e.code.toString(), e.message, e)
         } catch (e: Exception) {
-            LOGGER.error(e.message, e)
+            LOGGER.error(e) { e.message }
             throw RuntimeException(e)
         }
     }
@@ -53,13 +53,12 @@ class MongoDatabase(connectionString: String, databaseName: String) :
     val databaseNames: MongoIterable<String>
         get() = mongoClient.listDatabaseNames()
 
-    val collectionNames: Set<String?>
+    val collectionNames: Set<String>
         get() {
             val collectionNames = database.listCollectionNames() ?: return Collections.emptySet()
             return MoreIterators.toSet(collectionNames.iterator())
-                .stream()
                 .filter { c: String -> !c.startsWith(MONGO_RESERVED_COLLECTION_PREFIX) }
-                .collect(Collectors.toSet())
+                .toSet()
         }
 
     fun getCollection(collectionName: String): MongoCollection<Document> {
@@ -105,11 +104,9 @@ class MongoDatabase(connectionString: String, databaseName: String) :
                     }
                 }
         } catch (e: Exception) {
-            LOGGER.error(
-                "Exception attempting to read data from collection: {}, {}",
-                collectionName,
-                e.message
-            )
+            LOGGER.error {
+                "Exception attempting to read data from collection: $collectionName, ${e.message}"
+            }
             throw RuntimeException(e)
         }
     }
@@ -135,7 +132,7 @@ class MongoDatabase(connectionString: String, databaseName: String) :
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(MongoDatabase::class.java)
+
         private const val BATCH_SIZE = 1000
         private const val MONGO_RESERVED_COLLECTION_PREFIX = "system."
     }

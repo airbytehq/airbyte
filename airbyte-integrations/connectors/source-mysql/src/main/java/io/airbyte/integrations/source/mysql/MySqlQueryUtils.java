@@ -175,7 +175,9 @@ public class MySqlQueryUtils {
         }
 
         LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
+
         final String cursorField = cursorInfoOptional.get().getCursorField();
+        LOGGER.info("cursor field", cursorField);
         final String quotedCursorField = getIdentifierWithQuoting(cursorField, quoteString);
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             quotedCursorField,

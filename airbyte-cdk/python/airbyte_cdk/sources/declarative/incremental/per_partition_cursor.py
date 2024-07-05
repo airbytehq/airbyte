@@ -5,9 +5,11 @@
 import json
 from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 
 class PerPartitionKeySerializer:
@@ -29,14 +31,14 @@ class PerPartitionKeySerializer:
 
 
 class CursorFactory:
-    def __init__(self, create_function: Callable[[], Cursor]):
+    def __init__(self, create_function: Callable[[], DeclarativeCursor]):
         self._create_function = create_function
 
-    def create(self) -> Cursor:
+    def create(self) -> DeclarativeCursor:
         return self._create_function()
 
 
-class PerPartitionCursor(Cursor):
+class PerPartitionCursor(DeclarativeCursor):
     """
     Given a stream has many partitions, it is important to provide a state per partition.
 
@@ -62,10 +64,10 @@ class PerPartitionCursor(Cursor):
     _KEY = 0
     _VALUE = 1
 
-    def __init__(self, cursor_factory: CursorFactory, partition_router: StreamSlicer):
+    def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
-        self._cursor_per_partition: MutableMapping[str, Cursor] = {}
+        self._cursor_per_partition: MutableMapping[str, DeclarativeCursor] = {}
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -80,11 +82,51 @@ class PerPartitionCursor(Cursor):
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
     def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        Set the initial state for the cursors.
+
+        This method initializes the state for each partition cursor using the provided stream state.
+        If a partition state is provided in the stream state, it will update the corresponding partition cursor with this state.
+
+        Additionally, it sets the parent state for partition routers that are based on parent streams. If a partition router
+        does not have parent streams, this step will be skipped due to the default PartitionRouter implementation.
+
+        Args:
+            stream_state (StreamState): The state of the streams to be set. The format of the stream state should be:
+                {
+                    "states": [
+                        {
+                            "partition": {
+                                "partition_key": "value"
+                            },
+                            "cursor": {
+                                "last_updated": "2023-05-27T00:00:00Z"
+                            }
+                        }
+                    ],
+                    "parent_state": {
+                        "parent_stream_name": {
+                            "last_updated": "2023-05-27T00:00:00Z"
+                        }
+                    }
+                }
+        """
         if not stream_state:
             return
 
+        if "states" not in stream_state:
+            raise AirbyteTracedException(
+                internal_message=f"Could not sync parse the following state: {stream_state}",
+                message="The state for is format invalid. Validate that the migration steps included a reset and that it was performed "
+                "properly. Otherwise, please contact Airbyte support.",
+                failure_type=FailureType.config_error,
+            )
+
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+
+        # Set parent state for partition routers based on parent streams
+        self._partition_router.set_initial_state(stream_state)
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].observe(
@@ -113,7 +155,12 @@ class PerPartitionCursor(Cursor):
                         "cursor": cursor_state,
                     }
                 )
-        return {"states": states}
+        state: dict[str, Any] = {"states": states}
+
+        parent_state = self._partition_router.get_stream_state()
+        if parent_state:
+            state["parent_state"] = parent_state
+        return state
 
     def _get_state_for_partition(self, partition: Mapping[str, Any]) -> Optional[StreamState]:
         cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
@@ -141,7 +188,7 @@ class PerPartitionCursor(Cursor):
 
         return self._get_state_for_partition(stream_slice.partition)
 
-    def _create_cursor(self, cursor_state: Any) -> Cursor:
+    def _create_cursor(self, cursor_state: Any) -> DeclarativeCursor:
         cursor = self._cursor_factory.create()
         cursor.set_initial_state(cursor_state)
         return cursor
@@ -248,7 +295,7 @@ class PerPartitionCursor(Cursor):
             StreamSlice(partition={}, cursor_slice=record.associated_slice.cursor_slice) if record.associated_slice else None,
         )
 
-    def _get_cursor(self, record: Record) -> Cursor:
+    def _get_cursor(self, record: Record) -> DeclarativeCursor:
         if not record.associated_slice:
             raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
         partition_key = self._to_partition_key(record.associated_slice.partition)

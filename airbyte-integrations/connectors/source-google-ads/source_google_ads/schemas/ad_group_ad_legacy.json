@@ -3,478 +3,618 @@
   "type": "object",
   "properties": {
     "ad_group_ad.ad.legacy_responsive_display_ad.accent_color": {
+      "description": "Accent color for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group.id": {
+      "description": "The ID of the ad group.",
       "type": ["null", "integer"]
     },
     "customer.currency_code": {
+      "description": "The currency code of the customer.",
       "type": ["null", "string"]
     },
     "customer.descriptive_name": {
+      "description": "The descriptive name of the customer.",
       "type": ["null", "string"]
     },
     "customer.time_zone": {
+      "description": "The time zone of the customer.",
       "type": ["null", "string"]
     },
     "metrics.active_view_cpm": {
+      "description": "Cost per thousand active viewable impressions.",
       "type": ["null", "number"]
     },
     "metrics.active_view_ctr": {
+      "description": "Active view click-through rate.",
       "type": ["null", "number"]
     },
     "metrics.active_view_impressions": {
+      "description": "Number of active viewable impressions.",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurability": {
+      "description": "Measurability of active view impressions.",
       "type": ["null", "number"]
     },
     "metrics.active_view_measurable_cost_micros": {
+      "description": "Cost of measurable active viewable impressions.",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurable_impressions": {
+      "description": "Number of measurable active viewable impressions.",
       "type": ["null", "integer"]
     },
     "metrics.active_view_viewability": {
+      "description": "Viewability of active view impressions.",
       "type": ["null", "number"]
     },
     "ad_group_ad.ad_group": {
+      "description": "The ad group associated with the ad group ad data.",
       "type": ["null", "string"]
     },
     "ad_group.name": {
+      "description": "The name of the ad group.",
       "type": ["null", "string"]
     },
     "ad_group.status": {
+      "description": "The status of the ad group.",
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
+      "description": "Type of ad network where the ad was displayed.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad_strength": {
+      "description": "Strength of the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.type": {
+      "description": "The type of the ad.",
       "type": ["null", "string"]
     },
     "metrics.all_conversions_from_interactions_rate": {
+      "description": "Rate of all conversions from interactions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_value": {
+      "description": "Total value of all conversions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions": {
+      "description": "Total number of all conversions.",
       "type": ["null", "number"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.allow_flexible_color": {
+      "description": "Flag indicating if flexible color is allowed for the legacy responsive display ad.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.added_by_google_ads": {
+      "description": "Flag indicating if the ad was added by Google Ads.",
       "type": ["null", "boolean"]
     },
     "metrics.average_cost": {
+      "description": "Average cost per click.",
       "type": ["null", "number"]
     },
     "metrics.average_cpc": {
+      "description": "Average cost per click.",
       "type": ["null", "number"]
     },
     "metrics.average_cpe": {
+      "description": "Average cost per engagement.",
       "type": ["null", "number"]
     },
     "metrics.average_cpm": {
+      "description": "Average cost per thousand impressions.",
       "type": ["null", "number"]
     },
     "metrics.average_cpv": {
+      "description": "Average cost per view.",
       "type": ["null", "number"]
     },
     "metrics.average_page_views": {
+      "description": "Average number of pages viewed.",
       "type": ["null", "number"]
     },
     "metrics.average_time_on_site": {
+      "description": "Average time spent on the site.",
       "type": ["null", "number"]
     },
     "ad_group.base_ad_group": {
+      "description": "The base ad group associated with the ad group ad legacy data.",
       "type": ["null", "string"]
     },
     "campaign.base_campaign": {
+      "description": "The base campaign associated with the ad group ad data.",
       "type": ["null", "string"]
     },
     "metrics.bounce_rate": {
+      "description": "Bounce rate of the ad.",
       "type": ["null", "number"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.business_name": {
+      "description": "Business name for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.call_to_action_text": {
+      "description": "Call to action text for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign.",
       "type": ["null", "integer"]
     },
     "campaign.name": {
+      "description": "The name of the campaign.",
       "type": ["null", "string"]
     },
     "campaign.status": {
+      "description": "The status of the campaign.",
       "type": ["null", "string"]
     },
     "metrics.clicks": {
+      "description": "Number of clicks on the ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.policy_summary.approval_status": {
+      "description": "Approval status of the ad according to policies.",
       "type": ["null", "string"]
     },
     "metrics.conversions_from_interactions_rate": {
+      "description": "Rate of conversions from interactions.",
       "type": ["null", "number"]
     },
     "metrics.conversions_value": {
+      "description": "Total value of conversions.",
       "type": ["null", "number"]
     },
     "metrics.conversions": {
+      "description": "Total number of conversions.",
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
+      "description": "Cost in micros for the ad.",
       "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
+      "description": "Cost per all conversions.",
       "type": ["null", "number"]
     },
     "metrics.cost_per_conversion": {
+      "description": "Cost per conversion.",
       "type": ["null", "number"]
     },
     "metrics.cost_per_current_model_attributed_conversion": {
+      "description": "Cost per currently attributed model conversion.",
       "type": ["null", "number"]
     },
     "ad_group_ad.ad.final_mobile_urls": {
+      "description": "Final mobile URLs for the ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.final_urls": {
+      "description": "Final URLs for the ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.tracking_url_template": {
+      "description": "Custom tracking URL template for the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.url_custom_parameters": {
+      "description": "Custom parameters for the ad URL.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "metrics.cross_device_conversions": {
+      "description": "Conversions that happen across multiple devices.",
       "type": ["null", "number"]
     },
     "metrics.ctr": {
+      "description": "Click-through rate of the ad.",
       "type": ["null", "number"]
     },
     "metrics.current_model_attributed_conversions_value": {
+      "description": "Value of currently attributed model conversions.",
       "type": ["null", "number"]
     },
     "metrics.current_model_attributed_conversions": {
+      "description": "Number of currently attributed model conversions.",
       "type": ["null", "number"]
     },
     "segments.date": {
+      "description": "Date segment for the data.",
       "type": ["null", "string"],
       "format": "date"
     },
     "segments.day_of_week": {
+      "description": "Day of the week for the data segment.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.description": {
+      "description": "Description for the expanded text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.text_ad.description1": {
+      "description": "First description line for the text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.text_ad.description2": {
+      "description": "Second description line for the text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.device_preference": {
+      "description": "Device preference for the ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.display_url": {
+      "description": "Display URL of the ad.",
       "type": ["null", "string"]
     },
     "metrics.engagement_rate": {
+      "description": "Rate of engagements with the ad.",
       "type": ["null", "number"]
     },
     "metrics.engagements": {
+      "description": "Number of engagements with the ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.logo_image": {
+      "description": "Logo image for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.square_logo_image": {
+      "description": "Square logo image for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.marketing_image": {
+      "description": "Marketing image for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.square_marketing_image": {
+      "description": "Square marketing image for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_dynamic_search_ad.description": {
+      "description": "Description for the expanded dynamic search ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.description2": {
+      "description": "Additional description for the expanded text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.headline_part3": {
+      "description": "Third part of the headline for the expanded text ad.",
       "type": ["null", "string"]
     },
     "customer.id": {
+      "description": "The ID of the customer.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
+      "description": "Format setting for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "metrics.gmail_forwards": {
+      "description": "Number of Gmail forwards for the ad.",
       "type": ["null", "integer"]
     },
     "metrics.gmail_saves": {
+      "description": "Number of times the ad was saved on Gmail.",
       "type": ["null", "integer"]
     },
     "metrics.gmail_secondary_clicks": {
+      "description": "Number of secondary clicks on Gmail for the ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.text_ad.headline": {
+      "description": "Headline for the text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.headline_part1": {
+      "description": "First part of the headline for the expanded text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.headline_part2": {
+      "description": "Second part of the headline for the expanded text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.id": {
+      "description": "The ID of the ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.image_url": {
+      "description": "URL of the image for the image ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.image_ad.pixel_height": {
+      "description": "Pixel height of the image for the image ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.pixel_width": {
+      "description": "Pixel width of the image for the image ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.mime_type": {
+      "description": "MIME type of the image for the image ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.image_ad.name": {
+      "description": "Name of the image for the image ad.",
       "type": ["null", "string"]
     },
     "metrics.impressions": {
+      "description": "Number of ad impressions.",
       "type": ["null", "integer"]
     },
     "metrics.interaction_rate": {
+      "description": "Rate of interactions with the ad.",
       "type": ["null", "number"]
     },
     "metrics.interaction_event_types": {
+      "description": "Types of interaction events with the ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "metrics.interactions": {
+      "description": "Total number of interactions with the ad.",
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.long_headline": {
+      "description": "Long headline for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.main_color": {
+      "description": "Main color for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "segments.month": {
+      "description": "Month for the data segment.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.accent_color": {
+      "description": "Accent color for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.allow_flexible_color": {
+      "description": "Flag indicating if flexible color is allowed for the responsive display ad.",
       "type": ["null", "boolean"]
     },
     "ad_group_ad.ad.responsive_display_ad.business_name": {
+      "description": "Business name for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.call_to_action_text": {
+      "description": "Call to action text for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.descriptions": {
+      "description": "Descriptions for the responsive display ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.price_prefix": {
+      "description": "Price prefix for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.promo_text": {
+      "description": "Promotional text for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
+      "description": "Format setting for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
+      "description": "Headlines for the responsive display ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.logo_images": {
+      "description": "Logo images for the responsive display ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.square_logo_images": {
+      "description": "Square logo images for the responsive display ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.long_headline": {
+      "description": "Long headline for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.main_color": {
+      "description": "Main color for the responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.marketing_images": {
+      "description": "Marketing images for the responsive display ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.square_marketing_images": {
+      "description": "Square marketing images for the responsive display ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_display_ad.youtube_videos": {
+      "description": "YouTube videos for the responsive display ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.expanded_text_ad.path1": {
+      "description": "Path 1 for the expanded text ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.expanded_text_ad.path2": {
+      "description": "Path 2 for the expanded text ad.",
       "type": ["null", "string"]
     },
     "metrics.percent_new_visitors": {
+      "description": "Percentage of new visitors interacted with the ad.",
       "type": ["null", "number"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.price_prefix": {
+      "description": "Price prefix for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.promo_text": {
+      "description": "Promotional text for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "segments.quarter": {
+      "description": "Quarter for the data segment.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_search_ad.descriptions": {
+      "description": "Descriptions for the responsive search ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.headlines": {
+      "description": "Headlines for the responsive search ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.responsive_search_ad.path1": {
+      "description": "Path 1 for the responsive search ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_search_ad.path2": {
+      "description": "Path 2 for the responsive search ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.short_headline": {
+      "description": "Short headline for the legacy responsive display ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.status": {
+      "description": "Status of the ad group ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.system_managed_resource_source": {
+      "description": "Source of the system-managed resource for the ad.",
       "type": ["null", "string"]
     },
     "metrics.top_impression_percentage": {
+      "description": "Percentage of top ad impressions.",
       "type": ["null", "number"]
     },
     "ad_group_ad.ad.app_ad.descriptions": {
+      "description": "Descriptions for the app ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.headlines": {
+      "description": "Headlines for the app ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.html5_media_bundles": {
+      "description": "HTML5 media bundles for the app ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.images": {
+      "description": "Images for the app ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "ad_group_ad.ad.app_ad.mandatory_ad_text": {
+      "description": "Mandatory text for the app ad.",
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.app_ad.youtube_videos": {
+      "description": "YouTube videos for the app ad.",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "metrics.value_per_all_conversions": {
+      "description": "Value per all conversions.",
       "type": ["null", "number"]
     },
     "metrics.value_per_conversion": {
+      "description": "Value per conversion.",
       "type": ["null", "number"]
     },
     "metrics.value_per_current_model_attributed_conversion": {
+      "description": "Value per currently attributed model conversion.",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p100_rate": {
+      "description": "Rate of viewers reaching the 100th quartile of the video.",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p25_rate": {
+      "description": "Rate of viewers reaching the 25th quartile of the video.",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p50_rate": {
+      "description": "Rate of viewers reaching the 50th quartile of the video.",
       "type": ["null", "number"]
     },
     "metrics.video_quartile_p75_rate": {
+      "description": "Rate of viewers reaching the 75th quartile of the video.",
       "type": ["null", "number"]
     },
     "metrics.video_view_rate": {
+      "description": "Rate of video views.",
       "type": ["null", "number"]
     },
     "metrics.video_views": {
+      "description": "Number of video views.",
       "type": ["null", "integer"]
     },
     "metrics.view_through_conversions": {
+      "description": "Conversions that occur without a click but after a view.",
       "type": ["null", "integer"]
     },
     "segments.week": {
+      "description": "Week for the data segment.",
       "type": ["null", "string"]
     },
     "segments.year": {
+      "description": "Year for the data segment.",
       "type": ["null", "integer"]
     }
   }

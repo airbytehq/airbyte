@@ -8,6 +8,12 @@ This connector supports Universal Analytics properties through the [Reporting AP
 
 </HideInUI>
 
+:::danger
+
+Google Analytics Universal Analytics Source Connector will be deprecated due to the deprecation of the Google Analytics Universal Analytics API by Google. This deprecation is scheduled by Google on July 1, 2024 (see Google's Documentation for more details). Transition to the Google Analytics 4 (GA4) Source Connector by July 1, 2024, to continue accessing your analytics data.
+
+:::
+
 :::caution
 
 **The Google Analytics (Universal Analytics) connector will be deprecated soon.**
@@ -61,11 +67,11 @@ A Google Cloud account with [Viewer permissions](https://support.google.com/anal
 5. Authenticate your Google account via OAuth or Service Account Key Authentication:
    - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
    - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API and grant [Read and Analyze permissions](https://support.google.com/analytics/answer/2884495).
-5. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 <!-- /env:oss -->
-6. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
-7. Optionally, enter a JSON object as a string in the **Custom Reports** field. For details, refer to [Requesting custom reports](#requesting-custom-reports)
-8. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
+7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
+8. Optionally, enter a JSON object as a string in the **Custom Reports** field. For details, refer to [Requesting custom reports](#requesting-custom-reports)
+9. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
 
 <HideInUI>
 
@@ -129,50 +135,41 @@ Custom Reports allow for flexibility in the reporting dimensions and metrics to 
 A custom report is formatted as: `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...]}]`
 
 Example of a custom report:
-```json
-[{
-  "name" : "page_views_and_users",
-  "dimensions" :[
-    "ga:date",
-    "ga:pagePath",
-    "ga:sessionDefaultChannelGrouping"
-  ],
-  "metrics" :[
-    "ga:screenPageViews",
-    "ga:totalUsers"
-  ]
-}]
-```
-Multiple custom reports should be entered with a comma separator. Each custom report is created as it's own stream.
-Example of multiple custom reports:
+
 ```json
 [
   {
-    "name" : "page_views_and_users",
-    "dimensions" :[
+    "name": "page_views_and_users",
+    "dimensions": [
       "ga:date",
-      "ga:pagePath"
+      "ga:pagePath",
+      "ga:sessionDefaultChannelGrouping"
     ],
-    "metrics" :[
-      "ga:screenPageViews",
-      "ga:totalUsers"
-    ]
+    "metrics": ["ga:screenPageViews", "ga:totalUsers"]
+  }
+]
+```
+
+Multiple custom reports should be entered with a comma separator. Each custom report is created as it's own stream.
+Example of multiple custom reports:
+
+```json
+[
+  {
+    "name": "page_views_and_users",
+    "dimensions": ["ga:date", "ga:pagePath"],
+    "metrics": ["ga:screenPageViews", "ga:totalUsers"]
   },
   {
-    "name" : "sessions_by_region",
-    "dimensions" :[
-      "ga:date",
-      "ga:region"
-    ],
-    "metrics" :[
-      "ga:totalUsers",
-      "ga:sessions"
-    ]
+    "name": "sessions_by_region",
+    "dimensions": ["ga:date", "ga:region"],
+    "metrics": ["ga:totalUsers", "ga:sessions"]
   }
 ]
 ```
 
 Custom reports can also include segments and filters to pull a subset of your data. The report should be formatted as:
+
 ```json
 [
   {
@@ -185,27 +182,20 @@ Custom reports can also include segments and filters to pull a subset of your da
 ]
 ```
 
-* When using segments, make sure you also add the `ga:segment` dimension.
+- When using segments, make sure you also add the `ga:segment` dimension.
 
 Example of a custom report with segments and/or filters:
+
 ```json
-[{ "name" : "page_views_and_users",
-	"dimensions" :[
-		"ga:date",
-		"ga:pagePath",
-      "ga:segment"
-   ],
-   "metrics" :[
-      "ga:sessions",
-      "ga:totalUsers"
-   ],
-   "segments" :[
-      "ga:sessionSource!=(direct)"
-   ],
-   "filter" :[
-      "ga:sessionSource!=(direct);ga:sessionSource!=(not set)"
-   ]
-}]
+[
+  {
+    "name": "page_views_and_users",
+    "dimensions": ["ga:date", "ga:pagePath", "ga:segment"],
+    "metrics": ["ga:sessions", "ga:totalUsers"],
+    "segments": ["ga:sessionSource!=(direct)"],
+    "filter": ["ga:sessionSource!=(direct);ga:sessionSource!=(not set)"]
+  }
+]
 ```
 
 To create a list of dimensions, you can use default Google Analytics dimensions (listed below) or custom dimensions if you have some defined. Each report can contain no more than 7 dimensions, and they must all be unique. The default Google Analytics dimensions are:
@@ -275,14 +265,20 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 
 <!-- Review common issues here: https://www.notion.so/512cf64f0ca54a1e9ea0034aaded84e8?v=77f3aa662f3641acaab5607c85966bb8 -->
 
-* Check out common troubleshooting issues for the Google Analytics v4 source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Google Analytics v4 source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+|:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.4.0   | 2024-07-01 | [40244](https://github.com/airbytehq/airbyte/pull/40244) | Deprecate the connector                  |
+| 0.3.3   | 2024-06-21 | [39940](https://github.com/airbytehq/airbyte/pull/39940) | Update dependencies |
+| 0.3.2   | 2024-06-04 | [38934](https://github.com/airbytehq/airbyte/pull/38934) | [autopull] Upgrade base image to v1.2.1 |
 | 0.3.1   | 2024-04-19 | [37432](https://github.com/airbytehq/airbyte/pull/36267) | Fix empty response error for test stream                                                     |
 | 0.3.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                              |
 | 0.2.5   | 2024-02-09 | [35101](https://github.com/airbytehq/airbyte/pull/35101) | Manage dependencies with Poetry.                                                             |
@@ -326,5 +322,7 @@ The Google Analytics connector should not run into the "requests per 100 seconds
 | 0.1.2   | 2021-09-20 | [6306](https://github.com/airbytehq/airbyte/pull/6306)   | Support of Airbyte OAuth initialization flow                                                 |
 | 0.1.1   | 2021-08-25 | [5655](https://github.com/airbytehq/airbyte/pull/5655)   | Corrected validation of empty custom report                                                  |
 | 0.1.0   | 2021-08-10 | [5290](https://github.com/airbytehq/airbyte/pull/5290)   | Initial Release                                                                              |
+
+</details>
 
 </HideInUI>

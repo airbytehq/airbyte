@@ -61,7 +61,7 @@ class LocalAirbyteDestination(private val dest: Destination) : AirbyteDestinatio
         return isClosed
     }
 
-    override val exitValue = 0
+    override var exitValue = 0
 
     override fun attemptRead(): Optional<io.airbyte.protocol.models.AirbyteMessage> {
         return Optional.empty()

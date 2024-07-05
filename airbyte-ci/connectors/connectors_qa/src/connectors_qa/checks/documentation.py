@@ -15,7 +15,7 @@ class DocumentationCheck(Check):
 
 class CheckMigrationGuide(DocumentationCheck):
     name = "Breaking changes must be accompanied by a migration guide"
-    description = "When a breaking change is introduced, we check that a migration guide is available. It should be stored under  `./docs/integrations/<connector-type>s/<connector-name>-migrations.md`.\nThis document should contain a section for each breaking change, in order of the version descending. It must explain users which action to take to migrate to the new version."
+    description = "When a breaking change is introduced, we check that a migration guide is available. It should be stored under `./docs/integrations/<connector-type>s/<connector-name>-migrations.md`.\nThis document should contain a section for each breaking change, in order of the version descending. It must explain users which action to take to migrate to the new version."
 
     def _run(self, connector: Connector) -> CheckResult:
         breaking_changes = get(connector.metadata, "releases.breakingChanges")

@@ -7,13 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.SourceOperations
 import io.airbyte.protocol.models.JsonSchemaType
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.*
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.format.DateTimeParseException
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Implementation of source operations with standard JDBC types. */
 open class JdbcSourceOperations :
     AbstractJdbcCompatibleSourceOperations<JDBCType>(), SourceOperations<ResultSet, JDBCType> {
@@ -130,15 +130,11 @@ open class JdbcSourceOperations :
         try {
             return JDBCType.valueOf(field[JdbcConstants.INTERNAL_COLUMN_TYPE].asInt())
         } catch (ex: IllegalArgumentException) {
-            LOGGER.warn(
-                String.format(
-                    "Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-                    field[JdbcConstants.INTERNAL_COLUMN_NAME],
-                    field[JdbcConstants.INTERNAL_SCHEMA_NAME],
-                    field[JdbcConstants.INTERNAL_TABLE_NAME],
-                    field[JdbcConstants.INTERNAL_COLUMN_TYPE]
-                )
-            )
+            LOGGER.warn {
+                "Could not convert column: ${field[JdbcConstants.INTERNAL_COLUMN_NAME]} from table: " +
+                    "${field[JdbcConstants.INTERNAL_SCHEMA_NAME]}.${field[JdbcConstants.INTERNAL_TABLE_NAME]} " +
+                    "with type: ${field[JdbcConstants.INTERNAL_COLUMN_TYPE]}. Casting to VARCHAR."
+            }
             return JDBCType.VARCHAR
         }
     }
@@ -177,7 +173,5 @@ open class JdbcSourceOperations :
         }
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcSourceOperations::class.java)
-    }
+    companion object {}
 }

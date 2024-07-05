@@ -58,7 +58,12 @@ class AvroSerializedBuffer(
 
     @Throws(IOException::class)
     @Suppress("DEPRECATION")
-    override fun writeRecord(recordString: String, airbyteMetaString: String, emittedAt: Long) {
+    override fun writeRecord(
+        recordString: String,
+        airbyteMetaString: String,
+        generationId: Long,
+        emittedAt: Long
+    ) {
         // TODO Remove this double deserialization when S3 Destinations moves to Async.
         writeRecord(
             Jsons.deserialize(
@@ -94,7 +99,6 @@ class AvroSerializedBuffer(
                 val schema =
                     schemaConverter.getAvroSchema(
                         catalog.streams
-                            .stream()
                             .filter { s: ConfiguredAirbyteStream ->
                                 s.stream.name == stream.name &&
                                     StringUtils.equals(
@@ -102,14 +106,12 @@ class AvroSerializedBuffer(
                                         stream.namespace,
                                     )
                             }
-                            .findFirst()
-                            .orElseThrow {
-                                RuntimeException(
-                                    "No such stream ${stream.namespace}.${stream.name}"
-                                )
-                            }
-                            .stream
-                            .jsonSchema,
+                            .firstOrNull()
+                            ?.stream
+                            ?.jsonSchema
+                            ?: throw RuntimeException(
+                                "No such stream ${stream.namespace}.${stream.name}"
+                            ),
                         stream.name,
                         stream.namespace,
                     )

@@ -3,364 +3,182 @@
 #
 from __future__ import annotations
 
-import re
-from typing import TYPE_CHECKING, List
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 import dagger
-from connector_ops.utils import ConnectorLanguage  # type: ignore
-from packaging.version import Version
+from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
-from pipelines.airbyte_ci.connectors.bump_version.pipeline import AddChangelogEntry, BumpDockerImageTagInMetadata, get_bumped_version
-from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.steps.base_image import UpdateBaseImageMetadata
+from pipelines.airbyte_ci.steps.bump_version import BumpConnectorVersion
+from pipelines.airbyte_ci.steps.changelog import AddChangelogEntry
+from pipelines.airbyte_ci.steps.pull_request import CreateOrUpdatePullRequest
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.dagger.actions.python.common import with_python_connector_installed
-from pipelines.helpers.connectors.cdk_helpers import get_latest_python_cdk_version
-from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
-from pipelines.models.steps import Step, StepResult, StepStatus
+
+from .steps import DependencyUpdate, GetDependencyUpdates, PoetryUpdate
 
 if TYPE_CHECKING:
+    from typing import Dict, Iterable, List, Set, Tuple
+
     from anyio import Semaphore
+    from github import PullRequest
+    from pipelines.models.steps import StepResult
 
-POETRY_LOCK_FILE = "poetry.lock"
-POETRY_TOML_FILE = "pyproject.toml"
-
-
-class CheckIsPythonUpdateable(Step):
-    """Check if the connector is a candidate for updates.
-    Candidate conditions:
-    - The connector is a Python connector.
-    - The connector is a source connector.
-    - The connector is using poetry.
-    - The connector has a base image defined in the metadata.
-    """
-
-    context: ConnectorContext
-
-    title = "Check if the connector is a candidate for updating."
-
-    def __init__(self, context: PipelineContext) -> None:
-        super().__init__(context)
-
-    async def _run(self) -> StepResult:
-        connector_dir_entries = await (await self.context.get_connector_dir()).entries()
-        if self.context.connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stderr="The connector is not a Python connector.",
-            )
-        if self.context.connector.connector_type != "source":
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stderr="The connector is not a source connector.",
-            )
-        if POETRY_LOCK_FILE not in connector_dir_entries or POETRY_TOML_FILE not in connector_dir_entries:
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stderr="The connector requires poetry.",
-            )
-
-        if not self.context.connector.metadata or not self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage"):
-            return StepResult(
-                step=self,
-                status=StepStatus.SKIPPED,
-                stderr="The connector can't be updated because it does not have a base image defined in the metadata.",
-            )
-
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS,
-        )
+UP_TO_DATE_PR_LABEL = "up-to-date"
+AUTO_MERGE_PR_LABEL = "auto-merge"
+DEFAULT_PR_LABELS = [UP_TO_DATE_PR_LABEL]
+BUMP_TYPE = "patch"
+CHANGELOG_ENTRY_COMMENT = "Update dependencies"
 
 
-class UpdatePoetry(Step):
-    context: ConnectorContext
-    dev: bool
-    specified_versions: dict[str, str]
-
-    title = "Update versions of libraries in poetry."
-
-    def __init__(self, context: PipelineContext, dev: bool, specific_dependencies: List[str]) -> None:
-        super().__init__(context)
-        self.dev = dev
-        self.specified_versions = parse_specific_dependencies(specific_dependencies)
-
-    async def _run(self) -> StepResult:
-        base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
-        base_container = self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(base_image_name)
-        connector_container = await with_python_connector_installed(
-            self.context,
-            base_container,
-            str(self.context.connector.code_directory),
-        )
-
-        try:
-            before_versions = await get_poetry_versions(connector_container)
-            before_main = await get_poetry_versions(connector_container, only="main")
-
-            if self.specified_versions:
-                for package, dep in self.specified_versions.items():
-                    self.logger.info(f"  Specified: poetry add {dep}")
-                    if package in before_main:
-                        connector_container = await connector_container.with_exec(["poetry", "add", dep])
-                    else:
-                        connector_container = await connector_container.with_exec(["poetry", "add", dep, "--group=dev"])
-            else:
-                current_cdk_version = before_versions.get("airbyte-cdk") or None
-                if current_cdk_version:
-                    # We want the CDK pinned exactly so it also works as expected in PyAirbyte and other `pip` scenarios
-                    new_cdk_version = pick_airbyte_cdk_version(current_cdk_version, self.context)
-                    self.logger.info(f"Updating airbyte-cdk from {current_cdk_version} to {new_cdk_version}")
-                    if new_cdk_version > current_cdk_version:
-                        connector_container = await connector_container.with_exec(["poetry", "add", f"airbyte-cdk=={new_cdk_version}"])
-
-                # update everything else
-                connector_container = await connector_container.with_exec(["poetry", "update"])
-                poetry_update_output = await connector_container.stdout()
-                self.logger.info(poetry_update_output)
-
-            after_versions = await get_poetry_versions(connector_container)
-
-            # see what changed
-            all_changeset = get_package_changes(before_versions, after_versions)
-            main_changeset = get_package_changes(before_main, after_versions)
-            if self.specified_versions or self.dev:
-                important_changeset = all_changeset
-            else:
-                important_changeset = main_changeset
-
-            for package, version in main_changeset.items():
-                self.logger.info(f"Main {package} updates: {before_versions.get(package) or 'None'} -> {version or 'None'}")
-            for package, version in all_changeset.items():
-                if package not in main_changeset:
-                    self.logger.info(f" Dev {package} updates: {before_versions.get(package) or 'None'} -> {version or 'None'}")
-
-            if not important_changeset:
-                message = f"No important dependencies updated. Only {', '.join(all_changeset.keys() or ['none'])} were updated."
-                self.logger.info(message)
-                return StepResult(step=self, status=StepStatus.SKIPPED, stderr=message)
-
-            await connector_container.file(POETRY_TOML_FILE).export(f"{self.context.connector.code_directory}/{POETRY_TOML_FILE}")
-            self.logger.info(f"Generated {POETRY_TOML_FILE} for {self.context.connector.technical_name}")
-            await connector_container.file(POETRY_LOCK_FILE).export(f"{self.context.connector.code_directory}/{POETRY_LOCK_FILE}")
-            self.logger.info(f"Generated {POETRY_LOCK_FILE} for {self.context.connector.technical_name}")
-
-        except dagger.ExecError as e:
-            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
-
-        return StepResult(step=self, status=StepStatus.SUCCESS, output=all_changeset)
+## HELPER FUNCTIONS
+async def export_modified_files(
+    step_with_modified_files: UpdateBaseImageMetadata | PoetryUpdate | BumpConnectorVersion | AddChangelogEntry,
+    directory_modified_by_step: dagger.Directory,
+    export_to_directory: Path,
+) -> Set[Path]:
+    modified_files = set()
+    for modified_file in step_with_modified_files.modified_files:
+        local_path = export_to_directory / modified_file
+        await directory_modified_by_step.file(str(modified_file)).export(str(local_path))
+        modified_files.add(local_path)
+    return modified_files
 
 
-class RestoreOriginalState(Step):
-    context: ConnectorContext
-
-    title = "Restore original state"
-
-    def __init__(self, context: ConnectorContext) -> None:
-        super().__init__(context)
-        self.pyproject_path = context.connector.code_directory / POETRY_TOML_FILE
-        if self.pyproject_path.exists():
-            self.original_pyproject = self.pyproject_path.read_text()
-        self.poetry_lock_path = context.connector.code_directory / POETRY_LOCK_FILE
-        if self.poetry_lock_path.exists():
-            self.original_poetry_lock = self.poetry_lock_path.read_text()
-
-    async def _run(self) -> StepResult:
-        if self.original_pyproject:
-            self.pyproject_path.write_text(self.original_pyproject)
-            self.logger.info(f"Restored {POETRY_TOML_FILE} for {self.context.connector.technical_name}")
-        if self.original_poetry_lock:
-            self.poetry_lock_path.write_text(self.original_poetry_lock)
-            self.logger.info(f"Restored {POETRY_LOCK_FILE} for {self.context.connector.technical_name}")
-
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS,
-        )
+def get_pr_body(context: ConnectorContext, step_results: Iterable[StepResult], dependency_updates: Iterable[DependencyUpdate]) -> str:
+    env = Environment(
+        loader=PackageLoader("pipelines.airbyte_ci.connectors.up_to_date"),
+        autoescape=select_autoescape(),
+        trim_blocks=False,
+        lstrip_blocks=True,
+    )
+    template = env.get_template("up_to_date_pr_body.md.j2")
+    latest_docker_image = f"{context.connector.metadata['dockerRepository']}:latest"
+    return template.render(
+        connector_technical_name=context.connector.technical_name,
+        step_results=step_results,
+        dependency_updates=dependency_updates,
+        connector_latest_docker_image=latest_docker_image,
+    )
 
 
-class RegressionTest(Step):
-    """Run the regression test for the connector.
-    We test that:
-    - The original dependencies are installed in the new connector image.
-    - The dev dependencies are not installed in the new connector image.
-    - The connector spec command successfully.
-    """
-
-    context: ConnectorContext
-
-    title = "Run regression test"
-
-    async def _run(self, new_connector_container: dagger.Container) -> StepResult:
-        try:
-            await new_connector_container.with_exec(["spec"])
-            await new_connector_container.with_mounted_file(
-                "pyproject.toml", (await self.context.get_connector_dir(include=["pyproject.toml"])).file("pyproject.toml")
-            ).with_exec(["poetry", "run", self.context.connector.technical_name, "spec"], skip_entrypoint=True)
-        except dagger.ExecError as e:
-            return StepResult(
-                step=self,
-                status=StepStatus.FAILURE,
-                stderr=str(e),
-            )
-        return StepResult(
-            step=self,
-            status=StepStatus.SUCCESS,
-        )
+def get_pr_creation_arguments(
+    modified_files: Iterable[Path],
+    context: ConnectorContext,
+    step_results: Iterable[StepResult],
+    dependency_updates: Iterable[DependencyUpdate],
+) -> Tuple[Tuple, Dict]:
+    return (modified_files,), {
+        "branch_id": f"up-to-date/{context.connector.technical_name}",
+        "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
+        "pr_title": f"🐙 {context.connector.technical_name}: run up-to-date pipeline [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
+        "pr_body": get_pr_body(context, step_results, dependency_updates),
+    }
 
 
-def pick_airbyte_cdk_version(current_version: Version, context: ConnectorContext) -> Version:
-    latest = Version(get_latest_python_cdk_version())
-
-    # TODO: could add more logic here for semantic and other known things
-
-    # 0.84: where from airbyte_cdk.sources.deprecated is removed
-    if context.connector.language == ConnectorLanguage.PYTHON and current_version < Version("0.84.0"):
-        return Version("0.83.0")
-
-    return latest
-
-
-def parse_specific_dependencies(specific_dependencies: List[str]) -> dict[str, str]:
-    package_name_pattern = r"^(\w+)[@><=]([^\s]+)$"
-    versions: dict[str, str] = {}
-    for dep in specific_dependencies:
-        match = re.match(package_name_pattern, dep)
-        if match:
-            package = match.group(1)
-            versions[package] = dep
-        else:
-            raise ValueError(f"Invalid dependency name: {dep}")
-    return versions
-
-
-def get_package_changes(before_versions: dict[str, Version], after_versions: dict[str, Version]) -> dict[str, Version]:
-    changes: dict[str, Version] = {}
-    for package, before_version in before_versions.items():
-        after_version = after_versions.get(package)
-        if after_version and before_version != after_version:
-            changes[package] = after_version
-    return changes
-
-
-async def get_poetry_versions(connector_container: dagger.Container, only: str | None = None) -> dict[str, Version]:
-    # -T makes it only the top-level ones
-    # poetry show -T --only main will jsut be the main dependecies
-    command = ["poetry", "show", "-T"]
-    if only:
-        command.append("--only")
-        command.append(only)
-    poetry_show_result = await connector_container.with_exec(command).stdout()
-    versions: dict[str, Version] = {}
-    lines = poetry_show_result.strip().split("\n")
-    for line in lines:
-        parts = line.split(maxsplit=2)  # Use maxsplit to limit the split parts
-        if len(parts) >= 2:
-            package = parts[0]
-            # Regex to find version-like patterns. saw case with (!) before version
-            version_match = re.search(r"\d+\.\d+.*", parts[1])
-            if version_match:
-                version = version_match.group()
-                versions[package] = Version(version)
-    return versions
-
-
+## MAIN FUNCTION
 async def run_connector_up_to_date_pipeline(
     context: ConnectorContext,
     semaphore: "Semaphore",
-    dev: bool = False,
+    create_pull_request: bool = False,
+    auto_merge: bool = False,
     specific_dependencies: List[str] = [],
-) -> Report:
-    restore_original_state = RestoreOriginalState(context)
-
-    # TODO: could pipe in the new version from the command line
-    should_bump = False
-    if should_bump:
-        new_version = get_bumped_version(context.connector.version, "patch")
-    else:
-        new_version = None
-
-    context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
-
-    steps_to_run: STEP_TREE = []
-
-    steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.CHECK_UPDATE_CANDIDATE, step=CheckIsPythonUpdateable(context))])
-
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.UPDATE_POETRY,
-                step=UpdatePoetry(context, dev, specific_dependencies),
-                depends_on=[CONNECTOR_TEST_STEP_ID.CHECK_UPDATE_CANDIDATE],
-            )
-        ]
-    )
-
-    steps_to_run.append(
-        [StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context), depends_on=[CONNECTOR_TEST_STEP_ID.UPDATE_POETRY])]
-    )
-
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.REGRESSION_TEST,
-                step=RegressionTest(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-                args=lambda results: {"new_connector_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
-            )
-        ]
-    )
-
-    if new_version:
-        steps_to_run.append(
-            [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.BUMP_METADATA_VERSION,
-                    step=BumpDockerImageTagInMetadata(
-                        context,
-                        await context.get_repo_dir(include=[str(context.connector.code_directory)]),
-                        new_version,
-                        export_metadata=True,
-                    ),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-                )
-            ]
-        )
-        steps_to_run.append(
-            [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.ADD_CHANGELOG_ENTRY,
-                    step=AddChangelogEntry(
-                        context,
-                        await context.get_repo_dir(include=[str(context.connector.local_connector_documentation_directory)]),
-                        new_version,
-                        "TODO: better message - Poetry update.",
-                        "0",
-                        export_docs=True,
-                    ),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.REGRESSION_TEST],
-                )
-            ]
-        )
+    bump_connector_version: bool = True,
+) -> ConnectorReport:
 
     async with semaphore:
         async with context:
-            try:
-                result_dict = await run_steps(
-                    runnables=steps_to_run,
-                    options=context.run_step_options,
-                )
-            except Exception as e:
-                await restore_original_state.run()
-                raise e
-            results = list(result_dict.values())
-            if any(step_result.status is StepStatus.FAILURE for step_result in results):
-                await restore_original_state.run()
-            report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
-            context.report = report
+            step_results: List[StepResult] = []
+            all_modified_files: Set[Path] = set()
+            created_pr: PullRequest.PullRequest | None = None
+            new_version: str | None = None
 
+            connector_directory = await context.get_connector_dir()
+            upgrade_base_image_in_metadata = UpdateBaseImageMetadata(context, connector_directory=connector_directory)
+            upgrade_base_image_in_metadata_result = await upgrade_base_image_in_metadata.run()
+            step_results.append(upgrade_base_image_in_metadata_result)
+            if upgrade_base_image_in_metadata_result.success:
+                connector_directory = upgrade_base_image_in_metadata_result.output
+                exported_modified_files = await export_modified_files(
+                    upgrade_base_image_in_metadata, connector_directory, context.connector.code_directory
+                )
+                context.logger.info(f"Exported files following the base image upgrade: {exported_modified_files}")
+                all_modified_files.update(exported_modified_files)
+
+            if context.connector.is_using_poetry:
+                # We run the poetry update step after the base image upgrade because the base image upgrade may change the python environment
+                poetry_update = PoetryUpdate(context, specific_dependencies=specific_dependencies, connector_directory=connector_directory)
+                poetry_update_result = await poetry_update.run()
+                step_results.append(poetry_update_result)
+                if poetry_update_result.success:
+                    connector_directory = poetry_update_result.output
+                    exported_modified_files = await export_modified_files(
+                        poetry_update, connector_directory, context.connector.code_directory
+                    )
+                    context.logger.info(f"Exported files following the Poetry update: {exported_modified_files}")
+                    all_modified_files.update(exported_modified_files)
+
+            one_previous_step_is_successful = any(step_result.success for step_result in step_results)
+            if bump_connector_version and one_previous_step_is_successful:
+                bump_version = BumpConnectorVersion(context, BUMP_TYPE, connector_directory=connector_directory)
+                bump_version_result = await bump_version.run()
+                step_results.append(bump_version_result)
+                if bump_version_result.success:
+                    new_version = bump_version.new_version
+                    exported_modified_files = await export_modified_files(
+                        bump_version, bump_version_result.output, context.connector.code_directory
+                    )
+                    context.logger.info(f"Exported files following the version bump: {exported_modified_files}")
+                    all_modified_files.update(exported_modified_files)
+
+            create_pull_request = create_pull_request and one_previous_step_is_successful and bump_version_result.success
+            # We run build and get dependency updates only if we are creating a pull request, to fill the PR body with the correct information
+            if create_pull_request:
+                build_result = await BuildConnectorImages(context).run()
+                step_results.append(build_result)
+                dependency_updates: List[DependencyUpdate] = []
+
+                if build_result.success:
+                    built_connector_container = build_result.output[LOCAL_BUILD_PLATFORM]
+                    get_dependency_updates = GetDependencyUpdates(context)
+                    dependency_updates_result = await get_dependency_updates.run(built_connector_container)
+                    step_results.append(dependency_updates_result)
+                    dependency_updates = dependency_updates_result.output
+
+                # We open a PR even if build is failing.
+                # This might allow a developer to fix the build in the PR.
+                # ---
+                # We are skipping CI on this first PR creation attempt to avoid useless runs:
+                # the new changelog entry is missing, it will fail QA checks
+                initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True, labels=DEFAULT_PR_LABELS)
+                pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
+                    all_modified_files, context, step_results, dependency_updates
+                )
+                initial_pr_creation_result = await initial_pr_creation.run(*pr_creation_args, **pr_creation_kwargs)
+                step_results.append(initial_pr_creation_result)
+                if initial_pr_creation_result.success:
+                    created_pr = initial_pr_creation_result.output
+
+            if new_version and created_pr:
+                add_changelog_entry = AddChangelogEntry(context, new_version, CHANGELOG_ENTRY_COMMENT, created_pr.number)
+                add_changelog_entry_result = await add_changelog_entry.run()
+                step_results.append(add_changelog_entry_result)
+                if add_changelog_entry_result.success:
+                    # File path modified by the changelog entry step are relative to the repo root
+                    exported_modified_files = await export_modified_files(add_changelog_entry, add_changelog_entry_result.output, Path("."))
+                    context.logger.info(f"Exported files following the changelog entry: {exported_modified_files}")
+                    all_modified_files.update(exported_modified_files)
+                    final_labels = DEFAULT_PR_LABELS + [AUTO_MERGE_PR_LABEL] if auto_merge else DEFAULT_PR_LABELS
+                    post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=final_labels)
+                    pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
+                        all_modified_files, context, step_results, dependency_updates
+                    )
+                    post_changelog_pr_update_result = await post_changelog_pr_update.run(*pr_creation_args, **pr_creation_kwargs)
+                    step_results.append(post_changelog_pr_update_result)
+
+            report = ConnectorReport(context, step_results, name="UP-TO-DATE RESULTS")
+            context.report = report
     return report

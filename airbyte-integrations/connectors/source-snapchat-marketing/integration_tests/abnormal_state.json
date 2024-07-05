@@ -2,77 +2,244 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "updated_at": "2221-01-01T00:00:00Z"
-      },
       "stream_descriptor": {
-        "name": "adaccounts"
+        "name": "adaccounts",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+              "parent_slice": {}
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "updated_at": "2221-01-01T00:00:00Z"
-      },
       "stream_descriptor": {
-        "name": "creatives"
+        "name": "creatives",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "updated_at": "2221-01-01T00:00:00Z"
-      },
       "stream_descriptor": {
-        "name": "media"
+        "name": "media",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "updated_at": "2221-01-01T00:00:00Z"
-      },
       "stream_descriptor": {
-        "name": "campaigns"
+        "name": "campaigns",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "updated_at": "2221-01-01T00:00:00Z"
-      },
       "stream_descriptor": {
-        "name": "ads"
+        "name": "ads",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "updated_at": "2221-01-01T00:00:00Z"
-      },
       "stream_descriptor": {
-        "name": "adsquads"
+        "name": "adsquads",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          }
+        ]
       }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": {
-        "updated_at": "2221-01-01T00:00:00Z"
-      },
       "stream_descriptor": {
-        "name": "segments"
+        "name": "segments",
+        "namespace": null
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "adaccount_id": "04214c00-3aa5-4123-b5c8-363c32c40e42",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          },
+          {
+            "partition": {
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "parent_slice": {
+                "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
+                "parent_slice": {}
+              }
+            },
+            "cursor": {
+              "updated_at": "2221-01-01T00:00:00.000Z"
+            }
+          }
+        ]
       }
     }
   }

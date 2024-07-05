@@ -3,26 +3,33 @@
   "type": "object",
   "properties": {
     "Account Id": {
+      "description": "The unique identifier of the account associated with the campaign label.",
       "type": ["null", "integer"]
     },
     "Campaign": {
+      "description": "The name or title of the campaign to which the label is applied.",
       "type": ["null", "string"]
     },
     "Client Id": {
+      "description": "The unique identifier of the client associated with the campaign label.",
       "type": ["null", "string"]
     },
     "Id": {
+      "description": "The unique identifier of the campaign label.",
       "type": ["null", "integer"]
     },
     "Parent Id": {
+      "description": "The unique identifier of the parent item associated with the campaign label.",
       "type": ["null", "integer"]
     },
     "Modified Time": {
+      "description": "The date and time when the campaign label was last modified.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "Status": {
+      "description": "The current status of the campaign label (e.g., active, paused, deleted).",
       "type": ["null", "string"]
     }
   }

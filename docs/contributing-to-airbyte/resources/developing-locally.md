@@ -16,23 +16,24 @@ Manually switching between different language versions can get hairy. We recomme
 
 To start contributing:
 
-1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte`](https://github.com/airbytehq/airbyte) repository to develop connectors or the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository to develop the Airbyte platform. 
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte`](https://github.com/airbytehq/airbyte) repository to develop connectors or the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository to develop the Airbyte platform.
 2. Clone the fork on your workstation:
 
 If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
 
-   ```bash
-   git clone git@github.com:{YOUR_USERNAME}/airbyte.git
-   cd airbyte
-   ./run-ab-platform.sh
-   ```
+```bash
+git clone git@github.com:{YOUR_USERNAME}/airbyte.git
+cd airbyte
+./run-ab-platform.sh
+```
+
 If developing platform:
 
-   ```bash
-   git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
-   cd airbyte-platform
-   docker compose up
-   ```
+```bash
+git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
+cd airbyte-platform
+docker compose up
+```
 
 ## Build with `gradle`
 
@@ -107,11 +108,9 @@ In your local `airbyte` repository, run the following command:
 ```
 
 - Then, build the connector image:
-  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector.
   - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
   - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
-
-
 
 :::info
 
@@ -121,7 +120,7 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 - In your browser, visit [http://localhost:8000/](http://localhost:8000/)
 - Log in with the default user `airbyte` and default password `password`
-- Go to `Settings` (gear icon in lower left corner) 
+- Go to `Settings` (gear icon in lower left corner)
 - Go to `Sources` or `Destinations` (depending on which connector you are testing)
 - Update the version number to use your docker image tag (default is `dev`)
 - Click `Change` to save the changes
@@ -131,7 +130,6 @@ Now when you run a sync with that connector, it will use your local docker image
 ## Run platform acceptance tests
 
 In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
-
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew clean build
@@ -196,6 +194,7 @@ pnpm start
 When working on the connector builder UI and doing changes to the CDK and the webapp at the same time, you can start the dev server with `CDK_MANIFEST_PATH` or `CDK_VERSION` environment variables set to have the correct Typescript types built. If `CDK_VERSION` is set, it's loading the specified version of the CDK from pypi instead of the default one, if `CDK_MANIFEST_PATH` is set, it's copying the schema file locally.
 
 For example:
+
 ```
 CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml pnpm start
 ```

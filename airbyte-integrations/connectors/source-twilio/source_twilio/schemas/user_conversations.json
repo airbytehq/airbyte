@@ -5,68 +5,89 @@
   "type": ["null", "object"],
   "properties": {
     "notification_level": {
+      "description": "The level of notification settings for the conversation.",
       "type": ["null", "string"]
     },
     "unique_name": {
+      "description": "A unique name assigned to the conversation.",
       "type": ["null", "string"]
     },
     "user_sid": {
+      "description": "The unique identifier of the user associated with the conversation.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name or alias for the conversation.",
       "type": ["null", "string"]
     },
     "conversation_sid": {
+      "description": "The unique identifier of the conversation.",
       "type": ["null", "string"]
     },
     "unread_messages_count": {
+      "description": "The count of unread messages in the conversation.",
       "type": ["null", "integer"]
     },
     "created_by": {
+      "description": "The user or entity that created the conversation.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier of the Twilio account the conversation belongs to.",
       "type": ["null", "string"]
     },
     "last_read_message_index": {
+      "description": "The index of the last message in the conversation that has been read by the user.",
       "type": ["null", "integer"]
     },
     "date_created": {
+      "description": "The date and time when the conversation was initially created.",
       "type": ["null", "string"]
     },
     "timers": {
+      "description": "Contains timers or time-related information for the user conversation.",
       "type": ["null", "object"],
       "properties": {
         "chat_service_sid": {
+          "description": "Additional timer related to the chat service.",
           "type": ["null", "string"]
         }
       }
     },
     "url": {
+      "description": "The URL to access the conversation details.",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the conversation was last updated.",
       "type": ["null", "string"]
     },
     "attributes": {
+      "description": "Additional metadata or attributes associated with the conversation.",
       "type": ["null", "string"]
     },
     "participant_sid": {
+      "description": "The unique identifier of the participant in the conversation.",
       "type": ["null", "string"]
     },
     "conversation_state": {
+      "description": "The current state or status of the conversation.",
       "type": ["null", "string"]
     },
     "chat_service_sid": {
+      "description": "The unique identifier of the chat service associated with the conversation.",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Contains links related to the user conversation data.",
       "type": ["null", "object"],
       "properties": {
         "conversation": {
+          "description": "Link to access detailed information about the conversation.",
           "type": ["null", "string"]
         },
         "participant": {
+          "description": "Link to access participant information related to the conversation.",
           "type": ["null", "string"]
         }
       }

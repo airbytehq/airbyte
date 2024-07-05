@@ -11,9 +11,9 @@ import pendulum
 import requests
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from pendulum import Date
+from requests.auth import AuthBase
 from source_mixpanel.utils import fix_date_time
 
 
@@ -49,11 +49,11 @@ class MixpanelStream(HttpStream, ABC):
 
     def __init__(
         self,
-        authenticator: HttpAuthenticator,
+        authenticator: AuthBase,
         region: str,
-        project_timezone: str,
-        start_date: Date = None,
-        end_date: Date = None,
+        project_timezone: Optional[str] = "US/Pacific",
+        start_date: Optional[Date] = None,
+        end_date: Optional[Date] = None,
         date_window_size: int = 30,  # in days
         attribution_window: int = 0,  # in days
         select_properties_by_default: bool = True,
@@ -145,7 +145,7 @@ class MixpanelStream(HttpStream, ABC):
         Fetch required parameters in a given stream. Used to create sub-streams
         """
         params = {
-            "authenticator": self.authenticator,
+            "authenticator": self._session.auth,
             "region": self.region,
             "project_timezone": self.project_timezone,
             "reqs_per_hour_limit": self.reqs_per_hour_limit,

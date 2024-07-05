@@ -53,4 +53,3 @@ that users know the document has been deleted.
 
 Docs:
 [Events](https://docs.fauna.com/fauna/current/api/fql/functions/events?lang=python).
-

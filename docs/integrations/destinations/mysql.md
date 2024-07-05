@@ -15,14 +15,6 @@ There are two flavors of connectors for this destination:
 | Namespaces                     | Yes                  |       |
 | SSH Tunnel Connection          | Yes                  |       |
 
-#### Output Schema
-
-Each stream will be output into its own table in MySQL. Each table will contain 3 columns:
-
-- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in MySQL is `VARCHAR(256)`.
-- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in MySQL is `TIMESTAMP(6)`.
-- `_airbyte_data`: a json blob representing with the event data. The column type in MySQL is `JSON`.
-
 ## Getting Started \(Airbyte Cloud\)
 
 Airbyte Cloud only supports connecting to your MySQL instance with TLS encryption. Other than that, you can proceed with the open-source instructions below.
@@ -33,8 +25,8 @@ Airbyte Cloud only supports connecting to your MySQL instance with TLS encryptio
 
 To use the MySQL destination, you'll need:
 
-- To sync data to MySQL **with** normalization MySQL database 8.0.0 or above
-- To sync data to MySQL **without** normalization you'll need MySQL 5.0 or above.
+- To sync data to MySQL **with** typing and deduping: MySQL database 8.0.0 or above
+- To sync data to MySQL **without** typing and deduping: MySQL 5.0 or above.
 
 #### Troubleshooting
 
@@ -112,10 +104,17 @@ Using this feature requires additional configuration, when creating the destinat
 6. If you are using `Password Authentication`, then `SSH Login Username` should be set to the password of the User from the previous step. If you are using `SSH Key Authentication` leave this blank. Again, this is not the MySQl password, but the password for the OS-user that Airbyte is using to perform commands on the bastion.
 7. If you are using `SSH Key Authentication`, then `SSH Private Key` should be set to the RSA Private Key that you are using to create the SSH connection. This should be the full contents of the key file starting with `-----BEGIN RSA PRIVATE KEY-----` and ending with `-----END RSA PRIVATE KEY-----`.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
+| 1.0.3   | 2024-06-26 | [40566](https://github.com/airbytehq/airbyte/pull/40566) | Remove strict-encrypt variant                                                                       |
+| 1.0.2   | 2024-06-26 | [40553](https://github.com/airbytehq/airbyte/pull/40553) | Convert prod code to kotlin                                                                         |
+| 1.0.1   | 2024-06-25 | [40513](https://github.com/airbytehq/airbyte/pull/40513) | Improve error reporting for "access denied" error                                                   |
+| 1.0.0   | 2024-04-26 | [37322](https://github.com/airbytehq/airbyte/pull/37322) | Remove normalization and upgrade to DV2 output format                                               |
 | 0.3.1   | 2024-04-12 | [36926](https://github.com/airbytehq/airbyte/pull/36926) | Upgrade to Kotlin CDK                                                                               |
 | 0.3.0   | 2023-12-18 | [33468](https://github.com/airbytehq/airbyte/pull/33468) | Upgrade to latest Java CDK                                                                          |
 | 0.2.0   | 2023-06-27 | [27781](https://github.com/airbytehq/airbyte/pull/27781) | License Update: Elv2                                                                                |
@@ -139,3 +138,5 @@ Using this feature requires additional configuration, when creating the destinat
 | 0.1.2   | 2021-07-03 | [\#3327](https://github.com/airbytehq/airbyte/pull/3327) | Fixed LSEP unicode characters.                                                                      |
 | 0.1.1   | 2021-07-03 | [\#3289](https://github.com/airbytehq/airbyte/pull/3289) | Added support for outputting messages.                                                              |
 | 0.1.0   | 2021-05-06 | [\#3242](https://github.com/airbytehq/airbyte/pull/3242) | Added MySQL destination.                                                                            |
+
+</details>

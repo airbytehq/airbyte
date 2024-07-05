@@ -6,7 +6,7 @@ products: all
 
 Setting up a new source in Airbyte is a quick and simple process! When viewing the Airbyte UI, you'll see the main navigation bar on the left side of your screen. Click the **Sources** tab to bring up a list of all available sources.
 
-<Arcade id="WjbChISa931Hc55yx4cb" title="Getting Started (Source)" />
+<Arcade id="WjbChISa931Hc55yx4cb" title="Getting Started (Source)" paddingBottom="calc(61.42578125% + 41px)" />
 
 You can use the provided search bar, or simply scroll down the list to find the source you want to replicate data from. Let's use a demo source, Faker, as an example. Clicking on the **Sample Data (Faker)** card will bring us to its setup page.
 
@@ -23,4 +23,3 @@ Some sources will have an **Optional Fields** tab. You can open this tab to view
 Once you've filled out all the required fields, click on the **Set up source** button and Airbyte will run a check to verify the connection. Happy replicating!
 
 Can't find the connectors that you want? Try your hand at easily building one yourself using our [Connector Builder](../../connector-development/connector-builder-ui/overview.md)!
-

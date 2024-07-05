@@ -161,7 +161,10 @@ class TestLinkedinAdsStream:
         "response_json, expected",
         (
             ({"elements": []}, None),
-            ({"elements": [{"data": []}] * 500, "paging": {"start": 0, "total": 600}}, {"start": 500}),
+            (
+                {"elements": [{"data": []}] * 500, "metadata": {"nextPageToken": "next_page_token"}, "paging": {"start": 0, "total": 600}},
+                {"pageToken": "next_page_token"},
+            ),
         ),
     )
     def test_next_page_token(self, requests_mock, response_json, expected):
@@ -172,7 +175,7 @@ class TestLinkedinAdsStream:
         assert expected == result
 
     def test_request_params(self):
-        expected = "count=500&q=search&search=(id:(values:List(1,2)))"
+        expected = "pageSize=500&q=search&search=(id:(values:List(urn%3Ali%3AsponsoredAccount%3A1,urn%3Ali%3AsponsoredAccount%3A2)))"
         result = self.stream.request_params(stream_state={}, stream_slice={"account_id": 123})
         assert expected == result
 
@@ -221,17 +224,17 @@ class TestLinkedInAdsStreamSlicing:
             (
                 CampaignGroups,
                 {"account_id": 123},
-                "count=500&q=search&search=(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))",
+                "pageSize=500&q=search&search=(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))",
             ),
             (
                 Campaigns,
                 {"account_id": 123},
-                "count=500&q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
+                "pageSize=500&q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
             ),
             (
                 Creatives,
                 {"campaign_id": 123},
-                "count=100&q=criteria",
+                "pageSize=100&q=criteria",
             ),
         ],
         ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],
@@ -239,7 +242,7 @@ class TestLinkedInAdsStreamSlicing:
     def test_request_params(self, stream_cls, slice, expected):
         stream = stream_cls(TEST_CONFIG)
         result = stream.request_params(stream_state={}, stream_slice=slice)
-        assert expected == result
+        assert result == expected
 
     @pytest.mark.parametrize(
         "stream_cls, state, records_slice, expected",
