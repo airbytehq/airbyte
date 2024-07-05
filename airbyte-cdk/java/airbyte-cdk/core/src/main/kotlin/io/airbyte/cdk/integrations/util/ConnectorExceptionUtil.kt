@@ -4,10 +4,6 @@
 package io.airbyte.cdk.integrations.util
 
 import com.google.common.collect.ImmutableList
-import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
-import io.airbyte.commons.exceptions.ConfigErrorException
-import io.airbyte.commons.exceptions.ConnectionErrorException
-import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.functional.Either
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils

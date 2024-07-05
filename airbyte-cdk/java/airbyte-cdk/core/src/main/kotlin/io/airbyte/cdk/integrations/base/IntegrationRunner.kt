@@ -110,8 +110,7 @@ internal constructor(
     @Trace(operationName = "RUN_OPERATION")
     @Throws(Exception::class)
     @JvmOverloads
-    fun run(args: Array<String>,
-            exceptionHandler: ConnectorExceptionHandler? = null) {
+    fun run(args: Array<String>, exceptionHandler: ConnectorExceptionHandler? = null) {
         val parsed = cliParser.parse(args)
         try {
             runInternal(parsed, exceptionHandler)
@@ -121,8 +120,10 @@ internal constructor(
     }
 
     @Throws(Exception::class)
-    private fun runInternal(parsed: IntegrationConfig,
-                            exceptionHandler: ConnectorExceptionHandler? = null) {
+    private fun runInternal(
+        parsed: IntegrationConfig,
+        exceptionHandler: ConnectorExceptionHandler? = null
+    ) {
         LOGGER.info { "Running integration: ${integration.javaClass.name}" }
         LOGGER.info { "Command: ${parsed.command}" }
         LOGGER.info { "Integration config: $parsed" }
@@ -215,7 +216,16 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
-            exceptionHandler?.handleException(e, parsed.command, outputRecordCollector)
+            if (exceptionHandler != null)
+                exceptionHandler.handleException(e, parsed.command, outputRecordCollector)
+            else {
+                val defaultConnectorExceptionHandler = ConnectorExceptionHandler()
+                defaultConnectorExceptionHandler.handleException(
+                    e,
+                    parsed.command,
+                    outputRecordCollector
+                )
+            }
         }
         LOGGER.info { "Completed integration: ${integration.javaClass.name}" }
     }
