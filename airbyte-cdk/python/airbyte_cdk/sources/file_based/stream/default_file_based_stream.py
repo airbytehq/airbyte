@@ -210,9 +210,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         if first_n_files > max_n_files_for_schema_inference:
             # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-            self.logger.warning(
-                msg=f"Refusing to infer schema for {first_n_files} files; using {max_n_files_for_schema_inference} files."
-            )
+            self.logger.warning(msg=f"Refusing to infer schema for {first_n_files} files; using {max_n_files_for_schema_inference} files.")
             first_n_files = max_n_files_for_schema_inference
 
         files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:first_n_files]
