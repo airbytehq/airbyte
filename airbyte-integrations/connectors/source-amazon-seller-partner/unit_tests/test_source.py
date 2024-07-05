@@ -28,6 +28,7 @@ def connector_config_with_report_options():
         "region": "US",
         "report_options_list": [
             {
+                "report_name": "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
                 "stream_name": "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
                 "options_list": [
                     {"option_name": "some_name_1", "option_value": "some_value_1"},
@@ -112,26 +113,30 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
         "GET",
         "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders",
         status_code=200,
-        json={"payload": {"Orders": [{"some_key": "some_value"}]}},
+        json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02"}]}},
     )
     assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
 
 
 @pytest.mark.parametrize(
-    ("report_name", "options_list"),
+    ("report_name", "stream_name_w_options"),
     (
         (
             "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
             [
-                {"option_name": "some_name_1", "option_value": "some_value_1"},
-                {"option_name": "some_name_2", "option_value": "some_value_2"},
-            ],
+                ("GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
+                    [
+                        {"option_name": "some_name_1", "option_value": "some_value_1"},
+                        {"option_name": "some_name_2", "option_value": "some_value_2"},
+                    ],
+                 ),
+            ]
         ),
-        ("SOME_OTHER_STREAM", None),
+        ("SOME_OTHER_STREAM", []),
     ),
 )
-def test_get_stream_report_options_list(connector_config_with_report_options, report_name, options_list):
-    assert SourceAmazonSellerPartner().get_stream_report_options_list(report_name, connector_config_with_report_options) == options_list
+def test_get_stream_report_options_list(connector_config_with_report_options, report_name, stream_name_w_options):
+    assert list(SourceAmazonSellerPartner().get_stream_report_kwargs(report_name, connector_config_with_report_options)) == stream_name_w_options
 
 
 def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
@@ -196,5 +201,5 @@ def test_spec(deployment_mode, common_streams_count, monkeypatch):
     }
     streams_with_report_options = SourceAmazonSellerPartner().spec(
         logger
-    ).connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["stream_name"]["enum"]
+    ).connectionSpecification["properties"]["report_options_list"]["items"]["properties"]["report_name"]["enum"]
     assert len(set(streams_with_report_options).intersection(oss_only_streams)) == common_streams_count

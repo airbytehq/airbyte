@@ -17,7 +17,7 @@ Data for the `Comments` stream will need to cleared to ensure your syncs continu
 2. Select the **Status** tab.
    1. In the **Enabled streams** list, click the three dots on the right side of the **Comments** stream and select **Clear data**.
 
-After the clear succeeds, trigger a sync for the `Comments` stream by clicking "Sync Now". For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+After the clear succeeds, trigger a sync for the `Comments` stream by clicking "Sync Now". For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 

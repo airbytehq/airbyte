@@ -185,6 +185,37 @@ class TestRun:
         # verify output was correct
         assert returned_check_result == _wrapped(expected_check_result)
 
+    def test_run_check_with_invalid_config(self, mocker, destination: Destination, tmp_path):
+        file_path = tmp_path / "config.json"
+        invalid_config = {"not": "valid"}
+        write_file(file_path, invalid_config)
+        args = {"command": "check", "config": file_path}
+
+        parsed_args = argparse.Namespace(**args)
+        destination.run_cmd(parsed_args)
+
+        spec = {'type': 'integer'}
+        spec_msg = ConnectorSpecification(connectionSpecification=spec)
+
+        mocker.patch.object(destination, "spec", return_value=spec_msg)
+
+        # validation against spec happens first, so this should not be reached
+        mocker.patch.object(destination, "check")
+
+        returned_check_result = next(iter(destination.run_cmd(parsed_args)))
+
+        destination.spec.assert_called_once()  # type: ignore
+
+        # config validation against spec happens first, so this should not be reached
+        destination.check.assert_not_called()  # type: ignore
+
+        # verify output was correct
+        assert isinstance(returned_check_result, AirbyteMessage)
+        assert returned_check_result.type == Type.CONNECTION_STATUS
+        assert returned_check_result.connectionStatus.status == Status.FAILED
+        # the specific phrasing is not relevant, so only check for the keywords
+        assert 'validation error' in returned_check_result.connectionStatus.message
+
     def test_run_write(self, mocker, destination: Destination, tmp_path, monkeypatch):
         config_path, dummy_config = tmp_path / "config.json", {"user": "sherif"}
         write_file(config_path, dummy_config)

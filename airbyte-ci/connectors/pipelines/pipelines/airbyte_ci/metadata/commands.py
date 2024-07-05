@@ -24,11 +24,11 @@ def deploy(ctx: click.Context) -> None:
 
 @deploy.command(cls=DaggerPipelineCommand, name="orchestrator", help="Deploy the metadata service orchestrator to production")
 @click.pass_context
-async def deploy_orchestrator(ctx: click.Context) -> None:
+async def deploy_orchestrator(ctx: click.Context) -> bool:
     # Import locally to speed up CLI.
     from pipelines.airbyte_ci.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
 
-    await run_metadata_orchestrator_deploy_pipeline(
+    return await run_metadata_orchestrator_deploy_pipeline(
         ctx,
         ctx.obj["is_local"],
         ctx.obj["git_branch"],

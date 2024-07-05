@@ -19,19 +19,20 @@ import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
+import io.airbyte.protocol.models.v0.*
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.util.Optional
 import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
  * [AirbyteMessage] for processing
@@ -47,7 +48,7 @@ private constructor(
     private val purgeStagingData: Boolean,
     private val typerDeduper: TyperDeduper?,
     private val parsedCatalog: ParsedCatalog?,
-    private val defaultNamespace: String?,
+    private val defaultNamespace: String,
     private val destinationColumns: JavaBaseConstants.DestinationColumns,
     // Optional fields
     private val bufferMemoryLimit: Optional<Long>,
@@ -104,7 +105,9 @@ private constructor(
                 purgeStagingData,
                 typerDeduper,
                 parsedCatalog,
-                defaultNamespace,
+                // If we don't set a default namespace, throw. This is required for staging
+                // destinations.
+                defaultNamespace!!,
                 destinationColumns,
                 bufferMemoryLimit,
                 optimalBatchSizeBytes,
@@ -147,8 +150,7 @@ private constructor(
             ),
             flusher,
             catalog!!,
-            BufferManager(getMemoryLimit(bufferMemoryLimit)),
-            Optional.ofNullable(defaultNamespace),
+            BufferManager(defaultNamespace, getMemoryLimit(bufferMemoryLimit)),
             FlushFailure(),
             Executors.newFixedThreadPool(5),
             AirbyteMessageDeserializer(dataTransformer),
@@ -156,7 +158,6 @@ private constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(StagingConsumerFactory::class.java)
 
         private val SYNC_DATETIME: Instant = Instant.now()
 
@@ -251,11 +252,9 @@ private constructor(
             parsedCatalog: ParsedCatalog?,
             destinationColumns: JavaBaseConstants.DestinationColumns
         ): List<WriteConfig> {
-            return catalog!!
-                .streams
-                .stream()
-                .map(toWriteConfig(namingResolver, config, parsedCatalog, destinationColumns))
-                .toList()
+            return catalog!!.streams.map {
+                toWriteConfig(namingResolver, config, parsedCatalog, destinationColumns).apply(it)
+            }
         }
 
         private fun toWriteConfig(
@@ -277,7 +276,8 @@ private constructor(
                 val tableName: String
                 when (destinationColumns) {
                     JavaBaseConstants.DestinationColumns.V2_WITH_META,
-                    JavaBaseConstants.DestinationColumns.V2_WITHOUT_META -> {
+                    JavaBaseConstants.DestinationColumns.V2_WITHOUT_META,
+                    JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION -> {
                         val streamId = parsedCatalog!!.getStream(abStream.namespace, streamName).id
                         outputSchema = streamId.rawNamespace
                         tableName = streamId.rawName
@@ -303,7 +303,7 @@ private constructor(
                         syncMode,
                         SYNC_DATETIME
                     )
-                LOGGER.info("Write config: {}", writeConfig)
+                LOGGER.info { "Write config: $writeConfig" }
                 writeConfig
             }
         }

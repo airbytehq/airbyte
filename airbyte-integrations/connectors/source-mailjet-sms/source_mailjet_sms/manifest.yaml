@@ -1,101 +1,143 @@
-version: "0.29.0"
+version: 0.79.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - sms
 
 definitions:
-  selector:
-    extractor:
-      field_path: ["Data"]
-  requester:
-    url_base: "https://api.mailjet.com/v4"
-    http_method: "GET"
-    request_parameters:
-      fromTS: "{{ config['start_date'] }}"
-      ToTS: "{{ config['end_date'] }}"
+  streams:
+    sms:
+      type: DeclarativeStream
+      name: sms
+      primary_key:
+        - ID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sms
+          http_method: GET
+          request_parameters:
+            fromTS: "{{ config['start_date'] }}"
+            ToTS: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Offset
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sms"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.mailjet.com/v4
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['token'] }}"
-  offset_paginator:
-    type: DefaultPaginator
-    pagination_strategy:
-      type: "OffsetIncrement"
-      page_size: 100
-    page_token_option:
-      type: RequestOption
-      field_name: "Offset"
-      inject_into: "request_parameter"
-    page_size_option:
-      inject_into: "request_parameter"
-      field_name: "Limit"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-  sms_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/offset_paginator"
-      requester:
-        $ref: "#/definitions/requester"
-    $parameters:
-      name: "sms"
-      primary_key: "ID"
-      path: "/sms"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        properties:
-          ID:
-            description: Unique identifier for the SMS
-            type: string
-          From:
-            description: The sender's information or number
-            type: string
-          To:
-            description: The recipient's information or number
-            type: string
-          Status:
-            description: The status details of the SMS
-            type: object
-            properties:
-              Code:
-                description: The code representing the status
-                type: number
-              Name:
-                description: Name of the status
-                type: string
-              Description:
-                description: Description of the status
-                type: string
-          Cost:
-            description: The cost details of the SMS
-            type: object
-            properties:
-              Value:
-                description: The value of the cost
-                type: number
-              Currency:
-                description: The currency in which the cost is calculated
-                type: string
-          CreationTS:
-            description: Timestamp of when the SMS was created
-            type: integer
-          SmsCount:
-            description: The number of SMS messages included in the data
-            type: integer
 streams:
-  - "#/definitions/sms_stream"
+  - $ref: "#/definitions/streams/sms"
 
-check:
-  stream_names:
-    - "sms"
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token
+    properties:
+      end_date:
+        type: integer
+        title: End date
+        description: >-
+          Retrieve SMS messages created before the specified timestamp. Required
+          format - Unix timestamp.
+        pattern: ^[0-9]*$
+        examples:
+          - 1666281656
+        order: 0
+      start_date:
+        type: integer
+        title: Start date
+        description: >-
+          Retrieve SMS messages created after the specified timestamp. Required
+          format - Unix timestamp.
+        pattern: ^[0-9]*$
+        examples:
+          - 1666261656
+        order: 1
+      token:
+        type: string
+        title: Access Token
+        description: >-
+          Your access token. See <a
+          href="https://dev.mailjet.com/sms/reference/overview/authentication">here</a>.
+        airbyte_secret: true
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    sms: false
+
+schemas:
+  sms:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      Cost:
+        type: object
+        description: The cost details of the SMS
+        properties:
+          Currency:
+            type: string
+            description: The currency in which the cost is calculated
+          Value:
+            type: number
+            description: The value of the cost
+      CreationTS:
+        type: integer
+        description: Timestamp of when the SMS was created
+      From:
+        type: string
+        description: The sender's information or number
+      ID:
+        type: string
+        description: Unique identifier for the SMS
+      SmsCount:
+        type: integer
+        description: The number of SMS messages included in the data
+      Status:
+        type: object
+        description: The status details of the SMS
+        properties:
+          Code:
+            type: number
+            description: The code representing the status
+          Description:
+            type: string
+            description: Description of the status
+          Name:
+            type: string
+            description: Name of the status
+      To:
+        type: string
+        description: The recipient's information or number
+    additionalProperties: true

@@ -1,13 +1,103 @@
 # Changelog
 
-## 0.89.0
+## 2.3.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
 
+## 2.2.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
+## 2.1.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
+## 2.0.0
+Update  dependency to pydantic v2, and  dependency to pydantic v2 models. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
+## 1.8.0
+low-code: Add is_compare_strictly flag to DatetimeBasedCursor
+
+## 1.7.3
+Exclude airbyte-cdk modules from schema discovery (retry after pypi read error - take 2)
+
+## 1.7.2
+Exclude airbyte-cdk modules from schema discovery (retry after pypi read error)
+
+## 1.7.1
+Exclude airbyte-cdk modules from schema discovery
+
+## 1.7.0
+add  from  to 
+
+## 1.6.0
+add  from  to 
+
+## 1.5.6
+Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout take 2)
+
+## 1.5.5
+Jinja interpolation - Allow access to _partition for source-jira (re-release after pypi timeout)
+
+## 1.5.4
+Jinja interpolation - Allow access to _partition for source-jira
+
+## 1.5.3
+Ensure error message is the same after migration to HttpClient
+
+## 1.5.2
+PerPartitionState - setting invalid initial state should trigger a config error
+
+## 1.5.1
+Fix client_side_incremental end_datetime comparison
+
+## 1.5.0
+Python/Low Code: Updates ErroHandler, BackoffStrategy, HttpClient. Integrates HttpClient into low-code CDK.
+
+## 1.4.0
+low-code: Add Incremental Parent State Handling to SubstreamPartitionRouter 
+
+## 1.3.3
+Mock server tests: adding 'discover' as part of the entrypoint_wrapper
+
+## 1.3.2
+low-code: Added retriever type filter to stream slicer merge
+
+## 1.3.1
+Use  for Jinja interpolations
+
+## 1.3.0
+Added new datetime format: %s_as_float
+
+## 1.2.1
+Python 3.11 compatibility bugfixes
+
+## 1.2.0
+add client side incremental sync
+
+## 1.1.3
+Removed experimental suffix for unstructured file type
+
+## 1.1.2
+CDK: upgrade dpath
+
+## 1.1.1
+Fix bug so that RFR streams don't resync successful streams on subsequent attempts
+
+## 1.1.0
+low-code: Add RFR support automatically for non-substreams
+
+## 1.0.1
+File-based CDK: avoid error on empty stream when running discover
+
+## 1.0.0
+Delete deprecated AirbyteLogger, AirbyteSpec, and Authenticators + move public classes to the top level init file. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
+## 0.90.0
+Python CDK: Adds HttpClient, ErrorHandler, and related interfaces.
+
+## 0.89.0
+low-code: Remove support for last_records and improve memory usage
 
 ## 0.88.4
 HttpMocker, Adding the delete method.
-
-## 0.88.3
-Add Delete method to HttpMocker
 
 ## 0.88.2
 Fix dependency for pytz
