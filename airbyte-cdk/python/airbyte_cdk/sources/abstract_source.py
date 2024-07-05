@@ -111,7 +111,7 @@ class AbstractSource(Source, ABC):
                 stream_instance = stream_instances.get(configured_stream.stream.name)
                 is_stream_exist = bool(stream_instance)
                 try:
-                    if not is_stream_exist:
+                    if not stream_instance:
                         if not self.raise_exception_on_missing_stream:
                             yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                             continue
