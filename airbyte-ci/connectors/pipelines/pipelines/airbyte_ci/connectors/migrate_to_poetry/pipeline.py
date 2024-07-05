@@ -456,3 +456,11 @@ async def run_connector_migration_to_poetry_pipeline(context: ConnectorContext, 
             context.report = report
 
     return report
+
+
+async def run_connector_migration_to_poetry_pipeline_wrapper(context: ConnectorContext, semaphore: "Sephamore", *args) -> Report:
+    """
+    Wrapper for running the connector migration to poetry pipeline, 
+    allowing it to match the expected signature for run_connectors_pipelines without accepting any additional arguments.
+    """
+    return await run_connector_migration_to_poetry_pipeline(context, semaphore)
