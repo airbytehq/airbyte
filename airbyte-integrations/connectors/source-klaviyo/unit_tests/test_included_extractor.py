@@ -34,8 +34,8 @@ def extractor(mock_config, mock_field_path, mock_decoder):
     return KlaviyoIncludedFieldExtractor(mock_field_path, mock_config, mock_decoder)
 
 
-@patch('dpath.util.get')
-@patch('dpath.util.values')
+@patch('dpath.get')
+@patch('dpath.values')
 def test_extract_records_by_path(mock_values, mock_get, extractor, mock_response, mock_decoder):
     mock_values.return_value = [{'key': 'value'}]
     mock_get.return_value = {'key': 'value'}
