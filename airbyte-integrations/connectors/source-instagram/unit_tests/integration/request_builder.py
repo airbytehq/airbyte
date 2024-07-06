@@ -3,7 +3,7 @@
 #
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.test.mock_http.request import HttpRequest
@@ -26,6 +26,14 @@ class RequestBuilder:
     @classmethod
     def get_media_endpoint(cls, item_id: str) -> RequestBuilder:
         return cls(resource="media").with_item_id(item_id)
+
+    @classmethod
+    def get_media_children_endpoint(cls, item_id: str) -> RequestBuilder:
+        return cls().with_item_id(item_id).with_item_id_is_sub_path(False)
+
+    @classmethod
+    def get_media_insights_endpoint(cls, item_id: str) -> RequestBuilder:
+        return cls(resource="insights").with_item_id(item_id)
 
     @classmethod
     def get_stories_endpoint(cls, item_id: str) -> RequestBuilder:
@@ -66,7 +74,9 @@ class RequestBuilder:
         self._item_id_is_sub_path = is_sub_path
         return self
 
-    def with_custom_param(self, param: str, value: str):
+    def with_custom_param(self, param: str, value: Union[str, List[str]], with_format=False):
+        if with_format and isinstance(value, List):
+            value = self._get_formatted_fields(value)
         self._query_params[param] = value
         return self
 
