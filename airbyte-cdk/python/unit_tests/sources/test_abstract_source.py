@@ -316,10 +316,10 @@ def test_read_nonexistent_stream_raises_exception(mocker):
         list(src.read(logger, {}, catalog))
 
     assert exc_info.value.failure_type == FailureType.config_error
-    assert "not found in the source" in exc_info.value.internal_message
+    assert "not found in the source" in exc_info.value.message
 
 
-def test_read_nonexistent_stream_without_raises_exception(mocker):
+def test_read_nonexistent_stream_without_raises_exception(mocker, as_stream_status):
     """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception"""
     s1 = MockStream(name="s1")
     s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
@@ -330,8 +330,11 @@ def test_read_nonexistent_stream_without_raises_exception(mocker):
 
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     messages = list(src.read(logger, {}, catalog))
+    messages = _fix_emitted_at(messages)
 
-    assert messages == []
+    expected = _fix_emitted_at([as_stream_status("this_stream_doesnt_exist_in_the_source", AirbyteStreamStatus.INCOMPLETE)])
+
+    assert messages == expected
 
 
 def test_read_stream_emits_repository_message_before_record(mocker, message_repository):

@@ -148,4 +148,4 @@ def test_read_nonexistent_concurrent_stream_emit_incomplete_stream_status(mocker
             messages = [remove_stack_trace(message) for message in adapter.read(logger, {}, _configured_catalog([s2]))]
             assert messages == expected_status
         assert exc_info.value.failure_type == FailureType.config_error
-        assert "not found in the source" in exc_info.value.internal_message
+        assert "not found in the source" in exc_info.value.message
