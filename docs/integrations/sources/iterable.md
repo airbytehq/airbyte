@@ -83,6 +83,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.7 | 2024-07-06 | [40811](https://github.com/airbytehq/airbyte/pull/40811) | Update dependencies |
 | 0.5.6 | 2024-06-25 | [40362](https://github.com/airbytehq/airbyte/pull/40362) | Update dependencies |
 | 0.5.5 | 2024-06-22 | [40080](https://github.com/airbytehq/airbyte/pull/40080) | Update dependencies |
 | 0.5.4 | 2024-06-17 | [39382](https://github.com/airbytehq/airbyte/pull/39382) | Refactor state handling for Python incremental streams |
