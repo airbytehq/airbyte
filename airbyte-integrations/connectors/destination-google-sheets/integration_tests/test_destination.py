@@ -3,11 +3,11 @@
 #
 
 
+import logging
 import sys
 from io import StringIO
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from destination_google_sheets.destination import DestinationGoogleSheets
 from integration_tests.test_buffer import read_input_messages
@@ -43,7 +43,7 @@ TEST_RECORDS_PATH: str = "integration_tests/test_data/test_destination_messages.
 
 def test_check():
     expected = AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    actual = TEST_DESTINATION.check(logger=AirbyteLogger, config=TEST_CONFIG)
+    actual = TEST_DESTINATION.check(logger=logging.Logger, config=TEST_CONFIG)
     assert actual == expected
 
 

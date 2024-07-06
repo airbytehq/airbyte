@@ -4,10 +4,10 @@
 
 
 import io
+import logging
 from typing import Iterable
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from destination_google_sheets.buffer import WriteBufferMixin
 
@@ -36,7 +36,7 @@ def read_input_messages(records_path: str) -> Iterable[AirbyteMessage]:
 
 def test_logger():
     test_logger = TEST_WRITE_BUFFER.logger
-    assert isinstance(test_logger, AirbyteLogger)
+    assert isinstance(test_logger, logging.Logger)
 
 
 @pytest.mark.parametrize(
