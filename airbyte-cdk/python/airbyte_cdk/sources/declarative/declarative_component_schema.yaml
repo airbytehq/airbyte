@@ -1046,11 +1046,7 @@ definitions:
         items:
           type: string
         examples:
-          - [
-              "crm.list.read",
-              "crm.objects.contacts.read",
-              "crm.schema.contacts.read",
-            ]
+          - ["crm.list.read", "crm.objects.contacts.read", "crm.schema.contacts.read"]
       token_expiry_date:
         title: Token Expiry Date
         description: The access token expiry date.
@@ -1300,6 +1296,31 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CSVExtractor:
+    title: CSV Extractor
+    description: Record extractor that expects a response to be a valid CSV string
+    type: object
+    required:
+      - type
+      - separator
+      - quotechar
+    properties:
+      type:
+        type: string
+        enum: [CSVExtractor]
+      separator:
+        title: Separator
+        description: CSV column separator. Usually a comma, but some data sources might use space separated values.
+        type: string
+        default: ","
+        examples:
+          - ","
+          - " "
+      quotechar:
+        title: Quotechar
+        description: Quotation character used in the CSV
+        type: string
+        default: '"'
   ExponentialBackoffStrategy:
     title: Exponential Backoff
     description: Backoff strategy with an exponential backoff interval. The interval is defined as factor * 2^attempt_count.
@@ -2084,6 +2105,7 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRecordExtractor"
           - "$ref": "#/definitions/DpathExtractor"
+          - "$ref": "#/definitions/CSVExtractor"
       record_filter:
         title: Record Filter
         description: Responsible for filtering records to be emitted by the Source.

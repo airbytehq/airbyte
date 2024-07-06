@@ -507,6 +507,19 @@ class OAuthAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CSVExtractor(BaseModel):
+    type: Literal['CSVExtractor']
+    separator: str = Field(
+        ...,
+        description='CSV column separator. Usually a comma, but some data sources might use space separated values.',
+        examples=[',', ' '],
+        title='Separator',
+    )
+    quotechar: str = Field(
+        ..., description='Quotation character used in the CSV', title='Quotechar'
+    )
+
+
 class ExponentialBackoffStrategy(BaseModel):
     type: Literal['ExponentialBackoffStrategy']
     factor: Optional[Union[float, str]] = Field(
@@ -1220,7 +1233,7 @@ class ListPartitionRouter(BaseModel):
 
 class RecordSelector(BaseModel):
     type: Literal['RecordSelector']
-    extractor: Union[CustomRecordExtractor, DpathExtractor]
+    extractor: Union[CustomRecordExtractor, DpathExtractor, CSVExtractor]
     record_filter: Optional[Union[CustomRecordFilter, RecordFilter]] = Field(
         None,
         description='Responsible for filtering records to be emitted by the Source.',
