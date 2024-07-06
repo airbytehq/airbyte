@@ -106,6 +106,7 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                              | Subject                                     |
 | :------ |:-----------| :-------------------------------------------------------- |:--------------------------------------------|
+| 0.1.6 | 2024-07-06 | [40823](https://github.com/airbytehq/airbyte/pull/40823) | Update dependencies |
 | 0.1.5 | 2024-06-25 | [40394](https://github.com/airbytehq/airbyte/pull/40394) | Update dependencies |
 | 0.1.4 | 2024-06-23 | [39924](https://github.com/airbytehq/airbyte/pull/39924) | Update dependencies |
 | 0.1.3 | 2024-06-15 | [39509](https://github.com/airbytehq/airbyte/pull/39509) | Make connector compatible with Builder |
