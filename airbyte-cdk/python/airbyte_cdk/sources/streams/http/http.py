@@ -413,9 +413,6 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
 
     @deprecated(reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-
-        raise_on_http_errors = self.stream.raise_on_http_errors
-
         if isinstance(response_or_exception, Exception):
             return super().interpret_response(response_or_exception)
         should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
@@ -432,7 +429,7 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
                     failure_type=None,
                     error_message=None,
                 )
-            if raise_on_http_errors:
+            if self.stream.raise_on_http_errors:
                 return ErrorResolution(
                     response_action=ResponseAction.FAIL,
                     failure_type=FailureType.transient_error,
