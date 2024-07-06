@@ -2,7 +2,7 @@
 
 #### Report a Bug
 
-Bug reports help us make Airbyte better for everyone. We provide a preconfigured template for bugs to make it very clear what information we need. Check if the bug was [already reported](https://github.com/airbytehq/airbyte/issues?q=is%3Aissue+is%3Aopen+label%3Atype%2Fbug) before raising a new one to make sure you're not raising a duplicate.
+Bug reports help us make Airbyte better for everyone. We provide a preconfigured template for reporting bugs to make it very clear what information we need. To avoid duplicate reports, check if the bug was [already reported](https://github.com/airbytehq/airbyte/issues?q=is%3Aissue+is%3Aopen+label%3Atype%2Fbug) before raising a new one. 
 
 #### Request new Features or a Connector
 

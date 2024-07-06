@@ -38,7 +38,7 @@ We're not actively reviewing/accepting new Java connectors for now.
 4. Make and commit changes.
 5. Push your local branch to your fork.
 6. Submit a Pull Request so that we can review your changes.
-7. [Link an existing Issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) that does not include the `needs triage` label to your Pull Request. Pull requests without an issue attached to take longer to review.
+7. [Link an existing Issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) that does not include the `needs triage` label to your Pull Request. Pull requests without an issue attached take longer to review.
 8. Write a PR title and description that follows the [Pull Request Handbook](./resources/pull-requests-handbook.md).
 9. An Airbyte maintainer will trigger the CI tests for you and review the code.
 10. Review and respond to feedback and questions by Airbyte maintainers.
@@ -51,9 +51,8 @@ Guidelines to common code contributions:
 
 ## Documentation
 
-We welcome Pull Requests that enhance the grammar, structure, or fix typos in our documentation! Check the [Updating Documentation](writing-docs.md) guide for submitting documentation changes.
+We welcome Pull Requests that fix typos or enhance the grammar and structure of our documentation! Check the [Updating Documentation](writing-docs.md) guide for details on submitting documentation changes.
 
-If you're working on connector documentation, make sure you cover:
 
 The following highlights from the [Google developer documentation style guide](https://developers.google.com/style) are helpful for new writers:
 
@@ -71,10 +70,10 @@ For examples of good connector docs, see the [Salesforce source connector doc](h
 
 ## Community Content
 
-We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our tutorials page. Head to this repo dedicated to community content: [Write for the Community](https://github.com/airbytehq/write-for-the-community).
+We welcome contributions as new tutorials / showcases / articles, or as enhancements to any of the existing guides on our tutorials page. Head to this repo dedicated to community content: [Write for the Community](https://github.com/airbytehq/write-for-the-community).
 
 Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
 
 ## Engage with the Community
 
-Another crucial way to contribute is by reporting bugs and helping other users in the community. You're welcome to join the [Community Slack](https://slack.airbyte.io). Refer to [Issues and Feature Requests](issues-and-requests.md) guide to learn about best ways to report bugs.
+Another crucial way to contribute is by reporting bugs and helping other users in the community. You're welcome to join the [Community Slack](https://slack.airbyte.io). Refer to our [Issues and Feature Requests](issues-and-requests.md) guide to learn about the best ways to report bugs.
