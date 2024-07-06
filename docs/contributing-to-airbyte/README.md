@@ -46,8 +46,8 @@ We're not actively reviewing/accepting new Java connectors for now.
 
 Guidelines to common code contributions:
 
-- [Submit code change to existing Source Connector](change-cdk-connector.md)
-- [Submit a New Connector](submit-new-connector.md)
+- [Contribute a code change to an existing connector](change-cdk-connector.md)
+- [Contribute a new connector](submit-new-connector.md)
 
 ## Documentation
 
