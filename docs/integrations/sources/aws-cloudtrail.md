@@ -54,6 +54,7 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.2 | 2024-07-06 | [40995](https://github.com/airbytehq/airbyte/pull/40995) | Update dependencies |
 | 1.0.1 | 2024-06-26 | [40419](https://github.com/airbytehq/airbyte/pull/40419) | Update dependencies |
 | 1.0.0 | 2024-07-02 | [36562](https://github.com/airbytehq/airbyte/pull/36562) | Migrate to low code CDK, Add filtering capability |
 | 0.1.12 | 2024-06-22 | [39960](https://github.com/airbytehq/airbyte/pull/39960) | Update dependencies |
