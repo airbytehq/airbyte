@@ -18,7 +18,7 @@ include = "source_faker"
 [tool.poetry.dependencies]
 python = "^3.9,<4.0"
 airbyte-cdk = "^2.0"
-mimesis = "^11.0"
+mimesis = "==6.1.1"
 
 [tool.poetry.scripts]
 source-faker = "source_faker.run:run"
