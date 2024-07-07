@@ -100,7 +100,7 @@ class TestReportsAmazonSPStream:
     def test_get_updated_state(self, report_init_kwargs, current_stream_state, latest_record, expected_date):
         stream = SomeIncrementalReportStream(**report_init_kwargs)
         expected_state = {stream.cursor_field: expected_date}
-        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
     def test_read_records_retrieve_fatal(self, report_init_kwargs, mocker, requests_mock):
         mocker.patch("time.sleep", lambda x: None)
@@ -138,7 +138,7 @@ class TestReportsAmazonSPStream:
             )
         assert e.value.internal_message == (
             f"Failed to retrieve the report 'GET_TEST_REPORT' for period {stream_start}-{stream_end}. "
-            "This will be read during the next sync. Error: Failed to retrieve the report result document."
+            "This will be read during the next sync. Report ID: some_report_id. Error: Failed to retrieve the report result document."
         )
 
     def test_read_records_retrieve_cancelled(self, report_init_kwargs, mocker, requests_mock, caplog):
