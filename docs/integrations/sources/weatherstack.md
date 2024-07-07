@@ -39,6 +39,7 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.6 | 2024-07-06 | [40876](https://github.com/airbytehq/airbyte/pull/40876) | Update dependencies |
 | 0.1.5 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
 | 0.1.4 | 2024-06-25 | [40414](https://github.com/airbytehq/airbyte/pull/40414) | Update dependencies |
 | 0.1.3 | 2024-06-22 | [40086](https://github.com/airbytehq/airbyte/pull/40086) | Update dependencies |
