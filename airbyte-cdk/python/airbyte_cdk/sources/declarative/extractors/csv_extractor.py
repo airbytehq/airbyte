@@ -3,9 +3,9 @@
 #
 
 import csv
-from dataclasses import InitVar, dataclass, field
+from dataclasses import dataclass
 from io import StringIO
-from typing import Any, Iterable, List, Mapping, Union
+from typing import Any, Iterable, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
