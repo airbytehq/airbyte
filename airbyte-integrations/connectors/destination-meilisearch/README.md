@@ -9,30 +9,15 @@ For information about how to use this connector within Airbyte, see [the documen
 
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.7.0`
+#### Minimum Python version required `= 3.9.0`
 
 #### Build & Activate Virtual Environment and install dependencies
 
-From this connector directory, create a virtual environment:
+This project is using Poetry for dependency management and build system:
 
+```bash
+poetry install --with dev
 ```
-python -m venv .venv
-```
-
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
-
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
 
 #### Create credentials
 
