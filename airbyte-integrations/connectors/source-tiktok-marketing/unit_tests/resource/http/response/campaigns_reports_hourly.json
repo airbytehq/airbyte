@@ -1,0 +1,82 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "list": [
+      {
+        "dimensions": {
+          "stat_time_hour": "2024-01-01 09:00:00",
+          "campaign_id": "advertiser_id"
+        },
+        "metrics": {
+          "video_watched_2s": 493,
+          "profile_visits": 0,
+          "ctr": "1.09",
+          "likes": 18,
+          "video_play_actions": 4179,
+          "shares": 0,
+          "cpc": "0.39",
+          "cpm": "4.26",
+          "video_views_p75": 108,
+          "video_views_p100": 76,
+          "real_time_app_install_cost": 0,
+          "video_views_p25": 355,
+          "spend": "20.00",
+          "video_watched_6s": 132,
+          "reach": "3822",
+          "impressions": "4696",
+          "real_time_app_install": 0,
+          "campaign_name": "Website Traffic20211020010104",
+          "app_install": 0,
+          "video_views_p50": 164,
+          "comments": 0,
+          "follows": 0,
+          "cost_per_1000_reached": "5.23",
+          "average_video_play": 1.48,
+          "average_video_play_per_user": 1.61,
+          "clicks": "51",
+          "clicks_on_music_disc": 0,
+          "frequency": "1.23"
+        },
+        "advertiser_id": 872746382648
+      },
+      {
+        "dimensions": {
+          "stat_time_hour": "2024-01-01 10:00:00",
+          "campaign_id": "11111111"
+        },
+        "metrics": {
+          "video_watched_2s": 493,
+          "profile_visits": 0,
+          "ctr": "1.09",
+          "likes": 18,
+          "video_play_actions": 4179,
+          "shares": 0,
+          "cpc": "0.39",
+          "cpm": "4.26",
+          "video_views_p75": 108,
+          "video_views_p100": 76,
+          "real_time_app_install_cost": 0,
+          "video_views_p25": 355,
+          "spend": "20.00",
+          "video_watched_6s": 132,
+          "reach": "3822",
+          "impressions": "4696",
+          "real_time_app_install": 0,
+          "campaign_name": "Website Traffic20211020010104",
+          "app_install": 0,
+          "video_views_p50": 164,
+          "comments": 0,
+          "follows": 0,
+          "cost_per_1000_reached": "5.23",
+          "average_video_play": 1.48,
+          "average_video_play_per_user": 1.61,
+          "clicks": "51",
+          "clicks_on_music_disc": 0,
+          "frequency": "1.23"
+        },
+        "advertiser_id": 872746382648
+      }
+    ]
+  }
+}

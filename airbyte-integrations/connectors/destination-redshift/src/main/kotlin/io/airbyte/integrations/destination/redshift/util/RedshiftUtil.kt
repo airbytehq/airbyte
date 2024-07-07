@@ -4,7 +4,6 @@
 package io.airbyte.integrations.destination.redshift.util
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -36,11 +35,5 @@ object RedshiftUtil {
 
     private fun isNullOrEmpty(jsonNode: JsonNode?): Boolean {
         return null == jsonNode || "" == jsonNode.asText()
-    }
-
-    @Throws(Exception::class)
-    fun checkSvvTableAccess(database: JdbcDatabase) {
-        log.info("checking SVV_TABLE_INFO permissions")
-        database.queryJsons("SELECT 1 FROM SVV_TABLE_INFO LIMIT 1;")
     }
 }

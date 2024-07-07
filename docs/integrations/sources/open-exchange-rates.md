@@ -48,6 +48,8 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 
 | Version | Date       | Pull Request                                               | Subject                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.9 | 2024-07-06 | [40857](https://github.com/airbytehq/airbyte/pull/40857) | Update dependencies |
+| 0.2.8 | 2024-06-25 | [40300](https://github.com/airbytehq/airbyte/pull/40300) | Update dependencies |
 | 0.2.7 | 2024-06-21 | [39922](https://github.com/airbytehq/airbyte/pull/39922) | Update dependencies |
 | 0.2.6 | 2024-06-04 | [39028](https://github.com/airbytehq/airbyte/pull/39028) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.5 | 2024-05-14 | [38141](https://github.com/airbytehq/airbyte/pull/38141) | Make connector compatable with builder |
