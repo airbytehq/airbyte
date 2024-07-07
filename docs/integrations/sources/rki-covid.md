@@ -56,6 +56,7 @@ Select start date
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.7 | 2024-07-06 | [40927](https://github.com/airbytehq/airbyte/pull/40927) | Update dependencies |
 | 0.1.6 | 2024-06-25 | [40449](https://github.com/airbytehq/airbyte/pull/40449) | Update dependencies |
 | 0.1.5 | 2024-06-22 | [39980](https://github.com/airbytehq/airbyte/pull/39980) | Update dependencies |
 | 0.1.4 | 2024-06-06 | [39294](https://github.com/airbytehq/airbyte/pull/39294) | [autopull] Upgrade base image to v1.2.2 |
