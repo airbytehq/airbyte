@@ -215,13 +215,15 @@ def prepare_container_for_poe_tasks(
                     "https://github.com/airbytehq/airbyte-platform-internal.git",
                 ]
             )
+            .with_secret_variable(
+                "CI_GITHUB_ACCESS_TOKEN",
+                dagger_client.set_secret("CI_GITHUB_ACCESS_TOKEN", pipeline_context_params["ci_github_access_token"].value),
+            )
             .with_exec(
                 [
-                    "poetry",
-                    "config",
-                    "http-basic.airbyte-platform-internal-source",
-                    "octavia-squidington-iii",
-                    pipeline_context_params["ci_github_access_token"].value,
+                    "/bin/sh",
+                    "-c",
+                    "poetry config http-basic.airbyte-platform-internal-source octavia-squidington-iii $CI_GITHUB_ACCESS_TOKEN",
                 ]
             )
             .with_exec(["poetry", "lock", "--no-update"])
