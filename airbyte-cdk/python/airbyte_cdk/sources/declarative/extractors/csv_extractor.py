@@ -26,6 +26,7 @@ class CSVExtractor(RecordExtractor):
       extractor:
         type: Extractor
         separator: ","
+        quotechar: '"'
     ```
 
     Attributes:
