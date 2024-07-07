@@ -51,5 +51,6 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.2 | 2024-07-06 | [39964](https://github.com/airbytehq/airbyte/pull/39964) | Update dependencies |
 | 0.1.1   | 2024-07-02 | [40695](https://github.com/airbytehq/airbyte/pull/40695) | upgrade to base image 1.2.2 and metadata fixes
 | 0.1.0   | 2022-11-02 | [35633](https://github.com/airbytehq/airbyte/pull/35633) | 🎉 New Source: Fleetio source
