@@ -1046,7 +1046,11 @@ definitions:
         items:
           type: string
         examples:
-          - ["crm.list.read", "crm.objects.contacts.read", "crm.schema.contacts.read"]
+          - [
+              "crm.list.read",
+              "crm.objects.contacts.read",
+              "crm.schema.contacts.read",
+            ]
       token_expiry_date:
         title: Token Expiry Date
         description: The access token expiry date.

@@ -2,11 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Union
-
 import csv
+from dataclasses import InitVar, dataclass, field
 from io import StringIO
+from typing import Any, Iterable, List, Mapping, Union
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
