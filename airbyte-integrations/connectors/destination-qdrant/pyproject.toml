@@ -20,7 +20,7 @@ include = "destination_qdrant"
 python = "^3.9,<3.12"
 airbyte-cdk = { version = "< 3", extras = ["vector-db-based"] }
 qdrant-client = "*"
-fastembed = "*"
+fastembed = "< 0.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
