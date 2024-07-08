@@ -236,3 +236,5 @@ schemas:
         type: string
       year:
         type: string
+      timestamp:
+        type: string
