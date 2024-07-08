@@ -16,7 +16,7 @@ Once you've signed up for Airbyte Cloud or logged in to your Airbyte Open Source
 You can use the provided search bar at the top of the page, or scroll down the list to find the destination you want to replicate data from.
 
 :::tip
-You can filter the list of destinations by support level. Airbyte connectors are categorized in two support levels, Certified and Community. See our [Connector Support Levels](/integrations/connector-support-levels.md) page for more information on this topic.
+You can filter the list of destinations by support level. Airbyte connectors are categorized in two support levels, Airbyte Connectors and Marketplace Connectors. See our [Connector Support Levels](/integrations/connector-support-levels.md) page for more information on this topic.
 :::
 
 <Tabs groupId="cloud-hosted">
