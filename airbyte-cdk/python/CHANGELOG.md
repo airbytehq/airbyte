@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.1
+
+
 ## 2.3.0
 Add with_json_schema method to ConfiguredAirbyteStreamBuilder
 
