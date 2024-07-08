@@ -57,7 +57,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            /top/{{config.project}}/{{config.access}}/{{stream_slice.start_time}}
+            {{ '/top/' ~ config.project ~ '/' ~ config.access ~ '/' ~ stream_slice.start_time[:4] ~ '/' ~ stream_slice.start_time[4:6] ~ '/' ~ stream_slice.start_time[6:8] }}
           http_method: GET
           request_headers:
             "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0"
