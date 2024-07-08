@@ -15,4 +15,4 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceUnleash(YamlDeclarativeSource):
     def __init__(self):
-        super().__init__(**{"path_to_yaml": "unleash.yaml"})
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

@@ -1,5 +1,10 @@
 [
   {
+    "version": "1.2.2",
+    "changelog_entry": "Fix Python 3.9.19 image digest",
+    "dockerfile_example": "FROM docker.io/python:3.9.19-slim-bookworm@sha256:088d9217202188598aac37f8db0929345e124a82134ac66b8bb50ee9750b045b\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt update && apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir /usr/share/nltk_data"
+  },
+  {
     "version": "1.2.1",
     "changelog_entry": "Upgrade to Python 3.9.19 + update pip and setuptools",
     "dockerfile_example": "FROM docker.io/python:3.9.19-slim-bookworm@sha256:b92e6f45b58d9cafacc38563e946f8d249d850db862cbbd8befcf7f49eef8209\nRUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime\nRUN pip install --upgrade pip==24.0 setuptools==70.0.0\nENV POETRY_VIRTUALENVS_CREATE=false\nENV POETRY_VIRTUALENVS_IN_PROJECT=false\nENV POETRY_NO_INTERACTION=1\nRUN pip install poetry==1.6.1\nRUN sh -c apt update && apt-get install -y socat=1.7.4.4-2\nRUN sh -c apt-get update && apt-get install -y tesseract-ocr=5.3.0-2 poppler-utils=22.12.0-2+b1\nRUN mkdir /usr/share/nltk_data"

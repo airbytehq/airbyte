@@ -229,6 +229,51 @@ definitions:
     $parameters:
       path: "lists/{{ stream_slice.id }}"
 
+  events_detailed_stream:
+    # Docs: https://developers.klaviyo.com/en/reference/get_event
+    name: "events_detailed"
+    $ref: "#/definitions/base_semi_incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/events_detailed_schema"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_klaviyo.components.inclouded_fields_extractor.KlaviyoIncludedFieldExtractor
+          field_path: ["data"]
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "include": "metric"
+          "fields[metric]": "name"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "id"
+            stream: "#/definitions/events_stream"
+            partition_field: "event_id"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "datetime"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%d %H:%M:%S%z"
+      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: ["datetime"]
+            value: "{{ record.get('attributes', {}).get('datetime') }}"
+    $parameters:
+      path: "events/{{ stream_slice.event_id }}"
+
   # Schemas
   shared:
     list_properties:
@@ -691,6 +736,78 @@ definitions:
                   related:
                     type: string
 
+  events_detailed_schema:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        type: string
+      id:
+        type: string
+      datetime:
+        type: string
+        format: date-time
+      attributes:
+        type: ["null", object]
+        properties:
+          timestamp:
+            type: integer
+          event_properties:
+            type: ["null", object]
+            additionalProperties: true
+          datetime:
+            type: string
+            format: date-time
+          uuid:
+            type: string
+      links:
+        type: ["null", object]
+        properties:
+          self:
+            type: string
+      relationships:
+        type: ["null", object]
+        properties:
+          profile:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+              links:
+                type: ["null", object]
+                additionalProperties: true
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+          metric:
+            type: ["null", object]
+            properties:
+              data:
+                type: ["null", object]
+                properties:
+                  type:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+              links:
+                type: ["null", object]
+                additionalProperties: true
+                properties:
+                  self:
+                    type: string
+                  related:
+                    type: string
+
   email_templates_schema:
     $schema: "http://json-schema.org/draft-07/schema#"
     type: object
@@ -796,6 +913,7 @@ streams:
   - "#/definitions/profiles_stream"
   - "#/definitions/global_exclusions_stream"
   - "#/definitions/events_stream"
+  - "#/definitions/events_detailed_stream"
   - "#/definitions/email_templates_stream"
 
   # Semi-Incremental streams

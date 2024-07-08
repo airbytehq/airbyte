@@ -12,17 +12,23 @@ from source_xero.source import SourceXero
 @fixture(name="config_pass")
 def config_fixture():
     return {
-        "access_token": "goodone",
+        "credentials": {
+            "access_token": "goodone",
+            "auth_type": "oauth2_access_token",
+        },
         "tenant_id": "goodone",
-        "start_date": "2021-01-01T00:00:00Z"
+        "start_date": "2021-01-01T00:00:00Z",
     }
 
 
 @fixture(name="bad_config")
 def bad_config_fixture():
     return {
-        "access_token": "badone",
-        "start_date": "2021-01-01T00:00:00Z"
+        "credentials": {
+            "access_token": "badone",
+            "auth_type": "oauth2_access_token",
+        },
+        "start_date": "2021-01-01T00:00:00Z",
     }
 
 
@@ -32,10 +38,7 @@ def mock_bank_transactions():
         "BankTransactions": [
             {
                 "BankTransactionID": "12345",
-                "BankAccount": {
-                    "AccountID": "12345",
-                    "Name": "Business Account"
-                },
+                "BankAccount": {"AccountID": "12345", "Name": "Business Account"},
                 "Type": "SPEND",
                 "Reference": "",
                 "IsReconciled": False,
@@ -47,7 +50,7 @@ def mock_bank_transactions():
                     "Phones": [],
                     "ContactGroups": [],
                     "ContactPersons": [],
-                    "HasValidationErrors": False
+                    "HasValidationErrors": False,
                 },
                 "DateString": "2021-08-31T00:00:00",
                 "Date": "/Date(1630368000000+0000)/",
@@ -58,7 +61,7 @@ def mock_bank_transactions():
                 "TotalTax": 0.00,
                 "Total": 3.00,
                 "UpdatedDateUTC": "/Date(1630412754013+0000)/",
-                "CurrencyCode": "USD"
+                "CurrencyCode": "USD",
             }
         ]
     }

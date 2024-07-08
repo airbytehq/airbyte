@@ -104,6 +104,10 @@ Useful links:
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.2.8 | 2024-07-06 | [40814](https://github.com/airbytehq/airbyte/pull/40814) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40375](https://github.com/airbytehq/airbyte/pull/40375) | Update dependencies |
+| 0.2.6 | 2024-06-22 | [40094](https://github.com/airbytehq/airbyte/pull/40094) | Update dependencies |
+| 0.2.5 | 2024-06-06 | [39270](https://github.com/airbytehq/airbyte/pull/39270) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.4 | 2024-05-21 | [38544](https://github.com/airbytehq/airbyte/pull/38544) | [autopull] base image + poetry + up_to_date |
 | 0.2.3 | 2023-06-02 | [26955](https://github.com/airbytehq/airbyte/pull/26955) | Added `block_context` and `author` properties to the `Products` stream |
 | 0.2.2 | 2023-03-03 | [23599](https://github.com/airbytehq/airbyte/pull/23599) | Fix pagination and removed lookback window |

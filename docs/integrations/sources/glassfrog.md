@@ -50,13 +50,17 @@ This Source is capable of syncing the following Streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.5   | 2024-05-20 | [38323](https://github.com/airbytehq/airbyte/pull/38323) | Make compatibility with builder                                                 |
-| 0.2.4   | 2024-04-19 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | Updating to 0.80.0 CDK                                                          |
-| 0.2.3   | 2024-04-18 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | Manage dependencies with Poetry.                                                |
-| 0.2.2   | 2024-04-15 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.2.1   | 2024-04-12 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | schema descriptions                                                             |
-| 0.2.0   | 2023-08-10 | [29306](https://github.com/airbytehq/airbyte/pull/29306) | Migrated to LowCode CDK                                                         |
-| 0.1.1   | 2023-08-15 | [13868](https://github.com/airbytehq/airbyte/pull/13868) | Fix schema and tests                                                            |
-| 0.1.0   | 2022-06-16 | [13868](https://github.com/airbytehq/airbyte/pull/13868) | Add Native Glassfrog Source Connector                                           |
+| 0.2.9 | 2024-07-06 | [40925](https://github.com/airbytehq/airbyte/pull/40925) | Update dependencies |
+| 0.2.8 | 2024-06-25 | [40279](https://github.com/airbytehq/airbyte/pull/40279) | Update dependencies |
+| 0.2.7 | 2024-06-22 | [40135](https://github.com/airbytehq/airbyte/pull/40135) | Update dependencies |
+| 0.2.6 | 2024-06-04 | [39056](https://github.com/airbytehq/airbyte/pull/39056) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.5 | 2024-05-20 | [38323](https://github.com/airbytehq/airbyte/pull/38323) | Make compatibility with builder |
+| 0.2.4 | 2024-04-19 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37167](https://github.com/airbytehq/airbyte/pull/37167) | schema descriptions |
+| 0.2.0 | 2023-08-10 | [29306](https://github.com/airbytehq/airbyte/pull/29306) | Migrated to LowCode CDK |
+| 0.1.1 | 2023-08-15 | [13868](https://github.com/airbytehq/airbyte/pull/13868) | Fix schema and tests |
+| 0.1.0 | 2022-06-16 | [13868](https://github.com/airbytehq/airbyte/pull/13868) | Add Native Glassfrog Source Connector |
 
 </details>

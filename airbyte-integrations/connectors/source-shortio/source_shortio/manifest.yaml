@@ -1,106 +1,432 @@
 version: "0.86.0"
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["{{ parameters.extractor_path }}"]
-
-  v1_api_requester:
-    type: HttpRequester
-    url_base: "https://api.short.io/api/"
-    http_method: "GET"
-    authenticator:
-      type: "ApiKeyAuthenticator"
-      header: "Authorization"
-      api_token: "{{ config['secret_key'] }}"
-    request_parameters:
-      domain_id: "{{ config['domain_id'] }}"
-
-  v2_api_requester:
-    type: HttpRequester
-    url_base: "https://api-v2.short.cm/statistics/"
-    http_method: "GET"
-    authenticator:
-      type: "ApiKeyAuthenticator"
-      header: "Authorization"
-      api_token: "{{ config['secret_key'] }}"
-
-  base_paginator:
-    type: "DefaultPaginator"
-    pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ response['nextPageToken'] }}"
-    page_token_option:
-      type: "RequestPath"
-      field_name: "pageToken"
-      inject_into: "request_parameter"
-
-  v1_base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/base_paginator"
-      requester:
-        $ref: "#/definitions/v1_api_requester"
-
-  v2_base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/base_paginator"
-      requester:
-        $ref: "#/definitions/v2_api_requester"
-
-  incremental_base:
-    type: DatetimeBasedCursor
-    cursor_field: "updatedAt"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    cursor_granularity: "PT0.001S"
-    lookback_window: "P31D"
-    start_datetime:
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    end_datetime:
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    step: "P1M"
-    end_time_option:
-      field_name: "beforeDate"
-      inject_into: "request_parameter"
-    start_time_option:
-      field_name: "afterDate"
-      inject_into: "request_parameter"
-
   links_stream:
-    $ref: "#/definitions/v1_base_stream"
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["links"]
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response['nextPageToken'] }}"
+        page_token_option:
+          type: "RequestPath"
+          field_name: "pageToken"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.short.io/api/"
+        http_method: "GET"
+        path: "links"
+        authenticator:
+          type: "ApiKeyAuthenticator"
+          header: "Authorization"
+          api_token: "{{ config['secret_key'] }}"
+        request_parameters:
+          domain_id: "{{ config['domain_id'] }}"
     name: "links"
     incremental_sync:
-      $ref: "#/definitions/incremental_base"
+      type: DatetimeBasedCursor
+      cursor_field: "updatedAt"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "PT0.001S"
+      lookback_window: "P31D"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: "P1M"
+      end_time_option:
+        field_name: "beforeDate"
+        inject_into: "request_parameter"
+      start_time_option:
+        field_name: "afterDate"
+        inject_into: "request_parameter"
     primary_key: "id"
-    $parameters:
-      extractor_path: "links"
-      path: "links"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/links"
 
   clicks_stream:
-    $ref: "#/definitions/v2_base_stream"
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response['nextPageToken'] }}"
+        page_token_option:
+          type: "RequestPath"
+          field_name: "pageToken"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://api-v2.short.cm/statistics/"
+        http_method: "GET"
+        path: "domain/{{ config['domain_id'] }}/link_clicks"
+        authenticator:
+          type: "ApiKeyAuthenticator"
+          header: "Authorization"
+          api_token: "{{ config['secret_key'] }}"
     name: "clicks"
-    $parameters:
-      path: "domain/{{ config['domain_id'] }}/link_clicks"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/clicks"
+
+schemas:
+  links:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      lcpath:
+        type:
+          - "null"
+          - string
+      passwordContact:
+        type:
+          - "null"
+          - boolean
+      hasPassword:
+        type:
+          - "null"
+          - boolean
+      OwnerId:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - string
+      path:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      icon:
+        type:
+          - "null"
+          - string
+      archived:
+        type:
+          - "null"
+          - boolean
+      originalURL:
+        type: string
+      iphoneURL:
+        type:
+          - "null"
+          - string
+      androidURL:
+        type:
+          - "null"
+          - string
+      password:
+        type:
+          - "null"
+          - string
+      utmSource:
+        type:
+          - "null"
+          - string
+      utmMedium:
+        type:
+          - "null"
+          - string
+      utmCampaign:
+        type:
+          - "null"
+          - string
+      utmCampaignId:
+        type:
+          - "null"
+          - string
+      utmTerm:
+        type:
+          - "null"
+          - string
+      utmContent:
+        type:
+          - "null"
+          - string
+      splitURL:
+        type:
+          - "null"
+          - string
+      splitPercent:
+        type:
+          - "null"
+          - string
+      expiresAt:
+        type:
+          - "null"
+          - string
+      expiredURL:
+        type:
+          - "null"
+          - string
+      redirectType:
+        type:
+          - "null"
+          - string
+      clicksLimit:
+        type:
+          - "null"
+          - string
+      cloaking:
+        type:
+          - "null"
+          - boolean
+      source:
+        type:
+          - "null"
+          - string
+      integrationGA:
+        type:
+          - "null"
+          - string
+      integrationFB:
+        type:
+          - "null"
+          - string
+      integrationAdroll:
+        type:
+          - "null"
+          - string
+      integrationGTM:
+        type:
+          - "null"
+          - string
+      AutodeletedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+      DomainId:
+        type: integer
+      Owner:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          photoURL:
+            type:
+              - "null"
+              - string
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      secureShortURL:
+        type:
+          - "null"
+          - string
+      idString:
+        type: string
+      shortURL:
+        type: string
+      User:
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            type: integer
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          photoURL:
+            type:
+              - "null"
+              - string
+
+  clicks:
+    "$schema": http://json-schema.org/draft-07/schema#
+    type: object
+    default_cursor_field:
+      - dt
+    additionalProperties: true
+    properties:
+      host:
+        type:
+          - "null"
+          - string
+      path:
+        type:
+          - "null"
+          - string
+      method:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      dt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      st:
+        type:
+          - "null"
+          - integer
+      ip:
+        type:
+          - "null"
+          - string
+      proto:
+        type:
+          - "null"
+          - string
+      ref:
+        type:
+          - "null"
+          - string
+      ua:
+        type:
+          - "null"
+          - string
+      human:
+        type:
+          - "null"
+          - boolean
+      browser:
+        type:
+          - "null"
+          - string
+      browser_version:
+        type:
+          - "null"
+          - string
+      country:
+        type:
+          - "null"
+          - string
+      city:
+        type:
+          - "null"
+          - string
+      social:
+        type:
+          - "null"
+          - string
+      refhost:
+        type:
+          - "null"
+          - string
+      os:
+        type:
+          - "null"
+          - string
+      utm_source:
+        type:
+          - "null"
+          - string
+      utm_medium:
+        type:
+          - "null"
+          - string
+      utm_campaign:
+        type:
+          - "null"
+          - string
+      goal_completed:
+        type:
+          - "null"
+          - string
+      ab_path:
+        type:
+          - "null"
+          - string
+      lcpath:
+        type:
+          - "null"
+          - string
 
 streams:
-  - "#/definitions/links_stream"
-  - "#/definitions/clicks_stream"
+  - $ref: "#/definitions/links_stream"
+  - $ref: "#/definitions/clicks_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "links"
     - "clicks"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/shortio/
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Shortio Spec
+    type: object
+    additionalProperties: true
+    required:
+      - domain_id
+      - secret_key
+      - start_date
+    properties:
+      domain_id:
+        type: string
+        desciprtion: Short.io Domain ID
+        title: Domain ID
+        airbyte_secret: false
+      secret_key:
+        type: string
+        title: Secret Key
+        description: Short.io Secret Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        title: Start Date
+        description:
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated.
+        examples:
+          - "2023-07-30T03:43:59.244Z"
+        airbyte_secret: false

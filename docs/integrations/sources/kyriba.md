@@ -71,10 +71,14 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| 0.1.3   | 2024-04-19 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                                   |
-| 0.1.2   | 2024-04-12 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | schema descriptions                                                                          |
-| 0.1.1   | 2024-01-30 | [34545](https://github.com/airbytehq/airbyte/pull/34545) | Updates CDK, Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.1.0   | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created                                                                 |
+| 0.1.7 | 2024-07-06 | [40874](https://github.com/airbytehq/airbyte/pull/40874) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40367](https://github.com/airbytehq/airbyte/pull/40367) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40111](https://github.com/airbytehq/airbyte/pull/40111) | Update dependencies |
+| 0.1.4 | 2024-06-06 | [39232](https://github.com/airbytehq/airbyte/pull/39232) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.3 | 2024-04-19 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.1.2 | 2024-04-12 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | schema descriptions |
+| 0.1.1 | 2024-01-30 | [34545](https://github.com/airbytehq/airbyte/pull/34545) | Updates CDK, Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.0 | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created |
 
 </details>
 

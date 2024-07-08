@@ -104,6 +104,11 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.0 | 2024-07-07 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update CDK to 2.0. |
+| 6.1.6 | 2024-07-06 | [40956](https://github.com/airbytehq/airbyte/pull/40956) | Update dependencies |
+| 6.1.5 | 2024-06-25 | [40426](https://github.com/airbytehq/airbyte/pull/40426) | Update dependencies |
+| 6.1.4 | 2024-06-21 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update dependencies |
+| 6.1.3 | 2024-06-04 | [39029](https://github.com/airbytehq/airbyte/pull/39029) | [autopull] Upgrade base image to v1.2.1 |
 | 6.1.2 | 2024-06-03 | [38831](https://github.com/airbytehq/airbyte/pull/38831) | Bump CDK to allow and prefer versions `1.x` |
 | 6.1.1 | 2024-05-20 | [38256](https://github.com/airbytehq/airbyte/pull/38256) | Replace AirbyteLogger with logging.Logger |
 | 6.1.0 | 2024-04-08 | [36898](https://github.com/airbytehq/airbyte/pull/36898) | Update car prices and years |

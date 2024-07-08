@@ -31,6 +31,9 @@ class SnowflakeDV2Migration(
     ): Migration.MigrationResult<SnowflakeState> {
         log.info { "Initializing DV2 Migration check" }
         legacyV1V2migrator.migrateIfNecessary(sqlGenerator, destinationHandler, stream)
-        return Migration.MigrationResult(SnowflakeState(false), true)
+        return Migration.MigrationResult(
+            SnowflakeState(needsSoftReset = false, isAirbyteMetaPresentInRaw = false),
+            true
+        )
     }
 }

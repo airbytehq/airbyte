@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "event_time": "2121-07-25T13:34:26Z",
+        "event_time": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -15,7 +15,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
+        "updated_time": "2121-07-25",
         "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
@@ -27,7 +27,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
+        "updated_time": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -39,7 +39,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
+        "updated_time": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -51,7 +51,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
+        "updated_time": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -63,7 +63,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": "2121-07-25T13:34:26Z",
+        "updated_time": "2121-07-25",
         "filter_statuses": ["ARCHIVED"]
       },
       "stream_descriptor": {
@@ -76,7 +76,7 @@
     "stream": {
       "stream_state": {
         "212551616838260": {
-          "updated_time": "2121-07-25T13:34:26Z",
+          "updated_time": "2121-07-25",
           "filter_statuses": ["ARCHIVED"],
           "include_deleted": true
         },
@@ -91,7 +91,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -103,7 +103,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -115,7 +115,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -127,7 +127,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -139,7 +139,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -151,7 +151,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -163,7 +163,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -175,7 +175,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -187,7 +187,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -199,7 +199,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -211,7 +211,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -223,7 +223,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -235,7 +235,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -247,7 +247,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -259,7 +259,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -271,7 +271,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -283,7 +283,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -295,7 +295,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -307,7 +307,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -319,7 +319,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -331,7 +331,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
@@ -343,7 +343,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_start": "2121-07-25T13:34:26Z",
+        "date_start": "2121-07-25",
         "filter_statuses": []
       },
       "stream_descriptor": {
