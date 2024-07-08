@@ -11,7 +11,7 @@ airbyteJavaConnector {
             'gcs-destinations',
             'core',
     ]
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 java {
