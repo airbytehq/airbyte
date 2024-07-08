@@ -5,7 +5,7 @@
 import builtins
 import datetime
 import typing
-from typing import Union
+from typing import Optional, Union
 
 import isodate
 import pytz
@@ -107,7 +107,7 @@ def duration(datestring: str) -> Union[datetime.timedelta, isodate.Duration]:
     return parse_duration(datestring)  # type: ignore # mypy thinks this returns Any for some reason
 
 
-def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
+def format_datetime(dt: Union[str, datetime.datetime], format: str, input_format: Optional[str] = None) -> str:
     """
     Converts datetime to another format
 
@@ -120,21 +120,11 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
     """
     if isinstance(dt, datetime.datetime):
         return dt.strftime(format)
-    dt_datetime = _str_to_datetime(dt)
+    dt_datetime = datetime.datetime.strptime(dt, input_format) if input_format else _str_to_datetime(dt)
     if format == "%s":
         return str(int(dt_datetime.timestamp()))
     return dt_datetime.strftime(format)
 
 
-def format_datetime_string(dt: str, format: str) -> datetime.datetime:
-    """
-    Converts string to datetime based on input format
-
-    Usage:
-    `"{{ format_datetime_string(config.start_date, '%a, %d %b %Y %H:%M:%S %z') }}"`
-    """
-    return datetime.datetime.strptime(dt, format)
-
-
-_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime, format_datetime_string]
+_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
 macros = {f.__name__: f for f in _macros_list}
