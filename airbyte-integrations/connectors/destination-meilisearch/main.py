@@ -5,7 +5,7 @@
 
 import sys
 
-from destination_meilisearch import DestinationMeilisearch
+from destination_meilisearch.run import run
 
 if __name__ == "__main__":
-    DestinationMeilisearch().run(sys.argv[1:])
+    run()
