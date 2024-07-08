@@ -28,7 +28,7 @@ def test_macros_export(test_name, fn_name, found_in_macros):
 
 
 @pytest.mark.parametrize(
-    "test_name, input_value, format, input_forma, expected_output",
+    "test_name, input_value, format, input_format, expected_output",
     [
         ("test_datetime_string_to_date", "2022-01-01T01:01:01Z", "%Y-%m-%d", None, "2022-01-01"),
         ("test_date_string_to_date", "2022-01-01", "%Y-%m-%d", None, "2022-01-01"),
