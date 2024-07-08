@@ -92,4 +92,4 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
-          subcommand: "connectors --use-local-cdk --name source-shopify --execute-timeout=18000 test --global-status-check-context='CDK Changes - Connectors Tests'"
+          subcommand: "connectors --use-local-cdk --name source-shopify --name source-zendesk-support --execute-timeout=18000 test --global-status-check-context='CDK Changes - Connectors Tests'"
