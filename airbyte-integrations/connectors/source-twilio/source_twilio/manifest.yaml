@@ -39,13 +39,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -97,13 +97,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -349,13 +349,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -404,13 +404,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -446,19 +446,6 @@ definitions:
             type: PageIncrement
             page_size: 1000
             start_from_page: 0
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -516,13 +503,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -570,19 +557,19 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_generated
-              value: '{% set formatted_datetime = format_datetime(record["date_generated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_generated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -634,13 +621,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -700,13 +687,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -756,7 +743,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: end_time
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -780,13 +767,43 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - start_time
+              value: '{% set formatted_datetime = format_datetime(record["start_time"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - end_time
+              value: '{% set formatted_datetime = format_datetime(record["end_time"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - duration
+              value: '{% set duration = record["duration"] | int %}{{ duration }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - price
+              value: '{% set price = record["price"] | float %}{{ price }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - queue_time
+              value: '{% set queue_time = record["queue_time"] | int %}{{ queue_time }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -836,7 +853,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -860,13 +877,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -927,13 +944,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -985,13 +1002,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1042,13 +1059,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1098,7 +1115,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1122,13 +1139,31 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - start_time
+              value: '{% set formatted_datetime = format_datetime(record["start_time"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - duration
+              value: '{% set duration = record["duration"] | int %}{{ duration }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - price
+              value: '{% set price = record["price"] | float %}{{ price }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1148,19 +1183,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - services
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1182,19 +1204,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - services
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1226,19 +1235,6 @@ definitions:
               partition_field: service_sid
               stream:
                 $ref: "#/definitions/streams/Services"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1290,13 +1286,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -1308,7 +1304,7 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - price
-              value: '{% set price = record["price"] | number %}{{ price }}'
+              value: '{% set price = record["price"] | float %}{{ price }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1330,19 +1326,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - trunks
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1394,13 +1377,13 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1450,7 +1433,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_sent
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1474,19 +1457,37 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_sent
-              value: '{% set formatted_datetime = format_datetime(record["date_sent"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_sent"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - num_media
+              value: '{% set num_media = record["num_media"] | int %}{{ num_media }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - num_segments
+              value: '{% set num_segments = record["num_segments"] | int %}{{ num_segments }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - price
+              value: '{% set price = record["price"] | float %}{{ price }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1544,7 +1545,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: date_created
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1562,19 +1563,6 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1625,7 +1613,7 @@ definitions:
         type: DatetimeBasedCursor
         cursor_field: start_date
         cursor_datetime_formats:
-          - "%a, %d %b %Y %H:%M:%S %z"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -1694,19 +1682,25 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
                 - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
               path:
-                - date_fired
-              value: '{% set formatted_datetime = format_datetime(record["date_fired"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
+                - current_value
+              value: '{% set current_value = record["current_value"] | float %}{{ current_value }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - trigger_value
+              value: '{% set trigger_value = record["trigger_value"] | float %}{{ trigger_value }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1728,19 +1722,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - conversations
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1772,19 +1753,6 @@ definitions:
               partition_field: conversation_sid
               stream:
                 $ref: "#/definitions/streams/Conversations"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1816,19 +1784,6 @@ definitions:
               partition_field: conversation_sid
               stream:
                 $ref: "#/definitions/streams/Conversations"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1850,19 +1805,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - users
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1894,19 +1836,6 @@ definitions:
               partition_field: user_sid
               stream:
                 $ref: "#/definitions/streams/Users"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
