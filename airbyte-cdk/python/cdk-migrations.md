@@ -7,15 +7,17 @@ Version 3.0.0 of the CDK updates the `HTTPStream` class by reusing the `HTTPClie
 - `HttpStreamAdapterHttpStatusErrorHandler` and `HttpStreamAdapterBackoffStrategy` adapters are marked as `deprecated`
 - `raise_on_http_errors`, `max_retries`, `max_time`, `retry_factor` are marked as `deprecated`
 
+Exceptions from the `requests` library should no longer be raised when calling `read_records`.
+Therefore, catching exceptions should be updated, and error messages might change.
+See [Migration of Source Zendesk Support](https://github.com/airbytehq/airbyte/pull/41032/commits/4d3a247f36b9826dcea4b98d30fc19802b03d014) as an example.
+
 ### Migration of `should_retry` method
 In case the connector uses custom logic for backoff based on the response from the server, a new method `get_error_handler` should be implemented.
 This method should return instance of [`ErrorHandler`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/error_handlers/error_handler.py).
-See [Migration of Source Zendesk Support](https://github.com/airbytehq/airbyte/pull/41032/commits/4d3a247f36b9826dcea4b98d30fc19802b03d014) as an example.
 
 ### Migration of `backoff_time` method
 In case the connector uses custom logic for backoff time calculation, a new method `get_backoff_strategy` should be implemented.
 This method should return instance(s) of [`BackoffStrategy`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/error_handlers/backoff_strategy.py).
-See [Migration of Source Zendesk Support](https://github.com/airbytehq/airbyte/pull/41032/commits/4d3a247f36b9826dcea4b98d30fc19802b03d014) as an example.
 
 ## Upgrading to 2.0.0
 Version 2.0.0 of the CDK updates the `pydantic` dependency to from Pydantic v1 to Pydantic v2. It also
