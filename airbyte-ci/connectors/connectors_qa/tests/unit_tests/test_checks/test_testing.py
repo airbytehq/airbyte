@@ -110,7 +110,13 @@ class TestAcceptanceTestsEnabledCheck:
         for usage_value in usage_values_to_test:
             for metadata_case in cases_to_test:
                 # Arrange
-                connector = mocker.MagicMock(cloud_usage=usage_value, metadata=metadata_case, language=ConnectorLanguage.PYTHON, connector_type="source")
+                connector = mocker.MagicMock(
+                    cloud_usage=usage_value,
+                    metadata=metadata_case,
+                    language=ConnectorLanguage.PYTHON,
+                    connector_type="source",
+                    ab_internal_sl=100
+                )
 
                 # Act
                 result = testing.AcceptanceTestsEnabledCheck().run(connector)
