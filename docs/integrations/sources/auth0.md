@@ -60,6 +60,7 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| 0.5.7 | 2024-07-06 | [40840](https://github.com/airbytehq/airbyte/pull/40840) | Update dependencies |
 | 0.5.6 | 2024-06-25 | [40344](https://github.com/airbytehq/airbyte/pull/40344) | Update dependencies |
 | 0.5.5 | 2024-06-21 | [39933](https://github.com/airbytehq/airbyte/pull/39933) | Update dependencies |
 | 0.5.4 | 2024-06-06 | [39194](https://github.com/airbytehq/airbyte/pull/39194) | [autopull] Upgrade base image to v1.2.2 |
