@@ -337,6 +337,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.9 | 2024-07-08 | [41045](https://github.com/airbytehq/airbyte/pull/41045) | Use latest `CDK` version possible |
 | 4.2.8 | 2024-07-06 | [40923](https://github.com/airbytehq/airbyte/pull/40923) | Update dependencies |
 | 4.2.7 | 2024-06-25 | [40441](https://github.com/airbytehq/airbyte/pull/40441) | Update dependencies |
 | 4.2.6 | 2024-06-22 | [40126](https://github.com/airbytehq/airbyte/pull/40126) | Update dependencies |
