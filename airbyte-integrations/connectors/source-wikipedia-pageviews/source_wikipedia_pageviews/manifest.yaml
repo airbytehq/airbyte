@@ -33,6 +33,7 @@ definitions:
         name: per-article
         cursor_datetime_formats:
           - "%Y%m%d"
+          - "%Y%m%d%H"
         datetime_format: "%Y%m%d"
         start_datetime:
           type: MinMaxDatetime
@@ -71,8 +72,9 @@ definitions:
         cursor_field: timestamp
         name: top
         cursor_datetime_formats:
-          - "%Y/%m/%d"
-        datetime_format: "%Y/%m/%d"
+          - "%Y%m%d"
+          - "%Y%m%d%H"
+        datetime_format: "%Y%m%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{config.start}}"
