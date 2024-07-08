@@ -104,6 +104,7 @@ Useful links:
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.2.8 | 2024-07-06 | [40814](https://github.com/airbytehq/airbyte/pull/40814) | Update dependencies |
 | 0.2.7 | 2024-06-25 | [40375](https://github.com/airbytehq/airbyte/pull/40375) | Update dependencies |
 | 0.2.6 | 2024-06-22 | [40094](https://github.com/airbytehq/airbyte/pull/40094) | Update dependencies |
 | 0.2.5 | 2024-06-06 | [39270](https://github.com/airbytehq/airbyte/pull/39270) | [autopull] Upgrade base image to v1.2.2 |

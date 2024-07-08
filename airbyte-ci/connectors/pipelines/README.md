@@ -552,6 +552,12 @@ Bump source-openweather:
 | `BUMP_TYPE`       | major, minor or patch                                                  |
 | `CHANGELOG_ENTRY` | The changelog entry that will get added to the connector documentation |
 
+#### Options
+
+| Option      | Description                                                                               |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| --pr-number | Explicitly set the PR number in the changelog entry, a placeholder will be set otherwise. |
+
 ### <a id="connectors-upgrade_cdk"></a>`connectors upgrade_cdk` command
 
 Upgrade the CDK version of the selected connectors by updating the dependency in the setup.py file.
@@ -761,6 +767,10 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.21.1  | [#41029](https://github.com/airbytehq/airbyte/pull/41029)  | `up-to-date`: mount local docker config to `Syft` to pull private images and benefit from increased DockerHub rate limits.   |
+| 4.21.0  | [#40547](https://github.com/airbytehq/airbyte/pull/40547)  | Make bump-version accept a `--pr-number` option.                                                                             |
+| 4.20.3  | [#40754](https://github.com/airbytehq/airbyte/pull/40754)  | Accept and ignore additional args in `migrate-to-poetry` pipeline                                                            |
+| 4.20.2  | [#40709](https://github.com/airbytehq/airbyte/pull/40709)  | Fix use of GH token.                                                                                                         |
 | 4.20.1  | [#40698](https://github.com/airbytehq/airbyte/pull/40698)  | Add live tests evaluation mode options.                                                                                      |
 | 4.20.0  | [#38816](https://github.com/airbytehq/airbyte/pull/38816)  | Add command for running all live tests (validation + regression).                                                            |
 | 4.19.0  | [#39600](https://github.com/airbytehq/airbyte/pull/39600)  | Productionize the `up-to-date` command                                                                                       |

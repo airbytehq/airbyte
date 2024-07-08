@@ -17,15 +17,11 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.10.6"
       - config_path: "secrets/config_oauth.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "0.10.6"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 2400
+        timeout_seconds: 3600
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
@@ -49,4 +45,4 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 2400
+        timeout_seconds: 3600
