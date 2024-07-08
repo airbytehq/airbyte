@@ -3,7 +3,7 @@
 #
 
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
@@ -61,11 +61,11 @@ _FIELDS = [
 ]
 
 
-def _get_videos_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
+def _get_videos_request(account_id: Optional[str] = ACCOUNT_ID, fields: Optional[List[str]] = None) -> RequestBuilder:
     return (
         RequestBuilder.get_videos_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
         .with_limit(100)
-        .with_fields(_FIELDS)
+        .with_fields(fields or _FIELDS)
         .with_summary()
     )
 
@@ -90,12 +90,13 @@ def _video_record() -> RecordBuilder:
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh(TestCase):
     @staticmethod
-    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+    def _read(config_: ConfigBuilder, expecting_exception: bool = False, json_schema: Optional[Dict[str, any]] = None) -> EntrypointOutput:
         return read_output(
             config_builder=config_,
             stream_name=_STREAM_NAME,
             sync_mode=SyncMode.full_refresh,
             expecting_exception=expecting_exception,
+            json_schema=json_schema
         )
 
     @HttpMocker()
@@ -113,6 +114,25 @@ class TestFullRefresh(TestCase):
         )
 
         output = self._read(config().with_account_ids([client_side_account_id]))
+        assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_request_fields_from_json_schema_in_configured_catalog(self, http_mocker: HttpMocker) -> None:
+        """
+        The purpose of this test is to check that the request fields are the same provided in json_request_schema inside configured catalog
+        """
+        configured_json_schema = find_template(f"{_STREAM_NAME}_reduced_configured_schema_fields", __file__)
+        params_fields = [field for field in configured_json_schema["properties"]]
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        http_mocker.get(
+            _get_videos_request(fields=params_fields).build(),
+            _get_videos_response().with_record(_video_record()).build(),
+        )
+
+        output = self._read(config(), json_schema=configured_json_schema)
         assert len(output.records) == 1
 
     @HttpMocker()

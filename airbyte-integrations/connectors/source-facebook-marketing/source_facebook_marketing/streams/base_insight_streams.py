@@ -396,14 +396,19 @@ class AdsInsights(FBMarketingIncrementalStream):
         return schema
 
     def fields(self, **kwargs) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema"""
+        """
+        List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
+        """
         if self._custom_fields:
             return self._custom_fields
 
         if self._fields:
             return self._fields
-
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        schema = (
+            self.configured_json_schema
+            if self.configured_json_schema and self.configured_json_schema.get("properties")
+            else ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        )
         self._fields = list(schema.get("properties", {}).keys())
 
         # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
