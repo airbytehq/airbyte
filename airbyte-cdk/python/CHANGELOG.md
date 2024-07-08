@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.0
+CDK: Add support for input format parsing at jinja macro format_datetime
+
+## 2.3.1
+
+
 ## 2.3.0
 Add with_json_schema method to ConfiguredAirbyteStreamBuilder
 
