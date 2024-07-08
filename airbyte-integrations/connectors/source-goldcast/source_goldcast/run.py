@@ -6,9 +6,10 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_punk_api import SourcePunkApi
+
+from .source import SourceGoldcast
 
 
 def run():
-    source = SourcePunkApi()
+    source = SourceGoldcast()
     launch(source, sys.argv[1:])

@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "beers",
+        "name": "events",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,7 +11,7 @@
     },
     {
       "stream": {
-        "name": "beers_with_id",
+        "name": "event_members",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
