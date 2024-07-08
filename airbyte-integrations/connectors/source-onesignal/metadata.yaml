@@ -1,18 +1,18 @@
 data:
   allowedHosts:
     hosts:
-    - onesignal.com
+      - onesignal.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorTestSuitesOptions:
-  - suite: acceptanceTests
-    testSecrets:
-    - fileName: config.json
-      name: SECRET_SOURCE-ONESIGNAL__CREDS
-      secretStore:
-        alias: airbyte-connector-testing-secret-store
-        type: GSM
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: config.json
+          name: SECRET_SOURCE-ONESIGNAL__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
   dockerImageTag: 1.2.0
@@ -35,6 +35,6 @@ data:
       packageName: airbyte-source-onesignal
   supportLevel: community
   tags:
-  - language:python
-  - cdk:low-code
-metadataSpecVersion: '1.0'
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"
