@@ -26,6 +26,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handl
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
@@ -398,27 +399,47 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         seconds_waited = 0
         try:
             report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
-        except DefaultBackoffException as e:
-            logger.warning(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
-            return []
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code == requests.codes.FORBIDDEN:
-                logger.warning(
-                    f"The endpoint {e.response.url} returned {e.response.status_code}: {e.response.reason}. "
-                    "This is most likely due to insufficient permissions on the credentials in use. "
-                    "Try to grant required permissions/scopes or re-authenticate."
-                )
-                return []
-
             errors = " ".join([er.get("message", "") for er in e.response.json().get("errors", [])])
-            if "does not support account ID of type class com.amazon.partner.account.id.VendorGroupId." in errors:
-                logger.warning(
-                    f"The endpoint {e.response.url} returned {e.response.status_code}: {errors}. "
-                    "This is most likely due to account type (Vendor) on the credentials in use. "
-                    "Try to re-authenticate with Seller account type and sync again."
+            if e.response.status_code == requests.codes.BAD_REQUEST:
+                invalid_report_names = list(
+                    map(
+                        lambda error: error.get("message").replace("Invalid Report Type ", ""),
+                        filter(lambda error: "Invalid Report Type " in error.get("message"), e.response.json().get("errors", [])),
+                    )
                 )
-                return []
-            raise e
+                if invalid_report_names:
+                    raise AirbyteTracedException(
+                        failure_type=FailureType.config_error,
+                        message=f"Report {invalid_report_names} does not exist. Please update the report options in your config to match only existing reports.",
+                        internal_message=f"Errors received from the API were: {errors}",
+                    )
+            if e.response.status_code == requests.codes.FORBIDDEN:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"The endpoint {e.response.url} returned {e.response.status_code}: {e.response.reason}. "
+                    "This is most likely due to insufficient permissions on the credentials in use. "
+                    "Try to grant required permissions/scopes or re-authenticate.",
+                    internal_message=f"Errors received from the API were: {errors}",
+                )
+            if e.response.status_code == requests.codes.TOO_MANY_REQUESTS:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.transient_error,
+                    message=f"Too many requests on resource {e.response.url}. Please retry later",
+                    internal_message=f"Errors received from the API were: {errors}",
+                )
+
+            if "does not support account ID of type class com.amazon.partner.account.id.VendorGroupId." in errors:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"The endpoint {e.response.url} returned {e.response.status_code}: {errors}. "
+                    "This is most likely due to account type (Vendor) on the credentials in use. "
+                    "Try to re-authenticate with Seller account type and sync again.",
+                    internal_message=f"Errors received from the API were: {errors}",
+                )
+            raise AirbyteTracedException.from_exception(
+                e, message=f"The report for stream '{self.name}' was cancelled due to several failed retry attempts."
+            )
 
         # create and retrieve the report
         processed = False
