@@ -17,7 +17,7 @@ include = "source_outbrain_amplify"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-outbrain-amplify = "source_outbrain_amplify.run:run"
