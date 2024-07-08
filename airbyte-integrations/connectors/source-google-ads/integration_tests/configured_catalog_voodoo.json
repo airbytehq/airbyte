@@ -20,6 +20,15 @@
     },
     {
       "stream": {
+        "name": "ad_group_ad_asset_view",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "campaign",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -48,15 +57,6 @@
     {
       "stream": {
         "name": "customer",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "ad_group_ad_asset_view",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
