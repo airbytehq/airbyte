@@ -18,8 +18,8 @@ jobs:
       - name: Docker login
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          password: ${{ secrets.DOCKER_HUB_USERNAME }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Get Dagger Engine Image
         uses: ./.github/actions/get-dagger-engine-image
         with:
