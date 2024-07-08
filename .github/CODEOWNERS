@@ -8,16 +8,16 @@
 /airbyte-cdk/python/airbyte_cdk/destinations/vector_db_based @airbytehq/ai-language-models
 
 # CI/CD
-/.github/ @airbytehq/connector-extensibility
-/airbyte-ci/ @airbytehq/connector-extensibility
+/.github/ @airbytehq/dev-tooling
+/airbyte-ci/ @airbytehq/dev-tooling
 
 # Python CDK and Connector Acceptance Tests
-/airbyte-cdk/python @airbytehq/connector-extensibility
-/airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/connector-extensibility @lazebnyi @oustynova
+/airbyte-cdk/python @airbytehq/python-team
+/airbyte-integrations/connector-templates/ @airbytehq/dev-marketplace-contributions
+/airbyte-integrations/bases/connector-acceptance-test/ @airbytehq/dev-tooling
 
 # Build customization file change
-/airbyte-integrations/connectors/**/build_customization.py @airbytehq/connector-extensibility
+/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-tooling
 
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
@@ -54,8 +54,8 @@
 /airbyte-integrations/connectors/destination-redshift/ @airbytehq/destinations
 
 # Python critical connectors
-/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/critical-connectors
-/airbyte-integrations/connectors/source-hubspot/ @airbytehq/critical-connectors
-/airbyte-integrations/connectors/source-salesforce/ @airbytehq/critical-connectors
-/airbyte-integrations/connectors/source-shopify/ @airbytehq/critical-connectors
-/airbyte-integrations/connectors/source-stripe/ @airbytehq/critical-connectors
+/airbyte-integrations/connectors/source-facebook-marketing/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-hubspot/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-salesforce/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-shopify/ @airbytehq/python-team
+/airbyte-integrations/connectors/source-stripe/ @airbytehq/python-team
