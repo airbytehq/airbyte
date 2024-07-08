@@ -1438,10 +1438,6 @@ schemas:
         type:
           - string
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       invoice_id:
         type:
           - string
@@ -1495,10 +1491,6 @@ schemas:
           - string
           - "null"
       product_title:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -1743,10 +1735,6 @@ schemas:
         type:
           - string
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       created_date:
         type:
           - string
@@ -1758,10 +1746,6 @@ schemas:
       is_greenfield:
         type:
           - boolean
-          - "null"
-      seller_domain:
-        type:
-          - string
           - "null"
       opportunity_id:
         type:
@@ -1872,10 +1856,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       auto_renew:
         type:
           - boolean
@@ -1925,10 +1905,6 @@ schemas:
           - string
           - "null"
       order_version:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -2073,10 +2049,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       billing_id:
         type:
           - string
@@ -2138,10 +2110,6 @@ schemas:
           - string
           - "null"
       sales_channel:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -2485,10 +2453,6 @@ schemas:
         type:
           - string
           - "null"
-      seller_domain:
-        type:
-          - string
-          - "null"
       status_reason:
         type:
           - string
@@ -2717,10 +2681,6 @@ schemas:
         type:
           - string
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       billing_id:
         type:
           - string
@@ -2766,10 +2726,6 @@ schemas:
           - string
           - "null"
       provider_name:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -2854,10 +2810,6 @@ schemas:
         type:
           - string
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       invoice_id:
         type:
           - string
@@ -2907,10 +2859,6 @@ schemas:
           - string
           - "null"
       product_title:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -3147,10 +3095,6 @@ schemas:
         type:
           - string
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       account_id:
         type:
           - string
@@ -3176,10 +3120,6 @@ schemas:
           - number
           - "null"
       cust_identity:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -3424,10 +3364,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       trial_use:
         type:
           - number
@@ -3457,10 +3393,6 @@ schemas:
           - string
           - "null"
       quote_creator:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -3581,10 +3513,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       billing_id:
         type:
           - string
@@ -3628,10 +3556,6 @@ schemas:
       metered_usage:
         type:
           - number
-          - "null"
-      seller_domain:
-        type:
-          - string
           - "null"
       is_preview_sku:
         type:
@@ -3834,10 +3758,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       trial_use:
         type:
           - number
@@ -3867,10 +3787,6 @@ schemas:
           - string
           - "null"
       quote_creator:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -4007,10 +3923,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       trial_use:
         type:
           - number
@@ -4028,10 +3940,6 @@ schemas:
           - string
           - "null"
       google_entity:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -4088,19 +3996,11 @@ schemas:
         type:
           - string
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       withholding:
         type:
           - string
           - "null"
       payment_type:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -4177,10 +4077,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       trial_use:
         type:
           - number
@@ -4214,10 +4110,6 @@ schemas:
           - string
           - "null"
       quote_creator:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
@@ -4370,10 +4262,6 @@ schemas:
         type:
           - number
           - "null"
-      seller_id:
-        type:
-          - string
-          - "null"
       trial_use:
         type:
           - number
@@ -4407,10 +4295,6 @@ schemas:
           - string
           - "null"
       quote_creator:
-        type:
-          - string
-          - "null"
-      seller_domain:
         type:
           - string
           - "null"
