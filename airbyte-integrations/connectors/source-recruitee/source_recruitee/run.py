@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_recruitee import SourceRecruitee
+
+from .source import SourceRecruitee
 
 
 def run():
