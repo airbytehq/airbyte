@@ -7,6 +7,7 @@ import os
 from typing import TYPE_CHECKING
 
 import asyncer
+import click
 import dagger
 import toml
 from pipelines.airbyte_ci.test.models import deserialize_airbyte_ci_config
@@ -39,6 +40,13 @@ DIRECTORIES_TO_ALWAYS_MOUNT = [
 ]
 
 DEFAULT_EXCLUDE = ["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/.gradle"]
+
+DEFAULT_CONTAINER_IMAGE = "python:{version}"
+
+VERSION_CONTAINER_IMAGES = {
+    "3.10": DEFAULT_CONTAINER_IMAGE.format(version="3.10.12"),
+    "3.11": DEFAULT_CONTAINER_IMAGE.format(version="3.11.5"),
+}
 
 
 async def get_filtered_airbyte_repo_dir(dagger_client: dagger.Client, poetry_package_path: Path) -> dagger.Directory:
@@ -111,9 +119,10 @@ def get_poetry_base_container(dagger_client: dagger.Client, python_version: str)
     """
     poetry_cache_volume: dagger.CacheVolume = dagger_client.cache_volume(POETRY_CACHE_VOLUME_NAME)
     poetry_cache_path = "/root/.cache/poetry"
+    container_image = VERSION_CONTAINER_IMAGES.get(python_version, DEFAULT_CONTAINER_IMAGE.format(version=python_version))
     return (
         dagger_client.container()
-        .from_(f"python:{python_version}")
+        .from_(container_image)
         .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
         .with_env_variable("POETRY_CACHE_DIR", poetry_cache_path)
         .with_mounted_cache(poetry_cache_path, poetry_cache_volume)
@@ -318,18 +327,13 @@ async def run_poe_tasks_for_package(
         logger.warning("No poe tasks to run.")
         return []
 
+    if len(package_config.python_versions) == 0:
+        raise click.UsageError("No python version specified.")
+
+    logger.info(f"Python versions: {package_config.python_versions}")
+
     poe_task_results: List[asyncer.SoonValue] = []
     return_results = []
-
-
-    if pipeline_context_params["python_version"]:
-        if pipeline_context_params["python_version"] not in package_config.python_versions:
-            logger.error(f"The python version {pipeline_context_params['python_version']} is not supported by the package.")
-            return []
-        package_config.python_versions = [pipeline_context_params["python_version"]]
-
-    if len(package_config.python_versions) > 1:
-        logger.info(f"Python versions: {package_config.python_versions}")
 
     for python_version in package_config.python_versions:
         container = prepare_container_for_poe_tasks(

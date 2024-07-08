@@ -99,12 +99,6 @@ def crash_on_any_failure(poetry_package_poe_tasks_results: List[Tuple[Path, asyn
     type=click.Choice(INTERNAL_POETRY_PACKAGES),
     multiple=True,
 )
-@click.option(
-    "--python-version",
-    "python_version",
-    help="The python version to use for the poe tasks.",
-    type=str,
-)
 @click_ci_requirements_option()
 @click_merge_args_into_context_obj
 @pass_pipeline_context
