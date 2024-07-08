@@ -156,7 +156,9 @@ class ConcurrentSource:
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
 
-    def _get_streams_to_read_from(self, streams: List[AbstractStream]) -> Tuple[List[AbstractStream], List[Tuple[AbstractStream, Optional[str]]]]:
+    def _get_streams_to_read_from(
+        self, streams: List[AbstractStream]
+    ) -> Tuple[List[AbstractStream], List[Tuple[AbstractStream, Optional[str]]]]:
         """
         Iterate over the configured streams and return a list of streams to read from.
         If a stream is not configured, it will be skipped.
