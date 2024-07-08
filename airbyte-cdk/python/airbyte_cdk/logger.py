@@ -28,8 +28,6 @@ LOGGING_CONFIG = {
     },
 }
 
-print("Test trigger CI")
-
 
 def init_logger(name: Optional[str] = None) -> logging.Logger:
     """Initial set up of logger"""
