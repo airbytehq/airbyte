@@ -15,6 +15,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any, ClassVar, Dict, List, Optional, Set
 
+import dagger
 import requests  # type: ignore
 import semver
 import yaml  # type: ignore
@@ -655,13 +656,17 @@ class LiveTests(Step):
                         "https://github.com/airbytehq/airbyte-platform-internal.git",
                     ]
                 )
+                .with_secret_variable(
+                    "CI_GITHUB_ACCESS_TOKEN",
+                    self.context.dagger_client.set_secret(
+                        "CI_GITHUB_ACCESS_TOKEN", self.context.ci_github_access_token.value if self.context.ci_github_access_token else ""
+                    ),
+                )
                 .with_exec(
                     [
-                        "poetry",
-                        "config",
-                        "http-basic.airbyte-platform-internal-source",
-                        self.github_user,
-                        self.context.ci_github_access_token.value if self.context.ci_github_access_token else "",
+                        "/bin/sh",
+                        "-c",
+                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)

@@ -190,7 +190,7 @@ def test_check(response, start_date, check_passed):
             403,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
             ],
             None,
         ),
@@ -199,7 +199,7 @@ def test_check(response, start_date, check_passed):
             404,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 404 and error message None. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
             ],
             "Not Found",
         ),
