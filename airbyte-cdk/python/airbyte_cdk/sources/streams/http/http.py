@@ -77,7 +77,7 @@ class HttpStream(Stream, ABC):
         return "GET"
 
     @property
-    @deprecated(reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
+    @deprecated(version="3.0.0", reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
     def raise_on_http_errors(self) -> bool:
         """
         Override if needed. If set to False, allows opting-out of raising HTTP code exception.
@@ -85,7 +85,7 @@ class HttpStream(Stream, ABC):
         return True
 
     @property
-    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
+    @deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def max_retries(self) -> Union[int, None]:
         """
         Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
@@ -93,7 +93,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
-    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
+    @deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def max_time(self) -> Union[int, None]:
         """
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
@@ -101,7 +101,7 @@ class HttpStream(Stream, ABC):
         return 60 * 10
 
     @property
-    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
+    @deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def retry_factor(self) -> float:
         """
         Override if needed. Specifies factor for backoff policy.
@@ -395,23 +395,23 @@ class HttpSubStream(HttpStream, ABC):
                 yield {"parent": record}
 
 
+@deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
 class HttpStreamAdapterBackoffStrategy(BackoffStrategy):
     def __init__(self, stream: HttpStream):
         self.stream = stream
 
-    @deprecated(reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
     ) -> Optional[float]:
         return self.stream.backoff_time(response_or_exception)  # type: ignore # noqa
 
 
+@deprecated(version="3.0.0", reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
 class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
         super().__init__(**kwargs)
 
-    @deprecated(reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, Exception):
             return super().interpret_response(response_or_exception)
