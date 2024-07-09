@@ -30,7 +30,8 @@ class AirtableBases(HttpStream):
             name=self.name,
             logger=self.logger,
             error_handler=error_handler,
-            backoff_strategy=backoff_strategy
+            backoff_strategy=backoff_strategy,
+            authenticator=kwargs.get("authenticator"),
         )
 
     url_base = URL_BASE
@@ -116,6 +117,7 @@ class AirtableStream(HttpStream, ABC):
             logger=self.logger,
             error_handler=error_handler,
             backoff_strategy=backoff_strategy,
+            authenticator=kwargs.get("authenticator"),
         )
 
     url_base = URL_BASE
