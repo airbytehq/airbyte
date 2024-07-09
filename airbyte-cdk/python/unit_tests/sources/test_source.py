@@ -75,7 +75,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    return ConfiguredAirbyteCatalog.model_validate(configured_catalog)
 
 
 @pytest.fixture
@@ -83,7 +83,7 @@ def abstract_source(mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
-    class MockHttpStream(mocker.MagicMock, HttpStream):
+    class MockHttpStream(HttpStream, mocker.MagicMock):
         url_base = "http://example.com"
         path = "/dummy/path"
         get_json_schema = mocker.MagicMock()
@@ -92,6 +92,12 @@ def abstract_source(mocker):
         @property
         def cursor_field(self) -> Union[str, List[str]]:
             return ["updated_at"]
+
+        def get_backoff_strategy(self):
+            return None
+
+        def get_error_handler(self):
+            return None
 
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
