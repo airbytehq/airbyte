@@ -112,5 +112,7 @@ internal class ConnectorExceptionHandlerTest {
         const val COMMON_EXCEPTION_MESSAGE: String = "something happens with connection"
         const val CONNECTION_ERROR_MESSAGE_TEMPLATE: String =
             "State code: %s; Error code: %s; Message: %s"
+        const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
+            "Could not connect with provided configuration. Error: %s"
     }
 }

@@ -18,24 +18,18 @@ import org.jetbrains.annotations.VisibleForTesting
 
 private val LOGGER = KotlinLogging.logger {}
 
-const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
-    "Could not connect with provided configuration. Error: %s"
-
-const val DATABASE_CONNECTION_ERROR: String =
-    "Encountered an error while connecting to the database error"
-
 enum class FailureType {
     CONFIG,
     TRANSIENT
 }
 
 data class ConnectorErrorProfile(
-    var errorClass: String,
-    var regexMatchingPattern: String,
-    var failureType: FailureType,
-    var externalMessage: String,
-    var sampleInternalMessage: String,
-    var referenceLink: List<String>
+    val errorClass: String,
+    val regexMatchingPattern: String,
+    val failureType: FailureType,
+    val externalMessage: String,
+    val sampleInternalMessage: String,
+    val referenceLinks: List<String>,
 )
 
 /**
@@ -44,7 +38,9 @@ data class ConnectorErrorProfile(
  */
 open class ConnectorExceptionHandler {
     @kotlin.jvm.JvmField
-    var DATABASE_READ_ERROR: String = "Encountered an error while reading the database"
+    val DATABASE_READ_ERROR: String = "Encountered an error while reading the database"
+    val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
+        "Could not connect with provided configuration. Error: %s"
 
     protected open var connectorErrorDictionary: MutableList<ConnectorErrorProfile> =
         mutableListOf()
