@@ -49,4 +49,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: This release changes the state format of existing connections. 
+        upgradeDeadline: "2024-12-01"
 metadataSpecVersion: "1.0"

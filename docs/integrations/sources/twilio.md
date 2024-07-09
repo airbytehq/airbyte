@@ -100,7 +100,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| 0.11.8 | 2024-06-24 | [40248](https://github.com/airbytehq/airbyte/pull/40248) | Twilio accounts stream migration to low code |
+| 1.0.0 | 2024-06-24 | [40248](https://github.com/airbytehq/airbyte/pull/40248) | Twilio migration to low code |
 | 0.11.7 | 2024-06-26 | [40527](https://github.com/airbytehq/airbyte/pull/40527) | Update dependencies |
 | 0.11.6 | 2024-06-22 | [40030](https://github.com/airbytehq/airbyte/pull/40030) | Update dependencies |
 | 0.11.5 | 2024-06-06 | [39252](https://github.com/airbytehq/airbyte/pull/39252) | [autopull] Upgrade base image to v1.2.2 |

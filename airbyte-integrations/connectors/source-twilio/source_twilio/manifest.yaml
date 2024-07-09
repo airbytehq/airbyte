@@ -570,6 +570,12 @@ definitions:
               path:
                 - date_generated
               value: '{% set formatted_datetime = format_datetime(record["date_generated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - error_code
+              value: '{% set error_code = record["error_code"] | string %}{{ error_code }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1164,6 +1170,12 @@ definitions:
               path:
                 - price
               value: '{% set price = record["price"] | float %}{{ price }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - error_code
+              value: '{% set error_code = record["error_code"] | string %}{{ error_code }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1437,7 +1449,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(max(timestamp(day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ')), timestamp(config['start_time'])), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -1488,6 +1500,12 @@ definitions:
               path:
                 - price
               value: '{% set price = record["price"] | float %}{{ price }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - error_code
+              value: '{% set error_code = record["error_code"] | string %}{{ error_code }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1549,7 +1567,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(max(timestamp(day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ')), timestamp(config['start_time'])), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
