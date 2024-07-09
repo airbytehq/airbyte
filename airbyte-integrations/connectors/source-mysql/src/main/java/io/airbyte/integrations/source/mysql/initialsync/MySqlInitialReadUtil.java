@@ -296,9 +296,9 @@ public class MySqlInitialReadUtil {
     } else if (initialLoadIterator.isEmpty()) {
       LOGGER.info("Initial load has finished completely - only reading the WAL");
       /*
-       * In this case, the initial load has compelted and only debezium should be ru. The iterators should
-       * be run in the following order: 1. Run the debezium iterators with ALL of the incremental streams
-       * configured.
+       * In this case, the initial load has completed and only debezium should be run. The iterators
+       * should be run in the following order: 1. Run the debezium iterators with ALL of the incremental
+       * streams configured.
        */
       final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
           MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, allCdcStreamList);
