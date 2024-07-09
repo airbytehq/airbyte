@@ -160,7 +160,7 @@ spec:
         title: Start
         description: >-
           The date of the first day to include, in YYYYMMDD or YYYYMMDDHH
-          format.
+          format. Also serves as the date to retrieve data for the top articles.
         order: 6
     additionalProperties: true
 
