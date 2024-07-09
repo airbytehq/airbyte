@@ -420,7 +420,7 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
             return ErrorResolution(
                 response_action=ResponseAction.RETRY,
                 failure_type=FailureType.transient_error,
-                error_message="Response does not include an HTTP status code.",
+                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
             )
         else:
             if response_or_exception.ok:  # type: ignore # noqa
@@ -433,11 +433,11 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.FAIL,
                     failure_type=FailureType.transient_error,
-                    error_message="Response does not include an HTTP status code.",
+                    error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
                 )
             else:
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.transient_error,
-                    error_message="Response does not include an HTTP status code.",
+                    error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
                 )
