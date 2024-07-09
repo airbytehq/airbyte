@@ -1,4 +1,4 @@
-version: 0.73.0
+version: 0.51.42
 type: DeclarativeSource
 
 definitions:
@@ -81,6 +81,9 @@ definitions:
       $ref: "#/definitions/retriever"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+
+  incremental_stream:
+    $ref: "#/definitions/stream_base"
 
   users_stream:
     primary_key: "id"
@@ -213,6 +216,15 @@ definitions:
             request_option:
               field_name: "channel"
               inject_into: "request_parameter"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: "{{ record.ts|float }}"
+          - path:
+              - channel_id
+            value: "{{ stream_partition.get('channel') }}"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: float_ts
@@ -238,6 +250,41 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+
+
+  threads_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: threads
+      path: conversations.replies
+      field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          channel: "{{ stream_slice['parent_slice']['channel'] }}"
+          inclusive: "true"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channel_messages_stream"
+            parent_key: ts
+            partition_field: float_ts
+            incremental_dependency: true
+            request_option:
+              type: RequestOption
+              field_name: "ts"
+              inject_into: "request_parameter"
     transformations:
       - type: AddFields
         fields:
@@ -247,12 +294,28 @@ definitions:
           - path:
               - channel_id
             value: "{{ stream_partition.get('channel') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: ts
+      cursor_datetime_formats:
+        - "%s_as_float"
+      datetime_format: "%s_as_float"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      global_parent_cursor: true
+      is_client_side_incremental: true
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: "source_slack.components.threads_state_migrations.ThreadsStateMigration"
 
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
+  - "#/definitions/threads_stream"
 
 check:
   type: CheckStream
