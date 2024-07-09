@@ -1449,7 +1449,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(max(timestamp(day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ')), timestamp(config['start_time'])), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(max(timestamp(day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ')), timestamp(config['start_date'])), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -1567,7 +1567,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(max(timestamp(day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ')), timestamp(config['start_time'])), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ format_datetime(max(timestamp(day_delta(-400, format='%Y-%m-%dT%H:%M:%SZ')), timestamp(config['start_date'])), '%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
