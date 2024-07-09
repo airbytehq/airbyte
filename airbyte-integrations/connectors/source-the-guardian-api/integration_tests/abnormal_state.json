@@ -1,5 +1,13 @@
-{
-  "content": {
-    "webPublicationDate": "2123-10-31T10:10:10Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "webPublicationDate": "2123-10-31T10:10:10Z"
+      },
+      "stream_descriptor": {
+        "name": "content"
+      }
+    }
   }
-}
+]
