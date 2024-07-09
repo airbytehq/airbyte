@@ -10,6 +10,7 @@ import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice, get_first_stream_slice
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
 
 if typing.TYPE_CHECKING:
@@ -30,6 +31,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           for some reason and the str should describe what went wrong and how to
           resolve the unavailability, if possible.
         """
+        reason: Optional[str] = None
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
             # Streams that don't need a stream slice will return `None` as their first stream slice.
@@ -45,6 +47,8 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             if not is_available:
                 reason = f"Unable to get slices for {stream.name} stream, because of error in parent stream. {reason}"
             return is_available, reason
+        except AirbyteTracedException as error:
+            return False, error.message
 
         try:
             get_first_record_for_slice(stream, stream_slice)
@@ -57,6 +61,8 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             if not is_available:
                 reason = f"Unable to read {stream.name} stream. {reason}"
             return is_available, reason
+        except AirbyteTracedException as error:
+            return False, error.message
 
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
@@ -86,7 +92,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
 
         doc_ref = self._visit_docs_message(logger, source)
         reason = f"The endpoint {error.response.url} returned {status_code}: {error.response.reason}. {known_reason}. {doc_ref} "
-        response_error_message = stream.parse_response_error_message(error.response)
+        response_error_message = stream.parse_response_error_message(error.response)  # type: ignore # noqa ; method will be deprecated in https://github.com/airbytehq/airbyte-internal-issues/issues/8521
         if response_error_message:
             reason += response_error_message
         return False, reason
