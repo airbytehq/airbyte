@@ -93,3 +93,8 @@ class Source(
     @classmethod
     def read_catalog(cls, catalog_path: str) -> ConfiguredAirbyteCatalog:
         return ConfiguredAirbyteCatalog.parse_obj(cls._read_json_file(catalog_path))
+
+    @property
+    def name(self) -> str:
+        """Source name"""
+        return self.__class__.__name__
