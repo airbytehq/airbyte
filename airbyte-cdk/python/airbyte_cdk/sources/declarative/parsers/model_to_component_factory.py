@@ -142,7 +142,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Resp
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
@@ -1076,6 +1076,8 @@ class ModelToComponentFactory:
         )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+
+        # Define cursor only if per partition or common incremental support is needed
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
 
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None

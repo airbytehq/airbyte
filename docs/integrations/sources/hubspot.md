@@ -337,6 +337,10 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.9 | 2024-07-08 | [41045](https://github.com/airbytehq/airbyte/pull/41045) | Use latest `CDK` version possible |
+| 4.2.8 | 2024-07-06 | [40923](https://github.com/airbytehq/airbyte/pull/40923) | Update dependencies |
+| 4.2.7 | 2024-06-25 | [40441](https://github.com/airbytehq/airbyte/pull/40441) | Update dependencies |
+| 4.2.6 | 2024-06-22 | [40126](https://github.com/airbytehq/airbyte/pull/40126) | Update dependencies |
 | 4.2.5 | 2024-06-17 | [39432](https://github.com/airbytehq/airbyte/pull/39432) | Remove references to deprecated state method |
 | 4.2.4 | 2024-06-10 | [38800](https://github.com/airbytehq/airbyte/pull/38800) | Retry hubspot _parse_and_handle_errors on JSON decode errors |
 | 4.2.3 | 2024-06-06 | [39314](https://github.com/airbytehq/airbyte/pull/39314) | Added missing schema types for the `Workflows` stream schema |

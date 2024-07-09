@@ -3,6 +3,8 @@
  */
 package io.airbyte.cdk.integrations.debezium.internals
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition
 import io.debezium.engine.ChangeEvent
 import java.time.Duration
@@ -34,6 +36,7 @@ class DebeziumRecordIteratorTest {
                 { false },
                 mock(),
                 Duration.ZERO,
+                getTestConfig(), // Heartbeats should not be ignored for tests.
             )
         val lsn =
             debeziumRecordIterator.getHeartbeatPosition(
@@ -44,7 +47,7 @@ class DebeziumRecordIteratorTest {
                             Collections.singletonMap("lsn", 358824993496L),
                             null,
                             null,
-                            null
+                            null,
                         )
 
                     override fun key(): String? {
@@ -62,9 +65,15 @@ class DebeziumRecordIteratorTest {
                     fun sourceRecord(): SourceRecord {
                         return sourceRecord
                     }
-                }
+                },
             )
 
         Assertions.assertEquals(lsn, 358824993496L)
+    }
+
+    fun getTestConfig(): JsonNode {
+        val mapper: ObjectMapper = ObjectMapper()
+        val testConfig = "{\"is_test\": true}"
+        return mapper.readTree(testConfig)
     }
 }

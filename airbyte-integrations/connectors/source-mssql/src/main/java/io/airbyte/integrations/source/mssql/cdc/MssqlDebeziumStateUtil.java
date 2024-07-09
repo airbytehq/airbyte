@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorag
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.RecordWaitTimeUtil;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -107,8 +108,15 @@ public class MssqlDebeziumStateUtil implements DebeziumStateUtil {
             break;
           }
 
-          if (Duration.between(engineStartTime, Instant.now()).compareTo(Duration.ofMinutes(5)) > 0) {
-            LOGGER.error("No record is returned even after {} seconds of waiting, closing the engine", 300);
+          Duration initialWaitingDuration = Duration.ofMinutes(5L);
+          // If initial waiting seconds is configured and it's greater than 5 minutes, use that value instead
+          // of the default value
+          final Duration configuredDuration = RecordWaitTimeUtil.getFirstRecordWaitTime(database.getSourceConfig());
+          if (configuredDuration.compareTo(initialWaitingDuration) > 0) {
+            initialWaitingDuration = configuredDuration;
+          }
+          if (Duration.between(engineStartTime, Instant.now()).compareTo(initialWaitingDuration) > 0) {
+            LOGGER.error("Schema history not constructed after {} seconds of waiting, closing the engine", initialWaitingDuration.getSeconds());
             publisher.close();
             throw new RuntimeException(
                 "Building schema history has timed out. Please consider increasing the debezium wait time in advanced options.");
