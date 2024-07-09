@@ -1022,8 +1022,6 @@ definitions:
     Outgoing Caller Ids:
       type: DeclarativeStream
       name: outgoing_caller_ids
-      primary_key:
-        - sid
       retriever:
         type: SimpleRetriever
         requester:
