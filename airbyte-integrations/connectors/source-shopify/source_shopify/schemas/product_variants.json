@@ -54,6 +54,50 @@
       "description": "The value for option 3 of the variant",
       "type": ["null", "string"]
     },
+    "options": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "option_value": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "has_variants": {
+                "type": ["null", "boolean"]
+              },
+              "swatch": {
+                "type": ["null", "object"],
+                "properties": {
+                  "color": {
+                    "type": ["null", "string"]
+                  },
+                  "image": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "created_at": {
       "description": "The date and time when the variant was created",
       "type": ["null", "string"],
