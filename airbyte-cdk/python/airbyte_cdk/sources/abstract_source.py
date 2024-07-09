@@ -67,11 +67,6 @@ class AbstractSource(Source, ABC):
     _stream_to_instance_map: Dict[str, Stream] = {}
     _slice_logger: SliceLogger = DebugSliceLogger()
 
-    @property
-    def name(self) -> str:
-        """Source name"""
-        return self.__class__.__name__
-
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.

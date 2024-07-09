@@ -77,7 +77,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    return ConfiguredAirbyteCatalog.model_validate(configured_catalog)
 
 
 @pytest.fixture
@@ -85,7 +85,7 @@ def abstract_source(mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
-    class MockHttpStream(mocker.MagicMock, HttpStream):
+    class MockHttpStream(HttpStream, mocker.MagicMock):
         url_base = "http://example.com"
         path = "/dummy/path"
         get_json_schema = mocker.MagicMock()
@@ -94,6 +94,12 @@ def abstract_source(mocker):
         @property
         def cursor_field(self) -> Union[str, List[str]]:
             return ["updated_at"]
+
+        def get_backoff_strategy(self):
+            return None
+
+        def get_error_handler(self):
+            return None
 
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
@@ -524,6 +530,12 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
         def state(self, value: MutableMapping[str, Any]) -> None:
             self._state = value
 
+        def get_backoff_strategy(self):
+            return None
+
+        def get_error_handler(self):
+            return None
+
     class MockStream(mocker.MagicMock, Stream):
         page_size = None
         get_json_schema = mocker.MagicMock()
@@ -612,9 +624,8 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
     assert non_http_stream.read_records.called
     expected_logs = [
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
-        f"Unable to read {http_stream.name} stream.",
-        "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
+        "Forbidden.",
+        "You don't have permission to access this resource.",
     ]
     for message in expected_logs:
         assert message in caplog.text
@@ -687,7 +698,7 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
             }
         ]
     }
-    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    catalog = ConfiguredAirbyteCatalog.model_validate(configured_catalog)
     with caplog.at_level(logging.WARNING):
         records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
 
@@ -695,9 +706,8 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
     assert len(records) == 0
     expected_logs = [
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
-        f"Unable to get slices for {http_stream.name} stream, because of error in parent stream",
-        "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
+        "Forbidden.",
+        "You don't have permission to access this resource.",
     ]
     for message in expected_logs:
         assert message in caplog.text
