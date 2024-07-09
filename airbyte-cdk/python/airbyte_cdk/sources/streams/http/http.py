@@ -109,6 +109,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
+    @deprecated(version="3.1.0", reason="This functionality is handled by combination of HttpClient.ErrorHandler and AirbyteStreamStatus")
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
         return HttpAvailabilityStrategy()
 
