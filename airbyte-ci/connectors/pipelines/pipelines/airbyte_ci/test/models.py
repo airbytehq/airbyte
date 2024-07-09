@@ -20,7 +20,7 @@ class AirbyteCiPackageConfiguration(BaseModel):
         False,
         description="Flag indicating the mount of the host docker socket to the container running the poe task, useful when the package under test is using dagger",
     )
-    python_versions: List[str] = Field([], description="List of unique python versions to run the poe tasks on")
+    python_versions: List[str] = Field(description="List of unique python versions to run the poe tasks on")
 
     @validator("required_environment_variables")
     def check_required_environment_variables_are_set(cls, value: Set) -> Set:

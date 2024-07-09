@@ -329,9 +329,6 @@ async def run_poe_tasks_for_package(
         logger.warning("No poe tasks to run.")
         return []
 
-    if len(package_config.python_versions) == 0:
-        raise click.UsageError("No python version specified.")
-
     logger.info(f"Python versions: {package_config.python_versions}")
 
     poe_task_results: List[asyncer.SoonValue] = []
