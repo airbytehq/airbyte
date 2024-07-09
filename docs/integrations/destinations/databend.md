@@ -67,8 +67,13 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
+| 0.1.9 | 2024-07-06 | [40916](https://github.com/airbytehq/airbyte/pull/40916) | Update dependencies |
+| 0.1.8 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.1.7 | 2024-06-25 | [40301](https://github.com/airbytehq/airbyte/pull/40301) | Update dependencies |
 | 0.1.6 | 2024-06-21 | [39936](https://github.com/airbytehq/airbyte/pull/39936) | Update dependencies |
 | 0.1.5 | 2024-06-04 | [39090](https://github.com/airbytehq/airbyte/pull/39090) | [autopull] Upgrade base image to v1.2.1 |
@@ -79,3 +84,5 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 | [21182](https://github.com/airbytehq/airbyte/pull/21182) | Remove protocol option and enforce HTTPS |
 |                                                          | 0.1.0                                    | 2022-01-09                                                | [20909](https://github.com/airbytehq/airbyte/pull/20909) | Destination |
 | Databend                                                 |
+
+</details>

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "airbyte-destination-meilisearch"
+version = "1.0.3"
+description = "Airbyte destination implementation for Meilisearch."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/meilisearch"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "destination_meilisearch"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "< 3"
+meilisearch = "> 0.22"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^ 8.0"
+
+[tool.poetry.scripts]
+destination-qdrant = "destination_meilisearch.run:run"

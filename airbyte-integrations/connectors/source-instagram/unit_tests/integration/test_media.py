@@ -2,10 +2,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from unittest import TestCase
 
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -40,6 +41,25 @@ _FIELDS = [
     "children"
 ]
 
+_CHILDREN_FIELDS = [
+    "id",
+    "ig_id",
+    "media_type",
+    "media_url",
+    "owner",
+    "permalink",
+    "shortcode",
+    "thumbnail_url",
+    "timestamp",
+    "username"
+    ]
+
+_CHILDREN_IDS = [
+    "07608776690540123",
+    "52896800415362123",
+    "39559889460059123",
+    "17359925580923123"
+        ]
 _STREAM_NAME = "media"
 
 
@@ -48,6 +68,13 @@ def _get_request() -> RequestBuilder:
         RequestBuilder.get_media_endpoint(item_id=BUSINESS_ACCOUNT_ID)
         .with_limit(100)
         .with_fields(_FIELDS)
+    )
+
+
+def _get_children_request(media_id:str) -> RequestBuilder:
+    return(
+        RequestBuilder.get_media_children_endpoint(item_id=media_id)
+        .with_fields(_CHILDREN_FIELDS)
     )
 
 
@@ -127,3 +154,31 @@ class TestFullRefresh(TestCase):
         output = self._read(config_=config())
         assert len(output.records) == 1
         assert output.records[0].record.data[created_time_field] == expected_datetime_value
+
+    @HttpMocker()
+    def test_given_one_page_has_children_field(self, http_mocker: HttpMocker) -> None:
+        test = "children"
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        http_mocker.get(
+            _get_request().build(),
+            HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_for_{test}", __file__)), 200)
+        )
+
+        for children_id in _CHILDREN_IDS:
+            http_mocker.get(
+                _get_children_request(children_id).build(),
+                HttpResponse(json.dumps(find_template(f"{_STREAM_NAME}_children_for_{test}", __file__)), 200)
+            )
+
+        output = self._read(config_=config())
+        assert len(output.records) == 1
+        children = output.records[0].record.data["children"]
+        assert len(children) == 4
+        for child in children:
+            assert "id" in child
+            assert "ig_id" in child
+            assert "media_type" in child
+            assert "owner" in child
