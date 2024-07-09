@@ -2,12 +2,14 @@
 
 For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
 
-We assume in the following that you've already configured a Postgres instance:
+The following instructions assume that you've already configured a Postgres instance:
 
 <details open>
-<summary>External database setup steps</summary>
+<summary>External database setup</summary>
 
-Add external database details to your `values.yaml` file. This disables the default internal Postgres database (`airbyte/db`), and configures the external Postgres database. You can override all of the values below by setting them in the airbyte-config-secrets or set them directly here. You must set the database password in the airbyte-config-secrets. Here is an example configuration:
+Add external database details to your `values.yaml` file. This disables the default internal Postgres database (`airbyte/db`), and configures your external Postgres database. You can override all of the values below by setting them in the airbyte-config-secrets or set them directly in the `values.yaml` file. **The database password is a special case in that it must be set in the airbyte-config-secrets.** 
+
+Here is an example configuration:
 
 ```yaml
 postgresql:

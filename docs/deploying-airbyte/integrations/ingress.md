@@ -5,7 +5,7 @@ import TabItem from '@theme/TabItem';
 
 # Ingress
 
-To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
+To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a simplified definition of an ingress resource you could use for Self-Managed Enterprise:
 
 <details open>
 <summary>Ingress configuration setup steps</summary>
@@ -53,7 +53,7 @@ spec:
 </TabItem>
 <TabItem value="Amazon ALB" label="Amazon ALB">
 
-If you are intending on using Amazon Application Load Balancer (ALB) for ingress, this ingress definition will be close to what's needed to get up and running:
+If you intend to use Amazon Application Load Balancer (ALB) for ingress, this ingress definition will be close to what's needed to get up and running:
 
 
 ```yaml
@@ -104,7 +104,7 @@ spec:
             pathType: Prefix
 ```
 
-The ALB controller will use a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
+The ALB controller uses a `ServiceAccount` that requires the [following IAM policy](https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json) to be attached.
 
 </TabItem>
 </Tabs>

@@ -7,9 +7,16 @@ import TabItem from '@theme/TabItem';
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement. If setting up an Airbyte server does not fit your usecase needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](./using-airbyte/pyairbyte/getting-started) documentation useful. To quickly deploy Airbyte on your local machine you can visit the 
 [Quickstart](./using-airbyte/getting-started/oss-quickstart) guide.
 
+:::tip
+Enterprise Customers should refer to our docs on [Airbyte Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
+:::
+
 ## Understanding the Airbyte Deployment
 
-Airbyte is built to be deployed on top of Kubernetes in a cloud environment. We recommend deploying Airbyte using Helm and the documented Helm chart values. Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information.
+Airbyte is built to be deployed on top of Kubernetes in a cloud environment. We recommend deploying Airbyte using Helm and the documented Helm chart values. 
+
+Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
+
 
 The [Infrastructure](#deploying-airbyte/infrastructure) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order  to fit into your existing infrastructure.
 
@@ -172,3 +179,4 @@ kubectl create secret generic airbyte-config-secrets \
 
 </TabItem>
 </Tabs>
+
