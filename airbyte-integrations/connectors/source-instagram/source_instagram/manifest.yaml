@@ -1,4 +1,4 @@
-version: 1.3.1
+version: 2.0.0
 
 type: DeclarativeSource
 
@@ -69,6 +69,17 @@ definitions:
           fields:
             - type: AddedFieldDefinition
               path:
+                - media_insights_info
+              value: >-
+                {{ {"media_id": record['id'], "media_type":
+                record['media_type'], "media_product_type":
+                record['media_product_type'], "business_account_id":
+                stream_partition.account.business_account_id, "page_id":
+                stream_partition.account.page_id} }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
                 - page_id
               value: "{{ stream_partition.account.page_id }}"
               value_type: string
@@ -93,6 +104,110 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Media"
+    MediaInsights:
+      type: DeclarativeStream
+      name: media_insights
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ stream_partition.media_insights_info.media_id }}/insights"
+          http_method: GET
+          request_parameters:
+            metric: >-
+              {% if stream_partition.media_insights_info.media_product_type ==
+              "REELS" %}{{
+              'comments,ig_reels_avg_watch_time,ig_reels_video_view_total_time,likes,plays,reach,saved,shares'
+              }}{% elif stream_partition.media_insights_info.media_type ==
+              "VIDEO" and
+              stream_partition.media_insights_info.media_product_type == "FEED"
+              %}{{  'impressions,reach,saved,video_views'}}{% elif
+              stream_partition.media_insights_info.media_type == "VIDEO" %}{{
+              'impressions,reach,saved,video_views,likes,comments,shares'
+              }}{%elif stream_partition.media_insights_info.media_type ==
+              "CAROUSEL_ALBUM"%}{{ 'impressions,reach,saved,video_views' }}{% else %}{{
+              'impressions,reach,saved,video_views,likes,comments,shares' }}{%
+              endif %}
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ 'error' in response and
+                      response['error']['error_subcode'] == 2108006 }}
+                    http_codes: []
+                    error_message: >-
+                      Insights error for business_account_id: {{
+                      response['error']['message'] }}
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ 'error' in response and ( (response['error']['code'] ==
+                      100 and response['error']['error_subcode'] == 33) or
+                      (response['error']['code'] == 10 and
+                      response['error']['message'] == "(#10) Application does
+                      not have permission for this action") ) }}
+                    error_message: >-
+                      Check provided permissions for: {{
+                      response['error']['message'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: media_insights_info
+              partition_field: media_insights_info
+              stream:
+                $ref: "#/definitions/streams/Media"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramInsightsTransformation
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - id
+              value: "{{ stream_partition.media_insights_info.media_id}}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: "{{ stream_partition.media_insights_info.page_id}}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - business_account_id
+              value: "{{ stream_partition.media_insights_info.business_account_id }}"
+              value_type: string
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramClearUrlTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/MediaInsights"
     Users:
       type: DeclarativeStream
       name: users
@@ -292,6 +407,15 @@ definitions:
           fields:
             - type: AddedFieldDefinition
               path:
+                - story_insights_info
+              value: >-
+                {{ {"story_id": record['id'], "business_account_id":
+                stream_partition.account.business_account_id, "page_id":
+                stream_partition.account.page_id} }}
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
                 - page_id
               value: "{{ stream_partition.account.page_id }}"
               value_type: string
@@ -314,6 +438,75 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Stories"
+    StoryInsights:
+      type: DeclarativeStream
+      name: story_insights
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ stream_partition.story_insights_info.story_id }}/insights"
+          http_method: GET
+          request_parameters:
+            metric: impressions,reach,replies
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 5
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ 'error' in response and response['error']['code'] == 10 }}
+                    error_message: >-
+                      Insights error: {{ response['error']['message'] }}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: story_insights_info
+              partition_field: story_insights_info
+              stream:
+                $ref: "#/definitions/streams/Stories"
+      transformations:
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramInsightsTransformation
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - id
+              value: "{{ stream_partition.story_insights_info.story_id  }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - page_id
+              value: "{{ stream_partition.story_insights_info.page_id }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - business_account_id
+              value: "{{ stream_partition.story_insights_info.business_account_id }}"
+              value_type: string
+        - type: CustomTransformation
+          class_name: source_instagram.components.InstagramClearUrlTransformation
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/StoryInsights"
     Api:
       type: DeclarativeStream
       name: Api
@@ -387,27 +580,35 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/Media"
+  - $ref: "#/definitions/streams/MediaInsights"
   - $ref: "#/definitions/streams/Users"
   - $ref: "#/definitions/streams/UserLifetimeInsights"
   - $ref: "#/definitions/streams/Stories"
+  - $ref: "#/definitions/streams/StoryInsights"
   - $ref: "#/definitions/streams/Api"
 
 metadata:
   autoImportSchema:
     Media: true
+    MediaInsights: true
     Users: true
     UserLifetimeInsights: true
     Stories: true
+    StoryInsights: true
     Api: true
   yamlComponents:
     streams:
       Media:
+        - transformations
+      MediaInsights:
         - transformations
       Users:
         - transformations
       UserLifetimeInsights:
         - transformations
       Stories:
+        - transformations
+      StoryInsights:
         - transformations
 
 schemas:
@@ -576,6 +777,83 @@ schemas:
               type:
                 - "null"
                 - string
+    required:
+      - id
+  MediaInsights:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      business_account_id:
+        description: The unique identifier of the Instagram business account associated with the media.
+        type:
+          - "null"
+          - string
+      page_id:
+        description: The unique identifier of the Instagram page where the media is posted.
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier of the media.
+        type:
+          - "null"
+          - string
+      ig_reels_avg_watch_time:
+        description: The average watch time of Instagram Reels videos in seconds
+        type:
+          - "null"
+          - number
+      ig_reels_video_view_total_time:
+        description: The total watch time of Instagram Reels videos in seconds.
+        type:
+          - "null"
+          - number
+      impressions:
+        description: The number of times the media has been displayed to users.
+        type:
+          - "null"
+          - integer
+      reach:
+        description: The number of unique users who have seen the media.
+        type:
+          - "null"
+          - integer
+      saved:
+        description: The number of times users have saved the media.
+        type:
+          - "null"
+          - integer
+      video_views:
+        description: The total number of views on video media.
+        type:
+          - "null"
+          - integer
+      comments:
+        description: The number of comments received on the media.
+        type:
+          - "null"
+          - integer
+      likes:
+        description: The number of likes received on the media.
+        type:
+          - "null"
+          - integer
+      shares:
+        description: The number of times the media has been shared.
+        type:
+          - "null"
+          - integer
+      total_interactions:
+        description: The total number of interactions (likes, comments, shares) on the media.
+        type:
+          - "null"
+          - integer
+      plays:
+        description: The number of times the media has been played.
+        type:
+          - "null"
+          - integer
     required:
       - id
   Users:
@@ -763,6 +1041,41 @@ schemas:
           - string
     required:
       - id
+  StoryInsights:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      business_account_id:
+        description: The unique identifier of the business account associated with the story insights.
+        type:
+          - "null"
+          - string
+      page_id:
+        description: The unique identifier of the associated page where the story was posted.
+        type:
+          - "null"
+          - string
+      id:
+        description: The unique identifier of the story insights record.
+        type:
+          - "null"
+          - string
+      impressions:
+        description: The number of times the story was viewed.
+        type:
+          - "null"
+          - integer
+      reach:
+        description: The number of unique accounts that viewed the story.
+        type:
+          - "null"
+          - integer
+      replies:
+        description: The number of replies or interactions generated by the story.
+        type:
+          - "null"
+          - integer
   Api:
     type: object
     $schema: http://json-schema.org/schema#

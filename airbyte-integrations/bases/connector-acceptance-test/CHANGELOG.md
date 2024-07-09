@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.3
+
+Add handling for global state messages (for use by DB sources).
+
 ## 3.8.2
 
 Allow tests to access the setup/teardown container.
