@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.0.0
+Integrate HttpClient into HttpStream class. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
 ## 2.4.0
 CDK: Add support for input format parsing at jinja macro format_datetime
 
