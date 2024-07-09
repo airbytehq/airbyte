@@ -1170,12 +1170,6 @@ definitions:
               path:
                 - price
               value: '{% set price = record["price"] | float %}{{ price }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - error_code
-              value: '{% set error_code = record["error_code"] | string %}{{ error_code }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
