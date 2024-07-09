@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 from http import HTTPStatus
 from typing import Any, Iterable, Mapping, Optional
 from unittest.mock import ANY, MagicMock, patch
@@ -12,7 +13,10 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
@@ -42,31 +46,31 @@ class StubBasicReadHttpStream(HttpStream):
 
 def test_default_authenticator():
     stream = StubBasicReadHttpStream()
-    assert stream._session.auth is None
+    assert stream._http_client._session.auth is None
 
 
 def test_requests_native_token_authenticator():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
-    assert isinstance(stream._session.auth, TokenAuthenticator)
+    assert isinstance(stream._http_client._session.auth, TokenAuthenticator)
 
 
 def test_request_kwargs_used(mocker, requests_mock):
     stream = StubBasicReadHttpStream()
     request_kwargs = {"cert": None, "proxies": "google.com"}
     mocker.patch.object(stream, "request_kwargs", return_value=request_kwargs)
-    send_mock = mocker.patch.object(stream._session, "send", wraps=stream._session.send)
+    send_mock = mocker.patch.object(stream._http_client._session, "send", wraps=stream._http_client._session.send)
     requests_mock.register_uri("GET", stream.url_base)
 
     list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    stream._session.send.assert_any_call(ANY, **request_kwargs)
+    stream._http_client._session.send.assert_any_call(ANY, **request_kwargs)
     assert send_mock.call_count == 1
 
 
 def test_stub_basic_read_http_stream_read_records(mocker):
     stream = StubBasicReadHttpStream()
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubBasicReadHttpStream, "_send_request", return_value=blank_response)
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     records = list(stream.read_records(SyncMode.full_refresh))
 
@@ -93,7 +97,7 @@ def test_next_page_token_is_input_to_other_methods(mocker):
     pages = 5
     stream = StubNextPageTokenHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubNextPageTokenHttpStream, "_send_request", return_value=blank_response)
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     methods = ["request_params", "request_headers", "request_body_json"]
     for method in methods:
@@ -156,12 +160,15 @@ def test_stub_custom_backoff_http_stream_retries(mocker, retries):
         def max_retries(self):
             return retries
 
+        def get_error_handler(self) -> Optional[ErrorHandler]:
+            return HttpStatusErrorHandler(logging.Logger, max_retries=retries)
+
     stream = StubCustomBackoffHttpStreamRetries()
     req = requests.Response()
     req.status_code = HTTPStatus.TOO_MANY_REQUESTS
     send_mock = mocker.patch.object(requests.Session, "send", return_value=req)
 
-    with pytest.raises(UserDefinedBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429") as excinfo:
+    with pytest.raises(UserDefinedBackoffException, match="Too many requests") as excinfo:
         list(stream.read_records(SyncMode.full_refresh))
     assert isinstance(excinfo.value.request, requests.PreparedRequest)
     assert isinstance(excinfo.value.response, requests.Response)
@@ -175,9 +182,8 @@ def test_stub_custom_backoff_http_stream_endless_retries(mocker):
     mocker.patch("time.sleep", lambda x: None)
 
     class StubCustomBackoffHttpStreamRetries(StubCustomBackoffHttpStream):
-        @property
-        def max_retries(self):
-            return None
+        def get_error_handler(self) -> Optional[ErrorHandler]:
+            return HttpStatusErrorHandler(logging.Logger, max_retries=99999)
 
     infinite_number = 20
 
@@ -199,28 +205,32 @@ def test_4xx_error_codes_http_stream(mocker, http_code):
     req.status_code = http_code
     mocker.patch.object(requests.Session, "send", return_value=req)
 
-    with pytest.raises(requests.exceptions.HTTPError):
+    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
         list(stream.read_records(SyncMode.full_refresh))
 
 
 class AutoFailFalseHttpStream(StubBasicReadHttpStream):
     raise_on_http_errors = False
     max_retries = 3
-    retry_factor = 0.01
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return HttpStatusErrorHandler(logging.getLogger(), max_retries=3)
 
 
 def test_raise_on_http_errors_off_429(mocker):
+    mocker.patch("time.sleep", lambda x: None)
     stream = AutoFailFalseHttpStream()
     req = requests.Response()
     req.status_code = 429
 
     mocker.patch.object(requests.Session, "send", return_value=req)
-    with pytest.raises(DefaultBackoffException, match="Request URL: https://test_base_url.com/, Response Code: 429"):
+    with pytest.raises(DefaultBackoffException, match="Too many requests"):
         list(stream.read_records(SyncMode.full_refresh))
 
 
 @pytest.mark.parametrize("status_code", [500, 501, 503, 504])
 def test_raise_on_http_errors_off_5xx(mocker, status_code):
+    mocker.patch("time.sleep", lambda x: None)
     stream = AutoFailFalseHttpStream()
     req = requests.Response()
     req.status_code = status_code
@@ -239,7 +249,7 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     res.status_code = status_code
 
     mocker.patch.object(requests.Session, "send", return_value=res)
-    response = stream._send_request(req, {})
+    response = stream._http_client._session.send(req)
     assert response.status_code == status_code
 
 
@@ -253,10 +263,11 @@ def test_raise_on_http_errors_off_non_retryable_4xx(mocker, status_code):
     ),
 )
 def test_raise_on_http_errors(mocker, error):
+    mocker.patch("time.sleep", lambda x: None)
     stream = AutoFailFalseHttpStream()
     send_mock = mocker.patch.object(requests.Session, "send", side_effect=error())
 
-    with pytest.raises(error):
+    with pytest.raises(DefaultBackoffException):
         list(stream.read_records(SyncMode.full_refresh))
     assert send_mock.call_count == stream.max_retries + 1
 
@@ -374,7 +385,7 @@ def test_caching_sessions_are_different():
     stream_1 = CacheHttpStream()
     stream_2 = CacheHttpStream()
 
-    assert stream_1._session != stream_2._session
+    assert stream_1._http_client._session != stream_2._http_client._session
     assert stream_1.cache_filename == stream_2.cache_filename
 
 
@@ -399,7 +410,7 @@ def test_parent_attribute_exist():
 def test_that_response_was_cached(mocker, requests_mock):
     requests_mock.register_uri("GET", "https://google.com/", text="text")
     stream = CacheHttpStream()
-    stream.clear_cache()
+    stream._http_client.clear_cache()
     mocker.patch.object(stream, "url_base", "https://google.com/")
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
@@ -433,16 +444,16 @@ def test_using_cache(mocker, requests_mock):
 
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
-    parent_stream._session.cache.clear()
+    parent_stream._http_client._session.cache.clear()
 
     assert requests_mock.call_count == 0
-    assert len(parent_stream._session.cache.responses) == 0
+    assert len(parent_stream._http_client._session.cache.responses) == 0
 
     for _slice in parent_stream.stream_slices():
         list(parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice))
 
     assert requests_mock.call_count == 2
-    assert len(parent_stream._session.cache.responses) == 2
+    assert len(parent_stream._http_client._session.cache.responses) == 2
 
     child_stream = CacheHttpSubStream(parent=parent_stream)
 
@@ -450,27 +461,53 @@ def test_using_cache(mocker, requests_mock):
         pass
 
     assert requests_mock.call_count == 2
-    assert len(parent_stream._session.cache.responses) == 2
-    assert parent_stream._session.cache.contains(url="https://google.com/")
-    assert parent_stream._session.cache.contains(url="https://google.com/search")
+    assert len(parent_stream._http_client._session.cache.responses) == 2
+    assert parent_stream._http_client._session.cache.contains(url="https://google.com/")
+    assert parent_stream._http_client._session.cache.contains(url="https://google.com/search")
 
 
 class AutoFailTrueHttpStream(StubBasicReadHttpStream):
     raise_on_http_errors = True
 
+    def should_retry(self, *args, **kwargs):
+        return True
+
+
+@pytest.mark.parametrize(
+    "response_status_code,should_retry, raise_on_http_errors, expected_response_action",
+    [
+        (300, True, True, ResponseAction.RETRY),
+        (200, False, True, ResponseAction.SUCCESS),
+        (503, False,True, ResponseAction.FAIL),
+        (503,False,False, ResponseAction.IGNORE)
+    ]
+)
+def test_http_stream_adapter_http_status_error_handler_should_retry_false_raise_on_http_errors(mocker,
+                                                                                               response_status_code: int,
+                                                                                               should_retry: bool,
+                                                                                               raise_on_http_errors: bool,
+                                                                                               expected_response_action: ResponseAction):
+    stream = AutoFailTrueHttpStream()
+    mocker.patch.object(stream, "should_retry", return_value=should_retry)
+    mocker.patch.object(stream, "raise_on_http_errors", raise_on_http_errors)
+    res = requests.Response()
+    res.status_code = response_status_code
+    error_handler = stream.get_error_handler()
+    error_resolution = error_handler.interpret_response(res)
+    assert error_resolution.response_action == expected_response_action
+
 
 @pytest.mark.parametrize("status_code", range(400, 600))
 def test_send_raise_on_http_errors_logs(mocker, status_code):
-    mocker.patch.object(AutoFailTrueHttpStream, "logger")
-    mocker.patch.object(AutoFailTrueHttpStream, "should_retry", mocker.Mock(return_value=False))
+    mocker.patch("time.sleep", lambda x: None)
     stream = AutoFailTrueHttpStream()
-    req = requests.PreparedRequest()
     res = requests.Response()
     res.status_code = status_code
     mocker.patch.object(requests.Session, "send", return_value=res)
+    mocker.patch.object(stream._http_client, "_logger")
     with pytest.raises(requests.exceptions.HTTPError):
-        response = stream._send_request(req, {})
-        stream.logger.error.assert_called_with(response.text)
+        response = stream._http_client.send_request("GET", "https://g", {})
+        stream._http_client.logger.error.assert_called_with(response.text)
         assert response.status_code == status_code
 
 
@@ -610,16 +647,17 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     ],
 )
 def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, params, expected_url):
+
     stream = StubBasicReadHttpStream(deduplicate_query_params)
 
     if expected_url is None:
         with pytest.raises(ValueError):
-            stream._create_prepared_request(path=path, params=params)
+            stream._http_client._create_prepared_request(http_method=stream.http_method, url=stream._join_url(stream.url_base, path), params=params, dedupe_query_params=deduplicate_query_params)
     else:
-        prepared_request = stream._create_prepared_request(path=path, params=params)
+        prepared_request = stream._http_client._create_prepared_request(http_method=stream.http_method, url=stream._join_url(stream.url_base, path), params=params, dedupe_query_params=deduplicate_query_params)
         assert prepared_request.url == expected_url
 
 
 def test_connection_pool():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
-    assert stream._session.adapters["https://"]._pool_connections == 20
+    assert stream._http_client._session.adapters["https://"]._pool_connections == 20

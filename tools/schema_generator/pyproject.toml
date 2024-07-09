@@ -20,11 +20,11 @@ keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
 python = ">=3.9, <3.12"
-airbyte-cdk = "^0.83.1"
-genson = "^1.2.2"
+airbyte-cdk = " < 3"
+genson = "< 2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.1.1"
+pytest = "^8"
 
 [tool.poetry.scripts]
 schema_generator = "schema_generator.main:main"
