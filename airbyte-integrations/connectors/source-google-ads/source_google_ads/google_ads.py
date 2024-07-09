@@ -5,7 +5,7 @@
 
 import logging
 from enum import Enum
-from typing import Any, Iterable, Iterator, List, Dict, Mapping, MutableMapping
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping
 
 import backoff
 from airbyte_cdk.models import FailureType
@@ -212,21 +212,22 @@ class GoogleAds:
             field_value = str(field_value)
 
         return field_value
-    
+
     @staticmethod
     def convert_array(field_value: List[str]) -> List[Dict[str, any]]:
         output_list = []
         for value in field_value:
-            value = value.replace('"', '').split('\n')
-            item_dict = {k.strip(): v.strip() for k, v in (val.split(':', 1) for val in value if ':' in val)}
+            value = value.replace('"', "").split("\n")
+            item_dict = {k.strip(): v.strip() for k, v in (val.split(":", 1) for val in value if ":" in val)}
             output_list.append(item_dict)
         return output_list
-
 
     @staticmethod
     def parse_single_result(schema: Mapping[str, Any], result: GoogleAdsRow):
         props = schema.get("properties")
         fields = GoogleAds.get_fields_from_schema(schema)
         response_record = {field: GoogleAds.get_field_value(result, field, props.get(field)) for field in fields}
-        single_record = {key: GoogleAds.convert_array(value) if isinstance(value, list) else value for key, value in response_record.items()}
+        single_record = {
+            key: GoogleAds.convert_array(value) if isinstance(value, list) else value for key, value in response_record.items()
+        }
         return single_record

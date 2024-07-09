@@ -233,7 +233,6 @@ class SourceGoogleAds(AbstractSource):
         incremental_config = self.get_incremental_stream_config(google_api, config, customers)
         non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
 
-
         streams = [
             AccessibleBiddingStrategy(**default_config),
             AdGroup(**incremental_config),

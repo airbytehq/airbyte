@@ -1,558 +1,285 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "properties": {
-        "customer.id": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "customer.descriptive_name": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "customer.currency_code": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "customer.time_zone": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "campaign.id": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "campaign.name": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "campaign.base_campaign": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "campaign.bidding_strategy": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "campaign.bidding_strategy_type": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "campaign.status": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "campaign.manual_cpc.enhanced_cpc_enabled": {
-            "type": [
-                "null",
-                "boolean"
-            ]
-        },
-        "ad_group.id": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "ad_group.status": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "ad_group.targeting_setting.target_restrictions": {
-            "type": [
-                "null",
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "ad_group.name": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "ad_group.type": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "ad_group.base_ad_group": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "ad_group.cpc_bid_micros": {
-            "type": [
-                "null",
-                "integer"
-            ]
-        },
-        "ad_group.cpm_bid_micros": {
-            "type": [
-                "null",
-                "integer"
-            ]
-        },
-        "ad_group.cpv_bid_micros": {
-            "type": [
-                "null",
-                "integer"
-            ]
-        },
-        "ad_group.effective_target_cpa_micros": {
-            "type": [
-                "null",
-                "integer"
-            ]
-        },
-        "ad_group.effective_target_cpa_source": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "ad_group.url_custom_parameters": {
-            "type": [
-                "null",
-                "array"
-            ],
-            "items": {
-                "type": "string"
-            }
-        },
-        "metrics.interaction_event_types": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.clicks": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_absolute_top_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_budget_lost_absolute_top_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_budget_lost_top_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_exact_match_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_rank_lost_absolute_top_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_rank_lost_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_rank_lost_top_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.search_top_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.top_impression_percentage": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.value_per_all_conversions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.video_views": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.view_through_conversions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.conversions_from_interactions_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.conversions_value": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.conversions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.cost_micros": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.cost_per_all_conversions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.cross_device_conversions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.ctr": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.current_model_attributed_conversions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.current_model_attributed_conversions_value": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.engagements": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.absolute_top_impression_percentage": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.active_view_impressions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.active_view_measurability": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.active_view_measurable_cost_micros": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.active_view_measurable_impressions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.all_conversions_from_interactions_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.all_conversions_value": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.all_conversions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.average_cost": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.average_cpc": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.average_cpm": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.gmail_forwards": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.gmail_saves": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.gmail_secondary_clicks": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.impressions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.interaction_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.interactions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.phone_calls": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.phone_impressions": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.average_page_views": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.average_time_on_site": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.bounce_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.percent_new_visitors": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.value_per_conversion": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.value_per_current_model_attributed_conversion": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.cost_per_conversion": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.cost_per_current_model_attributed_conversion": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.content_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.content_rank_lost_impression_share": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.relative_ctr": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.phone_through_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.active_view_cpm": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.active_view_ctr": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.active_view_viewability": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.video_quartile_p100_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.video_quartile_p25_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.video_quartile_p50_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.video_quartile_p75_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.video_view_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.engagement_rate": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.average_cpv": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "metrics.average_cpe": {
-            "type": [
-                "null",
-                "number"
-            ]
-        },
-        "segments.date": {
-            "type": [
-                "null",
-                "string"
-            ]
-        }
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "customer.id": {
+      "type": ["null", "string"]
+    },
+    "customer.descriptive_name": {
+      "type": ["null", "string"]
+    },
+    "customer.currency_code": {
+      "type": ["null", "string"]
+    },
+    "customer.time_zone": {
+      "type": ["null", "string"]
+    },
+    "campaign.id": {
+      "type": ["null", "string"]
+    },
+    "campaign.name": {
+      "type": ["null", "string"]
+    },
+    "campaign.base_campaign": {
+      "type": ["null", "string"]
+    },
+    "campaign.bidding_strategy": {
+      "type": ["null", "string"]
+    },
+    "campaign.bidding_strategy_type": {
+      "type": ["null", "string"]
+    },
+    "campaign.status": {
+      "type": ["null", "string"]
+    },
+    "campaign.manual_cpc.enhanced_cpc_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "ad_group.id": {
+      "type": ["null", "string"]
+    },
+    "ad_group.status": {
+      "type": ["null", "string"]
+    },
+    "ad_group.targeting_setting.target_restrictions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "ad_group.name": {
+      "type": ["null", "string"]
+    },
+    "ad_group.type": {
+      "type": ["null", "string"]
+    },
+    "ad_group.base_ad_group": {
+      "type": ["null", "string"]
+    },
+    "ad_group.cpc_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.cpm_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.cpv_bid_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.effective_target_cpa_micros": {
+      "type": ["null", "integer"]
+    },
+    "ad_group.effective_target_cpa_source": {
+      "type": ["null", "string"]
+    },
+    "ad_group.url_custom_parameters": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "metrics.interaction_event_types": {
+      "type": ["null", "number"]
+    },
+    "metrics.clicks": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_absolute_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_budget_lost_absolute_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_budget_lost_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_exact_match_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_rank_lost_absolute_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_rank_lost_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_rank_lost_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.search_top_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.top_impression_percentage": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_views": {
+      "type": ["null", "number"]
+    },
+    "metrics.view_through_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_from_interactions_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_micros": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.cross_device_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.current_model_attributed_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.current_model_attributed_conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.engagements": {
+      "type": ["null", "number"]
+    },
+    "metrics.absolute_top_impression_percentage": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_impressions": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_measurability": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_measurable_cost_micros": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_measurable_impressions": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_from_interactions_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cost": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpc": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpm": {
+      "type": ["null", "number"]
+    },
+    "metrics.gmail_forwards": {
+      "type": ["null", "number"]
+    },
+    "metrics.gmail_saves": {
+      "type": ["null", "number"]
+    },
+    "metrics.gmail_secondary_clicks": {
+      "type": ["null", "number"]
+    },
+    "metrics.impressions": {
+      "type": ["null", "number"]
+    },
+    "metrics.interaction_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.interactions": {
+      "type": ["null", "number"]
+    },
+    "metrics.phone_calls": {
+      "type": ["null", "number"]
+    },
+    "metrics.phone_impressions": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_page_views": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_time_on_site": {
+      "type": ["null", "number"]
+    },
+    "metrics.bounce_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.percent_new_visitors": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_current_model_attributed_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_current_model_attributed_conversion": {
+      "type": ["null", "number"]
+    },
+    "metrics.content_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.content_rank_lost_impression_share": {
+      "type": ["null", "number"]
+    },
+    "metrics.relative_ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.phone_through_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_cpm": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_viewability": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p100_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p25_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p50_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p75_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.video_view_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.engagement_rate": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpv": {
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpe": {
+      "type": ["null", "number"]
+    },
+    "segments.date": {
+      "type": ["null", "string"]
     }
+  }
 }
