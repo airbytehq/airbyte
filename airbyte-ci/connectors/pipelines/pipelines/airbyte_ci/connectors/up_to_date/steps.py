@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from dataclasses import dataclass
 from enum import Enum
@@ -111,8 +112,14 @@ class GetDependencyUpdates(Step):
     title: str = "Get dependency updates"
 
     def get_syft_container(self) -> dagger.Container:
+        home_dir = os.path.expanduser("~")
+        config_path = os.path.join(home_dir, ".docker", "config.json")
+        config_file = self.dagger_client.host().file(config_path)
         return (
-            self.dagger_client.container().from_(self.SYFT_DOCKER_IMAGE)
+            self.dagger_client.container()
+            .from_(self.SYFT_DOCKER_IMAGE)
+            .with_mounted_file("/config/config.json", config_file)
+            .with_env_variable("DOCKER_CONFIG", "/config")
             # Syft requires access to the docker daemon. We share the host's docker socket with the Syft container.
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
         )
