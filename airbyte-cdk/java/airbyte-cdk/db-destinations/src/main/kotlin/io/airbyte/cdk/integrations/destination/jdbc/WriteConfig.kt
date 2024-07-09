@@ -24,7 +24,10 @@ constructor(
     val tmpTableName: String?,
     val outputTableName: String?,
     val syncMode: DestinationSyncMode,
-    val writeDatetime: Instant = Instant.now()
+    val generationId: Long,
+    val minimumGenerationId: Long,
+    val rawTableSuffix: String,
+    val writeDatetime: Instant = Instant.now(),
 ) {
     override fun toString(): String {
         return "WriteConfig{" +

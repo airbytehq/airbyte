@@ -3,11 +3,12 @@
  */
 package io.airbyte.integrations.base.destination.typing_deduping
 
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
 import kotlin.collections.LinkedHashMap
 
-data class StreamConfig(
+data class StreamConfig (
     val id: StreamId,
     val destinationSyncMode: DestinationSyncMode,
     val primaryKey: List<ColumnId>,

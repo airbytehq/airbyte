@@ -14,6 +14,10 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.io.FileUtils
+import java.time.Instant
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 
 private val log = KotlinLogging.logger {}
 
@@ -26,6 +30,21 @@ private val log = KotlinLogging.logger {}
  * writing, we avoid doing so to simplify the migration to async flushing.
  */
 object SerialFlush {
+    // using a random string here as a placeholder for the moment.
+    // This would avoid mixing data in the staging area between different syncs (especially if
+    // they
+    // manipulate streams with similar names)
+    // if we replaced the random connection id by the actual connection_id, we'd gain the
+    // opportunity to
+    // leverage data that was uploaded to stage
+    // in a previous attempt but failed to load to the warehouse for some reason (interrupted?)
+    // instead.
+    // This would also allow other programs/scripts
+    // to load (or reload backups?) in the connection's staging area to be loaded at the next
+    // sync.
+    private val SYNC_DATETIME: Instant = Instant.now()
+    val RANDOM_CONNECTION_ID: UUID = UUID.randomUUID()
+
     /**
      * Logic handling how destinations with staging areas (aka bucket storages) will flush their
      * buffer
@@ -88,7 +107,7 @@ object SerialFlush {
             val stageName = stagingOperations.getStageName(schemaName, writeConfig.outputTableName)
             val stagingPath =
                 stagingOperations.getStagingPath(
-                    SerialStagingConsumerFactory.Companion.RANDOM_CONNECTION_ID,
+                    RANDOM_CONNECTION_ID,
                     schemaName,
                     writeConfig.streamName,
                     writeConfig.outputTableName,

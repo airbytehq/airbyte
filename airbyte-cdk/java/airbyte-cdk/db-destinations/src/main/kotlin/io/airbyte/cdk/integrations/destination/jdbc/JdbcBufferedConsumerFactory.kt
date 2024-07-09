@@ -66,15 +66,15 @@ object JdbcBufferedConsumerFactory {
         typerDeduper: TyperDeduper,
         dataTransformer: StreamAwareDataTransformer = IdentityDataTransformer(),
         optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
-        parsedCatalog: ParsedCatalog? = null
+        parsedCatalog: ParsedCatalog,
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs =
             createWriteConfigs(
                 namingResolver,
                 config,
-                catalog,
                 sqlOperations.isSchemaRequired,
-                parsedCatalog
+                parsedCatalog,
+                ""
             )
         return AsyncStreamConsumer(
             outputRecordCollector,
@@ -95,9 +95,9 @@ object JdbcBufferedConsumerFactory {
     private fun createWriteConfigs(
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
         schemaRequired: Boolean,
-        parsedCatalog: ParsedCatalog?
+        parsedCatalog: ParsedCatalog,
+        rawTableSuffix: String,
     ): List<WriteConfig> {
         if (schemaRequired) {
             Preconditions.checkState(
@@ -105,66 +105,14 @@ object JdbcBufferedConsumerFactory {
                 "jdbc destinations must specify a schema."
             )
         }
-        return if (parsedCatalog == null) {
-            catalog!!
-                .streams
-                .map { toWriteConfig(namingResolver, config, schemaRequired).apply(it) }
-                .toList()
-        } else {
-            parsedCatalog.streams
-                .map { parsedStreamToWriteConfig(namingResolver).apply(it) }
-                .toList()
-        }
-    }
-
-    private fun toWriteConfig(
-        namingResolver: NamingConventionTransformer,
-        config: JsonNode,
-        schemaRequired: Boolean
-    ): Function<ConfiguredAirbyteStream, WriteConfig> {
-        return Function { stream: ConfiguredAirbyteStream ->
-            Preconditions.checkNotNull(
-                stream.destinationSyncMode,
-                "Undefined destination sync mode"
-            )
-            val abStream = stream.stream
-
-            val defaultSchemaName =
-                if (schemaRequired) namingResolver.getIdentifier(config["schema"].asText())
-                else namingResolver.getIdentifier(config[JdbcUtils.DATABASE_KEY].asText())
-            // Method checks for v2
-            val outputSchema = getOutputSchema(abStream, defaultSchemaName, namingResolver)
-            val streamName = abStream.name
-            val tableName: String
-            val tmpTableName: String
-            // TODO: Should this be injected from outside ?
-            if (isDestinationV2) {
-                val finalSchema = Optional.ofNullable(abStream.namespace).orElse(defaultSchemaName)
-                val rawName = concatenateRawTableName(finalSchema, streamName)
-                tableName = namingResolver.convertStreamName(rawName)
-                tmpTableName = @Suppress("deprecation") namingResolver.getTmpTableName(rawName)
-            } else {
-                tableName = @Suppress("deprecation") namingResolver.getRawTableName(streamName)
-                tmpTableName = @Suppress("deprecation") namingResolver.getTmpTableName(streamName)
-            }
-            val syncMode = stream.destinationSyncMode
-
-            val writeConfig =
-                WriteConfig(
-                    streamName,
-                    abStream.namespace,
-                    outputSchema,
-                    tmpTableName,
-                    tableName,
-                    syncMode
-                )
-            LOGGER.info { "Write config: $writeConfig" }
-            writeConfig
-        }
+        return parsedCatalog.streams
+            .map { parsedStreamToWriteConfig(namingResolver, rawTableSuffix).apply(it) }
+            .toList()
     }
 
     private fun parsedStreamToWriteConfig(
-        namingResolver: NamingConventionTransformer
+        namingResolver: NamingConventionTransformer,
+        rawTableSuffix: String
     ): Function<StreamConfig, WriteConfig> {
         return Function { streamConfig: StreamConfig ->
             // TODO We should probably replace WriteConfig with StreamConfig?
@@ -180,30 +128,9 @@ object JdbcBufferedConsumerFactory {
                 namingResolver.getTmpTableName(streamConfig.id.rawNamespace),
                 streamConfig.id.rawName,
                 streamConfig.destinationSyncMode,
-            )
-        }
-    }
-
-    /**
-     * Defer to the [AirbyteStream]'s namespace. If this is not set, use the destination's default
-     * schema. This namespace is source-provided, and can be potentially empty.
-     *
-     * The logic here matches the logic in the catalog_process.py for Normalization. Any
-     * modifications need to be reflected there and vice versa.
-     */
-    private fun getOutputSchema(
-        stream: AirbyteStream,
-        defaultDestSchema: String,
-        namingResolver: NamingConventionTransformer,
-    ): String {
-        return if (isDestinationV2) {
-            namingResolver.getNamespace(
-                getRawNamespaceOverride(AbstractJdbcDestination.Companion.RAW_SCHEMA_OVERRIDE)
-                    .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE)
-            )
-        } else {
-            namingResolver.getNamespace(
-                Optional.ofNullable<String>(stream.namespace).orElse(defaultDestSchema)
+                streamConfig.generationId,
+                streamConfig.minimumGenerationId,
+                rawTableSuffix
             )
         }
     }

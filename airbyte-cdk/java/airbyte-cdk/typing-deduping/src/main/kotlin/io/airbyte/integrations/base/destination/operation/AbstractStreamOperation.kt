@@ -59,7 +59,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
             rawTableSuffix = TMP_TABLE_SUFFIX
             initialRawTableStatus = destinationInitialStatus.initialTempRawTableStatus
         } else {
-            rawTableSuffix = NO_SUFFIX
+            rawTableSuffix= NO_SUFFIX
             initialRawTableStatus = prepareStageForNormalSync(stream, destinationInitialStatus)
         }
 
@@ -265,7 +265,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
             storageOperation.overwriteStage(streamConfig.id, rawTableSuffix)
         } else {
             log.info {
-                "Not overwriting raw table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful"
+                "Not overwriting raw table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName}. Truncate sync: ${isTruncateSync}; stream success: $streamSuccessful"
             }
         }
 
@@ -325,7 +325,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
             storageOperation.overwriteFinalTable(streamConfig, finalTmpTableSuffix)
         } else {
             log.info {
-                "Not overwriting final table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful; final table suffix not blank: ${finalTmpTableSuffix.isNotBlank()}"
+                "Not overwriting final table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName}. Truncate sync: ${isTruncateSync}; stream success: $streamSuccessful; final table suffix not blank: ${finalTmpTableSuffix.isNotBlank()}"
             }
         }
     }

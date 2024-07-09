@@ -10,7 +10,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
  * This class wants to do three separate things, but not all of them actually happen here right now:
  * * A migration runner, which handles any changes in raw tables (#prepareSchemasAndRawTables) * A
  * raw table creator, which creates any missing raw tables (currently handled in e.g.
- * GeneralStagingFunctions.onStartFunction, BigQueryStagingConsumerFactory.onStartFunction, etc.) *
+ * GeneralStagingFunctions.onStartFunction, etc.) *
  * A T+D runner, which manages the final tables (#prepareFinalTables, #typeAndDedupe, etc.)
  *
  * These would be injectable to the relevant locations, so that we can have: * DV2 destinations with
