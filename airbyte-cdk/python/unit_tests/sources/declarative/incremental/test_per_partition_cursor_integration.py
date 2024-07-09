@@ -232,8 +232,7 @@ def test_substream_without_input_state():
 
     stream_instance = test_source.streams({})[1]
 
-    stream_slice = StreamSlice(partition={},
-                               cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
+    stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
 
     with patch.object(
             SimpleRetriever, "_read_pages", side_effect=[[Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],

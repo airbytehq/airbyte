@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from dataclasses import InitVar, dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
 
@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.utils import AirbyteTracedException
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -140,6 +141,9 @@ class SubstreamPartitionRouter(PartitionRouter):
                     parent_associated_slice = None
                     # Skip non-records (eg AirbyteLogMessage)
                     if isinstance(parent_record, AirbyteMessage):
+                        self.logger.warning(
+                            f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
+                        )
                         if parent_record.type == MessageType.RECORD:
                             parent_record = parent_record.record.data
                         else:
@@ -148,6 +152,9 @@ class SubstreamPartitionRouter(PartitionRouter):
                         parent_partition = parent_record.associated_slice.partition if parent_record.associated_slice else {}
                         parent_associated_slice = parent_record.associated_slice
                         parent_record = parent_record.data
+                    elif not isinstance(parent_record, Mapping):
+                        # The parent_record should only take the form of a Record, AirbyteMessage, or Mapping. Anything else is invalid
+                        raise AirbyteTracedException(message=f"Parent stream returned records as invalid type {type(parent_record)}")
                     try:
                         partition_value = dpath.get(parent_record, parent_field)
                     except KeyError:
@@ -237,3 +244,7 @@ class SubstreamPartitionRouter(PartitionRouter):
         }
         """
         return self._parent_state
+
+    @property
+    def logger(self) -> logging.Logger:
+        return logging.getLogger(f"airbyte.SubstreamPartitionRouter")

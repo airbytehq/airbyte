@@ -16,10 +16,10 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_cdk.sources.types import Record
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.sources.types import Record
 from airbyte_cdk.sources.utils.types import JsonType
 from deprecated import deprecated
 from requests.auth import AuthBase

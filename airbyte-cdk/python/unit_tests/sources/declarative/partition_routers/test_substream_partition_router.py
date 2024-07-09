@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.partition_routers.substream_partition_route
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.types import Record
+from airbyte_cdk.utils import AirbyteTracedException
 
 parent_records = [{"id": 1, "data": "data1"}, {"id": 2, "data": "data2"}]
 more_records = [{"id": 10, "data": "data10", "slice": "second_parent"}, {"id": 20, "data": "data20", "slice": "second_parent"}]
@@ -292,7 +293,7 @@ class MockResumableFullRefreshStream(MockStream):
         "test_dpath_extraction",
     ],
 )
-def test_substream_slicer(parent_stream_configs, expected_slices):
+def test_substream_partition_router(parent_stream_configs, expected_slices):
     if expected_slices is None:
         try:
             SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
@@ -302,6 +303,23 @@ def test_substream_slicer(parent_stream_configs, expected_slices):
     partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
     slices = [s for s in partition_router.stream_slices()]
     assert slices == expected_slices
+
+
+def test_substream_partition_router_invalid_parent_record_type():
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[ParentStreamConfig(
+            stream=MockStream([{}], [list()], "first_stream"),
+            parent_key="id",
+            partition_field="first_stream_id",
+            parameters={},
+            config={},
+        )],
+        parameters={},
+        config={}
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        _ = [s for s in partition_router.stream_slices()]
 
 
 @pytest.mark.parametrize(
