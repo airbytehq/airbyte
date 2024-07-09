@@ -102,6 +102,7 @@ Extra care should be taken to understand this risk before enabling this option.
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 0.2.0   | 2024-07-10 | [41064](https://github.com/airbytehq/airbyte/pull/41064) | Migrate to low code |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
 | 0.1.0   | 2021-10-10 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                   |
 

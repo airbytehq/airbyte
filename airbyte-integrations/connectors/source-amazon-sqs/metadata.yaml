@@ -20,7 +20,7 @@ data:
   icon: amazon-sqs.svg
   license: MIT
   name: Amazon SQS
-  releaseDate: TODO
+  releaseDate: 2021-10-27
   remoteRegistries:
     pypi:
       enabled: true
