@@ -104,7 +104,6 @@ async def generate(
         )
     else:
         logger.info(f"Generating insights for {len(connectors)} connectors.")
-
     semaphore = Semaphore(concurrency)
     soon_results = []
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
