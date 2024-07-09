@@ -14,6 +14,8 @@ import pendulum as pdm
 import requests
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_protocol.models import SyncMode
 from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
@@ -37,9 +39,6 @@ class ShopifyStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
-
-    raise_on_http_errors = True
-    max_retries = 5
 
     def __init__(self, config: Dict) -> None:
         super().__init__(authenticator=config["authenticator"])
@@ -110,15 +109,10 @@ class ShopifyStream(HttpStream, ABC):
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
-    def should_retry(self, response: requests.Response) -> bool:
+    def get_error_handler(self) -> Optional[ErrorHandler]:
         known_errors = ShopifyNonRetryableErrors(self.name)
-        status = response.status_code
-        if status in known_errors.keys():
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.warning(known_errors.get(status))
-            return False
-        else:
-            return super().should_retry(response)
+        error_mapping = DEFAULT_ERROR_MAPPING | known_errors
+        return HttpStatusErrorHandler(self.logger, max_retries=5, error_mapping=error_mapping)
 
 
 class ShopifyDeletedEventsStream(ShopifyStream):
@@ -642,15 +636,15 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
-            session=self._session,
+            session=self._http_client._session,
             base_url=f"{self.url_base}{self.path()}",
             stream_name=self.name,
             query=self.query,
+            job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
+            # overide the default job slice size, if provided (it's auto-adjusted, later on)
+            job_size=config.get("bulk_window_in_days", 0.0),
         )
-        # overide the default job slice size, if provided (it's auto-adjusted, later on)
-        self.bulk_window_in_days = config.get("bulk_window_in_days")
-        if self.bulk_window_in_days:
-            self.job_manager.job_size = self.bulk_window_in_days
+
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
 
@@ -729,7 +723,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             return self.config.get("start_date")
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
-        slice_size_message = f"Slice size: `P{round(self.job_manager.job_size, 1)}D`"
+        slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
         self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
 
     @stream_state_cache.cache_stream_state

@@ -2597,11 +2597,13 @@ interpolation:
       description: Converts a datetime or a datetime-string to the specified format.
       arguments:
         datetime: The datetime object or a string to convert. If datetime is a string, it must be formatted as ISO8601.
-        format: The datetime format
+        format: The datetime format.
+        input_format: (optional) The datetime format in the case it is an string.
       return_type: str
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ', '%a, %d %b %Y %H:%M:%S %z') }}"
   filters:
     - title: Hash
       description: Convert the specified value to a hashed string.
@@ -2632,3 +2634,10 @@ interpolation:
       examples:
         - '{{ 1 | string }} -> "1"'
         - '{{ ["hello", "world" | string }} -> "["hello", "world"]"'
+    - title: Regex Search
+      description: Match the input string against a regular expression and return the first match.
+      arguments:
+        regex: The regular expression to search for. It must include a capture group.
+      return_type: str
+      examples:
+        - '{{ "goodbye, cruel world" | regex_search("goodbye,\s(.*)$") }} -> "cruel world"'

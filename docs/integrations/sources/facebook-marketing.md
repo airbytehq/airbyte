@@ -205,6 +205,11 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.8 | 2024-07-06 | [40934](https://github.com/airbytehq/airbyte/pull/40934) | Update dependencies |
+| 3.3.7 | 2024-07-01 | [40645](https://github.com/airbytehq/airbyte/pull/40645) | Use latest `CDK` version possible |
+| 3.3.6 | 2024-06-24 | [40241](https://github.com/airbytehq/airbyte/pull/40241) | Update AdsInsights fields - removed `adset_start` |
+| 3.3.5 | 2024-06-26 | [40545](https://github.com/airbytehq/airbyte/pull/40545) | Fixed issue when the `STATE` is literal `None` (RFR) |
+| 3.3.4 | 2024-06-25 | [40485](https://github.com/airbytehq/airbyte/pull/40485) | Update dependencies |
 | 3.3.3 | 2024-06-22 | [40191](https://github.com/airbytehq/airbyte/pull/40191) | Update dependencies |
 | 3.3.2 | 2024-06-06 | [39174](https://github.com/airbytehq/airbyte/pull/39174) | [autopull] Upgrade base image to v1.2.2 |
 | 3.3.1 | 2024-06-15 | [39511](https://github.com/airbytehq/airbyte/pull/39511) | Fix validation of the spec `custom_insights.time_increment` field |
