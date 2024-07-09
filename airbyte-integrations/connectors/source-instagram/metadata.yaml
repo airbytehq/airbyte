@@ -50,7 +50,7 @@ data:
     - language:python
     - cdk:low-code
   ab_internal:
-    sl: 300
+    sl: 200
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
