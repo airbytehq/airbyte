@@ -64,10 +64,6 @@ class ZendeskSupportBackoffStrategy(BackoffStrategy):
         return None
 
 
-class ZendeskSupportHttpStatusErrorHandler(HttpStatusErrorHandler):
-    ...
-
-
 class BaseZendeskSupportStream(HttpStream, ABC):
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -541,7 +537,7 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
                 error_message="Not found. Ticket was deleted. If the issue persists, contact Zendesk support.",
             ),
         }
-        return ZendeskSupportHttpStatusErrorHandler(logger=self.logger, max_retries=10, error_mapping=error_mapping)
+        return HttpStatusErrorHandler(logger=self.logger, max_retries=10, error_mapping=error_mapping)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
