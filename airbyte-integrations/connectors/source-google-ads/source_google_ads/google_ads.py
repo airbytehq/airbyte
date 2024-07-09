@@ -217,9 +217,26 @@ class GoogleAds:
     def convert_array(field_value: List[str]) -> List[Dict[str, any]]:
         output_list = []
         for value in field_value:
-            value = value.replace('"', "").split("\n")
-            item_dict = {k.strip(): v.strip() for k, v in (val.split(":", 1) for val in value if ":" in val)}
-            output_list.append(item_dict)
+            lines = value.replace('"', "").split("\n")
+            result = {}
+            stack = [result]
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                if line.endswith('{'):
+                    key = line[:-1].strip()
+                    new_dict = {}
+                    stack[-1][key] = new_dict
+                    stack.append(new_dict)
+                elif line == '}':
+                    stack.pop()
+                elif ':' in line:
+                    key, value = map(str.strip, line.split(':', 1))
+                    stack[-1][key] = value
+                else:
+                    result['description'] = line
+            output_list.append(result)
         return output_list
 
     @staticmethod
