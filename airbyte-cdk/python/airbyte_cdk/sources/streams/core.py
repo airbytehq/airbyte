@@ -330,6 +330,7 @@ class Stream(ABC):
         return True, None
 
     @property
+    @deprecated(version="3.1.0")
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         """
         :return: The AvailabilityStrategy used to check whether this stream is available.
