@@ -251,6 +251,7 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
 class OrganicInAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     intervals = 31
     cursor_field = "event_time"
+    additional_fields = additional_fields.organic_in_app_events
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

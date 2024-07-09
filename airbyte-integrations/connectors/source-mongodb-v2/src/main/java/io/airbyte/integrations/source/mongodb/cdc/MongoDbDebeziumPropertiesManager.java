@@ -49,8 +49,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
-                                          final ConfiguredAirbyteCatalog catalog) {
-    super(properties, config, catalog);
+                                          final ConfiguredAirbyteCatalog catalog,
+                                          final List<String> streamNames) {
+    super(properties, config, catalog, streamNames);
   }
 
   @Override
@@ -82,20 +83,21 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   }
 
   @Override
-  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
+  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final List<String> cdcStreamNames) {
     final Properties properties = new Properties();
 
     // Database/collection selection
-    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams()));
+    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
     properties.setProperty(DATABASE_INCLUDE_LIST_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
     properties.setProperty(CAPTURE_TARGET_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
 
     return properties;
   }
 
-  protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams) {
+  protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams, final List<String> cdcStreamNames) {
     return streams.stream()
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
+        .filter(s -> cdcStreamNames.contains(s))
         .collect(Collectors.joining(","));
   }
 
