@@ -67,11 +67,6 @@ class AbstractSource(Source, ABC):
     _stream_to_instance_map: Dict[str, Stream] = {}
     _slice_logger: SliceLogger = DebugSliceLogger()
 
-    @property
-    def name(self) -> str:
-        """Source name"""
-        return self.__class__.__name__
-
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
@@ -142,6 +137,7 @@ class AbstractSource(Source, ABC):
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
                 except AirbyteTracedException as e:
+                    yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
