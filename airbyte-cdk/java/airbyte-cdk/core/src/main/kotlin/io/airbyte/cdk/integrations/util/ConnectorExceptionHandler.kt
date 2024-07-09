@@ -15,6 +15,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
 import kotlin.system.exitProcess
 import org.jetbrains.annotations.VisibleForTesting
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -30,7 +32,23 @@ data class ConnectorErrorProfile(
     val externalMessage: String,
     val sampleInternalMessage: String,
     val referenceLinks: List<String>,
-)
+)  {
+    init {
+        require(errorClass.isNotBlank()) { "errorClass must not be blank" }
+        require(isValidRegex(regexMatchingPattern)) { "regexMatchingPattern is not a valid regular expression string" }
+        require(externalMessage.isNotBlank()) { "externalMessage must not be blank" }
+        require(sampleInternalMessage.isNotBlank()) { "sampleInternalMessage must not be blank" }
+    }
+
+    private fun isValidRegex(regexString: String): Boolean {
+        return try {
+            Pattern.compile(regexString)
+            true // The regex is valid
+        } catch (e: PatternSyntaxException) {
+            false // The regex is not valid
+        }
+    }
+}
 
 /**
  * This abstract class defines interfaces that will be implemented by individual connectors for
