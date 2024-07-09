@@ -394,16 +394,16 @@ const deployAirbyte = {
     type: "doc",
     id: "deploying-airbyte/deploying-airbyte",
   },
-  items: [
-    {
-      type: "category",
-      label: "Infrastructure",
-      items: [
-        "deploying-airbyte/infrastructure/aws",
-        "deploying-airbyte/infrastructure/gcp",
-        "deploying-airbyte/infrastructure/azure",
-      ],
-    },
+  // items: [
+  //   {
+  //     type: "category",
+  //     label: "Infrastructure",
+  //     items: [
+  //       "deploying-airbyte/infrastructure/aws",
+  //       "deploying-airbyte/infrastructure/gcp",
+  //       "deploying-airbyte/infrastructure/azure",
+  //     ],
+  //   },
 
     {
       type: "category",
@@ -412,7 +412,7 @@ const deployAirbyte = {
         "deploying-airbyte/integrations/storage",
         "deploying-airbyte/integrations/secrets",
         "deploying-airbyte/integrations/database",
-        "deploying-airbyte/integrations/monitoring",
+        // "deploying-airbyte/integrations/monitoring",
         "deploying-airbyte/integrations/ingress",
       ],
     },
