@@ -12,7 +12,7 @@ from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
-from pydantic import BaseModel, Field, PositiveInt, constr
+from pydantic.v1 import BaseModel, Field, PositiveInt, constr
 
 logger = logging.getLogger("airbyte")
 

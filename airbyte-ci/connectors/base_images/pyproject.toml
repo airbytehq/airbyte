@@ -37,6 +37,7 @@ publish =  "base_images.commands:publish_existing_version"
 test = "pytest tests"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]
 mount_docker_socket = true
