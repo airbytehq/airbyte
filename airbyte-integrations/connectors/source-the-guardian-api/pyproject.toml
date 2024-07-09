@@ -17,7 +17,7 @@ include = "source_the_guardian_api"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.7.1"
+airbyte-cdk = "0.60.0"
 
 [tool.poetry.scripts]
 source-the-guardian-api = "source_the_guardian_api.run:run"
