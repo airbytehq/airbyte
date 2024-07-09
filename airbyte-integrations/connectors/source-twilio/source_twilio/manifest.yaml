@@ -1045,19 +1045,6 @@ definitions:
               partition_field: account_sid
               stream:
                 $ref: "#/definitions/streams/Accounts"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
