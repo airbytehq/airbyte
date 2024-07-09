@@ -6,10 +6,10 @@ products: all
 
 The following table describes the support levels of Airbyte connectors.
 
-|                                      | Integration                                 | Marketplace                                                                                              | Custom                                                                                                                                                                                                                                                             |
+|                                      | Airbyte Connector                         | Marketplace                                                                                            | Custom                                                               |
 | ------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Availability**                     | Available to all users                    | Available to all users                                                                                 | Available to all users                                                                                                                                                                                                                                             |
-| **Who builds them?**                 | Either the community or the Airbyte team. | Typically they are built by the community. The Airbyte team may upgrade them to become an Integration at any time. | Anyone can build custom connectors. We recommend using our [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [Low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview). |
+| **Who builds them?**                 | Either the community or the Airbyte team. | Typically they are built by the community. The Airbyte team may upgrade them to become an Airbyte Connector at any time. | Anyone can build custom connectors. We recommend using our [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [Low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview). |
 | **Who maintains them?**              | The Airbyte team                          | Users                                                                                                  | Users                                                                                                                                                                                                                                                              |
 | **Production Readiness**             | Guaranteed by Airbyte                     | Not guaranteed                                                                                         | Not guaranteed                                                                                                                                                                                                                                                     |
 | **Support: Cloud**                   | Supported\*                               | No Support                                                                                             | Supported\*\*                                                                                                                                                                                                                                                      |
@@ -17,7 +17,7 @@ The following table describes the support levels of Airbyte connectors.
 | **Support: Self-Managed Enterprise** | Supported\*                               | No Support                                                                                             | Supported\*\*                                                                                                                                                                                                                                                      |
 | **Support: Community (OSS)**         | Slack Support only                        | No Support                                                                                             | Slack Support only                                                                                                                                                                                                                                                 |
 
-\*For Integrations, Official Support SLAs are only available to customers with Premium
+\*For Airbyte Connectors, Official Support SLAs are only available to customers with Premium
 Support included in their contract. Otherwise, please use our support portal and we will address
 your issues as soon as possible.
 
@@ -25,16 +25,16 @@ your issues as soon as possible.
 Support included in their contract. This support is provided with best efforts, and
 maintenance/upgrades are owned by the customer.
 
-## Integrations
+## Airbyte Connectors
 
-An **Integration** type connector is actively maintained and supported by the Airbyte team and maintains a
+An **Airbyte Connector** is actively maintained and supported by the Airbyte team and maintains a
 high quality bar. It is production ready.
 
-### What you should know about Integrations:
+### What you should know about Airbyte Connectors:
 
-- Integrations are official Airbyte connectors that are available to all users.
+- Airbyte Connectors are officially supported by Airbyte and are available to all users.
 - These connectors have been tested and vetted. They are production ready.
-- Integrations should go through minimal breaking change but in the event an upgrade is
+- Airbyte Connectors should go through minimal breaking change but in the event an upgrade is
   needed users will be given an adequate upgrade window.
 
 ## Marketplace
