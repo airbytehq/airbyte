@@ -7,13 +7,13 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream, HttpClient
+from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_airtable.schema_helpers import SchemaHelpers
 from source_airtable.backoff_strategy import AirtableBackoffStrategy
 from source_airtable.error_mapping import AIRTABLE_ERROR_MAPPING
+from source_airtable.schema_helpers import SchemaHelpers
 
 URL_BASE: str = "https://api.airtable.com/v0/"
 
@@ -21,10 +21,7 @@ URL_BASE: str = "https://api.airtable.com/v0/"
 class AirtableBases(HttpStream):
     def __init__(self, **kwargs):
         backoff_strategy = AirtableBackoffStrategy()
-        error_handler = HttpStatusErrorHandler(
-            logger=self.logger,
-            error_mapping=AIRTABLE_ERROR_MAPPING
-        )
+        error_handler = HttpStatusErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING)
 
         self._http_client = HttpClient(
             name=self.name,
@@ -107,10 +104,7 @@ class AirtableStream(HttpStream, ABC):
         self.table_name = table_name
 
         backoff_strategy = AirtableBackoffStrategy()
-        error_handler = HttpStatusErrorHandler(
-            logger=self.logger,
-            error_mapping=AIRTABLE_ERROR_MAPPING
-        )
+        error_handler = HttpStatusErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING)
 
         self._http_client = HttpClient(
             name=self.name,

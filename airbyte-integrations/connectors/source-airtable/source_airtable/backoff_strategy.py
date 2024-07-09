@@ -4,12 +4,10 @@
 from typing import Any, Optional, Union
 
 import requests
-
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 
 class AirtableBackoffStrategy(BackoffStrategy):
-
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
     ) -> Optional[float]:
