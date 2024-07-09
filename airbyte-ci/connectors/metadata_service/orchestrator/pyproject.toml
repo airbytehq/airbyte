@@ -45,5 +45,6 @@ module_name = "orchestrator"
 test = "pytest tests"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]
