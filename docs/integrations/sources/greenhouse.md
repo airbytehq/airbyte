@@ -74,6 +74,7 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.8 | 2024-07-10 | [39601](https://github.com/airbytehq/airbyte/pull/39601) | Move spec to manifest, fix readme |
 | 0.5.7 | 2024-07-06 | [40882](https://github.com/airbytehq/airbyte/pull/40882) | Update dependencies |
 | 0.5.6 | 2024-06-25 | [40451](https://github.com/airbytehq/airbyte/pull/40451) | Update dependencies |
 | 0.5.5 | 2024-06-22 | [39968](https://github.com/airbytehq/airbyte/pull/39968) | Update dependencies |
