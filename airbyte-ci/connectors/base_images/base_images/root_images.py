@@ -15,5 +15,5 @@ PYTHON_3_9_19 = PublishedImage(
     registry="docker.io",
     repository="python",
     tag="3.9.19-slim-bookworm",
-    sha="088d9217202188598aac37f8db0929345e124a82134ac66b8bb50ee9750b045b",
+    sha="e6941b744e8eb9df6cf6baf323d2b9ad1dfe17d118f5efee14634aff4d47c76f",
 )
