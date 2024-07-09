@@ -7,19 +7,31 @@ from abc import ABC
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from source_airtable.schema_helpers import SchemaHelpers
+from source_airtable.backoff_strategy import AirtableBackoffStrategy
+from source_airtable.error_mapping import AIRTABLE_ERROR_MAPPING
 
 URL_BASE: str = "https://api.airtable.com/v0/"
 
 
 class AirtableBases(HttpStream):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        backoff_strategy = AirtableBackoffStrategy()
+        error_handler = HttpStatusErrorHandler(
+            logger=self.logger,
+            error_mapping=AIRTABLE_ERROR_MAPPING
+        )
+
+        self._http_client = HttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=error_handler,
+            backoff_strategy=backoff_strategy
+        )
 
     url_base = URL_BASE
     primary_key = None
@@ -87,11 +99,24 @@ class AirtableTables(AirtableBases):
 
 class AirtableStream(HttpStream, ABC):
     def __init__(self, stream_path: str, stream_name: str, stream_schema, table_name: str, **kwargs):
+
         self.stream_name = stream_name
-        super().__init__(**kwargs)
         self.stream_path = stream_path
         self.stream_schema = stream_schema
         self.table_name = table_name
+
+        backoff_strategy = AirtableBackoffStrategy()
+        error_handler = HttpStatusErrorHandler(
+            logger=self.logger,
+            error_mapping=AIRTABLE_ERROR_MAPPING
+        )
+
+        self._http_client = HttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=error_handler,
+            backoff_strategy=backoff_strategy,
+        )
 
     url_base = URL_BASE
     primary_key = "id"
