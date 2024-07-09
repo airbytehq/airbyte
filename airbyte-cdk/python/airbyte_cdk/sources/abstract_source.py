@@ -165,7 +165,7 @@ class AbstractSource(Source, ABC):
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                    display_message = stream_instance.get_error_display_message(e)  # type: ignore
+                    display_message = stream_instance.get_error_display_message(e)  # type: ignore[union-attr]
                     stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
                     if display_message:
                         traced_exception = AirbyteTracedException.from_exception(
