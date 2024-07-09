@@ -462,6 +462,14 @@ definitions:
           path: >-
             https://studio.twilio.com/v1/Flows/{{stream_partition.flow_sid}}/Executions/{{stream_partition.execution_sid}}/Steps
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - http_codes: [404]
+                    action: IGNORE
+                    error_message: "The requested resource was not found."
         record_selector:
           type: RecordSelector
           extractor:
@@ -552,24 +560,6 @@ definitions:
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_generated
-              value: '{% set formatted_datetime = format_datetime(record["date_generated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
         - type: AddFields
           fields:
             - type: AddedFieldDefinition
@@ -1002,19 +992,6 @@ definitions:
               partition_field: flow_sid
               stream:
                 $ref: "#/definitions/streams/Flows"
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
