@@ -1030,27 +1030,13 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             https://api.twilio.com/2010-04-01/Accounts/{{
-            stream_partition.account_sid }}/OutgoingCallerIds
+            stream_partition.account_sid }}/OutgoingCallerIds.json
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: Page
-          page_size_option:
-            type: RequestOption
-            field_name: PageSize
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 1000
-            start_from_page: 0
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1523,7 +1509,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - media
+              - media_list
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1575,6 +1561,19 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_created
+              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date_updated
+              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
