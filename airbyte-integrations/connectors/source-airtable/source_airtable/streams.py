@@ -32,31 +32,6 @@ class AirtableBases(HttpStream):
         """
         return "meta/bases"
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if (
-            response.status_code == requests.codes.FORBIDDEN
-            and response.json().get("error", {}).get("type") == "INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND"
-        ):
-            if isinstance(self._session.auth, TokenAuthenticator):
-                error_message = "Personal Access Token has not enough permissions, please add all required permissions to existed one or create new PAT, see docs for more info: https://docs.airbyte.com/integrations/sources/airtable#step-1-set-up-airtable"
-            else:
-                error_message = "Access Token has not enough permissions, please reauthenticate"
-            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
-        if response.status_code == 403 or response.status_code == 422:
-            self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        return super().should_retry(response)
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Based on official docs: https://airtable.com/developers/web/api/rate-limits
-        when 429 is received, we should wait at least 30 sec.
-        """
-        if response.status_code == 429:
-            self.logger.error(f"Stream {self.name}: rate limit exceeded")
-            return 30.0
-
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         """
         The bases list could be more than 100 records, therefore the pagination is required to fetch all of them.
@@ -112,9 +87,9 @@ class AirtableTables(AirtableBases):
 
 class AirtableStream(HttpStream, ABC):
     def __init__(self, stream_path: str, stream_name: str, stream_schema, table_name: str, **kwargs):
+        self.stream_name = stream_name
         super().__init__(**kwargs)
         self.stream_path = stream_path
-        self.stream_name = stream_name
         self.stream_schema = stream_schema
         self.table_name = table_name
 
@@ -126,23 +101,6 @@ class AirtableStream(HttpStream, ABC):
     @property
     def name(self):
         return self.stream_name
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 403 or response.status_code == 422:
-            self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        return super().should_retry(response)
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Based on official docs: https://airtable.com/developers/web/api/rate-limits
-        when 429 is received, we should wait at least 30 sec.
-        """
-        if response.status_code == 429:
-            self.logger.error(f"Stream {self.name}: rate limit exceeded")
-            return 30.0
-        return None
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.stream_schema
