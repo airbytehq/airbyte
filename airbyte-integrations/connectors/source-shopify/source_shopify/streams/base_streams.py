@@ -14,6 +14,8 @@ import pendulum as pdm
 import requests
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_protocol.models import SyncMode
 from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
@@ -37,9 +39,6 @@ class ShopifyStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
-
-    raise_on_http_errors = True
-    max_retries = 5
 
     def __init__(self, config: Dict) -> None:
         super().__init__(authenticator=config["authenticator"])
@@ -110,15 +109,10 @@ class ShopifyStream(HttpStream, ABC):
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
-    def should_retry(self, response: requests.Response) -> bool:
+    def get_error_handler(self) -> Optional[ErrorHandler]:
         known_errors = ShopifyNonRetryableErrors(self.name)
-        status = response.status_code
-        if status in known_errors.keys():
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.warning(known_errors.get(status))
-            return False
-        else:
-            return super().should_retry(response)
+        error_mapping = DEFAULT_ERROR_MAPPING | known_errors
+        return HttpStatusErrorHandler(self.logger, max_retries=5, error_mapping=error_mapping)
 
 
 class ShopifyDeletedEventsStream(ShopifyStream):
@@ -642,7 +636,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
-            session=self._session,
+            session=self._http_client._session,
             base_url=f"{self.url_base}{self.path()}",
             stream_name=self.name,
             query=self.query,
