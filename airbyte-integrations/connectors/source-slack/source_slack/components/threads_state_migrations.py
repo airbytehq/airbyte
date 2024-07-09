@@ -22,5 +22,5 @@ class ThreadsStateMigration(StateMigration):
         :return: The migrated stream_state
         """
         migrated_stream_state = {"state": {"ts": stream_state["float_ts"]},
-                                 "parent_state": {"channel_messages": {"state": stream_state}}}
+                                 "parent_state": {"channel_messages": {"states": []}}}
         return migrated_stream_state
