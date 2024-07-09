@@ -247,4 +247,4 @@ class SubstreamPartitionRouter(PartitionRouter):
 
     @property
     def logger(self) -> logging.Logger:
-        return logging.getLogger(f"airbyte.SubstreamPartitionRouter")
+        return logging.getLogger("airbyte.SubstreamPartitionRouter")
