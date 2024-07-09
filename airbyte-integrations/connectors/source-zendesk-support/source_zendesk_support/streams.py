@@ -132,7 +132,7 @@ class BaseZendeskSupportStream(HttpStream, ABC):
                 error_message="Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support.",
             ),
         }
-        return ZendeskSupportHttpStatusErrorHandler(logger=self.logger, max_retries=10, error_mapping=error_mapping)
+        return HttpStatusErrorHandler(logger=self.logger, max_retries=10, error_mapping=error_mapping)
 
     def read_records(
         self,
