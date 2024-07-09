@@ -21,7 +21,7 @@ async def _build_container(dagger_client: dagger.Client, dockerfile_path: Path) 
         .with_mounted_directory("/tmp/setup_teardown_context", dagger_client.host().directory(os.path.dirname(dockerfile_path)))
         .directory("/tmp/setup_teardown_context")
     )
-    return await dagger_client.container().build(context=workspace, dockerfile="Dockerfile.cat_setup_teardown")
+    return await dagger_client.container().build(context=workspace, dockerfile=dockerfile_path.name)
 
 
 async def _build_client_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path) -> dagger.Container:
