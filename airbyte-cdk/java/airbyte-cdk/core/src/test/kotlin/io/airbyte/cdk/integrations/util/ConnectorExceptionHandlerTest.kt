@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.util
 
+import com.sun.jdi.connect.Connector
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.exceptions.TransientErrorException
@@ -12,12 +13,10 @@ import org.junit.jupiter.api.Test
 
 internal class ConnectorExceptionHandlerTest {
 
-    // Concrete subclass for testing
-    private class TestConnectorExceptionHandler : ConnectorExceptionHandler() {}
+    val exceptionHandler = ConnectorExceptionHandler()
 
     @Test
     fun `test getExternalMessage() with ConfigErrorException`() {
-        val exceptionHandler = TestConnectorExceptionHandler()
         val configError = ConfigErrorException(CONFIG_EXCEPTION_MESSAGE)
         val actualMessage = exceptionHandler.getExternalMessage(configError)
         assertEquals(CONFIG_EXCEPTION_MESSAGE, actualMessage)
@@ -25,7 +24,6 @@ internal class ConnectorExceptionHandlerTest {
 
     @Test
     fun `test getExternalMessage() with TransientErrorException`() {
-        val exceptionHandler = TestConnectorExceptionHandler()
         val configError = TransientErrorException(TRANSIENT_EXCEPTION_MESSAGE)
         val actualMessage = exceptionHandler.getExternalMessage(configError)
         assertEquals(TRANSIENT_EXCEPTION_MESSAGE, actualMessage)
@@ -33,7 +31,6 @@ internal class ConnectorExceptionHandlerTest {
 
     @Test
     fun `test getExternalMessage() with ConnectionErrorException`() {
-        val exceptionHandler = TestConnectorExceptionHandler()
         val testCode = "test code"
         val errorCode = -1
         val connectionErrorException =
@@ -54,7 +51,6 @@ internal class ConnectorExceptionHandlerTest {
     fun `test getExternalMessage() with SQL Exceptions`() {
         // the following exceptions being tested are DB source specific, therefore,
         // we expect a common error gets returned by the default implementation
-        val exceptionHandler = TestConnectorExceptionHandler()
         val recoveryException = SQLException(RECOVERY_EXCEPTION_MESSAGE)
         val actualDisplayMessage = exceptionHandler.getExternalMessage(recoveryException)
         val expectedMessage =
@@ -64,7 +60,6 @@ internal class ConnectorExceptionHandlerTest {
 
     @Test
     fun `test getRootException() with ConfigErrorException being root exception`() {
-        val exceptionHandler = TestConnectorExceptionHandler()
         // creates a nested exception rooted by a config error exception
         val configErrorException = ConfigErrorException(CONFIG_EXCEPTION_MESSAGE)
         val nestedException = Exception(COMMON_EXCEPTION_MESSAGE, configErrorException)
@@ -74,7 +69,6 @@ internal class ConnectorExceptionHandlerTest {
 
     @Test
     fun `test getRootException() with TransientErrorException being root exception`() {
-        val exceptionHandler = TestConnectorExceptionHandler()
         // creates a nested exception rooted by a config error exception
         val transientErrorException = TransientErrorException(TRANSIENT_EXCEPTION_MESSAGE)
         val nestedException = Exception(COMMON_EXCEPTION_MESSAGE, transientErrorException)
@@ -84,7 +78,6 @@ internal class ConnectorExceptionHandlerTest {
 
     @Test
     fun `test getRootException() with three nested exception`() {
-        val exceptionHandler = TestConnectorExceptionHandler()
         // creates a nested exception rooted by a config error exception
         val transientErrorException = TransientErrorException(TRANSIENT_EXCEPTION_MESSAGE)
         val nestedException = Exception(COMMON_EXCEPTION_MESSAGE, transientErrorException)
@@ -95,7 +88,6 @@ internal class ConnectorExceptionHandlerTest {
 
     @Test
     fun `test getRootException() with nested but unrecognizable exception`() {
-        val exceptionHandler = TestConnectorExceptionHandler()
         // creates a nested exception rooted by a config error exception
         val e1 = Exception(COMMON_EXCEPTION_MESSAGE)
         val e2 = Exception(COMMON_EXCEPTION_MESSAGE, e1)
