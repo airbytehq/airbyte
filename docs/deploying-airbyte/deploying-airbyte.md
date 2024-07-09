@@ -8,7 +8,7 @@ The Airbyte platform is a sophisticated data integration platform that enables y
 [Quickstart](./using-airbyte/getting-started/oss-quickstart) guide.
 
 :::tip
-Enterprise Customers should refer to our docs on [Airbyte Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
+Enterprise Customers should follow the steps outlined in our docs on [Airbyte Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
 :::
 
 ## Understanding the Airbyte Deployment

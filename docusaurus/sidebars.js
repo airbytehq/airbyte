@@ -394,7 +394,7 @@ const deployAirbyte = {
     type: "doc",
     id: "deploying-airbyte/deploying-airbyte",
   },
-  // items: [
+  items: [
   //   {
   //     type: "category",
   //     label: "Infrastructure",

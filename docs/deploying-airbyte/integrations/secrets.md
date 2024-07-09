@@ -5,7 +5,7 @@ import TabItem from '@theme/TabItem';
 # Secret Management
 
 
-Airbyte's default behavior is to store encrypted connector secrets on your cluster as Kubernetes secrets. You may <b>optionally</b> opt to instead store connector secrets in an external secret manager such as AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault. Upon creating a new connector, secrets (e.g. OAuth tokens, database passwords) will be written to, then read from the configured secrets manager.
+Airbyte's default behavior is to store encrypted connector secrets on your cluster as Kubernetes secrets.v<b>Optionally</b>, you may instead choose store connector secrets in an external secret manager such as AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault. Upon creating a new connector, secrets (e.g. OAuth tokens, database passwords) will be written to and read from the configured secrets manager.
 
 <details open>
 <summary>Configuring external connector secret management</summary>

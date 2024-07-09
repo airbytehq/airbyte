@@ -51,8 +51,9 @@ global:
       credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
-<!-- </TabItem>
-<TabItem value="Azure" label="Azure blob store">
+</TabItem>
+
+<!-- <TabItem value="Azure" label="Azure blob store">
 
 Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
 
@@ -70,7 +71,7 @@ global:
       credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
-</TabItem> -->
+</TabItem>  -->
 
 </Tabs>
 </details>
