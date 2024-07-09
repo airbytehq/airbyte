@@ -7,6 +7,10 @@ Version 3.0.0 of the CDK updates the `HTTPStream` class by reusing the `HTTPClie
 - `HttpStreamAdapterHttpStatusErrorHandler` and `HttpStreamAdapterBackoffStrategy` adapters are marked as `deprecated`
 - `raise_on_http_errors`, `max_retries`, `max_time`, `retry_factor` are marked as `deprecated`
 
+Exceptions from the `requests` library should no longer be raised when calling `read_records`.
+Therefore, catching exceptions should be updated, and error messages might change.
+See [Migration of Source Zendesk Support](https://github.com/airbytehq/airbyte/pull/41032/commits/4d3a247f36b9826dcea4b98d30fc19802b03d014) as an example.
+
 ### Migration of `should_retry` method
 In case the connector uses custom logic for backoff based on the response from the server, a new method `get_error_handler` should be implemented.
 This method should return instance of [`ErrorHandler`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/error_handlers/error_handler.py).
