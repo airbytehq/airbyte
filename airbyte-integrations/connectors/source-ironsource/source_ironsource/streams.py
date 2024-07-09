@@ -20,7 +20,6 @@ logger = logging.getLogger()
 
 class IronsourceStream(HttpStream, ABC):
     url_base = API_ROOT_V4
-    use_cache = True  # it is used in all streams
     send_fields = True
     page_number = 1
     paginate = True
@@ -121,8 +120,12 @@ class IronsourceSubStream(IronsourceStream, ABC):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
+            parent_records_materialized = [parent_record for parent_record in parent_records]
+
+            active_parent_records = [parent_record for parent_record in parent_records_materialized if not parent_record["isArchived"]]
+
             # iterate over all parent records with current stream_slice
-            for record in parent_records:
+            for record in active_parent_records:
                 yield {"parent": record}
 
     def add_parent_id(self, row: MutableMapping[str, Any], parent_key: str, parent_id: Any):
@@ -141,6 +144,7 @@ class IronsourceSubStream(IronsourceStream, ABC):
 
 
 class Campaigns(IronsourceStream):
+    use_cache = True  # it is used in all streams
     primary_key = "id"
     entity = "campaigns"
 
