@@ -42,7 +42,7 @@ open class ConnectorExceptionHandler {
     val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
         "Could not connect with provided configuration. Error: %s"
 
-    protected open var connectorErrorDictionary: MutableList<ConnectorErrorProfile> =
+    protected open val connectorErrorDictionary: MutableList<ConnectorErrorProfile> =
         mutableListOf()
 
     /**
@@ -117,8 +117,9 @@ open class ConnectorExceptionHandler {
      * specific error messages.
      */
     open fun translateConnectorSpecificErrorMessage(e: Throwable?): String? {
+        if (e == null) return null
         for (error in connectorErrorDictionary) {
-            if (e!!.message?.lowercase()?.matches(error.regexMatchingPattern.toRegex())!!)
+            if (e.message?.lowercase()?.matches(error.regexMatchingPattern.toRegex())!!)
                 return error.externalMessage
         }
         return null
