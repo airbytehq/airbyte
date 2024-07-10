@@ -13,6 +13,37 @@ from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from source_azure_blob_storage import SourceAzureBlobStorage, SourceAzureBlobStorageSpec, SourceAzureBlobStorageStreamReader
 from source_azure_blob_storage.config_migrations import MigrateCredentials, MigrateLegacyConfig
 
+import sys
+
+
+class PrintBuffer:
+    def __init__(self, buffer_size=100):
+        self.buffer = []
+        self.buffer_size = buffer_size
+
+    def write(self, message):
+        self.buffer.append(message)
+        if len(self.buffer) >= self.buffer_size:
+            self.flush()
+
+    def flush(self):
+        if self.buffer:
+            # Combine all buffered messages into a single string
+            combined_message = "".join(self.buffer)
+            # Print combined messages (or handle them in another way)
+            sys.__stdout__.write(combined_message + "\n")
+            # Clear the buffer
+            self.buffer = []
+
+    def __enter__(self):
+        self.old_stdout = sys.stdout
+        sys.stdout = self
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.flush()  # Ensure any remaining messages are flushed
+        sys.stdout = self.old_stdout
+
 
 def run():
     print("Init test without buffers")
@@ -21,6 +52,7 @@ def run():
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
     try:
+        sys.stdout = PrintBuffer()
         source = SourceAzureBlobStorage(
             SourceAzureBlobStorageStreamReader(),
             SourceAzureBlobStorageSpec,
@@ -47,3 +79,5 @@ def run():
         )
     else:
         launch(source, args)
+    finally:
+        sys.stdout.flush()
