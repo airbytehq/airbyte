@@ -31,7 +31,7 @@ So, to get around all of these issues, we instead issue queries that look more l
 
 CTID is a special postgres column that we use to paginate the contents of the table, and this affords us a cursor we can use to break the query into chunks, both keeping the database happy, and allowing Airbyte to resume the sync half-way though if needed. However, if the sync only got partially through a query, the records in that query will be re-sent on the second attempt. If you want your destination to only contain a unique instance for each record, please choose a destination and sync mode that includes deduplication.
 
-This example uses a database source, but the same logic holds for API sources as well. A series of requests to a user's API endpoint might be:
+While this example uses a database source, the same logic holds for API sources. For instance, a series of requests to a user's API endpoint might be:
 
 - `curl -x GET api.com/v1/users?page=1`
 - `curl -x GET api.com/v1/users?page=2`
