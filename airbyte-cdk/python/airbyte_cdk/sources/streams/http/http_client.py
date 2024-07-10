@@ -78,6 +78,7 @@ class HttpClient:
         error_message_parser: Optional[ErrorMessageParser] = None,
         disable_retries: bool = False,
         message_repository: Optional[MessageRepository] = None,
+        exit_on_rate_limit: bool = False,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -104,6 +105,7 @@ class HttpClient:
         self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
         self._disable_retries = disable_retries
         self._message_repository = message_repository
+        self._exit_on_rate_limit = exit_on_rate_limit
 
     @property
     def cache_filename(self) -> str:
@@ -221,10 +223,10 @@ class HttpClient:
         max_time = self._max_time
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
-        rate_limit_backoff_handler = rate_limit_default_backoff_handler(max_tries=max_tries, max_time=max_time)
+        rate_limit_backoff_handler = rate_limit_default_backoff_handler()
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time)
         # backoff handlers wrap _send, so it will always return a response
-        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
+        response = backoff_handler(rate_limit_backoff_handler(user_backoff_handler))(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
         return response
 
@@ -319,6 +321,9 @@ class HttpClient:
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
+
+            retry_endlessly = error_resolution.response_action == ResponseAction.RATE_LIMITED and not self._exit_on_rate_limit
+
             if user_defined_backoff_time:
                 raise UserDefinedBackoffException(
                     backoff=user_defined_backoff_time,
@@ -326,14 +331,11 @@ class HttpClient:
                     response=(response if response is not None else exc),
                     error_message=error_message,
                 )
-            else:
-                if error_resolution.response_action == ResponseAction.RATE_LIMITED:
-                    raise RateLimitBackoffException(
-                        request=request, response=(response if response is not None else exc), error_message=error_message
-                    )
-                raise DefaultBackoffException(
-                    request=request, response=(response if response is not None else exc), error_message=error_message
-                )
+
+            elif retry_endlessly:
+                raise RateLimitBackoffException(request=request, response=response or exc, error_message=error_message)
+
+            raise DefaultBackoffException(request=request, response=response or exc, error_message=error_message)
 
         elif response:
             try:

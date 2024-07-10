@@ -5,6 +5,7 @@
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
@@ -36,5 +37,10 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     """
     # We wrap the return output of read_records() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
-    records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+    if isinstance(stream, DeclarativeStream):
+        stream.retriever.requester.exit_on_rate_limit = True
+        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+    else:
+        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, exit_on_rate_limit=True))
+
     return next(records_for_slice)

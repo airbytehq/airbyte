@@ -310,9 +310,13 @@ class HttpStream(Stream, ABC):
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
+        exit_on_rate_limit: bool = False,
     ) -> Iterable[StreamData]:
         yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
+            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+            stream_slice,
+            stream_state,
+            exit_on_rate_limit,
         )
 
     def _read_pages(
@@ -322,12 +326,13 @@ class HttpStream(Stream, ABC):
         ],
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
+        exit_on_rate_limit: bool = False,
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
         while not pagination_complete:
-            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
+            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token, exit_on_rate_limit)
             yield from records_generator_fn(request, response, stream_state, stream_slice)
 
             next_page_token = self.next_page_token(response)
@@ -342,6 +347,7 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
+        exit_on_rate_limit: bool = False,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
 
         request, response = self._http_client.send_request(
@@ -357,6 +363,7 @@ class HttpStream(Stream, ABC):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             dedupe_query_params=True,
             log_formatter=self.get_log_formatter(),
+            exit_on_rate_limit=exit_on_rate_limit,
         )
 
         return request, response
@@ -417,6 +424,12 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
             return super().interpret_response(response_or_exception)
         should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
         if should_retry:
+            if response_or_exception.status_code == 429:  # type: ignore[union-attr]
+                return ErrorResolution(
+                    response_action=ResponseAction.RATE_LIMITED,
+                    failure_type=FailureType.transient_error,
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                )
             return ErrorResolution(
                 response_action=ResponseAction.RETRY,
                 failure_type=FailureType.transient_error,
