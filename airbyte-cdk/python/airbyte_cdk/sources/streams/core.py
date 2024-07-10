@@ -234,7 +234,7 @@ class Stream(ABC):
             configured_stream=configured_stream,
             logger=self.logger,
             slice_logger=DebugSliceLogger(),
-            stream_state=state or {},
+            stream_state=dict(state) if state else {},  # read() expects MutableMapping instead of Mapping which is used more often
             state_manager=None,
             internal_config=InternalConfig(),
         )
