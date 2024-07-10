@@ -200,7 +200,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 ## Troubleshooting
 
-### Handling "Please reduce the amount of data" response from Facebook Graph API
+### Handling "_Please reduce the amount of data you're asking for, then retry your request_" response from Facebook Graph API
 
 This response indicates that the Facebook Graph API requires you to reduce the fields (amount of data) requested. To resolve this issue:
 
