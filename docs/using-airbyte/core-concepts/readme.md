@@ -87,7 +87,7 @@ Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.
 
 ## Resumability
 
-[Resumability](/understanding-airbyte/resumability.md) is an important principle in Airbyte's approach to reliability. 
+[Resumability](/understanding-airbyte/resumability.md) is an important principle in Airbyte's approach to reliability.
 
 ## Typing and Deduping
 
