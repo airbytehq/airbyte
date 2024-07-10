@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.3.0
+CDK: add incomplete status to availability check during read
+
+## 3.2.1
+CDK: flush buffer for each RATE_LIMITED message print
+
+## 3.2.0
+CDK: add running stream status with rate limit reason to backoff approach
+
+## 3.1.0
+CDK: add incomplete stream status to nonexistent stream handling
+
 ## 3.0.0
 Integrate HttpClient into HttpStream class. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
 
