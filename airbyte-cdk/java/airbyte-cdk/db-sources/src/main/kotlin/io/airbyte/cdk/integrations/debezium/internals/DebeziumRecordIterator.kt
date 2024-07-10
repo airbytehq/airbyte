@@ -190,6 +190,9 @@ class DebeziumRecordIterator<T>(
                 )
             }
             this.tsLastHeartbeat = null
+            if (!receivedFirstRecord) {
+                LOGGER.info { "Received first record from debezium." }
+            }
             this.receivedFirstRecord = true
             this.maxInstanceOfNoRecordsFound = 0
             return changeEventWithMetadata
@@ -250,15 +253,19 @@ class DebeziumRecordIterator<T>(
     }
 
     private fun heartbeatPosNotChanging(): Boolean {
-        // Closing debezium due to heartbeat position not changing only exists as an escape hatch
-        // for
-        // testing setups. In production, we rely on the platform heartbeats to kill the sync
-        if (!isTest() || this.tsLastHeartbeat == null) {
+        if (this.tsLastHeartbeat == null) {
+            return false
+        } else if (!isTest() && receivedFirstRecord) {
+            // Closing debezium due to heartbeat position not changing only exists as an escape hatch
+            // for testing setups. In production, we rely on the platform heartbeats to kill the sync
+            // ONLY if we haven't received a record from Debezium. If a record has not been received
+            // from Debezium and the heartbeat isn't changing, the sync should be shut down due to
+            // heartbeat position not changing.
             return false
         }
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
-        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
+        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime) > 0
     }
 
     private fun requestClose(closeLogMessage: String, closeReason: DebeziumCloseReason) {
