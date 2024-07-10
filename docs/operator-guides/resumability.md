@@ -37,7 +37,7 @@ This example uses a database source, but the same logic holds for API sources as
 - `curl -x GET api.com/v1/users?page=2`
 - `...`
 
-Resumability applies to all sync modes, including standard Full Refresh + Overwrite and Full Refresh + Append syncs, along with [Refreshes]().
+Resumability applies to all sync modes, including standard Full Refresh + Overwrite and Full Refresh + Append syncs, along with [Refreshes](./refreshes.md).
 
 ## Resumable Full Refresh
 
