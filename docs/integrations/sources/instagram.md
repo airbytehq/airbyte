@@ -116,6 +116,7 @@ Instagram limits the number of requests that can be made at a time. See Facebook
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 | :------ |:-----------|:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
+| 3.0.18 | 2024-07-09 | [41109](https://github.com/airbytehq/airbyte/pull/41109) | Update dependencies |
 | 3.0.17 | 2024-07-08 | [41046](https://github.com/airbytehq/airbyte/pull/41046) | Use latest `CDK` version possible |
 | 3.0.16 | 2024-07-06 | [40903](https://github.com/airbytehq/airbyte/pull/40903) | Update dependencies |
 | 3.0.15 | 2024-07-02 | [40569](https://github.com/airbytehq/airbyte/pull/40569) | Migrate MediaInsights and StoryInsights to low-code |
