@@ -198,6 +198,16 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 |      array       |    array     |
 |      object      |    object    |
 
+## Troubleshooting
+
+### Handling "Please reduce the amount of data" response from Facebook Graph API
+
+This response indicates that the Facebook Graph API requires you to reduce the fields (amount of data) requested. To resolve this issue:
+
+1. **Go to the Schema Tab**: Navigate to the schema tab of your connection.
+2. **Select the Source**: Click on the source that is having issues with synchronization.
+3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
+
 ## Changelog
 
 <details>
