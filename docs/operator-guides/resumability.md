@@ -44,7 +44,7 @@ Resumability applies to all sync modes, including standard Full Refresh + Overwr
 Resumability is an inherent feature of Incremental syncs. What does it mean for Full Refresh syncs?
 
 
-Although incremental syncs are superior in all cases, they require a cursor, which is not always possible.
+Although incremental syncs are superior in all cases, they require implementing a cursor, which is not always possible.
 
 Consider a data analyst without direct access to the underlying database. Not being able to introspect schemas makes identifying and selecting the correct cursor column a challenge.
 In fact, there might not be a cursor column to start! Full Refresh, in this case, is the only option.
