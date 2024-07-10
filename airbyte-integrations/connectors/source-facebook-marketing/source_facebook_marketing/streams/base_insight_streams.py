@@ -3,6 +3,7 @@
 #
 
 import logging
+from functools import cache
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -395,6 +396,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                     schema["properties"].update({object_breakdown_id: breakdowns_properties[object_breakdown_id]})
         return schema
 
+    @cache
     def fields(self, **kwargs) -> List[str]:
         """
         List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema

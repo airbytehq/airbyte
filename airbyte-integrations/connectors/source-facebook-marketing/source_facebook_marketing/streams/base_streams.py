@@ -5,6 +5,7 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
+from functools import cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
@@ -57,6 +58,7 @@ class FBMarketingStream(Stream, ABC):
         self._fields = None
         self._saved_fields = None
 
+    @cache
     def fields(self, **kwargs) -> List[str]:
         """
         List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
