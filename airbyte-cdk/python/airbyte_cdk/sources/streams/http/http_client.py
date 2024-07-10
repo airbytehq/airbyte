@@ -204,7 +204,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
-        exit_on_rate_limit: bool = False,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
         """
         Sends a request with retry logic.
@@ -234,7 +234,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
-        exit_on_rate_limit: bool = False,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
 
         if request not in self._request_attempt_count:
@@ -335,7 +335,9 @@ class HttpClient:
             elif retry_endlessly:
                 raise RateLimitBackoffException(request=request, response=response or exc, error_message=error_message)
 
-            raise DefaultBackoffException(request=request, response=response or exc, error_message=error_message)
+            raise DefaultBackoffException(
+                request=request, response=(response if response is not None else exc), error_message=error_message
+            )
 
         elif response:
             try:
@@ -357,7 +359,7 @@ class HttpClient:
         data: Optional[Union[str, Mapping[str, Any]]] = None,
         dedupe_query_params: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
-        exit_on_rate_limit: bool = False,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
         Prepares and sends request and return request and response objects.
