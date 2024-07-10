@@ -37,7 +37,7 @@ While this example uses a database source, the same logic holds for API sources.
 - `curl -x GET api.com/v1/users?page=2`
 - `...`
 
-Resumability applies to all sync modes, including standard Full Refresh + Overwrite and Full Refresh + Append syncs, along with [Refreshes](./refreshes.md).
+Resumability applies to all sync modes, including standard Full Refresh + Overwrite and Full Refresh + Append syncs, along with [Refreshes](./../operator-guides/refreshes.md).
 
 ## Resumable Full Refresh
 
@@ -68,9 +68,9 @@ The following Database Sources support Resumable Full Refresh as of 9th July 202
    1) Tables without primary keys do not support Resumable Full Refresh.
 2) **Source MsSql >= 4.0.27**
    1) Tables without primary keys do not support Resumable Full Refresh.
-3) **Source Postgres >version**
+3) **Source Postgres >= 3.4.10**
    1) views do not support Resumable Full Refresh.
-4) **Source Mongo >version**
+4) **Source Mongo >= 1.3.14**
 
 The following API Sources support Resumable Full Refresh as of 9th July 2024:
 1) All Sources on Python CDK version 1.1.0 and above.
