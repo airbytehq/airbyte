@@ -10,4 +10,6 @@ acceptance_tests:
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
           setup_command:
-            - "python ./hook.py"
+            - "python"
+            - "./hook.py"
+        configured_catalog_path: "integration_tests/catalog_copy.json"

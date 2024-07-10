@@ -1,5 +1,5 @@
 # Use a base image with PostgreSQL client
-FROM python:3.9-slim
+FROM python:3.9
 
 RUN apt-get update && apt-get install -y \
     libpq-dev \
@@ -11,6 +11,7 @@ WORKDIR /usr/src/app
 # Copy the script to the container
 COPY seed/hook.py .
 COPY seed/requirement.txt .
+COPY configured_catalog.json .
 
 RUN ls .
 

@@ -3,16 +3,20 @@ from psycopg2 import sql
 import datetime
 import random
 import string
+import json
 
 def connect_to_db():
+    f = open('/connector/secrets/config.json')
+    secret = json.load(f)
+
     try:
         # Define connection parameters
         connection = psycopg2.connect(
-            dbname="postgres",
-            user="postgres",
-            password="b{;v|l]qxBD~fYJ`",
-            host="34.23.30.27",
-            port="5432"
+            dbname=secret.database,
+            user=secret.username,
+            password=secret.password,
+            host=secret.host,
+            port=secret.port
         )
         print("Connected to the database successfully")
         return connection
@@ -47,11 +51,45 @@ def create_schema(connection, schema_name):
         cursor.execute(create_schema_query)
         connection.commit()
         print(f"Schema '{schema_name}' created successfully")
+
     except Exception as error:
         print(f"Error creating schema: {error}")
         connection.rollback()
     finally:
         cursor.close()
+
+def write_catalog_file():
+    with open("/connector/integration_tests/catalog_copy.json", "w") as file:
+        file.write("""{
+                   "streams": [
+            {
+                "stream": {
+                    "name": "id_and_name",
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "id": {
+                                "type": "number",
+                                "airbyte_type": "integer"
+                            }
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "default_cursor_field": [],
+                    "source_defined_primary_key": [],
+                    "namespace": "public"
+                },
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "append",
+                "cursor_field": ["id"],
+                "user_defined_primary_key": ["id"]
+            }
+        ]
+        }
+    """)
 
 def create_table(connection, schema_name, table_name):
     try:
@@ -79,29 +117,30 @@ def generate_date_with_suffix():
     return f"{current_date}-{suffix}"
 
 def main():
-    schema_name = generate_date_with_suffix()
-    table_name = "id_and_name"
-
-    # Define the records to be inserted
-    records = [
-        (1, 'value1_2'),
-        (2, 'value2_2'),
-        (3, 'value3_2')
-    ]
-
-    # Connect to the database
-    connection = connect_to_db()
-
-    if connection:
-        # Create the schema
-        create_schema(connection, schema_name)
-        create_table(connection, schema_name, table_name)
-
-        # Insert the records
-        insert_records(connection, schema_name, table_name, records)
-
-        # Close the connection
-        connection.close()
+    write_catalog_file()
+    # schema_name = generate_date_with_suffix()
+    # table_name = "id_and_name"
+    #
+    # # Define the records to be inserted
+    # records = [
+    #     (1, 'value1_2'),
+    #     (2, 'value2_2'),
+    #     (3, 'value3_2')
+    # ]
+    #
+    # # Connect to the database
+    # connection = connect_to_db()
+    #
+    # if connection:
+    #     # Create the schema
+    #     create_schema(connection, schema_name)
+    #     create_table(connection, schema_name, table_name)
+    #
+    #     # Insert the records
+    #     insert_records(connection, schema_name, table_name, records)
+    #
+    #     # Close the connection
+    #     connection.close()
 
 if __name__ == "__main__":
     main()
