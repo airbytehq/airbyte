@@ -4,7 +4,7 @@
 
 import logging
 import os
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
@@ -55,7 +55,7 @@ class HttpRequester(Requester):
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
     stream_response: bool = False
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
