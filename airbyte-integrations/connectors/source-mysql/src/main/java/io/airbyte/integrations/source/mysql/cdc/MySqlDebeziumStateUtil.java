@@ -22,13 +22,13 @@ import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumProper
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
+import io.debezium.connector.binlog.gtid.GtidSet;
 import io.debezium.connector.common.OffsetReader;
-import io.debezium.connector.mysql.GtidSet;
 import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.connector.mysql.MySqlOffsetContext;
 import io.debezium.connector.mysql.MySqlOffsetContext.Loader;
 import io.debezium.connector.mysql.MySqlPartition;
-import io.debezium.connector.mysql.strategy.mysql.MySqlGtidSet;
+import io.debezium.connector.mysql.gtid.MySqlGtidSet;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
