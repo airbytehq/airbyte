@@ -9,6 +9,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
+
 def get_first_stream_slice(stream: Stream) -> Optional[Mapping[str, Any]]:
     """
     Gets the first stream_slice from a given stream's stream_slices.
@@ -41,8 +42,7 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
         stream.retriever.requester.exit_on_rate_limit = True  # type: ignore[attr-defined]
 
     if isinstance(stream, HttpStream):
-        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice,
-                                                     exit_on_rate_limit=True))
+        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, exit_on_rate_limit=True))
     else:
         records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
 
