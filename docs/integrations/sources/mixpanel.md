@@ -58,7 +58,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.3.0 | 2024-07-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate to CDK v1.8.0 |
+| 3.3.0 | 2024-07-11 | [41608](https://github.com/airbytehq/airbyte/pull/41608) | Migrate to CDK v1.8.0 |
 | 3.2.3 | 2024-07-10 | [41420](https://github.com/airbytehq/airbyte/pull/41420) | Update dependencies |
 | 3.2.2 | 2024-07-09 | [41289](https://github.com/airbytehq/airbyte/pull/41289) | Update dependencies |
 | 3.2.1 | 2024-07-06 | [40806](https://github.com/airbytehq/airbyte/pull/40806) | Update dependencies |
