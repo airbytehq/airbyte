@@ -216,6 +216,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 3.3.10 | 2024-07-10 | [41039](https://github.com/airbytehq/airbyte/pull/41039) | Pick request fields from configured json schema properties if present  |
+| 3.3.10 | 2024-07-10 | [41458](https://github.com/airbytehq/airbyte/pull/41458) | Update dependencies |
 | 3.3.9 | 2024-07-09 | [41106](https://github.com/airbytehq/airbyte/pull/41106) | Update dependencies |
 | 3.3.8 | 2024-07-06 | [40934](https://github.com/airbytehq/airbyte/pull/40934) | Update dependencies |
 | 3.3.7 | 2024-07-01 | [40645](https://github.com/airbytehq/airbyte/pull/40645) | Use latest `CDK` version possible |
