@@ -7,8 +7,6 @@ import TabItem from '@theme/TabItem';
 
 To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a simplified definition of an ingress resource you could use for Self-Managed Enterprise:
 
-<details open>
-<summary>Ingress configuration setup steps</summary>
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 
@@ -108,4 +106,3 @@ The ALB controller uses a `ServiceAccount` that requires the [following IAM poli
 
 </TabItem>
 </Tabs>
-</details>

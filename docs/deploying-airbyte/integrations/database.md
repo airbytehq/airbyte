@@ -4,12 +4,26 @@ For Self-Managed Enterprise deployments, we recommend using a dedicated database
 
 The following instructions assume that you've already configured a Postgres instance:
 
-<details open>
-<summary>External database setup</summary>
+## Secrets
 
-Add external database details to your `values.yaml` file. This disables the default internal Postgres database (`airbyte/db`), and configures your external Postgres database. You can override all of the values below by setting them in the airbyte-config-secrets or set them directly in the `values.yaml` file. **The database password is a special case in that it must be set in the airbyte-config-secrets.** 
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+  # Database Secrets
+  ## database-host: ## e.g. database.internla
+  ## database-port: ## e.g. 5432
+  ## database-name: ## e.g. airbyte
+  ## database-user: ## e.g. airbyte
+  database-password: ## e.g. password
+```
 
-Here is an example configuration:
+## Values
+
+Add external database details to your `values.yaml` file. This disables the default internal Postgres database (`airbyte/db`), and configures your external Postgres database. You can override all of the values below by setting them in the airbyte-config-secrets or set them directly in the `values.yaml` file. **The database password is a special case in that it must be set in the [airbyte-config-secrets](#secrets).** 
 
 ```yaml
 postgresql:
@@ -43,4 +57,3 @@ global:
     passwordSecretKey: "" # e.g."database-password"
 ```
 
-</details>
