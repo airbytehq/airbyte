@@ -72,6 +72,7 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 0.3.3 | 2024-07-09 | [41312](https://github.com/airbytehq/airbyte/pull/41312) | Update dependencies |
 | 0.3.2 | 2024-07-06 | [40863](https://github.com/airbytehq/airbyte/pull/40863) | Update dependencies |
 | 0.3.1 | 2024-07-02 | [40693](https://github.com/airbytehq/airbyte/pull/40693) | Corrects subscription stream fields |
 | 0.2.1 | 2023-11-08 | [31489](https://github.com/airbytehq/airbyte/pull/31489) | Fix transaction stream custom fields |
