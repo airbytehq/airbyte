@@ -58,6 +58,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.2 | 2024-07-09 | [41289](https://github.com/airbytehq/airbyte/pull/41289) | Update dependencies |
 | 3.2.1 | 2024-07-06 | [40806](https://github.com/airbytehq/airbyte/pull/40806) | Update dependencies |
 | 3.2.0 | 2024-06-26 | [40607](https://github.com/airbytehq/airbyte/pull/40607) | Make engage stream really incremental |
 | 3.1.5 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |

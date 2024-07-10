@@ -84,6 +84,7 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.10 | 2024-07-09 | [41173](https://github.com/airbytehq/airbyte/pull/41173) | Update dependencies |
 | 0.2.9 | 2024-07-06 | [40836](https://github.com/airbytehq/airbyte/pull/40836) | Update dependencies |
 | 0.2.8 | 2024-06-29 | [40630](https://github.com/airbytehq/airbyte/pull/40630) | Update dependencies |
 | 0.2.7 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
