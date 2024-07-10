@@ -410,11 +410,15 @@ class AdsInsights(FBMarketingIncrementalStream):
             else ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         )
         self._fields = list(schema.get("properties", {}).keys())
-
+        
+        # Check that no breakdowns are injected from configured catalog schema (review "get_json_schema" doc).
+        removable_keys = list(self.breakdowns if self.breakdowns else [])
         # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
-        try:
-            self._fields.remove("wish_bid")
-        except ValueError:
-            pass
+        removable_keys.append("wish_bid")
+        for removable_key in removable_keys:
+            try:
+                self._fields.remove(removable_key)
+            except ValueError:
+                pass
 
         return self._fields
