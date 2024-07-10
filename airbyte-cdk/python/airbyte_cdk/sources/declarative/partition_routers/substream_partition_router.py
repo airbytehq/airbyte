@@ -136,6 +136,9 @@ class SubstreamPartitionRouter(PartitionRouter):
 
                 stream_slices_for_parent = []
                 previous_associated_slice = None
+
+                # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
+                # not support either substreams or RFR, but something that needs to be considered once we do
                 for parent_record in parent_stream.read_stateless():
                     parent_partition = None
                     parent_associated_slice = None

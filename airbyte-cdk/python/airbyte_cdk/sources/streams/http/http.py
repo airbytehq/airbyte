@@ -382,6 +382,8 @@ class HttpSubStream(HttpStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
+        # not support either substreams or RFR, but something that needs to be considered once we do
         for parent_record in self.parent.read_stateless():
             # Skip non-records (eg AirbyteLogMessage)
             if isinstance(parent_record, AirbyteMessage):
