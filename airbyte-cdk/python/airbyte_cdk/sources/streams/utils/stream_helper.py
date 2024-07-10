@@ -7,9 +7,9 @@ from typing import Any, Mapping, Optional
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
-
-def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
+def get_first_stream_slice(stream: Stream) -> Optional[Mapping[str, Any]]:
     """
     Gets the first stream_slice from a given stream's stream_slices.
     :param stream: stream
@@ -24,7 +24,7 @@ def get_first_stream_slice(stream) -> Optional[Mapping[str, Any]]:
             sync_mode=SyncMode.full_refresh,
         )
     )
-    return next(slices)
+    return next(slices)  # type: ignore[no-any-return]
 
 
 def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[str, Any]]) -> StreamData:
@@ -38,9 +38,12 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     # We wrap the return output of read_records() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
     if isinstance(stream, DeclarativeStream):
-        stream.retriever.requester.exit_on_rate_limit = True
-        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+        stream.retriever.requester.exit_on_rate_limit = True  # type: ignore[attr-defined]
+
+    if isinstance(stream, HttpStream):
+        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice,
+                                                     exit_on_rate_limit=True))
     else:
-        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, exit_on_rate_limit=True))
+        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
 
     return next(records_for_slice)

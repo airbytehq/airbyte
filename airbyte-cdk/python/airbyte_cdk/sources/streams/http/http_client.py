@@ -78,7 +78,6 @@ class HttpClient:
         error_message_parser: Optional[ErrorMessageParser] = None,
         disable_retries: bool = False,
         message_repository: Optional[MessageRepository] = None,
-        exit_on_rate_limit: bool = False,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -105,7 +104,6 @@ class HttpClient:
         self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
         self._disable_retries = disable_retries
         self._message_repository = message_repository
-        self._exit_on_rate_limit = exit_on_rate_limit
 
     @property
     def cache_filename(self) -> str:
@@ -206,6 +204,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: bool = False,
     ) -> requests.Response:
         """
         Sends a request with retry logic.
@@ -226,7 +225,7 @@ class HttpClient:
         rate_limit_backoff_handler = rate_limit_default_backoff_handler()
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time)
         # backoff handlers wrap _send, so it will always return a response
-        response = backoff_handler(rate_limit_backoff_handler(user_backoff_handler))(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
+        response = backoff_handler(rate_limit_backoff_handler(user_backoff_handler))(request, request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
         return response
 
@@ -235,6 +234,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: bool = False,
     ) -> requests.Response:
 
         if request not in self._request_attempt_count:
@@ -322,7 +322,7 @@ class HttpClient:
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
 
-            retry_endlessly = error_resolution.response_action == ResponseAction.RATE_LIMITED and not self._exit_on_rate_limit
+            retry_endlessly = error_resolution.response_action == ResponseAction.RATE_LIMITED and not exit_on_rate_limit
 
             if user_defined_backoff_time:
                 raise UserDefinedBackoffException(
@@ -357,6 +357,7 @@ class HttpClient:
         data: Optional[Union[str, Mapping[str, Any]]] = None,
         dedupe_query_params: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: bool = False,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
         Prepares and sends request and return request and response objects.
@@ -366,6 +367,6 @@ class HttpClient:
             http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
         )
 
-        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs, log_formatter=log_formatter)
+        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit)
 
         return request, response
