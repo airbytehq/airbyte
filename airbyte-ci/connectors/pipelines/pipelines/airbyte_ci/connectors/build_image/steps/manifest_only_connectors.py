@@ -7,11 +7,11 @@ from typing import Any
 
 from dagger import Container, Platform
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
-from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase, apply_airbyte_docker_labels
+from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import MANIFEST_FILE_PATH
 from pipelines.models.steps import StepResult
-from pydash.objects import get
+from pydash.objects import get  # type: ignore
 
 
 class BuildConnectorImages(BuildConnectorImagesBase):

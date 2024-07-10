@@ -591,6 +591,29 @@ class Connector:
         return f"{self.connector_type}DefinitionId"
 
     @property
+    def is_enabled_in_any_registry(self) -> bool:
+        """Check if the connector is enabled in the registry.
+
+        Example:
+          - {registries: null} -> false
+          - {registries: {oss: {enabled: false }}} -> false
+          - {registries: {oss: {enabled: true }}} -> true
+          - {registries: {cloud: {enabled: true }}} -> true
+
+        Returns:
+            bool: True if the connector is enabled, False otherwise.
+        """
+        registries = self.metadata.get("registries")
+        if not registries:
+            return False
+
+        for registry in registries.values():
+            if registry.get("enabled"):
+                return True
+
+        return False
+
+    @property
     def is_released(self) -> bool:
         """Pull the the OSS registry and check if it the current definition ID and docker image tag are in the registry.
         If there is a match it means the connector is released.
