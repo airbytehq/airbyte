@@ -6,11 +6,11 @@ data:
     hosts:
       - api.clockify.me
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:1.2.3@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696
   connectorSubtype: api
   connectorType: source
   definitionId: e71aae8a-5143-11ed-bdc3-0242ac120002
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   dockerRepository: airbyte/source-clockify
   documentationUrl: https://docs.airbyte.com/integrations/sources/clockify
   githubIssueLabel: source-clockify
