@@ -23,7 +23,7 @@ Consider a Postgres source. We could build a query that does `select * from user
 - Tables over a certain size won’t be able to fit in memory, again dramatically slowing down your database while syncing (or even crashing the database)
 - There is no logical cursor that Airbyte can use as a placeholder to resume from if we need to retry the sync.
 
-So, to get around all of these issues, we instead issue queries that look more like this:
+To get around all of these issues, we issue queries that look like this:
 
 - `select * from users where CTID >= X AND CTID < Y`
 - `select * from users where CTID >= Y AND CTID < Z`
