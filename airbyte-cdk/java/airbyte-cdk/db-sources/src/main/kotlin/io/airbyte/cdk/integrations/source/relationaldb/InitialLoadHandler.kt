@@ -10,7 +10,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.Optional
 
 interface InitialLoadHandler<T> {
     fun getIteratorForStream(

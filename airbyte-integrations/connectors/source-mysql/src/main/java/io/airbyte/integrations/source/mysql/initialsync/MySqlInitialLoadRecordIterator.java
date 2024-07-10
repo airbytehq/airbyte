@@ -98,13 +98,12 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   protected AirbyteRecordData computeNext() {
     if (isCdcSync && cdcInitialLoadTimeout.isPresent()
         && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
-      LOGGER.info(String.format(
+      final String cdcInitialLoadTimeoutMessage = String.format(
           "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
-          getAirbyteStream().get(), cdcInitialLoadTimeout.get()));
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
-      throw new TransientErrorException(String.format(
-          "Initial load for table %s has taken longer than %s. Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume.",
-          getAirbyteStream().get(), cdcInitialLoadTimeout.get()));
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
     }
     if (shouldBuildNextSubquery()) {
       try {
