@@ -167,6 +167,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.6.9 | 2024-07-10 | [41390](https://github.com/airbytehq/airbyte/pull/41390) | Update dependencies |
 | 2.6.8 | 2024-07-09 | [40025](https://github.com/airbytehq/airbyte/pull/40025) | Update dependencies |
 | 2.6.7 | 2024-07-09 | [41032](https://github.com/airbytehq/airbyte/pull/41032) | Use latest `CDK`: 3.0.0 |
 | 2.6.6 | 2024-06-27 | [40592](https://github.com/airbytehq/airbyte/pull/40592) | Updated to use latest `CDK` version, fixed `cursor pagination` logic |
