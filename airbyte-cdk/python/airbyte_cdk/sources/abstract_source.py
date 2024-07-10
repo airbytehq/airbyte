@@ -131,6 +131,7 @@ class AbstractSource(Source, ABC):
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
                     if not stream_is_available:
                         logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
+                        yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
                         continue
                     logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
