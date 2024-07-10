@@ -50,6 +50,11 @@ brew upgrade abctl
 
 **1: Download the latest release of `abctl` [here](https://github.com/airbytehq/abctl/releases)**
 
+<a id="download-button" class="button button--primary" data-repo="username/repo-name" href="#" download>Download</a>
+
+<script src="/js/download-button.js"></script>
+
+<DownloadButton repo="username/repo-name" />
 :::info
 Be sure to download the file that is compatible with your machine's processor architecture. 
 :::
