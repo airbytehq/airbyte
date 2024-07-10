@@ -12,7 +12,6 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import (
     DefaultBackoffException,
-    RateLimitBackoffException,
     RequestBodyException,
     UserDefinedBackoffException,
 )
@@ -485,6 +484,7 @@ def test_backoff_strategy_max_time():
         with pytest.raises(UserDefinedBackoffException):
             http_client.send_request(http_method="get", url="https://test_base_url.com/v1/endpoint", request_kwargs={})
         assert mocked_send.call_count == 2
+
 
 @pytest.mark.usefixtures("mock_sleep")
 def test_send_emit_stream_status_with_rate_limit_reason(capsys):
