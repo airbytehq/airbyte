@@ -89,7 +89,7 @@ We recommend iterating on this YAML file is via the [connector builder UI](https
 
 ## Configuring the YAML file
 
-The low-code framework involves editing a boilerplate YAML file. The general structure of the YAML file is as follows:
+The low-code framework involves editing the Connector Manifest a boilerplate YAML file. The general structure of the YAML file is as follows:
 
 ```
 version: "0.1.0"
