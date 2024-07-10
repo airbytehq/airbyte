@@ -112,6 +112,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject            |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------|
+| 0.1.2 | 2024-07-09 | [41123](https://github.com/airbytehq/airbyte/pull/41123) | Update dependencies |
 | 0.1.1 | 2024-07-06 | [40922](https://github.com/airbytehq/airbyte/pull/40922) | Update dependencies |
 | 0.1.0 | 2024-06-27 | [40562](https://github.com/airbytehq/airbyte/pull/40562) | New Source: Clazar |
 
