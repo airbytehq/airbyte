@@ -17,7 +17,6 @@ public class MySqlSourceExceptionHandlerTest {
   @BeforeEach
   void setUp() {
     exceptionHandler = new MySqlSourceExceptionHandler();
-    exceptionHandler.initializeErrorDictionary();
   }
 
   @Test

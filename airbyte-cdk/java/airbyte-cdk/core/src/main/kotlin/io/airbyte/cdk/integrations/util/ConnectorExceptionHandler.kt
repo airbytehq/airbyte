@@ -34,7 +34,6 @@ data class ConnectorErrorProfile(
     val referenceLinks: List<String>,
 )  {
     init {
-        require(errorClass.isNotBlank()) { "errorClass must not be blank" }
         require(isValidRegex(regexMatchingPattern)) { "regexMatchingPattern is not a valid regular expression string" }
         require(externalMessage.isNotBlank()) { "externalMessage must not be blank" }
         require(sampleInternalMessage.isNotBlank()) { "sampleInternalMessage must not be blank" }
@@ -43,9 +42,9 @@ data class ConnectorErrorProfile(
     private fun isValidRegex(regexString: String): Boolean {
         return try {
             Pattern.compile(regexString)
-            true // The regex is valid
+            true
         } catch (e: PatternSyntaxException) {
-            false // The regex is not valid
+            false
         }
     }
 }
@@ -55,9 +54,7 @@ data class ConnectorErrorProfile(
  * translating internal exception error messages to external user-friendly error messages.
  */
 open class ConnectorExceptionHandler {
-    @kotlin.jvm.JvmField
-    val DATABASE_READ_ERROR: String = "Encountered an error while reading the database"
-    val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
+    private val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
         "Could not connect with provided configuration. Error: %s"
 
     protected open val connectorErrorDictionary: MutableList<ConnectorErrorProfile> =

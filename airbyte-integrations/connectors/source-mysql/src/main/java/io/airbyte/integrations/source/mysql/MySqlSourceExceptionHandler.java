@@ -10,6 +10,11 @@ import java.util.ArrayList;
 
 public class MySqlSourceExceptionHandler extends ConnectorExceptionHandler {
 
+  @SuppressWarnings("this-escape")
+  public MySqlSourceExceptionHandler() {
+    initializeErrorDictionary();
+  }
+
   @Override
   public void initializeErrorDictionary() {
     super.initializeErrorDictionary();

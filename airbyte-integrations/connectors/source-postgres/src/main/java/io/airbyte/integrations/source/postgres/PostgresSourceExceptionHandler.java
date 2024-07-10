@@ -11,9 +11,16 @@ import java.util.Arrays;
 
 public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
 
-  String POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE =
+  private String POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE =
       "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
           "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds";
+
+  private String DATABASE_READ_ERROR  = "Encountered an error while reading the database";
+
+  @SuppressWarnings("this-escape")
+  public PostgresSourceExceptionHandler() {
+    initializeErrorDictionary();
+  }
 
   @Override
   public void initializeErrorDictionary() {
@@ -25,7 +32,7 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
             "Postgres SQL Exception",
             ".*temporary file size exceeds temp_file_limit.*",
             FailureType.TRANSIENT,
-            this.DATABASE_READ_ERROR,
+            DATABASE_READ_ERROR,
             "org.postgresql.util.PSQLException: ERROR: temporary file size exceeds temp_file_limit",
             Arrays.asList("https://github.com/airbytehq/airbyte/issues/27090",
                 "https://github.com/airbytehq/oncall/issues/1822")));
@@ -35,7 +42,7 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
             "Postgres  SQL Exception",
             ".*an i/o error occurred while sending to the backend.*",
             FailureType.TRANSIENT,
-            this.DATABASE_READ_ERROR,
+            DATABASE_READ_ERROR,
             "org.postgresql.util.PSQLException: An I/O error occured while sending to the backend.",
             new ArrayList<>()));
 
@@ -44,7 +51,7 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
             "Postgres Query Conflicts",
             ".*due to conflict with recovery.*",
             FailureType.TRANSIENT,
-            this.POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE,
+            POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE,
             "ERROR: canceling statement due to conflict with recovery.",
             new ArrayList<>()));
   }

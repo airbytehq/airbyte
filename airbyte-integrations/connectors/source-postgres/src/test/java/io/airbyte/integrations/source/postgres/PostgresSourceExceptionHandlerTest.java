@@ -16,14 +16,13 @@ public class PostgresSourceExceptionHandlerTest {
   @BeforeEach
   void setUp() {
     exceptionHandler = new PostgresSourceExceptionHandler();
-    exceptionHandler.initializeErrorDictionary();
   }
 
   @Test
   void testTranslateTemporaryFileSizeExceedsLimitException() {
     PSQLException exception = new PSQLException("ERROR: temporary file size exceeds temp_file_limit (500kB)", null);
     String external_message = exceptionHandler.getExternalMessage(exception);
-    assertEquals(exceptionHandler.DATABASE_READ_ERROR, external_message);
+    assertEquals("Encountered an error while reading the database", external_message);
   }
 
 }
