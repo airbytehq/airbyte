@@ -38,7 +38,7 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     if isinstance(stream, DeclarativeStream):
         stream.retriever.requester.exit_on_rate_limit = True  # type: ignore[attr-defined]
     else:
-        stream.exit_on_rate_limit = True # type: ignore[attr-defined]
+        stream.exit_on_rate_limit = True  # type: ignore[attr-defined]
 
     # We wrap the return output of read_records() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
