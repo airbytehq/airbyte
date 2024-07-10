@@ -53,7 +53,7 @@ In fact, there might not be a cursor column to start! Full Refresh, in this case
 
 Enabling Resumable Full Refresh requires **Artificial Cursors**. An Artificial Cursor is a best-effort attempt to construct a relatively stable cursor.
 These cursors are artificial as they are often not present in the data schema, e.g. Postgres's CTID is a system-level column, and subject to independent
-change i.e. without external control or input. Contrast this with a proper cursor column, e.g. an `update_at` column, that is present in the data schema,
+change i.e. without external control or input. This differs from a proper cursor column, e.g. an `update_at` column, that is present in the data schema,
 and changes in response to user input.
 
 
