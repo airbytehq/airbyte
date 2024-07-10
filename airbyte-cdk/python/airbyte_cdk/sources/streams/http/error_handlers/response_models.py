@@ -12,6 +12,7 @@ class ResponseAction(Enum):
     RETRY = "RETRY"
     FAIL = "FAIL"
     IGNORE = "IGNORE"
+    RATE_LIMITED = "RATE_LIMITED"
 
 
 @dataclass
