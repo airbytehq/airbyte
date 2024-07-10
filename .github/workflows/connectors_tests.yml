@@ -32,6 +32,8 @@ jobs:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
         uses: actions/checkout@v4
+        with:
+          submodules: true
       - id: changes
         uses: dorny/paths-filter@v2
         with:
@@ -70,6 +72,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
