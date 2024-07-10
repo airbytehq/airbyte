@@ -480,3 +480,25 @@ def test_backoff_strategy_max_time():
         with pytest.raises(UserDefinedBackoffException):
             http_client.send_request(http_method="get", url="https://test_base_url.com/v1/endpoint", request_kwargs={})
         assert mocked_send.call_count == 2
+
+
+def test_send_emit_stream_status_with_rate_limit_reason(capsys):
+    class BackoffStrategy:
+        def backoff_time(self, *args, **kwargs):
+            return 0.001
+
+    http_client = HttpClient(name="test", logger=MagicMock(), error_handler=HttpStatusErrorHandler(logger=MagicMock()), backoff_strategy=BackoffStrategy())
+
+    mocked_response = MagicMock(spec=requests.Response)
+    mocked_response.status_code = 429
+    mocked_response.headers = {}
+    mocked_response.ok = False
+    session_send = MagicMock(spec=requests.Session.send)
+    session_send.return_value = mocked_response
+
+    with patch.object(requests.Session, "send", return_value=mocked_response) as mocked_send:
+        with pytest.raises(UserDefinedBackoffException):
+            http_client.send_request(http_method="get", url="https://test_base_url.com/v1/endpoint", request_kwargs={})
+
+        trace_messages = capsys.readouterr().out.split()
+        assert len(trace_messages) == mocked_send.call_count
