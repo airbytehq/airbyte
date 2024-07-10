@@ -213,7 +213,7 @@ class Stream(ABC):
             airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
 
-    def read_only_records(self, state: Mapping[str, Any] = None) -> Iterable[StreamData]:
+    def read_only_records(self, state: Optional[Mapping[str, Any]] = None) -> Iterable[StreamData]:
         """
         Helper method that performs a read on a stream with an optional state and emits records. If the parent stream supports
         incremental, this operation does not update the stream's internal state (if it uses the modern state setter/getter)
