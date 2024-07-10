@@ -17,7 +17,7 @@ include = "source_fauna"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "^3"
 faunadb = "4.2.0"
 
 [tool.poetry.scripts]
