@@ -15,6 +15,7 @@ from source_azure_blob_storage.config_migrations import MigrateCredentials, Migr
 
 
 def run():
+    print("Init test without buffers")
     args = sys.argv[1:]
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
