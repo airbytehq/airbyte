@@ -9,16 +9,12 @@ import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
-import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
-import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory.Companion.getCreateFunction
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
-import java.util.function.Function
 
 private val LOGGER = KotlinLogging.logger {}
 

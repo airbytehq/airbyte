@@ -23,16 +23,16 @@ class S3DestinationFlushFunction(
 
     override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val namespace = streamDescriptor.namespace ?: defaultNamespace
-        val nameAndNamespace =
-            AirbyteStreamNameNamespacePair(streamDescriptor.name, namespace)
+        val nameAndNamespace = AirbyteStreamNameNamespacePair(streamDescriptor.name, namespace)
         val strategy = strategyProvider()
         for (partialMessage in stream) {
             val partialRecord = partialMessage.record!!
-            val data = if (partialRecord.data == null || partialRecord.data!!.isNull) {
-                Jsons.deserialize(partialMessage.serialized)
-            } else {
-                partialRecord.data
-            }
+            val data =
+                if (partialRecord.data == null || partialRecord.data!!.isNull) {
+                    Jsons.deserialize(partialMessage.serialized)
+                } else {
+                    partialRecord.data
+                }
             val completeRecord =
                 AirbyteRecordMessage()
                     .withEmittedAt(partialRecord.emittedAt)

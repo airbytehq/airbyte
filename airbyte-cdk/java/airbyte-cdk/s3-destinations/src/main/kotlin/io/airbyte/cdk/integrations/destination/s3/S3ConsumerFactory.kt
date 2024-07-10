@@ -10,7 +10,6 @@ import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
-import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
@@ -69,7 +68,8 @@ class S3ConsumerFactory {
         catalog: ConfiguredAirbyteCatalog?,
         defaultNamespace: String
     ): FlushBufferFunction {
-        val pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it, defaultNamespace) }
+        val pairToWriteConfig =
+            writeConfigs.associateBy { toNameNamespacePair(it, defaultNamespace) }
 
         return FlushBufferFunction {
             pair: AirbyteStreamNameNamespacePair,
@@ -130,13 +130,14 @@ class S3ConsumerFactory {
         catalog: ConfiguredAirbyteCatalog
     ): SerializedAirbyteMessageConsumer? {
         val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
-        val createFunction = getCreateFunction(
-            s3Config,
-            Function<String, BufferStorage> { fileExtension: String ->
-                FileBuffer(fileExtension)
-            },
-            DEFAULT_NAMESPACE
-        )
+        val createFunction =
+            getCreateFunction(
+                s3Config,
+                Function<String, BufferStorage> { fileExtension: String ->
+                    FileBuffer(fileExtension)
+                },
+                DEFAULT_NAMESPACE
+            )
         return AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(storageOps, writeConfigs),
@@ -150,7 +151,8 @@ class S3ConsumerFactory {
                         flushBufferFunction(storageOps, writeConfigs, catalog, DEFAULT_NAMESPACE)
                     )
                 },
-                DEFAULT_NAMESPACE),
+                DEFAULT_NAMESPACE
+            ),
             catalog,
             BufferManager(DEFAULT_NAMESPACE)
         )
@@ -204,8 +206,14 @@ class S3ConsumerFactory {
             }
         }
 
-        private fun toNameNamespacePair(config: WriteConfig, defaultNamespace: String): AirbyteStreamNameNamespacePair {
-            return AirbyteStreamNameNamespacePair(config.streamName, config.namespace ?: defaultNamespace)
+        private fun toNameNamespacePair(
+            config: WriteConfig,
+            defaultNamespace: String
+        ): AirbyteStreamNameNamespacePair {
+            return AirbyteStreamNameNamespacePair(
+                config.streamName,
+                config.namespace ?: defaultNamespace
+            )
         }
     }
 }

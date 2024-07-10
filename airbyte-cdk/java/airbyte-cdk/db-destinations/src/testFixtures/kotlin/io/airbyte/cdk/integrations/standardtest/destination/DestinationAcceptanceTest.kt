@@ -33,9 +33,9 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
+import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
@@ -1457,8 +1457,7 @@ abstract class DestinationAcceptanceTest {
         // Run second sync with new fields on the message
         val descriptor = StreamDescriptor()
         descriptor.name = stream.name
-        val secondSyncMessagesWithNewFields:
-            MutableList<AirbyteMessage> =
+        val secondSyncMessagesWithNewFields: MutableList<AirbyteMessage> =
             Lists.newArrayList(
                 AirbyteMessage()
                     .withType(Type.RECORD)
@@ -1491,9 +1490,12 @@ abstract class DestinationAcceptanceTest {
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withStreamStatus(AirbyteStreamStatusTraceMessage()
-                                .withStreamDescriptor(descriptor)
-                                .withStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(descriptor)
+                                    .withStatus(
+                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                                    )
                             )
                     )
             )
@@ -1508,8 +1510,7 @@ abstract class DestinationAcceptanceTest {
         val destinationOutput =
             retrieveRecords(testEnv, stream.name, getDefaultSchema(config)!!, stream.jsonSchema)
         // Remove state message
-        secondSyncMessagesWithNewFields.removeIf {
-            airbyteMessage: AirbyteMessage ->
+        secondSyncMessagesWithNewFields.removeIf { airbyteMessage: AirbyteMessage ->
             airbyteMessage.type == Type.STATE || airbyteMessage.type == Type.TRACE
         }
         Assertions.assertEquals(secondSyncMessagesWithNewFields.size, destinationOutput.size)
