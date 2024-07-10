@@ -1,83 +1,47 @@
 {
-    "$schema": "https://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "additionalProperties": true,
-    "properties": {
-        "id": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "employeeId": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "name": {
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        "start": {
-            "type": [
-                "null",
-                "string"
-            ],
-            "default": ""
-        },
-        "end": {
-            "type": [
-                "null",
-                "string"
-            ],
-            "default": ""
-        },
-        "created": {
-            "type": [
-                "null",
-                "string"
-            ],
-            "default": ""
-        },
-        "status": {
-            "type": [
-                "null",
-                "object"
-            ]
-        },
-        "dates": {
-            "type": [
-                "null",
-                "string"
-            ],
-            "default": {}
-        },
-        "type": {
-            "type": [
-                "null",
-                "object"
-            ]
-        },
-        "amount": {
-            "type": [
-                "null",
-                "object"
-            ]
-        },
-        "actions": {
-            "type": [
-                "null",
-                "object"
-            ]
-        },
-        "notes": {
-            "type": [
-                "null",
-                "object"
-            ]
-        }
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "employeeId": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "start": {
+      "type": ["null", "string"],
+      "default": ""
+    },
+    "end": {
+      "type": ["null", "string"],
+      "default": ""
+    },
+    "created": {
+      "type": ["null", "string"],
+      "default": ""
+    },
+    "status": {
+      "type": ["null", "object"]
+    },
+    "dates": {
+      "type": ["null", "string"],
+      "default": {}
+    },
+    "type": {
+      "type": ["null", "object"]
+    },
+    "amount": {
+      "type": ["null", "object"]
+    },
+    "actions": {
+      "type": ["null", "object"]
+    },
+    "notes": {
+      "type": ["null", "object"]
     }
+  }
 }

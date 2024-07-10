@@ -15,17 +15,10 @@ This page contains the setup guide and reference information for the [BambooHR](
 
 ## Step 1: Set up the BambooHR connector in Airbyte
 
-- Get a BambooHR apu key (ref - https://documentation.bamboohr.com/docs)
-- Setup params (Subdomain and Api Key are required)
-- Available params
-    - Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
-    - Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
-    - (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
-    - Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
-    -  `Start date`: to fetch data from. Format: YYYY-MM-DD. This just applies to Incremental syncs.
+<!-- env:cloud -->
 
-## Step 2: Set up the Aircall connector in Airbyte
-**For Airbyte Cloud**
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the BambooHR connector and select **BambooHR** from the Source type dropdown.
@@ -35,11 +28,23 @@ This page contains the setup guide and reference information for the [BambooHR](
 7. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
 8. Click **Set up source**
 
-**For Airbyte OSS**
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+**For Airbyte OSS:**
+
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your params
-4. Click **Set up source**
+3. Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
+4. Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
+5. (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
+6. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
+7. Click **Set up source**
+
+<!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
