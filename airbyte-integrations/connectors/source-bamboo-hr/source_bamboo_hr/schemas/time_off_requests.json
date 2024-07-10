@@ -32,16 +32,24 @@
       "default": {}
     },
     "type": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "amount": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "actions": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "notes": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     }
   }
 }

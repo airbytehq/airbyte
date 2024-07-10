@@ -100,7 +100,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.start_date or (now_utc() - duration('P2DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config.start_date or (now_utc() - duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -112,7 +112,7 @@ definitions:
           inject_into: request_parameter
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config.start_date or (now_utc() - duration('P2DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config.start_date or (now_utc() - duration('P30DT23H')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1D
         cursor_granularity: P1D
