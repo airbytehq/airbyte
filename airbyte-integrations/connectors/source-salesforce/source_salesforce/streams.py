@@ -13,7 +13,6 @@ from abc import ABC
 from contextlib import closing
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-import backoff
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
@@ -27,7 +26,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import JSONDecodeError, exceptions
+from requests import exceptions
 from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -372,9 +371,7 @@ class BulkSalesforceStream(SalesforceStream):
         This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
         the response buffer (which is either by calling `json` or `iter_content`)
         """
-        headers = (
-            self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
-        )  # FIXME can we remove this?
+        headers = headers if headers else self._http_client._session.auth.get_auth_header()
         return self._http_client.send_request(method, url, headers=headers, json=json, request_kwargs={})[1]
 
     @default_backoff_handler(max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS)

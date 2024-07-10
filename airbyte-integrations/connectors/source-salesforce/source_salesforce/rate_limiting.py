@@ -61,6 +61,14 @@ class SalesforceErrorHandler(ErrorHandler):
         self._stream_name = stream_name
         self._sobject_options: Mapping[str, Any] = sobject_options or {}
 
+    @property
+    def max_retries(self) -> Optional[int]:
+        return 5
+
+    @property
+    def max_time(self) -> Optional[int]:
+        return 120
+
     def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response, TRANSIENT_EXCEPTIONS):
             return ErrorResolution(

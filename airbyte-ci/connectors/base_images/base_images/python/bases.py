@@ -100,8 +100,10 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
             .with_env_variable("POETRY_NO_INTERACTION", "1")
             .with_exec(["pip", "install", "poetry==1.6.1"], skip_entrypoint=True)
+            # Upgrade system packages
+            .with_exec(["sh", "-c", "apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y && apt-get clean"])
             # Install socat 1.7.4.4
-            .with_exec(["sh", "-c", "apt update && apt-get install -y socat=1.7.4.4-2"])
+            .with_exec(["sh", "-c", "apt-get install -y socat=1.7.4.4-2"])
             # Install CDK system dependencies
             .with_(self.install_cdk_system_dependencies())
         )
