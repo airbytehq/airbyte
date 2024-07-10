@@ -1120,7 +1120,7 @@ class TestTicketSubstream:
                 (404, ResponseAction.IGNORE),
                 (403, ResponseAction.IGNORE),
                 (500, ResponseAction.RETRY),
-                (429, ResponseAction.RETRY),
+                (429, ResponseAction.RATE_LIMITED),
         )
     )
     def test_ticket_metrics_should_retry(self, status_code: int, response_action: bool):
