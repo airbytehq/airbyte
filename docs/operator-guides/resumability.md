@@ -21,7 +21,7 @@ Consider a Postgres source. We could build a query that does `select * from user
 
 - First, it would keep a long-lasting transaction lock on the users table for the whole duration of the sync which would slow down the source
 - Tables over a certain size won’t be able to fit in memory, again dramatically slowing down your database while syncing (or even crashing the database)
-- There’s no logical cursor that we can resume from if we need to retry the sync
+- There is no logical cursor that Airbyte can use as a placeholder to resume from if we need to retry the sync.
 
 So, to get around all of these issues, we instead issue queries that look more like this:
 
