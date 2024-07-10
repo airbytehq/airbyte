@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.3.0
+CDK: add incomplete status to availability check during read
+
 ## 3.2.1
 CDK: flush buffer for each RATE_LIMITED message print
 
