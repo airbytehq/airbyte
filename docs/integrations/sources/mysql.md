@@ -233,6 +233,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.1   | 2024-07-10 | [41571](https://github.com/airbytehq/airbyte/pull/41571) | Bump debezium from 2.5 to 2.7.0.Final |
 | 3.5.0   | 2024-07-11 | [38240](https://github.com/airbytehq/airbyte/pull/38240) | Implement WASS.                                                                                                                                 |
 | 3.4.12  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz heartbeat.                                                                                                                           |
 | 3.4.11  | 2024-06-26 | [40561](https://github.com/airbytehq/airbyte/pull/40561)   | Support PlanetScale MySQL's per-query row limit.                                                                                                |
@@ -263,6 +264,37 @@ Any database or table encoding combination of charset and collation is supported
 | 3.3.12  | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675)   | Fix invalid cdc error message.                                                                                                                  |
 | 3.3.11  | 2024-02-23 | [35527](https://github.com/airbytehq/airbyte/pull/35527)   | Adopt 0.23.1 and shutdown timeouts.                                                                                                             |
 | 3.3.10  | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569)   | Fix logging bug.                                                                                                                                |
+=======
+| 3.4.12 | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat. |
+| 3.4.11 | 2024-06-26 | [40561](https://github.com/airbytehq/airbyte/pull/40561) | Support PlanetScale MySQL's per-query row limit. |
+| 3.4.10 | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349) | Full refresh stream sending internal count metadata. |
+| 3.4.9 | 2024-06-11 | [39405](https://github.com/airbytehq/airbyte/pull/39405) | Adopt latest CDK. |
+| 3.4.8 | 2024-06-05 | [39144](https://github.com/airbytehq/airbyte/pull/39144) | Upgrade Debezium to 2.5.4 |
+| 3.4.7 | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover. |
+| 3.4.6 | 2024-05-29 | [38538](https://github.com/airbytehq/airbyte/pull/38538) | Exit connector when encountering a config error. |
+| 3.4.5 | 2024-05-23 | [38198](https://github.com/airbytehq/airbyte/pull/38198) | Sync sending trace status messages indicating progress. |
+| 3.4.4 | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208) | disable counts in full refresh stream in state message. |
+| 3.4.3 | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104) | Handle transient error messages. |
+| 3.4.2 | 2024-05-07 | [38046](https://github.com/airbytehq/airbyte/pull/38046) | Resumeable refresh should run only if there is source defined pk. |
+| 3.4.1 | 2024-05-03 | [37824](https://github.com/airbytehq/airbyte/pull/37824) | Fixed a bug on Resumeable full refresh where cursor based source throw NPE. |
+| 3.4.0 | 2024-05-02 | [36932](https://github.com/airbytehq/airbyte/pull/36932) | Resumeable full refresh. Note please upgrade your platform - minimum platform version is 0.58.0. |
+| 3.3.25 | 2024-05-02 | [37781](https://github.com/airbytehq/airbyte/pull/37781) | Adopt latest CDK. |
+| 3.3.24 | 2024-05-01 | [37742](https://github.com/airbytehq/airbyte/pull/37742) | Adopt latest CDK. Remove Debezium retries. |
+| 3.3.23 | 2024-04-23 | [37507](https://github.com/airbytehq/airbyte/pull/37507) | Better errors when user switches from CDC to non-CDC mode. |
+| 3.3.22 | 2024-04-22 | [37541](https://github.com/airbytehq/airbyte/pull/37541) | Adopt latest CDK. reduce excessive logs. |
+| 3.3.21 | 2024-04-22 | [37476](https://github.com/airbytehq/airbyte/pull/37476) | Adopt latest CDK. |
+| 3.3.20 | 2024-04-16 | [37111](https://github.com/airbytehq/airbyte/pull/37111) | Populate null values in record message. |
+| 3.3.19 | 2024-04-15 | [37328](https://github.com/airbytehq/airbyte/pull/37328) | Populate airbyte_meta.changes |
+| 3.3.18 | 2024-04-15 | [37324](https://github.com/airbytehq/airbyte/pull/37324) | Refactor source operations. |
+| 3.3.17 | 2024-04-10 | [36919](https://github.com/airbytehq/airbyte/pull/36919) | Fix a bug in conversion of null values. |
+| 3.3.16 | 2024-04-05 | [36872](https://github.com/airbytehq/airbyte/pull/36872) | Update to connector's metadat definition. |
+| 3.3.15 | 2024-04-05 | [36577](https://github.com/airbytehq/airbyte/pull/36577) | Config error will not send out system trace message |
+| 3.3.14 | 2024-04-04 | [36742](https://github.com/airbytehq/airbyte/pull/36742) | To use new kotlin CDK |
+| 3.3.13 | 2024-02-29 | [35529](https://github.com/airbytehq/airbyte/pull/35529) | Refactor state iterator messages. |
+| 3.3.12 | 2024-02-27 | [35675](https://github.com/airbytehq/airbyte/pull/35675) | Fix invalid cdc error message. |
+| 3.3.11 | 2024-02-23 | [35527](https://github.com/airbytehq/airbyte/pull/35527) | Adopt 0.23.1 and shutdown timeouts. |
+| 3.3.10 | 2024-02-22 | [35569](https://github.com/airbytehq/airbyte/pull/35569) | Fix logging bug. |
+>>>>>>> 518359c4b5b (source-mysql: bump version and update changelog)
 | 3.3.9   | 2024-02-21 | [35525](https://github.com/airbytehq/airbyte/pull/35338)   | Adopt 0.21.4 and reduce cdc state compression threshold to 1MB.                                                                                 |
 | 3.3.8   | 2024-02-20 | [35338](https://github.com/airbytehq/airbyte/pull/35338)   | Add config to throw an error on invalid CDC position.                                                                                           |
 | 3.3.7   | 2024-02-13 | [35036](https://github.com/airbytehq/airbyte/pull/34751)   | Emit analytics message for invalid CDC cursor.                                                                                                  |
