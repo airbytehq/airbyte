@@ -24,8 +24,17 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
     JsonErrorMessageParser,
     ResponseAction,
 )
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException, RateLimitBackoffException
-from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler, rate_limit_default_backoff_handler
+from airbyte_cdk.sources.streams.http.exceptions import (
+    DefaultBackoffException,
+    RateLimitBackoffException,
+    RequestBodyException,
+    UserDefinedBackoffException,
+)
+from airbyte_cdk.sources.streams.http.rate_limiting import (
+    http_client_default_backoff_handler,
+    rate_limit_default_backoff_handler,
+    user_defined_backoff_handler,
+)
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException

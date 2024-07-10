@@ -10,7 +10,7 @@ from typing import Any, Callable, Mapping, Optional
 import backoff
 from requests import PreparedRequest, RequestException, Response, codes, exceptions
 
-from .exceptions import DefaultBackoffException, UserDefinedBackoffException, RateLimitBackoffException
+from .exceptions import DefaultBackoffException, RateLimitBackoffException, UserDefinedBackoffException
 
 TRANSIENT_EXCEPTIONS = (
     DefaultBackoffException,

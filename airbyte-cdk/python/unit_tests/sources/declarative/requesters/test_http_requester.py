@@ -17,7 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.http.exceptions import RequestBodyException, UserDefinedBackoffException, RateLimitBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import RateLimitBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.types import Config
 from requests import PreparedRequest
 
