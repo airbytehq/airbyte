@@ -120,9 +120,7 @@ class IronsourceSubStream(IronsourceStream, ABC):
                 sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
-            parent_records_materialized = [parent_record for parent_record in parent_records]
-
-            active_parent_records = [parent_record for parent_record in parent_records_materialized if not parent_record["isArchived"]]
+            active_parent_records = [parent_record for parent_record in parent_records if not parent_record["isArchived"]]
 
             # iterate over all parent records with current stream_slice
             for record in active_parent_records:
