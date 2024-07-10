@@ -38,7 +38,7 @@ kubectl create namespace airbyte
 ## Preconfiguring Kubernetes Secrets
 
 Deploying Airbyte requires specifying a number of sensitive values. These can be API keys, usernames and passwords, etc.
-In order to protect these sensitive values, the Helm Chart assumes that these values are pre-configured and stored in a Kubernetes Secret *before* the Helm installation begins. Each [integration](#Integrations)  will provide the Secret values that are required for the specific integration.
+In order to protect these sensitive values, the Helm Chart assumes that these values are pre-configured and stored in a Kubernetes Secret *before* the Helm installation begins. Each [integration](#integrations)  will provide the Secret values that are required for the specific integration.
 
 While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
 
@@ -79,7 +79,7 @@ kubectl create secret generic airbyte-config-secrets \
 To configure your installation of Airbyte, you will need to override specific parts of the Helm Chart. To do this you should create a new file called `values.yaml` somewhere that is accessible during the installation process. 
 The documentation has been created to "build up" a values.yaml, so there is no need to copy the whole of the Chart values.yaml, you only need to provide the specific overrides.
 
-Each [Integrations](#Iintegrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file might look something like:
+Each [Integrations](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file might look something like:
 
 ```yaml
 global:
