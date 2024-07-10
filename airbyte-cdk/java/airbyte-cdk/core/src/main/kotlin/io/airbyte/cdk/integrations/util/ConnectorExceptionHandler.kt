@@ -49,6 +49,32 @@ data class ConnectorErrorProfile(
     }
 }
 
+class ConnectorErrorProfileBuilder {
+    var errorClass: String = ""
+    var regexMatchingPattern: String = ""
+    var failureType: FailureType = FailureType.CONFIG // Default value, adjust as needed
+    var externalMessage: String = ""
+    var sampleInternalMessage: String = ""
+    var referenceLinks: List<String> = emptyList()
+
+    fun errorClass(errorClass: String) = apply { this.errorClass = errorClass }
+    fun regexMatchingPattern(regexMatchingPattern: String) = apply { this.regexMatchingPattern = regexMatchingPattern }
+    fun failureType(failureType: FailureType) = apply { this.failureType = failureType }
+    fun externalMessage(externalMessage: String) = apply { this.externalMessage = externalMessage }
+    fun sampleInternalMessage(sampleInternalMessage: String) = apply { this.sampleInternalMessage = sampleInternalMessage }
+    fun referenceLinks(referenceLinks: List<String>) = apply { this.referenceLinks = referenceLinks }
+
+    fun build() = ConnectorErrorProfile(
+        errorClass,
+        regexMatchingPattern,
+        failureType,
+        externalMessage,
+        sampleInternalMessage,
+        referenceLinks
+    )
+}
+
+
 /**
  * This abstract class defines interfaces that will be implemented by individual connectors for
  * translating internal exception error messages to external user-friendly error messages.
