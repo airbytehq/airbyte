@@ -84,8 +84,8 @@ class ConnectorErrorProfileBuilder {
 }
 
 /**
- * This class defines interfaces that will be implemented by individual connectors for
- * translating internal exception error messages to external user-friendly error messages.
+ * This class defines interfaces that will be implemented by individual connectors for translating
+ * internal exception error messages to external user-friendly error messages.
  */
 open class ConnectorExceptionHandler {
     private val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
