@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.2.1
+CDK: flush buffer for each RATE_LIMITED message print
+
 ## 3.2.0
 CDK: add running stream status with rate limit reason to backoff approach
 
