@@ -72,6 +72,7 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.4.0 | 2024-07-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate CDK to v3.3.0 |
 | 3.3.0 | 2024-07-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate CDK to v2.4.0 |
 | 3.2.0 | 2024-07-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate CDK to v1.8.0 |
 | 3.1.1 | 2024-06-06 | [39231](https://github.com/airbytehq/airbyte/pull/39231) | [autopull] Upgrade base image to v1.2.2 |
