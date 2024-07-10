@@ -410,7 +410,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             else ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
         )
         self._fields = list(schema.get("properties", {}).keys())
-        
+
         # Check that no breakdowns are injected from configured catalog schema (review "get_json_schema" doc).
         removable_keys = list(self.breakdowns if self.breakdowns else [])
         # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
