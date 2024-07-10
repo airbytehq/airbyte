@@ -1,0 +1,49 @@
+name: Connectors Approve Regression Tests
+
+concurrency:
+  # This is the name of the concurrency group. It is used to prevent concurrent runs of the same workflow.
+  #
+  # - github.head_ref is only defined on PR runs, it makes sure that the concurrency group is unique for pull requests
+  #  ensuring that only one run per pull request is active at a time.
+  #
+  # - github.run_id is defined on all runs, it makes sure that the concurrency group is unique for workflow dispatches.
+  # This allows us to run multiple workflow dispatches in parallel.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths:
+      - "airbyte-integrations/connectors/**/*"
+jobs:
+  connectors_approve_regression_tests:
+    name: Connectors Approve Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+
+      - name: Read persisted data
+        id: check-artifact
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download -n regression-test-approval_${{ github.event.pull_request.head.sha }}.txt
+
+      - name: Require Regression Test Approval
+        if: steps.check-artifact.outcome != 'success'
+        run: |
+          echo ${{ steps.check-artifact.outcome }}
+          echo "Waiting for manual regression test approval"
+          exit 1
+
+      - name: Approve Regression Tests
+        if: steps.check-artifact.outcome == 'success'
+        run: echo "Approved regression tests"
