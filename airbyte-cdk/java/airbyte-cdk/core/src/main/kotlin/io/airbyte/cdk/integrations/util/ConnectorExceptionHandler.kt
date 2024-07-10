@@ -84,7 +84,7 @@ class ConnectorErrorProfileBuilder {
 }
 
 /**
- * This abstract class defines interfaces that will be implemented by individual connectors for
+ * This class defines interfaces that will be implemented by individual connectors for
  * translating internal exception error messages to external user-friendly error messages.
  */
 open class ConnectorExceptionHandler {
@@ -105,10 +105,11 @@ open class ConnectorExceptionHandler {
         cmd: Command,
         outputRecordCollector: Consumer<AirbyteMessage>
     ) {
+        LOGGER.error(e) { "caught exception!" }
         ApmTraceUtils.addExceptionToTrace(e)
         val rootException: Throwable = getRootException(e)
         val externalMessage: String? = getExternalMessage(rootException)
-        // error messages generated during check() needs special handling
+        /* error messages generated during check() needs special handling */
         if (cmd == Command.CHECK) {
             outputRecordCollector.accept(
                 AirbyteMessage()
@@ -121,15 +122,12 @@ open class ConnectorExceptionHandler {
             )
         } else {
             if (checkErrorType(rootException, FailureType.CONFIG)) {
-                LOGGER.error(e) { "caught exception caused by config error!" }
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(e, externalMessage)
                 exitProcess(1)
             } else if (checkErrorType(rootException, FailureType.TRANSIENT)) {
-                LOGGER.error(e) { "caught exception caused by transient error!" }
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(e, externalMessage)
                 exitProcess(1)
             }
-            LOGGER.error(e) { "caught exception caused by system error!" }
             throw e
         }
     }

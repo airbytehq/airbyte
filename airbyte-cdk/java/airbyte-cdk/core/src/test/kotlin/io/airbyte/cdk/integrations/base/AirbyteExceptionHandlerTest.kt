@@ -3,6 +3,8 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import com.sun.jdi.connect.Connector
+import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.AirbyteMessage
@@ -203,8 +205,9 @@ class AirbyteExceptionHandlerTest {
             object : Thread() {
                 override fun run() {
                     val runner = Mockito.mock(IntegrationRunner::class.java)
-                    Mockito.doThrow(throwable).`when`(runner).run(arrayOf("write"))
-                    runner.run(arrayOf("write"))
+                    val exceptionHandler = ConnectorExceptionHandler()
+                    Mockito.doThrow(throwable).`when`(runner).run(arrayOf("write"), exceptionHandler)
+                    runner.run(arrayOf("write"), exceptionHandler)
                 }
             }
         thread.uncaughtExceptionHandler = airbyteExceptionHandler
