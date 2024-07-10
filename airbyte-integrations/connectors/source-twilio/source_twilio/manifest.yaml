@@ -559,6 +559,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: PT1S
+        step: P1Y
       transformations:
         - type: AddFields
           fields:
@@ -757,6 +759,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: P1D
+        step: P1Y
       transformations:
         - type: AddFields
           fields:
@@ -867,6 +871,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: PT1S
+        step: P1Y
       transformations:
         - type: AddFields
           fields:
@@ -1103,6 +1109,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: PT1S
+        step: P1Y
       transformations:
         - type: AddFields
           fields:
@@ -1421,6 +1429,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: PT1S
+        step: P1D
       transformations:
         - type: AddFields
           fields:
@@ -1539,6 +1549,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: PT1S
+        step: P1Y
       transformations:
         - type: AddFields
           fields:
@@ -1620,6 +1632,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_granularity: P1D
+        step: P1Y
       schema_loader:
         type: InlineSchemaLoader
         schema:
