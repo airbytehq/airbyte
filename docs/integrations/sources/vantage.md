@@ -35,6 +35,7 @@ Vantage APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.1.7 | 2024-07-09 | [41224](https://github.com/airbytehq/airbyte/pull/41224) | Update dependencies |
 | 0.1.6 | 2024-07-06 | [40901](https://github.com/airbytehq/airbyte/pull/40901) | Update dependencies |
 | 0.1.5 | 2024-06-25 | [40385](https://github.com/airbytehq/airbyte/pull/40385) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [39993](https://github.com/airbytehq/airbyte/pull/39993) | Update dependencies |
