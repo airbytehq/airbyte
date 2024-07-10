@@ -38,6 +38,7 @@ Toggl APIs are under rate limits for the number of API calls allowed per API key
 
 | Version | Date       | Pull Request                                              | Subject                                 |
 |:--------|:-----------| :-------------------------------------------------------- | :-------------------------------------- |
+| 0.1.7 | 2024-07-09 | [41227](https://github.com/airbytehq/airbyte/pull/41227) | Update dependencies |
 | 0.1.6 | 2024-07-06 | [40968](https://github.com/airbytehq/airbyte/pull/40968) | Update dependencies |
 | 0.1.5   | 2024-06-28 | [#38740](https://github.com/airbytehq/airbyte/pull/38740) | Make connector compatible with Builder  |
 | 0.1.4   | 2024-06-25 | [40493](https://github.com/airbytehq/airbyte/pull/40493) | Update dependencies |
