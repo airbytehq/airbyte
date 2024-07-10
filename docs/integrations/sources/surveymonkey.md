@@ -75,6 +75,7 @@ To cover more data from this source we use caching.
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.11 | 2024-07-10 | [41352](https://github.com/airbytehq/airbyte/pull/41352) | Update dependencies |
 | 0.3.10 | 2024-07-09 | [41258](https://github.com/airbytehq/airbyte/pull/41258) | Update dependencies |
 | 0.3.9 | 2024-07-06 | [40958](https://github.com/airbytehq/airbyte/pull/40958) | Update dependencies |
 | 0.3.8 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
