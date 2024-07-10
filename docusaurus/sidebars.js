@@ -546,6 +546,7 @@ module.exports = {
         "operator-guides/browsing-output-logs",
         "operator-guides/clear",
         "operator-guides/refreshes",
+        "operator-guides/resumability",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
