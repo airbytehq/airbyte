@@ -1264,7 +1264,7 @@ requester:
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
     http_requester = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name"
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name", decoder=JsonDecoder(parameters={})
     )
     requests_mock.get(
         "https://api.sendgrid.com/v3/marketing/lists", status_code=401
