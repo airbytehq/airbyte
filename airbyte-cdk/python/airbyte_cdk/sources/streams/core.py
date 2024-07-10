@@ -213,9 +213,9 @@ class Stream(ABC):
             airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
 
-    def read_stateless(self) -> Iterable[StreamData]:
+    def read_only_records(self, state: Mapping[str, Any] = None) -> Iterable[StreamData]:
         """
-        Helper method that performs a full refresh read on a stream and emits records. If the parent stream supports
+        Helper method that performs a read on a stream with an optional state and emits records. If the parent stream supports
         incremental, this operation does not update the stream's internal state (if it uses the modern state setter/getter)
         or emit state messages.
         """
@@ -224,9 +224,9 @@ class Stream(ABC):
             stream=AirbyteStream(
                 name=self.name,
                 json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh],
+                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
             ),
-            sync_mode=SyncMode.full_refresh,
+            sync_mode=SyncMode.incremental if state else SyncMode.full_refresh,
             destination_sync_mode=DestinationSyncMode.append,
         )
 
@@ -234,7 +234,7 @@ class Stream(ABC):
             configured_stream=configured_stream,
             logger=self.logger,
             slice_logger=DebugSliceLogger(),
-            stream_state={},
+            stream_state=state or {},
             state_manager=None,
             internal_config=InternalConfig(),
         )

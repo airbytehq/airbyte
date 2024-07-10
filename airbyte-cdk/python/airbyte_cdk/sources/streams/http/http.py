@@ -384,7 +384,7 @@ class HttpSubStream(HttpStream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
         # not support either substreams or RFR, but something that needs to be considered once we do
-        for parent_record in self.parent.read_stateless():
+        for parent_record in self.parent.read_only_records(stream_state):
             # Skip non-records (eg AirbyteLogMessage)
             if isinstance(parent_record, AirbyteMessage):
                 if parent_record.type == MessageType.RECORD:
