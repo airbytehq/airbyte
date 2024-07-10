@@ -43,7 +43,6 @@ Resumability applies to all sync modes, including standard Full Refresh + Overwr
 
 Resumability is an inherent feature of Incremental syncs. What does it mean for Full Refresh syncs?
 
-### Why Full Refresh?
 
 Although incremental syncs are superior in all cases, they require a cursor, which is not always possible.
 
