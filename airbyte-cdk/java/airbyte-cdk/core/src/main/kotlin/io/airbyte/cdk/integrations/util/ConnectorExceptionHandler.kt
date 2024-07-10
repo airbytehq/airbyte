@@ -32,9 +32,11 @@ data class ConnectorErrorProfile(
     val externalMessage: String,
     val sampleInternalMessage: String,
     val referenceLinks: List<String>,
-)  {
+) {
     init {
-        require(isValidRegex(regexMatchingPattern)) { "regexMatchingPattern is not a valid regular expression string" }
+        require(isValidRegex(regexMatchingPattern)) {
+            "regexMatchingPattern is not a valid regular expression string"
+        }
         require(externalMessage.isNotBlank()) { "externalMessage must not be blank" }
         require(sampleInternalMessage.isNotBlank()) { "sampleInternalMessage must not be blank" }
     }
@@ -50,30 +52,36 @@ data class ConnectorErrorProfile(
 }
 
 class ConnectorErrorProfileBuilder {
-    var errorClass: String = ""
-    var regexMatchingPattern: String = ""
-    var failureType: FailureType = FailureType.CONFIG // Default value, adjust as needed
-    var externalMessage: String = ""
-    var sampleInternalMessage: String = ""
-    var referenceLinks: List<String> = emptyList()
+    private var errorClass: String = ""
+    private var regexMatchingPattern: String = ""
+    private var failureType: FailureType = FailureType.CONFIG // Default value, adjust as needed
+    private var externalMessage: String = ""
+    private var sampleInternalMessage: String = ""
+    private var referenceLinks: List<String> = emptyList()
 
     fun errorClass(errorClass: String) = apply { this.errorClass = errorClass }
-    fun regexMatchingPattern(regexMatchingPattern: String) = apply { this.regexMatchingPattern = regexMatchingPattern }
+    fun regexMatchingPattern(regexMatchingPattern: String) = apply {
+        this.regexMatchingPattern = regexMatchingPattern
+    }
     fun failureType(failureType: FailureType) = apply { this.failureType = failureType }
     fun externalMessage(externalMessage: String) = apply { this.externalMessage = externalMessage }
-    fun sampleInternalMessage(sampleInternalMessage: String) = apply { this.sampleInternalMessage = sampleInternalMessage }
-    fun referenceLinks(referenceLinks: List<String>) = apply { this.referenceLinks = referenceLinks }
+    fun sampleInternalMessage(sampleInternalMessage: String) = apply {
+        this.sampleInternalMessage = sampleInternalMessage
+    }
+    fun referenceLinks(referenceLinks: List<String>) = apply {
+        this.referenceLinks = referenceLinks
+    }
 
-    fun build() = ConnectorErrorProfile(
-        errorClass,
-        regexMatchingPattern,
-        failureType,
-        externalMessage,
-        sampleInternalMessage,
-        referenceLinks
-    )
+    fun build() =
+        ConnectorErrorProfile(
+            errorClass,
+            regexMatchingPattern,
+            failureType,
+            externalMessage,
+            sampleInternalMessage,
+            referenceLinks
+        )
 }
-
 
 /**
  * This abstract class defines interfaces that will be implemented by individual connectors for
@@ -98,7 +106,7 @@ open class ConnectorExceptionHandler {
         outputRecordCollector: Consumer<AirbyteMessage>
     ) {
         ApmTraceUtils.addExceptionToTrace(e)
-        val rootException: Throwable? = getRootException(e)
+        val rootException: Throwable = getRootException(e)
         val externalMessage: String? = getExternalMessage(rootException)
         // error messages generated during check() needs special handling
         if (cmd == Command.CHECK) {
@@ -175,7 +183,7 @@ open class ConnectorExceptionHandler {
      * exist, we just return the original exception.
      */
     @VisibleForTesting
-    internal fun getRootException(e: Throwable): Throwable? {
+    internal fun getRootException(e: Throwable): Throwable {
         var current: Throwable? = e
         while (current != null) {
             if (isRecognizableError(current)) {

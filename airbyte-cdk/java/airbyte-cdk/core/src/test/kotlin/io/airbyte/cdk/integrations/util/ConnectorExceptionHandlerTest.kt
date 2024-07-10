@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.integrations.util
 
-import com.sun.jdi.connect.Connector
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.exceptions.TransientErrorException

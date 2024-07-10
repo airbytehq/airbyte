@@ -110,7 +110,10 @@ internal constructor(
     @Trace(operationName = "RUN_OPERATION")
     @Throws(Exception::class)
     @JvmOverloads
-    fun run(args: Array<String>, exceptionHandler: ConnectorExceptionHandler = ConnectorExceptionHandler()) {
+    fun run(
+        args: Array<String>,
+        exceptionHandler: ConnectorExceptionHandler = ConnectorExceptionHandler()
+    ) {
         val parsed = cliParser.parse(args)
         try {
             runInternal(parsed, exceptionHandler)
