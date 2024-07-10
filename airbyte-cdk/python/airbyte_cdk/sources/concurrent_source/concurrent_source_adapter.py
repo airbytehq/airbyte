@@ -1,17 +1,17 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from abc import ABC
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, FailureType
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class ConcurrentSourceAdapter(AbstractSource, ABC):
@@ -53,19 +53,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         for configured_stream in configured_catalog.streams:
             stream_instance = stream_name_to_instance.get(configured_stream.stream.name)
             if not stream_instance:
-                if not self.raise_exception_on_missing_stream:
-                    continue
-
-                error_message = (
-                    f"The stream '{configured_stream.stream.name}' in your connection configuration was not found in the source. "
-                    f"Refresh the schema in your replication settings and remove this stream from future sync attempts."
-                )
-
-                raise AirbyteTracedException(
-                    message="A stream listed in your configuration was not found in the source. Please check the logs for more details.",
-                    internal_message=error_message,
-                    failure_type=FailureType.config_error,
-                )
+                continue
 
             if isinstance(stream_instance, AbstractStreamFacade):
                 abstract_streams.append(stream_instance.get_underlying_stream())
