@@ -13,10 +13,10 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
-import kotlin.system.exitProcess
-import org.jetbrains.annotations.VisibleForTesting
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
+import kotlin.system.exitProcess
+import org.jetbrains.annotations.VisibleForTesting
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -87,12 +87,15 @@ open class ConnectorExceptionHandler {
             )
         } else {
             if (checkErrorType(rootException, FailureType.CONFIG)) {
+                LOGGER.error(e) { "caught exception caused by config error!" }
                 AirbyteTraceMessageUtility.emitConfigErrorTrace(e, externalMessage)
                 exitProcess(1)
             } else if (checkErrorType(rootException, FailureType.TRANSIENT)) {
+                LOGGER.error(e) { "caught exception caused by transient error!" }
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(e, externalMessage)
                 exitProcess(1)
             }
+            LOGGER.error(e) { "caught exception caused by system error!" }
             throw e
         }
     }

@@ -216,7 +216,6 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
-            LOGGER.error(e) { "caught exception!" }
             exceptionHandler.handleException(e, parsed.command, outputRecordCollector)
         }
         LOGGER.info { "Completed integration: ${integration.javaClass.name}" }
