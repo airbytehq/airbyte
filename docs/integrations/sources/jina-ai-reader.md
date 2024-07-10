@@ -50,6 +50,7 @@ The website also provides a free bearer token for testing with its interface.
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.1.3 | 2024-07-09 | [41245](https://github.com/airbytehq/airbyte/pull/41245) | Update dependencies |
 | 0.1.2 | 2024-07-06 | [40880](https://github.com/airbytehq/airbyte/pull/40880) | Update dependencies |
 | 0.1.1 | 2024-06-25 | [40359](https://github.com/airbytehq/airbyte/pull/40359) | Update dependencies |
 | 0.1.0 | 2024-06-25 | [39515](https://github.com/airbytehq/airbyte/pull/39515) | Add Jina AI source |
