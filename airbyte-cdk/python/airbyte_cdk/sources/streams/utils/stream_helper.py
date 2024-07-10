@@ -21,11 +21,11 @@ def get_first_stream_slice(stream: Stream) -> Optional[Mapping[str, Any]]:
     # but not iterators such as lists or tuples
     slices = iter(
         stream.stream_slices(
-            cursor_field=stream.cursor_field,
+            cursor_field=stream.cursor_field,  # type: ignore[arg-type]
             sync_mode=SyncMode.full_refresh,
         )
     )
-    return next(slices)  # type: ignore[no-any-return]
+    return next(slices)
 
 
 def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[str, Any]]) -> StreamData:

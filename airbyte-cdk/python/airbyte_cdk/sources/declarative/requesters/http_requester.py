@@ -87,7 +87,7 @@ class HttpRequester(Requester):
         )
 
     @property
-    def exit_on_rate_limit(self):
+    def exit_on_rate_limit(self) -> bool:
         return self._exit_on_rate_limit
 
     @exit_on_rate_limit.setter
