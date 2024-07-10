@@ -20,7 +20,7 @@ and the destination can commit them. In order to achieve this resumability, Airb
 Consider a Postgres source. We could build a query that does `select * from users`, which would guarantee that each row is emitted only once, but that would lead to some problems:
 
 - First, it would keep a long-lasting transaction lock on the users table for the whole duration of the sync which would slow down the source
-- Tables over a certain size won’t be able to fit in memory, again dramatically slowing down your database while syncing (or even crashing the database)
+- Tables over a certain size would not be able to fit in memory. This would dramatically slow down the database while syncing (or even crashing) the database.
 - There is no logical cursor that Airbyte can use as a placeholder to resume from if we need to retry the sync.
 
 To get around all of these issues, we issue queries that look like this:
