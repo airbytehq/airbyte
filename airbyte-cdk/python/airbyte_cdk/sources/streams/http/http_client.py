@@ -270,8 +270,8 @@ class HttpClient:
             # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
             # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the
             # end of the retry decorator behavior. This approach does not allow us to emit messages in the queue before exiting the
-            # backoff retry loop.
-            print(message)
+            # backoff retry loop. Adding `\n` to the message and ignore 'end' ensure that few messages are printed at the same time.
+            print(f"{message}\n", end="", flush=True)
 
         if error_resolution.response_action == ResponseAction.FAIL:
             if response:
