@@ -220,6 +220,7 @@ async def setup_and_teardown(
     client_container: dagger.Container,
     connector_config: SecretDict,
     client_container_config: Optional[ClientContainerConfig],
+    base_path: Path,
 ):
     if client_container:
         logging.info("Running setup")
@@ -227,6 +228,7 @@ async def setup_and_teardown(
             client_container,
             client_container_config.setup_command,
             connector_config,
+            base_path,
         )
         logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None
