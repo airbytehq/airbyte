@@ -62,6 +62,7 @@ async def run_connector_version_bump_pipeline(
     semaphore: "Semaphore",
     bump_type: str,
     changelog_entry: str,
+    pull_request_number: str | int | None = None,
 ) -> Report:
     """Run a pipeline to upgrade for a single connector.
 
@@ -89,9 +90,7 @@ async def run_connector_version_bump_pipeline(
                 context.logger.info(f"Exported {modified_file} following the version bump.")
 
             add_changelog_entry = AddChangelogEntry(
-                context,
-                bump_version.new_version,
-                changelog_entry,
+                context, bump_version.new_version, changelog_entry, pull_request_number=pull_request_number
             )
             add_changelog_entry_result = await add_changelog_entry.run()
             steps_results.append(add_changelog_entry_result)

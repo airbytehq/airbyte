@@ -491,6 +491,7 @@ const understandingAirbyte = {
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/operations",
     "understanding-airbyte/cdc",
+    "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",
@@ -693,6 +694,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/june_2024",
         "release_notes/may_2024",
         "release_notes/april_2024",
         "release_notes/march_2024",

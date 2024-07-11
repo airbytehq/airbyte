@@ -28,13 +28,13 @@ class AddChangelogEntry(Step):
         context: ConnectorContext,
         new_version: str,
         comment: str,
-        pull_request_number: str | int = "*PR_NUMBER_PLACEHOLDER*",
+        pull_request_number: str | int | None,
         repo_dir: Directory | None = None,
     ) -> None:
         super().__init__(context)
         self.new_version = semver.VersionInfo.parse(new_version)
         self.comment = comment
-        self.pull_request_number = pull_request_number
+        self.pull_request_number = pull_request_number or "*PR_NUMBER_PLACEHOLDER*"
         self.modified_files = []
         self.repo_dir = repo_dir
 

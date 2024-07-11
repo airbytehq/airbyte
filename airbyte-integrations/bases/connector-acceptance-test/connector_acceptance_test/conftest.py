@@ -134,8 +134,8 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
 @pytest.fixture(name="client_container_config")
 def client_container_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[ClientContainerConfig]:
     """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
-    if hasattr(inputs, "setup_teardown_config") and inputs.setup_teardown_config:
-        return inputs.setup_teardown_config
+    if hasattr(inputs, "client_container_config") and inputs.client_container_config:
+        return inputs.client_container_config
 
 
 @pytest.fixture(name="invalid_connector_config")
@@ -211,7 +211,7 @@ async def client_container(
         return await client_container_runner.get_client_container(
             dagger_client,
             base_path,
-            base_path / client_container_config.client_dockerfile_path,
+            base_path / client_container_config.client_container_dockerfile_path,
         )
 
 
@@ -220,6 +220,7 @@ async def setup_and_teardown(
     client_container: dagger.Container,
     connector_config: SecretDict,
     client_container_config: Optional[ClientContainerConfig],
+    base_path: Path,
 ):
     if client_container:
         logging.info("Running setup")
@@ -227,6 +228,7 @@ async def setup_and_teardown(
             client_container,
             client_container_config.setup_command,
             connector_config,
+            base_path,
         )
         logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None

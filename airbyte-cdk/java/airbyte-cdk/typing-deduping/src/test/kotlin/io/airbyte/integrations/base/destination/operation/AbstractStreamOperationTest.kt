@@ -146,7 +146,7 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, true)
+                storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, replace = true)
             }
             confirmVerified(storageOperation)
 
@@ -238,7 +238,7 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, true)
+                storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, replace = true)
             }
             confirmVerified(storageOperation)
 
@@ -318,7 +318,7 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
-                storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, true)
+                storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, replace = true)
             }
             confirmVerified(storageOperation)
 
@@ -331,6 +331,68 @@ class AbstractStreamOperationTest {
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
+                storageOperation.overwriteFinalTable(streamConfig, EXPECTED_SUFFIX)
+            }
+            confirmVerified(storageOperation)
+            checkUnnecessaryStub(
+                initialState,
+                initialState.initialRawTableStatus,
+                initialState.destinationState
+            )
+        }
+
+        /**
+         * 1. A previous truncate refresh attempt created a non-empty temp raw table, then failed.
+         * 2. Our current attempt is successful, but we emitted no new records
+         * 3. We should still run T+D for this table, because we need to T+D the previous attempt's
+         * records.
+         */
+        @Test
+        fun existingNonEmptyTempRawTableNoNewRecords() {
+            val initialState =
+                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
+                    every { streamConfig } returns this@Truncate.streamConfig
+                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
+                    every { initialTempRawTableStatus.rawTableExists } returns true
+                    every { initialTempRawTableStatus.hasUnprocessedRecords } returns true
+                    every { initialTempRawTableStatus.maxProcessedTimestamp } returns
+                        maxProcessedTimestamp
+                    // This doesn't matter too much, but thematically - there's a preexisting
+                    // final table.
+                    every { isFinalTablePresent } returns true
+                    every { isFinalTableEmpty } returns false
+                    every {
+                        destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
+                    } returns destinationState
+                }
+            every { storageOperation.getStageGeneration(streamId, EXPECTED_SUFFIX) } returns 21
+
+            val streamOperations = TestStreamOperation(storageOperation, initialState)
+
+            verifySequence {
+                storageOperation.getStageGeneration(streamId, EXPECTED_SUFFIX)
+                storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
+                storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, replace = true)
+            }
+            confirmVerified(storageOperation)
+
+            clearMocks(storageOperation)
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(0, AirbyteStreamStatus.COMPLETE)
+            )
+
+            verifySequence {
+                storageOperation.cleanupStage(streamId)
+                storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
+                storageOperation.typeAndDedupe(
+                    streamConfig,
+                    // In a truncate refresh, we know we need to T+D the entire temp raw table
+                    // so even though the initial temp raw table status has a real timestamp,
+                    // we just ignore that and pass Optional.empty()
+                    maxProcessedTimestamp = Optional.empty(),
+                    EXPECTED_SUFFIX,
+                )
                 storageOperation.overwriteFinalTable(streamConfig, EXPECTED_SUFFIX)
             }
             confirmVerified(storageOperation)
