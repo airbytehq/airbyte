@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,11 +85,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
-    // Count has been disabled due to we do not support RFR for non resumeable full refresh.
-    // AtomicLong count = new AtomicLong(0L);
-    // stateMessages.stream().forEach(stateMessage ->
-    // count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
-    // assertEquals(totalCount, count.get());
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    assertEquals(totalCount, count.get());
   }
 
   @Override
@@ -266,10 +265,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   protected void validateStreamStateInResumableFullRefresh(final JsonNode streamStateToBeTested) {
     assertEquals("ctid", streamStateToBeTested.get("state_type").asText());
   }
-
-  @Override
-  @Test
-  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
 
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,

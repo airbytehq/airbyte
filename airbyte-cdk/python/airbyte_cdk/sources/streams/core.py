@@ -7,10 +7,10 @@ import logging
 import typing
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.checkpoint import (
     CheckpointMode,
@@ -24,7 +24,7 @@ from airbyte_cdk.sources.streams.checkpoint import (
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated import deprecated
 
@@ -105,6 +105,8 @@ class Stream(ABC):
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
+    _configured_json_schema: Optional[Dict[str, Any]] = None
+
     # Use self.logger in subclasses to log any messages
     @property
     def logger(self) -> logging.Logger:
@@ -143,6 +145,7 @@ class Stream(ABC):
     ) -> Iterable[StreamData]:
         sync_mode = configured_stream.sync_mode
         cursor_field = configured_stream.cursor_field
+        self.configured_json_schema = configured_stream.stream.json_schema
 
         # WARNING: When performing a read() that uses incoming stream state, we MUST use the self.state that is defined as
         # opposed to the incoming stream_state value. Because some connectors like ones using the file-based CDK modify
@@ -153,6 +156,7 @@ class Stream(ABC):
         except AttributeError:
             pass
 
+        should_checkpoint = bool(state_manager)
         checkpoint_reader = self._get_checkpoint_reader(
             logger=logger, cursor_field=cursor_field, sync_mode=sync_mode, stream_state=stream_state
         )
@@ -190,7 +194,7 @@ class Stream(ABC):
 
                     checkpoint_interval = self.state_checkpoint_interval
                     checkpoint = checkpoint_reader.get_checkpoint()
-                    if checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
+                    if should_checkpoint and checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
                         airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
                         yield airbyte_state_message
 
@@ -198,16 +202,42 @@ class Stream(ABC):
                         break
             self._observe_state(checkpoint_reader)
             checkpoint_state = checkpoint_reader.get_checkpoint()
-            if checkpoint_state is not None:
+            if should_checkpoint and checkpoint_state is not None:
                 airbyte_state_message = self._checkpoint_state(checkpoint_state, state_manager=state_manager)
                 yield airbyte_state_message
 
             next_slice = checkpoint_reader.next()
 
         checkpoint = checkpoint_reader.get_checkpoint()
-        if checkpoint is not None:
+        if should_checkpoint and checkpoint is not None:
             airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
+
+    def read_only_records(self, state: Optional[Mapping[str, Any]] = None) -> Iterable[StreamData]:
+        """
+        Helper method that performs a read on a stream with an optional state and emits records. If the parent stream supports
+        incremental, this operation does not update the stream's internal state (if it uses the modern state setter/getter)
+        or emit state messages.
+        """
+
+        configured_stream = ConfiguredAirbyteStream(
+            stream=AirbyteStream(
+                name=self.name,
+                json_schema={},
+                supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+            ),
+            sync_mode=SyncMode.incremental if state else SyncMode.full_refresh,
+            destination_sync_mode=DestinationSyncMode.append,
+        )
+
+        yield from self.read(
+            configured_stream=configured_stream,
+            logger=self.logger,
+            slice_logger=DebugSliceLogger(),
+            stream_state=dict(state) if state else {},  # read() expects MutableMapping instead of Mapping which is used more often
+            state_manager=None,
+            internal_config=InternalConfig(),
+        )
 
     @abstractmethod
     def read_records(
@@ -502,3 +532,16 @@ class Stream(ABC):
         #  to reduce changes right now and this would span concurrent as well
         state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
         return state_manager.create_state_message(self.name, self.namespace)
+
+    @property
+    def configured_json_schema(self) -> Optional[Dict[str, Any]]:
+        """
+        This property is set from the read method.
+
+        :return Optional[Dict]: JSON schema from configured catalog if provided, otherwise None.
+        """
+        return self._configured_json_schema
+
+    @configured_json_schema.setter
+    def configured_json_schema(self, json_schema: Dict[str, Any]) -> None:
+        self._configured_json_schema = json_schema
