@@ -1,11 +1,14 @@
-import psycopg2
-from psycopg2 import sql
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import datetime
+import json
+import os
 import random
 import string
-import json
 import sys
-import os
+
+import psycopg2
+from psycopg2 import sql
 
 catalog_write_file = "/connector/integration_tests/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog.json"
