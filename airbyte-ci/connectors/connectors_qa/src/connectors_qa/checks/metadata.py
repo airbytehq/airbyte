@@ -140,7 +140,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
     """
 
     name = "Breaking change deadline should be a week in the future"
-    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future or set force release."
+    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future. This requirement can be bypassed with `forceRelease: true` flag."
     runs_on_released_connectors = False
     minimum_days_until_deadline = 7
 
