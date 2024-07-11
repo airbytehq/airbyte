@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:-----------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.41.1     | 2024-07-11 | [\#41212](https://github.com/airbytehq/airbyte/pull/41212) | Improve debezium logging.                                                                                                                                      |
 | 0.41.0     | 2024-07-11 | [\#38240](https://github.com/airbytehq/airbyte/pull/38240) | Sources : Changes in CDC interfaces to support WASS algorithm                                                                                                  |
 | 0.40.11    | 2024-07-08 | [\#41041](https://github.com/airbytehq/airbyte/pull/41041) | Destinations: Fix truncate refreshes incorrectly discarding data if successful attempt had 0 records                                                           |
 | 0.40.10    | 2024-07-05 | [\#40719](https://github.com/airbytehq/airbyte/pull/40719) | Update test to refrlect isResumable field in catalog                                                                                                           |
