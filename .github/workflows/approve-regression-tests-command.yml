@@ -102,4 +102,4 @@ jobs:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: confused
           body: |
-            > ❌ Job failed
+            > ❌ Regression test approval failed
