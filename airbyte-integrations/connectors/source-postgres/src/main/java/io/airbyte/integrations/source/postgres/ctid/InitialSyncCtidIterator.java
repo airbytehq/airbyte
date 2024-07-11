@@ -25,6 +25,8 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +37,9 @@ import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.commons.exceptions.TransientErrorException;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 
 /**
  * This class is responsible to divide the data of the stream into chunks based on the ctid and
@@ -67,6 +72,10 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   private boolean subQueriesInitialized = false;
   private final boolean tidRangeScanCapableDBServer;
 
+  private final Instant startInstant;
+  private Optional<Duration> cdcInitialLoadTimeout;
+  private boolean isCdcSync;
+
   public InitialSyncCtidIterator(final CtidStateManager ctidStateManager,
                                  final JdbcDatabase database,
                                  final CtidPostgresSourceOperations sourceOperations,
@@ -79,7 +88,9 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
                                  final int maxTuple,
                                  final FileNodeHandler fileNodeHandler,
                                  final boolean tidRangeScanCapableDBServer,
-                                 final boolean useTestPageSize) {
+                                 final boolean useTestPageSize,
+                                 final Instant startInstant,
+                                 final Optional<Duration> cdcInitialLoadTimeout) {
     this.airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     this.blockSize = blockSize;
     this.maxTuple = maxTuple;
@@ -95,6 +106,9 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
     this.tableSize = tableSize;
     this.tidRangeScanCapableDBServer = tidRangeScanCapableDBServer;
     this.useTestPageSize = useTestPageSize;
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
+    this.isCdcSync = isCdcSync(ctidStateManager);
   }
 
   @CheckForNull
@@ -104,6 +118,16 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
       if (!subQueriesInitialized) {
         initSubQueries();
         subQueriesInitialized = true;
+      }
+
+      if (isCdcSync && cdcInitialLoadTimeout.isPresent()
+          && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+        final String cdcInitialLoadTimeoutMessage = String.format(
+            "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+            getAirbyteStream().get(), cdcInitialLoadTimeout.get());
+        LOGGER.info(cdcInitialLoadTimeoutMessage);
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+        throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
       }
 
       if (currentIterator == null || !currentIterator.hasNext()) {
@@ -327,6 +351,16 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   public void close() throws Exception {
     if (currentIterator != null) {
       currentIterator.close();
+    }
+  }
+
+  private boolean isCdcSync(CtidStateManager initialLoadStateManager) {
+    if (initialLoadStateManager instanceof CtidGlobalStateManager) {
+      LOGGER.info("Running a cdc sync");
+      return true;
+    } else {
+      LOGGER.info("Not running a cdc sync");
+      return false;
     }
   }
 

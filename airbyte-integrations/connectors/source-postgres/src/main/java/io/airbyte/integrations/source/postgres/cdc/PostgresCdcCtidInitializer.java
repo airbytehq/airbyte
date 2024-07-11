@@ -19,6 +19,7 @@ import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumEventConverter;
 import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadTimeoutUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
@@ -32,7 +33,9 @@ import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
 import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidUtils.CtidStreams;
+import io.airbyte.integrations.source.postgres.ctid.Ctid;
 import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
 import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.protocol.models.CommonField;
@@ -45,6 +48,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -137,9 +141,10 @@ public class PostgresCdcCtidInitializer {
                                                                                      final boolean savedOffsetAfterReplicationSlotLSN) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
-    final Duration subsequentRecordWaitTime = PostgresUtils.getSubsequentRecordWaitTime(sourceConfig);
+    final Duration initialLoadTimeout = InitialLoadTimeoutUtil.getInitialLoadTimeout(sourceConfig);
     final int queueSize = PostgresUtils.getQueueSize(sourceConfig);
     LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+    LOGGER.info("Initial load timeout: {} hours", initialLoadTimeout.get(ChronoUnit.HOURS));
     LOGGER.info("Queue size: {}", queueSize);
 
     if (isDebugMode(sourceConfig) && !PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
@@ -188,29 +193,42 @@ public class PostgresCdcCtidInitializer {
     final CdcState stateToBeUsed = ctidStateManager.getCdcState();
     final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
         savedOffsetAfterReplicationSlotLSN);
+
     final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>();
     final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = new ArrayList<>();
-    List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid = new ArrayList<>();
+    final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid = new ArrayList<>();
     if (!ctidStreams.streamsForCtidSync().isEmpty()) {
       streamsUnderVacuum.addAll(streamsUnderVacuum(database,
           ctidStreams.streamsForCtidSync(), quoteString).result());
 
-      finalListOfStreamsToBeSyncedViaCtid =
+      finalListOfStreamsToBeSyncedViaCtid.addAll(
           streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
               : ctidStreams.streamsForCtidSync().stream()
                   .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
-                  .toList();
+                  .toList());
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
           finalListOfStreamsToBeSyncedViaCtid,
           quoteString);
       final PostgresCtidHandler ctidHandler;
       if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
-        finalListOfStreamsToBeSyncedViaCtid = finalListOfStreamsToBeSyncedViaCtid.stream()
+        finalListOfStreamsToBeSyncedViaCtid.clear();
+        finalListOfStreamsToBeSyncedViaCtid.addAll(finalListOfStreamsToBeSyncedViaCtid.stream()
             .filter(stream -> !fileNodeHandler.getFailedToQuery().contains(
                 new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())))
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
       }
       LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
+
+      // Debezium is started for streams that have been started - that is they have been partially or
+      // fully completed.
+      final var startedCdcStreamList = catalog.getStreams().stream()
+          .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+          .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, finalListOfStreamsToBeSyncedViaCtid, ctidStreams))
+          .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
+
+      final var allCdcStreamList = catalog.getStreams().stream()
+          .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+          .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
 
       try {
         ctidHandler =
@@ -226,7 +244,7 @@ public class PostgresCdcCtidInitializer {
                                                                                                                          * decorateWithStartedStatus=
                                                                                                                          */ true, /*
                                                                                                                                    * decorateWithCompletedStatus=
-                                                                                                                                   */ false));
+                                                                                                                                   */ false, Optional.of(initialLoadTimeout)));
     } else {
       LOGGER.info("No streams will be synced via ctid");
     }
@@ -303,6 +321,25 @@ public class PostgresCdcCtidInitializer {
     return (stateManager.getCdcStateManager().getCdcState() == null
         || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
             : stateManager.getCdcStateManager().getCdcState();
+  }
+
+  private static boolean isStreamPartiallyOrFullyCompleted(ConfiguredAirbyteStream stream, List<ConfiguredAirbyteStream> finalListOfStreamsToBeSynced,
+      CtidStreams ctidStreams) {
+    boolean isStreamCompleted = !ctidStreams.streamsForCtidSync().contains(stream);
+    // A stream has been partially completed if an initial load status exists.
+    boolean isStreamPartiallyCompleted = finalListOfStreamsToBeSynced.contains(stream) && (ctidStreams.pairToCtidStatus()
+        .get(new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()))) != null;
+    return isStreamCompleted || isStreamPartiallyCompleted;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Supplier<AutoCloseableIterator<AirbyteMessage>> getCdcIncrementalIteratorsSupplier(AirbyteDebeziumHandler handler,
+      RelationalDbDebeziumPropertiesManager propertiesManager,
+      RelationalDbDebeziumEventConverter eventConverter,
+      CdcState stateToBeUsed,
+      PostgresCdcStateHandler postgresCdcStateHandler) {
+    return () -> handler.getIncrementalIterators(
+  propertiesManager, eventConverter, new PostgresCdcSavedInfoFetcher(stateToBeUsed), postgresCdcStateHandler);
   }
 
 }
