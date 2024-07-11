@@ -209,11 +209,16 @@ public class PostgresCdcCtidInitializer {
             "Postgres database is undergoing a full vacuum - cannot proceed with the sync. Please sync again when the vacuum is finished.");
       }
 
-      finalListOfStreamsToBeSyncedViaCtid = ctidStreams.streamsForCtidSync();
+      // Any stream currently undergoing full vacuum should not be synced via CTID as it is not a stable cursor. In practice, this will never happen
+      // during a sync as a full vacuum in Postgres locks the entire databa
+      finalListOfStreamsToBeSyncedViaCtid.addAll(ctidStreams.streamsForCtidSync());
+
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
           finalListOfStreamsToBeSyncedViaCtid,
           quoteString);
       final PostgresCtidHandler ctidHandler;
+      // Check if a full vacuum occurred between syncs. If we are unable to determine whether this has occurred, we will exclude the tables for which
+      // we were unable to determine this from the initial CTID sync.
       if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
         finalListOfStreamsToBeSyncedViaCtid.clear();
         finalListOfStreamsToBeSyncedViaCtid.addAll(finalListOfStreamsToBeSyncedViaCtid.stream()
@@ -222,17 +227,6 @@ public class PostgresCdcCtidInitializer {
             .collect(Collectors.toList()));
       }
       LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
-
-      // Debezium is started for streams that have been started - that is they have been partially or
-      // fully completed.
-      final var startedCdcStreamList = catalog.getStreams().stream()
-          .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-          .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, finalListOfStreamsToBeSyncedViaCtid, ctidStreams))
-          .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
-
-      final var allCdcStreamList = catalog.getStreams().stream()
-          .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
-          .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
 
       try {
         ctidHandler =
@@ -262,26 +256,33 @@ public class PostgresCdcCtidInitializer {
     final AirbyteDebeziumHandler<Long> handler = new AirbyteDebeziumHandler<>(sourceConfig,
         targetPosition, false, firstRecordWaitTime, queueSize, false);
     final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
-    final var cdcStreamList = catalog.getStreams().stream()
+    final var allCdcStreamList = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
-    final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
-        PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog, cdcStreamList);
+    // Debezium is started for streams that have been started - that is they have been partially or
+    // fully completed.
+    final var startedCdcStreamList = catalog.getStreams().stream()
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(stream -> isStreamPartiallyOrFullyCompleted(stream, finalListOfStreamsToBeSyncedViaCtid, ctidStreams))
+        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
+
+    // TODO
+    //final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+      //  PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog, cdcStreamList);
     final var eventConverter = new RelationalDbDebeziumEventConverter(new PostgresCdcConnectorMetadataInjector(), emittedAt);
 
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
-        propertiesManager, eventConverter, new PostgresCdcSavedInfoFetcher(stateToBeUsed), postgresCdcStateHandler);
+    //final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+      //  propertiesManager, eventConverter, new PostgresCdcSavedInfoFetcher(stateToBeUsed), postgresCdcStateHandler);
 
-    final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtidInLambda = finalListOfStreamsToBeSyncedViaCtid;
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = catalog.getStreams().stream()
-        .filter(stream -> !finalListOfStreamsToBeSyncedViaCtidInLambda.contains(stream))
+        .filter(stream -> !finalListOfStreamsToBeSyncedViaCtid.contains(stream))
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
                 new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
         .toList();
 
-    final List<AutoCloseableIterator<AirbyteMessage>> allStreamsCompleteStatusEmitters = catalog.getStreams().stream()
+    final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsCompleteStatusEmitters = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
@@ -290,7 +291,17 @@ public class PostgresCdcCtidInitializer {
         .toList();
 
     if (initialSyncCtidIterators.isEmpty()) {
-      return Stream.of(cdcStreamsStartStatusEmitters, Collections.singletonList(incrementalIteratorSupplier.get()), allStreamsCompleteStatusEmitters)
+      LOGGER.info("Initial load has finished completely - only reading the binlog");
+      /*
+       * In this case, the initial load has completed and only debezium should be run. The iterators
+       * should be run in the following order: 1. Run the debezium iterators with ALL of the incremental
+       * streams configured.
+       */
+      final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
+          PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog, allCdcStreamList);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = getCdcIncrementalIteratorsSupplier(handler,
+          propertiesManager, eventConverter, stateToBeUsed, postgresCdcStateHandler);
+      return Stream.of(cdcStreamsStartStatusEmitters, Collections.singletonList(incrementalIteratorSupplier.get()), cdcStreamsCompleteStatusEmitters)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     }
@@ -302,7 +313,7 @@ public class PostgresCdcCtidInitializer {
     return Stream
         .of(initialSyncCtidIterators, cdcStreamsStartStatusEmitters,
             Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-            allStreamsCompleteStatusEmitters)
+            cdcStreamsCompleteStatusEmitters)
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
   }
