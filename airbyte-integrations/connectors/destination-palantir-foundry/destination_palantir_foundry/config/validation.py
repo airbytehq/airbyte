@@ -1,0 +1,3 @@
+from destination_palantir_foundry.config.foundry_config import FoundryConfig
+
+def is_valid_config(config: FoundryConfig, authenticated_foundry_session)
