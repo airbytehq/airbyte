@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from copy import deepcopy
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
@@ -35,10 +36,12 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     :return: StreamData containing the first record in the slice
     """
 
-    if hasattr(stream.exit_on_rate_limit, "setter"):  # Safely set the value of exit_on_rate_limit to True
-        stream.exit_on_rate_limit = True  # type: ignore[misc]
+    first_slice_stream = deepcopy(stream)
+
+    if hasattr(first_slice_stream.exit_on_rate_limit, "setter"):  # Safely set the value of exit_on_rate_limit to True
+        first_slice_stream.exit_on_rate_limit = True  # type: ignore[misc]
 
     # We wrap the return output of read_records() because some implementations return types that are iterable,
     # but not iterators such as lists or tuples
-    records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+    records_for_slice = iter(first_slice_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
     return next(records_for_slice)
