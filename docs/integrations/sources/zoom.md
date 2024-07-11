@@ -71,6 +71,7 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.1.6 | 2024-07-10 | [41486](https://github.com/airbytehq/airbyte/pull/41486) | Update dependencies |
 | 1.1.5 | 2024-07-09 | [41316](https://github.com/airbytehq/airbyte/pull/41316) | Update dependencies |
 | 1.1.4 | 2024-07-06 | [40986](https://github.com/airbytehq/airbyte/pull/40986) | Update dependencies |
 | 1.1.3 | 2024-06-26 | [40509](https://github.com/airbytehq/airbyte/pull/40509) | Update dependencies |
