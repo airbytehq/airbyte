@@ -198,6 +198,16 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 |      array       |    array     |
 |      object      |    object    |
 
+## Troubleshooting
+
+### Handling "_Please reduce the amount of data you're asking for, then retry your request_" response from Facebook Graph API
+
+This response indicates that the Facebook Graph API requires you to reduce the fields (amount of data) requested. To resolve this issue:
+
+1. **Go to the Schema Tab**: Navigate to the schema tab of your connection.
+2. **Select the Source**: Click on the source that is having issues with synchronization.
+3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
+
 ## Changelog
 
 <details>
@@ -205,6 +215,7 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.11 | 2024-07-10 | [41039](https://github.com/airbytehq/airbyte/pull/41039) | Pick request fields from configured json schema properties if present  |
 | 3.3.10 | 2024-07-10 | [41458](https://github.com/airbytehq/airbyte/pull/41458) | Update dependencies |
 | 3.3.9 | 2024-07-09 | [41106](https://github.com/airbytehq/airbyte/pull/41106) | Update dependencies |
 | 3.3.8 | 2024-07-06 | [40934](https://github.com/airbytehq/airbyte/pull/40934) | Update dependencies |
