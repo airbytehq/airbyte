@@ -9,14 +9,15 @@ from typing import Any, Iterable, Mapping
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from destination_palantir_foundry.config.foundry_config import FoundryConfig
-from destination_palantir_foundry.config.validation import get_config_errors
+from destination_palantir_foundry.config.validation import ConfigValidator
+from destination_palantir_foundry.foundry_api.compass import CompassFactory
+from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialClientAuthFactory
 
 
 class DestinationPalantirFoundry(Destination):
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
@@ -52,7 +53,9 @@ class DestinationPalantirFoundry(Destination):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Invalid format.")
 
-        config_error = get_config_errors(logger, foundry_config)
+        config_validator = ConfigValidator(
+            logger, CompassFactory(), ConfidentialClientAuthFactory())
+        config_error = config_validator.get_config_errors(foundry_config)
         if config_error is not None:
             return AirbyteConnectionStatus(status=Status.FAILED, message=config_error)
 

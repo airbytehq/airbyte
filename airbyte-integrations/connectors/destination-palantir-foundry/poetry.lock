@@ -667,6 +667,17 @@ files = [
 ]
 
 [[package]]
+name = "mockito"
+version = "1.5.0"
+description = "Spying framework"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mockito-1.5.0-py3-none-any.whl", hash = "sha256:b4df89187bcd0b1bac44b7d6bcbd03ad652bae800a3effbd2e077276ca69a862"},
+    {file = "mockito-1.5.0.tar.gz", hash = "sha256:036128da7daf2da89a0b637bd73321e992ff65ba8a39876ca233eec17eb77e8f"},
+]
+
+[[package]]
 name = "orjson"
 version = "3.10.6"
 description = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy"
@@ -1399,4 +1410,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "67d108b01b5b67d87c2ad92b95d792978d2419f9274c7deb6e4f7389e55204f6"
+content-hash = "9ffd569e65f0ae345794ea155af7c7770c5538dd2c27df5313e12be53715da04"

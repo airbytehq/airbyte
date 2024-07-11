@@ -9,7 +9,8 @@ from pydantic import BaseModel
 COMPASS = "compass"
 
 
-class DecoratedResource(BaseModel): # partial: https://spellbook.palantir.build/repo/Compass/api/version/3.1227.0?typeId=com.palantir.compass.api.DecoratedResource
+# partial: https://spellbook.palantir.build/repo/Compass/api/version/3.1227.0?typeId=com.palantir.compass.api.DecoratedResource
+class DecoratedResource(BaseModel):
     name: str
 
 
@@ -25,5 +26,10 @@ class Compass:
             query_params={},
             path_params={"rid": rid}
         )
-        
+
         return self.api_client.call_api(get_resource_request)
+
+
+class CompassFactory:
+    def create(self, config: FoundryConfig, api_auth: Auth) -> Compass:
+        return Compass(config, api_auth)
