@@ -2929,13 +2929,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "validators"
-version = "0.31.0"
+version = "0.32.0"
 description = "Python Data Validation for Humans™"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "validators-0.31.0-py3-none-any.whl", hash = "sha256:e15a600d81555a4cd409b17bf55946c5edec7748e776afc85ed0a19bdee54e56"},
-    {file = "validators-0.31.0.tar.gz", hash = "sha256:de7574fc56a231c788162f3e7da15bc2053c5ff9e0281d9ff1afb3a7b69498df"},
+    {file = "validators-0.32.0-py3-none-any.whl", hash = "sha256:e9ce1703afb0adf7724b0f98e4081d9d10e88fa5d37254d21e41f27774c020cd"},
+    {file = "validators-0.32.0.tar.gz", hash = "sha256:9ee6e6d7ac9292b9b755a3155d7c361d76bb2dce23def4f0627662da1e300676"},
 ]
 
 [package.extras]

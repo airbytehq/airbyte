@@ -124,6 +124,7 @@ Snapchat Marketing API has limitations to 1000 items per page.
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.0.2 | 2024-07-10 | [41547](https://github.com/airbytehq/airbyte/pull/41547) | Update dependencies |
 | 1.0.1 | 2024-07-09 | [40132](https://github.com/airbytehq/airbyte/pull/40132) | Update dependencies |
 | 1.0.0 | 2024-06-20 | [39507](https://github.com/airbytehq/airbyte/pull/39507) | Migrate to low-code CDK and add incremental functionality to `organizations` |
 | 0.6.2 | 2024-05-22 | [38574](https://github.com/airbytehq/airbyte/pull/38574) | Update authenticator package |
