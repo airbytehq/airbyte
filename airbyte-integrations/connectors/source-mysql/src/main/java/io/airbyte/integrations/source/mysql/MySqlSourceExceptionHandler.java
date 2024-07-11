@@ -17,9 +17,7 @@ public class MySqlSourceExceptionHandler extends ConnectorExceptionHandler {
 
   @Override
   public void initializeErrorDictionary() {
-    super.initializeErrorDictionary();
-    this.getConnectorErrorDictionary().add(
-        new ConnectorErrorProfileBuilder()
+    add(new ConnectorErrorProfileBuilder()
             .errorClass("MySQL Syntax Exception")
             .regexMatchingPattern(".*unknown column '.+' in 'field list'.*")
             .failureType(FailureType.CONFIG)
@@ -28,8 +26,7 @@ public class MySqlSourceExceptionHandler extends ConnectorExceptionHandler {
             .referenceLinks(new ArrayList<>())
             .build());
 
-    this.getConnectorErrorDictionary().add(
-        new ConnectorErrorProfileBuilder()
+    add(new ConnectorErrorProfileBuilder()
             .errorClass("MySQL EOF Exception")
             .regexMatchingPattern(".*can not read response from server. expected to read [1-9]\\d* bytes.*")
             .failureType(FailureType.TRANSIENT)

@@ -24,10 +24,9 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
 
   @Override
   public void initializeErrorDictionary() {
-    super.initializeErrorDictionary();
     // A sample translation rule that translates the Postgres temp_file_limit error to a user-friendly
     // message
-    this.getConnectorErrorDictionary().add(new ConnectorErrorProfileBuilder()
+    add(new ConnectorErrorProfileBuilder()
         .errorClass("Postgres SQL Exception")
         .regexMatchingPattern(".*temporary file size exceeds temp_file_limit.*")
         .failureType(FailureType.TRANSIENT)
@@ -36,8 +35,7 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
         .referenceLinks(Arrays.asList("https://github.com/airbytehq/airbyte/issues/27090", "https://github.com/airbytehq/oncall/issues/1822"))
         .build());
 
-    this.getConnectorErrorDictionary().add(
-        new ConnectorErrorProfileBuilder()
+    add(new ConnectorErrorProfileBuilder()
             .errorClass("Postgres SQL Exception")
             .regexMatchingPattern(".*an i/o error occurred while sending to the backend.*")
             .failureType(FailureType.TRANSIENT)
@@ -46,8 +44,7 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
             .referenceLinks(new ArrayList<>())
             .build());
 
-    this.getConnectorErrorDictionary().add(
-        new ConnectorErrorProfileBuilder()
+    add(new ConnectorErrorProfileBuilder()
             .errorClass("Postgres Query Conflicts")
             .regexMatchingPattern(".*due to conflict with recovery.*")
             .failureType(FailureType.TRANSIENT)

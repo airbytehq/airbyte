@@ -167,6 +167,10 @@ open class ConnectorExceptionHandler {
         )
     }
 
+    fun add(errorProfile: ConnectorErrorProfile) {
+        connectorErrorDictionary.add(errorProfile)
+    }
+
     /**
      * Translates a connector specific error message to an external user-friendly message. This
      * method should be implemented by individual connectors that wish to translate connector
