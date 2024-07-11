@@ -72,59 +72,22 @@ jobs:
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
-      - name: Get RUN_ID for most recent run
-        id: get-run-id
+      - name: Approve regression tests
+        id: approve
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          prev_run_id=$(gh api repos/${{ github.repository }}/actions/runs?head_sha=${{ steps.job-vars.outputs.latest_commit }} | jq "first(.workflow_runs[] | select(.name | endswith(\"Connectors Approve Regression Tests\")) | .id)")
-          echo $prev_run_id
-
-          [ -n "$prev_run_id" ] && [ "$prev_run_id" != "null" ] || {
-            echo "Failed to determine run ID" 1>&2
-            exit 1
-          }
-
-          echo prev_run_id=$prev_run_id >> $GITHUB_OUTPUT
-
-      - name: Create artifact
-        id: create-artifact
-        run: |
-          echo '' > regression-test-approval_${{ steps.job-vars.outputs.latest_commit }}.txt
-
-      - name: Write persisted data
-        id: write-persisted-data
-        uses: actions/upload-artifact@v4
-        with:
-          name: regression-test-approval_${{ steps.job-vars.outputs.latest_commit }}.txt
-          path: regression-test-approval_${{ steps.job-vars.outputs.latest_commit }}.txt
-          retention-days: 1
-
-      - name: Get job for prev_run_id ID
-        id: get-job-id
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          job_id=$(gh api repos/${{ github.repository }}/actions/runs/${{ steps.get-run-id.outputs.prev_run_id }}/jobs | jq "first(.jobs[] | select(.name | endswith(\"Connectors Approve Regression Tests\")) | .id)")
-          echo $job_id
-
-          [ -n "$job_id" ] && [ "$job_id" != "null" ] || {
-            echo "Failed to determine job ID" 1>&2
-            exit 1
-          }
-
-          echo job_id=$job_id >> $GITHUB_OUTPUT
-
-      - name: Rerun approve-regression-tests
-        id: re-run
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "rerunning ...."
-          callback_url=${{ github.api_url }}/repos/${{ github.repository }}/actions/jobs/${{ steps.get-job-id.outputs.job_id }}/rerun
-          echo $callback_url
-          curl -X POST -Ss -H "Authorization: Bearer ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" $callback_url
-
+          echo "approving ...."
+          curl --request POST \
+          --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
+          --header 'authorization: Bearer ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "state": "success",
+            "context": "Regression tests manual approval",
+            "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+            }'
+  
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@v4
         if: success()
