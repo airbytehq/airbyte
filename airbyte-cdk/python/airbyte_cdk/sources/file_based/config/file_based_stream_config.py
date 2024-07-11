@@ -64,7 +64,7 @@ class FileBasedStreamConfig(BaseModel):
         description="When enabled, syncs will not validate or structure records against the stream's schema.",
         default=False,
     )
-    resent_n_files_to_read_for_schema_discovery: Optional[int] = Field(
+    recent_n_files_to_read_for_schema_discovery: Optional[int] = Field(
         title="Files To Read For Schema Discover",
         description="The number of resent files which will be used to discover the schema for this stream.",
         default=None,

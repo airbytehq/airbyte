@@ -71,6 +71,7 @@ class AbstractFileBasedStream(Stream):
 
         The output of this method is cached so we don't need to list the files more than once.
         This means we won't pick up changes to the files during a sync. This method uses the
+        get_files method which is implemented by the concrete stream class.
         """
         return list(self.get_files())
 

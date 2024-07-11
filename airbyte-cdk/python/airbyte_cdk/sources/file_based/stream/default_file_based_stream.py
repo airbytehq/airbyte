@@ -193,14 +193,14 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             files = self.list_files()
             first_n_files = len(files)
 
-            if self.config.resent_n_files_to_read_for_schema_discovery:
+            if self.config.recent_n_files_to_read_for_schema_discovery:
                 self.logger.info(
                     msg=(
-                        f"Only first {self.config.resent_n_files_to_read_for_schema_discovery} files will be used to infer schema "
+                        f"Only first {self.config.recent_n_files_to_read_for_schema_discovery} files will be used to infer schema "
                         f"for stream {self.name} due to limitation in config."
                     )
                 )
-                first_n_files = self.config.resent_n_files_to_read_for_schema_discovery
+                first_n_files = self.config.recent_n_files_to_read_for_schema_discovery
 
         if first_n_files == 0:
             self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")

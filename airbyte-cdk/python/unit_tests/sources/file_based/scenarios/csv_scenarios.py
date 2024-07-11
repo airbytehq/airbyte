@@ -419,7 +419,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "default": False,
                                     "type": "boolean",
                                 },
-                                "resent_n_files_to_read_for_schema_discovery": {
+                                "recent_n_files_to_read_for_schema_discovery": {
                                     "title": "Files To Read For Schema Discover",
                                     "description": "The number of resent files which will be used to discover the schema for this stream.",
                                     "exclusiveMinimum": 0,
@@ -832,7 +832,7 @@ multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
                     "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "resent_n_files_to_read_for_schema_discovery": 3,
+                    "recent_n_files_to_read_for_schema_discovery": 3,
                 }
             ]
         }
