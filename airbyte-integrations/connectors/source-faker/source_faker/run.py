@@ -10,6 +10,7 @@ from source_faker import SourceFaker
 
 
 def run():
+    print("running")
     source = SourceFaker()
     launch(source, sys.argv[1:])
 
