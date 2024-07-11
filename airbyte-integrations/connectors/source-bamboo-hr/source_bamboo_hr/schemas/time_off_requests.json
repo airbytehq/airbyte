@@ -25,7 +25,9 @@
       "default": ""
     },
     "status": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
     },
     "dates": {
       "type": ["null", "string"],
