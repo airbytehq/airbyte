@@ -1,6 +1,7 @@
 name: Approve Regression Tests
 permissions:
   pull-requests: write
+  statuses: write
 on:
   workflow_dispatch:
     inputs:
@@ -28,9 +29,6 @@ jobs:
   approve-regression-tests:
     name: "Approve Regression Tests"
     runs-on: ubuntu-latest
-    permissions:
-      statuses: write
-      issues: write
     steps:
       - name: Get job variables
         id: job-vars
