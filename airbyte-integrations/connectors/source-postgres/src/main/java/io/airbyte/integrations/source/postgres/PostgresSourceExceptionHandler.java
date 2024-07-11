@@ -11,19 +11,14 @@ import java.util.Arrays;
 
 public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
 
-  private String POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE =
-      "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
-          "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds";
-
-  private String DATABASE_READ_ERROR = "Encountered an error while reading the database";
-
-  @SuppressWarnings("this-escape")
-  public PostgresSourceExceptionHandler() {
-    initializeErrorDictionary();
-  }
-
   @Override
   public void initializeErrorDictionary() {
+    String POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE =
+        "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
+            "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds";
+
+    String DATABASE_READ_ERROR = "Encountered an error while reading the database";
+
     // A sample translation rule that translates the Postgres temp_file_limit error to a user-friendly
     // message
     add(new ConnectorErrorProfileBuilder()
@@ -36,22 +31,22 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
         .build());
 
     add(new ConnectorErrorProfileBuilder()
-            .errorClass("Postgres SQL Exception")
-            .regexMatchingPattern(".*an i/o error occurred while sending to the backend.*")
-            .failureType(FailureType.TRANSIENT)
-            .externalMessage(DATABASE_READ_ERROR)
-            .sampleInternalMessage("org.postgresql.util.PSQLException: An I/O error occured while sending to the backend.")
-            .referenceLinks(new ArrayList<>())
-            .build());
+        .errorClass("Postgres SQL Exception")
+        .regexMatchingPattern(".*an i/o error occurred while sending to the backend.*")
+        .failureType(FailureType.TRANSIENT)
+        .externalMessage(DATABASE_READ_ERROR)
+        .sampleInternalMessage("org.postgresql.util.PSQLException: An I/O error occured while sending to the backend.")
+        .referenceLinks(new ArrayList<>())
+        .build());
 
     add(new ConnectorErrorProfileBuilder()
-            .errorClass("Postgres Query Conflicts")
-            .regexMatchingPattern(".*due to conflict with recovery.*")
-            .failureType(FailureType.TRANSIENT)
-            .externalMessage(POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE)
-            .sampleInternalMessage("ERROR: canceling statement due to conflict with recovery.")
-            .referenceLinks(new ArrayList<>())
-            .build());
+        .errorClass("Postgres Query Conflicts")
+        .regexMatchingPattern(".*due to conflict with recovery.*")
+        .failureType(FailureType.TRANSIENT)
+        .externalMessage(POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE)
+        .sampleInternalMessage("ERROR: canceling statement due to conflict with recovery.")
+        .referenceLinks(new ArrayList<>())
+        .build());
   }
 
 }

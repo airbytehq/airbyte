@@ -100,6 +100,10 @@ open class ConnectorExceptionHandler {
     protected open val connectorErrorDictionary: MutableList<ConnectorErrorProfile> =
         mutableListOf()
 
+    init {
+        initializeErrorDictionary()
+    }
+
     /**
      * Handles exceptions thrown by the connector. This method is the main entrance for handling
      * exceptions thrown by the connector. It checks if the exception is a known exception, and if
