@@ -16,7 +16,8 @@ packages = [ { include = "destination_palantir_foundry" }, {include = "main.py" 
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "^3.3.0"
+foundry-platform-sdk = "^0.6.0"
 
 [tool.poetry.scripts]
 destination-palantir-foundry = "destination_palantir_foundry.run:run"
