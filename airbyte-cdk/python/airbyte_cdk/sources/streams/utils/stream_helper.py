@@ -50,4 +50,4 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
         return next(records_for_slice)
     finally:
         # Restore the original exit_on_rate_limit value
-        stream.exit_on_rate_limit = original_exit_on_rate_limit
+        stream.exit_on_rate_limit = original_exit_on_rate_limit  # type: ignore[misc]
