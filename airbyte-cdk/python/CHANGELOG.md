@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.4.0
+file-based cdk: add config option to limit number of files for schema discover
+
 ## 3.3.0
 CDK: add incomplete status to availability check during read
 
