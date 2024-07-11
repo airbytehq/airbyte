@@ -21,7 +21,10 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
@@ -44,6 +47,9 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   private final long chunkSize;
   private final OrderedColumnInfo ocInfo;
   private final boolean isCompositeKeyLoad;
+  private final Instant startInstant;
+  private Optional<Duration> cdcInitialLoadTimeout;
+  private boolean isCdcSync;
 
   MssqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
@@ -53,7 +59,9 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
                                  final List<String> columnNames,
                                  final AirbyteStreamNameNamespacePair pair,
                                  final long chunkSize,
-                                 final boolean isCompositeKeyLoad) {
+                                 final boolean isCompositeKeyLoad,
+                                 final Instant startInstant,
+                                 final Optional<Duration> cdcInitialLoadTimeout) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -63,6 +71,9 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     this.chunkSize = chunkSize;
     this.ocInfo = initialLoadStateManager.getOrderedColumnInfo(pair);
     this.isCompositeKeyLoad = isCompositeKeyLoad;
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
+    this.isCdcSync = isCdcSync(initialLoadStateManager);
   }
 
   @CheckForNull
@@ -161,6 +172,16 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   public void close() throws Exception {
     if (currentIterator != null) {
       currentIterator.close();
+    }
+  }
+
+  private boolean isCdcSync(MssqlInitialLoadStateManager initialLoadStateManager) {
+    if (initialLoadStateManager instanceof MssqlInitialLoadGlobalStateManager) {
+      LOGGER.info("Running a cdc sync");
+      return true;
+    } else {
+      LOGGER.info("Not running a cdc sync");
+      return false;
     }
   }
 
