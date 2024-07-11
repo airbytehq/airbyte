@@ -9,11 +9,11 @@
         "cursor_field": ["id"],
         "cursor": 4,
         "cursor_record_count": 1,
-        "stream_namespace": "%s"
+        "stream_namespace": "20240711-aJR3ODUV"
       },
       "stream_descriptor": {
         "name": "id_and_name",
-        "namespace": "%s"
+        "namespace": "20240711-aJR3ODUV"
       }
     }
   }

@@ -11,7 +11,6 @@ WORKDIR /usr/src/app
 # Copy the script to the container
 COPY seed/hook.py .
 COPY seed/requirement.txt .
-COPY configured_catalog.json .
 
 RUN ls .
 
