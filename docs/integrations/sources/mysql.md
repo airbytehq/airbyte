@@ -233,7 +233,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.13  | 2024-07-11 | [40208](https://github.com/airbytehq/airbyte/pull/40208) | Start using the new error MySql source error handler that comes with a new error translation layer.                                             | 
+| 3.4.13  | 2024-07-04 | [40208](https://github.com/airbytehq/airbyte/pull/40208) | Start using the new error MySql source error handler that comes with a new error translation layer.                                             | 
 | 3.4.12  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat.                                                                                      |
 | 3.4.11  | 2024-06-26 | [40561](https://github.com/airbytehq/airbyte/pull/40561)   | Support PlanetScale MySQL's per-query row limit.                                                                                                |
 | 3.4.10  | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349)   | Full refresh stream sending internal count metadata.                                                                                            |
