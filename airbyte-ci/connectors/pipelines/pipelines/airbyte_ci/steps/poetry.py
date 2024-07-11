@@ -18,7 +18,7 @@ class PoetryRunStep(Step):
             title (str): name of the step
             parent_dir_path (str): The path to the parent directory of the poetry project
             module_path (str): The path to the poetry project
-            poetry_run_args (List[str]): The arguments to pass to the poetry run command
+            poetry_run_args (List[str]): The arguments to pass to the poetry run command. Silly change.
         """
         self._title = title
         super().__init__(context)

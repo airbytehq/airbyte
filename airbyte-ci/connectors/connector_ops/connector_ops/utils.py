@@ -93,7 +93,7 @@ def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
         diff_regex (str): Find the edited files that contain the following regex in their change.
 
     Returns:
-        Set[Connector]: Set of connectors that were changed
+        Set[Connector]: Set of connectors that were changed. Silly change!
     """
     return get_changed_file(METADATA_FILE_NAME, diff_regex)
 
