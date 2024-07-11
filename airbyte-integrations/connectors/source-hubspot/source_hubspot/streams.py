@@ -2245,16 +2245,15 @@ class CustomObject(CRMSearchStream, ABC):
     primary_key = "id"
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
-    def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs):
+    def __init__(
+        self, entity: str, name: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs
+    ):
         super().__init__(**kwargs)
         self.entity = entity
+        self.name = name
         self.schema = schema
         self.fully_qualified_name = fully_qualified_name
         self.custom_properties = custom_properties
-
-    @property
-    def name(self) -> str:
-        return self.entity
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.schema
