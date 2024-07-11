@@ -146,7 +146,7 @@ class VersionBreakingChange(BaseModel):
 
     upgradeDeadline: date = Field(..., description="The deadline by which to upgrade before the breaking change takes effect.")
     message: str = Field(..., description="Descriptive message detailing the breaking change.")
-    forceRelease: Optional[bool] = Field(..., description="The flag used to indicate whether a breaking change in the connector version should take effect less tha one week, bypassing the standard deadline requirement.")
+    forceRelease: Optional[bool] = Field(None, description="The flag used to indicate whether a breaking change in the connector version should take effect less tha one week, bypassing the standard deadline requirement.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
