@@ -6,12 +6,14 @@
 import json
 import logging
 from http import HTTPStatus
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
+from airbyte_cdk.sources.streams import CheckpointMixin
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
@@ -661,3 +663,219 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, pa
 def test_connection_pool():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
     assert stream._http_client._session.adapters["https://"]._pool_connections == 20
+
+
+class StubParentHttpStream(HttpStream, CheckpointMixin):
+    primary_key = "primary_key"
+
+    counter = 0
+
+    def __init__(self, records: List[Mapping[str, Any]]):
+        super().__init__()
+        self._records = records
+        self._state: MutableMapping[str, Any] = {}
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {"__ab_full_refresh_sync_complete": True}
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._records
+
+        self.state = {"__ab_full_refresh_sync_complete": True}
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+
+class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
+    primary_key = "primary_key"
+
+    counter = 0
+
+    def __init__(self, record_pages: List[List[Mapping[str, Any]]]):
+        super().__init__()
+        self._record_pages = record_pages
+        self._state: MutableMapping[str, Any] = {}
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {"__ab_full_refresh_sync_complete": True}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        page_number = self.state.get("page") or 1
+        yield from self._record_pages[page_number - 1]
+
+        if page_number < len(self._record_pages):
+            self.state = {"page": page_number + 1}
+        else:
+            self.state = {"__ab_full_refresh_sync_complete": True}
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        self._state = value
+
+
+class StubHttpSubstream(HttpSubStream):
+    primary_key = "primary_key"
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        return [
+            {"id": "abc", "parent": stream_slice.get("id")},
+            {"id", "def", "parent", stream_slice.get("id")},
+        ]
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+
+def test_substream_with_incremental_parent():
+    expected_slices = [
+        {"parent": {"id": "abc"}},
+        {"parent": {"id": "def"}},
+    ]
+
+    parent_records = [
+        {"id": "abc"},
+        {"id": "def"},
+    ]
+
+    parent_stream = StubParentHttpStream(records=parent_records)
+    substream = StubHttpSubstream(parent=parent_stream)
+
+    actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]
+    assert actual_slices == expected_slices
+
+
+def test_substream_with_resumable_full_refresh_parent():
+    parent_pages = [
+        [
+            {"id": "page_1_abc"},
+            {"id": "page_1_def"},
+        ],
+        [
+            {"id": "page_2_abc"},
+            {"id": "page_2_def"},
+        ],
+        [
+            {"id": "page_3_abc"},
+            {"id": "page_3_def"},
+        ]
+    ]
+
+    expected_slices = [
+        {"parent": {"id": "page_1_abc"}},
+        {"parent": {"id": "page_1_def"}},
+        {"parent": {"id": "page_2_abc"}},
+        {"parent": {"id": "page_2_def"}},
+        {"parent": {"id": "page_3_abc"}},
+        {"parent": {"id": "page_3_def"}},
+    ]
+
+    parent_stream = StubParentResumableFullRefreshStream(record_pages=parent_pages)
+    substream = StubHttpSubstream(parent=parent_stream)
+
+    actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]
+    assert actual_slices == expected_slices
+
+
+def test_substream_skips_non_record_messages():
+    expected_slices = [
+        {"parent": {"id": "abc"}},
+        {"parent": {"id": "def"}},
+        {"parent": {"id": "ghi"}},
+    ]
+
+    parent_records = [
+        {"id": "abc"},
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="should_not_be_parent_record")),
+        {"id": "def"},
+        {"id": "ghi"},
+    ]
+
+    parent_stream = StubParentHttpStream(records=parent_records)
+    substream = StubHttpSubstream(parent=parent_stream)
+
+    actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]
+    assert actual_slices == expected_slices
