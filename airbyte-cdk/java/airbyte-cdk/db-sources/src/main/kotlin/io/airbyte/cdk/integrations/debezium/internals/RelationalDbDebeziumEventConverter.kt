@@ -27,14 +27,18 @@ class RelationalDbDebeziumEventConverter(
                 "ChangeEvent contains no before or after records $debeziumEvent"
             )
         }
+        // Value of before and after may be a null or a NullNode object, representing a "null" in json
+        val baseNode = when (after?.isNull == true) {
+            true -> before
+            false -> after
+        } as ObjectNode
 
-        val baseNode = (after ?: before) as ObjectNode
         val data: JsonNode =
             DebeziumEventConverter.Companion.addCdcMetadata(
                 baseNode,
                 source,
                 cdcMetadataInjector,
-                after == null
+                after?.isNull == true
             )
         return DebeziumEventConverter.Companion.buildAirbyteMessage(
             source,
