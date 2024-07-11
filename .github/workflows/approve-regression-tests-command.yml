@@ -24,10 +24,6 @@ on:
         required: false
 
 run-name: "Approve Regression Tests #${{ github.event.inputs.pr }}"
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
-  # Cancel any previous runs on the same branch if they are still in progress
-  cancel-in-progress: true
 
 jobs:
   approve-regression-tests:
@@ -65,8 +61,6 @@ jobs:
 
       - name: Approve regression tests
         id: approve
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "approving ...."
           response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
@@ -85,7 +79,7 @@ jobs:
           else
             echo "Regression tests approved."
           fi
-  
+
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@v4
         if: success()
