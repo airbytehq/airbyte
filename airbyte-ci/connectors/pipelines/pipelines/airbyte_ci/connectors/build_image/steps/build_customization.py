@@ -60,6 +60,12 @@ def get_entrypoint(connector: Connector) -> List[str]:
     return ["python", f"/airbyte/integration_code/{main_file_name}"]
 
 
+def apply_airbyte_entrypoint(connector_container: Container, connector: Connector) -> Container:
+    entrypoint = get_entrypoint(connector)
+
+    return connector_container.with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint)).with_entrypoint(entrypoint)
+
+
 async def pre_install_hooks(connector: Connector, base_container: Container, logger: Logger) -> Container:
     """Run the pre_connector_install hook if it exists in the build_customization.py module.
     It will mutate the base_container and return it.

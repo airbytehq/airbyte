@@ -419,6 +419,12 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "default": False,
                                     "type": "boolean",
                                 },
+                                "recent_n_files_to_read_for_schema_discovery": {
+                                    "title": "Files To Read For Schema Discover",
+                                    "description": "The number of resent files which will be used to discover the schema for this stream.",
+                                    "exclusiveMinimum": 0,
+                                    "type": "integer",
+                                }
                             },
                             "required": ["name", "format"],
                         },
@@ -808,6 +814,144 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                     "col2": "val22b",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+        ]
+    )
+).build()
+
+multi_csv_stream_n_file_exceeds_config_limit_for_inference = (
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("multi_csv_stream_n_file_exceeds_config_limit_for_inference")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "csv"},
+                    "globs": ["*"],
+                    "validation_policy": "Emit Record",
+                    "recent_n_files_to_read_for_schema_discovery": 3,
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3", "col4"),
+                        ("val11c", "val12c", "val13c", "val14c"),
+                        ("val21c", "val22c", "val23c", "val24c"),
+                    ],
+                    "last_modified": "2023-06-06T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
+                            "col4": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val11b",
+                    "col2": "val12b",
+                    "col3": "val13b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21b",
+                    "col2": "val22b",
+                    "col3": "val23b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val11c",
+                    "col2": "val12c",
+                    "col3": "val13c",
+                    "col4": "val14c",
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
+                    "_ab_source_file_url": "c.csv",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21c",
+                    "col2": "val22c",
+                    "col3": "val23c",
+                    "col4": "val24c",
+                    "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
+                    "_ab_source_file_url": "c.csv",
                 },
                 "stream": "stream1",
             },
