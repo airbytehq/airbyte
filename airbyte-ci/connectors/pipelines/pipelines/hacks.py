@@ -81,7 +81,7 @@ def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name:
 
     Only required for certified connectors.
     """
-    if any([connector.support_level == "certified" for connector in ctx.obj["selected_connectors"]]):
+    if any([connector.support_level == "certified" for connector in ctx.obj["selected_connectors_with_modified_files"]]):
         update_commit_status_check(
             ctx.obj["git_revision"],
             "failure",
