@@ -78,15 +78,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "approving ...."
-          curl --request POST \
-          --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
-          --header 'authorization: Bearer ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}' \
-          --header 'content-type: application/json' \
-          --data '{
-            "state": "success",
-            "context": "Regression tests manual approval",
-            "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
-            }'
+          response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
+            --request POST \
+            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
+            --header 'authorization: Bearer ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}' \
+            --header 'content-type: application/json' \
+            --data '{
+              "state": "success",
+              "context": "Regression tests manual approval",
+              "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+            }')
+          if [ $response -ne 201 ]; then
+            echo "Failed to approve regression tests. HTTP status code: $response"
+            exit 1
+          else
+            echo "Regression tests approved successfully."
+          fi
   
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@v4
