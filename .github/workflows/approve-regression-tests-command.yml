@@ -72,7 +72,7 @@ jobs:
           response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
             --request POST \
             --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
-            --header 'authorization: Bearer ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}' \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'content-type: application/json' \
             --data '{
               "state": "success",
