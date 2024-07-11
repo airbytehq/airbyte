@@ -207,26 +207,6 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
     return project_dependencies, test_dependencies
 
 
-def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path]:
-    """Recursively retrieve all transitive dependencies of a Gradle project.
-
-    Args:
-        with_test_dependencies: True to include test dependencies.
-
-    Returns:
-        List[Path]: All dependencies of the project.
-    """
-    base_path = Path("airbyte-cdk/java/airbyte-cdk")
-    found: List[Path] = [base_path]
-    for submodule in ["core", "db-sources", "db-destinations"]:
-        found.append(base_path / submodule)
-        project_dependencies, test_dependencies = parse_gradle_dependencies(base_path / Path(submodule) / Path("build.gradle"))
-        found += project_dependencies
-        if with_test_dependencies:
-            found += test_dependencies
-    return list(set(found))
-
-
 def get_all_gradle_dependencies(
     build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
 ) -> List[Path]:
@@ -242,12 +222,6 @@ def get_all_gradle_dependencies(
     if found_dependencies is None:
         found_dependencies = []
     project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
-
-    # Since first party project folders are transitive (compileOnly) in the
-    # CDK, we always need to add them as the project dependencies.
-    project_dependencies += get_local_cdk_gradle_dependencies(False)
-    test_dependencies += get_local_cdk_gradle_dependencies(with_test_dependencies=True)
-
     all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
     for dependency_path in all_dependencies:
         if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
@@ -685,6 +659,7 @@ class Connector:
     def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
+            dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk")]
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )
