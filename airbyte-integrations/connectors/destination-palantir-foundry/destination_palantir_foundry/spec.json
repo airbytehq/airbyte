@@ -8,7 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Palantir Foundry",
     "type": "object",
-    "required": ["host", "auth", "destination_config", "sync_mode"],
+    "required": ["host", "auth", "destination_config"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -18,39 +18,25 @@
         "order": 0
       },
       "auth": {
-        "title": "Authentication",
-        "description": "How you want to authenticate with Palantir Foundry",
+        "title" : "OAuth 2.0 Client Credentials",
+        "required" : [
+          "client_id",
+          "client_secret"
+        ],
         "type": "object",
-        "order": 1,
-        "oneOf": [
-          {
-            "title" : "Client Credentials",
-            "required" : [
-              "instance",
-              "client_id",
-              "client_secret"
-            ],
-            "type": "object",
-            "properties" : {
-              "instance": {
-                "type": "string",
-                "enum": ["client_credentials"],
-                "default": "client_credentials"
-              },
-              "client_id": {
-                "title": "Client ID",
-                "type": "string",
-                "order": 0
-              },
-              "client_secret": {
-                "title": "Client Secret",
-                "type": "string",
-                "order": 1,
-                "airbyte_secret": true
-              }
-            }
+        "properties" : {
+          "client_id": {
+            "title": "Client ID",
+            "type": "string",
+            "order": 0
+          },
+          "client_secret": {
+            "title": "Client Secret",
+            "type": "string",
+            "order": 1,
+            "airbyte_secret": true
           }
-        ]
+        }
       },
       "destination_config": {
         "title": "Destination Configuration",
@@ -64,11 +50,6 @@
             "order": 0
           }
         }
-      },
-      "sync_mode": {
-        "type": "string",
-        "enum": ["Stream"],
-        "default": "Stream"
       }
     }
   }
