@@ -83,6 +83,7 @@ The Trello connector should not run into Trello API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------- |
+| 1.0.9 | 2024-07-10 | [41601](https://github.com/airbytehq/airbyte/pull/41601) | Update dependencies |
 | 1.0.8 | 2024-07-09 | [41099](https://github.com/airbytehq/airbyte/pull/41099) | Update dependencies |
 | 1.0.7 | 2024-07-06 | [40825](https://github.com/airbytehq/airbyte/pull/40825) | Update dependencies |
 | 1.0.6 | 2024-06-27 | [40592](https://github.com/airbytehq/airbyte/pull/40592) | Updated to use latest `CDK` version, fixed `cursor pagination` logic |
