@@ -405,11 +405,11 @@ class TestSpec(BaseTest):
             property_definition = schema_helper.get_parent(format_path)
             pattern = property_definition.get("pattern")
             if format == "date" and not pattern == DATE_PATTERN:
-                detailed_logger.warning(
+                pytest.fail(
                     f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI."
                 )
             if format == "date-time" and not pattern == DATETIME_PATTERN:
-                detailed_logger.warning(
+                pytest.fail(
                     f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
                 )
 
@@ -426,11 +426,11 @@ class TestSpec(BaseTest):
                 property_definition = schema_helper.get_parent(pattern_path)
                 format = property_definition.get("format")
                 if not format == "date" and pattern == DATE_PATTERN:
-                    detailed_logger.warning(
+                    pytest.fail(
                         f"{pattern_path} is defining a pattern that looks like a date without setting the format to `date`. Consider specifying the format to make it easier for users to edit this field in the UI."
                     )
                 if not format == "date-time" and pattern == DATETIME_PATTERN:
-                    detailed_logger.warning(
+                    pytest.fail(
                         f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
                     )
 
