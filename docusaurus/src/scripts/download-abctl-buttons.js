@@ -1,6 +1,7 @@
 import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment";
 
 if (ExecutionEnvironment.canUseDOM) {
+  // use data-architecture context to find the link to the relevant binary.
   function initializeDownloadButton(button) {
     const architecture = button.getAttribute('data-architecture');
     fetch('https://api.github.com/repos/airbytehq/abctl/releases/latest')
@@ -34,6 +35,7 @@ if (ExecutionEnvironment.canUseDOM) {
     button.classList.remove('disabled');
   }
 
+  // All buttons with this behavior have the class abctl-download.
   function initializeAllDownloadButtons() {
     const buttons = document.getElementsByClassName('abctl-download');
     Array.from(buttons).forEach(initializeDownloadButton);
