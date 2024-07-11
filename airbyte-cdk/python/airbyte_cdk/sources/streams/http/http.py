@@ -33,9 +33,9 @@ class HttpStream(Stream, ABC):
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
-    exit_on_rate_limit: Optional[bool] = None
 
     def __init__(self, authenticator: Optional[AuthBase] = None, api_budget: Optional[APIBudget] = None):
+        self._exit_on_rate_limit: bool = False
         self._http_client = HttpClient(
             name=self.name,
             logger=self.logger,
@@ -46,6 +46,17 @@ class HttpStream(Stream, ABC):
             backoff_strategy=self.get_backoff_strategy(),
             message_repository=InMemoryMessageRepository(),
         )
+
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        """
+        :return: False if the stream will retry endlessly when rate limited
+        """
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self._exit_on_rate_limit = value
 
     @property
     def cache_filename(self) -> str:
