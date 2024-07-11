@@ -57,6 +57,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.3.17 | 2024-07-10 | [41537](https://github.com/airbytehq/airbyte/pull/41537) | Update dependencies |
 | 0.3.16 | 2024-07-09 | [41097](https://github.com/airbytehq/airbyte/pull/41097) | Update dependencies |
 | 0.3.15 | 2024-07-06 | [40982](https://github.com/airbytehq/airbyte/pull/40982) | Update dependencies |
 | 0.3.14 | 2024-06-25 | [40407](https://github.com/airbytehq/airbyte/pull/40407) | Update dependencies |
