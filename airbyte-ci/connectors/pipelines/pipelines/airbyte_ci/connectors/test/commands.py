@@ -14,16 +14,17 @@ from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pip
 from pipelines.airbyte_ci.connectors.test.steps.common import LiveTests
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import LOCAL_BUILD_PLATFORM, MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS, ContextState
+from pipelines.consts import LOCAL_BUILD_PLATFORM, MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS, CIContext, ContextState
 from pipelines.helpers.execution import argument_parsing
 from pipelines.helpers.execution.run_steps import RunStepOptions
-from pipelines.helpers.github import update_global_commit_status_check_for_tests
+from pipelines.helpers.github import update_commit_status_check, update_global_commit_status_check_for_tests
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 from pipelines.models.secrets import GSMSecretStore
 from pipelines.models.steps import STEP_PARAMS
 
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
 GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
+REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT = "Regression tests manual approval"
 TESTS_SKIPPED_BY_DEFAULT = [
     CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS,
 ]
@@ -124,6 +125,17 @@ async def test(
 
     if ctx.obj["selected_connectors_with_modified_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
+        if any([connector.support_level == "certified" for connector in ctx.obj["selected_connectors"]]):
+            update_commit_status_check(
+                ctx.obj["git_revision"],
+                "failure",
+                ctx.obj["gha_workflow_run_url"],
+                description="Check if regression tests have been manually approved",
+                context=REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT,
+                is_optional=False,
+                should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
+                logger=main_logger,
+            )
     else:
         main_logger.warn("No connector were selected for testing.")
         update_global_commit_status_check_for_tests(ctx.obj, "success")
