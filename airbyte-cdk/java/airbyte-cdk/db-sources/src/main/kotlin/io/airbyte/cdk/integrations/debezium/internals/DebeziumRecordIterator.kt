@@ -256,8 +256,10 @@ class DebeziumRecordIterator<T>(
         if (this.tsLastHeartbeat == null) {
             return false
         } else if (!isTest() && receivedFirstRecord) {
-            // Closing debezium due to heartbeat position not changing only exists as an escape hatch
-            // for testing setups. In production, we rely on the platform heartbeats to kill the sync
+            // Closing debezium due to heartbeat position not changing only exists as an escape
+            // hatch
+            // for testing setups. In production, we rely on the platform heartbeats to kill the
+            // sync
             // ONLY if we haven't received a record from Debezium. If a record has not been received
             // from Debezium and the heartbeat isn't changing, the sync should be shut down due to
             // heartbeat position not changing.
