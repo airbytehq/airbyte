@@ -32,7 +32,7 @@ class AbstractFileBasedStream(Stream):
       files in the stream.
     - A DiscoveryPolicy that controls the number of concurrent requests sent to the source
       during discover, and the number of files used for schema discovery.
-    - A dictionary of FileType:Parser that holds all of the file types that can be handled
+    - A dictionary of FileType:Parser that holds all the file types that can be handled
       by the stream.
     """
 
@@ -70,7 +70,7 @@ class AbstractFileBasedStream(Stream):
         List all files that belong to the stream.
 
         The output of this method is cached so we don't need to list the files more than once.
-        This means we won't pick up changes to the files during a sync. This meethod uses the
+        This means we won't pick up changes to the files during a sync. This method uses the
         get_files method which is implemented by the concrete stream class.
         """
         return list(self.get_files())
