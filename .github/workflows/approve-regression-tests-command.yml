@@ -49,16 +49,6 @@ jobs:
           LATEST_COMMIT=$(gh api repos/${{ github.repository }}/commits/$BRANCH | jq -r .sha)
           echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
 
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ steps.job-vars.outputs.repo }}
-          ref: ${{ steps.job-vars.outputs.branch }}
-          fetch-depth: 1
-          # Important that token is a PAT so that CI checks are triggered again.
-          # Without this we would be forever waiting on required checks to pass.
-          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
-
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
         # comment with the job run link.
