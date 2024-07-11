@@ -38,7 +38,7 @@ async def get_pylint_output(dagger_client: dagger.Client, connector: Connector) 
     Returns:
         str | None: Pylint output.
     """
-    if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+    if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE, ConnectorLanguage.MANIFEST_ONLY]:
         return None
     cdk_deprecation_checker_path = Path(os.path.abspath(__file__)).parent / "pylint_plugins/cdk_deprecation_checkers.py"
     pip_cache_volume: dagger.CacheVolume = dagger_client.cache_volume("pip_cache")
