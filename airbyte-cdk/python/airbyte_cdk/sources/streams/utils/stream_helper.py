@@ -37,10 +37,11 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     """
     # Store the original value of exit_on_rate_limit
     original_exit_on_rate_limit = stream.exit_on_rate_limit
+    exit_on_rate_limit_has_setter = hasattr(stream.exit_on_rate_limit, "setter")
 
     try:
         # Ensure exit_on_rate_limit is safely set to True if possible
-        if hasattr(stream.exit_on_rate_limit, "setter"):
+        if exit_on_rate_limit_has_setter:
             stream.exit_on_rate_limit = True  # type: ignore[misc]
 
         # We wrap the return output of read_records() because some implementations return types that are iterable,
@@ -50,4 +51,5 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
         return next(records_for_slice)
     finally:
         # Restore the original exit_on_rate_limit value
-        stream.exit_on_rate_limit = original_exit_on_rate_limit  # type: ignore[misc]
+        if exit_on_rate_limit_has_setter:
+            stream.exit_on_rate_limit = original_exit_on_rate_limit  # type: ignore[misc]
