@@ -312,16 +312,18 @@ class SourceGoogleAds(ConcurrentSourceAdapter):
                     KeywordView(**non_manager_incremental_config),
                 ]
             )
-
+        concurrent_streams = []
         for single_query_config in config.get("custom_queries_array", []):
             query_stream = self.create_custom_query_stream(
                 google_api, single_query_config, customers, non_manager_accounts, incremental_config, non_manager_incremental_config
             )
             if query_stream:
-                streams.append(query_stream)
+                concurrent_streams.append(query_stream)
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
-        return [self._to_concurrent(stream, self._start_date_to_date(config), state_manager, customers) for stream in streams]
+        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in concurrent_streams}, state=self.state)
+        for stream in concurrent_streams:
+            streams.append(self._to_concurrent(stream, self._start_date_to_date(config), state_manager, customers))
+        return streams
 
     def _get_sync_mode_from_catalog(self, stream: Stream) -> Optional[SyncMode]:
         if self.catalog:
