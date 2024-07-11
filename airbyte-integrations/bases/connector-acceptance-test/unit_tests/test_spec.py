@@ -1638,7 +1638,7 @@ def test_forbidden_complex_types(mocker, connector_spec, should_fail):
 
 
 @pytest.mark.parametrize(
-    "connector_spec, is_warning_logged",
+    "connector_spec, should_fail",
     (
         ({"type": "object", "properties": {"date": {"type": "string"}}}, False),
         ({"type": "object", "properties": {"date": {"type": "string", "format": "date"}}}, True),
@@ -1670,20 +1670,19 @@ def test_forbidden_complex_types(mocker, connector_spec, should_fail):
         ),
     ),
 )
-def test_date_pattern(mocker, connector_spec, is_warning_logged):
+def test_date_pattern(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     logger = mocker.Mock()
     t = _TestSpec()
     t.test_date_pattern(ConnectorSpecification(connectionSpecification=connector_spec), logger)
-    conftest.pytest.fail.assert_not_called()
-    if is_warning_logged:
-        _, args, _ = logger.warning.mock_calls[0]
-        msg, *_ = args
-        assert "Consider setting the pattern" in msg
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
 
 
 @pytest.mark.parametrize(
-    "connector_spec, is_warning_logged",
+    "connector_spec, should_fail",
     (
         ({"type": "object", "properties": {"date": {"type": "string"}}}, False),
         ({"type": "object", "properties": {"format": {"type": "string"}}}, False),
@@ -1715,16 +1714,15 @@ def test_date_pattern(mocker, connector_spec, is_warning_logged):
         ),
     ),
 )
-def test_date_format(mocker, connector_spec, is_warning_logged):
+def test_date_format(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     logger = mocker.Mock()
     t = _TestSpec()
     t.test_date_format(ConnectorSpecification(connectionSpecification=connector_spec), logger)
-    conftest.pytest.fail.assert_not_called()
-    if is_warning_logged:
-        _, args, _ = logger.warning.mock_calls[0]
-        msg, *_ = args
-        assert "Consider specifying the format" in msg
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
 
 
 @pytest.mark.parametrize(
