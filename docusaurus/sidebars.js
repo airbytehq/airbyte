@@ -491,6 +491,7 @@ const understandingAirbyte = {
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/operations",
     "understanding-airbyte/cdc",
+    "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",
