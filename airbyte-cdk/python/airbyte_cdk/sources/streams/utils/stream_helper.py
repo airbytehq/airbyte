@@ -43,6 +43,6 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
 
     if stream.exit_on_rate_limit:
-        stream.exit_on_rate_limit = False
+        stream.exit_on_rate_limit = False  # type: ignore[misc]
 
     return next(records_for_slice)
