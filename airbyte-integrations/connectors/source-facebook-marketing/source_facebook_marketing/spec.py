@@ -35,6 +35,7 @@ EMPTY_PATTERN = "^$"
 class OAuthCredentials(BaseModel):
     class Config(OneOfOptionConfig):
         title = "Authenticate via Facebook Marketing (Oauth)"
+        discriminator = "auth_type"
 
     auth_type: Literal["Client"] = Field("Client", const=True)
     client_id: str = Field(
@@ -60,6 +61,7 @@ class OAuthCredentials(BaseModel):
 class ServiceAccountCredentials(BaseModel):
     class Config(OneOfOptionConfig):
         title = "Service Account Key Authentication"
+        discriminator = "auth_type"
 
     auth_type: Literal["Service"] = Field("Service", const=True)
     access_token: str = Field(
@@ -197,7 +199,7 @@ class ConnectorConfig(BaseConfig):
         airbyte_secret=True,
     )
 
-    credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Field(
+    credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication",
         description="Credentials for connecting to the Facebook Marketing API",
         type="object",
