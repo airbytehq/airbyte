@@ -51,6 +51,12 @@ data class ConnectorErrorProfile(
     }
 }
 
+/**
+ * The builder provides an expressive way to construct error profile by allowing user to specify the
+ * name of each field. This is useful when the error profile is constructed in Java code For Kotlin
+ * code that constructs error profile, it is recommended to use the data class directly which
+ * supports named parameters.
+ */
 class ConnectorErrorProfileBuilder {
     private var errorClass: String = ""
     private var regexMatchingPattern: String = ""
