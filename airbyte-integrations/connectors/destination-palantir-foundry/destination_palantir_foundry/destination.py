@@ -8,6 +8,8 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from destination_palantir_foundry.config.foundry_config import FoundryConfig
+from destination_palantir_foundry.config.validation import get_config_errors
 
 
 class DestinationPalantirFoundry(Destination):
@@ -46,8 +48,12 @@ class DestinationPalantirFoundry(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO
-
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            foundry_config = FoundryConfig.from_raw(config)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Invalid format.")
+
+        config_error = get_config_errors(logger, foundry_config)
+        if config_error is not None:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=config_error)
+
+        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
