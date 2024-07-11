@@ -1,7 +1,6 @@
 name: Approve Regression Tests
 permissions:
   pull-requests: write
-  status: write # to allow the GITHUB_TOKEN to post a commit status
 on:
   workflow_dispatch:
     inputs:
