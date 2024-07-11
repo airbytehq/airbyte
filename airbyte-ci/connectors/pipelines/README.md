@@ -767,6 +767,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.22.0  | [#41623](https://github.com/airbytehq/airbyte/pull/41623)  | Make `airbyte-ci` run on private forks.                                                                                      |
 | 4.21.1  | [#41029](https://github.com/airbytehq/airbyte/pull/41029)  | `up-to-date`: mount local docker config to `Syft` to pull private images and benefit from increased DockerHub rate limits.   |
 | 4.21.0  | [#40547](https://github.com/airbytehq/airbyte/pull/40547)  | Make bump-version accept a `--pr-number` option.                                                                             |
 | 4.20.3  | [#40754](https://github.com/airbytehq/airbyte/pull/40754)  | Accept and ignore additional args in `migrate-to-poetry` pipeline                                                            |
