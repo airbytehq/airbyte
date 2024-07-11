@@ -1,17 +1,20 @@
 import ExecutionEnvironment from "@docusaurus/ExecutionEnvironment";
 
 if (ExecutionEnvironment.canUseDOM) {
-  // use data-architecture context to find the link to the relevant binary.
+  // Pre-fetch the urls for the binaries.
+  const binaries = fetch(
+      'https://api.github.com/repos/airbytehq/abctl/releases/latest')
+  .then(response => response.json())
+  .then(data => data.assets);
+
+  // Initialize button by choosing the relevant binary based on the data-architecture tag.
   function initializeDownloadButton(button) {
-    const architecture = button.getAttribute('data-architecture');
-    fetch('https://api.github.com/repos/airbytehq/abctl/releases/latest')
-    .then(response => response.json())
-    .then(data => {
-      const asset = data.assets.find(asset =>
-          asset.name.toLowerCase().includes(architecture.toLowerCase())
-      );
-      if (asset) {
-        button.href = asset.browser_download_url;
+    binaries.then(assets => {
+      const architecture = button.getAttribute('data-architecture');
+      const binary = assets.find(
+          b => b.name.toLowerCase().includes(architecture.toLowerCase()));
+      if (binary) {
+        button.href = binary.browser_download_url;
         button.innerText = `Download ${architecture}`;
         button.classList.remove('disabled');
       } else {
@@ -24,11 +27,10 @@ if (ExecutionEnvironment.canUseDOM) {
     });
   }
 
-  /*
-   If loading fails for some reason or we can't find the asset, fallback on just
-   making a link to the latest releases page.
-  */
+  // If loading fails for some reason or we can't find the asset, fallback on just
+  // making a link to the latest releases page.
   function fallback(button) {
+    const architecture = button.getAttribute('data-architecture');
     button.href = 'https://github.com/airbytehq/abctl/releases/latest';
     button.innerText = `Latest ${architecture} Release`
     button.target = '_blank';  // Opens the link in a new tab
@@ -41,24 +43,9 @@ if (ExecutionEnvironment.canUseDOM) {
     Array.from(buttons).forEach(initializeDownloadButton);
   }
 
-  function handleMutations(mutations) {
-    for (let mutation of mutations) {
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.classList.contains('abctl-download')) {
-              initializeDownloadButton(node);
-            } else {
-              const buttons = node.getElementsByClassName('abctl-download');
-              Array.from(buttons).forEach(initializeDownloadButton);
-            }
-          }
-        });
-      }
-    }
-  }
-
-  window.addEventListener('load', initializeAllDownloadButtons);
-  const observer = new MutationObserver(handleMutations);
-  observer.observe(document.body, { childList: true, subtree: true });
+  // Document load is a bit weird in docusaurus.
+  // https://stackoverflow.com/a/74736980/4195169
+  window.addEventListener('load', () => {
+    setTimeout(initializeAllDownloadButtons, 1000);
+  });
 }
