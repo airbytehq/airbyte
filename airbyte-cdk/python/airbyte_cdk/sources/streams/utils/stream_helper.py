@@ -29,20 +29,25 @@ def get_first_stream_slice(stream: Stream) -> Optional[Mapping[str, Any]]:
 def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[str, Any]]) -> StreamData:
     """
     Gets the first record for a stream_slice of a stream.
-    :param stream: stream
-    :param stream_slice: stream_slice
+
+    :param stream: stream instance from which to read records
+    :param stream_slice: stream_slice parameters for slicing the stream
     :raises StopIteration: if there is no first record to return (the read_records generator is empty)
     :return: StreamData containing the first record in the slice
     """
+    # Store the original value of exit_on_rate_limit
+    original_exit_on_rate_limit = stream.exit_on_rate_limit
 
-    if hasattr(stream.exit_on_rate_limit, "setter"):  # Safely set the value of exit_on_rate_limit to True
-        stream.exit_on_rate_limit = True  # type: ignore[misc]
+    try:
+        # Ensure exit_on_rate_limit is safely set to True if possible
+        if hasattr(stream.exit_on_rate_limit, "setter"):
+            stream.exit_on_rate_limit = True  # type: ignore[misc]
 
-    # We wrap the return output of read_records() because some implementations return types that are iterable,
-    # but not iterators such as lists or tuples
-    records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+        # We wrap the return output of read_records() because some implementations return types that are iterable,
+        # but not iterators such as lists or tuples
+        records_for_slice = iter(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
 
-    if stream.exit_on_rate_limit:
-        stream.exit_on_rate_limit = False  # type: ignore[misc]
-
-    return next(records_for_slice)
+        return next(records_for_slice)
+    finally:
+        # Restore the original exit_on_rate_limit value
+        stream.exit_on_rate_limit = original_exit_on_rate_limit
