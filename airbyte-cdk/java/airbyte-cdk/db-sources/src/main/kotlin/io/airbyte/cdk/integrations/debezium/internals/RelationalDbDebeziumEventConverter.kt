@@ -17,10 +17,15 @@ class RelationalDbDebeziumEventConverter(
         val debeziumEvent = event.eventValueAsJson()
         val before: JsonNode? = debeziumEvent.get(DebeziumEventConverter.Companion.BEFORE_EVENT)
         val after: JsonNode? = debeziumEvent.get(DebeziumEventConverter.Companion.AFTER_EVENT)
-        val source: JsonNode = checkNotNull(debeziumEvent.get(DebeziumEventConverter.Companion.SOURCE_EVENT)) { "ChangeEvent contains no source record $debeziumEvent" }
+        val source: JsonNode =
+            checkNotNull(debeziumEvent.get(DebeziumEventConverter.Companion.SOURCE_EVENT)) {
+                "ChangeEvent contains no source record $debeziumEvent"
+            }
 
         if (listOf(before, after).all { it == null }) {
-            throw IllegalStateException("ChangeEvent contains no before or after records $debeziumEvent")
+            throw IllegalStateException(
+                "ChangeEvent contains no before or after records $debeziumEvent"
+            )
         }
 
         val baseNode = (after ?: before) as ObjectNode
