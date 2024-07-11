@@ -16,6 +16,14 @@ from source_azure_blob_storage.config_migrations import MigrateCredentials, Migr
 import sys
 
 
+def launch(source, args) -> None:
+    source_entrypoint = AirbyteEntrypoint(source)
+    parsed_args = source_entrypoint.parse_args(args)
+    with PrintBuffer():
+        for message in source_entrypoint.run(parsed_args):
+            print(f"{message}\n", end="")
+
+
 class PrintBuffer:
     def __init__(self, buffer_size=1000):
         self.buffer = []
@@ -52,7 +60,6 @@ def run():
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
     try:
-        sys.stdout = PrintBuffer()
         source = SourceAzureBlobStorage(
             SourceAzureBlobStorageStreamReader(),
             SourceAzureBlobStorageSpec,
@@ -79,5 +86,3 @@ def run():
         )
     else:
         launch(source, args)
-    finally:
-        sys.stdout.flush()
