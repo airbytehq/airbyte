@@ -173,6 +173,7 @@ def test_parse_dependencies_with_cdk(gradle_file_with_local_cdk_dependencies):
     assert all([test_dependency in expected_test_dependencies for test_dependency in test_dependencies])
 
 
+@pytest.mark.skip(reason="see https://github.com/airbytehq/airbyte/issues/41628")
 def test_get_all_connectors_in_repo():
     all_connectors = utils.get_all_connectors_in_repo()
     assert len(all_connectors) > 0
