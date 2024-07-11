@@ -30,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       statuses: write
+      issues: write
     steps:
       - name: Get job variables
         id: job-vars
