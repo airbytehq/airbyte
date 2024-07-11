@@ -4,7 +4,8 @@ import os
 from typing import Optional
 
 from dagger import Client, Container
-from pipelines.helpers.utils import AIRBYTE_REPO_URL, sh_dash_c
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL
+from pipelines.helpers.utils import sh_dash_c
 
 
 def get_authenticated_repo_url(url: str, github_token: str) -> str:
@@ -16,7 +17,7 @@ async def checked_out_git_container(
     current_git_branch: str,
     current_git_revision: str,
     diffed_branch: Optional[str] = None,
-    repo_url: str = AIRBYTE_REPO_URL,
+    repo_url: str = AIRBYTE_GITHUB_REPO_URL,
 ) -> Container:
     """
     Create a container with git in it.
@@ -24,7 +25,7 @@ async def checked_out_git_container(
     We fetch the diffed branch from the origin remote and the current branch from the target remote.
     We then checkout the current branch.
     """
-    origin_repo_url = AIRBYTE_REPO_URL
+    origin_repo_url = AIRBYTE_GITHUB_REPO_URL
     current_git_branch = current_git_branch.removeprefix("origin/")
     diffed_branch = current_git_branch if diffed_branch is None else diffed_branch.removeprefix("origin/")
     if github_token := os.environ.get("CI_GITHUB_ACCESS_TOKEN"):
