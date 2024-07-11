@@ -635,6 +635,7 @@ class ModelToComponentFactory:
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
+                "is_global_parent_cursor": isinstance(combined_slicers, GlobalParentCursor),
             }
         transformations = []
         if model.transformations:
@@ -687,6 +688,12 @@ class ModelToComponentFactory:
             and model.retriever.partition_router
         ):
             stream_slicer_model = model.retriever.partition_router
+
+            # if model.incremental_sync and hasattr(model.incremental_sync, "global_parent_cursor") and model.incremental_sync.global_parent_cursor:
+            #     for parent_stream_config in stream_slicer_model.parent_stream_configs:
+            #         if parent_stream_config.stream.incremental_sync:
+            #             parent_stream_config.stream.incremental_sync.global_parent_cursor = True
+
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
