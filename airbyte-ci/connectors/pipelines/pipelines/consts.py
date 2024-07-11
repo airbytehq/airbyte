@@ -9,6 +9,7 @@ from enum import Enum
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
+MANIFEST_FILE_PATH = "manifest.yaml"
 LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",

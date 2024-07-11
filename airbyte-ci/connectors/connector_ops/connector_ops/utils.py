@@ -261,6 +261,7 @@ class ConnectorLanguage(str, Enum):
     PYTHON = "python"
     JAVA = "java"
     LOW_CODE = "low-code"
+    MANIFEST_ONLY = "manifest-only"
 
 
 class ConnectorLanguageError(Exception):
@@ -357,8 +358,19 @@ class Connector:
         return self.code_directory / self.technical_name.replace("-", "_")
 
     @property
-    def manifest_path(self) -> Path:
+    def _manifest_only_path(self) -> Path:
+        return self.code_directory / MANIFEST_FILE_NAME
+
+    @property
+    def _manifest_low_code_path(self) -> Path:
         return self.python_source_dir_path / MANIFEST_FILE_NAME
+
+    @property
+    def manifest_path(self) -> Path:
+        if self._manifest_only_path.is_file():
+            return self._manifest_only_path
+
+        return self._manifest_low_code_path
 
     @property
     def has_dockerfile(self) -> bool:
@@ -385,6 +397,8 @@ class Connector:
 
     @property
     def language(self) -> ConnectorLanguage:
+        if Path(self.code_directory / "manifest.yaml").is_file():
+            return ConnectorLanguage.MANIFEST_ONLY
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
@@ -575,6 +589,29 @@ class Connector:
         - destination -> destinationDefinitionId
         """
         return f"{self.connector_type}DefinitionId"
+
+    @property
+    def is_enabled_in_any_registry(self) -> bool:
+        """Check if the connector is enabled in the registry.
+
+        Example:
+          - {registries: null} -> false
+          - {registries: {oss: {enabled: false }}} -> false
+          - {registries: {oss: {enabled: true }}} -> true
+          - {registries: {cloud: {enabled: true }}} -> true
+
+        Returns:
+            bool: True if the connector is enabled, False otherwise.
+        """
+        registries = self.metadata.get("registries")
+        if not registries:
+            return False
+
+        for registry in registries.values():
+            if registry.get("enabled"):
+                return True
+
+        return False
 
     @property
     def is_released(self) -> bool:
