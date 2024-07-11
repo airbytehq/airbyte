@@ -72,7 +72,7 @@ _Applies to the following connector languages: java, low-code, python_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
-If the connector version has a breaking change, the deadline field must be set to at least a week in the future.
+If the connector version has a breaking change, the deadline field must be set to at least a week in the future. This requirement can be bypassed with `forceRelease: true` flag. 
 
 ### Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata
 

@@ -140,15 +140,11 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
     """
 
     name = "Breaking change deadline should be a week in the future"
-    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future."
+    description = "If the connector version has a breaking change, the deadline field must be set to at least a week in the future or set force release."
     runs_on_released_connectors = False
     minimum_days_until_deadline = 7
 
     def _run(self, connector: Connector) -> CheckResult:
-
-        # fetch the current branch version of the connector first.
-        # we'll try and see if there are any breaking changes associated
-        # with it next.
         current_version = connector.version
         if current_version is None:
             return self.fail(
@@ -156,14 +152,7 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
                 message="Can't verify breaking changes deadline: connector version is not defined.",
             )
 
-        breaking_changes = connector.metadata.get("releases", {}).get("breakingChanges")
-
-        if not breaking_changes:
-            return self.pass_(
-                connector=connector,
-                message="No breaking changes found on this connector.",
-            )
-
+        breaking_changes = connector.metadata.get("releases", {}).get("breakingChanges", {})
         current_version_breaking_changes = breaking_changes.get(current_version)
 
         if not current_version_breaking_changes:
@@ -182,14 +171,21 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
 
         upgrade_deadline_datetime = datetime.strptime(upgrade_deadline, "%Y-%m-%d")
         one_week_from_now = datetime.utcnow() + timedelta(days=self.minimum_days_until_deadline)
+        is_force_release = current_version_breaking_changes.get("forceRelease", False)
 
-        if upgrade_deadline_datetime <= one_week_from_now:
+        if upgrade_deadline_datetime <= one_week_from_now and not is_force_release:
             return self.fail(
                 connector=connector,
-                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline",
+                message=f"The upgrade deadline for the breaking changes in {current_version} is less than {self.minimum_days_until_deadline} days from today. Please extend the deadline.",
             )
 
-        return self.pass_(connector=connector, message="The upgrade deadline is set to at least a week in the future")
+        message = (
+            "The upgrade deadline is set to less than a week in the future due to force release."
+            if is_force_release
+            else "The upgrade deadline is set to at least a week in the future."
+        )
+
+        return self.pass_(connector=connector, message=message)
 
 
 class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):

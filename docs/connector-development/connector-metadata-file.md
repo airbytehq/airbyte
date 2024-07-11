@@ -115,7 +115,11 @@ their associated breaking changes. Each entry must contain the following paramet
   - What the user should do to fix the issue (e.g. a full reset, run a SQL query in the destinaton, etc)
 - `upgradeDeadline`: (`YYYY-MM-DD`) The date by which the user should upgrade to the new version.
 
-When considering what the `upgradeDeadline` should be, target the amount of time which would be reasonable for the user to make the required changes described in the `message` and upgrade giude. If the required changes are _simple_ (e.g. "do a full reset"), 2 weeks is recommended. Note that you do _not_ want to link the duration of `upgradeDeadline` to an upstream API's deprecation date. While it is true that the older version of a connector will continue to work for that period of time, it means that users who are pinned to the older version of the connector will not benefit from future updates and fixes.
+When considering what the `upgradeDeadline` should be, target the amount of time which would be reasonable for the user to make the required changes 
+described in the `message` and upgrade giude. If the required changes are _simple_ (e.g. "do a full reset"), 2 weeks is recommended. Note that you 
+do _not_ want to link the duration of `upgradeDeadline` to an upstream API's deprecation date. While it is true that the older version of a connector 
+will continue to work for that period of time, it means that users who are pinned to the older version of the connector will not benefit from future 
+updates and fixes.
 
 Without all 3 of these points, the breaking change message is not helpful to users.
 
@@ -127,6 +131,20 @@ releases:
     1.0.0:
       message: "This version changes the connector’s authentication by removing ApiKey authentication, which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue syncing."
       upgradeDeadline: "2023-12-31"
+```
+
+#### `forceRelease`
+The optional `scopedImpact` property allows you to bypass check that the `upgradeDeadline` is set to at least one week in the future.
+
+Here's an example:
+
+```yaml
+releases:
+  breakingChanges:
+    1.0.0:
+      message: "This version changes the connector’s authentication by removing ApiKey authentication, which is now deprecated by the [upstream source](upsteam-docs-url.com). Users currently using ApiKey auth will need to reauthenticate with OAuth after upgrading to continue syncing."
+      upgradeDeadline: "2023-12-31"
+      forceRelease: true  
 ```
 
 #### `scopedImpact`

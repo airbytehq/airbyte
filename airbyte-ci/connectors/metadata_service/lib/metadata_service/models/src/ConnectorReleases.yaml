@@ -38,6 +38,9 @@ definitions:
       message:
         description: Descriptive message detailing the breaking change.
         type: string
+      forceRelease:
+        description: The flag used to indicate whether a breaking change in the connector version should take effect less tha one week, bypassing the standard deadline requirement.
+        type: boolean
       migrationDocumentationUrl:
         description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}
         type: string
