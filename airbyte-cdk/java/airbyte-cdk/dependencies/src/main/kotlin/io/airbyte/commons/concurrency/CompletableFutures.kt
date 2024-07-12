@@ -23,6 +23,10 @@ object CompletableFutures {
         futures: List<CompletionStage<Result>>
     ): CompletionStage<List<Either<out Exception, Result>>> {
         val result = CompletableFuture<List<Either<out Exception, Result>>>()
+        if (futures.isEmpty()) {
+            result.complete(emptyList())
+            return result
+        }
         val size = futures.size
         val counter = AtomicInteger()
         // This whole function should probably use kotlin flows, but I couldn't figure it out...
