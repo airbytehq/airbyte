@@ -10,6 +10,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, Callable, List
 
 import asyncclick as click
+from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines import consts
 from pipelines.helpers.github import update_commit_status_check
 
@@ -81,7 +82,12 @@ def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name:
 
     Only required for certified connectors.
     """
-    if any([connector.support_level == "certified" for connector in ctx.obj["selected_connectors_with_modified_files"]]):
+    if any(
+        [
+            (connector.language == ConnectorLanguage.PYTHON and connector.support_level == "certified")
+            for connector in ctx.obj["selected_connectors_with_modified_files"]
+        ]
+    ):
         update_commit_status_check(
             ctx.obj["git_revision"],
             "failure",
