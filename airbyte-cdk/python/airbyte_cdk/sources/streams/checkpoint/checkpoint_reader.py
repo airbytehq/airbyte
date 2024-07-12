@@ -119,7 +119,8 @@ class CursorBasedCheckpointReader(CheckpointReader):
                     next_slice = self._get_next_slice()
                     state_for_slice = self._cursor.select_state(next_slice)
                     if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
-                        next_candidate_slice = None
+                        # This is a dummy initialization since we'll iterate at least once to get the next slice
+                        next_candidate_slice = StreamSlice(cursor_slice={}, partition={})
                         has_more = True
                         while has_more:
                             next_candidate_slice = self._get_next_slice()
