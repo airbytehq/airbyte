@@ -285,9 +285,15 @@ class TestIncremental(BaseTest):
         self, inputs: IncrementalConfig, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
-        output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state)
+        output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state, enable_caching=False)
         records = filter_output(output, type_=Type.RECORD)
         states = filter_output(output, type_=Type.STATE)
+
+        print(f"connector_config: {connector_config}")
+        print(f"****configured_catalog:  + {configured_catalog}")
+        print(f"****state:  {future_state}")
+        print(f"****records size: {records}")
+
 
         assert (
             not records
