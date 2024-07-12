@@ -15,7 +15,7 @@ data:
   githubIssueLabel: source-firetruck
   icon: oracle.svg
   license: Airbyte Enterprise
-  name: Firetruck
+  name: Firetruck Source
   registries:
     cloud:
       enabled: false
