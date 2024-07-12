@@ -75,7 +75,7 @@ public class PostgresUtils {
     final boolean shouldFlushAfterSync = config.hasNonNull("replication_method")
         && config.get("replication_method").hasNonNull("lsn_commit_behaviour")
         && config.get("replication_method").get("lsn_commit_behaviour").asText().equals("After loading Data in the destination");
-    LOGGER.info("Should flush after sync: {}", shouldFlushAfterSync);
+    LOGGER.info("Should flush after sync!: {}", shouldFlushAfterSync);
     return shouldFlushAfterSync;
   }
 
