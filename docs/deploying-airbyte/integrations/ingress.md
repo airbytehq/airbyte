@@ -5,7 +5,12 @@ import TabItem from '@theme/TabItem';
 
 # Ingress
 
-To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a simplified definition of an ingress resource you could use for Self-Managed Enterprise:
+:::tip
+If you are using `abctl` to manage your deployment then a nginx ingress is provided for you. There is no need to provision an additional ingress.
+:::
+
+To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment.
+The following is a simplified definition of an ingress resource you could use for your Airbyte instance:
 
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
@@ -14,19 +19,19 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: # ingress name, example: enterprise-demo
+  name: # ingress name, example: airbyte-production
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - host: # host, example: enterprise-demo.airbyte.com
+    - host: # host, example: airbyte.company.example
       http:
         paths:
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-webapp-svc
-                name: airbyte-enterprise-airbyte-webapp-svc
+                name: airbyte-airbyte-webapp-svc
                 port:
                   number: 80 # service port, example: 8080
             path: /
@@ -34,7 +39,7 @@ spec:
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-keycloak-svc
-                name: airbyte-enterprise-airbyte-keycloak-svc
+                name: airbyte-airbyte-keycloak-svc
                 port:
                   number: 8180
             path: /auth
@@ -42,7 +47,7 @@ spec:
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte--server-svc
-                name: airbyte-enterprise-airbyte-server-svc
+                name: airbyte-airbyte-server-svc
                 port:
                   number: 8001
             path: /api/public
@@ -58,7 +63,7 @@ If you intend to use Amazon Application Load Balancer (ALB) for ingress, this in
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: # ingress name, e.g. enterprise-demo
+  name: # ingress name, e.g. airbyte-production
   annotations:
     # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
@@ -75,19 +80,19 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-    - host: # e.g. enterprise-demo.airbyte.com
+    - host: # e.g. airbyte.company.example
       http:
         paths:
           - backend:
               service:
-                name: airbyte-enterprise-airbyte-webapp-svc
+                name: airbyte-airbyte-webapp-svc
                 port:
                   number: 80
             path: /
             pathType: Prefix
           - backend:
               service:
-                name: airbyte-enterprise-airbyte-keycloak-svc
+                name: airbyte-airbyte-keycloak-svc
                 port:
                   number: 8180
             path: /auth
@@ -95,7 +100,7 @@ spec:
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-enterprise-airbyte-server-svc
+                name: airbyte-airbyte-server-svc
                 port:
                   number: 8001
             path: /api/public

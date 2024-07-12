@@ -83,6 +83,7 @@ Each [Integrations](#integrations) will provide a section of the specific values
 
 ```yaml
 global:
+  airbyteUrl: https://airbyte.company.example
   storage:
     type: "S3"
     bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
