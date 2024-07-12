@@ -1450,6 +1450,30 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connections/disabled_all_workspace:
+    post:
+      tags:
+        - connection
+      summary: disabled all connections for workspaces.
+      description: for workspace.
+      operationId: connectionsDisabledAllForWorkspaceAll
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdListRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionDisplayFlag"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/count:
     post:
       tags:
@@ -1462,6 +1486,30 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionsCount"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connections/countByWorkspaces:
+    post:
+      tags:
+        - connection
+      summary: connections count for workspaces.
+      description: connections count for workspaces.
+      operationId: connectionsCountForWorkspaces
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdListRequestBody"
         required: true
       responses:
         "200":
@@ -2590,6 +2638,15 @@ components:
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
+    WorkspaceIdListRequestBody:
+      type: object
+      required:
+        - workspaceIdList
+      properties:
+        workspaceIdList:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceId"
     WorkspaceReadList:
       type: object
       required:

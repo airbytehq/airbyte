@@ -975,10 +975,30 @@ public class ConfigRepository {
     });
   }
 
+  public int disabledConnectionsForWorkspacesAll(final List<UUID> workspaceIds) throws IOException {
+    return database.transaction(ctx -> {
+      Set<UUID> actors = ctx.selectFrom(ACTOR).where(ACTOR.WORKSPACE_ID.in(workspaceIds)).and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+          .fetchSet(ACTOR.ID);
+      return ctx.update(CONNECTION)
+          .set(CONNECTION.STATUS, StatusType.inactive)
+          .where(CONNECTION.SOURCE_ID.in(actors))
+          .and(CONNECTION.STATUS.eq(StatusType.active)).execute();
+    });
+  }
+
   public Long connectionsCount(UUID workspaceId) throws IOException {
     return database.query(ctx -> ctx.selectCount().from(ACTOR)
         .join(CONNECTION).on(ACTOR.ID.eq(CONNECTION.SOURCE_ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
+        .and(CONNECTION.STATUS.ne(StatusType.deprecated))
+        .fetchOne().into(Long.class));
+  }
+
+  public Long connectionsCount(List<UUID> workspaceIds) throws IOException {
+    return database.query(ctx -> ctx.selectCount().from(ACTOR)
+        .join(CONNECTION).on(ACTOR.ID.eq(CONNECTION.SOURCE_ID))
+        .where(ACTOR.WORKSPACE_ID.in(workspaceIds))
         .and(ACTOR.ACTOR_TYPE.eq(ActorType.source))
         .and(CONNECTION.STATUS.ne(StatusType.deprecated))
         .fetchOne().into(Long.class));
