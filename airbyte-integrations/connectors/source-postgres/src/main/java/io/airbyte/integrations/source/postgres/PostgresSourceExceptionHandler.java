@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.postgres;
 import io.airbyte.cdk.integrations.util.ConnectorErrorProfileBuilder;
 import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler;
 import io.airbyte.cdk.integrations.util.FailureType;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
@@ -36,7 +35,6 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
         .failureType(FailureType.TRANSIENT)
         .externalMessage(DATABASE_READ_ERROR)
         .sampleInternalMessage("org.postgresql.util.PSQLException: An I/O error occured while sending to the backend.")
-        .referenceLinks(new ArrayList<>())
         .build());
 
     add(new ConnectorErrorProfileBuilder()
@@ -45,7 +43,6 @@ public class PostgresSourceExceptionHandler extends ConnectorExceptionHandler {
         .failureType(FailureType.TRANSIENT)
         .externalMessage(POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE)
         .sampleInternalMessage("ERROR: canceling statement due to conflict with recovery.")
-        .referenceLinks(new ArrayList<>())
         .build());
   }
 
