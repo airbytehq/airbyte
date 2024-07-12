@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
+from datetime import timedelta
 import json
 import os
 import random
@@ -101,7 +102,7 @@ def create_table(connection, schema_name, table_name):
         # Create table
         create_table_query = sql.SQL("""
             CREATE TABLE IF NOT EXISTS {}.{} (
-                id INT PRIMARY KEY,
+                id VARCHAR(100) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL
             )
         """).format(sql.Identifier(schema_name), sql.Identifier(table_name))
@@ -121,16 +122,21 @@ def generate_schema_date_with_suffix():
     suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
     return f"{current_date}-{suffix}"
 
-def setup():
+def prepare():
     schema_name = generate_schema_date_with_suffix()
+    with open("./generated_schema.txt", "w") as f:
+        f.write(schema_name)
+
+def setup():
+    schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
     table_name = "id_and_name"
 
     # Define the records to be inserted
     records = [
-        (1, 'one'),
-        (2, 'two'),
-        (3, 'three')
+        ('1', 'one'),
+        ('2', 'two'),
+        ('3', 'three')
     ]
 
     # Connect to the database
@@ -147,10 +153,9 @@ def setup():
         # Close the connection
         connection.close()
 
-def load_schema_name_from_catalog(catalog_file_path):
-    with open(catalog_file_path, "r") as f:
-        catalog = json.load(f)
-    return catalog["streams"][0]["stream"]["namespace"]
+def load_schema_name_from_catalog():
+    with open("./generated_schema.txt", "r") as f:
+        return f.read()
 
 def remove_all_write_files():
     print("***removing write files***")
@@ -159,30 +164,49 @@ def remove_all_write_files():
     os.remove(catalog_incremental_write_file)
     os.remove(abnormal_state_write_file)
 
+def delete_schemas_with_prefix(conn, date_prefix):
+    try:
+        # Connect to the PostgreSQL database
+        conn.autocommit = True
+        cursor = conn.cursor()
+
+        # Query to find all schemas that start with the specified date prefix
+        query = sql.SQL("""
+            SELECT schema_name
+            FROM information_schema.schemata
+            WHERE schema_name LIKE %s;
+        """)
+
+        cursor.execute(query, (f"{date_prefix}%",))
+        schemas = cursor.fetchall()
+
+        # Generate and execute DROP SCHEMA statements for each matching schema
+        for schema in schemas:
+            drop_query = sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE;").format(sql.Identifier(schema[0]))
+            cursor.execute(drop_query)
+            print(f"Schema {schema[0]} has been dropped.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 def teardown():
     connection = connect_to_db()
-    schema_name = load_schema_name_from_catalog(catalog_write_file)
+    today = datetime.datetime.now()
+    yesterday = today - timedelta(days=1)
+    formatted_yesterday = yesterday.strftime('%y%m%d')
+    delete_schemas_with_prefix(connection, formatted_yesterday)
     remove_all_write_files()
-
-    try:
-        cursor = connection.cursor()
-        # Create table
-        drop_schema_query = sql.SQL("""
-            DROP SCHEMA {} CASCADE
-        """).format(sql.Identifier(schema_name))
-
-        cursor.execute(drop_schema_query)
-        connection.commit()
-        print(f"Schema '{schema_name}' dropped successfully")
-    except Exception as error:
-        print(f"Error dropping schema '{schema_name}': {error}")
-        connection.rollback()
-    finally:
-        cursor.close()
 
 if __name__ == "__main__":
     command = sys.argv[1]
     if command == "setup":
         setup()
-    if command == "teardown":
+    elif command == "teardown":
         teardown()
+    elif command == "prepare":
+        prepare()

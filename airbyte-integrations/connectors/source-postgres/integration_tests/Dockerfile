@@ -18,5 +18,6 @@ RUN pip install --no-cache-dir -r ./requirement.txt
 
 EXPOSE 80
 
-# Give execution rights to the script
+# Give execution rights to the script and pre-generate all scripts.
 RUN chmod +x ./hook.py
+RUN python ./hook.py prepare

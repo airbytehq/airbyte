@@ -10,8 +10,7 @@
               "type": "string"
             },
             "id": {
-              "type": "number",
-              "airbyte_type": "integer"
+              "type": "string"
             }
           }
         },

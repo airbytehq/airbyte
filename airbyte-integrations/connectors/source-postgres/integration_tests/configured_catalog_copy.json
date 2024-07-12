@@ -10,15 +10,14 @@
               "type": "string"
             },
             "id": {
-              "type": "number",
-              "airbyte_type": "integer"
+              "type": "string"
             }
           }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "default_cursor_field": [],
         "source_defined_primary_key": [],
-        "namespace": "20240712-KhZYlgLq"
+        "namespace": "20240712-56hlSijO"
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append",
