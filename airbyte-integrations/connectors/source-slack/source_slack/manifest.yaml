@@ -251,7 +251,6 @@ definitions:
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 
-
   threads_stream:
     $ref: "#/definitions/stream_base"
     $parameters:

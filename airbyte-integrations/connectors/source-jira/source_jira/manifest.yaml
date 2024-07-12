@@ -1259,7 +1259,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "issueId" ]
+          - path: ["issueId"]
             value_type: string
             value: "{{ stream_slice.issue_id }}"
     state_migrations:
@@ -1287,7 +1287,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "issueId" ]
+          - path: ["issueId"]
             value_type: string
             value: "{{ stream_slice.issue_id }}"
     state_migrations:
@@ -1296,7 +1296,6 @@ definitions:
     $parameters:
       path: "issue/{{ stream_slice.issue_id }}/worklog"
       extract_field: "worklogs"
-
 
 streams:
   # Full refresh streams
