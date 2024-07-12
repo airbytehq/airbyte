@@ -1576,6 +1576,7 @@ definitions:
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
       failure_type:
         title: Failure Type
         description: Failure type of traced exception if a response matches the filter.
