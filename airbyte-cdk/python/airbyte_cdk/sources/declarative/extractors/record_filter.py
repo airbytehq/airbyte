@@ -48,8 +48,11 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
     """
 
     def __init__(
-            self, date_time_based_cursor: DatetimeBasedCursor, per_partition_cursor: Optional[PerPartitionCursor] = None,
-            is_global_parent_cursor: bool = False, **kwargs: Any
+        self,
+        date_time_based_cursor: DatetimeBasedCursor,
+        per_partition_cursor: Optional[PerPartitionCursor] = None,
+        is_global_parent_cursor: bool = False,
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self._date_time_based_cursor = date_time_based_cursor
@@ -59,7 +62,8 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
     @property
     def _cursor_field(self) -> str:
         return self._date_time_based_cursor.cursor_field.eval(
-            self._date_time_based_cursor.config)  # type: ignore # eval returns a string in this context
+            self._date_time_based_cursor.config
+        )  # type: ignore # eval returns a string in this context
 
     @property
     def _start_date_from_config(self) -> datetime.datetime:
