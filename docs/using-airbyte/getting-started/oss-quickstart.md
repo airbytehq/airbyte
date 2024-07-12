@@ -172,6 +172,28 @@ In the Building Connections section, you'll learn how to start moving data. Gene
 
 3: [Set up a Connection](./set-up-a-connection.md)
 
+## Migrating from Docker Compose (Optional)
+
+If you have data that you would like to migrate from an existing docker compose instance follow the steps below:
+
+1. Make sure that you have stopped the instance running in docker compose, this may require the following command:
+
+```
+docker compose stop
+```
+2. Make sure that you have the latest version of abctl by running the following command:
+
+```
+curl -LsfS https://get.airbyte.com | bash -
+```
+
+3. Run abctl with the migrate flag set with the following command:
+```
+abctl local install --migrate
+```
+
+
+
 ## Troubleshooting
 
 There are several channels for community support of local setup and deployment. 

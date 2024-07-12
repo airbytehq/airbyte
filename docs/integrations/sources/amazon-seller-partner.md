@@ -178,6 +178,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.10 | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345) | Update dependencies |
 | 4.3.9 | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158) | Update dependencies |
 | 4.3.8 | 2024-07-08 | [40751](https://github.com/airbytehq/airbyte/pull/40751) | Improve error messaging and turning on alerting |
 | 4.3.7 | 2024-07-06 | [40990](https://github.com/airbytehq/airbyte/pull/40990) | Update dependencies |
