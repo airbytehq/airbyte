@@ -10,7 +10,7 @@ from logging import Logger
 from typing import TYPE_CHECKING, Callable, List
 
 import asyncclick as click
-from connector_ops.utils import ConnectorLanguage
+from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines import consts
 from pipelines.helpers.github import update_commit_status_check
 
