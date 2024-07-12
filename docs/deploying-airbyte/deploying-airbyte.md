@@ -25,18 +25,16 @@ The [Infrastructure](infrastructure/aws) section describes the Airbyte's recomme
 
 ## Adding the Helm Repository
 
-From now charts are stored in helm-repo thus there're no need to clone the repo each time you need
-to deploy the chart.
+Charts are stored in `helm-repo`. As a result, you do not need to clone the repo each time you need to deploy the chart.
 
-To add remote helm repo simply run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`.
+To add remote helm repo:
+1. Run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`. `airbyte` is the name of the repository that will be indexed locally.
 
-Where `airbyte` is the name of the repository that will be indexed locally.
+2. After adding the repo, perform the repo indexing process by running `helm repo update`.
 
-After adding the repo, perform the repo indexing process by running `helm repo update`.
+3. You can now browse all charts uploaded to repository by running `helm search repo airbyte`
 
-After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
-
-It'll produce output similar to below:
+An example of the chart output: 
 
 ```text
 NAME                               	CHART VERSION	APP VERSION	DESCRIPTION                                       
