@@ -1,7 +1,7 @@
 # Amazon Web Services (AWS)
 
 Airbyte supports Amazon Web Services as a Cloud Provider. There are several ways that you can deploy Airbyte using AWS.
-You can use the AWS managed Kubernetes solution EKS, using `abctl` on an EC2 instance, or on a Kubernetes distrobution
+You can use the AWS managed Kubernetes solution EKS, using `abctl` on an EC2 instance, or on a Kubernetes distribution
 that has been deployed on EC2 instances.
 
 ## Policies
