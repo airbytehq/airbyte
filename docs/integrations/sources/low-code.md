@@ -9,6 +9,11 @@ The changelog below is automatically updated by the `bump_version` command as pa
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 3.5.0 | 2024-07-11 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.4.0 |
+| 3.4.0 | 2024-07-10 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.3.0 |
+| 3.3.1 | 2024-07-10 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.2.1 |
+| 3.3.0 | 2024-07-10 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.2.0 |
+| 3.2.0 | 2024-07-10 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.1.0 |
 | 3.1.0 | 2024-07-09 | [39905](https://github.com/airbytehq/airbyte/pull/39905) | Add local yaml support to source declarative |
 | 3.0.0 | 2024-07-09 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.0.0 |
 | 2.1.0 | 2024-07-05 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Bump CDK version to 2.3.0 |
