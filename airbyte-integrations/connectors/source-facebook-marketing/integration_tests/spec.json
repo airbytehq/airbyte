@@ -30,13 +30,6 @@
         "title": "Authentication",
         "description": "Credentials for connecting to the Facebook Marketing API",
         "type": "object",
-        "discriminator": {
-          "propertyName": "auth_type",
-          "mapping": {
-            "Client": "#/definitions/OAuthCredentials",
-            "Service": "#/definitions/ServiceAccountCredentials"
-          }
-        },
         "oneOf": [
           {
             "title": "Authenticate via Facebook Marketing (Oauth)",
@@ -528,7 +521,7 @@
         "type": "string"
       }
     },
-    "required": ["account_ids"]
+    "required": ["account_ids", "credentials"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
