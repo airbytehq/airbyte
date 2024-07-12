@@ -6,7 +6,7 @@ import logging
 from queue import Queue
 from typing import Iterable, Iterator, List, Optional, Tuple
 
-from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
+from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
@@ -19,7 +19,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
-from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
 class ConcurrentSource:
@@ -81,15 +80,6 @@ class ConcurrentSource:
         streams: List[AbstractStream],
     ) -> Iterator[AirbyteMessage]:
         self._logger.info("Starting syncing")
-        stream_instances_to_read_from, not_available_streams = self._get_streams_to_read_from(streams)
-
-        for stream, message in not_available_streams:
-            self._logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {message}")
-            yield stream_status_as_airbyte_message(stream, AirbyteStreamStatus.INCOMPLETE)
-
-        # Return early if there are no streams to read from
-        if not stream_instances_to_read_from:
-            return
 
         # We set a maxsize to for the main thread to process record items when the queue size grows. This assumes that there are less
         # threads generating partitions that than are max number of workers. If it weren't the case, we could have threads only generating
@@ -97,7 +87,7 @@ class ConcurrentSource:
         # information and might even need to be configurable depending on the source
         queue: Queue[QueueItem] = Queue(maxsize=10_000)
         concurrent_stream_processor = ConcurrentReadProcessor(
-            stream_instances_to_read_from,
+            streams,
             PartitionEnqueuer(queue, self._threadpool),
             self._threadpool,
             self._logger,
