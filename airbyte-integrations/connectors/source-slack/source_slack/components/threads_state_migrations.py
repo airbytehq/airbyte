@@ -1,5 +1,8 @@
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Any, Mapping
+
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 
 
 class ThreadsStateMigration(StateMigration):
@@ -21,6 +24,5 @@ class ThreadsStateMigration(StateMigration):
         :param stream_state: The stream_state to migrate
         :return: The migrated stream_state
         """
-        migrated_stream_state = {"state": {"ts": stream_state["float_ts"]},
-                                 "parent_state": {"channel_messages": {"states": []}}}
+        migrated_stream_state = {"state": {"ts": stream_state["float_ts"]}, "parent_state": {"channel_messages": {"states": []}}}
         return migrated_stream_state

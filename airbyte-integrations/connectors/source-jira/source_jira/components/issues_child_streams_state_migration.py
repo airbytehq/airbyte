@@ -1,5 +1,8 @@
-from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Any, Mapping
+
+from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 
 
 class IssuesChildStreamsStateMigration(StateMigration):
@@ -21,6 +24,5 @@ class IssuesChildStreamsStateMigration(StateMigration):
         :param stream_state: The stream_state to migrate
         :return: The migrated stream_state
         """
-        migrated_stream_state = {"state": {"updated": stream_state["updated"]},
-                                 "parent_state": {"issues": {"states": []}}}
+        migrated_stream_state = {"state": {"updated": stream_state["updated"]}, "parent_state": {"issues": {"states": []}}}
         return migrated_stream_state
