@@ -23,7 +23,11 @@ if TYPE_CHECKING:
     from typing import Iterable, List, Optional
 
 
-AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
+DEFAULT_AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
+AIRBYTE_GITHUB_REPO = os.environ.get("AIRBYTE_GITHUB_REPO", DEFAULT_AIRBYTE_GITHUB_REPO)
+AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX = f"https://raw.githubusercontent.com/{AIRBYTE_GITHUB_REPO}"
+AIRBYTE_GITHUB_REPO_URL_PREFIX = f"https://github.com/{AIRBYTE_GITHUB_REPO}"
+AIRBYTE_GITHUB_REPO_URL = f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}.git"
 BASE_BRANCH = "master"
 
 
