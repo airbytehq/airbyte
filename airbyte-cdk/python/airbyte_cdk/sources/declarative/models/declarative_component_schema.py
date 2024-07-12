@@ -532,6 +532,7 @@ class Action(Enum):
     FAIL = 'FAIL'
     RETRY = 'RETRY'
     IGNORE = 'IGNORE'
+    RATE_LIMITED = 'RATE_LIMITED'
 
 
 class FailureType(Enum):
@@ -545,7 +546,7 @@ class HttpResponseFilter(BaseModel):
     action: Optional[Action] = Field(
         None,
         description='Action to execute if a response matches the filter.',
-        examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE'],
+        examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE', 'RATE_LIMITED'],
         title='Action',
     )
     failure_type: Optional[FailureType] = Field(

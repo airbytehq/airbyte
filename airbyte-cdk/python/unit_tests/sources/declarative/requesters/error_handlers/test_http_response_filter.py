@@ -139,6 +139,17 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             ErrorResolution(response_action=ResponseAction.RETRY, failure_type=FailureType.transient_error, error_message="rate limits"),
             id="test_http_code_matches_failure_type_config_error_action_retry_uses_default_failure_type",
         ),
+        pytest.param(
+            ResponseAction.RATE_LIMITED,
+            None,
+            {500},
+            "",
+            "",
+            "rate limits",
+            {"status_code": 500},
+            ErrorResolution(response_action=ResponseAction.RATE_LIMITED, failure_type=FailureType.transient_error, error_message="rate limits"),
+            id="test_http_code_matches_response_action_rate_limited",
+        ),
     ],
 )
 def test_matches(requests_mock, action, failure_type, http_codes, predicate, error_contains, error_message, response, expected_error_resolution):
