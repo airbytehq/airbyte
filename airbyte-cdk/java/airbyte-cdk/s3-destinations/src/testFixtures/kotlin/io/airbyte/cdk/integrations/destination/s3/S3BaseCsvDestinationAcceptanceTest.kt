@@ -100,7 +100,12 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
             for ((key, value) in input) {
                 if (
                     key == JavaBaseConstants.COLUMN_NAME_AB_ID ||
-                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_RAW_ID) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_META) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
                 ) {
                     continue
                 }
