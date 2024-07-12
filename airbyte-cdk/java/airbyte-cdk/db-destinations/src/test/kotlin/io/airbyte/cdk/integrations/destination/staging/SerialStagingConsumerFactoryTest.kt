@@ -14,7 +14,7 @@ internal class SerialStagingConsumerFactoryTest {
     @Test
     fun detectConflictingStreams() {
         val configErrorException =
-            Assertions.assertThrows(ConfigErrorException::class.java) {
+            try {
                 SerialFlush.function(
                     null,
                     mock(),
@@ -24,25 +24,34 @@ internal class SerialStagingConsumerFactoryTest {
                             "source_schema",
                             "destination_default_schema",
                             null,
-                            null,
-                            mock()
+                            "output_table_name",
+                            mock(),
+                            -1L,
+                            -1L,
+                            -1L,
+                            "",
                         ),
                         WriteConfig(
                             "example_stream",
                             "source_schema",
                             "destination_default_schema",
                             null,
-                            null,
-                            mock()
+                            "output_table_name",
+                            mock(),
+                            -1L,
+                            -1L,
+                            -1L,
+                            "",
                         )
                     ),
                     mock(),
                 )
+                Assertions.fail("shold have throw a ConfigErrorException")
+            } catch (e: ConfigErrorException) {
+                Assertions.assertEquals(
+                    "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: source_schema.example_stream, source_schema.example_stream",
+                    e.message
+                )
             }
-
-        Assertions.assertEquals(
-            "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: source_schema.example_stream, source_schema.example_stream",
-            configErrorException.message
-        )
     }
 }

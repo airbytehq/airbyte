@@ -175,7 +175,11 @@ constructor(
 
         return StreamConfig(
             sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            stream.destinationSyncMode,
+            when (stream.destinationSyncMode!!) {
+                DestinationSyncMode.APPEND,
+                DestinationSyncMode.OVERWRITE -> PostImportAction.DO_NOTHING
+                DestinationSyncMode.APPEND_DEDUP -> PostImportAction.DEDUPE
+            },
             primaryKey,
             cursor,
             columns,
