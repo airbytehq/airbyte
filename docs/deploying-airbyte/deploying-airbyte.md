@@ -21,7 +21,7 @@ We recommend deploying Airbyte using Helm and the documented Helm chart values.
 Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
 
 
-[//]: # (The [Infrastructure]&#40;#deploying-airbyte/infrastructure&#41; section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order  to fit into your existing infrastructure.)
+The [Infrastructure](infrastructure/aws) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
 
 ## Adding the Helm Repository
 

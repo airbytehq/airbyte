@@ -395,15 +395,15 @@ const deployAirbyte = {
     id: "deploying-airbyte/deploying-airbyte",
   },
   items: [
-  //   {
-  //     type: "category",
-  //     label: "Infrastructure",
-  //     items: [
-  //       "deploying-airbyte/infrastructure/aws",
-  //       "deploying-airbyte/infrastructure/gcp",
-  //       "deploying-airbyte/infrastructure/azure",
-  //     ],
-  //   },
+    {
+      type: "category",
+      label: "Infrastructure",
+      items: [
+        "deploying-airbyte/infrastructure/aws",
+        // "deploying-airbyte/infrastructure/gcp",
+        // "deploying-airbyte/infrastructure/azure",
+      ],
+    },
 
     {
       type: "category",
