@@ -67,7 +67,11 @@ object GeneralStagingFunctions {
                 when (writeConfig.minimumGenerationId) {
                     writeConfig.generationId ->
                         queryList.add(
-                            stagingOperations.truncateTableQuery(database, schema, dstTableName)
+                            stagingOperations.truncateTableQuery(
+                                database,
+                                schema,
+                                dstTableName,
+                            )
                         )
                     0L -> {}
                     else ->
