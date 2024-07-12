@@ -6,7 +6,7 @@ import TabItem from '@theme/TabItem';
 # Ingress
 
 :::tip
-If you are using `abctl` to manage your deployment then a nginx ingress is provided for you. There is no need to provision an additional ingress.
+If you are using `abctl` to manage your deployment, a nginx ingress is automatically provided for you. There is no need to provision an additional ingress.
 :::
 
 To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment.

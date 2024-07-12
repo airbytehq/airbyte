@@ -1,6 +1,7 @@
 # Amazon Web Services (AWS)
 
 Airbyte supports Amazon Web Services as a Cloud Provider. There are several ways that you can deploy Airbyte using AWS.
+
 You can use the AWS managed Kubernetes solution EKS, using `abctl` on an EC2 instance, or on a Kubernetes distribution
 that has been deployed on EC2 instances.
 
@@ -74,16 +75,10 @@ The [following policies](https://docs.aws.amazon.com/mediaconnect/latest/ug/iam-
 
 ## Using an EC2 Instance with abctl
 
-This guide will assume that you are using the Amazon Linux distribution, however any distribution that supports a docker
-engine should work with `abctl`. The launching and connecting to your EC2 Instance is outside the scope of this guide,
-you can find more information on how to launch and connect to EC2 Instances in the [Get started with Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html)
-documentation from Amazon.
+This guide will assume that you are using the Amazon Linux distribution. However. any distribution that supports a docker engine should work with `abctl`. The launching and connecting to your EC2 Instance is outside the scope of this guide. You can find more information on how to launch and connect to EC2 Instances in the [Get started with Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html) documentation from Amazon.
 
 :::tip
-`abctl` runs by default on port 8000. You can change the port by passing the `--port` flag to the `local install` command.
-Make sure that the security group that you have configured for the EC2 Instance allows traffic in on the port that you 
-deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) 
-documentation for more information.
+`abctl` runs by default on port 8000. You can change the port by passing the `--port` flag to the `local install` command. Make sure that the security group that you have configured for the EC2 Instance allows traffic in on the port that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
 :::
 
 
