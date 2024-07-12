@@ -23,6 +23,44 @@ Helm is a Kubernetes package manager for automating deployment and management of
 
 [//]: # (The [Infrastructure]&#40;#deploying-airbyte/infrastructure&#41; section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order  to fit into your existing infrastructure.)
 
+## Adding the Helm Repository
+
+From now charts are stored in helm-repo thus there're no need to clone the repo each time you need
+to deploy the chart.
+
+To add remote helm repo simply run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`.
+
+Where `airbyte` is the name of the repository that will be indexed locally.
+
+After adding the repo, perform the repo indexing process by running `helm repo update`.
+
+After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
+
+It'll produce output similar to below:
+
+```text
+NAME                               	CHART VERSION	APP VERSION	DESCRIPTION                                       
+airbyte/airbyte                    	0.290.0      	0.63.6     	Helm chart to deploy airbyte                      
+airbyte/airbyte-api-server         	0.290.0      	0.63.6     	Helm chart to deploy airbyte-api-server           
+airbyte/airbyte-bootloader         	0.290.0      	0.63.6     	Helm chart to deploy airbyte-bootloader           
+airbyte/airbyte-cron               	0.40.37      	0.40.17    	Helm chart to deploy airbyte-cron                 
+airbyte/airbyte-workload-api-server	0.49.18      	0.50.33    	Helm chart to deploy airbyte-api-server           
+airbyte/connector-builder-server   	0.290.0      	0.63.6     	Helm chart to deploy airbyte-connector-builder-...
+airbyte/cron                       	0.290.0      	0.63.6     	Helm chart to deploy airbyte-cron                 
+airbyte/keycloak                   	0.290.0      	0.63.6     	Helm chart to deploy airbyte-keycloak             
+airbyte/keycloak-setup             	0.290.0      	0.63.6     	Helm chart to deploy airbyte-keycloak-setup       
+airbyte/metrics                    	0.290.0      	0.63.6     	Helm chart to deploy airbyte-metrics              
+airbyte/pod-sweeper                	0.290.0      	0.63.6     	Helm chart to deploy airbyte-pod-sweeper          
+airbyte/server                     	0.290.0      	0.63.6     	Helm chart to deploy airbyte-server               
+airbyte/temporal                   	0.290.0      	0.63.6     	Helm chart to deploy airbyte-temporal             
+airbyte/webapp                     	0.290.0      	0.63.6     	Helm chart to deploy airbyte-webapp               
+airbyte/worker                     	0.290.0      	0.63.6     	Helm chart to deploy airbyte-worker               
+airbyte/workload-api               	0.50.3       	0.50.35    	Helm chart to deploy the workload-api service     
+airbyte/workload-api-server        	0.290.0      	0.63.6     	Helm chart to deploy the workload-api service     
+airbyte/workload-launcher          	0.290.0      	0.63.6     	Helm chart to deploy airbyte-workload-launcher    
+```
+
+
 ## Creating a Namespace for Airbyte
 
 While it is not strictly necessary to isolate the Airbyte installation into its own namespace, it is good practice and recommended as a part of the installation.
