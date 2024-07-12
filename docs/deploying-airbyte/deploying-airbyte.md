@@ -16,7 +16,8 @@ Enterprise Customers should follow the steps outlined in our docs on [Airbyte Se
 
 Airbyte is built to be deployed into a Kubernetes cluster.
 You can use a Cloud Provider, such as, AWS, GCP, Azure, or onto a single node, such as an EC2 VM, or even locally on your computer.
-We recommend deploying Airbyte using Helm and the documented Helm chart values. 
+
+We highly recommend deploying Airbyte using Helm and the documented Helm chart values. 
 
 Helm is a Kubernetes package manager for automating deployment and management of complex applications with microservices on Kubernetes.  Refer to our [Helm Chart Usage Guide](https://airbytehq.github.io/helm-charts/) for more information about how to get started.
 
@@ -28,7 +29,7 @@ The [Infrastructure](infrastructure/aws) section describes the Airbyte's recomme
 Charts are stored in `helm-repo`. As a result, you do not need to clone the repo each time you need to deploy the chart.
 
 To add remote helm repo:
-1. Run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`. `airbyte` is the name of the repository that will be indexed locally.
+1. Run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`. In this example, `airbyte` is being used to represent the name of the repository that will be indexed locally.
 
 2. After adding the repo, perform the repo indexing process by running `helm repo update`.
 
@@ -113,9 +114,9 @@ kubectl create secret generic airbyte-config-secrets \
 ## Creating a values.yaml override file
 
 To configure your installation of Airbyte, you will need to override specific parts of the Helm Chart. To do this you should create a new file called `values.yaml` somewhere that is accessible during the installation process. 
-The documentation has been created to "build up" a values.yaml, so there is no need to copy the whole of the Chart values.yaml, you only need to provide the specific overrides.
+The documentation has been created to "build up" a values.yaml, so there is no need to copy the whole of the Chart values.yaml. You only need to provide the specific overrides.
 
-Each [Integrations](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file might look something like:
+Each [Integration](#integrations) will provide a section of the specific values that you should override and provide examples of what the values should look like. An example `values.yaml` file may look like the following: 
 
 ```yaml
 global:
@@ -140,11 +141,9 @@ global:
 
 ## Integrations
 
-The Airbyte platform is built to integrate with your existing cloud infrastructure. You can 
-configure various components of the platform to suit your needs. This includes an object store,
-such as S3 or GCS for storing logs and state, a database for externalizing state, and a secret 
-manager for keep your secrets secure. Each of these integrations can be configured to suit your 
-needs. Their configuration is described in the Integrations section. Each of these integrations has its own section where you'll find an explanation of the rationale for why it's useful to configure the integration. There, you'll also find details about how to configure the integration.
+The Airbyte platform is built to integrate with your existing cloud infrastructure. You can configure various components of the platform to suit your needs. This includes an object store, such as S3 or GCS for storing logs and state, a database for externalizing state, and a secrets manager for keep your secrets secure. 
+
+Each of these integrations can be configured to suit your specific needs and is described in the [Integration](#integrations) section. Each of these integrations has its own section where you'll find an explanation for why it's useful to configure the integration. There, you'll also find details about how to configure the integration.
 
 - [State and Logging Storage](./integrations/storage)
 - [Secret Management](./integrations/secrets)
@@ -154,8 +153,7 @@ needs. Their configuration is described in the Integrations section. Each of the
 
 ## Installing Airbyte
 
-After you have applied your Secret values to the Cluster and you have filled out a values.yaml file appropriately for your specific configuration,
-you can begin a Helm Install. To do this, make sure that you have the [Helm Client](https://helm.sh/docs/intro/install/) installed and on your path.
+After you have applied your Secret values to the Cluster and you have filled out a values.yaml file appropriately for your specific configuration, you can begin a Helm Install. To do this, make sure that you have the [Helm Client](https://helm.sh/docs/intro/install/) installed and on your path.
 Then you can run:
 
 ```sh
