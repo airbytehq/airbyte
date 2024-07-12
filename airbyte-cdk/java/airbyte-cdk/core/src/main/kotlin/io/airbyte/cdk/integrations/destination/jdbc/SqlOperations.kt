@@ -80,7 +80,7 @@ interface SqlOperations {
      * @param tableName Name of table
      * @return Query
      */
-    fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String
+    fun truncateTableQuery(database: JdbcDatabase, schemaName: String, tableName: String): String
 
     /**
      * Insert records into table. Assumes the table exists.
@@ -96,7 +96,9 @@ interface SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     /**
