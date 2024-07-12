@@ -15,6 +15,9 @@ class CheckpointMode(Enum):
     FULL_REFRESH = "full_refresh"
 
 
+FULL_REFRESH_COMPLETE_STATE: Mapping[str, Any] = {"__ab_full_refresh_sync_complete": True}
+
+
 class CheckpointReader(ABC):
     """
     CheckpointReader manages how to iterate over a stream's partitions and serves as the bridge for interpreting the current state
@@ -112,22 +115,22 @@ class CursorBasedCheckpointReader(CheckpointReader):
 
         try:
             if self._read_state_from_cursor:
-                if self._current_slice is None:
+                if self.current_slice is None:
                     next_slice = self._get_next_slice()
-                    state_for_slice = self._cursor.select_state(self._current_slice)
-                    if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                    state_for_slice = self._cursor.select_state(next_slice)
+                    if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                         next_candidate_slice = None
                         has_more = True
                         while has_more:
                             next_candidate_slice = self._get_next_slice()
                             state_for_slice = self._cursor.select_state(next_candidate_slice)
-                            has_more = state_for_slice == {"__ab_full_refresh_sync_complete": True}
-                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
+                            has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
+                        self.current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
                     else:
-                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
+                        self.current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
                 else:
-                    state_for_slice = self._cursor.select_state(self._current_slice)
-                    if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                    state_for_slice = self._cursor.select_state(self.current_slice)
+                    if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                         # Skip every slice that already has the terminal complete value indicating that a previous attempt
                         # successfully synced the slice
                         next_candidate_slice = None
@@ -135,15 +138,15 @@ class CursorBasedCheckpointReader(CheckpointReader):
                         while has_more:
                             next_candidate_slice = self._get_next_slice()
                             state_for_slice = self._cursor.select_state(next_candidate_slice)
-                            has_more = state_for_slice == {"__ab_full_refresh_sync_complete": True}
-                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
+                            has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
+                        self.current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
                     else:
-                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=self._current_slice.partition)
+                        self.current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=self.current_slice.partition)
             else:
                 # Unlike RFR cursors that iterate dynamically based on how stream state is updated, most cursors operate on a
                 # fixed set of slices determined before reading records. They should just iterate to the next slice
-                self._current_slice = self._get_next_slice()
-            return self._current_slice
+                self.current_slice = self._get_next_slice()
+            return self.current_slice
         except StopIteration:
             self._finished_sync = True
             return None
@@ -170,6 +173,14 @@ class CursorBasedCheckpointReader(CheckpointReader):
         else:
             return None
 
+    @property
+    def current_slice(self) -> Optional[StreamSlice]:
+        return self._current_slice
+
+    @current_slice.setter
+    def current_slice(self, value: StreamSlice) -> None:
+        self._current_slice = value
+
 
 class ResumableFullRefreshCheckpointReader(CheckpointReader):
     """
@@ -188,7 +199,7 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
         if self._first_page:
             self._first_page = False
             return self._state
-        elif self._state == {"__ab_full_refresh_sync_complete": True}:
+        elif self._state == FULL_REFRESH_COMPLETE_STATE:
             return None
         else:
             return self._state
