@@ -27,6 +27,7 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
+from pipelines.helpers.github import AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
@@ -36,12 +37,13 @@ from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, Ste
 # live_test can't resolve the passed connector container otherwise.
 from slugify import slugify  # type: ignore
 
+GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/master/airbyte-integrations/connectors"
+
 
 class VersionCheck(Step, ABC):
     """A step to validate the connector version was bumped if files were modified"""
 
     context: ConnectorContext
-    GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
 
     @property
@@ -50,7 +52,7 @@ class VersionCheck(Step, ABC):
 
     @property
     def github_master_metadata_url(self) -> str:
-        return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
+        return f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
     def master_metadata(self) -> Optional[dict]:
@@ -393,9 +395,7 @@ class IncrementalAcceptanceTests(Step):
         Returns:
             Artifact: The report log of the acceptance tests run on the released image.
         """
-        raw_master_metadata = requests.get(
-            f"https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/{self.context.connector.technical_name}/metadata.yaml"
-        )
+        raw_master_metadata = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
         master_metadata = yaml.safe_load(raw_master_metadata.text)
         master_docker_image_tag = master_metadata["data"]["dockerImageTag"]
         released_image = f'{master_metadata["data"]["dockerRepository"]}:{master_docker_image_tag}'
