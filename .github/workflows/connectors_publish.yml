@@ -45,7 +45,7 @@ jobs:
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_repo_url: https://github.com/airbytehq/airbyte-enterprise.git
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
@@ -67,7 +67,7 @@ jobs:
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_repo_url: https://github.com/airbytehq/airbyte-enterprise.git
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
