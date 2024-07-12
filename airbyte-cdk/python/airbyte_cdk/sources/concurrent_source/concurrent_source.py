@@ -4,9 +4,9 @@
 import concurrent
 import logging
 from queue import Queue
-from typing import Iterable, Iterator, List
+from typing import Iterable, Iterator, List, Optional, Tuple
 
-from airbyte_cdk.models import AirbyteMessage
+from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
 from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.concurrent_source.stream_thread_exception import StreamThreadException
@@ -19,6 +19,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 
 
 class ConcurrentSource:
@@ -80,7 +81,11 @@ class ConcurrentSource:
         streams: List[AbstractStream],
     ) -> Iterator[AirbyteMessage]:
         self._logger.info("Starting syncing")
-        stream_instances_to_read_from = self._get_streams_to_read_from(streams)
+        stream_instances_to_read_from, not_available_streams = self._get_streams_to_read_from(streams)
+
+        for stream, message in not_available_streams:
+            self._logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {message}")
+            yield stream_status_as_airbyte_message(stream, AirbyteStreamStatus.INCOMPLETE)
 
         # Return early if there are no streams to read from
         if not stream_instances_to_read_from:
@@ -151,7 +156,9 @@ class ConcurrentSource:
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
 
-    def _get_streams_to_read_from(self, streams: List[AbstractStream]) -> List[AbstractStream]:
+    def _get_streams_to_read_from(
+        self, streams: List[AbstractStream]
+    ) -> Tuple[List[AbstractStream], List[Tuple[AbstractStream, Optional[str]]]]:
         """
         Iterate over the configured streams and return a list of streams to read from.
         If a stream is not configured, it will be skipped.
@@ -159,10 +166,11 @@ class ConcurrentSource:
         If a stream is not available, it will be skipped
         """
         stream_instances_to_read_from = []
+        not_available_streams = []
         for stream in streams:
             stream_availability = stream.check_availability()
             if not stream_availability.is_available():
-                self._logger.warning(f"Skipped syncing stream '{stream.name}' because it was unavailable. {stream_availability.message()}")
+                not_available_streams.append((stream, stream_availability.message()))
                 continue
             stream_instances_to_read_from.append(stream)
-        return stream_instances_to_read_from
+        return stream_instances_to_read_from, not_available_streams
