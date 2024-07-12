@@ -16,6 +16,7 @@ from pendulum.parsing.exceptions import ParserError
 class CustomFieldTransformation(RecordTransformation):
     """
     Remove all "empty" (e.g. '0000-00-00', '0000-00-00 00:00:00') 'date' and 'date-time' fields from record
+    TODO: Seems like this can be now done with a low-code record transformation
     """
 
     config: Config

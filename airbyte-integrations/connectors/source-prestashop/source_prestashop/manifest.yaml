@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "3.4.0"
 
 definitions:
   selector:
@@ -53,11 +53,9 @@ definitions:
         request_parameters:
           $ref: "#/definitions/requester/request_parameters"
           date: "1"
-          sort:
-            "[{{ parameters['cursor_field'] }}_ASC,{{ parameters['primary_key']
+          sort: "[{{ parameters['cursor_field'] }}_ASC,{{ parameters['primary_key']
             }}_ASC]"
-          "filter[{{ parameters['cursor_field'] }}]":
-            "[{{ stream_slice['start_time']
+          "filter[{{ parameters['cursor_field'] }}]": "[{{ stream_slice['start_time']
             }},{{ stream_slice['end_time'] }}]"
   addresses_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -169,8 +167,7 @@ definitions:
               - "null"
               - string
           dni:
-            description:
-              DNI (Documento Nacional de Identidad) number associated with
+            description: DNI (Documento Nacional de Identidad) number associated with
               the address.
             type:
               - "null"
@@ -357,15 +354,13 @@ definitions:
               - "null"
               - string
           quantity:
-            description:
-              Minimum quantity of products required to trigger the cart
+            description: Minimum quantity of products required to trigger the cart
               rule.
             type:
               - "null"
               - string
           quantity_per_user:
-            description:
-              Maximum quantity of product per user that the cart rule applies
+            description: Maximum quantity of product per user that the cart rule applies
               to.
             type:
               - "null"
@@ -376,15 +371,13 @@ definitions:
               - "null"
               - string
           partial_use:
-            description:
-              Indicates whether the cart rule can be partially used or
+            description: Indicates whether the cart rule can be partially used or
               applied multiple times.
             type:
               - "null"
               - string
           code:
-            description:
-              The unique code that customers can apply at checkout to trigger
+            description: The unique code that customers can apply at checkout to trigger
               the discount.
             type:
               - "null"
@@ -395,8 +388,7 @@ definitions:
               - "null"
               - string
           minimum_amount_tax:
-            description:
-              Minimum order amount that includes taxes to trigger the cart
+            description: Minimum order amount that includes taxes to trigger the cart
               rule.
             type:
               - "null"
@@ -407,15 +399,13 @@ definitions:
               - "null"
               - string
           minimum_amount_shipping:
-            description:
-              Minimum order amount that includes shipping cost to trigger
+            description: Minimum order amount that includes shipping cost to trigger
               the cart rule.
             type:
               - "null"
               - string
           country_restriction:
-            description:
-              ISO country codes for countries the cart rule is applicable
+            description: ISO country codes for countries the cart rule is applicable
               to.
             type:
               - "null"
@@ -431,15 +421,13 @@ definitions:
               - "null"
               - string
           cart_rule_restriction:
-            description:
-              IDs of other cart rules that are restricted in conjunction
+            description: IDs of other cart rules that are restricted in conjunction
               with this rule.
             type:
               - "null"
               - string
           product_restriction:
-            description:
-              IDs of specific products that the cart rule is restricted
+            description: IDs of specific products that the cart rule is restricted
               to.
             type:
               - "null"
@@ -480,8 +468,7 @@ definitions:
               - "null"
               - string
           reduction_exclude_special:
-            description:
-              Indicates whether special offers are excluded from the cart
+            description: Indicates whether special offers are excluded from the cart
               rule.
             type:
               - "null"
@@ -497,8 +484,7 @@ definitions:
               - "null"
               - string
           highlight:
-            description:
-              Indicates whether the cart rule should be highlighted for
+            description: Indicates whether the cart rule should be highlighted for
               customers.
             type:
               - "null"
@@ -653,15 +639,13 @@ definitions:
                         - "null"
                         - string
                     id_product_attribute:
-                      description:
-                        ID of the product attribute selected for the cart
+                      description: ID of the product attribute selected for the cart
                         item
                       type:
                         - "null"
                         - string
                     id_address_delivery:
-                      description:
-                        ID of the delivery address associated with the
+                      description: ID of the delivery address associated with the
                         cart item
                       type:
                         - "null"
@@ -958,15 +942,13 @@ definitions:
               - "null"
               - string
           id_shop_group:
-            description:
-              The identifier of the shop group associated with the configuration
+            description: The identifier of the shop group associated with the configuration
               data.
             type:
               - "null"
               - string
           id_shop:
-            description:
-              The identifier of the shop associated with the configuration
+            description: The identifier of the shop associated with the configuration
               data.
             type:
               - "null"
@@ -1055,8 +1037,7 @@ definitions:
               - "null"
               - string
           active:
-            description:
-              Indicates if the content management system data is active
+            description: Indicates if the content management system data is active
               or not.
             type:
               - "null"
@@ -1110,8 +1091,7 @@ definitions:
               - "null"
               - integer
           id_zone:
-            description:
-              Identifier for the geographical zone or region to which the
+            description: Identifier for the geographical zone or region to which the
               country belongs.
             type:
               - "null"
@@ -1122,8 +1102,7 @@ definitions:
               - "null"
               - string
           call_prefix:
-            description:
-              The call prefix or telephone code used to make calls to this
+            description: The call prefix or telephone code used to make calls to this
               country.
             type:
               - "null"
@@ -1139,22 +1118,19 @@ definitions:
               - "null"
               - string
           contains_states:
-            description:
-              Specifies if the country contains states or regions within
+            description: Specifies if the country contains states or regions within
               its territory.
             type:
               - "null"
               - string
           need_identification_number:
-            description:
-              Specifies if an identification number is required for transactions
+            description: Specifies if an identification number is required for transactions
               in this country.
             type:
               - "null"
               - string
           need_zip_code:
-            description:
-              Indicates if a zip code is required for addressing purposes
+            description: Indicates if a zip code is required for addressing purposes
               in this country.
             type:
               - "null"
@@ -1193,8 +1169,7 @@ definitions:
               - "null"
               - integer
           names:
-            description:
-              Object containing the names of the currency in different
+            description: Object containing the names of the currency in different
               languages.
             type:
               - "null"
@@ -1225,8 +1200,7 @@ definitions:
               - "null"
               - string
           conversion_rate:
-            description:
-              The conversion rate of the currency compared to the default
+            description: The conversion rate of the currency compared to the default
               currency.
             type:
               - "null"
@@ -1281,8 +1255,7 @@ definitions:
               - "null"
               - string
           id_customer_thread:
-            description:
-              The identifier of the customer thread this message belongs
+            description: The identifier of the customer thread this message belongs
               to
             type:
               - "null"
@@ -1308,8 +1281,7 @@ definitions:
               - "null"
               - string
           private:
-            description:
-              Indicates if the message is private (e.g., only visible to
+            description: Indicates if the message is private (e.g., only visible to
               specific users)
             type:
               - "null"
@@ -1421,8 +1393,7 @@ definitions:
               - "null"
               - string
           optin:
-            description:
-              Indicates whether the customer has opted-in for promotional
+            description: Indicates whether the customer has opted-in for promotional
               communications
             type:
               - "null"
@@ -1526,8 +1497,7 @@ definitions:
                   type: object
                   properties:
                     id:
-                      description:
-                        The unique identifier of a group associated with
+                      description: The unique identifier of a group associated with
                         the customer
                       type:
                         - "null"
@@ -1657,8 +1627,7 @@ definitions:
               - "null"
               - string
           id_zone:
-            description:
-              Identifier for the geographical zone to which the delivery
+            description: Identifier for the geographical zone to which the delivery
               applies
             type:
               - "null"
@@ -1806,8 +1775,7 @@ definitions:
               - "null"
               - string
           id_last_customer_message:
-            description:
-              Identifier of the last customer message associated with the
+            description: Identifier of the last customer message associated with the
               employee
             type:
               - "null"
@@ -1898,8 +1866,7 @@ definitions:
               - "null"
               - integer
           id_customer:
-            description:
-              Unique identifier of the customer associated with the guest
+            description: Unique identifier of the customer associated with the guest
               data
             type:
               - "null"
@@ -2559,15 +2526,13 @@ definitions:
               - "null"
               - integer
           id_employee:
-            description:
-              The identifier of the employee who made the order history
+            description: The identifier of the employee who made the order history
               entry.
             type:
               - "null"
               - string
           id_order_state:
-            description:
-              The identifier of the order state for this order history
+            description: The identifier of the order state for this order history
               entry.
             type:
               - "null"
@@ -2618,8 +2583,7 @@ definitions:
               - "null"
               - string
           delivery_date:
-            description:
-              The expected delivery date for the order associated with
+            description: The expected delivery date for the order associated with
               this invoice.
             type:
               - "null"
@@ -3038,8 +3002,7 @@ definitions:
                         - "null"
                         - string
                     product_attribute_id:
-                      description:
-                        Identifier for the product attribute of the ordered
+                      description: Identifier for the product attribute of the ordered
                         product
                       type:
                         - "null"
@@ -3080,8 +3043,7 @@ definitions:
                         - "null"
                         - string
                     id_customization:
-                      description:
-                        Identifier for customization related to the product
+                      description: Identifier for customization related to the product
                         on the order row
                       type:
                         - "null"
@@ -3299,8 +3261,7 @@ definitions:
               - "null"
               - integer
           id_carrier:
-            description:
-              The unique identifier for the carrier associated with the
+            description: The unique identifier for the carrier associated with the
               price range
             type:
               - "null"
@@ -3334,36 +3295,31 @@ definitions:
               - "null"
               - integer
           id_product:
-            description:
-              The ID of the product to which this customization field is
+            description: The ID of the product to which this customization field is
               associated.
             type:
               - "null"
               - string
           type:
-            description:
-              The type of customization field such as text, image, file,
+            description: The type of customization field such as text, image, file,
               etc.
             type:
               - "null"
               - string
           required:
-            description:
-              A flag indicating whether this customization field is required
+            description: A flag indicating whether this customization field is required
               for the product.
             type:
               - "null"
               - string
           is_module:
-            description:
-              A flag indicating whether the customization field is a module
+            description: A flag indicating whether the customization field is a module
               or not.
             type:
               - "null"
               - string
           is_deleted:
-            description:
-              A flag indicating whether the customization field has been
+            description: A flag indicating whether the customization field has been
               deleted.
             type:
               - "null"
@@ -3512,8 +3468,7 @@ definitions:
               - "null"
               - integer
           id_attribute_group:
-            description:
-              The identifier of the attribute group to which the product
+            description: The identifier of the attribute group to which the product
               option value belongs.
             type:
               - "null"
@@ -3524,8 +3479,7 @@ definitions:
               - "null"
               - string
           position:
-            description:
-              The position or order of the product option value in the
+            description: The position or order of the product option value in the
               list of values.
             type:
               - "null"
@@ -3835,8 +3789,7 @@ definitions:
               - "null"
               - string
           advanced_stock_management:
-            description:
-              Indicates if advanced stock management is enabled for the
+            description: Indicates if advanced stock management is enabled for the
               product.
             type:
               - "null"
@@ -3904,8 +3857,7 @@ definitions:
               - "null"
               - string
           associations:
-            description:
-              Associations related to the product such as categories, images,
+            description: Associations related to the product such as categories, images,
               and stock availables.
             type: object
             properties:
@@ -3937,8 +3889,7 @@ definitions:
                 description: Stock availability information related to the product.
                 type: array
                 items:
-                  description:
-                    Details of each stock availability record related to
+                  description: Details of each stock availability record related to
                     the product.
                   type: object
                   properties:
@@ -3948,8 +3899,7 @@ definitions:
                         - "null"
                         - string
                     id_product_attribute:
-                      description:
-                        The product attribute ID associated with the stock
+                      description: The product attribute ID associated with the stock
                         available.
                       type:
                         - "null"
@@ -3998,8 +3948,7 @@ definitions:
               - "null"
               - string
           product_supplier_price_te:
-            description:
-              Price at which the supplier offers the product, excluding
+            description: Price at which the supplier offers the product, excluding
               taxes.
             type:
               - "null"
@@ -4028,8 +3977,7 @@ definitions:
               - "null"
               - string
           share_customer:
-            description:
-              Indicates if customers are shared among shops within this
+            description: Indicates if customers are shared among shops within this
               group.
             type:
               - "null"
@@ -4040,8 +3988,7 @@ definitions:
               - "null"
               - string
           share_stock:
-            description:
-              Indicates if stock information is shared among shops within
+            description: Indicates if stock information is shared among shops within
               this group.
             type:
               - "null"
@@ -4191,8 +4138,7 @@ definitions:
               - "null"
               - string
           id_group:
-            description:
-              ID of the customer group to which the specific price rule
+            description: ID of the customer group to which the specific price rule
               applies
             type:
               - "null"
@@ -4203,8 +4149,7 @@ definitions:
               - "null"
               - string
           from_quantity:
-            description:
-              Minimum quantity required for the specific price rule to
+            description: Minimum quantity required for the specific price rule to
               apply
             type:
               - "null"
@@ -4258,8 +4203,7 @@ definitions:
               - "null"
               - integer
           id_shop_group:
-            description:
-              The shop group ID if specific price is applied at a shop
+            description: The shop group ID if specific price is applied at a shop
               group level.
             type:
               - "null"
@@ -4315,8 +4259,7 @@ definitions:
               - "null"
               - string
           from_quantity:
-            description:
-              The minimum quantity of the product for the specific price
+            description: The minimum quantity of the product for the specific price
               to be applied.
             type:
               - "null"
@@ -4413,8 +4356,7 @@ definitions:
               - "null"
               - string
           id_product_attribute:
-            description:
-              Identifier of the product attribute associated with the stock
+            description: Identifier of the product attribute associated with the stock
               availability
             type:
               - "null"
@@ -4425,8 +4367,7 @@ definitions:
               - "null"
               - string
           id_shop_group:
-            description:
-              Identifier of the shop group where the stock availability
+            description: Identifier of the shop group where the stock availability
               applies
             type:
               - "null"
@@ -4471,8 +4412,7 @@ definitions:
               - "null"
               - integer
           sign:
-            description:
-              The sign associated with the stock movement reason (e.g.,
+            description: The sign associated with the stock movement reason (e.g.,
               positive or negative)
             type:
               - "null"
@@ -4489,8 +4429,7 @@ definitions:
               - string
             format: date-time
           date_upd:
-            description:
-              The date and time when the stock movement reason was last
+            description: The date and time when the stock movement reason was last
               updated
             type:
               - "null"
@@ -4773,8 +4712,7 @@ definitions:
               - string
             format: date-time
           date_upd:
-            description:
-              The date and time when the supplier's information was last
+            description: The date and time when the supplier's information was last
               updated
             type:
               - "null"
@@ -4896,8 +4834,7 @@ definitions:
               - "null"
               - string
           deleted:
-            description:
-              Indicates if the tax rule group has been marked as deleted
+            description: Indicates if the tax rule group has been marked as deleted
               or not.
             type:
               - "null"
@@ -4963,8 +4900,7 @@ definitions:
               - "null"
               - string
           behavior:
-            description:
-              The behavior of the tax rule, indicating how it is applied
+            description: The behavior of the tax rule, indicating how it is applied
               (e.g., 'order' or 'shipping').
             type:
               - "null"
@@ -5015,8 +4951,7 @@ definitions:
               - "null"
               - string
           id_shop_group:
-            description:
-              The ID of the shop group to which the translated configuration
+            description: The ID of the shop group to which the translated configuration
               belongs.
             type:
               - "null"

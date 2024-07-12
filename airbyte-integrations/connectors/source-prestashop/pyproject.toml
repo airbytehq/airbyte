@@ -1,12 +1,12 @@
 [build-system]
-requires = [ "poetry-core>=1.0.0",]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "1.0.4"
+version = "1.0.5"
 name = "source-prestashop"
 description = "Source implementation for PrestaShop."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/prestashop"
@@ -17,12 +17,12 @@ include = "source_prestashop"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+airbyte-cdk = "< 4.0.0"
 
 [tool.poetry.scripts]
 source-prestashop = "source_prestashop.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.1"
-pytest-mock = "^3.6.1"
-requests-mock = "^1.9.3"
+pytest = "^8"
+pytest-mock = "*"
+requests-mock = "*"
