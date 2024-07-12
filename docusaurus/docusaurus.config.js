@@ -79,9 +79,8 @@ const config = {
   ],
 
   clientModules: [
-    require.resolve("./src/scripts/cloudStatus.js"),
-    require.resolve('./src/scripts/download-abctl-buttons.js'),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
+    require.resolve("./src/scripts/cloudStatus.js"),
   ],
 
   presets: [

@@ -48,16 +48,11 @@ brew upgrade abctl
 </TabItem>
 <TabItem value="abctl-linux" label="Linux" default>
 
-**1: Download the latest release of `abctl`.**
-
-<a class="abctl-download button button--primary disabled" data-architecture="linux-amd64" href="#" style={{ marginRight: '10px' }} download>Loading...</a>
-<a class="abctl-download button button--primary disabled" data-architecture="linux-arm64" href="#" download>Loading...</a>
-<br/>
-<br/>
+**1: Download the latest release of `abctl` [here](https://github.com/airbytehq/abctl/releases)**
 
 :::info
-<details>
-<summary>Be sure to download the file that is compatible with your machine's processor architecture.</summary>
+Be sure to download the file that is compatible with your machine's processor architecture. 
+:::
 
 You'll see two options: `linux-amd64` and `linux-arm64`
 If you're unsure which one you need, running the following command will help:
@@ -68,8 +63,6 @@ uname -m
 
 - If the output is `x86_64`, you have an x86-64 processor.
 - If the output is `aarch64` or something similar, you have an ARM-based processor.
-</details>
-:::
 
 **2: Extract the archive**
 
@@ -106,11 +99,7 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 </TabItem>
 <TabItem value="abctl-windows" label="Windows" default>
 
-**1: Download the latest release of `abctl`.**
-
-<a class="abctl-download button button--primary disabled" data-architecture="windows-amd64" href="#" download>Loading...</a>
-<br/>
-<br/>
+**1: Download the latest release of `abctl` [here](https://github.com/airbytehq/abctl/releases)**
 
 **2: Extract the archive**
 - Right click the zip file you've downloaded and select `Extract All...`, then choose a destination folder. 
@@ -222,5 +211,3 @@ On Udemy, [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/
 
 **Bug Reports:**<br/>If you find an issue with the `abctl` command, please report it as a github
 issue [here](https://github.com/airbytehq/airbyte/issues) with the type of `🐛 [abctl] Report an issue with the abctl tool`.
-
-**Releases:**<br/>If you'd like to select which release of abctl to run, you can find the list of releases [here](https://github.com/airbytehq/abctl/releases/).
