@@ -115,6 +115,9 @@ class CursorBasedCheckpointReader(CheckpointReader):
 
         try:
             if self._read_state_from_cursor:
+                # We need to check that `current_slice is None` as opposed to `not current_slice` because the current_slice
+                # could be the empty StreamSlice() which derives to the falsy empty mapping {}. The slice still requires
+                # iterating over the cursor state in the else block until it hits the terminal value
                 if self.current_slice is None:
                     next_slice = self._get_next_slice()
                     state_for_slice = self._cursor.select_state(next_slice)
