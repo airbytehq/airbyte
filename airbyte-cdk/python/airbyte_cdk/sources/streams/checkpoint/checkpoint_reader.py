@@ -15,6 +15,9 @@ class CheckpointMode(Enum):
     FULL_REFRESH = "full_refresh"
 
 
+FULL_REFRESH_COMPLETE_STATE: Mapping[str, Any] = {"__ab_full_refresh_sync_complete": True}
+
+
 class CheckpointReader(ABC):
     """
     CheckpointReader manages how to iterate over a stream's partitions and serves as the bridge for interpreting the current state
@@ -137,38 +140,38 @@ class CursorBasedCheckpointReader(CheckpointReader):
 
         if self._read_state_from_cursor:
             if self._current_slice is None:
-                next_slice = self.get_next_slice()
+                next_slice = self.read_and_convert_slice()
                 state_for_slice = self._cursor.select_state(next_slice)
-                if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                     next_candidate_slice = None
                     has_more = True
                     while has_more:
-                        next_candidate_slice = self.get_next_slice()
+                        next_candidate_slice = self.read_and_convert_slice()
                         state_for_slice = self._cursor.select_state(next_candidate_slice)
-                        has_more = state_for_slice == {"__ab_full_refresh_sync_complete": True}
+                        has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
                     return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
                 else:
                     return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
             else:
                 state_for_slice = self._cursor.select_state(self._current_slice)
-                if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                     # Skip every slice that already has the terminal complete value indicating that a previous attempt
                     # successfully synced the slice
                     next_candidate_slice = None
                     has_more = True
                     while has_more:
-                        next_candidate_slice = self.get_next_slice()
+                        next_candidate_slice = self.read_and_convert_slice()
                         state_for_slice = self._cursor.select_state(next_candidate_slice)
-                        has_more = state_for_slice == {"__ab_full_refresh_sync_complete": True}
+                        has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
                     return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
                 else:
                     return StreamSlice(cursor_slice=state_for_slice or {}, partition=self._current_slice.partition)
         else:
             # Unlike RFR cursors that iterate dynamically according to how stream state is updated, most cursors operate
             # on a fixed set of slices determined before reading records. They just iterate to the next slice
-            return self.get_next_slice()
+            return self.read_and_convert_slice()
 
-    def get_next_slice(self) -> StreamSlice:
+    def read_and_convert_slice(self) -> StreamSlice:
         next_slice = next(self._stream_slices)
         if not isinstance(next_slice, StreamSlice):
             raise ValueError(
@@ -221,7 +224,7 @@ class LegacyCursorBasedCheckpointReader(CursorBasedCheckpointReader):
             self._finished_sync = True
             return None
 
-    def get_next_slice(self) -> StreamSlice:
+    def read_and_convert_slice(self) -> StreamSlice:
         next_mapping_slice = next(self._stream_slices)
         if not isinstance(next_mapping_slice, Mapping):
             raise ValueError(
@@ -253,7 +256,7 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
         if self._first_page:
             self._first_page = False
             return self._state
-        elif self._state == {"__ab_full_refresh_sync_complete": True}:
+        elif self._state == FULL_REFRESH_COMPLETE_STATE:
             return None
         else:
             return self._state

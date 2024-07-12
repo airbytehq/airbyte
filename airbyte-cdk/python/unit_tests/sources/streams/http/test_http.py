@@ -41,6 +41,7 @@ class StubBasicReadHttpStream(HttpStream):
     def must_deduplicate_query_params(self) -> bool:
         return self._deduplicate_query_params
 
+    @property
     def cursor_field(self) -> Union[str, List[str]]:
         return ["updated_at"]
 
@@ -818,10 +819,10 @@ def test_resumable_full_refresh_legacy_stream_slice(mocker):
 
 
 class StubWithCursorFields(StubBasicReadHttpStream):
-    def __init__(self, is_substream: bool, set_cursor_field: List[str], deduplicate_query_params: bool = False, **kwargs):
-        super().__init__()
-        self.is_substream = is_substream
+    def __init__(self, has_multiple_slices: bool, set_cursor_field: List[str], deduplicate_query_params: bool = False, **kwargs):
+        self.has_multiple_slices = has_multiple_slices
         self._cursor_field = set_cursor_field
+        super().__init__()
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -838,22 +839,7 @@ class StubWithCursorFields(StubBasicReadHttpStream):
     ]
 )
 def test_get_cursor(cursor_field, is_substream, expected_cursor):
-    stream = StubWithCursorFields(set_cursor_field=cursor_field, is_substream=is_substream)
+    stream = StubWithCursorFields(set_cursor_field=cursor_field, has_multiple_slices=is_substream)
     actual_cursor = stream.get_cursor()
 
     assert actual_cursor == expected_cursor
-
-
-def test_get_cursor_uses_already_assigned_cursor():
-    """
-    This is a special test that verifies that when get_cursor() is invoked, the same cursor is returned. Because we don't
-    know what type of cursor to use when instantiating the stream, we have to create and assign the cursor at runtime
-    within get_cursor(). And since get_cursor() is called throughout the sync, we need to assign it the first time this
-    is called and reuse it on subsequent invocations
-    """
-
-    stream = StubWithCursorFields(set_cursor_field=[], is_substream=False)
-    actual_cursor = stream.get_cursor()
-    should_be_same_cursor = stream.get_cursor()
-
-    assert actual_cursor is should_be_same_cursor

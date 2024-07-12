@@ -48,6 +48,14 @@ class HttpStream(Stream, CheckpointMixin, ABC):
         )
         self._session.auth = authenticator
 
+        # Stream's with at least one cursor_field is incremental and thus a superior sync than RFR. We also cannot
+        # assume that streams overriding read_records() will call the parent implementation
+        # which
+        if len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+            self.cursor = ResumableFullRefreshCursor()
+        else:
+            self.cursor = None
+
     @property
     def cache_filename(self) -> str:
         """
@@ -500,18 +508,15 @@ class HttpStream(Stream, CheckpointMixin, ABC):
         self._state = value
 
     def get_cursor(self) -> Optional[Cursor]:
-        # I don't love that this is semi-stateful but not sure what else to do. We don't know what type of cursor to instantiate
-        # when creating the class, so during our first attempt to use the cursor we create it. This makes for a slightly awkward
-        # implementation since we only invoke this flow the first time when the cursor is None
-        if self.cursor is None:
-            if len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records and not self.is_substream:
-                # We are temporarily gating RFR to Python HttpStreams to minimize complexity. While implementing RFR for
-                # substreams we'll remove this self.is_substream condition
-                self.cursor = ResumableFullRefreshCursor()
-            else:
-                self.cursor = None
-
-        return self.cursor
+        # I don't love that this is semi-stateful but not sure what else to do. We don't know exactly what type of cursor to
+        # instantiate when creating the class. We can make a few assumptions like if there is a cursor_field which implies
+        # incremental, but we don't know until runtime if this is a substream. This makes for a slightly awkward getter that
+        # is stateful because `has_multiple_slices` can be reassigned at runtime after we inspect slices.
+        # This code temporarily gates RFR off for substreams by always removing the RFR cursor if there are multiple slices
+        if self.has_multiple_slices:
+            return None
+        else:
+            return self.cursor
 
     def _read_pages(
         self,
@@ -601,6 +606,8 @@ class HttpSubStream(HttpStream, ABC):
         """
         super().__init__(**kwargs)
         self.parent = parent
+        self.has_multiple_slices = True  # Substreams are based on parent records which implies there are multiple slices
+        self.cursor = None  # todo: HttpSubStream does not currently support RFR so this is set to None
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None

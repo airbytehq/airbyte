@@ -3,8 +3,8 @@
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.checkpoint import Cursor
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 @dataclass

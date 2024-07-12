@@ -7,6 +7,7 @@ import itertools
 import logging
 import typing
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -103,6 +104,12 @@ class IncrementalMixin(CheckpointMixin, ABC):
     """
 
 
+@dataclass
+class StreamClassification:
+    is_legacy_format: bool
+    has_multiple_slices: bool
+
+
 class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
@@ -120,7 +127,7 @@ class Stream(ABC):
 
     cursor: Optional[Cursor] = None
 
-    is_substream = False
+    has_multiple_slices = False
 
     @property
     def name(self) -> str:
@@ -282,7 +289,7 @@ class Stream(ABC):
         """
         if self.supports_incremental:
             return True
-        if self.is_substream:
+        if self.has_multiple_slices:
             # We temporarily gate substream to not support RFR because puts a pretty high burden on connector developers
             # to structure stream state in a very specific way. We also can't check for issubclass(HttpSubStream) because
             # not all substreams implement the interface and it would be a circular dependency so we use parent as a surrogate
@@ -425,17 +432,21 @@ class Stream(ABC):
             mappings_or_slices = iter([{}])
 
         slices_iterable_copy, iterable_for_detecting_format = itertools.tee(mappings_or_slices, 2)
-        legacy_slice_format, is_substream = self._detect_stream_category(mappings_or_slices=iterable_for_detecting_format)
-        self.is_substream = is_substream
+        stream_classification = self._classify_stream(mappings_or_slices=iterable_for_detecting_format)
 
-        self.cursor = None  # todo: This doesn't work for file-based streams because it doesn't support cursor reassignment. Need to fix
+        # Streams that override has_multiple_slices are explicitly indicating that they will iterate over
+        # multiple partitions. Inspecting slices to automatically apply the correct cursor is only needed as
+        # a backup. So if this value was already assigned to True by the stream, we don't need to reassign it
+        self.has_multiple_slices = self.has_multiple_slices or stream_classification.has_multiple_slices
+
+        # self.cursor = None  # todo: This doesn't work for file-based streams because it doesn't support cursor reassignment. Need to fix
         cursor = self.get_cursor()
         if cursor:
             cursor.set_initial_state(stream_state=stream_state)
 
         checkpoint_mode = self._checkpoint_mode
 
-        if cursor and legacy_slice_format:
+        if cursor and stream_classification.is_legacy_format:
             return LegacyCursorBasedCheckpointReader(stream_slices=slices_iterable_copy, cursor=cursor, read_state_from_cursor=True)
         elif cursor:
             return CursorBasedCheckpointReader(
@@ -462,7 +473,7 @@ class Stream(ABC):
             return CheckpointMode.FULL_REFRESH
 
     @staticmethod
-    def _detect_stream_category(mappings_or_slices: Iterable[Union[Mapping[str, Any], StreamSlice]]) -> tuple[bool, bool]:
+    def _classify_stream(mappings_or_slices: Iterable[Union[Mapping[str, Any], StreamSlice]]) -> StreamClassification:
         """
         This is a bit of a crazy solution, but also the only way we can detect certain attributes about the stream since Python
         streams do not follow consistent implementation patterns. We care about the following two attributes:
@@ -493,20 +504,20 @@ class Stream(ABC):
         except StopIteration:
             # If the stream has no slices, the format ultimately does not matter since no data will get synced. This is technically
             # a valid case because it is up to the stream to define its slicing behavior
-            return False, False
+            return StreamClassification(is_legacy_format=False, has_multiple_slices=False)
 
         if slice_has_value:
             # If the first slice contained a partition value from the result of stream_slices(), this is a substream that might
             # have multiple parent records to iterate over
-            return is_legacy_format, slice_has_value
+            return StreamClassification(is_legacy_format=is_legacy_format, has_multiple_slices=slice_has_value)
 
         try:
             # If stream_slices() returns multiple slices, this is also a substream that can potentially generate empty slices
             next(mappings_or_slices)
-            return is_legacy_format, True
+            return StreamClassification(is_legacy_format=is_legacy_format, has_multiple_slices=True)
         except StopIteration:
             # If the result of stream_slices() only returns a single empty stream slice, then we know this is a regular stream
-            return is_legacy_format, False
+            return StreamClassification(is_legacy_format=is_legacy_format, has_multiple_slices=False)
 
     def log_stream_sync_configuration(self) -> None:
         """
