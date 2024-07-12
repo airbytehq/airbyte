@@ -24,6 +24,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -103,7 +104,7 @@ public class PostgresCdcCtidInitializer {
         ctidStreams.streamsForCtidSync(), quoteString).result());
 
     if (!streamsUnderVacuum.isEmpty()) {
-      throw new ConfigErrorException(
+      throw new TransientErrorException(
           "Postgres database is undergoing a full vacuum - cannot proceed with the sync. Please sync again when the vacuum is finished.");
     }
 
@@ -198,7 +199,7 @@ public class PostgresCdcCtidInitializer {
           ctidStreams.streamsForCtidSync(), quoteString).result());
 
       if (!streamsUnderVacuum.isEmpty()) {
-        throw new ConfigErrorException(
+        throw new TransientErrorException(
             "Postgres database is undergoing a full vacuum - cannot proceed with the sync. Please sync again when the vacuum is finished.");
       }
 
