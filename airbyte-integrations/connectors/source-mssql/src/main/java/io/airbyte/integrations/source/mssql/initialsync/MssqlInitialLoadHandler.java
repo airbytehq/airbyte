@@ -159,7 +159,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
           iteratorList.add(
               new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
         }
-        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
+        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt, Optional.empty()));
         if (decorateWithCompletedStatus) {
           iteratorList.add(new StreamStatusTraceEmitterIterator(
               new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
@@ -173,7 +173,8 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
   @Override
   public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(@NotNull final ConfiguredAirbyteStream airbyteStream,
                                                                     @NotNull final TableInfo<CommonField<JDBCType>> table,
-                                                                    @NotNull final Instant emittedAt) {
+                                                                    @NotNull final Instant emittedAt,
+                                                                    @NotNull Optional<Duration> optional) {
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();
     final String namespace = stream.getNamespace();
