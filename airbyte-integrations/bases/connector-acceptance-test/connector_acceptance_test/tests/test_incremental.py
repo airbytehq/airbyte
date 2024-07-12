@@ -42,8 +42,7 @@ SCHEMA_TYPES_MAPPING = {
 }
 
 
-@pytest.fixture(name="future_state_configuration")
-def future_state_configuration_fixture(inputs, base_path, test_strictness_level) -> Tuple[Path, List[EmptyStreamConfiguration]]:
+def get_future_state_configuration(inputs, base_path, test_strictness_level) -> Tuple[Path, List[EmptyStreamConfiguration]]:
     """Fixture with connector's future state path (relative to base_path)"""
     if inputs.future_state and inputs.future_state.bypass_reason is not None:
         pytest.skip("`future_state` has a bypass reason, skipping.")
@@ -57,10 +56,9 @@ def future_state_configuration_fixture(inputs, base_path, test_strictness_level)
         pytest.skip("`future_state` not specified, skipping.")
 
 
-@pytest.fixture(name="future_state")
-def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> List[MutableMapping]:
+def get_future_state(inputs, base_path, test_strictness_level, configured_catalog) -> List[MutableMapping]:
     """"""
-    future_state_path, missing_streams = future_state_configuration
+    future_state_path, missing_streams = get_future_state_configuration(inputs, base_path, test_strictness_level)
     with open(str(future_state_path), "r") as file:
         contents = file.read()
     states = json.loads(contents)
@@ -282,9 +280,10 @@ class TestIncremental(BaseTest):
                 # ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 1}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
+        self, inputs: IncrementalConfig, base_path: Path, test_strictness_level, connector_config, configured_catalog, docker_runner: ConnectorRunner
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
+        future_state = get_future_state(inputs, base_path, test_strictness_level, configured_catalog)
         output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state)
         records = filter_output(output, type_=Type.RECORD)
         states = filter_output(output, type_=Type.STATE)
