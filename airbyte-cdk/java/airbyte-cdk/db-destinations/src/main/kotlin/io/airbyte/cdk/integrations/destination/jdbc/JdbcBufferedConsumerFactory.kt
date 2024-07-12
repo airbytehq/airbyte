@@ -90,7 +90,7 @@ object JdbcBufferedConsumerFactory {
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
         schemaRequired: Boolean,
-        parsedCatalog: ParsedCatalog
+        parsedCatalog: ParsedCatalog,
     ): List<WriteConfig> {
         if (schemaRequired) {
             Preconditions.checkState(
@@ -99,12 +99,13 @@ object JdbcBufferedConsumerFactory {
             )
         }
         return parsedCatalog.streams
-            .map { parsedStreamToWriteConfig(namingResolver).apply(it) }
+            .map { parsedStreamToWriteConfig(namingResolver, rawTableSuffix = "").apply(it) }
             .toList()
     }
 
     private fun parsedStreamToWriteConfig(
-        namingResolver: NamingConventionTransformer
+        namingResolver: NamingConventionTransformer,
+        rawTableSuffix: String,
     ): Function<StreamConfig, WriteConfig> {
         return Function { streamConfig: StreamConfig ->
             // TODO We should probably replace WriteConfig with StreamConfig?
@@ -119,7 +120,11 @@ object JdbcBufferedConsumerFactory {
                 @Suppress("deprecation")
                 namingResolver.getTmpTableName(streamConfig.id.rawNamespace),
                 streamConfig.id.rawName,
-                streamConfig.destinationSyncMode,
+                streamConfig.postImportAction,
+                streamConfig.syncId,
+                streamConfig.generationId,
+                streamConfig.minimumGenerationId,
+                rawTableSuffix
             )
         }
     }
@@ -150,23 +155,22 @@ object JdbcBufferedConsumerFactory {
             }
             val queryList: MutableList<String> = ArrayList()
             for (writeConfig in writeConfigs) {
-                val schemaName = writeConfig.outputSchemaName
-                val dstTableName = writeConfig.outputTableName
+                val schemaName = writeConfig.rawNamespace
+                val dstTableName = writeConfig.rawTableName
                 LOGGER.info {
                     "Preparing raw table in destination started for stream ${writeConfig.streamName}. schema: $schemaName, table name: $dstTableName"
                 }
                 sqlOperations.createSchemaIfNotExists(database, schemaName)
                 sqlOperations.createTableIfNotExists(database, schemaName, dstTableName)
-                when (writeConfig.syncMode) {
-                    DestinationSyncMode.OVERWRITE ->
+                when (writeConfig.minimumGenerationId) {
+                    writeConfig.generationId ->
                         queryList.add(
                             sqlOperations.truncateTableQuery(database, schemaName, dstTableName)
                         )
-                    DestinationSyncMode.APPEND,
-                    DestinationSyncMode.APPEND_DEDUP -> {}
+                    0L -> {}
                     else ->
                         throw IllegalStateException(
-                            "Unrecognized sync mode: " + writeConfig.syncMode
+                            "Invalid minimumGenerationId ${writeConfig.minimumGenerationId} for stream ${writeConfig.streamName}. generationId=${writeConfig.generationId}"
                         )
                 }
             }
@@ -208,8 +212,8 @@ object JdbcBufferedConsumerFactory {
             sqlOperations.insertRecords(
                 database,
                 ArrayList(records),
-                writeConfig.outputSchemaName,
-                writeConfig.outputTableName
+                writeConfig.rawNamespace,
+                writeConfig.rawTableName
             )
         }
     }
