@@ -24,6 +24,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -102,11 +103,13 @@ public class PostgresCdcCtidInitializer {
     streamsUnderVacuum.addAll(streamsUnderVacuum(database,
         ctidStreams.streamsForCtidSync(), quoteString).result());
 
-    final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
-        streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
-            : ctidStreams.streamsForCtidSync().stream()
-                .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
-                .toList();
+    if (!streamsUnderVacuum.isEmpty()) {
+      throw new TransientErrorException(
+          "Postgres database is undergoing a full vacuum - cannot proceed with the sync. Please sync again when the vacuum is finished.");
+    }
+
+    final List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid = ctidStreams.streamsForCtidSync();
+
     LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
     LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
     final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
@@ -195,11 +198,12 @@ public class PostgresCdcCtidInitializer {
       streamsUnderVacuum.addAll(streamsUnderVacuum(database,
           ctidStreams.streamsForCtidSync(), quoteString).result());
 
-      finalListOfStreamsToBeSyncedViaCtid =
-          streamsUnderVacuum.isEmpty() ? ctidStreams.streamsForCtidSync()
-              : ctidStreams.streamsForCtidSync().stream()
-                  .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
-                  .toList();
+      if (!streamsUnderVacuum.isEmpty()) {
+        throw new TransientErrorException(
+            "Postgres database is undergoing a full vacuum - cannot proceed with the sync. Please sync again when the vacuum is finished.");
+      }
+
+      finalListOfStreamsToBeSyncedViaCtid = ctidStreams.streamsForCtidSync();
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
           finalListOfStreamsToBeSyncedViaCtid,
           quoteString);
@@ -273,22 +277,16 @@ public class PostgresCdcCtidInitializer {
           .collect(Collectors.toList());
     }
 
-    if (streamsUnderVacuum.isEmpty()) {
-      // This starts processing the WAL as soon as initial sync is complete, this is a bit different from
-      // the current cdc syncs.
-      // We finish the current CDC once the initial snapshot is complete and the next sync starts
-      // processing the WAL
-      return Stream
-          .of(initialSyncCtidIterators, cdcStreamsStartStatusEmitters,
-              Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-              allStreamsCompleteStatusEmitters)
-          .flatMap(Collection::stream)
-          .collect(Collectors.toList());
-    } else {
-      LOGGER.warn("Streams are under vacuuming, not going to process WAL");
-      return Stream.of(initialSyncCtidIterators, cdcStreamsStartStatusEmitters, allStreamsCompleteStatusEmitters).flatMap(Collection::stream)
-          .collect(Collectors.toList());
-    }
+    // This starts processing the WAL as soon as initial sync is complete, this is a bit different from
+    // the current cdc syncs.
+    // We finish the current CDC once the initial snapshot is complete and the next sync starts
+    // processing the WAL
+    return Stream
+        .of(initialSyncCtidIterators, cdcStreamsStartStatusEmitters,
+            Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+            allStreamsCompleteStatusEmitters)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
   }
 
   public static CdcState getCdcState(final JdbcDatabase database,

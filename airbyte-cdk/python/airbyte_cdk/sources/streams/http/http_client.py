@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import AirbyteStreamStatus, AirbyteStreamStatusReason, AirbyteStreamStatusReasonType, Level, StreamDescriptor
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
@@ -27,6 +27,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
@@ -67,7 +68,7 @@ class HttpClient:
         backoff_strategy: Optional[Union[BackoffStrategy, List[BackoffStrategy]]] = None,
         error_message_parser: Optional[ErrorMessageParser] = None,
         disable_retries: bool = False,
-        message_respository: Optional[MessageRepository] = None,
+        message_repository: Optional[MessageRepository] = None,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -93,7 +94,7 @@ class HttpClient:
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
         self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
         self._disable_retries = disable_retries
-        self._message_repository = message_respository
+        self._message_repository = message_repository
 
     @property
     def cache_filename(self) -> str:
@@ -119,6 +120,13 @@ class HttpClient:
             return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
         else:
             return LimiterSession(api_budget=self._api_budget)
+
+    def clear_cache(self) -> None:
+        """
+        Clear cached requests for current session, can be called any time
+        """
+        if isinstance(self._session, requests_cache.CachedSession):
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     def _dedupe_query_params(self, url: str, params: Optional[Mapping[str, str]]) -> Mapping[str, str]:
         """
@@ -243,13 +251,27 @@ class HttpClient:
                 "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
             )
 
-        # Request/repsonse logging for declarative cdk.
+        # Request/response logging for declarative cdk
         if log_formatter is not None and response is not None and self._message_repository is not None:
             formatter = log_formatter
             self._message_repository.log_message(
                 Level.DEBUG,
                 lambda: formatter(response),  # type: ignore # log_formatter is always cast to a callable
             )
+
+        # Emit stream status RUNNING with the reason RATE_LIMITED to log that the rate limit has been reached
+        if error_resolution.response_action == ResponseAction.RATE_LIMITED:
+            # TODO: Update to handle with message repository when concurrent message repository is ready
+            reasons = [AirbyteStreamStatusReason(type=AirbyteStreamStatusReasonType.RATE_LIMITED)]
+            message = stream_status_as_airbyte_message(StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons).json(
+                exclude_unset=True
+            )
+
+            # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
+            # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the
+            # end of the retry decorator behavior. This approach does not allow us to emit messages in the queue before exiting the
+            # backoff retry loop. Adding `\n` to the message and ignore 'end' ensure that few messages are printed at the same time.
+            print(f"{message}\n", end="", flush=True)
 
         if error_resolution.response_action == ResponseAction.FAIL:
             if response:
@@ -274,7 +296,7 @@ class HttpClient:
             self._logger.info(error_resolution.error_message or log_message)
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
-        elif error_resolution.response_action == ResponseAction.RETRY:
+        elif error_resolution.response_action == ResponseAction.RETRY or error_resolution.response_action == ResponseAction.RATE_LIMITED:
             user_defined_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
                 backoff_time = backoff_strategy.backoff_time(

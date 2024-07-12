@@ -11,6 +11,7 @@ from github import PullRequest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX
 from pipelines.helpers.utils import format_duration
 from pipelines.models.secrets import Secret
 
@@ -117,9 +118,9 @@ class PublishConnectorContext(ConnectorContext):
             message += "🧑‍💻 Local run\n"
         message += f"*Connector:* {self.connector.technical_name}\n"
         message += f"*Version:* {self.connector.version}\n"
-        branch_url = f"https://github.com/airbytehq/airbyte/tree/{self.git_branch}"
+        branch_url = f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}/tree/{self.git_branch}"
         message += f"*Branch:* <{branch_url}|{self.git_branch}>\n"
-        commit_url = f"https://github.com/airbytehq/airbyte/commit/{self.git_revision}"
+        commit_url = f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}/commit/{self.git_revision}"
         message += f"*Commit:* <{commit_url}|{self.git_revision[:10]}>\n"
         if self.state in [ContextState.INITIALIZED, ContextState.RUNNING]:
             message += "🟠"
@@ -132,5 +133,5 @@ class PublishConnectorContext(ConnectorContext):
             assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!subteam^S03BQLNTFNC>"
+            message += "\ncc. <!subteam^S077R8636CV>"
         return message
