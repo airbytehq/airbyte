@@ -111,19 +111,34 @@ class CursorBasedCheckpointReader(CheckpointReader):
         """
 
         try:
-            if self._current_slice is None:
-                self._current_slice = self._get_next_slice()
-                state_for_slice = self._cursor.select_state(self._current_slice)
-                if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
-                    return None
-                else:
-                    return self._current_slice
             if self._read_state_from_cursor:
-                state_for_slice = self._cursor.select_state(self._current_slice)
-                if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
-                    self._current_slice = self._get_next_slice()
+                if self._current_slice is None:
+                    next_slice = self._get_next_slice()
+                    state_for_slice = self._cursor.select_state(self._current_slice)
+                    if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                        next_candidate_slice = None
+                        has_more = True
+                        while has_more:
+                            next_candidate_slice = self._get_next_slice()
+                            state_for_slice = self._cursor.select_state(next_candidate_slice)
+                            has_more = state_for_slice == {"__ab_full_refresh_sync_complete": True}
+                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
+                    else:
+                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
                 else:
-                    self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=self._current_slice.partition)
+                    state_for_slice = self._cursor.select_state(self._current_slice)
+                    if state_for_slice == {"__ab_full_refresh_sync_complete": True}:
+                        # Skip every slice that already has the terminal complete value indicating that a previous attempt
+                        # successfully synced the slice
+                        next_candidate_slice = None
+                        has_more = True
+                        while has_more:
+                            next_candidate_slice = self._get_next_slice()
+                            state_for_slice = self._cursor.select_state(next_candidate_slice)
+                            has_more = state_for_slice == {"__ab_full_refresh_sync_complete": True}
+                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
+                    else:
+                        self._current_slice = StreamSlice(cursor_slice=state_for_slice or {}, partition=self._current_slice.partition)
             else:
                 # Unlike RFR cursors that iterate dynamically based on how stream state is updated, most cursors operate on a
                 # fixed set of slices determined before reading records. They should just iterate to the next slice
