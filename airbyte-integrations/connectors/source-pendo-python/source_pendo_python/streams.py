@@ -1,7 +1,7 @@
 from abc import ABC
 import ujson as json
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
-from time import time
+import time
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -116,9 +116,7 @@ class PendoAggregationStream(PendoPythonStream):
 # Airbyte Streams using the Pendo /aggregation endpoint (Currently only Account and Visitor)
 class PendoTimeSeriesAggregationStream(PendoPythonStream, CheckpointMixin):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
-    START_TIMESTAMP = 1657055089000 # TODO This should come from an attribute on the connection
     DAY_MILLISECONDS = 60 * 60 * 24 * 1000
-    DAY_PAGE_SIZE = 1 # TODO PARAMETERIZE 
     source_name = None
 
     @property
@@ -141,7 +139,7 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream, CheckpointMixin):
         return "aggregation"
 
     def request_body_json(self, stream_slice: Mapping[str, Any] = {}, **kwargs) -> Optional[Mapping[str, Any]]:
-        start_timestamp = stream_slice.get("start_timestamp") or self.START_TIMESTAMP
+        start_timestamp = stream_slice.get("start_timestamp") or self.start_date_in_unix()
 
         request_body = {
             "response": { "mimeType": "application/json" },
@@ -152,7 +150,7 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream, CheckpointMixin):
                             self.source_name: { "appId": 'expandAppIds("*")' },
                             "timeSeries": {
                                 "first": start_timestamp,
-                                "count": self.DAY_PAGE_SIZE,
+                                "count": self.day_page_size,
                                 "period": "dayRange"
                             },
                         }
@@ -175,11 +173,11 @@ class PendoTimeSeriesAggregationStream(PendoPythonStream, CheckpointMixin):
 
     def stream_slices(self, stream_state: Mapping[str, Any] = {}, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         # TODO round timestamp to start of day?
-        start_timestamp = stream_state.get("start_timestamp", self.START_TIMESTAMP)
+        start_timestamp = stream_state.get("start_timestamp", self.start_date_in_unix())
 
         # End one day page size window ago to prevent a partial day read, range is end exclusive
-        end_timestamp = (int(time()) * 1000) - (self.DAY_PAGE_SIZE * self.DAY_MILLISECONDS) 
-        for slice_timestamp in range(start_timestamp, end_timestamp, self.DAY_MILLISECONDS * self.DAY_PAGE_SIZE):
+        end_timestamp = (int(time.time()) * 1000) - (self.day_page_size * self.DAY_MILLISECONDS)
+        for slice_timestamp in range(start_timestamp, end_timestamp, self.DAY_MILLISECONDS * self.day_page_size):
             yield {"start_timestamp": slice_timestamp}
 
 class Feature(PendoPythonStream):
@@ -207,17 +205,17 @@ class ReportResult(PendoPythonStream):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
     primary_key = "reportId"
 
-    def __init__(self, report: Mapping[str, Any], **kwargs):
+    def __init__(self, report: str, **kwargs):
         super().__init__(**kwargs)
         self.report = report
-        self.report_name = f"report_result_{report['id']}"
+        self.report_name = f"report_result_{report}"
 
     @property
     def name(self):
         return self.report_name
 
     def path(self, **kwargs) -> str:
-        return f"report/{self.report['id']}/results.json"
+        return f"report/{self.report}/results.json"
 
     def parse_response(
         self,
@@ -228,7 +226,7 @@ class ReportResult(PendoPythonStream):
             yield self.transform(record=record)
 
     def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        record["reportId"] = self.report['id']
+        record["reportId"] = self.report
         return record
 
     # Method to infer schema types from JSON response
@@ -385,12 +383,36 @@ class PageEvents(PendoTimeSeriesAggregationStream):
     source_name = "pageEvents"
     cursor_field = "day"
 
+    def __init__(self, start_date: str, day_page_size: int, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.day_page_size = day_page_size
+    
+    def start_date_in_unix(self):
+        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
+
 class FeatureEvents(PendoTimeSeriesAggregationStream):
     name = "feature_events"
     source_name = "featureEvents"
     cursor_field = "day"
 
+    def __init__(self, start_date: str, day_page_size: int, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.day_page_size = day_page_size
+    
+    def start_date_in_unix(self):
+        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
+
 class GuideEvents(PendoTimeSeriesAggregationStream):
     name = "guide_events"
     source_name = "guideEvents"
     cursor_field = "browserTime"
+
+    def __init__(self, start_date: str, day_page_size: int, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.day_page_size = day_page_size
+    
+    def start_date_in_unix(self):
+        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
