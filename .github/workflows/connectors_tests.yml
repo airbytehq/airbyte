@@ -34,7 +34,7 @@ jobs:
       statuses: write
       contents: read
     steps:
-      - name: Checkout Airbyte
+      - name: Checkout Airbyte Enterprise
         uses: actions/checkout@v4
         with:
           submodules: true
