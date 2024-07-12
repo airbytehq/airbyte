@@ -500,8 +500,18 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public ConnectionDisplayFlag connectionsDisabledAllForWorkspaceAll(WorkspaceIdListRequestBody workspaceIdListRequestBody) {
+    return execute(() -> connectionsHandler.connectionsDisabledAllForWorkspaceAll(workspaceIdListRequestBody));
+  }
+
+  @Override
   public ConnectionsCount connectionsCountForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> connectionsHandler.connectionsCountForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public ConnectionsCount connectionsCountForWorkspaces(WorkspaceIdListRequestBody workspaceIdListRequestBody) {
+    return execute(() -> connectionsHandler.connectionsCountForWorkspaces(workspaceIdListRequestBody));
   }
 
   @Override

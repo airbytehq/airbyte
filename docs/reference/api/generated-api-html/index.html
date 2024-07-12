@@ -226,7 +226,9 @@ font-style: italic;
   <h4><a href="#Connection">Connection</a></h4>
   <ul>
   <li><a href="#connectionsCountForWorkspace"><code><span class="http-method">post</span> /v1/connections/count</code></a></li>
+  <li><a href="#connectionsCountForWorkspaces"><code><span class="http-method">post</span> /v1/connections/countByWorkspaces</code></a></li>
   <li><a href="#connectionsDisabledAllForWorkspace"><code><span class="http-method">post</span> /v1/connections/disabled_all</code></a></li>
+  <li><a href="#connectionsDisabledAllForWorkspaceAll"><code><span class="http-method">post</span> /v1/connections/disabled_all_workspace</code></a></li>
   <li><a href="#createConnection"><code><span class="http-method">post</span> /v1/connections/create</code></a></li>
   <li><a href="#createOrUpdateState"><code><span class="http-method">post</span> /v1/state/create_or_update</code></a></li>
   <li><a href="#deleteConnection"><code><span class="http-method">post</span> /v1/connections/delete</code></a></li>
@@ -506,6 +508,64 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="connectionsCountForWorkspaces"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/countByWorkspaces</code></pre></div>
+    <div class="method-summary">connections count for workspaces. (<span class="nickname">connectionsCountForWorkspaces</span>)</div>
+    <div class="method-notes">connections count for workspaces.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdListRequestBody <a href="#WorkspaceIdListRequestBody">WorkspaceIdListRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionsCount">ConnectionsCount</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "count" : 0
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionsCount">ConnectionsCount</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <div class="method"><a name="connectionsDisabledAllForWorkspace"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -523,6 +583,64 @@ font-style: italic;
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
       <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectionDisplayFlag">ConnectionDisplayFlag</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "flag" : true
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectionDisplayFlag">ConnectionDisplayFlag</a>
+    <h4 class="field-label">404</h4>
+    Object with given id was not found.
+        <a href="#NotFoundKnownExceptionInfo">NotFoundKnownExceptionInfo</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="connectionsDisabledAllForWorkspaceAll"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connections/disabled_all_workspace</code></pre></div>
+    <div class="method-summary">disabled all connections for workspaces. (<span class="nickname">connectionsDisabledAllForWorkspaceAll</span>)</div>
+    <div class="method-notes">for workspace.</div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdListRequestBody <a href="#WorkspaceIdListRequestBody">WorkspaceIdListRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -11443,6 +11561,7 @@ font-style: italic;
     <li><a href="#WebBackendWorkspaceStateResult"><code>WebBackendWorkspaceStateResult</code> - </a></li>
     <li><a href="#WorkspaceCreate"><code>WorkspaceCreate</code> - </a></li>
     <li><a href="#WorkspaceGiveFeedback"><code>WorkspaceGiveFeedback</code> - </a></li>
+    <li><a href="#WorkspaceIdListRequestBody"><code>WorkspaceIdListRequestBody</code> - </a></li>
     <li><a href="#WorkspaceIdPageRequestBody"><code>WorkspaceIdPageRequestBody</code> - </a></li>
     <li><a href="#WorkspaceIdRequestBody"><code>WorkspaceIdRequestBody</code> - </a></li>
     <li><a href="#WorkspaceRead"><code>WorkspaceRead</code> - </a></li>
@@ -11942,6 +12061,7 @@ font-style: italic;
     <div class="field-items">
       <div class="param">destinationDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12130,6 +12250,7 @@ font-style: italic;
       <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12647,6 +12768,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">sourceDefinitionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -12835,6 +12957,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">connectionConfiguration </div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -13125,6 +13248,13 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WorkspaceIdListRequestBody"><code>WorkspaceIdListRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceIdList </div><div class="param-desc"><span class="param-type"><a href="#UUID">array[UUID]</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
