@@ -816,8 +816,8 @@ definitions:
         type: boolean
         default: False
       global_parent_cursor:
-        title: Global Parent Cursor
-        description: Indicates whether the parent stream state as one cursor instead of partitions.
+        title: Whether to store cursor as one value instead of per partition
+        description: If parent stream have thousands of partitions, it can be more efficient to store cursor as one value instead of per partition. Lookback window should be used to avoid missing records that where added during the sync
         type: boolean
         default: false
       lookback_window:
