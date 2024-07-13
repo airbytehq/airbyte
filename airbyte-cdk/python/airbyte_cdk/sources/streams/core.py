@@ -551,9 +551,9 @@ class Stream(ABC):
         Filters the properties in json_schema that are not present in the stream schema.
         Configured Schemas can have very old fields, so we need to housekeeping ourselves.
         """
-        if self.get_json_schema():
-            received_schema_properties: Any = json_schema.get("properties")
-            stream_schema_properties: Any = self.get_json_schema().get("properties")
+        received_schema_properties: Any = json_schema.get("properties")
+        stream_schema_properties: Any = self.get_json_schema().get("properties") if self.get_json_schema() else {}
+        if received_schema_properties and stream_schema_properties:
             valid_configured_schema_properties = {
                 stream_property: property_value
                 for stream_property, property_value in received_schema_properties.items()
