@@ -51,6 +51,7 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.5 | 2024-07-13 | [41717](https://github.com/airbytehq/airbyte/pull/41717) | Update dependencies |
 | 0.1.4 | 2024-07-10 | [41476](https://github.com/airbytehq/airbyte/pull/41476) | Update dependencies |
 | 0.1.3 | 2024-07-09 | [41299](https://github.com/airbytehq/airbyte/pull/41299) | Update dependencies |
 | 0.1.2 | 2024-07-06 | [39964](https://github.com/airbytehq/airbyte/pull/39964) | Update dependencies |
