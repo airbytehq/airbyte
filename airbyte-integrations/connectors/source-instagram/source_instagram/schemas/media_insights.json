@@ -14,11 +14,11 @@
       "type": ["null", "string"]
     },
     "ig_reels_avg_watch_time": {
-      "description": "The average watch time of Instagram Reels videos in miliseconds.",
+      "description": "The average watch time of Instagram Reels videos in milliseconds.",
       "type": ["null", "number"]
     },
     "ig_reels_video_view_total_time": {
-      "description": "The total watch time of Instagram Reels videos in miliseconds.",
+      "description": "The total watch time of Instagram Reels videos in milliseconds.",
       "type": ["null", "number"]
     },
     "impressions": {
