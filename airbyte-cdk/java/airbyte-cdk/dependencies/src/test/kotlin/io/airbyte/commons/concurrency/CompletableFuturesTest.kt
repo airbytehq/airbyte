@@ -4,11 +4,16 @@
 package io.airbyte.commons.concurrency
 
 import io.airbyte.commons.functional.Either
+import java.time.Duration
+import java.time.temporal.TemporalUnit
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
+import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class CompletableFuturesTest {
     @Test
@@ -43,6 +48,18 @@ internal class CompletableFuturesTest {
                 .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
 
         Assertions.assertEquals(failureMessages, mutableListOf("Fail 5", "Fail 6"))
+    }
+
+    @Test
+    fun allOfEmptyList() {
+        Assertions.assertTimeoutPreemptively(Duration.ofSeconds(5)) {
+            Assertions.assertEquals(
+                emptyList<String>(),
+                CompletableFutures.allOf(emptyList<CompletableFuture<String>>())
+                    .toCompletableFuture()
+                    .join(),
+            )
+        }
     }
 
     private fun returnSuccessWithDelay(value: Int, delayMs: Long): CompletableFuture<Int> {
