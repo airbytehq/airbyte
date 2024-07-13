@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
@@ -156,7 +154,7 @@ public class DynamodbSource extends BaseConnector implements Source {
       final var filterType = switch (cursorType) {
         case "\"string\"", "[\"null\",\"string\"]" -> DynamodbOperations.FilterAttribute.FilterType.S;
         case "\"integer\"", "[\"null\",\"integer\"]" -> DynamodbOperations.FilterAttribute.FilterType.N;
-        case "\"number\"", "[\"null\",\"number\"]"-> {
+        case "\"number\"", "[\"null\",\"number\"]" -> {
           final JsonNode airbyteType = properties.get(cursorField).get("airbyte_type");
           if (airbyteType != null && airbyteType.asText().equals("integer")) {
             yield DynamodbOperations.FilterAttribute.FilterType.N;
