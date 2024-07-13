@@ -212,6 +212,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.13 | 2024-07-13 | [41809](https://github.com/airbytehq/airbyte/pull/41809) | Update dependencies |
 | 2.4.12 | 2024-07-10 | [41103](https://github.com/airbytehq/airbyte/pull/41103) | Update dependencies |
 | 2.4.11 | 2024-07-09 | [41068](https://github.com/airbytehq/airbyte/pull/41068) | Added `options` field to `Product Variants` stream |
 | 2.4.10 | 2024-07-09 | [41042](https://github.com/airbytehq/airbyte/pull/41042) | Use latest `CDK`: 3.0.0 |
