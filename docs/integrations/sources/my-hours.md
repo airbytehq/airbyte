@@ -36,6 +36,7 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.6 | 2024-07-13 | [41905](https://github.com/airbytehq/airbyte/pull/41905) | Update dependencies |
 | 0.2.5 | 2024-07-10 | [41297](https://github.com/airbytehq/airbyte/pull/41297) | Update dependencies |
 | 0.2.4 | 2024-07-06 | [40993](https://github.com/airbytehq/airbyte/pull/40993) | Update dependencies |
 | 0.2.3 | 2024-06-25 | [40286](https://github.com/airbytehq/airbyte/pull/40286) | Update dependencies |
