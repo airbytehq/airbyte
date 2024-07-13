@@ -691,7 +691,9 @@ class StubParentHttpStream(HttpStream, CheckpointMixin):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return {"__ab_full_refresh_sync_complete": True}
 
-    def _read_pages(
+
+
+    def _read_page(
         self,
         records_generator_fn: Callable[
             [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
@@ -712,14 +714,6 @@ class StubParentHttpStream(HttpStream, CheckpointMixin):
             next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Mapping[str, Any]]:
         return []
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = value
 
 
 class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
@@ -767,14 +761,6 @@ class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
             next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Mapping[str, Any]]:
         return []
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return self._state
-
-    @state.setter
-    def state(self, value: MutableMapping[str, Any]) -> None:
-        self._state = value
 
 
 class StubHttpSubstream(HttpSubStream):
@@ -934,7 +920,7 @@ def test_resumable_full_refresh_read_from_start(mocker):
     pages = 5
     stream = StubFullRefreshHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubFullRefreshHttpStream, "_send_request", return_value=blank_response)
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
     mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
@@ -983,7 +969,7 @@ def test_resumable_full_refresh_read_from_state(mocker):
     pages = 5
     stream = StubFullRefreshHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubFullRefreshHttpStream, "_send_request", return_value=blank_response)
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
     mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
@@ -1032,7 +1018,7 @@ def test_resumable_full_refresh_legacy_stream_slice(mocker):
     pages = 5
     stream = StubFullRefreshLegacySliceHttpStream(pages=pages)
     blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
-    mocker.patch.object(StubFullRefreshLegacySliceHttpStream, "_send_request", return_value=blank_response)
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
     mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
