@@ -111,3 +111,6 @@
 - from:
     - /telemetry
   to: /operator-guides/telemetry
+- from:
+    - /deploying-airbyte/quickstart
+  to: /using-airbyte/getting-started/oss-quickstart
