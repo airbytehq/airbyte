@@ -780,6 +780,7 @@ class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
     def get_json_schema(self) -> Mapping[str, Any]:
         return {}
 
+
 class StubHttpSubstream(HttpSubStream):
     primary_key = "primary_key"
 
