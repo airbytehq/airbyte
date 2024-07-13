@@ -101,6 +101,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------|
+| 1.3.5 | 2024-07-13 | [41739](https://github.com/airbytehq/airbyte/pull/41739) | Update dependencies |
 | 1.3.4 | 2024-07-10 | [41434](https://github.com/airbytehq/airbyte/pull/41434) | Update dependencies |
 | 1.3.3 | 2024-07-09 | [41228](https://github.com/airbytehq/airbyte/pull/41228) | Update dependencies |
 | 1.3.2 | 2024-07-06 | [40821](https://github.com/airbytehq/airbyte/pull/40821) | Update dependencies |
