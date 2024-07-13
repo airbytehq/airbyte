@@ -9,7 +9,7 @@ import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
@@ -500,7 +500,7 @@ class Stream(ABC):
             return CheckpointMode.FULL_REFRESH
 
     @staticmethod
-    def _classify_stream(mappings_or_slices: Iterable[Union[Mapping[str, Any], StreamSlice]]) -> StreamClassification:
+    def _classify_stream(mappings_or_slices: Iterator[Optional[Union[Mapping[str, Any], StreamSlice]]]) -> StreamClassification:
         """
         This is a bit of a crazy solution, but also the only way we can detect certain attributes about the stream since Python
         streams do not follow consistent implementation patterns. We care about the following two attributes:
@@ -513,7 +513,8 @@ class Stream(ABC):
         Both attributes can eventually be deprecated once stream's define this method deleted once substreams have been implemented and
         legacy connectors all adhere to the StreamSlice object.
         """
-
+        if not mappings_or_slices:
+            raise ValueError("A stream should always have at least one slice")
         try:
             next_slice = next(mappings_or_slices)
             if isinstance(next_slice, StreamSlice) and next_slice == StreamSlice(partition={}, cursor_slice={}):

@@ -118,7 +118,7 @@ class CursorBasedCheckpointReader(CheckpointReader):
         else:
             return None
 
-    def _find_next_slice(self) -> Optional[Union[StreamSlice, Mapping[str, Any]]]:
+    def _find_next_slice(self) -> StreamSlice:
         """
         _find_next_slice() returns the next slice of data should be synced for the current stream according to its cursor.
         This function supports iterating over a stream's slices across two dimensions. The first dimension is the stream's
@@ -145,7 +145,8 @@ class CursorBasedCheckpointReader(CheckpointReader):
                 if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                     # Skip every slice that already has the terminal complete value indicating that a previous attempt
                     # successfully synced the slice
-                    next_candidate_slice = None
+                    # Dummy initialization for mypy since we'll iterate at least once to get the next slice
+                    next_candidate_slice = StreamSlice(cursor_slice={}, partition={})
                     has_more = True
                     while has_more:
                         next_candidate_slice = self.read_and_convert_slice()
@@ -159,7 +160,7 @@ class CursorBasedCheckpointReader(CheckpointReader):
                 if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                     # Skip every slice that already has the terminal complete value indicating that a previous attempt
                     # successfully synced the slice
-                    next_candidate_slice = None
+                    next_candidate_slice = StreamSlice(cursor_slice={}, partition={})
                     has_more = True
                     while has_more:
                         next_candidate_slice = self.read_and_convert_slice()

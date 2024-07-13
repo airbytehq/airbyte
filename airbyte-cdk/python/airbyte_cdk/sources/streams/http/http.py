@@ -401,7 +401,9 @@ class HttpStream(Stream, CheckpointMixin, ABC):
 
         next_page_token = self.next_page_token(response) or {"__ab_full_refresh_sync_complete": True}
 
-        self.get_cursor().close_slice(StreamSlice(cursor_slice=next_page_token, partition=partition))
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=partition))
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
