@@ -102,6 +102,9 @@ class MockStream(DeclarativeStream):
         if stream_slice and cursor_field and result:
             self._state["states"].append({cursor_field: result[-1][cursor_field], "partition": stream_slice["slice"]})
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
 
 class MockIncrementalStream(MockStream):
     def __init__(self, slices, records, name, cursor_field="", cursor=None, date_ranges=None):

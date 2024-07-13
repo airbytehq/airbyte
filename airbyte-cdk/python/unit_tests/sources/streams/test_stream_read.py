@@ -461,7 +461,7 @@ def setup_stream_dependencies(configured_json_schema):
 
 
 def test_configured_json_schema():
-    configured_json_schema = {
+    current_json_schema = {
         "$schema": "https://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
@@ -470,17 +470,17 @@ def test_configured_json_schema():
         },
     }
 
-    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(configured_json_schema)
+    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(current_json_schema)
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
     ]
 
     slice_to_partition = {1: records}
-    stream = _stream(slice_to_partition, slice_logger, logger, message_repository)
+    stream = _stream(slice_to_partition, slice_logger, logger, message_repository, json_schema=current_json_schema)
     assert not stream.configured_json_schema
     _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
-    assert stream.configured_json_schema == configured_json_schema
+    assert stream.configured_json_schema == current_json_schema
 
 
 def test_configured_json_schema_with_invalid_properties():
