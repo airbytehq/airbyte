@@ -159,9 +159,11 @@ class CsvParser(FileTypeParser):
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
         config_format = _extract_format(config)
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
-            lambda: _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
-            if config_format.inference_type != InferenceType.NONE
-            else _DisabledTypeInferrer()
+            lambda: (
+                _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
+                if config_format.inference_type != InferenceType.NONE
+                else _DisabledTypeInferrer()
+            )
         )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         read_bytes = 0
@@ -384,32 +386,27 @@ class _JsonTypeInferrer(_TypeInferrer):
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
-        inferred_types = set()
+        inferred_types = {self._STRING_TYPE}
 
         if value in self._null_values:
             inferred_types.add(self._NULL_TYPE)
         if self._is_boolean(value):
             inferred_types.add(self._BOOLEAN_TYPE)
+            return inferred_types  # Early return, avoiding unnecessary checks
         if self._is_integer(value):
-            inferred_types.add(self._INTEGER_TYPE)
-            inferred_types.add(self._NUMBER_TYPE)
+            inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})
         elif self._is_number(value):
             inferred_types.add(self._NUMBER_TYPE)
 
-        inferred_types.add(self._STRING_TYPE)
         return inferred_types
 
     def _is_boolean(self, value: str) -> bool:
-        try:
-            _value_to_bool(value, self._boolean_trues, self._boolean_falses)
-            return True
-        except ValueError:
-            return False
+        return value in self._boolean_trues or value in self._boolean_falses
 
     @staticmethod
     def _is_integer(value: str) -> bool:
         try:
-            _value_to_python_type(value, int)
+            int(value)
             return True
         except ValueError:
             return False
@@ -417,7 +414,7 @@ class _JsonTypeInferrer(_TypeInferrer):
     @staticmethod
     def _is_number(value: str) -> bool:
         try:
-            _value_to_python_type(value, float)
+            float(value)
             return True
         except ValueError:
             return False
@@ -455,3 +452,16 @@ def _extract_format(config: FileBasedStreamConfig) -> CsvFormat:
     if not isinstance(config_format, CsvFormat):
         raise ValueError(f"Invalid format config: {config_format}")
     return config_format
+
+
+def _value_to_python_type(value: str, py_type):
+    return py_type(value)
+
+
+def _value_to_bool(value: str, boolean_trues: Set[str], boolean_falses: Set[str]) -> bool:
+    if value in boolean_trues:
+        return True
+    elif value in boolean_falses:
+        return False
+    else:
+        raise ValueError
