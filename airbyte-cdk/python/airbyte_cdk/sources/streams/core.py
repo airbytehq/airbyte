@@ -456,7 +456,7 @@ class Stream(ABC):
         # specific slice values. None is bad, and now I feel bad that I have to write this hack.
         # if mappings_or_slices == [None] or mappings_or_slices == []:
         if mappings_or_slices == [None]:
-            mappings_or_slices = iter([{}])
+            mappings_or_slices = [{}]
 
         slices_iterable_copy, iterable_for_detecting_format = itertools.tee(mappings_or_slices, 2)
         stream_classification = self._classify_stream(mappings_or_slices=iterable_for_detecting_format)
