@@ -35,6 +35,10 @@ from airbyte_protocol.models.airbyte_protocol import (
     TraceType,
 )
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
+import orjson
+from abc import abstractmethod
+from airbyte_cdk.models import Level
+from functools import lru_cache
 
 
 class MessageGrouper:
@@ -348,7 +352,15 @@ class MessageGrouper:
         return False
 
     def _parse_slice_description(self, log_message: str) -> Dict[str, Any]:
-        return json.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))  # type: ignore
+        """Parse slice description from log message.
+
+        Parameters:
+        log_message: str - The log message string to be parsed.
+
+        Returns:
+        Dict[str, Any] - The parsed slice description.
+        """
+        return orjson.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))
 
     @staticmethod
     def _clean_config(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -357,3 +369,43 @@ class MessageGrouper:
             if key.startswith("__"):
                 del cleaned_config[key]
         return cleaned_config
+
+    def create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
+        """Create log message for a data slice.
+
+        Parameters:
+        _slice: Optional[Mapping[str, Any]] - The data slice to be logged.
+
+        Returns:
+        AirbyteMessage - The formatted log message.
+        """
+        printable_slice = dict(_slice) if _slice else _slice
+        return AirbyteMessage(
+            type=MessageType.LOG,
+            log=AirbyteLogMessage(
+                level=Level.INFO, message=f"{SliceLogger.SLICE_LOG_PREFIX}{orjson.dumps(printable_slice).decode('utf-8')}"
+            ),
+        )
+
+    @abstractmethod
+    def should_log_slice_message(self, logger: logging.Logger) -> bool:
+        """Determine if slice log message should be created.
+
+        Parameters:
+        logger: logging.Logger - The logger instance.
+
+        Returns:
+        bool - True if the log message should be created, False otherwise.
+        """
+
+    @lru_cache(maxsize=128)
+    def should_log_slice_message_cache(self, logger: logging.Logger) -> bool:
+        """Memoized determination of slice log message creation.
+
+        Parameters:
+        logger: logging.Logger - The logger instance.
+
+        Returns:
+        bool - True if the log message should be created, False otherwise.
+        """
+        return self.should_log_slice_message(logger)
