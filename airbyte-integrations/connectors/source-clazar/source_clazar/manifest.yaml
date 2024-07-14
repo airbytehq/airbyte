@@ -730,7 +730,6 @@ streams:
   - $ref: "#/definitions/streams/analytics_aws_marketplace_disbursements"
   - $ref: "#/definitions/streams/analytics_aws_marketplace_revenue"
   - $ref: "#/definitions/streams/analytics_aws_cosell_opportunities"
-
   - $ref: "#/definitions/streams/analytics_azure_marketplace_revenue"
   - $ref: "#/definitions/streams/analytics_azure_marketplace_customers"
   - $ref: "#/definitions/streams/analytics_azure_marketplace_orders"
