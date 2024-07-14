@@ -28,6 +28,14 @@ class ShopifyErrorHandler(ErrorHandler):
     def __init__(self, stream_name: str = "<no specified stream>") -> None:
         self._stream_name = stream_name
 
+    @property
+    def max_retries(self) -> Optional[int]:
+        return 5
+
+    @property
+    def max_time(self) -> Optional[int]:
+        return 20
+
     def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response, TRANSIENT_EXCEPTIONS):
             return ErrorResolution(

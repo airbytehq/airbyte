@@ -43,8 +43,8 @@ if TYPE_CHECKING:
     from pytest_sugar import SugarTerminalReporter  # type: ignore
 
 # CONSTS
-LOGGER = logging.getLogger("regression")
-MAIN_OUTPUT_DIRECTORY = Path("/tmp/regression_tests_artifacts")
+LOGGER = logging.getLogger("live-tests")
+MAIN_OUTPUT_DIRECTORY = Path("/tmp/live_tests_artifacts")
 
 # It's used by Dagger and its very verbose
 logging.getLogger("httpx").setLevel(logging.ERROR)
@@ -54,7 +54,7 @@ logging.getLogger("httpx").setLevel(logging.ERROR)
 def pytest_addoption(parser: Parser) -> None:
     parser.addoption(
         "--connector-image",
-        help="The connector image name on which the regressions tests will run: e.g. airbyte/source-faker",
+        help="The connector image name on which the tests will run: e.g. airbyte/source-faker",
     )
     parser.addoption(
         "--control-version",
@@ -63,7 +63,7 @@ def pytest_addoption(parser: Parser) -> None:
     parser.addoption(
         "--target-version",
         default="dev",
-        help="The target version used for regression testing. Defaults to dev.",
+        help="The target version used for regression and validation testing. Defaults to dev.",
     )
     parser.addoption("--config-path")
     parser.addoption("--catalog-path")
@@ -140,7 +140,7 @@ def pytest_configure(config: Config) -> None:
     else:
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = prompt_for_read_with_or_without_state()
 
-    retrieval_reason = f"Running regression tests on connection for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on target versions ({config.stash[stash_keys.TARGET_VERSION]})."
+    retrieval_reason = f"Running live tests on connection for connector {config.stash[stash_keys.CONNECTOR_IMAGE]} on target versions ({config.stash[stash_keys.TARGET_VERSION]})."
 
     try:
         config.stash[stash_keys.CONNECTION_OBJECTS] = get_connection_objects(

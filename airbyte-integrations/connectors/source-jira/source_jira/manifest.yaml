@@ -590,7 +590,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ stream_slice.parent_record.schema.type == 'option' }}"
+          condition: "{{ stream_slice.parent_record.schema.type == 'option' or stream_slice.parent_record.schema.get('items', '') == 'option'}}"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get
   issue_custom_field_options_stream:

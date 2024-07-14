@@ -108,6 +108,10 @@ poe lint
 
 ## Changelog
 
+### 1.5.0
+
+Added `AIRBYTE ENTERPRISE` to the list of allowed licenses, for use by Airbyte Enterprise connectors.
+
 ### 1.4.0
 
 Added the `IntegrationTestsEnabledCheck` check that verifies if the integration tests are enabled for connectors with higher cloud usage.

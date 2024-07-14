@@ -1,0 +1,176 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "A globally-unique Order ID",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time when the order was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the order was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "admin_graphql_api_id": {
+      "description": "The original order id reference for the shopify api",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "URL of the shop where the order was placed.",
+      "type": ["null", "string"]
+    },
+    "agreements": {
+      "description": "A list of sales agreements associated with the order.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "description": "The unique ID for the agreement.",
+            "type": ["null", "integer"]
+          },
+          "happened_at": {
+            "description": "The date and time at which the agreement occured.",
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "reason": {
+            "description": "The reason the agremeent was created.",
+            "type": ["null", "string"]
+          },
+          "sales": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "quantity": {
+                  "description": "The number of units either ordered or intended to be returned.",
+                  "type": ["null", "integer"]
+                },
+                "id": {
+                  "description": "The unique ID for the sale.",
+                  "type": ["null", "integer"]
+                },
+                "action_type": {
+                  "description": "The type of order action that the sale represents.",
+                  "type": ["null", "string"]
+                },
+                "line_type": {
+                  "description": "The line type assocated with the sale.",
+                  "type": ["null", "string"]
+                },
+                "total_amount": {
+                  "description": "The total sale amount after taxes and discounts.",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "description": "Amount in shop currency.",
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "description": "Decimal money amount.",
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "description": "Currency of the money.",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "total_discount_amount_after_taxes": {
+                  "description": "The total discounts allocated to the sale after taxes.",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "description": "Amount in shop currency.",
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "description": "Decimal money amount.",
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "description": "Currency of the money.",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "total_discount_amount_before_taxes": {
+                  "description": "The total discounts allocated to the sale before taxes.",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "description": "Amount in shop currency.",
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "description": "Decimal money amount.",
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "description": "Currency of the money.",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "total_tax_amount": {
+                  "description": "The total amount of taxes for the sale.",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "description": "Amount in shop currency.",
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "description": "Decimal money amount.",
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "description": "Currency of the money.",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "line_item": {
+                  "description": "The line item for the associated sale.",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "description": "A globally-unique line item ID.",
+                      "type": ["null", "integer"]
+                    },
+                    "admin_graphql_api_id": {
+                      "description": "The original agreement-sales-related line item id reference for the shopify api",
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "admin_graphql_api_id": {
+                  "description": "The original agreement-related sale id reference for the shopify api",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "admin_graphql_api_id": {
+            "description": "The original agreement id reference for the shopify api",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

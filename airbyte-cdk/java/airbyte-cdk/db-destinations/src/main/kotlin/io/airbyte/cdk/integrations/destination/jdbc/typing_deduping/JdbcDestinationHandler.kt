@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
@@ -50,7 +51,8 @@ abstract class JdbcDestinationHandler<DestinationState>(
     protected val catalogName: String?,
     protected val jdbcDatabase: JdbcDatabase,
     protected val rawTableNamespace: String,
-    private val dialect: SQLDialect
+    private val dialect: SQLDialect,
+    private val columns: DestinationColumns = DestinationColumns.V2_WITH_GENERATION,
 ) : DestinationHandler<DestinationState> {
     protected val dslContext: DSLContext
         get() = DSL.using(dialect)
@@ -363,6 +365,14 @@ abstract class JdbcDestinationHandler<DestinationState>(
             )
     }
 
+    protected open fun isAirbyteGenerationColumnMatch(existingTable: TableDefinition): Boolean {
+        return toJdbcTypeName(AirbyteProtocolType.INTEGER)
+            .equals(
+                existingTable.columns.getValue(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID).type,
+                ignoreCase = true,
+            )
+    }
+
     open protected fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
         existingTable: TableDefinition
@@ -375,7 +385,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
                 ) && isAirbyteExtractedAtColumnMatch(existingTable)) ||
                 !(existingTable.columns.containsKey(JavaBaseConstants.COLUMN_NAME_AB_META) &&
-                    isAirbyteMetaColumnMatch(existingTable))
+                    isAirbyteMetaColumnMatch(existingTable)) ||
+                (columns == DestinationColumns.V2_WITH_GENERATION &&
+                    !(existingTable.columns.containsKey(
+                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+                    ) && isAirbyteGenerationColumnMatch(existingTable)))
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
             // soft-reset

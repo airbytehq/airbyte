@@ -48,6 +48,7 @@ from .streams.streams import (
     MetafieldProductVariants,
     MetafieldShops,
     MetafieldSmartCollections,
+    OrderAgreements,
     OrderRefunds,
     OrderRisks,
     Orders,
@@ -73,7 +74,7 @@ class ConnectionCheckTest:
         # setting `max_retries` to 0 for the stage of `check connection`,
         # because it keeps retrying for wrong shop names,
         # but it should stop immediately
-        self.test_stream.max_retries = 0
+        self.test_stream._http_client.max_retries = 0
 
     def describe_error(self, pattern: str, shop_name: str = None, details: Any = None, **kwargs) -> str:
         connection_check_errors_map: Mapping[str, Any] = {
@@ -206,6 +207,7 @@ class SourceShopify(AbstractSource):
             MetafieldProductVariants(config),
             MetafieldShops(config),
             MetafieldSmartCollections(config),
+            OrderAgreements(config),
             OrderRefunds(config),
             OrderRisks(config),
             Orders(config),

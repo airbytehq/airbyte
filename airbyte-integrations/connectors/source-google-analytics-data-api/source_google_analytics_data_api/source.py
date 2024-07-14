@@ -438,6 +438,13 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         # set default date ranges start date to 2 years ago
         return pendulum.now(tz="UTC").subtract(years=2).format("YYYY-MM-DD")
 
+    @property
+    def raise_exception_on_missing_stream(self) -> bool:
+        # reference issue: https://github.com/airbytehq/airbyte-internal-issues/issues/8315
+        # This has been added, because there is a risk of removing the `Custom Stream` from the `input configuration`,
+        # which brings the error about `missing stream` present in the CATALOG but not in the `input configuration`.
+        return False
+
     def _validate_and_transform_start_date(self, start_date: str) -> datetime.date:
         start_date = self.default_date_ranges_start_date if not start_date else start_date
 
@@ -568,7 +575,9 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         config["authenticator"] = self.get_authenticator(config)
         return [stream for report in reports + config["custom_reports_array"] for stream in self.instantiate_report_streams(report, config)]
 
-    def instantiate_report_streams(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
+    def instantiate_report_streams(
+        self, report: dict, config: Mapping[str, Any], **extra_kwargs
+    ) -> Iterable[GoogleAnalyticsDataApiBaseStream]:
         add_name_suffix = False
         for property_id in config["property_ids"]:
             yield self.instantiate_report_class(

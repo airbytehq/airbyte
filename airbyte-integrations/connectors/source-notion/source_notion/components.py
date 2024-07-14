@@ -1,9 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional
 
-import pendulum
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -80,44 +79,6 @@ class NotionDataFeedFilter(RecordFilter):
 
         start_date_timestamp = start_date or None
         state_value_timestamp = state_value or None
-
-        if state_value_timestamp:
-            return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
-        return start_date_timestamp
-
-
-@dataclass
-class NotionSemiIncrementalFilter(RecordFilter):
-    """
-    Custom filter to implement semi-incremental syncing for the Comments endpoints, which does not support sorting or filtering.
-    This filter emulates incremental behavior by filtering out records based on the comparison of the cursor value with current value in state,
-    ensuring only records updated after the cutoff timestamp are synced.
-    """
-
-    def filter_records(
-        self, records: List[Mapping[str, Any]], stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, **kwargs
-    ) -> List[Mapping[str, Any]]:
-        """
-        Filters a list of records, returning only those with a cursor_value greater than the current value in state.
-        """
-        current_state = [
-            state_value
-            for state_value in stream_state.get("states", [])
-            if state_value.get("partition", {}).get("id") == stream_slice.get("id")
-        ]
-        cursor_value = self._get_filter_date(self.config.get("start_date"), current_state)
-        if cursor_value:
-            return [record for record in records if record["last_edited_time"] >= cursor_value]
-        return records
-
-    def _get_filter_date(self, start_date: str, state_value: list) -> str:
-        """
-        Calculates the filter date to pass in the request parameters by comparing the start_date with the value of state obtained from the stream_slice.
-        If only the start_date exists, use it by default.
-        """
-
-        start_date_timestamp = start_date or None
-        state_value_timestamp = state_value[0]["cursor"]["last_edited_time"] if state_value else None
 
         if state_value_timestamp:
             return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)

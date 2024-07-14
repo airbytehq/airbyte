@@ -8,6 +8,7 @@ from collections import defaultdict
 from collections.abc import Iterable, MutableMapping
 from copy import deepcopy
 from enum import Enum
+from functools import cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 
@@ -170,12 +171,16 @@ class Report:
                 stream_schemas: Iterable = result.stream_schemas or []
 
                 for stream in stream_schemas:
-                    per_stream_count[stream][source] = sum(1 for _ in result.get_records_per_stream(stream))  # type: ignore
+                    per_stream_count[stream][source] = self._get_record_count_for_stream(result, stream)
             for stream in per_stream_count:
                 per_stream_count[stream]["difference"] = per_stream_count[stream]["target"] - per_stream_count[stream]["control"]
             record_count_per_command_and_stream[control_result.command] = per_stream_count  # type: ignore
 
         return record_count_per_command_and_stream
+
+    @cache
+    def _get_record_count_for_stream(self, result: ExecutionResult, stream: str) -> int:
+        return sum(1 for _ in result.get_records_per_stream(stream))  # type: ignore
 
     def get_untested_streams(self) -> list[str]:
         streams_with_data: set[str] = set()

@@ -5,3 +5,4 @@
 {"stream":"user_lifetime_insights","data":{"page_id":"144706962067225","breakdown":"city","business_account_id":"17841408147298757","metric":"follower_demographics"},"emitted_at":1704378481116}
 {"stream":"user_lifetime_insights","data":{"page_id":"144706962067225","breakdown":"country","business_account_id":"17841408147298757","metric":"follower_demographics"},"emitted_at":1704378481343}
 {"stream":"user_lifetime_insights","data":{"page_id":"144706962067225","breakdown":"age,gender","business_account_id":"17841408147298757","metric":"follower_demographics"},"emitted_at":1704378481574}
+{"stream": "Api", "data": {"id": "144706962067225", "account": {"business_account_id": "17841408147298757", "page_id": "144706962067225"}}, "emitted_at": 1718280847529}
