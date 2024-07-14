@@ -113,6 +113,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 | Version | Date       | Pull Request                                             | Subject                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------|
 | 0.2.0   | 2024-07-11 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | updated streams schema declarations, json flattened output |
+| 0.1.4   | 2024-07-13 | [41759](https://github.com/airbytehq/airbyte/pull/41759) | Update dependencies                                        |
 | 0.1.3   | 2024-07-10 | [41351](https://github.com/airbytehq/airbyte/pull/41351) | Update dependencies                                        |
 | 0.1.2   | 2024-07-09 | [41123](https://github.com/airbytehq/airbyte/pull/41123) | Update dependencies                                        |
 | 0.1.1   | 2024-07-06 | [40922](https://github.com/airbytehq/airbyte/pull/40922) | Update dependencies                                        |

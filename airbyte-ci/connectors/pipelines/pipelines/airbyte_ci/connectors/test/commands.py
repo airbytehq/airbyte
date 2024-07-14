@@ -25,7 +25,7 @@ from pipelines.models.steps import STEP_PARAMS
 
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
 GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
-REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT = "Regression tests manual approval"
+REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT = "Regression Test Results Reviewed and Approved"
 TESTS_SKIPPED_BY_DEFAULT = [
     CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS,
 ]
