@@ -558,4 +558,14 @@ class Stream(ABC):
             for stream_property, property_value in received_schema_properties.items()
             if stream_property in stream_schema_properties
         }
+        invalid_properties = []
+        for stream_property, property_value in received_schema_properties.items():
+            if stream_property in stream_schema_properties:
+                valid_configured_schema_properties[stream_property] = property_value
+            else:
+                invalid_properties.append(stream_property)
+        if invalid_properties:
+            self.logger.warning(
+                f"For {self.name} the following properties in the configured catalog were not found in the the current stream schema and will be filtered: {invalid_properties}"
+            )
         return {**json_schema, "properties": valid_configured_schema_properties}
