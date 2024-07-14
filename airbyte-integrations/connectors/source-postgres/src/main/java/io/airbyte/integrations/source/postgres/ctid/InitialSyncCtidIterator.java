@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.EIGHT_KB;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.GIGABYTE;
@@ -14,7 +15,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -37,9 +40,6 @@ import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.commons.exceptions.TransientErrorException;
-import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 
 /**
  * This class is responsible to divide the data of the stream into chunks based on the ctid and
@@ -114,6 +114,15 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
   @CheckForNull
   @Override
   protected RowDataWithCtid computeNext() {
+    if (isCdcSync && cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+          "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     try {
       if (!subQueriesInitialized) {
         initSubQueries();

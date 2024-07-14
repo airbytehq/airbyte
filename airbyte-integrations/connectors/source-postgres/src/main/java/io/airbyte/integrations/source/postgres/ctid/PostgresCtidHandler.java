@@ -155,8 +155,9 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
                                                                 final String tableName,
                                                                 final long tableSize,
                                                                 final long blockSize,
-                                                                final int maxTuple, final Instant emittedAt,
-                                                                @NotNull final Optional<Duration> cdcInitialLoadTimeout ) {
+                                                                final int maxTuple,
+                                                                final Instant emittedAt,
+                                                                @NotNull final Optional<Duration> cdcInitialLoadTimeout) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
     return new InitialSyncCtidIterator(ctidStateManager, database, sourceOperations, quoteString, columnNames, schemaName, tableName, tableSize,
@@ -217,4 +218,5 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
         r -> new SourceStateIterator(r, airbyteStream, ctidStateManager, new StateEmitFrequency(syncCheckpointRecords, syncCheckpointDuration)),
         recordIterator, pair);
   }
+
 }

@@ -556,7 +556,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                                                                          * decorateWithStartedStatus=
                                                                                                                          */ true, /*
                                                                                                                                    * decorateWithCompletedStatus=
-                                                                                                                                   */ true, Optional.empty()));
+                                                                                                                                   */ true,
+          Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>(xminHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(xminStreams.streamsForXminSync()), tableNameToTable, emittedAt));
 
