@@ -10026,7 +10026,6 @@ schemas:
                 - "null"
                 - string
               $id: "#root/results/items/overview"
-              pattern: ^.*$
               title: Overview
             popularity:
               type: number
