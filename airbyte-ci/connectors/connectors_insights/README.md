@@ -56,6 +56,12 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.2.4
+Do not generate insights for `*-scaffold-*` and `*-strict-encrypt` connectors.
+
+### 0.2.3
+Share `.docker/config.json` with `syft` to benefit from increased DockerHub rate limit.
+
 ### 0.2.2
 - Write the sbom output to a file and not to stdout to avoid issues with large outputs.
 

@@ -55,7 +55,7 @@ DEFAULT_ERROR_MAPPING: Mapping[Union[int, str, Type[Exception]], ErrorResolution
         error_message="Request timeout.",
     ),
     429: ErrorResolution(
-        response_action=ResponseAction.RETRY,
+        response_action=ResponseAction.RATE_LIMITED,
         failure_type=FailureType.transient_error,
         error_message="Too many requests.",
     ),

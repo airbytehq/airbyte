@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from collections import defaultdict
 from datetime import datetime
 from time import time
@@ -10,7 +11,6 @@ from uuid import uuid4
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-from airbyte_cdk import AirbyteLogger
 from firebolt.db import Connection
 from pyarrow import fs
 
@@ -219,7 +219,7 @@ class FireboltSQLWriter(FireboltWriter):
         self._flush()
 
 
-def create_firebolt_wirter(connection: Connection, config: json, logger: AirbyteLogger) -> FireboltWriter:
+def create_firebolt_wirter(connection: Connection, config: json, logger: logging.Logger) -> FireboltWriter:
     if config["loading_method"]["method"] == "S3":
         logger.info("Using the S3 writing strategy")
         writer = FireboltS3Writer(
