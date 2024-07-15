@@ -4,14 +4,17 @@
 
 import json
 from functools import cache
-from typing import Any, Iterable, Mapping, MutableMapping
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from ..property_transformation import transform_property_names
+from ..utils import ExportErrorHandler
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 
 
@@ -23,14 +26,14 @@ class ExportSchema(MixpanelStream):
        When `reqs_per_hour_limit = 0` - it means we skip this limits.
     """
 
-    primary_key: str = None
-    data_field: str = None
+    primary_key: Optional[str] = None
+    data_field: Optional[str] = None
     reqs_per_hour_limit: int = 0  # see the docstring
 
-    def path(self, **kwargs) -> str:
+    def path(self, **kwargs: Any) -> str:
         return "events/properties/top"
 
-    def process_response(self, response: requests.Response, **kwargs) -> Iterable[str]:
+    def process_response(self, response: requests.Response, **kwargs: Any) -> Iterable[str]:  # type: ignore[override]
         """
         response.json() example:
         {
@@ -75,28 +78,23 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
      3 queries per second and 60 queries per hour.
     """
 
-    primary_key: str = None
-    cursor_field: str = "time"
+    primary_key: Optional[str] = None
+    cursor_field: Optional[str] = "time"
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     @property
-    def url_base(self):
+    def url_base(self) -> str:
         prefix = "-eu" if self.region == "EU" else ""
         return f"https://data{prefix}.mixpanel.com/api/2.0/"
 
-    def path(self, **kwargs) -> str:
+    def path(self, **kwargs: Any) -> str:
         return "export"
 
-    def should_retry(self, response: requests.Response) -> bool:
-        try:
-            # trying to parse response to avoid ConnectionResetError and retry if it occurs
-            self.iter_dicts(response.iter_lines(decode_unicode=True))
-        except ConnectionResetError:
-            return True
-        return super().should_retry(response)
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return ExportErrorHandler(logger=self.logger, max_retries=self.max_retries, error_mapping=DEFAULT_ERROR_MAPPING, stream=self)
 
-    def iter_dicts(self, lines):
+    def iter_dicts(self, lines: Iterable[str]) -> Iterable[Mapping[str, Any]]:
         """
         The incoming stream has to be JSON lines format.
         From time to time for some reason, the one record can be split into multiple lines.
@@ -122,7 +120,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 else:
                     parts = []
 
-    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping[str, Any]]:
         """Export API return response in JSONL format but each line is a valid JSON object
         Raw item example:
             {
@@ -158,7 +156,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             yield item
 
     @cache
-    def get_json_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Union[Mapping[str, Any], Any]:
         """
         :return: A dict of the JSON schema representing this stream.
 
@@ -184,17 +182,23 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return schema
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         # additional filter by timestamp because required start date and end date only allow to filter by date
-        cursor_param = stream_slice.get(self.cursor_field)
+        cursor_param = stream_slice.get(self.cursor_field)  # type: ignore
         if cursor_param:
             timestamp = int(pendulum.parse(cursor_param).timestamp())
             params["where"] = f'properties["$time"]>=datetime({timestamp})'
         return params
 
     def request_kwargs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return {"stream": True}
