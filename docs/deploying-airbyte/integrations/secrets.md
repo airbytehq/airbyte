@@ -1,3 +1,6 @@
+---
+products: oss-community, oss-enterprise
+---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
