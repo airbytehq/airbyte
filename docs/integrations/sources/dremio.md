@@ -41,6 +41,7 @@ Please read [How to get your APIs credentials](https://docs.dremio.com/software/
 
 | Version | Date       | Pull Request                                             | Subject            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------- |
+| 0.1.8 | 2024-07-13 | [41812](https://github.com/airbytehq/airbyte/pull/41812) | Update dependencies |
 | 0.1.7 | 2024-07-10 | [41578](https://github.com/airbytehq/airbyte/pull/41578) | Update dependencies |
 | 0.1.6 | 2024-07-09 | [41127](https://github.com/airbytehq/airbyte/pull/41127) | Update dependencies |
 | 0.1.5 | 2024-07-06 | [41008](https://github.com/airbytehq/airbyte/pull/41008) | Update dependencies |
