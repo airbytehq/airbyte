@@ -149,7 +149,7 @@ class StateValueWrapper(pydantic.BaseModel):
 
     stream: T
     state_value: str
-    max_cursor_time = ""
+    max_cursor_time: Any = ""
 
     def __repr__(self):
         """Overrides print view"""

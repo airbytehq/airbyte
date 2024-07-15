@@ -5,13 +5,13 @@ concurrency:
 
 on:
   schedule:
-    # Runs everyday at 12:00 UTC
-    - cron: "0 12 * * *"
+    # Runs everyday Saturday at 12:00 UTC
+    - cron: "0 12 * * 6"
   workflow_dispatch:
     inputs:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--concurrency=10 --language=python --language=low-code"
+        default: "--concurrency=10 --language=python --language=low-code --language=manifest-only"
       auto-merge:
         description: "Whether to auto-merge the PRs created by the action."
         default: "false"

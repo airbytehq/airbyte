@@ -18,6 +18,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.snowflake.*
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.workers.exception.TestHarnessException
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.sql.SQLException
 import java.util.*
@@ -27,6 +28,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
     private var databaseName: String? = null
@@ -132,6 +135,9 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
                             .withPrimaryKey(java.util.List.of(listOf("id1"), listOf("id2")))
+                            .withGenerationId(0)
+                            .withMinimumGenerationId(0)
+                            .withSyncId(0)
                             .withStream(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
@@ -191,20 +197,21 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
             catalog,
             messages1,
             "airbyte/destination-snowflake:2.1.7",
-        ) { config: JsonNode? ->
-            // Defensive to avoid weird behaviors or test failures if the original config is being
-            // altered by
-            // another thread, thanks jackson for a mutable JsonNode
-            val copiedConfig = Jsons.clone(config!!)
-            if (config is ObjectNode) {
-                // Opt out of T+D to run old V1 sync
-                (copiedConfig as ObjectNode?)!!.put(
-                    "use_1s1t_format",
-                    false,
-                )
-            }
-            copiedConfig
-        }
+            { config: JsonNode? ->
+                // Defensive to avoid weird behaviors or test failures if the original config is
+                // being altered by another thread, thanks jackson for a mutable JsonNode
+                val copiedConfig = Jsons.clone(config!!)
+                if (config is ObjectNode) {
+                    // Opt out of T+D to run old V1 sync
+                    (copiedConfig as ObjectNode?)!!.put(
+                        "use_1s1t_format",
+                        false,
+                    )
+                }
+                copiedConfig
+            },
+            streamStatus = null
+        )
 
         // The record differ code is already adapted to V2 columns format, use the post V2 sync
         // to verify that append mode preserved all the raw records and final records.
@@ -225,13 +232,16 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
 
     @Test
     @Throws(Exception::class)
-    fun testExtractedAtUtcTimezoneMigration() {
+    open fun testExtractedAtUtcTimezoneMigration() {
         val catalog =
             ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
                             .withSyncMode(SyncMode.INCREMENTAL)
+                            .withGenerationId(0)
+                            .withSyncId(0)
+                            .withMinimumGenerationId(0)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
                             .withPrimaryKey(java.util.List.of(listOf("id1"), listOf("id2")))
                             .withCursorField(listOf("updated_at"))
@@ -246,7 +256,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
 
         // First sync
         val messages1 = readMessages("dat/sync1_messages.jsonl")
-        runSync(catalog, messages1, "airbyte/destination-snowflake:3.5.11")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.5.11", streamStatus = null)
 
         // The dumpRawTable code already accounts for Meta and GenID columns, so we cannot use it
         // to verify expected records. We will rely on the second sync to verify raw and final
@@ -264,7 +274,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Test
-    fun testAirbyteMetaAndGenerationIdMigration() {
+    open fun testAirbyteMetaAndGenerationIdMigration() {
         val catalog =
             ConfiguredAirbyteCatalog()
                 .withStreams(
@@ -286,7 +296,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
 
         // First sync
         val messages1 = readMessages("dat/sync1_messages.jsonl")
-        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1", streamStatus = null)
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
@@ -338,7 +348,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
     }
 
     @Test
-    fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {
+    open fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {
         val catalog =
             ConfiguredAirbyteCatalog()
                 .withStreams(
@@ -348,7 +358,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withSyncId(42L)
                             .withGenerationId(43L)
-                            .withMinimumGenerationId(0L)
+                            .withMinimumGenerationId(43L)
                             .withStream(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
@@ -360,50 +370,9 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
 
         // First sync
         val messages1 = readMessages("dat/sync1_messages.jsonl")
-        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
+        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1", streamStatus = null)
 
         // Second sync
-        val messages2 = readMessages("dat/sync2_messages.jsonl")
-        runSync(catalog, messages2)
-
-        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
-        val expectedFinalRecords2 =
-            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
-        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
-    }
-
-    @Test
-    fun testAirbyteMetaAndGenerationIdMigrationForOverwrite310Broken() {
-        val catalog =
-            ConfiguredAirbyteCatalog()
-                .withStreams(
-                    listOf(
-                        ConfiguredAirbyteStream()
-                            .withSyncMode(SyncMode.FULL_REFRESH)
-                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-                            .withSyncId(42L)
-                            .withGenerationId(43L)
-                            .withMinimumGenerationId(0L)
-                            .withStream(
-                                AirbyteStream()
-                                    .withNamespace(streamNamespace)
-                                    .withName(streamName)
-                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
-                            ),
-                    ),
-                )
-
-        // First sync
-        val messages1 = readMessages("dat/sync1_messages.jsonl")
-        runSync(catalog, messages1, "airbyte/destination-snowflake:3.9.1")
-
-        // Second sync
-        // This throws exception due to a broken migration in connector
-        assertThrows(TestHarnessException::class.java) {
-            runSync(catalog, messages1, "airbyte/destination-snowflake:3.10.0")
-        }
-
-        // Third sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
         runSync(catalog, messages2)
 

@@ -484,7 +484,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
             tableNameToTable,
-            emittedAt, true, true));
+            emittedAt, true, true, Optional.empty()));
 
         // Build Cursor based iterator
         final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =

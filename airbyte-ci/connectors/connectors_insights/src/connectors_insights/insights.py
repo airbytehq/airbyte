@@ -16,7 +16,7 @@ from connectors_insights.result_backends import FileToPersist, ResultBackend
 from connectors_insights.sbom import get_json_sbom
 
 if TYPE_CHECKING:
-    from typing import Dict, List
+    from typing import Dict, List, Tuple
 
     import dagger
     from anyio import Semaphore
@@ -203,7 +203,7 @@ async def generate_insights_for_connector(
     semaphore: Semaphore,
     rewrite: bool = False,
     result_backends: List[ResultBackend] | None = None,
-) -> ConnectorInsights | None:
+) -> Tuple[bool, Connector]:
     """Aggregate insights for a connector and write them to the result backends.
 
     Args:
@@ -213,7 +213,7 @@ async def generate_insights_for_connector(
         rewrite (bool): whether to rewrite the insights if they already exist.
         result_backend (List[ResultBackend] | None): the result backends to write the insights to.
     Returns:
-        ConnectorInsights: the insights for the connector.
+        Tuple[bool, Connector]: a tuple of whether the insights were generated and the connector.
     """
     logger = logging.getLogger(__name__)
     insights_file = FileToPersist("insights.json")
@@ -223,17 +223,21 @@ async def generate_insights_for_connector(
     async with semaphore:
         if should_skip_generation(result_backends, connector, files_to_persist, rewrite):
             logger.info(f"Skipping insights generation for {connector.technical_name} because it is already generated.")
-            return None
+            return True, connector
 
         logger.info(f"Generating insights for {connector.technical_name}")
         result_backends = result_backends or []
-        pylint_output = await get_pylint_output(dagger_client, connector)
-        raw_sbom = await fetch_sbom(dagger_client, connector)
-        if raw_sbom:
-            sbom_file.set_file_content(raw_sbom)
+        try:
+            pylint_output = await get_pylint_output(dagger_client, connector)
+            raw_sbom = await fetch_sbom(dagger_client, connector)
+            if raw_sbom:
+                sbom_file.set_file_content(raw_sbom)
 
-        insights = generate_insights(connector, raw_sbom, pylint_output)
-        insights_file.set_file_content(insights.json())
-        persist_files(connector, files_to_persist, result_backends, rewrite, logger)
-        logger.info(f"Finished generating insights for {connector.technical_name}")
-        return insights
+            insights = generate_insights(connector, raw_sbom, pylint_output)
+            insights_file.set_file_content(insights.json())
+            persist_files(connector, files_to_persist, result_backends, rewrite, logger)
+            logger.info(f"Finished generating insights for {connector.technical_name}")
+            return True, connector
+        except Exception as e:
+            logger.error(f"Failed to generate insights for {connector.technical_name}: {e}")
+            return False, connector
