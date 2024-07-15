@@ -1,20 +1,28 @@
 {
-    "properties": {
-        "Company": {
-            "items": {},
-            "required": null,
-            "type": [
-              "null",
-              "array"
-            ]
-          },
-        "Companies": {
+  "properties": {
+      "Company": {
           "items": {},
           "required": null,
           "type": [
             "null",
             "array"
           ]
-        }
+        },
+      "Companies": {
+        "items": {},
+        "required": null,
+        "type": [
+          "null",
+          "array"
+        ]
+      },
+      "Guides": {
+        "items": {},
+        "required": null,
+        "type": [
+          "null",
+          "array"
+        ]
       }
+    }
 }
