@@ -546,7 +546,7 @@ class Stream(ABC):
     def configured_json_schema(self, json_schema: Dict[str, Any]) -> None:
         self._configured_json_schema = self._filter_schema_invalid_properties(json_schema)
 
-    def _filter_schema_invalid_properties(self, configured_catalog_json_schema: Dict[str, Any | Dict[str, Any]]) -> Dict[str, Any]:
+    def _filter_schema_invalid_properties(self, configured_catalog_json_schema: Dict[str, Any]) -> Dict[str, Any]:
         """
         Filters the properties in json_schema that are not present in the stream schema.
         Configured Schemas can have very old fields, so we need to housekeeping ourselves.
