@@ -8,13 +8,20 @@ package io.airbyte.commons.exceptions
  * exception is caught and emits an AirbyteTraceMessage.
  */
 class ConfigErrorException : RuntimeException {
+    val internalMessage: String
     val displayMessage: String
 
-    constructor(displayMessage: String) : super(displayMessage) {
+    constructor(displayMessage: String, internalMessage: String = "") : super(displayMessage) {
         this.displayMessage = displayMessage
+        this.internalMessage = internalMessage
     }
 
-    constructor(displayMessage: String, exception: Throwable?) : super(displayMessage, exception) {
+    constructor(
+        displayMessage: String,
+        exception: Throwable?,
+        internalMessage: String = ""
+    ) : super(displayMessage, exception) {
         this.displayMessage = displayMessage
+        this.internalMessage = internalMessage
     }
 }
