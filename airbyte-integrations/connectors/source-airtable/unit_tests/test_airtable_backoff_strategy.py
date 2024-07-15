@@ -2,9 +2,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import MagicMock
 
-import logging
 import pytest
 from requests import Response
 from source_airtable.airtable_backoff_strategy import AirtableBackoffStrategy
