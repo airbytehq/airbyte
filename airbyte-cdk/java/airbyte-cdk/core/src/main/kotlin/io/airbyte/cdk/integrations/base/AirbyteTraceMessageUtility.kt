@@ -123,11 +123,12 @@ object AirbyteTraceMessageUtility {
         failureType: AirbyteErrorTraceMessage.FailureType,
         internalMessage: String = "",
     ): AirbyteMessage {
-        val actualInternalMessage: String = if (internalMessage.isEmpty()) {
-            e.toString()
-        } else {
-            internalMessage + "\n" + e.toString()
-        }
+        val actualInternalMessage: String =
+            if (internalMessage.isEmpty()) {
+                e.toString()
+            } else {
+                internalMessage + "\n" + e.toString()
+            }
         return makeAirbyteMessageFromTraceMessage(
             makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
                 .withError(

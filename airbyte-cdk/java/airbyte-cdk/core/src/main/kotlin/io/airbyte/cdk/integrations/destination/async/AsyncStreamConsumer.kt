@@ -208,7 +208,8 @@ constructor(
             // Throw as a "transient" error. This will tell platform to retry the sync,
             // but won't trigger any alerting.
             throw TransientErrorException(
-                displayMessage = "Some streams were unsuccessful due to a source error. See logs for details.",
+                displayMessage =
+                    "Some streams were unsuccessful due to a source error. See logs for details.",
                 internalMessage = internalMessageString,
             )
         }
