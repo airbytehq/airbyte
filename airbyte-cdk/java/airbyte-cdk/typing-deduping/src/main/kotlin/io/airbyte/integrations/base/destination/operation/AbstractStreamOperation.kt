@@ -331,7 +331,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     }
 
     companion object {
-        private const val NO_SUFFIX = ""
+        const val NO_SUFFIX = ""
         const val TMP_TABLE_SUFFIX = "_airbyte_tmp"
     }
 }

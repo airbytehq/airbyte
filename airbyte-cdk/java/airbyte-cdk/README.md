@@ -174,6 +174,13 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:-----------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.43.0     | 2024-07-17 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | fix refreshes for connectors using the old SqlOperations                                                 |
+| 0.43.0     | 2024-07-17 | [\#42017](https://github.com/airbytehq/airbyte/pull/42017) | bump postgres-jdbc version                                                 |
+| 0.43.0     | 2024-07-17 | [\#42015](https://github.com/airbytehq/airbyte/pull/42015) | wait until migration before creating the Writeconfig objects                                                 |
+| 0.43.0     | 2024-07-17 | [\#41953](https://github.com/airbytehq/airbyte/pull/41953) | add generationId and syncId to SqlOperations functions                                                 |
+| 0.43.0     | 2024-07-17 | [\#41952](https://github.com/airbytehq/airbyte/pull/41952) | rename and add fields in WriteConfig                                                 |
+| 0.43.0     | 2024-07-17 | [\#41951](https://github.com/airbytehq/airbyte/pull/41951) | remove nullables in JdbcBufferedConsumerFactory                                                 |
+| 0.43.0     | 2024-07-17 | [\#41950](https://github.com/airbytehq/airbyte/pull/41950) | remove unused classes|
 | 0.42.2     | 2024-07-21 | [\#42122](https://github.com/airbytehq/airbyte/pull/42122) | Support for Debezium resync and shutdown scenarios.                                                                                                            |
 | 0.42.2     | 2024-07-04 | [\#40208](https://github.com/airbytehq/airbyte/pull/40208) | Implement a new connector error handling and translation framework                                                                                             |
 | 0.41.8     | 2024-07-18 | [\#42068](https://github.com/airbytehq/airbyte/pull/42068) | Add analytics message for WASS occurrence.                                                                                                                     |
