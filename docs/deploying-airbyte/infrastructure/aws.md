@@ -1,3 +1,7 @@
+---
+products: oss-community, oss-enterprise
+---
+
 # Amazon Web Services (AWS)
 
 Airbyte supports Amazon Web Services as a Cloud Provider. There are several ways that you can deploy Airbyte using AWS.
