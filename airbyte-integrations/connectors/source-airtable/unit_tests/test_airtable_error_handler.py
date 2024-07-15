@@ -19,7 +19,7 @@ from source_airtable.auth import AirtableOAuth
     [
         (TokenAuthenticator, {"error": {"type": "INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND"}}, "Personal Access Token does not have required permissions, please add all required permissions to existed one or create new PAT, see docs for more info: https://docs.airbyte.com/integrations/sources/airtable#step-1-set-up-airtable"),
         (AirtableOAuth, {"error": {"type": "INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND"}}, "Access Token does not have required permissions, please reauthenticate."),
-        (TokenAuthenticator, {"error": {"type": "Test 403"}}, "Permission denied or entity is unprocessable. Skipping.")
+        (TokenAuthenticator, {"error": {"type": "Test 403"}}, "Permission denied or entity is unprocessable.")
     ]
 )
 def test_interpret_response_handles_403_error(auth, json_response, error_message):
