@@ -260,7 +260,8 @@ public class PostgresCdcCtidInitializer {
     final var allCdcStreamList = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
-    // Debezium is started for streams that have been started - that is they have been partially or
+    // Debezium is started for incremental streams that have been started - that is they have been
+    // partially or
     // fully completed.
     final var startedCdcStreamList = catalog.getStreams().stream()
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)

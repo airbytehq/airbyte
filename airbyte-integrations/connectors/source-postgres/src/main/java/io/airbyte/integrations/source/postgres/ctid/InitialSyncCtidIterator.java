@@ -129,16 +129,6 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
         subQueriesInitialized = true;
       }
 
-      if (isCdcSync && cdcInitialLoadTimeout.isPresent()
-          && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
-        final String cdcInitialLoadTimeoutMessage = String.format(
-            "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
-            getAirbyteStream().get(), cdcInitialLoadTimeout.get());
-        LOGGER.info(cdcInitialLoadTimeoutMessage);
-        AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
-        throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
-      }
-
       if (currentIterator == null || !currentIterator.hasNext()) {
         do {
           final Optional<Long> mayBeLatestFileNode = PostgresQueryUtils.fileNodeForIndividualStream(database, airbyteStream, quoteString);
