@@ -19,36 +19,11 @@ definitions:
           path: /v1/search
           http_method: GET
           request_parameters:
-            query: |
-              {{
-                config['query']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            orientation: |
-              {{
-                config['orientation']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            size: |
-              {{
-                config['size']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            locale: |
-              {{
-                config['locale']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            color: |
-              {{
-                config['color']
-                if parameters['name'] == 'photos_search'
-                else ''
-              }}
+            query: "{{ config['query'] }}"
+            orientation: "{{config['orientation']}}"
+            size: "{{config['size']}}"
+            locale: "{{config['locale']}}"
+            color: "{{config['color']}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -89,37 +64,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v1/curated
           http_method: GET
-          request_parameters:
-            query: |
-              {{
-                config['query']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            orientation: |
-              {{
-                config['orientation']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            size: |
-              {{
-                config['size']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            locale: |
-              {{
-                config['locale']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            color: |
-              {{
-                config['color']
-                if parameters['name'] == 'photos_search'
-                else ''
-              }}
+          request_parameters: {}
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -160,37 +105,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /v1/collections/featured
           http_method: GET
-          request_parameters:
-            query: |
-              {{
-                config['query']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            orientation: |
-              {{
-                config['orientation']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            size: |
-              {{
-                config['size']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            locale: |
-              {{
-                config['locale']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            color: |
-              {{
-                config['color']
-                if parameters['name'] == 'photos_search'
-                else ''
-              }}
+          request_parameters: {}
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -232,36 +147,11 @@ definitions:
           path: /videos/search
           http_method: GET
           request_parameters:
-            query: |
-              {{
-                config['query']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            orientation: |
-              {{
-                config['orientation']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            size: |
-              {{
-                config['size']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            locale: |
-              {{
-                config['locale']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            color: |
-              {{
-                config['color']
-                if parameters['name'] == 'photos_search'
-                else ''
-              }}
+            query: "{{ config['query'] }}"
+            orientation: "{{config['orientation']}}"
+            size: "{{config['size']}}"
+            locale: "{{config['locale']}}"
+            color: "{{config['color']}}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -302,37 +192,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /videos/popular
           http_method: GET
-          request_parameters:
-            query: |
-              {{
-                config['query']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            orientation: |
-              {{
-                config['orientation']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            size: |
-              {{
-                config['size']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            locale: |
-              {{
-                config['locale']
-                if parameters['name'] == 'photos_search' or parameters['name'] == 'videos_search'
-                else ''
-              }}
-            color: |
-              {{
-                config['color']
-                if parameters['name'] == 'photos_search'
-                else ''
-              }}
+          request_parameters: {}
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
