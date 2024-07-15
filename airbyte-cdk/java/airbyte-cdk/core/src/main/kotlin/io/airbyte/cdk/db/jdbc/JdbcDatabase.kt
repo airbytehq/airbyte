@@ -35,7 +35,11 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
 
     @Throws(SQLException::class)
     override fun execute(sql: String?) {
-        execute { connection: Connection -> connection.createStatement().execute(sql) }
+        execute { connection: Connection ->
+            LOGGER.info("executing statement: $sql")
+            connection.createStatement().execute(sql)
+            LOGGER.info("statement successfully executed")
+        }
     }
 
     @Throws(SQLException::class)

@@ -174,6 +174,11 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:-----------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.42.0     | 2024-07-16 | [\#49154](https://github.com/airbytehq/airbyte/pull/49154) | fix refreshes for connectors using the old SqlOperations                                                 |
+| 0.42.0     | 2024-07-16 | [\#49153](https://github.com/airbytehq/airbyte/pull/49153) | add generationId and syncId to SqlOperations functions                                                 |
+| 0.42.0     | 2024-07-16 | [\#49152](https://github.com/airbytehq/airbyte/pull/49152) | rename and add fields in WriteConfig                                                 |
+| 0.42.0     | 2024-07-16 | [\#49151](https://github.com/airbytehq/airbyte/pull/49151) | remove nullables in JdbcBufferedConsumerFactory                                                 |
+| 0.42.0     | 2024-07-16 | [\#41950](https://github.com/airbytehq/airbyte/pull/41950) | remove unused classes|
 | 0.41.2     | 2024-07-12 | [\#40567](https://github.com/airbytehq/airbyte/pull/40567) | Fix BaseSqlGenerator test case (generation_id support); update minimum platform version for refreshes support.                                                 |
 | 0.41.1     | 2024-07-11 | [\#41212](https://github.com/airbytehq/airbyte/pull/41212) | Improve debezium logging.                                                                                                                                      |
 | 0.41.0     | 2024-07-11 | [\#38240](https://github.com/airbytehq/airbyte/pull/38240) | Sources : Changes in CDC interfaces to support WASS algorithm                                                                                                  |
