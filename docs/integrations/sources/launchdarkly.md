@@ -37,6 +37,7 @@ Launchdarkly APIs are under rate limits for the number of API calls allowed per 
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.1.8 | 2024-07-13 | [41700](https://github.com/airbytehq/airbyte/pull/41700) | Update dependencies |
 | 0.1.7 | 2024-07-10 | [41425](https://github.com/airbytehq/airbyte/pull/41425) | Update dependencies |
 | 0.1.6 | 2024-07-09 | [41284](https://github.com/airbytehq/airbyte/pull/41284) | Update dependencies |
 | 0.1.5 | 2024-07-06 | [40891](https://github.com/airbytehq/airbyte/pull/40891) | Update dependencies |
