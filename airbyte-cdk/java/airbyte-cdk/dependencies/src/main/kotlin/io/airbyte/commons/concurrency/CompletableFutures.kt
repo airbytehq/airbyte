@@ -33,7 +33,7 @@ object CompletableFutures {
                     try {
                         // By the time we get here, the futures have already
                         // completed, so we can just get() them
-                        return@map Either.right(it.toCompletableFuture().get())
+                        Either.right(it.toCompletableFuture().get())
                     } catch (e: ExecutionException) {
                         // For historical reasons, we return the wrapped
                         // exception instead of just returning the underlying
@@ -43,9 +43,9 @@ object CompletableFutures {
                         // In practice, most callers will just check the value
                         // of `result.left.cause`, which doesn't care about
                         // the actual exception type.
-                        return@map Either.left(CompletionException(e.cause))
+                        Either.left(CompletionException(e.cause))
                     } catch (e: Exception) {
-                        return@map Either.left(e)
+                        Either.left(e)
                     }
                     // handle() will take care of other Throwable types,
                     // so don't explicitly handle them.
