@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.5.1
+Remove 3.11-style union
+
 ## 3.5.0
 Clean invalid fields from configured catalog
 
