@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, MutableMapping, Optional, Tuple, Union, Callable
+from typing import Any, Callable, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
