@@ -17,6 +17,7 @@ from airbyte_cdk.models import (
     AirbyteStateMessage,
     AirbyteStateType,
     AirbyteStreamState,
+    AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
     StreamDescriptor,
     SyncMode,
@@ -458,6 +459,8 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     SLICE_DEBUG_LOG_COUNT = 1
     TRACE_STATUS_COUNT = 3
     STATE_COUNT = 1
+    # Read operation has an extra get_json_schema call when filtering invalid fields
+    GET_JSON_SCHEMA_COUNT_WHEN_FILTERING = 1
     logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
@@ -467,8 +470,8 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 * (5 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT)
     assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 5
-    assert non_http_stream.get_json_schema.call_count == 5
+    assert http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
+    assert non_http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
 
 
 def test_source_config_transform(mocker, abstract_source, catalog):
@@ -567,7 +570,7 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
     assert non_http_stream.read_records.called
 
 
-def test_read_default_http_availability_strategy_stream_unavailable(catalog, mocker, caplog):
+def test_read_default_http_availability_strategy_stream_unavailable(catalog, mocker, caplog, remove_stack_trace, as_stream_status):
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
     class MockHttpStream(HttpStream):
@@ -619,8 +622,8 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
     with caplog.at_level(logging.WARNING):
         records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
 
-    # 0 for http stream, 3 for non http stream, 1 for non http stream state message and 3 status trace messages
-    assert len(records) == 0 + 3 + 1 + 3
+    # 0 for http stream, 3 for non http stream, 1 for non http stream state message and 4 status trace messages
+    assert len(records) == 0 + 3 + 1 + 4
     assert non_http_stream.read_records.called
     expected_logs = [
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
@@ -630,8 +633,12 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
     for message in expected_logs:
         assert message in caplog.text
 
+    expected_status = [as_stream_status(f"{http_stream.name}", AirbyteStreamStatus.INCOMPLETE)]
+    records = [remove_stack_trace(record) for record in records]
+    assert records[0].trace.stream_status == expected_status[0].trace.stream_status
 
-def test_read_default_http_availability_strategy_parent_stream_unavailable(catalog, mocker, caplog):
+
+def test_read_default_http_availability_strategy_parent_stream_unavailable(catalog, mocker, caplog, remove_stack_trace, as_stream_status):
     """Test default availability strategy if error happens during slice extraction (reading of parent stream)"""
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
@@ -653,6 +660,9 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
             stub_response = {"data": self.resp_counter}
             self.resp_counter += 1
             yield stub_response
+
+        def get_json_schema(self) -> Mapping[str, Any]:
+            return {}
 
     class MockHttpStream(HttpSubStream):
         url_base = "https://test_base_url.com"
@@ -702,8 +712,9 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
     with caplog.at_level(logging.WARNING):
         records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
 
-    # 0 for http stream, 3 for non http stream and 3 status trace messages
-    assert len(records) == 0
+    # 0 for http stream, 0 for non http stream and 1 status trace messages
+    assert len(records) == 1
+
     expected_logs = [
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
         "Forbidden.",
@@ -711,3 +722,7 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
     ]
     for message in expected_logs:
         assert message in caplog.text
+
+    expected_status = [as_stream_status(f"{http_stream.name}", AirbyteStreamStatus.INCOMPLETE)]
+    records = [remove_stack_trace(record) for record in records]
+    assert records[0].trace.stream_status == expected_status[0].trace.stream_status

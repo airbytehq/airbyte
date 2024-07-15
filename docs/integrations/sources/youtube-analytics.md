@@ -26,7 +26,7 @@ Youtube also generates historical data reports covering the 30-day period prior 
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
 4. Select `Authenticate your account`.
-5. Log in and Authorize to the Instagram account and click `Set up source`.
+5. Log in and Authorize to the Youtube account and click `Set up source`.
 
 ### For Airbyte OSS:
 

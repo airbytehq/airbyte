@@ -57,7 +57,7 @@ class _MockSource(ConcurrentSourceAdapter):
 
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
-def test_concurrent_source_adapter():
+def test_concurrent_source_adapter(as_stream_status, remove_stack_trace):
     concurrent_source = Mock()
     message_from_concurrent_stream = AirbyteMessage(
         type=MessageType.RECORD,
@@ -76,6 +76,7 @@ def test_concurrent_source_adapter():
     adapter = _MockSource(concurrent_source, {regular_stream: False, concurrent_stream: True, unavailable_stream: False}, logger)
 
     messages = list(adapter.read(logger, {}, _configured_catalog([regular_stream, concurrent_stream, unavailable_stream])))
+
     records = [m for m in messages if m.type == MessageType.RECORD]
 
     expected_records = [
@@ -91,6 +92,12 @@ def test_concurrent_source_adapter():
     ]
 
     assert records == expected_records
+
+    unavailable_stream_trace_messages = [m for m in messages if m.type == MessageType.TRACE and m.trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE]
+    expected_status = [as_stream_status("s3", AirbyteStreamStatus.INCOMPLETE)]
+
+    assert len(unavailable_stream_trace_messages) == 1
+    assert unavailable_stream_trace_messages[0].trace.stream_status == expected_status[0].trace.stream_status
 
 
 def _mock_stream(name: str, data=[], available: bool = True):
