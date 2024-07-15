@@ -557,10 +557,12 @@ class Stream(ABC):
         configured_keys = configured_schema.keys()
         stream_keys = stream_schema_properties.keys()
         invalid_properties = configured_keys - stream_keys
-        if invalid_properties:
-            self.logger.warning(
-                f"Stream {self.name}: the following fields are deprecated and cannot be synced. {invalid_properties}. Refresh the connection's source schema to resolve this warning."
-            )
+        if not invalid_properties:
+            return configured_catalog_json_schema
+
+        self.logger.warning(
+            f"Stream {self.name}: the following fields are deprecated and cannot be synced. {invalid_properties}. Refresh the connection's source schema to resolve this warning."
+        )
 
         valid_configured_schema_properties_keys = stream_keys & configured_keys
         valid_configured_schema_properties = {}
