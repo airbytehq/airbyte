@@ -81,7 +81,7 @@ object AirbyteTraceMessageUtility {
         e: Throwable,
         displayMessage: String?,
         failureType: AirbyteErrorTraceMessage.FailureType,
-        internalMessage: String? = "",
+        internalMessage: String = "",
     ) {
         emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType, internalMessage))
     }
@@ -111,9 +111,9 @@ object AirbyteTraceMessageUtility {
         e: Throwable,
         displayMessage: String?,
         failureType: AirbyteErrorTraceMessage.FailureType,
-        internalMessage: String? = "",
+        internalMessage: String = "",
     ): AirbyteMessage {
-        val actualInternalMessage: String = if (internalMessage.isNullOrEmpty()) {
+        val actualInternalMessage: String = if (internalMessage.isEmpty()) {
             e.toString()
         } else {
             internalMessage + "\n" + e.toString()
