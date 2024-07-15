@@ -3,7 +3,8 @@
 #
 
 import logging
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from copy import deepcopy
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from unittest.mock import Mock
 
 import pytest
@@ -40,8 +41,9 @@ _NO_STATE = None
 
 
 class _MockStream(Stream):
-    def __init__(self, slice_to_records: Mapping[str, List[Mapping[str, Any]]]):
+    def __init__(self, slice_to_records: Mapping[str, List[Mapping[str, Any]]], json_schema: Dict[str, Any] = None):
         self._slice_to_records = slice_to_records
+        self._mocked_json_schema = json_schema or {}
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -63,7 +65,7 @@ class _MockStream(Stream):
         yield from self._slice_to_records[stream_slice["partition"]]
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return {}
+        return self._mocked_json_schema
 
 
 class _MockIncrementalStream(_MockStream, CheckpointMixin):
@@ -133,8 +135,8 @@ class MockConcurrentCursor(Cursor):
         pass
 
 
-def _stream(slice_to_partition_mapping, slice_logger, logger, message_repository):
-    return _MockStream(slice_to_partition_mapping)
+def _stream(slice_to_partition_mapping, slice_logger, logger, message_repository, json_schema=None):
+    return _MockStream(slice_to_partition_mapping, json_schema=json_schema)
 
 
 def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository, cursor: Optional[Cursor] = None):
@@ -444,15 +446,7 @@ def test_concurrent_incremental_read_two_slices():
     assert actual_state[0] == expected_state
 
 
-def test_configured_json_schema():
-    configured_json_schema = {
-        "$schema": "https://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-            "id": {"type": ["null", "number"]},
-            "name": {"type": ["null", "string"]},
-        },
-    }
+def setup_stream_dependencies(configured_json_schema):
     configured_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name="mock_stream", supported_sync_modes=[SyncMode.full_refresh], json_schema=configured_json_schema),
         sync_mode=SyncMode.full_refresh,
@@ -463,17 +457,72 @@ def test_configured_json_schema():
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
     state_manager = ConnectorStateManager(stream_instance_map={})
+    return configured_stream, internal_config, logger, slice_logger, message_repository, state_manager
 
+
+def test_configured_json_schema():
+    current_json_schema = {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "number"]},
+            "name": {"type": ["null", "string"]},
+        },
+    }
+
+    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(current_json_schema)
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
     ]
 
     slice_to_partition = {1: records}
-    stream = _stream(slice_to_partition, slice_logger, logger, message_repository)
+    stream = _stream(slice_to_partition, slice_logger, logger, message_repository, json_schema=current_json_schema)
     assert not stream.configured_json_schema
     _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
-    assert stream.configured_json_schema == configured_json_schema
+    assert stream.configured_json_schema == current_json_schema
+
+
+def test_configured_json_schema_with_invalid_properties():
+    """
+    Configured Schemas can have very old fields, so we need to housekeeping ourselves.
+    The purpose of this test in ensure that correct cleanup occurs when configured catalog schema is compared with current stream schema.
+    """
+    old_user_insights = "old_user_insights"
+    old_feature_info = "old_feature_info"
+    configured_json_schema = {
+        "$schema": "https://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "number"]},
+            "name": {"type": ["null", "string"]},
+            "cost_per_conversation": {"type": ["null", "string"]},
+            old_user_insights: {"type": ["null", "string"]},
+            old_feature_info: {"type": ["null", "string"]},
+        },
+    }
+    # stream schema is updated e.g. some fields in new api version are deprecated
+    stream_schema = deepcopy(configured_json_schema)
+    del stream_schema["properties"][old_user_insights]
+    del stream_schema["properties"][old_feature_info]
+
+    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(configured_json_schema)
+    records = [
+        {"id": 1, "partition": 1},
+        {"id": 2, "partition": 1},
+    ]
+
+    slice_to_partition = {1: records}
+    stream = _stream(slice_to_partition, slice_logger, logger, message_repository, json_schema=stream_schema)
+    assert not stream.configured_json_schema
+    _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
+    assert stream.configured_json_schema != configured_json_schema
+    configured_json_schema_properties = stream.configured_json_schema["properties"]
+    assert old_user_insights not in configured_json_schema_properties
+    assert old_feature_info not in configured_json_schema_properties
+    for stream_schema_property in stream_schema["properties"]:
+        assert stream_schema_property in configured_json_schema_properties, f"Stream schema property: {stream_schema_property} missing in configured schema"
+        assert stream_schema["properties"][stream_schema_property] == configured_json_schema_properties[stream_schema_property]
 
 
 def _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config):

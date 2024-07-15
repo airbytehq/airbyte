@@ -2389,53 +2389,67 @@ class ProductVariant(ShopifyBulkQuery):
                 node {
                     __typename
                     id
-                    product {
-                        product_id: id
-                    }
                     title
                     price
                     sku
                     position
                     inventoryPolicy
                     compareAtPrice
-                    fulfillmentService {
-                        fulfillment_service: handle
-                    }
                     inventoryManagement
                     createdAt
                     updatedAt
                     taxable
                     barcode
-                    grams: weight
                     weight
                     weightUnit
-                    inventoryItem {
-                        inventory_item_id: id
-                    }
                     inventoryQuantity
-                    old_inventory_quantity: inventoryQuantity
-                    presentmentPrices {
-                        edges {
-                            node {
-                                __typename
-                                price {
-                                    amount
-                                    currencyCode
-                                }
-                                compareAtPrice {
-                                    amount
-                                    currencyCode
+                    requiresShipping
+                    availableForSale
+                    displayName
+                    taxCode
+                    options: selectedOptions {
+                        name
+                        value
+                        option_value: optionValue {
+                            id
+                            name
+                            has_variants: hasVariants
+                            swatch {
+                                color
+                                image {
+                                    id
                                 }
                             }
                         }
                     }
-                    requiresShipping
+                    grams: weight
                     image {
                         image_id: id
                     }
-                    availableForSale
-                    displayName
-                    taxCode
+                    old_inventory_quantity: inventoryQuantity
+                    product {
+                        product_id: id
+                    }
+                    fulfillmentService {
+                        fulfillment_service: handle
+                    }
+                    inventoryItem {
+                        inventory_item_id: id
+                    }
+                    presentmentPrices {
+                    edges {
+                        node {
+                            __typename
+                            price {
+                                amount
+                                currencyCode
+                            }
+                            compareAtPrice {
+                                amount
+                                currencyCode
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2456,6 +2470,18 @@ class ProductVariant(ShopifyBulkQuery):
                 )
             ],
         )
+    ]
+
+    option_value_fields: List[Field] = [
+        "id",
+        "name",
+        Field(name="hasVariants", alias="has_variants"),
+        Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+    ]
+    option_fields: List[Field] = [
+        "name",
+        "value",
+        Field(name="optionValue", alias="option_value", fields=option_value_fields),
     ]
 
     # main query
@@ -2480,6 +2506,7 @@ class ProductVariant(ShopifyBulkQuery):
         "availableForSale",
         "displayName",
         "taxCode",
+        Field(name="selectedOptions", alias="options", fields=option_fields),
         Field(name="weight", alias="grams"),
         Field(name="image", fields=[Field(name="id", alias="image_id")]),
         Field(name="inventoryQuantity", alias="old_inventory_quantity"),
