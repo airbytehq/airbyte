@@ -109,23 +109,23 @@ The `Start Date` is required for the all streams that use `start_time` as a key 
 
 | Stream                  | Incremental | Key                                 |
 |:------------------------|:------------|-------------------------------------|
-| Adaccounts              | Yes         | "id"                                |
+| AdAccounts              | Yes         | "id"                                |
 | Ads                     | Yes         | "id"                                |
-| Adsquads                | Yes         | "id"                                |
+| AdSquads                | Yes         | "id"                                |
 | Campaigns               | Yes         | "id"                                |
 | Creatives               | Yes         | "id"                                |
 | Media                   | Yes         | "id"                                |
 | Organizations           | Yes         | "id"                                |
 | Segments                | Yes         | "id"                                |
-| AdaccountsStatsHourly   | Yes         | ["id", "granularity", "start_time"] |
-| AdaccountsStatsDaily    | Yes         | ["id", "granularity", "start_time"] |
-| AdaccountsStatsLifetime | No          | ["id", "granularity"]               |
-| AdsStatsHourly          | Yes         | ["id", "granularity", "start_time"] |
-| AdsStatsDaily           | Yes         | ["id", "granularity", "start_time"] |
-| AdsStatsLifetime        | No          | ["id", "granularity"]               |
-| AdsquadsStatsHourly     | Yes         | ["id", "granularity", "start_time"] |
-| AdsquadsStatsDaily      | Yes         | ["id", "granularity", "start_time"] |
-| AdsquadsStatsLifetime   | No          | ["id", "granularity"]               |
+| AdAccounts_Stats_Hourly   | Yes         | ["id", "granularity", "start_time"] |
+| AdAccounts_Stats_Daily    | Yes         | ["id", "granularity", "start_time"] |
+| AdAccounts_Stats_Lifetime | No          | ["id", "granularity"]               |
+| Ads_Stats_Hourly          | Yes         | ["id", "granularity", "start_time"] |
+| Ads_Stats_Daily           | Yes         | ["id", "granularity", "start_time"] |
+| Ads_Stats_Lifetime        | No          | ["id", "granularity"]               |
+| AdSquads_Stats_Hourly     | Yes         | ["id", "granularity", "start_time"] |
+| AdSquads_Stats_Daily      | Yes         | ["id", "granularity", "start_time"] |
+| AdSquads_Stats_Lifetime   | No          | ["id", "granularity"]               |
 | Campaigns_Stats_Hourly    | Yes         | ["id", "granularity", "start_time"] |
 | Campaigns_Stats_Daily     | Yes         | ["id", "granularity", "start_time"] |
 | Campaigns_Stats_Lifetime  | No          | ["id", "granularity"]               |
