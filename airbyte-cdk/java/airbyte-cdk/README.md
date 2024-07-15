@@ -175,8 +175,15 @@ corresponds to that version.
 =======
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:------------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.42.0      | 2024-07-17 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | fix refreshes for connectors using the old SqlOperations                                                 |
+| 0.42.0      | 2024-07-17 | [\#42017](https://github.com/airbytehq/airbyte/pull/42017) | bump postgres-jdbc version                                                 |
+| 0.42.0      | 2024-07-17 | [\#42015](https://github.com/airbytehq/airbyte/pull/42015) | wait until migration before creating the Writeconfig objects                                                 |
+| 0.42.0      | 2024-07-17 | [\#41953](https://github.com/airbytehq/airbyte/pull/41953) | add generationId and syncId to SqlOperations functions                                                 |
+| 0.42.0      | 2024-07-17 | [\#41952](https://github.com/airbytehq/airbyte/pull/41952) | rename and add fields in WriteConfig                                                 |
+| 0.42.0      | 2024-07-17 | [\#41951](https://github.com/airbytehq/airbyte/pull/41951) | remove nullables in JdbcBufferedConsumerFactory                                                 |
+| 0.42.0      | 2024-07-17 | [\#41950](https://github.com/airbytehq/airbyte/pull/41950) | remove unused classes|
 | 0.41.6      | 2024-07-17 | [\#41996](https://github.com/airbytehq/airbyte/pull/41996) | Fix java interop compilation issue in Config/TransientErrorException.                                                                |
-| 0.41.5      | 2024-07-16 | [\#42011] (https://github.com/airbytehq/airbyte/pull/42011) | Async consumer accepts null default namespace |
+| 0.41.5      | 2024-07-16 | [\#42011](https://github.com/airbytehq/airbyte/pull/42011) | Async consumer accepts null default namespace |
 | 0.41.4      | 2024-07-15 | [\#41959](https://github.com/airbytehq/airbyte/pull/41959) | Allow setting `internal_message` in Config/TransientErrorException. Destinations: shorten error message for INCOMPLETE stream status.                          |
 | 0.41.3      | 2024-07-15 | [\#41680](https://github.com/airbytehq/airbyte/pull/41680) | Fix: CompletableFutures.allOf now handles empty list and `Throwable`                                                                                           |
 | 0.41.2      | 2024-07-12 | [\#40567](https://github.com/airbytehq/airbyte/pull/40567) | Fix BaseSqlGenerator test case (generation_id support); update minimum platform version for refreshes support.                                                 |
