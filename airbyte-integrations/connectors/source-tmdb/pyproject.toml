@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.7"
+version = "1.0.0"
 name = "source-tmdb"
 description = "Source implementation for Tmdb."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_tmdb"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "1.0.0"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-tmdb = "source_tmdb.run:run"
