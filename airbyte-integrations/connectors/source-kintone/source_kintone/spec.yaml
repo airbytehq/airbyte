@@ -8,6 +8,7 @@ connectionSpecification:
     - login_id
     - password
     - app_ids
+    - guest_space_id
   properties:
     subdomain:
       type: string
@@ -33,3 +34,7 @@ connectionSpecification:
         The trailing number displayed after "https://[subdomain].cybozu.com/k/" is the app ID.
         e.g. https://[subdomain].cybozu.com/k/27
         https://support.kincone.com/hc/ja/articles/4411880749081-kintone%E9%80%A3%E6%90%BA-%E3%82%A2%E3%83%97%E3%83%AAID%E3%81%AE%E7%A2%BA%E8%AA%8D
+    guest_space_id:
+      type: string
+      description: >-
+        If the Kintone app you are registering is a guest app, please enter the space ID. If not, you can leave this field blank.
