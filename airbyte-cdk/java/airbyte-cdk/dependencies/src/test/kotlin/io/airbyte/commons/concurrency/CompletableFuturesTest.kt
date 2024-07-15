@@ -5,17 +5,17 @@ package io.airbyte.commons.concurrency
 
 import io.airbyte.commons.functional.Either
 import java.time.Duration
-import java.time.temporal.TemporalUnit
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.junit.jupiter.api.assertDoesNotThrow
 
 internal class CompletableFuturesTest {
+    @Timeout(value = 1, unit = TimeUnit.DAYS)
     @Test
     fun testAllOf() {
         // Complete in random order
@@ -59,6 +59,29 @@ internal class CompletableFuturesTest {
                     .toCompletableFuture()
                     .join(),
             )
+        }
+    }
+
+    @Test
+    fun testFutureThrowingThrowable() {
+        val errorMessage = "Throwable1"
+        try {
+            val result =
+                CompletableFutures.allOf(
+                        listOf(CompletableFuture.failedFuture<Int>(Throwable(errorMessage)))
+                    )
+                    .toCompletableFuture()
+                    .get()
+            val failureMessages =
+                result
+                    .filter { obj: Either<out Exception, Int> -> obj.isLeft() }
+                    .map { either: Either<out Exception, Int> -> either.left!!.cause!!.message }
+            Assertions.assertEquals(
+                listOf(errorMessage),
+                failureMessages,
+            )
+        } catch (t: Throwable) {
+            fail(t)
         }
     }
 
