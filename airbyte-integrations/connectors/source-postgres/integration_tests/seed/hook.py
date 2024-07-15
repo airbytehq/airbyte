@@ -130,7 +130,7 @@ def prepare():
 def setup():
     schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
-    table_name = "id_and_name"
+    table_name = "id_and_name_hook"
 
     # Define the records to be inserted
     records = [
