@@ -4,68 +4,89 @@
   "title": "Conversions",
   "properties": {
     "attributionType": {
+      "description": "The type of attribution for the conversion.",
       "type": ["null", "string"]
     },
     "account": {
+      "description": "The account associated with the conversion data.",
       "type": ["null", "string"]
     },
     "campaigns": {
+      "description": "List of campaigns related to the conversion.",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual campaign data.",
         "type": ["null", "string"]
       }
     },
     "created": {
+      "description": "Timestamp of when the conversion was created.",
       "type": ["null", "integer"]
     },
     "enabled": {
+      "description": "Flag indicating if the conversion tracking is enabled.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier for the conversion.",
       "type": ["null", "integer"]
     },
     "imagePixelTag": {
+      "description": "Pixel tag used for tracking the conversion.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the conversion.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of conversion.",
       "type": ["null", "string"]
     },
     "latestFirstPartyCallbackAt": {
+      "description": "Timestamp of the latest first-party callback for the conversion.",
       "type": ["null", "integer"]
     },
     "postClickAttributionWindowSize": {
+      "description": "Window size for post-click attribution.",
       "type": ["null", "integer"]
     },
     "viewThroughAttributionWindowSize": {
+      "description": "Window size for view-through attribution.",
       "type": ["null", "integer"]
     },
     "lastCallbackAt": {
+      "description": "Timestamp of the last callback for the conversion.",
       "type": ["null", "integer"]
     },
     "lastModified": {
+      "description": "Timestamp of the last modification made to the conversion.",
       "type": ["null", "integer"]
     },
     "value": {
+      "description": "Value associated with the conversion.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
+          "description": "Numeric value of the amount.",
           "type": ["null", "string"]
         },
         "currencyCode": {
+          "description": "Currency code of the value.",
           "type": ["null", "string"]
         }
       }
     },
     "associatedCampaigns": {
+      "description": "Campaigns associated with the conversion.",
       "type": ["null", "array"]
     },
     "urlMatchRuleExpression": {
+      "description": "Expression used for matching URLs for attribution.",
       "type": ["null", "array"]
     },
     "urlRules": {
+      "description": "Rules for URL matching in the conversion.",
       "type": ["null", "array"]
     }
   }

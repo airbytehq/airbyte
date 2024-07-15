@@ -10,12 +10,9 @@ import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.stream.Collectors
 import org.apache.commons.io.FileUtils
 
 private val log = KotlinLogging.logger {}
@@ -46,8 +43,6 @@ object SerialFlush {
         stagingOperations: StagingOperations,
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog,
-        typerDeduperValve: TypeAndDedupeOperationValve,
-        typerDeduper: TyperDeduper
     ): FlushBufferFunction {
         // TODO: (ryankfu) move this block of code that executes before the lambda to
         // #onStartFunction
@@ -69,21 +64,18 @@ object SerialFlush {
             val message =
                 String.format(
                     "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using \${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-                    conflictingStreams
-                        .stream()
-                        .map { config: WriteConfig -> config.namespace + "." + config.streamName }
-                        .collect(Collectors.joining(", "))
+                    conflictingStreams.joinToString(", ") { config: WriteConfig ->
+                        config.namespace + "." + config.streamName
+                    }
                 )
             throw ConfigErrorException(message)
         }
         return FlushBufferFunction {
             pair: AirbyteStreamNameNamespacePair,
             writer: SerializableBuffer ->
-            log.info(
-                "Flushing buffer for stream {} ({}) to staging",
-                pair.name,
-                FileUtils.byteCountToDisplaySize(writer.byteCount)
-            )
+            log.info {
+                "Flushing buffer for stream ${pair.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to staging"
+            }
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s",
@@ -117,18 +109,16 @@ object SerialFlush {
                         database,
                         stageName,
                         stagingPath,
-                        java.util.List.of(stagedFile),
+                        listOf(stagedFile),
                         writeConfig.outputTableName,
                         schemaName,
                         stagingOperations,
-                        writeConfig.namespace,
-                        writeConfig.streamName,
-                        typerDeduperValve,
-                        typerDeduper
                     )
                 }
             } catch (e: Exception) {
-                log.error("Failed to flush and commit buffer data into destination's raw table", e)
+                log.error(e) {
+                    "Failed to flush and commit buffer data into destination's raw table"
+                }
                 throw RuntimeException(
                     "Failed to upload buffer to stage and commit to destination",
                     e

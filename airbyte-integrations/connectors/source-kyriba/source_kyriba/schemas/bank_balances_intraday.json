@@ -2,32 +2,41 @@
   "type": "object",
   "properties": {
     "account": {
+      "description": "Information related to the bank account",
       "type": ["object", "null"],
       "properties": {
         "code": {
+          "description": "The unique code identifying the account",
           "type": ["string", "null"]
         },
         "statementIdentifier": {
+          "description": "Identifier for the statement related to the account",
           "type": ["null", "string"]
         },
         "uuid": {
+          "description": "The universally unique identifier for the account",
           "type": ["string", "null"]
         }
       }
     },
     "bankBalance": {
+      "description": "Details about the bank balance",
       "type": ["object", "null"],
       "properties": {
         "amount": {
+          "description": "The actual amount of the bank balance",
           "type": ["number", "null"]
         },
         "balanceDate": {
+          "description": "The date and time the balance was recorded",
           "type": ["string", "null"]
         },
         "currencyCode": {
+          "description": "The currency code for the amount",
           "type": ["string", "null"]
         },
         "lastKnownBalanceDate": {
+          "description": "The date and time of the last known balance",
           "type": ["string", "null"]
         }
       },

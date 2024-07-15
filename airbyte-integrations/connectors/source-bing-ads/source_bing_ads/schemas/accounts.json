@@ -3,129 +3,169 @@
   "type": "object",
   "properties": {
     "Id": {
+      "description": "ID of the account",
       "type": ["null", "number"]
     },
     "AccountFinancialStatus": {
+      "description": "The financial status of the account",
       "type": ["null", "string"]
     },
     "AccountLifeCycleStatus": {
+      "description": "The life cycle status of the account",
       "type": ["null", "string"]
     },
     "AutoTagType": {
+      "description": "The type of auto-tagging",
       "type": ["null", "string"]
     },
     "AccountMode": {
+      "description": "The mode of the account",
       "type": ["null", "string"]
     },
     "ForwardCompatibilityMap": {
+      "description": "Map for forward compatibility",
       "type": ["null", "string"]
     },
     "PaymentMethodType": {
+      "description": "Type of the payment method",
       "type": ["null", "string"]
     },
     "Language": {
+      "description": "The language used in the account",
       "type": ["null", "string"]
     },
     "LinkedAgencies": {
+      "description": "The agencies linked to the account for management purposes.",
       "type": ["null", "object"],
       "properties": {
         "Id": {
+          "description": "ID of the linked agency",
           "type": ["null", "integer"]
         },
         "Name": {
+          "description": "Name of the linked agency",
           "type": ["null", "string"]
         }
       }
     },
     "TaxInformation": {
+      "description": "Tax information of the account",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code used by the account",
       "type": ["null", "string"]
     },
     "TimeZone": {
+      "description": "The time zone of the account",
       "type": ["null", "string"]
     },
     "BusinessAddress": {
+      "description": "The business address associated with the account.",
       "type": ["null", "object"],
       "properties": {
         "City": {
+          "description": "The city of the business address",
           "type": ["null", "string"]
         },
         "CountryCode": {
+          "description": "The country code of the business address",
           "type": ["null", "string"]
         },
         "Id": {
+          "description": "ID of the business address",
           "type": ["null", "number"]
         },
         "Line1": {
+          "description": "Address line 1",
           "type": ["null", "string"]
         },
         "Line2": {
+          "description": "Address line 2",
           "type": ["null", "string"]
         },
         "Line3": {
+          "description": "Address line 3",
           "type": ["null", "string"]
         },
         "Line4": {
+          "description": "Address line 4",
           "type": ["null", "string"]
         },
         "PostalCode": {
+          "description": "The postal code of the business address",
           "type": ["null", "string"]
         },
         "StateOrProvince": {
+          "description": "The state or province of the business address",
           "type": ["null", "string"]
         },
         "TimeStamp": {
+          "description": "Timestamp of the business address",
           "type": ["null", "string"]
         },
         "BusinessName": {
+          "description": "The business name",
           "type": ["null", "string"]
         }
       }
     },
     "BackUpPaymentInstrumentId": {
+      "description": "ID of the backup payment instrument",
       "type": ["null", "number"]
     },
     "BillingThresholdAmount": {
+      "description": "The threshold amount for billing",
       "type": ["null", "number"]
     },
     "BillToCustomerId": {
+      "description": "Customer ID for billing",
       "type": ["null", "number"]
     },
     "LastModifiedByUserId": {
+      "description": "ID of the user who last modified the account",
       "type": ["null", "number"]
     },
     "LastModifiedTime": {
+      "description": "The date and time of the last modification",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "Name": {
+      "description": "The name of the account",
       "type": ["null", "string"]
     },
     "Number": {
+      "description": "The account number",
       "type": ["null", "string"]
     },
     "ParentCustomerId": {
+      "description": "ID of the parent customer",
       "type": ["null", "number"]
     },
     "PauseReason": {
+      "description": "Reason for pausing the account",
       "type": ["null", "number"]
     },
     "PaymentMethodId": {
+      "description": "ID of the payment method",
       "type": ["null", "number"]
     },
     "PrimaryUserId": {
+      "description": "ID of the primary user",
       "type": ["null", "number"]
     },
     "SalesHouseCustomerId": {
+      "description": "Customer ID for sales house",
       "type": ["null", "number"]
     },
     "SoldToPaymentInstrumentId": {
+      "description": "ID of the payment instrument for sales",
       "type": ["null", "number"]
     },
     "TimeStamp": {
+      "description": "Timestamp of the account",
       "type": ["null", "string"]
     },
     "TaxCertificate": {

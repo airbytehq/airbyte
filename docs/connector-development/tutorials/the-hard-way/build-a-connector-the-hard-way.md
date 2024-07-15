@@ -125,7 +125,7 @@ To contact the stock ticker API, we need two things:
 2. The API key to use when contacting the API \(you can obtain a free API token from
    [Polygon.io](https://polygon.io/dashboard/signup) free plan\)
 
-:::info 
+:::info
 
 For reference, the API docs we'll be using
 [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).

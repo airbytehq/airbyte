@@ -3,46 +3,60 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "The repository associated with the project.",
       "type": "string"
     },
     "owner_url": {
+      "description": "The URL to view the owner or creator of the project.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL for accessing the project.",
       "type": ["null", "string"]
     },
     "html_url": {
+      "description": "The HTML URL for viewing the project.",
       "type": ["null", "string"]
     },
     "columns_url": {
+      "description": "The URL to view the project's columns or categories.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the project.",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The Node ID associated with the project.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the project.",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The description or main content of the project.",
       "type": ["null", "string"]
     },
     "number": {
+      "description": "The project number or identifier.",
       "type": ["null", "integer"]
     },
     "state": {
+      "description": "The state or status of the project.",
       "type": ["null", "string"]
     },
     "creator": {
+      "description": "The user or entity who created the project.",
       "$ref": "user.json"
     },
     "created_at": {
+      "description": "The date and time when the project was created.",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the project was last updated.",
       "type": "string",
       "format": "date-time"
     }

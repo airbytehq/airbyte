@@ -3,96 +3,124 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the project assignment",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "The parent project assignment ID if this assignment is a sub-assignment",
       "type": "integer"
     },
     "is_project_manager": {
+      "description": "Indicates whether the user is assigned as a project manager",
       "type": ["null", "boolean"]
     },
     "is_active": {
+      "description": "Indicates whether the project assignment is currently active",
       "type": ["null", "boolean"]
     },
     "use_default_rates": {
+      "description": "Indicates whether default rates are used for this project assignment",
       "type": ["null", "boolean"]
     },
     "budget": {
+      "description": "The budget allocated for this project assignment",
       "type": ["null", "number"]
     },
     "created_at": {
+      "description": "The date and time when the project assignment was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the project assignment was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "hourly_rate": {
+      "description": "The hourly rate for this project assignment",
       "type": ["null", "number"]
     },
     "project": {
+      "description": "Project information for the assignment",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the project",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the project",
           "type": ["null", "string"]
         },
         "code": {
+          "description": "The code associated with the project",
           "type": ["null", "string"]
         }
       }
     },
     "client": {
+      "description": "Client information for the project assignment",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the client",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the client",
           "type": ["null", "string"]
         },
         "currency": {
+          "description": "The currency used by the client",
           "type": ["null", "string"]
         }
       }
     },
     "task_assignments": {
+      "description": "List of task assignments for the project",
       "type": ["null", "array"],
       "items": {
         "properties": {
           "billable": {
+            "description": "Indicates whether the task is billable",
             "type": ["null", "boolean"]
           },
           "budget": {
+            "description": "The budget allocated for this task assignment",
             "type": ["null", "number"]
           },
           "created_at": {
+            "description": "The date and time when the task assignment was created",
             "type": ["string", "null"]
           },
           "hourly_rate": {
+            "description": "The hourly rate for this task assignment",
             "type": ["null", "number"]
           },
           "id": {
+            "description": "The unique identifier of the task assignment",
             "type": ["null", "integer"]
           },
           "is_active": {
+            "description": "Indicates whether the task assignment is currently active",
             "type": ["null", "boolean"]
           },
           "task": {
+            "description": "Information about a specific task assigned",
             "properties": {
               "id": {
+                "description": "The unique identifier of the task",
                 "type": ["null", "integer"]
               },
               "name": {
+                "description": "The name of the task",
                 "type": ["null", "string"]
               }
             },
             "type": ["object", "null"]
           },
           "updated_at": {
+            "description": "The date and time when the task assignment was last updated",
             "type": ["null", "string"]
           }
         },

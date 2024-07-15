@@ -32,7 +32,7 @@ object FeatureFlagHelper {
     ): Boolean {
         val workspaceIdsString = flagRetriever.apply(featureFlags)
         val workspaceIds: MutableSet<UUID> = HashSet()
-        if (workspaceIdsString != null && !workspaceIdsString.isEmpty()) {
+        if (!workspaceIdsString.isNullOrEmpty()) {
             for (id in
                 workspaceIdsString
                     .split(",".toRegex())
@@ -41,7 +41,7 @@ object FeatureFlagHelper {
                 try {
                     workspaceIds.add(UUID.fromString(id))
                 } catch (e: IllegalArgumentException) {
-                    log.warn("Malformed workspace id for {}: {}", context, id)
+                    log.warn { "Malformed workspace id for $context: $id" }
                 }
             }
         }

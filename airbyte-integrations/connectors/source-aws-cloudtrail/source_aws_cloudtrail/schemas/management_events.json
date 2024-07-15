@@ -3,41 +3,52 @@
   "type": "object",
   "properties": {
     "AccessKeyId": {
+      "description": "The unique identifier for the AWS access key used during the event.",
       "type": ["null", "string"]
     },
     "CloudTrailEvent": {
+      "description": "The raw CloudTrail event data associated with the management event.",
       "type": ["null", "string"]
     },
     "EventId": {
+      "description": "The identifier for the specific event recorded in CloudTrail.",
       "type": ["null", "string"]
     },
     "EventName": {
+      "description": "The name of the management event that occurred.",
       "type": ["null", "string"]
     },
     "EventSource": {
+      "description": "The service that the API call was made to.",
       "type": ["null", "string"]
     },
     "EventTime": {
+      "description": "The timestamp when the event occurred.",
       "type": ["null", "integer"]
     },
     "ReadOnly": {
+      "description": "Indicates whether the event was a read-only operation.",
       "type": ["null", "string"]
     },
     "Resources": {
+      "description": "Information about the resources affected by the management event.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "ResourceName": {
+            "description": "The name of the affected resource.",
             "type": ["null", "string"]
           },
           "ResourceType": {
+            "description": "The type of the affected resource.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "Username": {
+      "description": "The username associated with the event.",
       "type": ["null", "string"]
     }
   }

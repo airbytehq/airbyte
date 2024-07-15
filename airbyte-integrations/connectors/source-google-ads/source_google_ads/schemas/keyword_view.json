@@ -3,85 +3,112 @@
   "type": "object",
   "properties": {
     "customer.id": {
+      "description": "The unique ID of the customer.",
       "type": ["null", "integer"]
     },
     "customer.descriptive_name": {
+      "description": "The name or description of the customer.",
       "type": ["null", "string"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign the keyword belongs to.",
       "type": ["null", "integer"]
     },
     "ad_group.id": {
+      "description": "The ID of the ad group the keyword belongs to.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.type": {
+      "description": "The type of the ad group criterion (e.g., keyword, placement).",
       "type": ["null", "string"]
     },
     "ad_group_criterion.keyword.text": {
+      "description": "The actual text of the keyword.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.negative": {
+      "description": "Specifies whether the keyword is a negative keyword.",
       "type": ["null", "boolean"]
     },
     "ad_group_criterion.keyword.match_type": {
+      "description": "The match type of the keyword (e.g., exact, broad, phrase).",
       "type": ["null", "string"]
     },
     "metrics.historical_quality_score": {
+      "description": "The historical quality score of the keyword.",
       "type": ["null", "integer"]
     },
     "metrics.ctr": {
+      "description": "The click-through rate (clicks divided by impressions) for the keyword.",
       "type": ["null", "number"]
     },
     "segments.date": {
+      "description": "The date when the data was recorded.",
       "type": ["null", "string"],
       "format": "date"
     },
     "campaign.bidding_strategy_type": {
+      "description": "The type of bidding strategy used for the campaign.",
       "type": ["null", "string"]
     },
     "metrics.clicks": {
+      "description": "The number of clicks on the keyword.",
       "type": ["null", "integer"]
     },
     "metrics.cost_micros": {
+      "description": "The cost of the keyword advertising in micros.",
       "type": ["null", "integer"]
     },
     "metrics.impressions": {
+      "description": "The number of times the keyword was displayed.",
       "type": ["null", "integer"]
     },
     "metrics.active_view_impressions": {
+      "description": "The number of viewable impressions.",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurability": {
+      "description": "The ratio of viewable impressions to the number of measurable impressions.",
       "type": ["null", "number"]
     },
     "metrics.active_view_measurable_cost_micros": {
+      "description": "The cost for measurable viewable impressions in micros.",
       "type": ["null", "integer"]
     },
     "metrics.active_view_measurable_impressions": {
+      "description": "The number of impressions that were measurable for viewability.",
       "type": ["null", "integer"]
     },
     "metrics.active_view_viewability": {
+      "description": "The ratio of viewable impressions to measurable impressions.",
       "type": ["null", "number"]
     },
     "metrics.conversions": {
+      "description": "The number of conversions attributed to the keyword.",
       "type": ["null", "number"]
     },
     "metrics.conversions_value": {
+      "description": "The total value of conversions attributed to the keyword.",
       "type": ["null", "number"]
     },
     "metrics.interactions": {
+      "description": "The total number of interactions (clicks, video views, etc.) on the keyword.",
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
+      "description": "The types of interactions that occurred (e.g., click, video view).",
       "type": ["null", "array"],
       "items": {
+        "description": "A specific type of interaction (e.g., click).",
         "type": ["null", "string"]
       }
     },
     "metrics.view_through_conversions": {
+      "description": "The number of conversions that occurred after a view of the ad without a click.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.criterion_id": {
+      "description": "The unique ID of the ad group criterion.",
       "type": ["null", "integer"]
     }
   }

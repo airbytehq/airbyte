@@ -75,6 +75,18 @@
       "format": "date-time"
     },
     "fields": {
+      "items": {
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"],
+        "additionalProperties": true
+      },
       "type": ["null", "array"]
     },
     "custom_fields": {

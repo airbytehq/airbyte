@@ -3,91 +3,116 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier of the invoice.",
       "type": "string"
     },
     "created_at": {
+      "description": "The date and time when the invoice was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "invoice_date": {
+      "description": "The date when the invoice was issued.",
       "type": ["string"],
       "format": "date-time"
     },
     "due_date": {
+      "description": "The due date for the payment of the invoice.",
       "type": ["string"],
       "format": "date-time"
     },
     "invoice_pdf": {
+      "description": "The URL to download the PDF version of the invoice.",
       "type": ["null", "string"]
     },
     "subtotal": {
+      "description": "The subtotal amount before applying taxes or discounts.",
       "type": ["string"]
     },
     "total": {
+      "description": "The total amount of the invoice including all charges.",
       "type": ["string"]
     },
     "amount_due": {
+      "description": "The total amount due on the invoice.",
       "type": ["string"]
     },
     "status": {
+      "description": "The current status of the invoice (e.g., pending, paid, voided).",
       "type": ["string"]
     },
     "memo": {
+      "description": "Any additional notes or comments associated with the invoice.",
       "type": ["null", "string"]
     },
     "issue_failed_at": {
+      "description": "The date and time when issuing the invoice failed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "sync_failed_at": {
+      "description": "The date and time when syncing the invoice data failed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "payment_failed_at": {
+      "description": "The date and time when the payment for the invoice failed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "payment_started_at": {
+      "description": "The date and time when the payment process started for the invoice.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "voided_at": {
+      "description": "The date and time when the invoice was voided.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "paid_at": {
+      "description": "The date and time when the invoice was paid.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "issued_at": {
+      "description": "The date and time when the invoice was issued.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "hosted_invoice_url": {
+      "description": "The URL to view the hosted invoice online.",
       "type": ["null", "string"]
     },
     "line_items": {
+      "description": "The line items included in the invoice.",
       "type": ["array"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier of the line item.",
             "type": "string"
           },
           "quantity": {
+            "description": "The quantity of the item included in the invoice.",
             "type": "number"
           },
           "amount": {
+            "description": "The amount for the line item.",
             "type": "string"
           },
           "name": {
+            "description": "The name or description of the line item.",
             "type": "string"
           },
           "start_date": {
+            "description": "The start date of the service period for the line item.",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "end_date": {
+            "description": "The end date of the service period for the line item.",
             "type": ["null", "string"],
             "format": "date-time"
           }
@@ -95,9 +120,11 @@
       }
     },
     "subscription": {
+      "description": "Information about the subscription associated with the invoice.",
       "type": ["object", "null"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the subscription.",
           "type": "string"
         }
       }

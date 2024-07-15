@@ -1,74 +1,93 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier of the account that owns the recording.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API used when the recording was created.",
       "type": ["null", "string"]
     },
     "call_sid": {
+      "description": "The unique identifier of the call associated with the recording.",
       "type": ["null", "string"]
     },
     "conference_sid": {
+      "description": "The unique identifier of the conference, if the recording is part of a conference.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the recording was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the recording was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "start_time": {
+      "description": "The date and time when the recording started.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "The duration of the recording in seconds.",
       "type": ["null", "integer"]
     },
     "sid": {
+      "description": "The unique identifier of the recording.",
       "type": ["null", "string"]
     },
     "price": {
+      "description": "The cost of storing the recording.",
       "type": ["null", "number"]
     },
     "price_unit": {
+      "description": "The unit in which the cost is measured (e.g., USD).",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the recording (e.g., completed, in-progress).",
       "type": ["null", "string"]
     },
     "channels": {
+      "description": "The number of audio channels in the recording.",
       "type": ["null", "integer"]
     },
     "source": {
+      "description": "The source of the recording (e.g., twilio).",
       "type": ["null", "string"]
     },
     "error_code": {
+      "description": "The error code, if any, associated with the recording.",
       "type": ["null", "integer"]
     },
     "media_url": {
-      "type": ["null", "string"]
-    },
-    "uri": {
-      "type": ["null", "string"]
-    },
-    "media_url": {
+      "description": "The URL where the recording audio file can be accessed.",
       "type": "string"
     },
+    "uri": {
+      "description": "The URI of the recording resource.",
+      "type": ["null", "string"]
+    },
     "encryption_details": {
+      "description": "Details about the encryption used for the recording.",
       "properties": {
         "type": {
+          "description": "The type of encryption used.",
           "type": ["null", "string"]
         },
         "encryption_public_key_sid": {
+          "description": "The SID of the public key used for encryption.",
           "type": ["null", "string"]
         },
         "encryption_cek": {
+          "description": "The Content Encryption Key used for encryption.",
           "type": ["null", "string"]
         },
         "iv": {
+          "description": "The Initialization Vector used for encryption.",
           "type": ["null", "string"]
         }
       },
@@ -76,13 +95,16 @@
       "additionalProperties": true
     },
     "subresource_uris": {
+      "description": "URIs for subresources related to the recording.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "transcriptions": {
+          "description": "The URI to fetch transcriptions of the recording.",
           "type": ["null", "string"]
         },
         "add_on_results": {
+          "description": "The URI to fetch add-on results related to the recording.",
           "type": ["null", "string"]
         }
       }

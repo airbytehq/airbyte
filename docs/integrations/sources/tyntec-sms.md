@@ -12,7 +12,7 @@ A Tyntec SMS API Key and SMS message request ID are required for this connector 
 
 ### Step 1: Set up a Tyntec SMS connection
 
-1. Create a new Tyntec account [here](https://www.tyntec.com/create-account). 
+1. Create a new Tyntec account [here](https://www.tyntec.com/create-account).
 2. In the left navigation bar, click **API Settings** and navigate to **API Keys** to access your API key.
 
 ### Step 2: Set up a Tyntec SMS connector in Airbyte
@@ -39,7 +39,7 @@ A Tyntec SMS API Key and SMS message request ID are required for this connector 
 The Tyntec SMS source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
-|:------------------|:-----------|
+| :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 
@@ -60,6 +60,14 @@ The Tyntec SMS connector should not run into limitations under normal usage. Ple
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                         |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.0   | 2022-11-02 | [18883](https://github.com/airbytehq/airbyte/pull/18883) | 🎉 New Source: Tyntec SMS                   |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                   |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------ |
+| 0.1.3 | 2024-06-05 | [38838](https://github.com/airbytehq/airbyte/pull/38838) | Make compatible with builder |
+| 0.1.2 | 2024-06-04 | [39043](https://github.com/airbytehq/airbyte/pull/39043) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.1 | 2024-05-21 | [38500](https://github.com/airbytehq/airbyte/pull/38500) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-11-02 | [18883](https://github.com/airbytehq/airbyte/pull/18883) | 🎉 New Source: Tyntec SMS |
+
+</details>

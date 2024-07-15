@@ -13,6 +13,7 @@ from pipelines.airbyte_ci.connectors.build_image import commands as connectors_b
 from pipelines.airbyte_ci.connectors.publish import commands as connectors_publish_command
 from pipelines.airbyte_ci.connectors.test import commands as connectors_test_command
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.models.secrets import InMemorySecretStore
 from tests.utils import pick_a_random_connector
 
 
@@ -227,7 +228,15 @@ def test_get_selected_connectors_with_metadata_query():
 
 
 @pytest.fixture()
-def click_context_obj():
+def in_memory_secret_store():
+    store = InMemorySecretStore()
+    store.add_secret("docker_hub_username", "foo")
+    store.add_secret("docker_hub_password", "bar")
+    return store
+
+
+@pytest.fixture()
+def click_context_obj(in_memory_secret_store):
     return {
         "git_branch": "test_branch",
         "git_revision": "test_revision",
@@ -240,14 +249,16 @@ def click_context_obj():
         "selected_connectors_with_modified_files": {},
         "gha_workflow_run_url": None,
         "ci_report_bucket_name": None,
-        "use_remote_secrets": False,
-        "ci_gcs_credentials": None,
+        "ci_gcp_credentials": None,
         "execute_timeout": 0,
         "concurrency": 1,
         "ci_git_user": None,
         "ci_github_access_token": None,
         "docker_hub_username": "foo",
+        "diffed_branch": "master",
+        "git_repo_url": "https://github.com/airbytehq/airbyte",
         "docker_hub_password": "bar",
+        "secret_stores": {"in_memory": in_memory_secret_store},
     }
 
 
@@ -259,11 +270,11 @@ def click_context_obj():
             connectors_publish_command.publish,
             [
                 "--spec-cache-gcs-credentials",
-                "test",
+                '{"foo": "bar"}',
                 "--spec-cache-bucket-name",
                 "test",
                 "--metadata-service-gcs-credentials",
-                "test",
+                '{"foo": "bar"}',
                 "--metadata-service-bucket-name",
                 "test",
             ],
@@ -285,33 +296,10 @@ async def test_commands_do_not_override_connector_selection(
 
     mocker.patch.object(click, "confirm")
     mock_connector_context = mocker.MagicMock()
-    mocker.patch.object(connectors_test_command, "ConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_test_command, "ConnectorTestContext", mock_connector_context)
     mocker.patch.object(connectors_build_command, "ConnectorContext", mock_connector_context)
     mocker.patch.object(connectors_publish_command, "PublishConnectorContext", mock_connector_context)
-    await runner.invoke(command, command_args, catch_exceptions=True, obj=click_context_obj)
+    await runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)
     assert mock_connector_context.call_count == 1
     # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
     assert mock_connector_context.call_args_list[0].kwargs["connector"] == selected_connector
-
-
-@pytest.mark.parametrize(
-    "use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error",
-    [
-        (None, True, True, False),
-        (None, False, False, False),
-        (True, False, None, True),
-        (True, True, True, False),
-        (False, True, False, False),
-        (False, False, False, False),
-    ],
-)
-def test_should_use_remote_secrets(
-    mocker, use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error
-):
-    mocker.patch.object(connectors_commands.os, "getenv", return_value="test" if gsm_env_var_set else None)
-    if expect_click_usage_error:
-        with pytest.raises(click.UsageError):
-            connectors_commands.should_use_remote_secrets(use_remote_secrets_user_input)
-    else:
-        final_use_remote_secrets = connectors_commands.should_use_remote_secrets(use_remote_secrets_user_input)
-        assert final_use_remote_secrets == expected_use_remote_secrets

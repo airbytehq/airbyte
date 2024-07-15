@@ -214,16 +214,12 @@ object DataSourceFactory {
         }
 
         fun withMaximumPoolSize(maximumPoolSize: Int): DataSourceBuilder {
-            if (maximumPoolSize != null) {
-                this.maximumPoolSize = maximumPoolSize
-            }
+            this.maximumPoolSize = maximumPoolSize
             return this
         }
 
         fun withMinimumPoolSize(minimumPoolSize: Int): DataSourceBuilder {
-            if (minimumPoolSize != null) {
-                this.minimumPoolSize = minimumPoolSize
-            }
+            this.minimumPoolSize = minimumPoolSize
             return this
         }
 
@@ -240,9 +236,7 @@ object DataSourceFactory {
         }
 
         fun withPort(port: Int): DataSourceBuilder {
-            if (port != null) {
-                this.port = port
-            }
+            this.port = port
             return this
         }
 

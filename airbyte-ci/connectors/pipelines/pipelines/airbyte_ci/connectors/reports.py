@@ -73,9 +73,9 @@ class ConnectorReport(Report):
                 "run_timestamp": self.created_at.isoformat(),
                 "run_duration": self.run_duration.total_seconds(),
                 "success": self.success,
-                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],  # type: ignore
-                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],  # type: ignore
-                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],  # type: ignore
+                "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
+                "successful_steps": [s.step.__class__.__name__ for s in self.successful_steps],
+                "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
                 "pipeline_end_timestamp": round(self.created_at.timestamp()),
@@ -147,12 +147,12 @@ class ConnectorReport(Report):
         await html_report_artifact.save_to_local_path(html_report_path)
         absolute_path = html_report_path.absolute()
         self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
-        if self.remote_storage_enabled and self.pipeline_context.ci_gcs_credentials_secret and self.pipeline_context.ci_report_bucket:
+        if self.pipeline_context.remote_storage_enabled:
             gcs_url = await html_report_artifact.upload_to_gcs(
                 dagger_client=self.pipeline_context.dagger_client,
-                bucket=self.pipeline_context.ci_report_bucket,
+                bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
                 key=self.html_report_remote_storage_key,
-                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
+                gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
             )
             self.pipeline_context.logger.info(f"HTML report uploaded to {gcs_url}")
 

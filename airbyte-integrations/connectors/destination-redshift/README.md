@@ -22,5 +22,5 @@ Consult the integration test area for Redshift.
 
 The actual secrets for integration tests can be found in Google Cloud Secrets Manager. Search on redshift for the labels:
 
-- SECRET_DESTINATION-REDSHIFT__CREDS - used for Standard tests. (__config.json__)
-- SECRET_DESTINATION-REDSHIFT_STAGING__CREDS - used for S3 Staging tests. (__config_staging.json__)
+- SECRET_DESTINATION-REDSHIFT**CREDS - used for Standard tests. (**config.json\_\_)
+- SECRET_DESTINATION-REDSHIFT_STAGING**CREDS - used for S3 Staging tests. (**config_staging.json\_\_)

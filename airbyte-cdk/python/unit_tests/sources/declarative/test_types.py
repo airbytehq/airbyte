@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import pytest
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.types import StreamSlice
 
 
 @pytest.mark.parametrize(

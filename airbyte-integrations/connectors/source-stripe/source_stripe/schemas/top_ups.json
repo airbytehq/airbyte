@@ -4,59 +4,77 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the top-up",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount of the top-up in the smallest currency unit, e.g., 100 cents for $1",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency in which the top-up was made, e.g., USD, EUR",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A brief description of the purpose of the top-up",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional information related to the top-up",
       "type": ["null", "object"],
       "properties": {}
     },
     "status": {
+      "description": "Current status of the top-up, e.g., succeeded, failed",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object, in this case, 'top-up'",
       "type": ["null", "string"]
     },
     "balance_transaction": {
+      "description": "ID of the balance transaction that describes the impact of this top-up on your account balance",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp indicating when the top-up was created",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp indicating when the top-up was last updated",
       "type": ["null", "integer"]
     },
     "destination_balance": {
+      "description": "ID of the balance that the top-up is ultimately creating",
       "type": ["null", "string"]
     },
     "expected_availability_date": {
+      "description": "Expected date when the funds from the top-up will become available",
       "type": ["null", "integer"]
     },
     "failure_code": {
+      "description": "Error code describing why the top-up failed if it did",
       "type": ["null", "string"]
     },
     "failure_message": {
+      "description": "A message explaining why the top-up failed if it did",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates whether the top-up was made in test/live mode",
       "type": ["null", "boolean"]
     },
     "source": {
+      "description": "Details about the payment source used for the top-up",
       "type": ["null", "object"],
       "properties": {}
     },
     "statement_descriptor": {
+      "description": "The statement descriptor displayed on customers' statements for the top-up",
       "type": ["null", "string"]
     },
     "transfer_group": {
+      "description": "A unique identifier for the transfer group this top-up is in",
       "type": ["null", "string"]
     }
   }

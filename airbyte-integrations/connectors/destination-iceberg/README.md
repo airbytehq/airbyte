@@ -32,7 +32,6 @@ the [instructions](https://docs.airbyte.io/connector-development#using-credentia
 
 Build the connector image via Gradle:
 
-
 ```
 ./gradlew :airbyte-integrations:connectors:destination-iceberg:buildConnectorImage
 ```
@@ -83,7 +82,9 @@ To run acceptance and custom integration tests:
 ## Dependency Management
 
 ### Publishing a new version of the connector
+
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-iceberg test`
 2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
 3. Make sure the `metadata.yaml` content is up to date.
@@ -91,4 +92,3 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
-

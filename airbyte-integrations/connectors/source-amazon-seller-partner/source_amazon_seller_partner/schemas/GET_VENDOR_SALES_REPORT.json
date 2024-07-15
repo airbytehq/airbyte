@@ -5,56 +5,71 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "startDate": {
+      "description": "The start date and time for the sales report data.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "endDate": {
+      "description": "The end date and time for the sales report data.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "asin": {
+      "description": "The unique Amazon Standard Identification Number for the product.",
       "type": ["null", "string"]
     },
     "customerReturns": {
+      "description": "The number of units of the product that customers returned.",
       "type": ["null", "number"]
     },
     "orderedRevenue": {
+      "description": "The total revenue generated from customer orders.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "The revenue amount in the specified currency.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "The currency code for the revenue amount.",
           "type": ["null", "string"]
         }
       }
     },
     "orderedUnits": {
+      "description": "The total number of units of the product ordered by customers.",
       "type": ["null", "number"]
     },
     "shippedCogs": {
+      "description": "The cost of goods sold for the shipped units.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "The cost amount in the specified currency.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "The currency code for the cost amount.",
           "type": ["null", "string"]
         }
       }
     },
     "shippedRevenue": {
+      "description": "The total revenue generated from the shipped units.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "The revenue amount in the specified currency.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "The currency code for the revenue amount.",
           "type": ["null", "string"]
         }
       }
     },
     "shippedUnits": {
+      "description": "The total number of units of the product shipped to customers.",
       "type": ["null", "number"]
     }
   }

@@ -9,9 +9,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.*
-import java.util.List
-import java.util.Map
-import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -22,12 +19,12 @@ class GlobalStateManagerTest {
     @Test
     fun testCdcStateManager() {
         val catalog = Mockito.mock(ConfiguredAirbyteCatalog::class.java)
-        val cdcState = CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)))
+        val cdcState = CdcState().withState(Jsons.jsonNode(mapOf("foo" to "bar", "baz" to 5)))
         val globalState =
             AirbyteGlobalState()
                 .withSharedState(Jsons.jsonNode(cdcState))
                 .withStreamStates(
-                    List.of(
+                    listOf(
                         AirbyteStreamState()
                             .withStreamDescriptor(
                                 StreamDescriptor().withNamespace("namespace").withName("name")
@@ -57,21 +54,21 @@ class GlobalStateManagerTest {
         val catalog =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    List.of(
+                    listOf(
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME1)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                             )
-                            .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1)),
+                            .withCursorField(listOf(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                             )
-                            .withCursorField(List.of(StateTestConstants.CURSOR_FIELD2)),
+                            .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
@@ -81,29 +78,27 @@ class GlobalStateManagerTest {
                     )
                 )
 
-        val cdcState = CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)))
+        val cdcState = CdcState().withState(Jsons.jsonNode(mapOf("foo" to "bar", "baz" to 5)))
         val dbState =
             DbState()
                 .withCdc(true)
                 .withCdcState(cdcState)
                 .withStreams(
-                    List.of(
+                    listOf(
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME1)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1))
+                                .withCursorField(listOf(StateTestConstants.CURSOR_FIELD1))
                                 .withCursor("a"),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                .withCursorField(List.of(StateTestConstants.CURSOR_FIELD2)),
+                                .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
         val stateManager: StateManager =
             GlobalStateManager(AirbyteStateMessage().withData(Jsons.jsonNode(dbState)), catalog)
@@ -114,31 +109,29 @@ class GlobalStateManagerTest {
                 .withCdc(true)
                 .withCdcState(cdcState)
                 .withStreams(
-                    List.of(
+                    listOf(
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME1)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1))
+                                .withCursorField(listOf(StateTestConstants.CURSOR_FIELD1))
                                 .withCursor("a")
                                 .withCursorRecordCount(expectedRecordCount),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                .withCursorField(List.of(StateTestConstants.CURSOR_FIELD2)),
+                                .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
 
         val expectedGlobalState =
             AirbyteGlobalState()
                 .withSharedState(Jsons.jsonNode(cdcState))
                 .withStreamStates(
-                    List.of(
+                    listOf(
                             AirbyteStreamState()
                                 .withStreamDescriptor(
                                     StreamDescriptor()
@@ -151,7 +144,7 @@ class GlobalStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME1)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                             .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD1)
+                                                listOf(StateTestConstants.CURSOR_FIELD1)
                                             )
                                             .withCursor("a")
                                             .withCursorRecordCount(expectedRecordCount)
@@ -169,7 +162,7 @@ class GlobalStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME2)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                             .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD2)
+                                                listOf(StateTestConstants.CURSOR_FIELD2)
                                             )
                                     )
                                 ),
@@ -187,13 +180,11 @@ class GlobalStateManagerTest {
                                     )
                                 )
                         )
-                        .stream()
-                        .sorted(
+                        .sortedWith(
                             Comparator.comparing { o: AirbyteStreamState ->
                                 o.streamDescriptor.name
                             }
                         )
-                        .collect(Collectors.toList())
                 )
         val expected =
             AirbyteStateMessage()
@@ -218,21 +209,21 @@ class GlobalStateManagerTest {
         val catalog =
             ConfiguredAirbyteCatalog()
                 .withStreams(
-                    List.of(
+                    listOf(
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME1)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                             )
-                            .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1)),
+                            .withCursorField(listOf(StateTestConstants.CURSOR_FIELD1)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
                                     .withName(StateTestConstants.STREAM_NAME2)
                                     .withNamespace(StateTestConstants.NAMESPACE)
                             )
-                            .withCursorField(List.of(StateTestConstants.CURSOR_FIELD2)),
+                            .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                         ConfiguredAirbyteStream()
                             .withStream(
                                 AirbyteStream()
@@ -242,12 +233,12 @@ class GlobalStateManagerTest {
                     )
                 )
 
-        val cdcState = CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)))
+        val cdcState = CdcState().withState(Jsons.jsonNode(mapOf("foo" to "bar", "baz" to 5)))
         val globalState =
             AirbyteGlobalState()
                 .withSharedState(Jsons.jsonNode(DbState()))
                 .withStreamStates(
-                    List.of(
+                    listOf(
                         AirbyteStreamState()
                             .withStreamDescriptor(StreamDescriptor())
                             .withStreamState(Jsons.jsonNode(DbStreamState()))
@@ -267,31 +258,29 @@ class GlobalStateManagerTest {
                 .withCdc(true)
                 .withCdcState(cdcState)
                 .withStreams(
-                    List.of(
+                    listOf(
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME1)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                .withCursorField(List.of(StateTestConstants.CURSOR_FIELD1))
+                                .withCursorField(listOf(StateTestConstants.CURSOR_FIELD1))
                                 .withCursor("a")
                                 .withCursorRecordCount(1L),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME2)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
-                                .withCursorField(List.of(StateTestConstants.CURSOR_FIELD2)),
+                                .withCursorField(listOf(StateTestConstants.CURSOR_FIELD2)),
                             DbStreamState()
                                 .withStreamName(StateTestConstants.STREAM_NAME3)
                                 .withStreamNamespace(StateTestConstants.NAMESPACE)
                         )
-                        .stream()
-                        .sorted(Comparator.comparing { obj: DbStreamState -> obj.streamName })
-                        .collect(Collectors.toList())
+                        .sortedWith(Comparator.comparing { obj: DbStreamState -> obj.streamName })
                 )
 
         val expectedGlobalState =
             AirbyteGlobalState()
                 .withSharedState(Jsons.jsonNode(cdcState))
                 .withStreamStates(
-                    List.of(
+                    listOf(
                             AirbyteStreamState()
                                 .withStreamDescriptor(
                                     StreamDescriptor()
@@ -304,7 +293,7 @@ class GlobalStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME1)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                             .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD1)
+                                                listOf(StateTestConstants.CURSOR_FIELD1)
                                             )
                                             .withCursor("a")
                                             .withCursorRecordCount(1L)
@@ -322,7 +311,7 @@ class GlobalStateManagerTest {
                                             .withStreamName(StateTestConstants.STREAM_NAME2)
                                             .withStreamNamespace(StateTestConstants.NAMESPACE)
                                             .withCursorField(
-                                                List.of(StateTestConstants.CURSOR_FIELD2)
+                                                listOf(StateTestConstants.CURSOR_FIELD2)
                                             )
                                     )
                                 ),
@@ -340,13 +329,11 @@ class GlobalStateManagerTest {
                                     )
                                 )
                         )
-                        .stream()
-                        .sorted(
+                        .sortedWith(
                             Comparator.comparing { o: AirbyteStreamState ->
                                 o.streamDescriptor.name
                             }
                         )
-                        .collect(Collectors.toList())
                 )
         val expected =
             AirbyteStateMessage()
@@ -368,7 +355,7 @@ class GlobalStateManagerTest {
         Assertions.assertNotNull(airbyteStateMessage)
         Assertions.assertEquals(
             AirbyteStateMessage.AirbyteStateType.GLOBAL,
-            airbyteStateMessage!!.type
+            airbyteStateMessage.type
         )
         Assertions.assertEquals(0, airbyteStateMessage.global.streamStates.size)
     }
@@ -376,12 +363,12 @@ class GlobalStateManagerTest {
     @Test
     fun testCdcStateManagerLegacyState() {
         val catalog = Mockito.mock(ConfiguredAirbyteCatalog::class.java)
-        val cdcState = CdcState().withState(Jsons.jsonNode(Map.of("foo", "bar", "baz", 5)))
+        val cdcState = CdcState().withState(Jsons.jsonNode(mapOf("foo" to "bar", "baz" to 5)))
         val dbState =
             DbState()
                 .withCdcState(CdcState().withState(Jsons.jsonNode(cdcState)))
                 .withStreams(
-                    List.of(
+                    listOf(
                         DbStreamState()
                             .withStreamName("name")
                             .withStreamNamespace("namespace")

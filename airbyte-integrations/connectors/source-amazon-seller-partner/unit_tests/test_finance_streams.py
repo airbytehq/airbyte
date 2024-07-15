@@ -209,6 +209,7 @@ def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
     requests_mock.post("https://test.url/reports/2021-06-30/reports", status_code=429)
 
     stream = RestockInventoryReports(
+        stream_name="GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT",
         url_base="https://test.url",
         replication_start_date=START_DATE_1,
         replication_end_date=END_DATE_1,

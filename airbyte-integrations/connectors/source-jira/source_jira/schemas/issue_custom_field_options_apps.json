@@ -3,48 +3,49 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
-      "description": "The unique identifier for the option. This is only unique within the select field's set of options."
+      "description": "Unique identifier for the custom field option within the select field's set of options.",
+      "type": "integer"
     },
     "value": {
-      "type": "string",
-      "description": "The option's name, which is displayed in Jira."
+      "description": "The display name of the custom field option in Jira.",
+      "type": "string"
     },
     "properties": {
+      "description": "Arbitrary key-value pairs representing additional properties of the custom field option. These properties are searchable via JQL if defined in the descriptor.",
       "type": "object",
-      "additionalProperties": true,
-      "description": "The properties of the object, as arbitrary key-value pairs. These properties can be searched using JQL, if the extractions (see [Issue Field Option Property Index](https://developer.atlassian.com/cloud/jira/platform/modules/issue-field-option-property-index/)) are defined in the descriptor for the issue field module."
+      "additionalProperties": true
     },
     "config": {
+      "description": "Configuration properties for the custom field option.",
       "type": "object",
       "properties": {
         "scope": {
-          "description": "Defines the projects that the option is available in. If the scope is not defined, then the option is available in all projects.",
+          "description": "Defines the scope of the custom field option within different project contexts.",
           "type": "object",
           "properties": {
             "projects": {
+              "description": "DEPRECATED - Reserved for future use.",
               "uniqueItems": true,
               "type": "array",
-              "description": "DEPRECATED",
               "items": {
                 "type": "integer"
               }
             },
             "projects2": {
+              "description": "Configuration for the custom field option in specific projects, overriding global settings.",
               "uniqueItems": true,
               "type": "array",
-              "description": "Defines the projects in which the option is available and the behavior of the option within each project. Specify one object per project. The behavior of the option in a project context overrides the behavior in the global context.",
               "items": {
                 "type": "object",
                 "properties": {
                   "id": {
-                    "type": "integer",
-                    "description": "The ID of the project that the option's behavior applies to."
+                    "description": "The ID of the project to which the option's behavior applies.",
+                    "type": "integer"
                   },
                   "attributes": {
+                    "description": "Configuration attributes for the option in a project context. Defines behavior such as selectability and default value.",
                     "uniqueItems": true,
                     "type": "array",
-                    "description": "Defines the behavior of the option in the project.If notSelectable is set, the option cannot be set as the field's value. This is useful for archiving an option that has previously been selected but shouldn't be used anymore.If defaultValue is set, the option is selected by default.",
                     "items": {
                       "type": "string",
                       "enum": ["notSelectable", "defaultValue"]
@@ -54,13 +55,13 @@
               }
             },
             "global": {
-              "description": "Defines the behavior of the option within the global context. If this property is set, even if set to an empty object, then the option is available in all projects.",
+              "description": "Global configuration for the custom field option. If set, the option is available in all projects.",
               "type": "object",
               "properties": {
                 "attributes": {
+                  "description": "Configuration attributes for the option in the global context. Defines behavior such as selectability and default value.",
                   "uniqueItems": true,
                   "type": "array",
-                  "description": "Defines the behavior of the option in the global context.If notSelectable is set, the option cannot be set as the field's value. This is useful for archiving an option that has previously been selected but shouldn't be used anymore.If defaultValue is set, the option is selected by default.",
                   "items": {
                     "type": "string",
                     "enum": ["notSelectable", "defaultValue"]
@@ -71,9 +72,9 @@
           }
         },
         "attributes": {
+          "description": "DEPRECATED - Reserved for additional configuration attributes if needed.",
           "uniqueItems": true,
           "type": "array",
-          "description": "DEPRECATED",
           "items": {
             "type": "string",
             "enum": ["notSelectable", "defaultValue"]

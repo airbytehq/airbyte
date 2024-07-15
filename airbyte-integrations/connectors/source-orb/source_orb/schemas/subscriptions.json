@@ -3,30 +3,38 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier of the subscription.",
       "type": "string"
     },
     "created_at": {
+      "description": "The date and time when the subscription was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "customer_id": {
+      "description": "The unique identifier of the customer associated with the subscription.",
       "type": "string"
     },
     "external_customer_id": {
+      "description": "The external identifier of the customer associated with the subscription.",
       "type": ["null", "string"]
     },
     "start_date": {
+      "description": "The date and time when the subscription is set to start.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "end_date": {
+      "description": "The date and time when the subscription is set to end.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "plan_id": {
+      "description": "The unique identifier of the subscription plan assigned to the subscription.",
       "type": "string"
     },
     "status": {
+      "description": "The current status of the subscription.",
       "type": "string"
     }
   },

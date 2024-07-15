@@ -1,14 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import json
-from typing import Callable, Dict, Iterable, List
+from collections.abc import Callable, Iterable
 
 import pytest
 from _pytest.fixtures import SubRequest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStream, Type  # type: ignore
 from live_tests.commons.models import ExecutionResult
-
-from .utils import fail_test_on_failing_execution_results, get_and_write_diff
+from live_tests.utils import fail_test_on_failing_execution_results, get_and_write_diff, get_catalog
 
 pytestmark = [
     pytest.mark.anyio,
@@ -32,12 +32,6 @@ async def test_catalog_are_the_same(
             discover_target_execution_result,
         ],
     )
-
-    def get_catalog(execution_result: ExecutionResult) -> AirbyteCatalog:
-        for message in execution_result.airbyte_messages:
-            if message.type is Type.CATALOG and message.catalog:
-                return message.catalog
-        return None
 
     control_catalog = get_catalog(discover_control_execution_result)
     target_catalog = get_catalog(discover_target_execution_result)
@@ -99,7 +93,7 @@ async def test_catalog_are_the_same(
             )
 
 
-def _get_filtered_sorted_streams(streams: Dict[str, AirbyteStream], stream_set: Iterable[str], include_target: bool) -> List[Dict]:
+def _get_filtered_sorted_streams(streams: dict[str, AirbyteStream], stream_set: Iterable[str], include_target: bool) -> list[dict]:
     return sorted(
         filter(
             lambda x: (x["name"] in stream_set if include_target else x["name"] not in stream_set),

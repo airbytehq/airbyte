@@ -3,11 +3,11 @@
   "type": "object",
   "properties": {
     "key": {
-      "type": "string",
-      "description": "The key of the property. Required on create and update."
+      "description": "The key of the property. This field is required when creating or updating issue comment properties.",
+      "type": "string"
     },
     "value": {
-      "description": "The value of the property. Required on create and update."
+      "description": "The value associated with the key. This field is required when creating or updating issue comment properties."
     }
   },
   "additionalProperties": true,

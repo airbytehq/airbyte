@@ -53,6 +53,12 @@ public class MssqlAgentStateTest {
 
   @AfterAll
   static void tearDown() {
+    try {
+      DataSourceFactory.close(testDataSource);
+      testdb.close();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     privateContainer.close();
   }
 

@@ -6,28 +6,6 @@ import logging
 import os
 from functools import wraps
 
-from .streams import Funnels
-
-
-def funnel_slices_patched(self: Funnels, sync_mode):
-    """
-    Return only first result from funnels
-    """
-    funnel_slices_values = self.get_funnel_slices(sync_mode)
-    single_slice = next(funnel_slices_values, None)
-    return [single_slice] if single_slice else []
-
-
-def adapt_streams_if_testing(func):
-    # Patch Funnels, so we download data only for one Funnel entity
-    @wraps(func)
-    def wrapper(self, config):
-        if bool(os.environ.get("PATCH_FUNNEL_SLICES", "")):
-            Funnels.funnel_slices = funnel_slices_patched
-        return func(self, config)
-
-    return wrapper
-
 
 def adapt_validate_if_testing(func):
     """

@@ -92,6 +92,13 @@ class EntrypointOutput:
     def errors(self) -> List[AirbyteMessage]:
         return self._get_trace_message_by_trace_type(TraceType.ERROR)
 
+    @property
+    def catalog(self) -> AirbyteMessage:
+        catalog = self._get_message_by_types([Type.CATALOG])
+        if len(catalog) != 1:
+            raise ValueError(f"Expected exactly one catalog but got {len(catalog)}")
+        return catalog[0]
+
     def get_stream_statuses(self, stream_name: str) -> List[AirbyteStreamStatus]:
         status_messages = map(
             lambda message: message.trace.stream_status.status,
@@ -109,6 +116,53 @@ class EntrypointOutput:
         return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
 
 
+def _run_command(source: Source, args: List[str], expecting_exception: bool = False) -> EntrypointOutput:
+    log_capture_buffer = StringIO()
+    stream_handler = logging.StreamHandler(log_capture_buffer)
+    stream_handler.setLevel(logging.INFO)
+    stream_handler.setFormatter(AirbyteLogFormatter())
+    parent_logger = logging.getLogger("")
+    parent_logger.addHandler(stream_handler)
+
+    parsed_args = AirbyteEntrypoint.parse_args(args)
+
+    source_entrypoint = AirbyteEntrypoint(source)
+    messages = []
+    uncaught_exception = None
+    try:
+        for message in source_entrypoint.run(parsed_args):
+            messages.append(message)
+    except Exception as exception:
+        if not expecting_exception:
+            print("Printing unexpected error from entrypoint_wrapper")
+            print("".join(traceback.format_exception(None, exception, exception.__traceback__)))
+        uncaught_exception = exception
+
+    captured_logs = log_capture_buffer.getvalue().split("\n")[:-1]
+
+    parent_logger.removeHandler(stream_handler)
+
+    return EntrypointOutput(messages + captured_logs, uncaught_exception)
+
+
+def discover(
+    source: Source,
+    config: Mapping[str, Any],
+    expecting_exception: bool = False,
+) -> EntrypointOutput:
+    """
+    config must be json serializable
+    :param expecting_exception: By default if there is an uncaught exception, the exception will be printed out. If this is expected, please
+        provide expecting_exception=True so that the test output logs are cleaner
+    """
+
+    with tempfile.TemporaryDirectory() as tmp_directory:
+        tmp_directory_path = Path(tmp_directory)
+        config_file = make_file(tmp_directory_path / "config.json", config)
+
+        return _run_command(source, ["discover", "--config", config_file, "--debug"], expecting_exception)
+
+
 def read(
     source: Source,
     config: Mapping[str, Any],
@@ -122,21 +176,16 @@ def read(
     :param expecting_exception: By default if there is an uncaught exception, the exception will be printed out. If this is expected, please
         provide expecting_exception=True so that the test output logs are cleaner
     """
-    log_capture_buffer = StringIO()
-    stream_handler = logging.StreamHandler(log_capture_buffer)
-    stream_handler.setLevel(logging.INFO)
-    stream_handler.setFormatter(AirbyteLogFormatter())
-    parent_logger = logging.getLogger("")
-    parent_logger.addHandler(stream_handler)
-
     with tempfile.TemporaryDirectory() as tmp_directory:
         tmp_directory_path = Path(tmp_directory)
+        config_file = make_file(tmp_directory_path / "config.json", config)
+        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.json())
         args = [
             "read",
             "--config",
-            make_file(tmp_directory_path / "config.json", config),
+            config_file,
             "--catalog",
-            make_file(tmp_directory_path / "catalog.json", catalog.json()),
+            catalog_file,
         ]
         if state is not None:
             args.extend(
@@ -145,26 +194,8 @@ def read(
                     make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
                 ]
             )
-        args.append("--debug")
-        source_entrypoint = AirbyteEntrypoint(source)
-        parsed_args = source_entrypoint.parse_args(args)
 
-        messages = []
-        uncaught_exception = None
-        try:
-            for message in source_entrypoint.run(parsed_args):
-                messages.append(message)
-        except Exception as exception:
-            if not expecting_exception:
-                print("Printing unexpected error from entrypoint_wrapper")
-                print("".join(traceback.format_exception(None, exception, exception.__traceback__)))
-            uncaught_exception = exception
-
-        captured_logs = log_capture_buffer.getvalue().split("\n")[:-1]
-
-        parent_logger.removeHandler(stream_handler)
-
-        return EntrypointOutput(messages + captured_logs, uncaught_exception)
+        return _run_command(source, args, expecting_exception)
 
 
 def make_file(path: Path, file_contents: Optional[Union[str, Mapping[str, Any], List[Mapping[str, Any]]]]) -> str:

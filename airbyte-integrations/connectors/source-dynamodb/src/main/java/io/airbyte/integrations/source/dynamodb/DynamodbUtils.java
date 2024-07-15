@@ -15,11 +15,19 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class DynamodbUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbUtils.class);
 
   private DynamodbUtils() {
 
@@ -27,10 +35,18 @@ public class DynamodbUtils {
 
   public static DynamoDbClient createDynamoDbClient(final DynamodbConfig dynamodbConfig) {
     final var dynamoDbClientBuilder = DynamoDbClient.builder();
+    AwsCredentialsProvider awsCredentialsProvider;
+    if (!StringUtils.isBlank(dynamodbConfig.accessKey()) && !StringUtils.isBlank(dynamodbConfig.secretKey())) {
+      LOGGER.info("Creating credentials using access key and secret key");
+      AwsCredentials awsCreds = AwsBasicCredentials.create(dynamodbConfig.accessKey(), dynamodbConfig.secretKey());
+      awsCredentialsProvider = StaticCredentialsProvider.create(awsCreds);
+    } else {
+      LOGGER.info("Using Role Based Access");
+      awsCredentialsProvider = DefaultCredentialsProvider.create();
+    }
 
     // configure access credentials
-    dynamoDbClientBuilder.credentialsProvider(StaticCredentialsProvider.create(
-        AwsBasicCredentials.create(dynamodbConfig.accessKey(), dynamodbConfig.secretKey())));
+    dynamoDbClientBuilder.credentialsProvider(awsCredentialsProvider);
 
     if (dynamodbConfig.region() != null) {
       dynamoDbClientBuilder.region(dynamodbConfig.region());

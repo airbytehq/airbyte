@@ -4,30 +4,31 @@
   "description": "The details of a custom field context.",
   "properties": {
     "id": {
-      "type": ["null", "string"],
-      "description": "The ID of the context."
+      "description": "The ID of the context.",
+      "type": ["null", "string"]
     },
     "fieldId": {
-      "type": ["null", "string"],
-      "description": "Id of the related field"
+      "description": "Id of the related field",
+      "type": ["null", "string"]
     },
     "name": {
-      "type": ["null", "string"],
-      "description": "The name of the context."
+      "description": "The name of the context.",
+      "type": ["null", "string"]
     },
     "description": {
-      "type": ["null", "string"],
-      "description": "The description of the context."
+      "description": "The description of the context.",
+      "type": ["null", "string"]
     },
     "isGlobalContext": {
-      "type": ["null", "boolean"],
-      "description": "Whether the context is global."
+      "description": "Whether the context is global.",
+      "type": ["null", "boolean"]
     },
     "isAnyIssueType": {
-      "type": ["null", "boolean"],
-      "description": "Whether the context apply to all issue types."
+      "description": "Whether the context applies to all issue types.",
+      "type": ["null", "boolean"]
     },
     "fieldType": {
+      "description": "The type of the related field",
       "type": ["null", "string"]
     }
   }

@@ -130,6 +130,10 @@ def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntr
         metadata_entry = LatestMetadataEntry(
             metadata_definition=metadata_def,
             icon_url=icon_url,
+            last_modified=blob.last_modified,
+            etag=blob.etag,
+            file_path=blob.name,
+            bucket_name=blob.bucket.name,
         )
         metadata_entries.append(metadata_entry)
 

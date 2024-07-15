@@ -4,24 +4,24 @@
 
 from unittest.mock import Mock, call
 
-from airbyte_cdk.sources.declarative.incremental import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condition import (
     CursorStopCondition,
     PaginationStopCondition,
     StopConditionPaginationStrategyDecorator,
 )
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 from pytest import fixture
 
 ANY_RECORD = Mock()
-NO_RECORDS = []
+NO_RECORD = None
 ANY_RESPONSE = Mock()
 
 
 @fixture
 def mocked_cursor():
-    return Mock(spec=Cursor)
+    return Mock(spec=DeclarativeCursor)
 
 
 @fixture
@@ -45,14 +45,13 @@ def test_given_record_should_not_be_synced_when_is_met_return_true(mocked_cursor
 
 
 def test_given_stop_condition_is_met_when_next_page_token_then_return_none(mocked_pagination_strategy, mocked_stop_condition):
-    mocked_stop_condition.is_met.side_effect = [False, True]
-    first_record = Mock(spec=Record)
+    mocked_stop_condition.is_met.return_value = True
     last_record = Mock(spec=Record)
 
     decorator = StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition)
 
-    assert not decorator.next_page_token(ANY_RESPONSE, [first_record, last_record])
-    mocked_stop_condition.is_met.assert_has_calls([call(last_record), call(first_record)])
+    assert not decorator.next_page_token(ANY_RESPONSE, 2, last_record)
+    mocked_stop_condition.is_met.assert_has_calls([call(last_record)])
 
 
 def test_given_last_record_meets_condition_when_next_page_token_then_do_not_check_for_other_records(
@@ -62,7 +61,7 @@ def test_given_last_record_meets_condition_when_next_page_token_then_do_not_chec
     last_record = Mock(spec=Record)
 
     StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition).next_page_token(
-        ANY_RESPONSE, [Mock(spec=Record), last_record]
+        ANY_RESPONSE, 2, last_record
     )
 
     mocked_stop_condition.is_met.assert_called_once_with(last_record)
@@ -70,24 +69,23 @@ def test_given_last_record_meets_condition_when_next_page_token_then_do_not_chec
 
 def test_given_stop_condition_is_not_met_when_next_page_token_then_delegate(mocked_pagination_strategy, mocked_stop_condition):
     mocked_stop_condition.is_met.return_value = False
-    first_record = Mock(spec=Record)
     last_record = Mock(spec=Record)
     decorator = StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition)
 
-    next_page_token = decorator.next_page_token(ANY_RESPONSE, [first_record, last_record])
+    next_page_token = decorator.next_page_token(ANY_RESPONSE, 2, last_record)
 
     assert next_page_token == mocked_pagination_strategy.next_page_token.return_value
-    mocked_pagination_strategy.next_page_token.assert_called_once_with(ANY_RESPONSE, [first_record, last_record])
-    mocked_stop_condition.is_met.assert_has_calls([call(last_record), call(first_record)])
+    mocked_pagination_strategy.next_page_token.assert_called_once_with(ANY_RESPONSE, 2, last_record)
+    mocked_stop_condition.is_met.assert_has_calls([call(last_record)])
 
 
 def test_given_no_records_when_next_page_token_then_delegate(mocked_pagination_strategy, mocked_stop_condition):
     decorator = StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition)
 
-    next_page_token = decorator.next_page_token(ANY_RESPONSE, NO_RECORDS)
+    next_page_token = decorator.next_page_token(ANY_RESPONSE, 0, NO_RECORD)
 
     assert next_page_token == mocked_pagination_strategy.next_page_token.return_value
-    mocked_pagination_strategy.next_page_token.assert_called_once_with(ANY_RESPONSE, NO_RECORDS)
+    mocked_pagination_strategy.next_page_token.assert_called_once_with(ANY_RESPONSE, 0, NO_RECORD)
 
 
 def test_when_reset_then_delegate(mocked_pagination_strategy, mocked_stop_condition):

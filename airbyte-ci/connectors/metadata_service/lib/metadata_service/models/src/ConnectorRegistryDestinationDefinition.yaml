@@ -72,3 +72,10 @@ properties:
     "$ref": ConnectorReleases.yaml
   ab_internal:
     "$ref": AirbyteInternal.yaml
+  supportsRefreshes:
+    type: boolean
+    default: false
+  generated:
+    "$ref": GeneratedFields.yaml
+  packageInfo:
+    "$ref": ConnectorPackageInfo.yaml

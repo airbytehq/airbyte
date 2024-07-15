@@ -1,4 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import logging
 
@@ -26,7 +27,7 @@ def get_secret_value(secret_manager_client: secretmanager.SecretManagerServiceCl
         response = secret_manager_client.access_secret_version(name=enabled_version.name)
         return response.payload.data.decode("UTF-8")
     except PermissionDenied as e:
-        logging.error(
+        logging.exception(
             f"Permission denied while trying to access secret {secret_id}. Please write to #dev-extensibility in Airbyte Slack for help.",
             exc_info=e,
         )

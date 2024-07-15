@@ -1,11 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 import logging
 import os
 from importlib.metadata import version
-from typing import Any, Dict
+from typing import Any, Optional
 
-import segment.analytics as analytics  # type: ignore
+from segment import analytics  # type: ignore
 
 ENABLE_TRACKING = os.getenv("REGRESSION_TEST_DISABLE_TRACKING") is None
 DEBUG_SEGMENT = os.getenv("DEBUG_SEGMENT") is not None
@@ -25,10 +26,14 @@ analytics.on_error = on_error
 
 
 def track_usage(
-    user_id: str,
-    pytest_options: Dict[str, Any],
+    user_id: Optional[str],
+    pytest_options: dict[str, Any],
 ) -> None:
-    analytics.identify(user_id)
+    if user_id:
+        analytics.identify(user_id)
+    else:
+        user_id = "airbyte-ci"
+
     # It contains default pytest option and the custom one passed by the user
     analytics.track(
         user_id,

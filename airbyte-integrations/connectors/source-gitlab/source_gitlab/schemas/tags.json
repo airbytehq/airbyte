@@ -3,36 +3,46 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "The name of the tag.",
       "type": ["null", "string"]
     },
     "message": {
+      "description": "The message or description of the tag.",
       "type": ["null", "string"]
     },
     "target": {
+      "description": "The target or object that the tag points to.",
       "type": ["null", "string"]
     },
     "release": {
+      "description": "Details about the release associated with the tag.",
       "type": ["null", "object"],
       "properties": {
         "tag_name": {
+          "description": "The name of the release tag.",
           "type": ["null", "string"]
         },
         "description": {
+          "description": "Description of the release.",
           "type": ["null", "string"]
         }
       }
     },
     "protected": {
+      "description": "Indicates whether the tag is protected.",
       "type": ["null", "boolean"]
     },
     "commit": {
+      "description": "Details about the commit associated with the tag.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "commit_id": {
+      "description": "Unique identifier for the commit associated with the tag.",
       "type": ["null", "string"]
     },
     "project_id": {
+      "description": "Unique identifier of the project to which the tag belongs.",
       "type": ["null", "integer"]
     }
   }

@@ -40,11 +40,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class PerformanceTest {
 
+  private static final Logger log = LoggerFactory.getLogger(PerformanceTest.class);
   public static final int PORT1 = 9877;
   public static final int PORT2 = 9878;
   public static final int PORT3 = 9879;

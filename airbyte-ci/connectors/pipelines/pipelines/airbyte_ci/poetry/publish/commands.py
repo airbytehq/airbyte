@@ -14,9 +14,11 @@ from packaging import version
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.cli.secrets import wrap_in_secret
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 from pipelines.models.contexts.python_registry_publish import PythonRegistryPublishContext
+from pipelines.models.secrets import Secret
 from pipelines.models.steps import StepStatus
 
 
@@ -45,6 +47,7 @@ def _validate_python_version(_ctx: dict, _param: dict, value: Optional[str]) -> 
     type=click.STRING,
     required=True,
     envvar="PYTHON_REGISTRY_TOKEN",
+    callback=wrap_in_secret,
 )
 @click.option(
     "--python-registry-url",
@@ -69,7 +72,7 @@ def _validate_python_version(_ctx: dict, _param: dict, value: Optional[str]) -> 
 async def publish(
     ctx: click.Context,
     click_pipeline_context: ClickPipelineContext,
-    python_registry_token: str,
+    python_registry_token: Secret,
     python_registry_url: str,
     publish_name: Optional[str],
     publish_version: Optional[str],
@@ -78,13 +81,15 @@ async def publish(
         is_local=ctx.obj["is_local"],
         git_branch=ctx.obj["git_branch"],
         git_revision=ctx.obj["git_revision"],
+        diffed_branch=ctx.obj["diffed_branch"],
+        git_repo_url=ctx.obj["git_repo_url"],
         ci_report_bucket=ctx.obj["ci_report_bucket_name"],
         report_output_prefix=ctx.obj["report_output_prefix"],
         gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
         dagger_logs_url=ctx.obj.get("dagger_logs_url"),
         pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
         ci_context=ctx.obj.get("ci_context"),
-        ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+        ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
         python_registry_token=python_registry_token,
         registry=python_registry_url,
         registry_check_url=DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL,

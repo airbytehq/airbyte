@@ -1,32 +1,41 @@
 {
   "properties": {
     "default": {
+      "description": "Flag indicating if this organization membership is the default one for the user.",
       "type": ["null", "boolean"]
     },
     "url": {
+      "description": "The URL for accessing the details of this organization membership.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the organization membership was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when the organization membership was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "id": {
+      "description": "Unique identifier for the organization membership.",
       "type": ["null", "integer"]
     },
     "user_id": {
+      "description": "The ID of the user associated with the organization membership.",
       "type": ["null", "integer"]
     },
     "organization_id": {
+      "description": "The ID of the organization associated with the membership.",
       "type": ["null", "integer"]
     },
     "organization_name": {
+      "description": "The name of the organization associated with the membership.",
       "type": ["null", "string"]
     },
     "view_tickets": {
+      "description": "Flag indicating if the user can view tickets within the organization.",
       "type": ["null", "boolean"]
     }
   },

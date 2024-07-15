@@ -12,6 +12,9 @@ acceptance_tests:
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
         timeout_seconds: 60
+      - config_path: "secrets/config_multiple_account_ids.json"
+        status: "succeed"
+        timeout_seconds: 60
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
       - config_path: "integration_tests/invalid_config_custom_report.json"

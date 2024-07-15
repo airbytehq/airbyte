@@ -4,15 +4,19 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the survey collector.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name or title of the survey collector.",
       "type": ["string", "null"]
     },
     "href": {
+      "description": "The URL to access the specific survey collector data.",
       "type": ["string", "null"]
     },
     "survey_id": {
+      "description": "The unique identifier of the survey associated with the collector.",
       "type": ["string", "null"]
     }
   }

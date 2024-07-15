@@ -8,7 +8,15 @@ from pipelines.helpers.execution.run_steps import InvalidStepConfiguration, RunS
 from pipelines.models.contexts.pipeline_context import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
-test_context = PipelineContext(pipeline_name="test", is_local=True, git_branch="test", git_revision="test", report_output_prefix="test")
+test_context = PipelineContext(
+    pipeline_name="test",
+    is_local=True,
+    git_branch="test",
+    git_revision="test",
+    diffed_branch="test",
+    git_repo_url="test",
+    report_output_prefix="test",
+)
 
 
 class TestStep(Step):

@@ -7,7 +7,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Dict, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 
 
 @dataclass

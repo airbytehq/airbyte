@@ -1,0 +1,596 @@
+version: 0.77.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - Tags
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_zendesk_support/schemas/{{ parameters.get('schema_name') or parameters['name'] }}.json"
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+  basic_authenticator:
+    type: BasicHttpAuthenticator
+    username: "{{ config['credentials']['email'] + '/token' }}"
+    password: "{{ config['credentials']['api_token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      type: HttpRequester
+      url_base: https://{{ config['subdomain'] }}.zendesk.com/api/v2/
+      http_method: GET
+      authenticator:
+        type: SelectiveAuthenticator
+        authenticator_selection_path: ["credentials", "credentials"]
+        authenticators:
+          oauth2.0: "#/definitions/bearer_authenticator"
+          api_token: "#/definitions/basic_authenticator"
+      error_handler:
+        type: CompositeErrorHandler
+        error_handlers:
+          - type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [403, 404]
+                action: IGNORE
+                error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+          - type: DefaultErrorHandler
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          ["{{ parameters.get('data_path') or parameters.get('name') }}"]
+      schema_normalization: Default
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: "per_page"
+        inject_into: request_parameter
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 100
+        cursor_value: '{{ response.get("next_page", {}) }}'
+        stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+      page_token_option:
+        type: RequestPath
+
+  base_stream:
+    type: DeclarativeStream
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  # Semi-incremental streams for endpoints that doesn't support filtering or sorting but include updated or created fields
+  semi_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/retriever/record_selector"
+        record_filter:
+          condition: "{{ record[parameters['cursor_field']] >= stream_state.get(parameters['cursor_field'], config.get('start_date')) }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
+      start_datetime:
+        datetime: "{{ config.get('start_date') }}"
+
+  cursor_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_datetime_formats:
+      - "%s"
+      - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format: "%s"
+    cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
+    start_datetime:
+      datetime: "{{ timestamp(config.get('start_date')) | int or day_delta(-730, '%Y-%m-%dT%H:%M:%SZ') }}"
+    start_time_option:
+      inject_into: request_parameter
+      field_name: "{{ parameters['cursor_filter'] }}"
+      type: RequestOption
+
+  base_incremental_stream:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      $ref: "#/definitions/cursor_incremental_sync"
+
+  # Paginators
+  links_next_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['links']['next'] }}"
+      stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
+      page_size: 100
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      type: RequestOption
+      field_name: "page[size]"
+      inject_into: request_parameter
+
+  after_url_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("after_url") }}'
+      stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+      page_size: 100
+    page_token_option:
+      type: RequestPath
+
+  # Full-refresh streams
+  account_attributes_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "account_attributes"
+      path: "routing/attributes"
+      data_path: "attributes"
+      primary_key: "id"
+
+  attribute_definitions_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_zendesk_support.components.ZendeskSupportAttributeDefinitionsExtractor
+    $parameters:
+      name: "attribute_definitions"
+      path: "routing/attributes/definitions"
+      data_path: "attributes"
+
+  brands_stream:
+    # ToDo: add incremental sync
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "brands"
+      path: "brands"
+      primary_key: "id"
+
+  user_fields_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user_fields"
+      path: "user_fields"
+      primary_key: "id"
+
+  tags_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "tags"
+      path: "tags"
+      primary_key: "name"
+
+  # Incremental cursor-based streams
+  audit_logs_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "created_at"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    incremental_sync:
+      class_name: source_zendesk_support.components.ZendeskSupportAuditLogsIncrementalSync
+      type: CustomIncrementalSync
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
+      start_datetime:
+        datetime: "{{ config.get('start_date') or day_delta(-3650, '%Y-%m-%dT%H:%M:%SZ') }}"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: "filter[created_at][]"
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: "filter[created_at][]"
+        type: RequestOption
+    $parameters:
+      name: "audit_logs"
+      path: "audit_logs"
+      cursor_field: "created_at"
+      cursor_filter: "filter[created_at][]"
+      primary_key: "id"
+
+  custom_roles_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        page_token_option:
+          type: RequestPath
+    $parameters:
+      name: "custom_roles"
+      path: "custom_roles"
+      data_path: "custom_roles"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  group_memberships_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "group_memberships"
+      path: "group_memberships"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  groups_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    $parameters:
+      name: "groups"
+      path: "groups"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  macros_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by: "created_at"
+          sort_order: "asc"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    incremental_sync:
+      $ref: "#/definitions/semi_incremental_stream/incremental_sync"
+    $parameters:
+      name: "macros"
+      path: "macros"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  organization_fields_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    $parameters:
+      name: "organization_fields"
+      path: "organization_fields"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  organization_memberships_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "organization_memberships"
+      path: "organization_memberships"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  organizations_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+        page_token_option:
+          type: RequestPath
+    $parameters:
+      name: "organizations"
+      path: "incremental/organizations"
+      cursor_field: "updated_at"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+  satisfaction_ratings_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "created_at"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "satisfaction_ratings"
+      path: "satisfaction_ratings"
+      cursor_field: "updated_at"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+  schedules_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/retriever/paginator"
+        page_size_option:
+          type: RequestOption
+          field_name: "page[size]"
+          inject_into: request_parameter
+    $parameters:
+      name: "schedules"
+      path: "business_hours/schedules.json"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  sla_policies_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        page_token_option:
+          type: RequestPath
+    $parameters:
+      name: "sla_policies"
+      path: "slas/policies.json"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  ticket_activities_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort: "created_at"
+          sort_by: "created_at"
+          sort_order: "asc"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "ticket_activities"
+      path: "activities"
+      data_path: "activities"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  ticket_audits_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_by: "created_at"
+          sort_order: "desc"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+            - response_filters:
+                - http_codes: [504]
+                  action: FAIL
+                  error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
+                - http_codes: [403, 404]
+                  action: IGNORE
+                  error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: "limit"
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 200
+          cursor_value: "{{ response.get('before_url') }}"
+          stop_condition: "{{ config.get('ignore_pagination') or 'before_url' not in response or not last_record }}"
+        page_token_option:
+          type: RequestPath
+    incremental_sync:
+      $ref: "#/definitions/semi_incremental_stream/incremental_sync"
+      is_data_feed: true
+    $parameters:
+      name: "ticket_audits"
+      path: "ticket_audits"
+      data_path: "audits"
+      cursor_field: "created_at"
+      primary_key: "id"
+
+  ticket_comments_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          include: "comment_events"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_zendesk_support.components.ZendeskSupportExtractorEvents
+          field_path: ["ticket_events", "*", "child_events", "*"]
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+        page_token_option:
+          type: RequestPath
+    $parameters:
+      name: "ticket_comments"
+      path: "incremental/ticket_events.json"
+      cursor_field: "created_at"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+  ticket_fields_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "ticket_fields"
+      path: "ticket_fields"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  ticket_forms_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - http_codes: [403, 404]
+                  action: FAIL # fail as this stream used to define enterprise plan
+                  error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response.get("next_page", {}) }}'
+          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        page_token_option:
+          type: RequestPath
+    $parameters:
+      name: "ticket_forms"
+      path: "ticket_forms"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  ticket_metric_events_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "ticket_metric_events"
+      path: "incremental/ticket_metric_events"
+      cursor_field: "time"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+  ticket_skips_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      requester:
+        $ref: "#/definitions/retriever/requester"
+        request_parameters:
+          sort_order: "desc"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "ticket_skips"
+      path: "skips.json"
+      data_path: "skips"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  topics_stream:
+    $ref: "#/definitions/semi_incremental_stream"
+    retriever:
+      $ref: "#/definitions/semi_incremental_stream/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "topics"
+      path: "community/topics"
+      cursor_field: "updated_at"
+      primary_key: "id"
+
+  users_stream:
+    $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      ignore_stream_slicer_parameters_on_paginated_requests: true
+      paginator:
+        $ref: "#/definitions/after_url_paginator"
+    $parameters:
+      name: "users"
+      path: "incremental/users/cursor.json"
+      cursor_field: "updated_at"
+      cursor_filter: "start_time"
+      primary_key: "id"
+
+streams:
+  # Full refresh streams
+  - $ref: "#/definitions/account_attributes_stream"
+  - $ref: "#/definitions/attribute_definitions_stream"
+  - $ref: "#/definitions/brands_stream"
+  - $ref: "#/definitions/custom_roles_stream"
+  - $ref: "#/definitions/schedules_stream"
+  - $ref: "#/definitions/sla_policies_stream"
+  - $ref: "#/definitions/tags_stream"
+  - $ref: "#/definitions/ticket_fields_stream"
+  - $ref: "#/definitions/ticket_forms_stream"
+  - $ref: "#/definitions/topics_stream"
+  - $ref: "#/definitions/user_fields_stream"
+  # Incremental streams
+  - $ref: "#/definitions/audit_logs_stream"
+  - $ref: "#/definitions/groups_stream"
+  - $ref: "#/definitions/group_memberships_stream"
+  - $ref: "#/definitions/macros_stream"
+  - $ref: "#/definitions/organization_fields_stream"
+  - $ref: "#/definitions/organization_memberships_stream"
+  - $ref: "#/definitions/organizations_stream"
+  - $ref: "#/definitions/satisfaction_ratings_stream"
+  - $ref: "#/definitions/ticket_activities_stream"
+  - $ref: "#/definitions/ticket_audits_stream"
+  - $ref: "#/definitions/ticket_comments_stream"
+  - $ref: "#/definitions/ticket_metric_events_stream"
+  - $ref: "#/definitions/ticket_skips_stream"
+  - $ref: "#/definitions/users_stream"

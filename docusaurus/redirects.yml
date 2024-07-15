@@ -88,8 +88,6 @@
   to: /using-airbyte/core-concepts/sync-modes/incremental-append
 - from: /understanding-airbyte/connections/incremental-append-deduped
   to: /using-airbyte/core-concepts/sync-modes/incremental-append-deduped
-- from: /understanding-airbyte/basic-normalization
-  to: /using-airbyte/core-concepts/basic-normalization
 - from: /understanding-airbyte/typing-deduping
   to: /using-airbyte/core-concepts/typing-deduping
 - from:
@@ -100,6 +98,8 @@
   to: /using-airbyte/workspaces
 - from: /operator-guides/locating-files-local-destination
   to: /integrations/locating-files-local-destination
+- from: /operator-guides/reset
+  to: /operator-guides/clear
 # End November 2023 restructure
 - from:
     - /enterprise-setup/self-managed/sso

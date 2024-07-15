@@ -29,4 +29,3 @@ Notion API consists of three endpoints which can be extracted data from:
 ## API Reference
 
 The API reference documents: [https://developers.notion.com/reference/intro](https://developers.notion.com/reference)
-

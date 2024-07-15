@@ -27,13 +27,12 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
 from conftest import encoding_symbols_parameters, generate_stream
-from requests.exceptions import ChunkedEncodingError, HTTPError
+from requests.exceptions import ChunkedEncodingError
+from salesforce_job_response_builder import JobInfoResponseBuilder
 from source_salesforce.api import Salesforce
-from source_salesforce.exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -46,7 +45,7 @@ from source_salesforce.streams import (
 
 _A_CHUNKED_RESPONSE = [b"first chunk", b"second chunk"]
 _A_JSON_RESPONSE = {"id": "any id"}
-_A_SUCCESSFUL_JOB_CREATION_RESPONSE = {"state": "JobComplete"}
+_A_SUCCESSFUL_JOB_CREATION_RESPONSE = JobInfoResponseBuilder().with_state("JobComplete").get_response()
 _A_PK = "a_pk"
 _A_STREAM_NAME = "a_stream_name"
 
@@ -83,30 +82,27 @@ def test_stream_slice_step_validation(stream_slice_step: str, expected_error_mes
 
 
 @pytest.mark.parametrize(
-    "login_status_code, login_json_resp, expected_error_msg, is_config_error",
+    "login_status_code, login_json_resp, expected_error_msg",
     [
         (
             400,
             {"error": "invalid_grant", "error_description": "expired access/refresh token"},
-            AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"),
-            True,
+            "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce.",
         ),
         (
             400,
             {"error": "invalid_grant", "error_description": "Authentication failure."},
             'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}',
-            False,
         ),
         (
             401,
             {"error": "Unauthorized", "error_description": "Unautorized"},
             'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}',
-            False,
         ),
     ],
 )
 def test_login_authentication_error_handler(
-    stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
+    stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg
 ):
     source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
     logger = logging.getLogger("airbyte")
@@ -114,24 +110,19 @@ def test_login_authentication_error_handler(
         "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
     )
 
-    if is_config_error:
-        with pytest.raises(AirbyteTracedException) as err:
-            source.check_connection(logger, stream_config)
-        assert err.value.message == expected_error_msg
-    else:
-        result, msg = source.check_connection(logger, stream_config)
-        assert result is False
-        assert msg == expected_error_msg
+    with pytest.raises(AirbyteTracedException) as err:
+        source.check_connection(logger, stream_config)
+    assert err.value.message == expected_error_msg
 
 
 def test_bulk_sync_creation_failed(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     with requests_mock.Mocker() as m:
         m.register_uri("POST", stream.path(), status_code=400, json=[{"message": "test_error"}])
-        with pytest.raises(HTTPError) as err:
+        with pytest.raises(AirbyteTracedException) as err:
             stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
             next(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))
-        assert err.value.response.json()[0]["message"] == "test_error"
+        assert "test_error" in str(err.value.message)
 
 
 def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stream_api):
@@ -178,31 +169,6 @@ def test_stream_contains_unsupported_properties_by_bulk(stream_config, stream_ap
     assert not isinstance(stream, BulkSalesforceStream)
 
 
-def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    job_id = "fake_job"
-    requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
-    resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
-    result_uri = requests_mock.register_uri(
-        "GET",
-        stream.path() + f"/{job_id}/results",
-        [
-            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
-            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
-            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}},
-        ],
-    )
-    requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
-
-    stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
-    loaded_ids = [int(record["ID"]) for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices)]
-    assert loaded_ids == [0, 1, 2, 3, 4, 0, 1, 2, 3, 4, 0, 1, 2, 3, 4]
-    assert result_uri.call_count == 3
-    assert result_uri.request_history[1].query == "locator=somelocator_1"
-    assert result_uri.request_history[2].query == "locator=somelocator_2"
-
-
 def _prepare_mock(m, stream):
     job_id = "fake_job_1"
     m.register_uri("POST", stream.path(), json={"id": job_id})
@@ -215,14 +181,6 @@ def _prepare_mock(m, stream):
 def _get_result_id(stream):
     stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
     return int(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))[0]["ID"])
-
-
-def test_bulk_sync_successful(stream_config, stream_api):
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    with requests_mock.Mocker() as m:
-        job_id = _prepare_mock(m, stream)
-        m.register_uri("GET", stream.path() + f"/{job_id}", [{"json": {"state": "JobComplete"}}])
-        assert _get_result_id(stream) == 1
 
 
 def test_bulk_sync_successful_long_response(stream_config, stream_api):
@@ -373,12 +331,6 @@ def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_he
     "login_status_code, login_json_resp, discovery_status_code, discovery_resp_json, expected_error_msg",
     (
         (
-            403,
-            [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "TotalRequests Limit exceeded."}],
-            200,
-            {},
-            "API Call limit is exceeded. Make sure that you have enough API allocation for your organization needs or retry later. For more information, see https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm"),
-        (
             200,
             {"access_token": "access_token", "instance_url": "https://instance_url"},
             403,
@@ -398,9 +350,9 @@ def test_check_connection_rate_limit(
         m.register_uri(
             "GET", "https://instance_url/services/data/v57.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code
         )
-        result, msg = source.check_connection(logger, stream_config)
-        assert result is False
-        assert msg == expected_error_msg
+        with pytest.raises(AirbyteTracedException) as exception:
+            source.check_connection(logger, stream_config)
+        assert exception.value.message == expected_error_msg
 
 
 def configure_request_params_mock(stream_1, stream_2):
@@ -478,50 +430,47 @@ def test_csv_reader_dialect_unix():
         assert result == data
 
 
-@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
-def test_given_retryable_error_when_download_data_then_retry(send_http_request_patch):
-    send_http_request_patch.return_value.iter_content.side_effect = [HTTPError(), _A_CHUNKED_RESPONSE]
+@pytest.fixture(name="mocked_response")
+def _create_mocked_response():
+    http_response = Mock()
+    http_response.headers = {}
+    return http_response
+
+
+@patch("source_salesforce.streams.HttpClient")
+def test_given_retryable_error_when_download_data_then_retry(mocked_http_client, mocked_response):
+    mocked_http_client.return_value.send_request.return_value = (Mock(), mocked_response)
+    mocked_response.iter_content.side_effect = [ChunkedEncodingError(), _A_CHUNKED_RESPONSE]
+
     BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).download_data(url="any url")
-    assert send_http_request_patch.call_count == 2
+
+    assert mocked_response.iter_content.call_count == 2
 
 
-@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
-def test_given_first_download_fail_when_download_data_then_retry_job_only_once(send_http_request_patch):
+@patch("source_salesforce.streams.HttpClient")
+def test_given_first_download_fail_when_download_data_then_retry_job_only_once(mocked_http_client, mocked_response):
     sf_api = Mock()
-    sf_api.generate_schema.return_value = {}
+    sf_api.generate_schema.return_value = JobInfoResponseBuilder().with_state("JobComplete").get_response()
     sf_api.instance_url = "http://test_given_first_download_fail_when_download_data_then_retry_job.com"
     job_creation_return_values = [_A_JSON_RESPONSE, _A_SUCCESSFUL_JOB_CREATION_RESPONSE]
-    send_http_request_patch.return_value.json.side_effect = job_creation_return_values * 2
-    send_http_request_patch.return_value.iter_content.side_effect = HTTPError()
+
+    mocked_http_client.return_value.send_request.return_value = (Mock(), mocked_response)
+    mocked_response.json.side_effect = job_creation_return_values * 2
+    mocked_response.iter_content.side_effect = ChunkedEncodingError()
 
     with pytest.raises(Exception):
         list(BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=sf_api, pk=_A_PK).read_records(SyncMode.full_refresh))
 
-    assert send_http_request_patch.call_count == (len(job_creation_return_values) + _NUMBER_OF_DOWNLOAD_TRIES) * 2
+    assert mocked_response.json.call_count == len(job_creation_return_values) * 2
+    assert mocked_response.iter_content.call_count == _NUMBER_OF_DOWNLOAD_TRIES * 2
 
 
-@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
-def test_given_http_errors_when_create_stream_job_then_retry(send_http_request_patch):
-    send_http_request_patch.return_value.json.side_effect = [HTTPError(), _A_JSON_RESPONSE]
+@patch("source_salesforce.streams.HttpClient")
+def test_given_retryable_error_that_are_not_http_errors_when_create_stream_job_then_retry(mocked_http_client, mocked_response):
+    mocked_http_client.return_value.send_request.return_value = (Mock(), mocked_response)
+    mocked_response.json.side_effect = [ChunkedEncodingError(), _A_JSON_RESPONSE]
     BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
-    assert send_http_request_patch.call_count == 2
-
-
-@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
-def test_given_fail_with_http_errors_when_create_stream_job_then_handle_error(send_http_request_patch):
-    mocked_response = Mock()
-    mocked_response.status_code = 666
-    send_http_request_patch.return_value.json.side_effect = HTTPError(response=mocked_response)
-
-    with pytest.raises(HTTPError):
-        BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
-
-
-@patch("source_salesforce.source.BulkSalesforceStream._non_retryable_send_http_request")
-def test_given_retryable_error_that_are_not_http_errors_when_create_stream_job_then_retry(send_http_request_patch):
-    send_http_request_patch.return_value.json.side_effect = [ChunkedEncodingError(), _A_JSON_RESPONSE]
-    BulkSalesforceStream(stream_name=_A_STREAM_NAME, sf_api=Mock(), pk=_A_PK).create_stream_job(query="any query", url="any url")
-    assert send_http_request_patch.call_count == 2
+    assert mocked_http_client.return_value.send_request.call_count == 2
 
 
 @pytest.mark.parametrize(
@@ -876,13 +825,13 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
 
     job_id_1 = "fake_job_1"
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}", [{"json": JobInfoResponseBuilder().with_id(job_id_1).with_state("JobComplete").get_response()}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_1}")
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_1}/results", text="Field1,LastModifiedDate,ID\ntest,2023-01-15,1")
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_1}")
 
     job_id_2 = "fake_job_2"
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": JobInfoResponseBuilder().with_id(job_id_2).with_state("JobComplete").get_response()}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_2}")
     requests_mock.register_uri(
         "GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2\ntest,2023-02-20,22"
@@ -893,7 +842,7 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     queries_history = requests_mock.register_uri(
         "POST", stream.path(), [{"json": {"id": job_id_1}}, {"json": {"id": job_id_2}}, {"json": {"id": job_id_3}}]
     )
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}", [{"json": {"state": "JobComplete"}}])
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}", [{"json": JobInfoResponseBuilder().with_id(job_id_3).with_state("JobComplete").get_response()}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_3}")
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,3")
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_3}")
@@ -952,7 +901,7 @@ def test_stream_slices_for_substream(stream_config, stream_api, requests_mock):
 
     job_id = "fake_job"
     requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
+    requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json=JobInfoResponseBuilder().with_id(job_id).with_state("JobComplete").get_response())
     requests_mock.register_uri(
         "GET",
         stream.path() + f"/{job_id}/results",

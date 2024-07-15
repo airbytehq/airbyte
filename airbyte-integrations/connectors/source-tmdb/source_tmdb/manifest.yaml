@@ -4,6 +4,7 @@ definitions:
   selector:
     extractor:
       field_path: []
+    schema_normalization: Default
   requester:
     url_base: "https://api.themoviedb.org/3/"
     http_method: "GET"

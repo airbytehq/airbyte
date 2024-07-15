@@ -62,6 +62,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_multi_stream_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,
+    csv_no_files_scenario,
     csv_no_records_scenario,
     csv_single_stream_scenario,
     csv_skip_after_header_scenario,
@@ -154,7 +155,6 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
 from unit_tests.sources.file_based.test_scenarios import verify_check, verify_discover, verify_read, verify_spec
 
 discover_failure_scenarios = [
-    earlier_csv_scenario,
     empty_schema_inference_scenario,
 ]
 
@@ -263,6 +263,8 @@ discover_success_scenarios = [
     single_csv_input_state_is_earlier_scenario_concurrent,
     single_csv_input_state_is_later_scenario_concurrent,
     single_csv_no_input_state_scenario_concurrent,
+    earlier_csv_scenario,
+    csv_no_files_scenario,
 ]
 
 discover_scenarios = discover_failure_scenarios + discover_success_scenarios
@@ -296,6 +298,7 @@ check_scenarios = [
     valid_single_stream_user_input_schema_scenario,
     single_avro_scenario,
     earlier_csv_scenario,
+    csv_no_files_scenario,
 ]
 
 

@@ -2,37 +2,47 @@
   "type": "object",
   "properties": {
     "adgroup_id": {
+      "description": "The unique identifier of the ad group",
       "type": "integer"
     },
     "campaign_id": {
+      "description": "The unique identifier of the campaign",
       "type": "integer"
     },
     "advertiser_id": {
+      "description": "The unique identifier of the advertiser",
       "type": "integer"
     },
     "adgroup_name": {
+      "description": "The name of the ad group",
       "type": "string"
     },
     "placement_type": {
+      "description": "The type of ad placement",
       "type": "string",
       "enum": ["PLACEMENT_TYPE_AUTOMATIC", "PLACEMENT_TYPE_NORMAL"]
     },
     "placements": {
+      "description": "Information about the ad placements targeted",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "inventory_filter_enabled": {
+      "description": "Flag indicating if inventory filter is enabled",
       "type": ["null", "boolean"]
     },
     "comment_disabled": {
+      "description": "Flag indicating if comments are disabled",
       "type": "boolean"
     },
     "app_id": {
+      "description": "The unique identifier of the app",
       "type": ["null", "integer"]
     },
     "promotion_type": {
+      "description": "The type of promotion",
       "type": "string",
       "enum": [
         "APP_ANDROID",
@@ -46,322 +56,403 @@
       ]
     },
     "app_download_url": {
+      "description": "The URL for downloading the associated app",
       "type": ["null", "string"]
     },
     "package": {
+      "description": "The package used for the ad group",
       "type": ["null", "string"]
     },
     "pixel_id": {
+      "description": "The ID of the pixel used for tracking",
       "type": ["null", "integer"]
     },
     "optimization_event": {
+      "description": "The event used for optimization",
       "type": ["null", "string"]
     },
     "secondary_optimization_event": {
+      "description": "Additional event used for optimization",
       "type": ["null", "string"]
     },
     "creative_material_mode": {
+      "description": "The mode for creative materials",
       "type": "string"
     },
     "modify_time": {
+      "description": "The timestamp for when the ad group was last modified",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "create_time": {
+      "description": "The timestamp for when the ad group was created",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "audience_ids": {
+      "description": "The IDs of the targeted audience",
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "excluded_audience_ids": {
+      "description": "The IDs of excluded audiences",
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "audience_type": {
+      "description": "The type of audience being targeted",
       "type": ["null", "string"]
     },
     "location_ids": {
+      "description": "The IDs of targeted locations",
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "is_hfss": {
+      "description": "Flag indicating if high-frequency short sequences are included",
       "type": "boolean"
     },
     "interest_category_ids": {
+      "description": "The IDs of interest categories for targeting",
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "interest_keyword_ids": {
+      "description": "The IDs of interest keywords for targeting",
       "type": "array",
       "items": {
         "type": "integer"
       }
     },
     "age_groups": {
+      "description": "The targeted age groups for the ad group",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "gender": {
+      "description": "The targeted gender for the ad group",
       "type": ["null", "string"]
     },
     "languages": {
+      "description": "The targeted languages for the ad group",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "operating_systems": {
+      "description": "The targeted operating systems",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "network_types": {
+      "description": "The types of networks targeted",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "device_price_ranges": {
+      "description": "The price ranges for devices",
       "type": ["null", "array"],
       "items": {
         "type": "number"
       }
     },
     "min_android_version": {
+      "description": "The minimum required Android version",
       "type": ["null", "string"]
     },
     "ios14_targeting": {
+      "description": "Information about iOS 14 targeting settings",
       "type": ["null", "string"]
     },
     "device_model_ids": {
+      "description": "The IDs of targeted device models",
       "type": ["null", "array"],
       "items": {
         "type": "integer"
       }
     },
     "min_ios_version": {
+      "description": "The minimum required iOS version",
       "type": ["null", "string"]
     },
     "budget_mode": {
+      "description": "The mode for managing the budget",
       "type": "string"
     },
     "budget": {
+      "description": "The allocated budget for the ad group",
       "type": "number"
     },
     "schedule_type": {
+      "description": "The type of scheduling",
       "type": "string"
     },
     "schedule_start_time": {
+      "description": "The start time of the scheduling",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "schedule_end_time": {
+      "description": "The end time of the scheduling",
       "type": "string",
       "format": "date-time",
       "airbyte_type": "timestamp_without_timezone"
     },
     "dayparting": {
+      "description": "Information about dayparting settings",
       "type": ["null", "string"]
     },
     "optimization_goal": {
+      "description": "The goal set for optimization",
       "type": "string"
     },
     "cpv_video_duration": {
+      "description": "The duration for cost-per-view video",
       "type": ["null", "string"]
     },
     "conversion_window": {
+      "description": "The window for tracking conversions",
       "type": ["null", "string"]
     },
     "pacing": {
+      "description": "Information about the pacing settings",
       "type": ["null", "string"]
     },
     "billing_event": {
+      "description": "The event used for billing",
       "type": ["null", "string"]
     },
     "skip_learning_phase": {
+      "description": "Flag indicating if the learning phase is skipped",
       "type": "integer"
     },
     "bid_type": {
+      "description": "The type of bidding",
       "type": ["null", "string"]
     },
     "bid_price": {
+      "description": "The price set for bidding",
       "type": "number"
     },
     "conversion_bid_price": {
+      "description": "The bid price for conversions",
       "type": "number"
     },
     "deep_bid_type": {
+      "description": "The type of deep bid strategy",
       "type": ["null", "string"]
     },
     "deep_cpa_bid": {
+      "description": "The bid amount for deep cost-per-action",
       "type": "number"
     },
     "secondary_status": {
+      "description": "The secondary status of the ad group",
       "type": "string"
     },
     "operation_status": {
+      "description": "The status of the operation",
       "type": "string"
     },
     "frequency": {
+      "description": "The frequency of ad display",
       "type": ["null", "integer"]
     },
     "frequency_schedule": {
+      "description": "The schedule for frequency capping",
       "type": ["null", "integer"]
     },
     "statistic_type": {
+      "description": "The type of statistics being tracked",
       "type": ["null", "string"]
     },
     "carrier_ids": {
+      "description": "The IDs of the targeted carriers",
       "type": ["null", "array"],
       "items": {
         "type": "integer"
       }
     },
     "carriers": {
+      "description": "Information about the targeted carriers",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "video_download_disabled": {
+      "description": "Flag indicating if video downloads are disabled",
       "type": "boolean"
     },
     "blocked_pangle_app_ids": {
+      "description": "The IDs of the blocked Pangle apps",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "action_category_ids": {
+      "description": "The IDs of the action categories associated with the ad group",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "action_days": {
+      "description": "The number of days the action has been performed",
       "type": ["null", "integer"]
     },
     "video_actions": {
+      "description": "Information about video-specific actions",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "rf_purchased_type": {
+      "description": "Type of purchased results",
       "type": ["null", "string"]
     },
     "purchased_impression": {
+      "description": "Information about purchased impressions",
       "type": ["null", "number"]
     },
     "purchased_reach": {
+      "description": "Information about purchased reach",
       "type": ["null", "number"]
     },
     "rf_estimated_cpr": {
+      "description": "Estimated cost per result",
       "type": ["null", "number"]
     },
     "rf_estimated_frequency": {
+      "description": "Estimated frequency of results",
       "type": ["null", "number"]
     },
     "included_pangle_audience_package_ids": {
+      "description": "The IDs of included Pangle audience packages",
       "type": ["null", "array"],
       "items": {
         "type": "number"
       }
     },
     "excluded_pangle_audience_package_ids": {
+      "description": "The IDs of excluded Pangle audience packages",
       "type": ["null", "array"],
       "items": {
         "type": "number"
       }
     },
     "is_new_structure": {
+      "description": "Flag indicating if the ad group follows a new structure",
       "type": "boolean"
     },
     "is_smart_performance_campaign": {
+      "description": "Flag indicating if the campaign is using smart performance",
       "type": ["null", "boolean"]
     },
     "catalog_id": {
+      "description": "The unique identifier of the catalog",
       "type": ["null", "integer"]
     },
     "product_set_id": {
+      "description": "The ID of the product set",
       "type": ["null", "integer"]
     },
     "catalog_authorized_bc_id": {
+      "description": "The authorized Business Center ID for the catalog",
       "type": ["null", "integer"]
     },
     "audience_rule": {
+      "description": "The rule set for targeting the audience",
       "type": ["null", "object"]
     },
     "included_custom_actions": {
+      "description": "Custom actions that are included",
       "type": ["null", "array"],
       "items": {
         "type": "object"
       }
     },
     "excluded_custom_actions": {
+      "description": "Custom actions that are excluded",
       "type": ["null", "array"],
       "items": {
         "type": "object"
       }
     },
     "shopping_ads_retargeting_type": {
+      "description": "The type of retargeting used for shopping ads",
       "type": ["null", "string"]
     },
     "split_test_adgroup_ids": {
+      "description": "The IDs of ad groups participating in split testing",
       "type": ["null", "array"],
       "items": {
         "type": "number"
       }
     },
     "brand_safety_type": {
+      "description": "The type of brand safety measures",
       "type": ["null", "string"]
     },
     "brand_safety_partner": {
+      "description": "Information about the brand safety partners",
       "type": ["null", "string"]
     },
     "promotion_website_type": {
+      "description": "The type of website used for promotion",
       "type": ["null", "string"]
     },
     "ios_quota_type": {
+      "description": "The type of iOS quota",
       "type": ["null", "string"]
     },
     "roas_bid": {
+      "description": "The bid amount set for return on ad spend",
       "type": ["null", "number"]
     },
     "actions": {
+      "description": "Information about the actions taken on the ad group",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "action_category_ids": {
+            "description": "The IDs of the action categories for the specific action",
             "type": ["null", "array"],
             "items": {
               "type": "integer"
             }
           },
           "action_period": {
+            "description": "The period during which the action was taken",
             "type": ["null", "number"]
           },
           "action_scene": {
+            "description": "The scene in which the action took place",
             "type": ["null", "string"]
           },
           "video_user_actions": {
+            "description": "User actions specific to video content",
             "type": ["null", "array"],
             "items": {
               "type": "string"
@@ -371,12 +462,15 @@
       }
     },
     "targeting_expansion": {
+      "description": "Settings for targeting expansion",
       "type": ["null", "object"],
       "properties": {
         "expansion_enabled": {
+          "description": "Flag indicating if targeting expansion is enabled",
           "type": "boolean"
         },
         "expansion_types": {
+          "description": "Types of expansion enabled",
           "type": ["null", "array"],
           "items": {
             "type": "string"
@@ -385,81 +479,102 @@
       }
     },
     "schedule_infos": {
+      "description": "Information about the scheduling arrangements",
       "type": ["null", "array"],
       "items": {
         "type": "object"
       }
     },
     "share_disabled": {
+      "description": "Flag indicating if sharing is disabled",
       "type": ["null", "boolean"]
     },
     "auto_targeting_enabled": {
+      "description": "Flag indicating if auto-targeting is enabled",
       "type": ["null", "boolean"]
     },
     "ios14_quota_type": {
+      "description": "The type of iOS 14 quota",
       "type": ["null", "string"]
     },
     "campaign_name": {
+      "description": "The name of the campaign",
       "type": ["null", "string"]
     },
     "bid_display_mode": {
+      "description": "The display mode for bidding",
       "type": ["null", "string"]
     },
     "scheduled_budget": {
+      "description": "The budget allocated for scheduling",
       "type": ["null", "number"]
     },
     "adgroup_app_profile_page_state": {
+      "description": "The state of the app profile page related to the ad group",
       "type": ["null", "string"]
     },
     "keywords": {
+      "description": "Keywords associated with the ad group",
       "type": ["null", "string"]
     },
     "next_day_retention": {
+      "description": "Retention information for the next day",
       "type": ["null", "number"]
     },
     "category_id": {
+      "description": "The ID of the category for the ad group",
       "type": ["null", "integer"]
     },
     "search_result_enabled": {
+      "description": "Flag indicating if search results are enabled",
       "type": ["null", "boolean"]
     },
     "app_type": {
+      "description": "The type of the associated app",
       "type": ["null", "string"]
     },
     "feed_type": {
+      "description": "The type of feed used",
       "type": ["null", "string"]
     },
     "delivery_mode": {
+      "description": "The mode for delivery",
       "type": ["null", "string"]
     },
     "category_exclusion_ids": {
+      "description": "The IDs of the excluded categories",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "contextual_tag_ids": {
+      "description": "The IDs of contextual tags for targeting",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "household_income": {
+      "description": "The targeted household income groups",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "isp_ids": {
+      "description": "The IDs of the targeted internet service providers",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "spending_power": {
+      "description": "Information about the spending power targeted",
       "type": ["null", "string"]
     },
     "zipcode_ids": {
+      "description": "The IDs of targeted ZIP codes",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

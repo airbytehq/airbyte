@@ -3,6 +3,7 @@
 #
 
 
+import logging
 import math
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -12,7 +13,6 @@ import boto3
 import botocore
 import botocore.exceptions
 import pendulum
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -187,7 +187,7 @@ class ManagementEvents(IncrementalAwsCloudtrailStream):
 
 
 class SourceAwsCloudtrail(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         client = Client(config["aws_key_id"], config["aws_secret_key"], config["aws_region_name"])
         try:
             client.session.lookup_events(MaxResults=1)

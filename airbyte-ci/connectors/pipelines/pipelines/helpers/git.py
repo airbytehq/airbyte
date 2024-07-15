@@ -9,7 +9,7 @@ import git
 from dagger import Connection, SessionError
 from pipelines.consts import CIContext
 from pipelines.dagger.containers.git import checked_out_git_container
-from pipelines.helpers.utils import DAGGER_CONFIG, DIFF_FILTER
+from pipelines.helpers.utils import AIRBYTE_REPO_URL, DAGGER_CONFIG, DIFF_FILTER
 
 
 def get_current_git_revision() -> str:  # noqa D103
@@ -21,18 +21,22 @@ def get_current_git_branch() -> str:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master", retries: int = 3
+    current_git_repo_url: str, current_git_branch: str, current_git_revision: str, diffed_branch: str = "master", retries: int = 3
 ) -> Set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     try:
         async with Connection(DAGGER_CONFIG) as dagger_client:
-            container = await checked_out_git_container(dagger_client, current_git_branch, current_git_revision, diffed_branch)
+            container = await checked_out_git_container(
+                dagger_client, current_git_branch, current_git_revision, diffed_branch, repo_url=current_git_repo_url
+            )
             modified_files = await container.with_exec(
-                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_branch}"]
+                ["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"origin/{diffed_branch}...target/{current_git_branch}"]
             ).stdout()
     except SessionError:
         if retries > 0:
-            return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch, retries - 1)
+            return await get_modified_files_in_branch_remote(
+                current_git_repo_url, current_git_branch, current_git_revision, diffed_branch, retries - 1
+            )
         else:
             raise
     return set(modified_files.split("\n"))
@@ -51,13 +55,13 @@ def get_modified_files_local(current_git_revision: str, diffed: str = "master") 
 
 
 async def get_modified_files_in_branch(
-    current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True
+    current_repo_url: str, current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True
 ) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
         return get_modified_files_local(current_git_revision, diffed_branch)
     else:
-        return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch)
+        return await get_modified_files_in_branch_remote(current_repo_url, current_git_branch, current_git_revision, diffed_branch)
 
 
 async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str, retries: int = 3) -> Set[str]:
@@ -98,7 +102,9 @@ def get_git_repo_path() -> str:
     return str(get_git_repo().working_tree_dir)
 
 
-async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext) -> Set[str]:
+async def get_modified_files(
+    git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, git_repo_url: str = AIRBYTE_REPO_URL
+) -> Set[str]:
     """Get the list of modified files in the current git branch.
     If the current branch is master, it will return the list of modified files in the head commit.
     The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
@@ -110,4 +116,4 @@ async def get_modified_files(git_branch: str, git_revision: str, diffed_branch: 
     """
     if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
-    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+    return await get_modified_files_in_branch(git_repo_url, git_branch, git_revision, diffed_branch, is_local)

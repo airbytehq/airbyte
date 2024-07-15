@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.destination.s3.writer.BaseS3Writer
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.net.URI
 import java.sql.Timestamp
@@ -27,9 +28,9 @@ import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.avro.AvroWriteSupport
 import org.apache.parquet.hadoop.ParquetWriter
 import org.apache.parquet.hadoop.util.HadoopOutputFile
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
+
+private val LOGGER = KotlinLogging.logger {}
 
 class S3ParquetWriter(
     config: S3DestinationConfig,
@@ -59,7 +60,7 @@ class S3ParquetWriter(
     override val fileLocation: String = String.format("s3a://%s/%s", config.bucketName, outputPath)
 
     init {
-        LOGGER.info("Full S3 path for stream '{}': {}", stream.name, fileLocation)
+        LOGGER.info { "Full S3 path for stream '${stream.name}': $fileLocation" }
 
         val path = Path(URI(fileLocation))
         val formatConfig = config.formatConfig as UploadParquetFormatConfig
@@ -112,7 +113,6 @@ class S3ParquetWriter(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(S3ParquetWriter::class.java)
 
         @JvmStatic
         fun getHadoopConfig(config: S3DestinationConfig): Configuration {

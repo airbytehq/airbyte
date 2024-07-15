@@ -75,13 +75,15 @@ class JsonToAvroConverterTest {
                         "parquet/json_schema_converter/type_conversion_test_cases_v0.json"
                     )
                 )
-            return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
-                Arguments.of(
-                    testCase["fieldName"].asText(),
-                    testCase["jsonFieldSchema"],
-                    testCase["avroFieldType"],
-                )
-            }
+            return MoreIterators.toList(testCases.elements())
+                .map { testCase: JsonNode ->
+                    Arguments.of(
+                        testCase["fieldName"].asText(),
+                        testCase["jsonFieldSchema"],
+                        testCase["avroFieldType"],
+                    )
+                }
+                .stream()
         }
     }
 
@@ -94,13 +96,15 @@ class JsonToAvroConverterTest {
                         "parquet/json_schema_converter/type_conversion_test_cases_v1.json"
                     )
                 )
-            return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
-                Arguments.of(
-                    testCase["fieldName"].asText(),
-                    testCase["jsonFieldSchema"],
-                    testCase["avroFieldType"],
-                )
-            }
+            return MoreIterators.toList(testCases.elements())
+                .map { testCase: JsonNode ->
+                    Arguments.of(
+                        testCase["fieldName"].asText(),
+                        testCase["jsonFieldSchema"],
+                        testCase["avroFieldType"],
+                    )
+                }
+                .stream()
         }
     }
 
@@ -165,17 +169,19 @@ class JsonToAvroConverterTest {
                         "parquet/json_schema_converter/json_conversion_test_cases_v0.json"
                     )
                 )
-            return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
-                Arguments.of(
-                    testCase["schemaName"].asText(),
-                    testCase["namespace"].asText(),
-                    testCase["appendAirbyteFields"].asBoolean(),
-                    testCase["jsonSchema"],
-                    testCase["jsonObject"],
-                    testCase["avroSchema"],
-                    testCase["avroObject"],
-                )
-            }
+            return MoreIterators.toList(testCases.elements())
+                .map { testCase: JsonNode ->
+                    Arguments.of(
+                        testCase["schemaName"].asText(),
+                        testCase["namespace"].asText(),
+                        testCase["appendAirbyteFields"].asBoolean(),
+                        testCase["jsonSchema"],
+                        testCase["jsonObject"],
+                        testCase["avroSchema"],
+                        testCase["avroObject"],
+                    )
+                }
+                .stream()
         }
     }
 
@@ -188,17 +194,19 @@ class JsonToAvroConverterTest {
                         "parquet/json_schema_converter/json_conversion_test_cases_v1.json"
                     )
                 )
-            return MoreIterators.toList(testCases.elements()).stream().map { testCase: JsonNode ->
-                Arguments.of(
-                    testCase["schemaName"].asText(),
-                    testCase["namespace"].asText(),
-                    testCase["appendAirbyteFields"].asBoolean(),
-                    testCase["jsonSchema"],
-                    testCase["jsonObject"],
-                    testCase["avroSchema"],
-                    testCase["avroObject"],
-                )
-            }
+            return MoreIterators.toList(testCases.elements())
+                .map { testCase: JsonNode ->
+                    Arguments.of(
+                        testCase["schemaName"].asText(),
+                        testCase["namespace"].asText(),
+                        testCase["appendAirbyteFields"].asBoolean(),
+                        testCase["jsonSchema"],
+                        testCase["jsonObject"],
+                        testCase["avroSchema"],
+                        testCase["avroObject"],
+                    )
+                }
+                .stream()
         }
     }
 

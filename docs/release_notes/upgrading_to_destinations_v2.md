@@ -55,11 +55,11 @@ Whenever possible, we've taken this opportunity to use the best data type for st
 
 :::caution Upgrade Warning
 
-* The upgrading process entails hydrating the v2 format raw table by querying the v1 raw table through a standard query, such as "INSERT INTO v2_raw_table SELECT * FROM v1_raw_table." 
-The duration of this process can vary significantly based on the data size and may encounter failures contingent on the Destination's capacity to execute the query. 
-In some cases, creating a new Airbyte connection, rather than migrating your existing connection, may be faster. Note that in these cases, all data will be re-imported. 
-* Following the successful migration of v1 raw tables to v2, the v1 raw tables will be dropped. However, it is essential to note that if there are any derived objects (materialized views) or referential 
-constraints (foreign keys) linked to the old raw table, this operation may encounter failure, resulting in an unsuccessful upgrade or broken derived objects (like materialized views etc). 
+- The upgrading process entails hydrating the v2 format raw table by querying the v1 raw table through a standard query, such as "INSERT INTO v2_raw_table SELECT \* FROM v1_raw_table."
+  The duration of this process can vary significantly based on the data size and may encounter failures contingent on the Destination's capacity to execute the query.
+  In some cases, creating a new Airbyte connection, rather than migrating your existing connection, may be faster. Note that in these cases, all data will be re-imported.
+- Following the successful migration of v1 raw tables to v2, the v1 raw tables will be dropped. However, it is essential to note that if there are any derived objects (materialized views) or referential
+  constraints (foreign keys) linked to the old raw table, this operation may encounter failure, resulting in an unsuccessful upgrade or broken derived objects (like materialized views etc).
 
 If any of the above concerns are applicable to your existing setup, we recommend [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing) for a more controlled upgrade process
 :::
@@ -160,7 +160,7 @@ As a user previously not running Normalization, Upgrading to Destinations V2 wil
 For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) source connector, we recommend the following:
 
 | CDC Source | Recommendation                                               | Notes                                                                                                                                                                                                                                                |
-|------------|--------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Postgres   | [Upgrade connection in place](#quick-start-to-upgrading)     | You can optionally dual write, but this requires resyncing historical data from the source. You must create a new Postgres source with a different replication slot than your existing source to preserve the integrity of your existing connection. |
 | MySQL      | [All above upgrade paths supported](#advanced-upgrade-paths) | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from MySQL.                                               |
 
@@ -169,7 +169,7 @@ For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) sou
 For each destination connector, Destinations V2 is effective as of the following versions:
 
 | Destination Connector | Safe Rollback Version | Destinations V2 Compatible | Upgrade Deadline         |
-|-----------------------|-----------------------|----------------------------|--------------------------|
+| --------------------- | --------------------- | -------------------------- | ------------------------ |
 | BigQuery              | 1.10.2                | 2.0.6+                     | November 7, 2023         |
 | Snowflake             | 2.1.7                 | 3.1.0+                     | November 7, 2023         |
 | Redshift              | 0.8.0                 | 2.0.0+                     | March 15, 2024           |
@@ -201,12 +201,14 @@ In addition to the changes which apply for all destinations described above, the
 ### BigQuery
 
 #### [Object and array properties](https://docs.airbyte.com/understanding-airbyte/supported-data-types/#the-types) are properly stored as JSON columns
+
 Previously, we had used TEXT, which made querying sub-properties more difficult.
 In certain cases, numbers within sub-properties with long decimal values will need to be converted to float representations due to a _quirk_ of Bigquery. Learn more [here](https://github.com/airbytehq/airbyte/issues/29594).
 
 ### Snowflake
 
 #### Explicitly uppercase column names in Final Tables
+
 Snowflake will implicitly uppercase column names if they are not quoted. Airbyte needs to quote the column names because a variety of sources have column/field names which contain special characters that require quoting in Snowflake.
 However, when you quote a column name in Snowflake, it also preserves lowercase naming. During the Snowflake V2 beta, most customers found this behavior unexpected and expected column selection to be case-insensitive for columns without special characters.
 As a result of this feedback, we decided to explicitly uppercase column names in the final tables, which does mean that columns which previous required quoting, now also require you to convert to the upper case version.
@@ -236,8 +238,8 @@ SELECT "MY COLUMN" from my_table;
 
 #### Preserving mixed case column names in Final Tables
 
-Postgres will implicitly lower case column names with mixed case characters when using unquoted identifiers. Based on feedback, we chose to replace any special 
-characters like spaces with underscores and use quoted identifiers to preserve mixed case column names. 
+Postgres will implicitly lower case column names with mixed case characters when using unquoted identifiers. Based on feedback, we chose to replace any special
+characters like spaces with underscores and use quoted identifiers to preserve mixed case column names.
 
 ## Updating Downstream Transformations
 

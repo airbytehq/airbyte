@@ -6,11 +6,11 @@ import json
 import pkgutil
 import sys
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Tuple, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 
@@ -43,9 +43,9 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
 
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    file_path: Union[InterpolatedString, str] = field(default=None)
+    file_path: Union[InterpolatedString, str] = field(default="")
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.file_path:
             self.file_path = _default_file_path()
         self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
@@ -66,11 +66,11 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
         self.package_name = resource
         return self._resolve_schema_references(raw_schema)
 
-    def _get_json_filepath(self):
-        return self.file_path.eval(self.config)
+    def _get_json_filepath(self) -> Any:
+        return self.file_path.eval(self.config)  # type: ignore # file_path is always cast to an interpolated string
 
     @staticmethod
-    def extract_resource_and_schema_path(json_schema_path: str) -> (str, str):
+    def extract_resource_and_schema_path(json_schema_path: str) -> Tuple[str, str]:
         """
         When the connector is running on a docker container, package_data is accessible from the resource (source_<name>), so we extract
         the resource from the first part of the schema path and the remaining path is used to find the schema file. This is a slight

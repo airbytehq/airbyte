@@ -7,6 +7,7 @@ It also offers embeddable charts and interactive dashboards, GUI and SQL editors
 that queries data from major data warehouses and databases with auditing and data sandboxing features, and more.
 
 Just like Airbyte, it offers the options for deployment:
+
 - self-hosted through their Open-Source or licensed (paid) versions which unlock more features.
 - cloud managed by Metabase for their paying customers.
 
@@ -27,9 +28,9 @@ Because of this, the connector configuration needs to be supplied with the sessi
 edit its own configuration with the new value everytime it runs.
 
 A consequence of this limitation is that the configuration of the connector will have to be updated when the credential token expires
-(every 14 days). Unless, the airbyte-server is able to refresh this token and persist the value of the new token. 
+(every 14 days). Unless, the airbyte-server is able to refresh this token and persist the value of the new token.
 
-If the connector is supplied with only username and password, a session_token will be generated everytime an 
+If the connector is supplied with only username and password, a session_token will be generated everytime an
 authenticated query is running, which might trigger security alerts on the user's account.
 
 All the API from metabase don't seem to support incremental sync modes as they don't expose cursor field values or pagination.
@@ -38,4 +39,3 @@ So all streams only support full refresh sync modes for the moment.
 ## API Reference
 
 The Metabase reference documents: [Metabase API documentation](https://www.metabase.com/docs/latest/api-documentation.html)
-

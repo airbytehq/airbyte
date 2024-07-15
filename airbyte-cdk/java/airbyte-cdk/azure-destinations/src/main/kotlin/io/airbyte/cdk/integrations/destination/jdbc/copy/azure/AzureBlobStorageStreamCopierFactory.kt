@@ -16,13 +16,13 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBlobStorageConfig> {
     override fun create(
         configuredSchema: String?,
-        azureBlobConfig: AzureBlobStorageConfig,
+        config: AzureBlobStorageConfig,
         stagingFolder: String?,
         configuredStream: ConfiguredAirbyteStream?,
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
         sqlOperations: SqlOperations?
-    ): StreamCopier? {
+    ): StreamCopier {
         try {
             val stream = configuredStream!!.stream
             val syncMode = configuredStream.destinationSyncMode
@@ -31,9 +31,9 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
 
             val specializedBlobClientBuilder =
                 SpecializedBlobClientBuilder()
-                    .endpoint(azureBlobConfig.endpointUrl)
-                    .sasToken(azureBlobConfig.sasToken)
-                    .containerName(azureBlobConfig.containerName)
+                    .endpoint(config.endpointUrl)
+                    .sasToken(config.sasToken)
+                    .containerName(config.containerName)
 
             return create(
                 stagingFolder,
@@ -42,7 +42,7 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
                 streamName,
                 specializedBlobClientBuilder,
                 db,
-                azureBlobConfig,
+                config,
                 nameTransformer,
                 sqlOperations
             )
@@ -62,5 +62,5 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
         azureBlobConfig: AzureBlobStorageConfig?,
         nameTransformer: StandardNameTransformer?,
         sqlOperations: SqlOperations?
-    ): StreamCopier?
+    ): StreamCopier
 }

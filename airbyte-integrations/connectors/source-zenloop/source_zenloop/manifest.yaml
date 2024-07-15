@@ -53,6 +53,35 @@ definitions:
       name: "surveys"
       path: "surveys"
       data_field: "surveys"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          title:
+            description: The title or name of the survey.
+            type:
+              - "null"
+              - string
+          status:
+            description: The status of the survey data (e.g., active, inactive, completed).
+            type:
+              - "null"
+              - string
+          public_hash_id:
+            description: The unique public hash identifier associated with the survey.
+            type:
+              - "null"
+              - string
+          inserted_at:
+            description: The date and time when the survey data was inserted.
+            type:
+              - "null"
+              - string
+            format: date-time
   surveys_slicer:
     class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
@@ -67,6 +96,62 @@ definitions:
       name: "survey_groups"
       path: "survey_groups"
       data_field: "survey_groups"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          surveys:
+            description: An array of surveys associated with the survey group.
+            type:
+              - "null"
+              - array
+            items:
+              properties:
+                title:
+                  description: The title of the survey.
+                  type:
+                    - "null"
+                    - string
+                status:
+                  description: The status of the survey.
+                  type:
+                    - "null"
+                    - string
+                public_hash_id:
+                  description: The public hash ID associated with the survey.
+                  type:
+                    - "null"
+                    - string
+                inserted_at:
+                  description:
+                    The date and time the survey was inserted into the
+                    system.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          name:
+            description: The name of the survey group.
+            type:
+              - "null"
+              - string
+          public_hash_id:
+            description: The public hash ID associated with the survey group.
+            type:
+              - "null"
+              - string
+          inserted_at:
+            description:
+              The date and time the survey group was inserted into the
+              system.
+            type:
+              - "null"
+              - string
+            format: date-time
   survey_groups_slicer:
     class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
@@ -102,9 +187,34 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        path: "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id'] else 'surveys/' + stream_slice.id + '/properties' }}"
+        path:
+          "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id']
+          else 'surveys/' + stream_slice.id + '/properties' }}"
       partition_router:
         $ref: "#/definitions/surveys_slicer"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier for the property.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the property.
+            type:
+              - "null"
+              - string
+          value:
+            description: The value associated with the property.
+            type:
+              - "null"
+              - string
   answers:
     $ref: "#/definitions/incremental_base_stream"
     $parameters:
@@ -117,6 +227,128 @@ definitions:
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
       partition_router:
         $ref: "#/definitions/surveys_slicer"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: The unique identifier of the answer data.
+            type:
+              - "null"
+              - string
+          score_type:
+            description: The type of score assigned to the answer data.
+            type:
+              - "null"
+              - string
+          score:
+            description: The score associated with the answer data.
+            type:
+              - "null"
+              - number
+          sentiment:
+            description: The sentiment associated with the answer data.
+            type:
+              - "null"
+              - string
+          sentiment_per_label_name:
+            description: Sentiment per label name.
+            type:
+              - "null"
+              - object
+          name:
+            description: The name of the respondent.
+            type:
+              - "null"
+              - string
+          recipient_id:
+            description: The unique identifier of the recipient.
+            type:
+              - "null"
+              - string
+          property_ids:
+            description: IDs of the properties linked to the answer data.
+            type:
+              - "null"
+              - array
+          metatags:
+            description: Meta tags associated with the answer data.
+            type:
+              - "null"
+              - object
+          labels:
+            description: Any labels associated with the answer data.
+            type:
+              - "null"
+              - array
+          labels_with_keywords:
+            description: Labels associated with keywords.
+            type:
+              - "null"
+              - object
+          inserted_at:
+            description: The timestamp when the answer data was inserted.
+            type:
+              - "null"
+              - string
+            format: date-time
+          email:
+            description: The email address of the respondent.
+            type:
+              - "null"
+              - string
+          identity:
+            description: The identity of the respondent.
+            type:
+              - "null"
+              - string
+          identity_type:
+            description: The type of identity used by the respondent.
+            type:
+              - "null"
+              - string
+          comment:
+            description: Any comments provided by the respondent.
+            type:
+              - "null"
+              - string
+          translated_comment:
+            description: The translated comment provided by the respondent.
+            type:
+              - "null"
+              - string
+          additional_answers:
+            description: Additional answers provided by the respondent.
+            type:
+              - "null"
+              - array
+            items:
+              properties:
+                additional_question_id:
+                  description: The unique identifier of the additional question.
+                  type:
+                    - "null"
+                    - string
+                answer:
+                  description: The answer provided by the respondent.
+                  type:
+                    - "null"
+                    - string
+                inserted_at:
+                  description: The timestamp when the answer was inserted.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+          additional_questions:
+            description: Any additional questions presented to the respondent.
+            type:
+              - "null"
+              - object
   answers_survey_group:
     $ref: "#/definitions/incremental_base_stream"
     $parameters:
@@ -130,6 +362,110 @@ definitions:
       partition_router:
         $ref: "#/definitions/survey_groups_slicer"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type:
+          - "null"
+          - object
+        properties:
+          id:
+            description: Unique identifier for the survey group response
+            type:
+              - "null"
+              - string
+          survey_public_hash_id:
+            description: Public hash ID of the survey associated with the response
+            type:
+              - "null"
+              - string
+          score_type:
+            description: Type of scoring used for the survey responses
+            type:
+              - "null"
+              - string
+          score:
+            description: Score assigned to the survey response
+            type:
+              - "null"
+              - number
+          sentiment:
+            description: Sentiment analysis result for the response
+            type:
+              - "null"
+              - string
+          sentiment_per_label_name:
+            description: Sentiment analysis results per label
+            type:
+              - "null"
+              - object
+          name:
+            description: Name of the respondent
+            type:
+              - "null"
+              - string
+          recipient_id:
+            description: Unique identifier for the recipient of the survey
+            type:
+              - "null"
+              - string
+          property_ids:
+            description: IDs of properties associated with the respondent
+            type:
+              - "null"
+              - array
+          metatags:
+            description: Additional metadata tags associated with the response
+            type:
+              - "null"
+              - object
+          labels:
+            description: Labels associated with the survey response
+            type:
+              - "null"
+              - array
+          labels_with_keywords:
+            description: Labels along with corresponding keywords
+            type:
+              - "null"
+              - object
+          inserted_at:
+            description: Timestamp of when the response was inserted
+            type:
+              - "null"
+              - string
+            format: date-time
+          email:
+            description: Email address of the respondent
+            type:
+              - "null"
+              - string
+          identity:
+            description: Identity information of the respondent
+            type:
+              - "null"
+              - string
+          identity_type:
+            description: Type of identity information provided
+            type:
+              - "null"
+              - string
+          comment:
+            description: Survey response comment provided by the respondent
+            type:
+              - "null"
+              - string
+          translated_comment:
+            description: Translated version of the comment provided
+            type:
+              - "null"
+              - string
+          additional_questions:
+            description: Any additional questions provided in the survey group response
+            type:
+              - "null"
+              - object
 streams:
   - "#/definitions/surveys"
   - "#/definitions/survey_groups"

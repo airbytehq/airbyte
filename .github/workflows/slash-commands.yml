@@ -22,6 +22,7 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           permission: write
           commands: |
+            format-fix
             test
             test-performance
             publish-java-cdk
@@ -30,6 +31,7 @@ jobs:
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
+            pr=${{ github.event.issue.number }}
           dispatch-type: workflow
 
       - name: Edit comment with error message

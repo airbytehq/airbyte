@@ -4,69 +4,91 @@
   "type": "object",
   "properties": {
     "fields": {
+      "description": "Represents the custom fields associated with the issue transition",
       "type": ["null", "string"]
     },
     "hasScreen": {
+      "description": "Indicates if the transition has an associated screen",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier for the issue transition",
       "type": ["null", "string"]
     },
     "issueId": {
+      "description": "Identifier of the issue associated with the transition",
       "type": ["null", "string"]
     },
     "isAvailable": {
+      "description": "Indicates if the transition is available",
       "type": ["null", "boolean"]
     },
     "isConditional": {
+      "description": "Indicates if the transition is conditional",
       "type": ["null", "boolean"]
     },
     "isGlobal": {
+      "description": "Indicates if the transition is global",
       "type": ["null", "boolean"]
     },
     "isInitial": {
+      "description": "Indicates if the transition is the initial transition",
       "type": ["null", "boolean"]
     },
     "isLooped": {
+      "description": "Indicates if the transition is a loop transition",
       "type": ["null", "boolean"]
     },
     "name": {
+      "description": "Name of the issue transition",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "Represents the destination status of the issue transition.",
       "type": ["null", "object"],
       "properties": {
         "description": {
+          "description": "Description of the destination status",
           "type": ["null", "string"]
         },
         "iconUrl": {
+          "description": "URL of the icon associated with the destination status",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "Unique identifier for the destination status",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "Name of the destination status",
           "type": ["null", "string"]
         },
         "self": {
+          "description": "Self URI for the destination status",
           "type": ["null", "string"]
         },
         "statusCategory": {
+          "description": "Contains information about the category of the status.",
           "type": ["null", "object"],
           "properties": {
             "colorName": {
+              "description": "Name of the color associated with the status category",
               "type": ["null", "string"]
             },
             "id": {
+              "description": "Unique identifier for the status category",
               "type": ["null", "integer"]
             },
             "key": {
+              "description": "Key of the status category",
               "type": ["null", "string"]
             },
             "name": {
+              "description": "Name of the status category",
               "type": ["null", "string"]
             },
             "self": {
+              "description": "Self URI for the status category",
               "type": ["null", "string"]
             }
           }

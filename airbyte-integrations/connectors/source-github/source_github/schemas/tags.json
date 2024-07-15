@@ -3,29 +3,37 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "Repository information related to the tag",
       "type": "string"
     },
     "name": {
+      "description": "Name of the tag",
       "type": ["null", "string"]
     },
     "commit": {
+      "description": "Information about the commit associated with this tag",
       "type": ["null", "object"],
       "properties": {
         "sha": {
+          "description": "The unique SHA of the commit",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "URL to view details of the commit",
           "type": ["null", "string"]
         }
       }
     },
     "zipball_url": {
+      "description": "URL to download a zipball archive of the repository at this tag",
       "type": ["null", "string"]
     },
     "tarball_url": {
+      "description": "URL to download a tarball archive of the repository at this tag",
       "type": ["null", "string"]
     },
     "node_id": {
+      "description": "Unique identifier of the tag",
       "type": ["null", "string"]
     }
   }

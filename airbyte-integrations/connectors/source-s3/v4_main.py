@@ -2,14 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import sys
 import traceback
 from datetime import datetime
 from typing import List
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
+from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 

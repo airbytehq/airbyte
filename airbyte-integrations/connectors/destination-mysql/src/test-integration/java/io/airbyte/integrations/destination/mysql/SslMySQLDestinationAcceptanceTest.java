@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled
 public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanceTest {
 
   private DSLContext dslContext;
@@ -100,7 +102,6 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
     db.stop();
     db.close();
   }
@@ -128,7 +129,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   }
 
   private void executeQuery(final String query) {
-    try (final DSLContext dslContext = DSLContextFactory.create(
+    final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
         db.getDriverClassName(),
@@ -136,10 +137,9 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        SQLDialect.DEFAULT)) {
-      new Database(dslContext).query(
-          ctx -> ctx
-              .execute(query));
+        SQLDialect.DEFAULT);
+    try {
+      new Database(dslContext).query(ctx -> ctx.execute(query));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }

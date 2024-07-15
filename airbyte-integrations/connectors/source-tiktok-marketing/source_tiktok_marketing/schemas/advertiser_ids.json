@@ -2,9 +2,11 @@
   "type": "object",
   "properties": {
     "advertiser_id": {
+      "description": "The unique identifier for each advertiser in the TikTok marketing platform.",
       "type": "integer"
     },
     "advertiser_name": {
+      "description": "The name of the advertiser registered in the TikTok marketing platform.",
       "type": "string"
     }
   }

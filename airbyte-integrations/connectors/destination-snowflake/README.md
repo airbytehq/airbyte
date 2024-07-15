@@ -95,7 +95,9 @@ DROP WAREHOUSE IF EXISTS INTEGRATION_TEST_WAREHOUSE_DESTINATION;
 ```
 
 ### Setup for various error-case users:
+
 Log in as the `INTEGRATION_TEST_USER_DESTINATION` user, and run this:
+
 ```sql
 drop schema if exists INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;
 create schema INTEGRATION_TEST_DESTINATION.TEXT_SCHEMA;

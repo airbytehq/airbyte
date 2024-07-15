@@ -3,53 +3,69 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the program.",
       "type": ["integer", "null"]
     },
     "createdAt": {
+      "description": "The date and time when the program was created.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the program was last updated.",
       "type": ["string", "null"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name or title of the program.",
       "type": ["string", "null"]
     },
     "description": {
+      "description": "The detailed information or overview of the program.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL associated with the program.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type or category of the program.",
       "type": ["null", "string"]
     },
     "channel": {
+      "description": "The marketing channel associated with the program.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the program.",
       "type": ["null", "string"]
     },
     "workspace": {
+      "description": "The workspace or environment where the program is located.",
       "type": ["null", "string"]
     },
     "headStart": {
+      "description": "The time duration for the program to start.",
       "type": ["null", "boolean"]
     },
     "isHeadStart": {
+      "description": "Indicates if the program has a head start feature enabled.",
       "type": ["null", "boolean"]
     },
     "folder": {
+      "description": "Details about the folder associated with the program",
       "type": ["object", "null"],
       "properties": {
         "type": {
+          "description": "The type or category of the folder.",
           "type": ["null", "string"]
         },
         "value": {
+          "description": "The unique value associated with the folder.",
           "type": ["null", "integer"]
         },
         "folderName": {
+          "description": "The name of the folder where the program is stored.",
           "type": ["null", "string"]
         }
       }

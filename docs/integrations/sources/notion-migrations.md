@@ -13,11 +13,11 @@ If you are not syncing data from the `Comments` stream, this change is non-break
 Data for the `Comments` stream will need to cleared to ensure your syncs continue successfully. To clear your data for the `Comments` stream, follow the steps below:
 
 1. Select **Connections** in the main nav bar.
-    1. Select the connection(s) affected by the update.
+   1. Select the connection(s) affected by the update.
 2. Select the **Status** tab.
-    1. In the **Enabled streams** list, click the three dots on the right side of the **Comments** stream and select **Clear data**.
+   1. In the **Enabled streams** list, click the three dots on the right side of the **Comments** stream and select **Clear data**.
 
-After the clear succeeds, trigger a sync for the `Comments` stream by clicking "Sync Now". For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+After the clear succeeds, trigger a sync for the `Comments` stream by clicking "Sync Now". For more information on clearing your data in Airbyte, see [this page](/operator-guides/clear).
 
 ## Upgrading to 2.0.0
 

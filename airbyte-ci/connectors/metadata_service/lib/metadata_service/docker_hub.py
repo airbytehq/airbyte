@@ -40,8 +40,14 @@ def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] 
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
 
-    token = get_docker_hub_auth_token()
-    headers = {"Authorization": f"JWT {token}"}
+    if "DOCKER_HUB_USERNAME" not in os.environ or "DOCKER_HUB_PASSWORD" not in os.environ:
+        # If the Docker Hub credentials are not provided, we can only anonymously call the Docker Hub API.
+        # This will only work for public images and lead to a lower rate limit.
+        headers = {}
+    else:
+        token = get_docker_hub_auth_token()
+        headers = {"Authorization": f"JWT {token}"} if token else {}
+
     tag_url = f"https://registry.hub.docker.com/v2/repositories/{image_name}/tags/{version}"
 
     # Allow for retries as the DockerHub API is not always reliable with returning the latest publish.

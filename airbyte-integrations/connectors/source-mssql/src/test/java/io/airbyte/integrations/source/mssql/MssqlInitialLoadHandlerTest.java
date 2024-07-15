@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.integrations.source.mssql.MssqlQueryUtils.TableSizeInfo;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialLoadHandler;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import org.junit.jupiter.api.Test;
 
 public class MssqlInitialLoadHandlerTest {

@@ -347,7 +347,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getBigDecimal(2));
+      final BigDecimal bigDecimal = DataTypeUtils.throwExceptionIfInvalid(() -> arrayResultSet.getBigDecimal(2));
       if (bigDecimal != null) {
         arrayNode.add(bigDecimal);
       } else {
@@ -361,7 +361,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final long value = DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getLong(2));
+      final long value = DataTypeUtils.throwExceptionIfInvalid(() -> arrayResultSet.getLong(2));
       arrayNode.add(value);
     }
     node.set(columnName, arrayNode);
@@ -371,7 +371,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(2), Double::isFinite));
+      arrayNode.add(DataTypeUtils.throwExceptionIfInvalid(() -> arrayResultSet.getDouble(2), Double::isFinite));
     }
     node.set(columnName, arrayNode);
   }
@@ -381,7 +381,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final String moneyValue = parseMoneyValue(arrayResultSet.getString(2));
-      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
+      arrayNode.add(
+          DataTypeUtils.throwExceptionIfInvalid(() -> DataTypeUtils.throwExceptionIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
     }
     node.set(columnName, arrayNode);
   }
@@ -612,7 +613,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
-    final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
+    final BigDecimal bigDecimal = DataTypeUtils.throwExceptionIfInvalid(() -> resultSet.getBigDecimal(index));
     if (bigDecimal != null) {
       node.put(columnName, bigDecimal);
     } else {
@@ -633,7 +634,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   private void putMoney(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final String moneyValue = parseMoneyValue(resultSet.getString(index));
-    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
+    node.put(columnName, DataTypeUtils.throwExceptionIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
   }
 
   private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)

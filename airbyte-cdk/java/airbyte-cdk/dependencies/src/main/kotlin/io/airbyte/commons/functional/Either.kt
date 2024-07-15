@@ -29,14 +29,14 @@ class Either<Error, Result> private constructor(left: Error?, right: Result?) {
         return right != null
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val either = o as Either<*, *>
+        val either = other as Either<*, *>
         return left == either.left && right == either.right
     }
 
@@ -47,7 +47,7 @@ class Either<Error, Result> private constructor(left: Error?, right: Result?) {
     companion object {
         fun <Error, Result> left(error: Error): Either<Error, Result> {
             if (error == null) {
-                LOGGER.warn("Either.left called with a null!")
+                LOGGER.warn { "Either.left called with a null!" }
             }
             return Either(error!!, null)
         }

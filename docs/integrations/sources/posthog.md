@@ -46,7 +46,7 @@ This page contains the setup guide and reference information for the PostHog sou
 
 ### Rate limiting
 
-Private `GET`, `POST`, `PATCH`, `DELETE` endpoints are rate limited. Public POST-only endpoints are **not** rate limited. A rule of thumb for whether rate limits apply is if the personal API key is used for authentication. 
+Private `GET`, `POST`, `PATCH`, `DELETE` endpoints are rate limited. Public POST-only endpoints are **not** rate limited. A rule of thumb for whether rate limits apply is if the personal API key is used for authentication.
 
 There are separate limits for different kinds of resources.
 
@@ -66,10 +66,13 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2023-12-04 | [28593](https://github.com/airbytehq/airbyte/pull/28593) | Fix events.event type                                                                                              |
-| 0.1.15  | 2023-10-28 | [31265](https://github.com/airbytehq/airbyte/pull/31265) | Fix Events stream datetime format                                                                     |
+| 0.1.15  | 2023-10-28 | [31265](https://github.com/airbytehq/airbyte/pull/31265) | Fix Events stream datetime format                                                                                  |
 | 0.1.14  | 2023-08-29 | [29947](https://github.com/airbytehq/airbyte/pull/29947) | Add optional field to spec: `events_time_step`                                                                     |
 | 0.1.13  | 2023-07-19 | [28461](https://github.com/airbytehq/airbyte/pull/28461) | Fixed EventsSimpleRetriever declaration                                                                            |
 | 0.1.12  | 2023-06-28 | [27764](https://github.com/airbytehq/airbyte/pull/27764) | Update following state breaking changes                                                                            |
@@ -85,3 +88,5 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 | 0.1.2   | 2021-07-15 | [4692](https://github.com/airbytehq/airbyte/pull/4692)   | Use account information for checking the connection                                                                |
 | 0.1.1   | 2021-07-05 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                                                       |
 | 0.1.0   | 2021-06-08 | [3768](https://github.com/airbytehq/airbyte/pull/3768)   | Initial Release                                                                                                    |
+
+</details>

@@ -32,12 +32,12 @@ class GcsDestinationConfig(
 ) :
     S3DestinationConfig(
         GCS_ENDPOINT,
-        bucketName!!,
-        bucketPath!!,
+        bucketName,
+        bucketPath,
         bucketRegion,
         S3DestinationConstants.DEFAULT_PATH_FORMAT,
         gcsCredentialConfig.s3CredentialConfig.orElseThrow(),
-        formatConfig!!,
+        formatConfig,
         null,
         null,
         false,
@@ -62,7 +62,7 @@ class GcsDestinationConfig(
             }
             else ->
                 throw IllegalArgumentException(
-                    "Unsupported credential type: " + gcsCredentialConfig.credentialType!!.name
+                    "Unsupported credential type: " + gcsCredentialConfig.credentialType.name
                 )
         }
     }
@@ -70,6 +70,7 @@ class GcsDestinationConfig(
     companion object {
         private const val GCS_ENDPOINT = "https://storage.googleapis.com"
 
+        @JvmStatic
         fun getGcsDestinationConfig(config: JsonNode): GcsDestinationConfig {
             return GcsDestinationConfig(
                 config["gcs_bucket_name"].asText(),

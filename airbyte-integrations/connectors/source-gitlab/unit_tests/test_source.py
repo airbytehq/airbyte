@@ -43,14 +43,17 @@ def test_connection_invalid_projects_and_projects(config_with_project_groups, re
     )
 
 
-@pytest.mark.parametrize("error_code, expected_status", ((500, False), (401, False)))
-def test_connection_fail_due_to_api_error(error_code, expected_status, config, mocker, requests_mock):
+def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     mocker.patch("time.sleep")
+    error_code = 401
     requests_mock.get("/api/v4/groups", status_code=error_code)
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config)
     assert status is False
-    assert msg.startswith(f"Unable to connect to stream projects")
+    assert msg == (
+        "Unable to connect to stream projects - Unable to refresh the `access_token`, "
+        "please re-authenticate in Sources > Settings."
+    )
 
 
 def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_mock):
@@ -63,12 +66,13 @@ def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_m
         "refresh_token": "new_refresh_token",
     }
     requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
-    requests_mock.get("/api/v4/groups", status_code=500)
+    requests_mock.get("/api/v4/groups", status_code=401)
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), oauth_config)
     assert status is False
-    assert msg.startswith(
-        "Unable to connect to stream projects - Unable to connect to Gitlab API with the provided credentials"
+    assert msg == (
+        "Unable to connect to stream projects - Unable to refresh the `access_token`, "
+        "please re-authenticate in Sources > Settings."
     )
 
 

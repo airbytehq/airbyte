@@ -54,7 +54,11 @@ class CatalogBuilder:
 
         # to avoid a breaking change, `name` needs to stay in the API but this can be either a name or a builder
         name_or_builder = name
-        builder = name_or_builder if isinstance(name_or_builder, ConfiguredAirbyteStreamBuilder) else ConfiguredAirbyteStreamBuilder().with_name(name_or_builder).with_sync_mode(sync_mode)
+        builder = (
+            name_or_builder
+            if isinstance(name_or_builder, ConfiguredAirbyteStreamBuilder)
+            else ConfiguredAirbyteStreamBuilder().with_name(name_or_builder).with_sync_mode(sync_mode)
+        )
         self._streams.append(builder)
         return self
 

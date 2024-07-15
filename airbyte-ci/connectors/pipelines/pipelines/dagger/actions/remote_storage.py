@@ -8,8 +8,9 @@ import uuid
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from dagger import Client, File, Secret
+from dagger import Client, File
 from pipelines.helpers.utils import get_exec_result, secret_host_variable, with_exit_code
+from pipelines.models.secrets import Secret
 
 GOOGLE_CLOUD_SDK_TAG = "425.0.0-slim"
 
@@ -54,7 +55,7 @@ async def upload_to_gcs(
         file_to_upload (File): The dagger File to upload.
         key (str): The key that will be written on the S3 bucket.
         bucket (str): The S3 bucket name.
-        gcs_credentials (Secret): The dagger secret holding the credentials to get and upload the targeted GCS bucket.
+        gcs_credentials (Secret): The secret holding the credentials to get and upload the targeted GCS bucket.
         flags (List[str]): Flags to be passed to the 'gcloud storage cp' command.
         cache_upload (bool): If false, the gcloud commands will be executed on each call.
     Returns:
@@ -69,7 +70,7 @@ async def upload_to_gcs(
         dagger_client.container()
         .from_(f"google/cloud-sdk:{GOOGLE_CLOUD_SDK_TAG}")
         .with_workdir("/upload")
-        .with_new_file("credentials.json", contents=await gcs_credentials.plaintext())
+        .with_mounted_secret("credentials.json", gcs_credentials.as_dagger_secret(dagger_client))
         .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/upload/credentials.json")
         .with_file("to_upload", file_to_upload)
     )

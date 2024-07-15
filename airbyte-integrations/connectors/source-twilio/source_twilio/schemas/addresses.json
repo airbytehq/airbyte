@@ -1,53 +1,69 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier of the account associated with this address.",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "The city of the address.",
       "type": ["null", "string"]
     },
     "customer_name": {
+      "description": "The name of the customer associated with this address.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the address was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the address was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "emergency_enabled": {
+      "description": "Indicates whether emergency services are enabled for this address.",
       "type": ["null", "boolean"]
     },
     "friendly_name": {
+      "description": "A friendly name or label for the address.",
       "type": ["null", "string"]
     },
     "iso_country": {
+      "description": "The ISO 3166-1 alpha-2 country code of the address.",
       "type": ["null", "string"]
     },
     "postal_code": {
+      "description": "The postal code of the address.",
       "type": ["null", "string"]
     },
     "region": {
+      "description": "The region or state of the address.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier of the address.",
       "type": ["null", "string"]
     },
     "street": {
+      "description": "The street address.",
       "type": ["null", "string"]
     },
     "street_secondary": {
+      "description": "Additional information about the street address, such as suite number.",
       "type": ["null", "string"]
     },
     "validated": {
+      "description": "Indicates whether the address has been validated.",
       "type": ["null", "boolean"]
     },
     "verified": {
+      "description": "Indicates whether the address has been verified.",
       "type": ["null", "boolean"]
     },
     "uri": {
+      "description": "The URI of the address resource.",
       "type": ["null", "string"]
     }
   },

@@ -1,9 +1,9 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mysql",
   "supportsIncremental": true,
-  "supportsNormalization": true,
+  "supportsNormalization": false,
   "supportsDBT": true,
-  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MySQL Destination Spec",
@@ -58,6 +58,19 @@
         "title": "JDBC URL Params",
         "type": "string",
         "order": 6
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The database to write raw tables into",
+        "title": "Raw table database (defaults to airbyte_internal)",
+        "order": 7
+      },
+      "disable_type_dedupe": {
+        "type": "boolean",
+        "default": false,
+        "description": "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
+        "title": "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "order": 8
       }
     }
   }

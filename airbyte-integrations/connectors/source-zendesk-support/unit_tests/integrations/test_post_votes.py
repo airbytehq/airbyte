@@ -27,11 +27,13 @@ _NOW = datetime.now(timezone.utc)
 class TestPostsVotesStreamFullRefresh(TestCase):
     @property
     def _config(self):
-        return ConfigBuilder() \
-            .with_basic_auth_credentials("user@example.com", "password") \
-            .with_subdomain("d3v-airbyte") \
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2)) \
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
             .build()
+        )
 
     def get_authenticator(self, config):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
@@ -48,13 +50,16 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_start_time(self._config["start_date"]).with_page_size(100).build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(PostsVotesRecordBuilder.posts_votes_record()).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostsVotesResponseBuilder.posts_votes_response().with_record(PostsVotesRecordBuilder.posts_votes_record()).build(),
         )
 
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 1
-    
+
     @HttpMocker()
     def test_given_403_error_when_read_posts_comments_then_skip_stream(self, http_mocker):
         """
@@ -67,8 +72,11 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_start_time(self._config["start_date"]).with_page_size(100).build(),
-            ErrorResponseBuilder.response_with_status(403).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            ErrorResponseBuilder.response_with_status(403).build(),
         )
 
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
@@ -89,8 +97,11 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_start_time(self._config["start_date"]).with_page_size(100).build(),
-            ErrorResponseBuilder.response_with_status(404).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            ErrorResponseBuilder.response_with_status(404).build(),
         )
 
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
@@ -111,11 +122,14 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         post = posts_record_builder.build()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_start_time(self._config["start_date"]).with_page_size(100).build(),
-            ErrorResponseBuilder.response_with_status(500).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            ErrorResponseBuilder.response_with_status(500).build(),
         )
 
-        with patch('time.sleep', return_value=None):
+        with patch("time.sleep", return_value=None):
             output = read_stream("post_votes", SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 0
@@ -128,11 +142,13 @@ class TestPostsVotesStreamFullRefresh(TestCase):
 class TestPostsVotesStreamIncremental(TestCase):
     @property
     def _config(self):
-        return ConfigBuilder() \
-            .with_basic_auth_credentials("user@example.com", "password") \
-            .with_subdomain("d3v-airbyte") \
-            .with_start_date(pendulum.now(tz="UTC").subtract(years=2)) \
+        return (
+            ConfigBuilder()
+            .with_basic_auth_credentials("user@example.com", "password")
+            .with_subdomain("d3v-airbyte")
+            .with_start_date(pendulum.now(tz="UTC").subtract(years=2))
             .build()
+        )
 
     def _get_authenticator(self, config):
         return ApiTokenAuthenticator(email=config["credentials"]["email"], password=config["credentials"]["api_token"])
@@ -150,15 +166,18 @@ class TestPostsVotesStreamIncremental(TestCase):
         post_comments_record_builder = PostsVotesRecordBuilder.posts_votes_record()
 
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_start_time(self._config["start_date"]).with_page_size(100).build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(post_comments_record_builder).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostsVotesResponseBuilder.posts_votes_response().with_record(post_comments_record_builder).build(),
         )
 
         output = read_stream("post_votes", SyncMode.incremental, self._config)
         assert len(output.records) == 1
 
         post_comment = post_comments_record_builder.build()
-        assert output.most_recent_state.stream_descriptor.name == "post_votes" 
+        assert output.most_recent_state.stream_descriptor.name == "post_votes"
         assert output.most_recent_state.stream_state == {"updated_at": post_comment["updated_at"]}
 
     @HttpMocker()
@@ -182,39 +201,47 @@ class TestPostsVotesStreamIncremental(TestCase):
         posts_record_builder = given_posts(http_mocker, state_start_date, api_token_authenticator)
         post = posts_record_builder.build()
 
-        post_comments_first_record_builder = PostsVotesRecordBuilder.posts_votes_record() \
-            .with_field(FieldPath("updated_at"), datetime_to_string(first_page_record_updated_at))
+        post_comments_first_record_builder = PostsVotesRecordBuilder.posts_votes_record().with_field(
+            FieldPath("updated_at"), datetime_to_string(first_page_record_updated_at)
+        )
 
         # Check availability request mock
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]).with_start_time(self._config["start_date"]).with_page_size(100).build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(PostsVotesRecordBuilder.posts_votes_record()).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(self._config["start_date"])
+            .with_page_size(100)
+            .build(),
+            PostsVotesResponseBuilder.posts_votes_response().with_record(PostsVotesRecordBuilder.posts_votes_record()).build(),
         )
 
         # Read first page request mock
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]) \
-                .with_start_time(datetime_to_string(state_start_date)) \
-                .with_page_size(100) \
-                .build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_pagination().with_record(post_comments_first_record_builder).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_start_time(datetime_to_string(state_start_date))
+            .with_page_size(100)
+            .build(),
+            PostsVotesResponseBuilder.posts_votes_response().with_pagination().with_record(post_comments_first_record_builder).build(),
         )
 
-        post_comments_last_record_builder = PostsVotesRecordBuilder.posts_votes_record() \
-            .with_id("last_record_id_from_last_page") \
+        post_comments_last_record_builder = (
+            PostsVotesRecordBuilder.posts_votes_record()
+            .with_id("last_record_id_from_last_page")
             .with_field(FieldPath("updated_at"), datetime_to_string(last_page_record_updated_at))
+        )
 
         # Read second page request mock
         http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"]) \
-                .with_page_after("after-cursor") \
-                .with_page_size(100) \
-                .build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(post_comments_last_record_builder).build()
+            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
+            .with_page_after("after-cursor")
+            .with_page_size(100)
+            .build(),
+            PostsVotesResponseBuilder.posts_votes_response().with_record(post_comments_last_record_builder).build(),
         )
 
-        output = read_stream("post_votes", SyncMode.incremental, self._config, StateBuilder().with_stream_state("post_votes", state).build())
+        output = read_stream(
+            "post_votes", SyncMode.incremental, self._config, StateBuilder().with_stream_state("post_votes", state).build()
+        )
         assert len(output.records) == 2
 
-        assert output.most_recent_state.stream_descriptor.name == "post_votes" 
-        assert output.most_recent_state.stream_state == {"updated_at":  datetime_to_string(last_page_record_updated_at)}
+        assert output.most_recent_state.stream_descriptor.name == "post_votes"
+        assert output.most_recent_state.stream_state == {"updated_at": datetime_to_string(last_page_record_updated_at)}

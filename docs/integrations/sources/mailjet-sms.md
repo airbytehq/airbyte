@@ -6,14 +6,14 @@ This source can sync data from the [Mailjet SMS API](https://dev.mailjet.com/sms
 
 ## This Source Supports the Following Streams
 
-* SMS
+- SMS
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -23,10 +23,20 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 ### Requirements
 
-* Mailjet SMS TOKEN
+- Mailjet SMS TOKEN
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.0   | 2022-10-26 | [#18345](https://github.com/airbytehq/airbyte/pull/18345) | 🎉 New Source: Mailjet SMS API [low-code CDK] |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject                                                                         |
+| :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.5 | 2024-06-06 | [39165](https://github.com/airbytehq/airbyte/pull/39165) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.4 | 2024-05-28 | [38730](https://github.com/airbytehq/airbyte/pull/38730) | Make compatible with builder. |
+| 0.1.3 | 2024-04-19 | [37195](https://github.com/airbytehq/airbyte/pull/37195) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.1.2 | 2024-04-15 | [37195](https://github.com/airbytehq/airbyte/pull/37195) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.1 | 2024-04-12 | [37195](https://github.com/airbytehq/airbyte/pull/37195) | schema descriptions |
+| 0.1.0   | 2022-10-26 | [#18345](https://github.com/airbytehq/airbyte/pull/18345) | 🎉 New Source: Mailjet SMS API [low-code CDK]                                   |
+
+</details>

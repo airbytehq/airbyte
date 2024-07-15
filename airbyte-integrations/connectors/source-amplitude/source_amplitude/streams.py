@@ -13,6 +13,7 @@ from typing import IO, Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
 LOGGER = logging.getLogger("airbyte")
@@ -45,7 +46,7 @@ def error_msg_from_status(status: int = None):
             LOGGER.error(f"Unknown error occured: code {status}")
 
 
-class Events(HttpStream):
+class Events(HttpStream, CheckpointMixin):
     api_version = 2
     base_params = {}
     cursor_field = "server_upload_time"
@@ -61,6 +62,8 @@ class Events(HttpStream):
         self.event_time_interval = event_time_interval
         self._start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
         self.date_time_fields = self._get_date_time_items_from_schema()
+        if not hasattr(self, "_state"):
+            self._state = {}
         super().__init__(**kwargs)
 
     @property
@@ -72,7 +75,15 @@ class Events(HttpStream):
     def time_interval(self) -> dict:
         return {self.event_time_interval.get("size_unit"): self.event_time_interval.get("size")}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]) -> Mapping[str, Any]:
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         # save state value in source native format
         if self.compare_date_template:
             latest_state = pendulum.parse(latest_record[self.cursor_field]).strftime(self.compare_date_template)
@@ -172,8 +183,9 @@ class Events(HttpStream):
         # https://developers.amplitude.com/docs/export-api#status-codes
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
-            records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-            yield from records
+            for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+                self.state = self._get_updated_state(self.state, record)
+                yield record
         except requests.exceptions.HTTPError as error:
             status = error.response.status_code
             if status in HTTP_ERROR_CODES.keys():

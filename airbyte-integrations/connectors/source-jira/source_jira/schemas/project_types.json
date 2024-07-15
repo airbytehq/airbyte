@@ -3,28 +3,28 @@
   "type": "object",
   "properties": {
     "key": {
-      "type": "string",
       "description": "The key of the project type.",
+      "type": "string",
       "readOnly": true
     },
     "formattedKey": {
-      "type": "string",
       "description": "The formatted key of the project type.",
+      "type": "string",
       "readOnly": true
     },
     "descriptionI18nKey": {
-      "type": "string",
       "description": "The key of the project type's description.",
+      "type": "string",
       "readOnly": true
     },
     "icon": {
-      "type": "string",
       "description": "The icon of the project type.",
+      "type": "string",
       "readOnly": true
     },
     "color": {
-      "type": "string",
       "description": "The color of the project type.",
+      "type": "string",
       "readOnly": true
     }
   },

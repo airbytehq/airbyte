@@ -5,15 +5,21 @@ import json
 import logging
 import tempfile
 from collections import defaultdict
+from collections.abc import Iterable, Iterator, MutableMapping
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, MutableMapping, Optional, Type
+from typing import Any, Dict, List, Optional
 
 import _collections_abc
 import dagger
 import requests
-from airbyte_protocol.models import AirbyteCatalog, AirbyteMessage, ConfiguredAirbyteCatalog  # type: ignore
+from airbyte_protocol.models import AirbyteCatalog  # type: ignore
+from airbyte_protocol.models import AirbyteMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStateMessage  # type: ignore
+from airbyte_protocol.models import AirbyteStreamStatusTraceMessage  # type: ignore
+from airbyte_protocol.models import ConfiguredAirbyteCatalog  # type: ignore
+from airbyte_protocol.models import TraceType  # type: ignore
 from airbyte_protocol.models import Type as AirbyteMessageType
 from genson import SchemaBuilder  # type: ignore
 from live_tests.commons.backends import DuckDbBackend, FileBackend
@@ -172,7 +178,7 @@ class ConnectorUnderTest:
 
     @classmethod
     async def from_image_name(
-        cls: Type[ConnectorUnderTest],
+        cls: type[ConnectorUnderTest],
         dagger_client: dagger.Client,
         image_name: str,
         target_or_control: TargetOrControl,
@@ -189,8 +195,8 @@ class ExecutionInputs:
     command: Command
     config: Optional[SecretDict] = None
     configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
-    state: Optional[Dict] = None
-    environment_variables: Optional[Dict] = None
+    state: Optional[dict] = None
+    environment_variables: Optional[dict] = None
     duckdb_path: Optional[Path] = None
 
     def raise_if_missing_attr_for_command(self, attribute: str) -> None:
@@ -230,8 +236,8 @@ class ExecutionResult:
     success: bool
     executed_container: Optional[dagger.Container]
     http_dump: Optional[dagger.File] = None
-    http_flows: List[http.HTTPFlow] = field(default_factory=list)
-    stream_schemas: Optional[Dict[str, Any]] = None
+    http_flows: list[http.HTTPFlow] = field(default_factory=list)
+    stream_schemas: Optional[dict[str, Any]] = None
     backend: Optional[FileBackend] = None
 
     HTTP_DUMP_FILE_NAME = "http_dump.mitm"
@@ -251,7 +257,7 @@ class ExecutionResult:
 
     @classmethod
     async def load(
-        cls: Type[ExecutionResult],
+        cls: type[ExecutionResult],
         connector_under_test: ConnectorUnderTest,
         actor_id: str,
         command: Command,
@@ -284,7 +290,7 @@ class ExecutionResult:
     def parse_airbyte_messages_from_command_output(
         self, command_output_path: Path, log_validation_errors: bool = False
     ) -> Iterable[AirbyteMessage]:
-        with open(command_output_path, "r") as command_output:
+        with open(command_output_path) as command_output:
             for line in command_output:
                 try:
                     yield AirbyteMessage.parse_raw(line)
@@ -300,9 +306,9 @@ class ExecutionResult:
             if message.type is AirbyteMessageType.RECORD:
                 yield message
 
-    def generate_stream_schemas(self) -> Dict[str, Any]:
+    def generate_stream_schemas(self) -> dict[str, Any]:
         self.logger.info("Generating stream schemas")
-        stream_builders: Dict[str, SchemaBuilder] = {}
+        stream_builders: dict[str, SchemaBuilder] = {}
         for record in self.get_records():
             stream = record.record.stream
             if stream not in stream_builders:
@@ -326,8 +332,24 @@ class ExecutionResult:
                 if message.type is AirbyteMessageType.RECORD:
                     yield message
 
-    def get_message_count_per_type(self) -> Dict[AirbyteMessageType, int]:
-        message_count: Dict[AirbyteMessageType, int] = defaultdict(int)
+    def get_states_per_stream(self, stream: str) -> Dict[str, List[AirbyteStateMessage]]:
+        self.logger.info(f"Reading state messages for stream {stream}")
+        states = defaultdict(list)
+        for message in self.airbyte_messages:
+            if message.type is AirbyteMessageType.STATE:
+                states[message.state.stream.stream_descriptor.name].append(message.state)
+        return states
+
+    def get_status_messages_per_stream(self, stream: str) -> Dict[str, List[AirbyteStreamStatusTraceMessage]]:
+        self.logger.info(f"Reading state messages for stream {stream}")
+        statuses = defaultdict(list)
+        for message in self.airbyte_messages:
+            if message.type is AirbyteMessageType.TRACE and message.trace.type == TraceType.STREAM_STATUS:
+                statuses[message.trace.stream_status.stream_descriptor.name].append(message.trace.stream_status)
+        return statuses
+
+    def get_message_count_per_type(self) -> dict[AirbyteMessageType, int]:
+        message_count: dict[AirbyteMessageType, int] = defaultdict(int)
         for message in self.airbyte_messages:
             message_count[message.type] += 1
         return message_count
@@ -374,7 +396,7 @@ class ExecutionResult:
         self.save_stream_schemas(output_dir)
         self.logger.info("All artifacts saved to disk")
 
-    def get_updated_configuration(self, control_message_path: Path) -> Optional[Dict[str, Any]]:
+    def get_updated_configuration(self, control_message_path: Path) -> Optional[dict[str, Any]]:
         """Iterate through the control messages to find CONNECTOR_CONFIG message and return the last updated configuration."""
         if not control_message_path.exists():
             return None
@@ -401,7 +423,7 @@ class ExecutionResult:
         payload = {
             "configuration": {
                 **updated_configuration,
-                **{f"{self.connector_under_test.actor_type.value}Type": self.connector_under_test.name_without_type_prefix},
+                f"{self.connector_under_test.actor_type.value}Type": self.connector_under_test.name_without_type_prefix,
             }
         }
         headers = {
@@ -425,7 +447,9 @@ class ConnectionObjects:
     destination_config: Optional[SecretDict]
     configured_catalog: Optional[ConfiguredAirbyteCatalog]
     catalog: Optional[AirbyteCatalog]
-    state: Optional[Dict]
+    state: Optional[dict]
     workspace_id: Optional[str]
     source_id: Optional[str]
     destination_id: Optional[str]
+    source_docker_image: Optional[str]
+    connection_id: Optional[str]

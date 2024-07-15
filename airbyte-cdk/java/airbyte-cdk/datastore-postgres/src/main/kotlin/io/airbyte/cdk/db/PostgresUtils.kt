@@ -20,9 +20,7 @@ object PostgresUtils {
                 { conn: Connection ->
                     conn.createStatement().executeQuery("select * from pg_current_wal_lsn()")
                 },
-                { resultSet: ResultSet? ->
-                    JdbcUtils.defaultSourceOperations.rowToJson(resultSet!!)
-                }
+                { resultSet: ResultSet -> JdbcUtils.defaultSourceOperations.rowToJson(resultSet) }
             )
 
         Preconditions.checkState(jsonNodes.size == 1)

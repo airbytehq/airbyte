@@ -29,12 +29,12 @@ interface SqlGenerator {
     fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql
 
     /**
-     * Used to create either the airbyte_internal or final schemas if they don't exist
+     * TODO delete this; superseded by [DestinationHandler.createNamespaces]
      *
      * @param schema the schema to create
      * @return SQL to create the schema if it does not exist
      */
-    fun createSchema(schema: String?): Sql
+    fun createSchema(schema: String): Sql
 
     /**
      * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -87,7 +87,7 @@ interface SqlGenerator {
      * @param tableName name of the v2 raw table
      * @return a string containing the necessary sql to migrate
      */
-    fun migrateFromV1toV2(streamId: StreamId, namespace: String?, tableName: String?): Sql
+    fun migrateFromV1toV2(streamId: StreamId, namespace: String, tableName: String): Sql
 
     /**
      * Typically we need to create a soft reset temporary table and clear loaded at values
@@ -95,7 +95,7 @@ interface SqlGenerator {
      * @return
      */
     fun prepareTablesForSoftReset(stream: StreamConfig): Sql {
-        val createTempTable = createTable(stream, TypeAndDedupeTransaction.SOFT_RESET_SUFFIX, true)
+        val createTempTable = createTable(stream, TyperDeduperUtil.SOFT_RESET_SUFFIX, true)
         val clearLoadedAt = clearLoadedAt(stream.id)
         return Sql.Companion.concat(createTempTable, clearLoadedAt)
     }

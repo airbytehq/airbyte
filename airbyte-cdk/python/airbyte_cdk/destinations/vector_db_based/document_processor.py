@@ -7,7 +7,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
-import dpath.util
+import dpath
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
@@ -137,7 +137,7 @@ class DocumentProcessor:
         relevant_fields = {}
         if fields and len(fields) > 0:
             for field in fields:
-                values = dpath.util.values(record.data, field, separator=".")
+                values = dpath.values(record.data, field, separator=".")
                 if values and len(values) > 0:
                     relevant_fields[field] = values if len(values) > 1 else values[0]
         else:
@@ -162,7 +162,7 @@ class DocumentProcessor:
         primary_key = []
         for key in current_stream.primary_key:
             try:
-                primary_key.append(str(dpath.util.get(record.data, key)))
+                primary_key.append(str(dpath.get(record.data, key)))
             except KeyError:
                 primary_key.append("__not_found__")
         stringified_primary_key = "_".join(primary_key)

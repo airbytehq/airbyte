@@ -45,6 +45,7 @@ interface NamingConventionTransformer {
     @Deprecated("as this is very SQL specific, prefer using getIdentifier instead")
     fun getTmpTableName(name: String): String
 
+    @Suppress("DEPRECATION")
     fun getTmpTableName(streamName: String, randomSuffix: String): String {
         return getTmpTableName(streamName)
     }

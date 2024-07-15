@@ -11,11 +11,17 @@ async def checked_out_git_container(
     current_git_branch: str,
     current_git_revision: str,
     diffed_branch: Optional[str] = None,
+    repo_url: str = AIRBYTE_REPO_URL,
 ) -> Container:
-    """Builds git-based container with the current branch checked out."""
+    """
+    Create a container with git in it.
+    We add the airbyte repo as the origin remote and the target repo as the target remote.
+    We fetch the diffed branch from the origin remote and the current branch from the target remote.
+    We then checkout the current branch.
+    """
     current_git_branch = current_git_branch.removeprefix("origin/")
     diffed_branch = current_git_branch if diffed_branch is None else diffed_branch.removeprefix("origin/")
-    return await (
+    git_container = (
         dagger_client.container()
         .from_("alpine/git:latest")
         .with_workdir("/repo")
@@ -25,14 +31,20 @@ async def checked_out_git_container(
             [
                 "remote",
                 "add",
-                "--fetch",
-                "--track",
-                current_git_branch,
-                "--track",
-                diffed_branch if diffed_branch is not None else current_git_branch,
                 "origin",
                 AIRBYTE_REPO_URL,
             ]
         )
-        .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
+        .with_exec(
+            [
+                "remote",
+                "add",
+                "target",
+                repo_url,
+            ]
+        )
+        .with_exec(["fetch", "origin", diffed_branch])
     )
+    if diffed_branch != current_git_branch:
+        git_container = git_container.with_exec(["fetch", "target", current_git_branch])
+    return await git_container.with_exec(["checkout", current_git_branch])

@@ -3,199 +3,259 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "ID of the merge request.",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Internal ID of the merge request.",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "ID of the project to which the merge request belongs.",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the merge request.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the merge request.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "State of the merge request.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Timestamp when the merge request was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "prepared_at": {
+      "description": "Timestamp when the merge request was prepared.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp when the merge request was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "merged_at": {
+      "description": "Timestamp when the merge request was merged.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "closed_at": {
+      "description": "Timestamp when the merge request was closed.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "target_branch": {
+      "description": "Name of the target branch for the merge request.",
       "type": ["null", "string"]
     },
     "source_branch": {
+      "description": "Name of the source branch for the merge request.",
       "type": ["null", "string"]
     },
     "user_notes_count": {
+      "description": "Total count of user notes on the merge request.",
       "type": ["null", "integer"]
     },
     "upvotes": {
+      "description": "Number of upvotes for the merge request.",
       "type": ["null", "integer"]
     },
     "downvotes": {
+      "description": "Number of downvotes for the merge request.",
       "type": ["null", "integer"]
     },
     "assignees": {
+      "description": "List of users assigned to this merge request.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "integer"]
       }
     },
     "reviewers": {
+      "description": "List of reviewers assigned to the merge request.",
       "type": ["null", "array"]
     },
     "source_project_id": {
+      "description": "ID of the source project for the merge request.",
       "type": ["null", "integer"]
     },
     "target_project_id": {
+      "description": "ID of the target project for the merge request.",
       "type": ["null", "integer"]
     },
     "labels": {
+      "description": "List of labels associated with the merge request.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "work_in_progress": {
+      "description": "Flag indicating if the merge request is a work in progress.",
       "type": ["null", "boolean"]
     },
     "merge_when_pipeline_succeeds": {
+      "description": "Flag indicating if the merge should happen when the pipeline succeeds.",
       "type": ["null", "boolean"]
     },
     "merge_status": {
+      "description": "Status of the merge request.",
       "type": ["null", "string"]
     },
     "sha": {
+      "description": "SHA of the merge request.",
       "type": ["null", "string"]
     },
     "merge_commit_sha": {
+      "description": "SHA of the merge commit.",
       "type": ["null", "string"]
     },
     "squash_commit_sha": {
+      "description": "SHA of the squashed commit.",
       "type": ["null", "string"]
     },
     "discussion_locked": {
+      "description": "Flag indicating if discussions are locked.",
       "type": ["null", "boolean"]
     },
     "should_remove_source_branch": {
+      "description": "Flag indicating if the source branch should be removed after merging.",
       "type": ["null", "boolean"]
     },
     "force_remove_source_branch": {
+      "description": "Flag indicating if the source branch should be removed after merging.",
       "type": ["null", "boolean"]
     },
     "reference": {
+      "description": "Reference of the merge request.",
       "type": ["null", "string"]
     },
     "references": {
+      "description": "List of references associated with the merge request.",
       "type": ["null", "object"]
     },
     "web_url": {
+      "description": "URL to view the merge request in the GitLab UI.",
       "type": ["null", "string"]
     },
     "time_stats": {
+      "description": "Time statistics related to the merge request.",
       "type": ["null", "object"]
     },
     "squash": {
+      "description": "Flag indicating if squashing should be performed.",
       "type": ["null", "boolean"]
     },
     "task_completion_status": {
+      "description": "Status of task completion for the merge request.",
       "type": ["null", "object"]
     },
     "has_conflicts": {
+      "description": "Flag indicating if the merge request has conflicts.",
       "type": ["null", "boolean"]
     },
     "blocking_discussions_resolved": {
+      "description": "Flag indicating if all blocking discussions are resolved.",
       "type": ["null", "boolean"]
     },
     "approvals_before_merge": {
+      "description": "Total number of approvals required before the merge request can be merged.",
       "type": ["null", "boolean", "string", "object"]
     },
     "author": {
+      "description": "Author of the merge request.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "author_id": {
+      "description": "ID of the author of the merge request.",
       "type": ["null", "integer"]
     },
     "assignee": {
+      "description": "User assigned to this merge request.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "assignee_id": {
+      "description": "ID of the user assigned to this merge request.",
       "type": ["null", "integer"]
     },
     "closed_by": {
+      "description": "User who closed the merge request.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "closed_by_id": {
+      "description": "ID of the user who closed the merge request.",
       "type": ["null", "integer"]
     },
     "milestone": {
+      "description": "Milestone associated with the merge request.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "milestone_id": {
+      "description": "ID of the milestone associated with the merge request.",
       "type": ["null", "integer"]
     },
     "merged_by": {
+      "description": "User who merged the merge request.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "merged_by_id": {
+      "description": "ID of the user who merged the merge request.",
       "type": ["null", "integer"]
     },
     "draft": {
+      "description": "Flag indicating if the merge request is a draft.",
       "type": ["null", "boolean"]
     },
     "detailed_merge_status": {
+      "description": "Detailed status of the merge request.",
       "type": ["null", "string"]
     },
     "squash_on_merge": {
+      "description": "Flag indicating if squashing should be done on merge.",
       "type": ["null", "boolean"]
     },
     "merge_user": {
+      "description": "User who performed the merge.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "ID of the user who performed the merge.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the user.",
           "type": ["null", "string"]
         },
         "username": {
+          "description": "Username of the user.",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "State of the user account.",
           "type": ["null", "string"]
         },
         "avatar_url": {
+          "description": "URL of the user's avatar.",
           "type": ["null", "string"]
         },
         "web_url": {
+          "description": "URL to the user's profile.",
           "type": ["null", "string"]
         },
         "locked": {
+          "description": "Flag indicating if the user account is locked.",
           "type": ["null", "boolean"]
         }
       }

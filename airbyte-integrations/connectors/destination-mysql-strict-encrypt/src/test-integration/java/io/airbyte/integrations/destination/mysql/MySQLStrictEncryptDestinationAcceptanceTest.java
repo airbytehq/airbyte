@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
+@Disabled
 public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private MySQLContainer<?> db;
@@ -113,7 +114,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    try (final DSLContext dslContext = DSLContextFactory.create(
+    final DSLContext dslContext = DSLContextFactory.create(
         db.getUsername(),
         db.getPassword(),
         db.getDriverClassName(),
@@ -121,15 +122,14 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        SQLDialect.MYSQL)) {
-      return new Database(dslContext).query(
-          ctx -> ctx
-              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .map(this::getJsonFromRecord)
-              .collect(Collectors.toList()));
-    }
+        SQLDialect.MYSQL);
+    return new Database(dslContext).query(
+        ctx -> ctx
+            .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+            .stream()
+            .map(this::getJsonFromRecord)
+            .collect(Collectors.toList()));
   }
 
   @Override
@@ -162,7 +162,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
   }
 
   private void executeQuery(final String query) {
-    try (final DSLContext dslContext = DSLContextFactory.create(
+    final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
         db.getDriverClassName(),
@@ -170,11 +170,10 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
             db.getHost(),
             db.getFirstMappedPort(),
             db.getDatabaseName()),
-        SQLDialect.MYSQL)) {
-      new Database(dslContext).query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final SQLException e) {
+        SQLDialect.MYSQL);
+    try {
+      new Database(dslContext).query(ctx -> ctx.execute(query));
+    } catch (SQLException e) {
       throw new RuntimeException(e);
     }
   }

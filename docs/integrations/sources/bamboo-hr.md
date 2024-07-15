@@ -8,8 +8,8 @@ This page contains the setup guide and reference information for the [BambooHR](
 
 ## Prerequisites
 
-* BambooHR Account
-* BambooHR [API key](https://documentation.bamboohr.com/docs)
+- BambooHR Account
+- BambooHR [API key](https://documentation.bamboohr.com/docs)
 
 ## Setup Guide
 
@@ -22,11 +22,11 @@ This page contains the setup guide and reference information for the [BambooHR](
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the BambooHR connector and select **BambooHR** from the Source type dropdown.
-3. Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
-4. Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
-5. (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
-6. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
-7. Click **Set up source**
+4. Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
+5. Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
+6. (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
+7. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
+8. Click **Set up source**
 
 <!-- /env:cloud -->
 
@@ -50,17 +50,16 @@ This page contains the setup guide and reference information for the [BambooHR](
 
 The BambooHR source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | No |
-| SSL connection | Yes |
-| Namespaces | No |
-
+| Feature                   | Supported? |
+|:--------------------------|:-----------|
+| Full Refresh Sync         | Yes        |
+| Incremental - Append Sync | No         |
+| SSL connection            | Yes        |
+| Namespaces                | No         |
 
 ## Supported Streams
 
-* [Custom Reports](https://documentation.bamboohr.com/reference/request-custom-report-1)
+- [Custom Reports](https://documentation.bamboohr.com/reference/request-custom-report-1)
 
 ## Limitations & Troubleshooting
 
@@ -79,17 +78,28 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the BambooHR source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the BambooHR source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                   |
-|:--------| :--------- | :------------------------------------------------------  | :---------------------------------------- |
-| 0.2.2   | 2022-09-16 | [17684](https://github.com/airbytehq/airbyte/pull/17684) | Fix custom field validation retrieve      |
-| 0.2.1   | 2022-09-16 | [16826](https://github.com/airbytehq/airbyte/pull/16826) | Add custom fields validation during check |
-| 0.2.0   | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Add support for Custom Reports endpoint   |
-| 0.1.0   | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054)   | Initial release with Employees API        |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.3.1 | 2024-06-06 | [39201](https://github.com/airbytehq/airbyte/pull/39201) | [autopull] Upgrade base image to v1.2.2 |
+| 0.3.0 | 2024-05-25 | [37452](https://github.com/airbytehq/airbyte/pull/37452) | Migrate to Low Code |
+| 0.2.6 | 2024-04-19 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Updating to 0.80.0 CDK |
+| 0.2.5 | 2024-04-18 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Manage dependencies with Poetry. |
+| 0.2.4 | 2024-04-15 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.3 | 2024-04-12 | [37124](https://github.com/airbytehq/airbyte/pull/37124) | schema descriptions |
+| 0.2.2 | 2022-09-16 | [17684](https://github.com/airbytehq/airbyte/pull/17684) | Fix custom field validation retrieve |
+| 0.2.1 | 2022-09-16 | [16826](https://github.com/airbytehq/airbyte/pull/16826) | Add custom fields validation during check |
+| 0.2.0 | 2022-03-24 | [11326](https://github.com/airbytehq/airbyte/pull/11326) | Add support for Custom Reports endpoint |
+| 0.1.0 | 2021-08-27 | [5054](https://github.com/airbytehq/airbyte/pull/5054) | Initial release with Employees API |
+
+</details>
 
 </HideInUI>

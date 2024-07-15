@@ -3,52 +3,69 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the IVR menu",
       "type": ["null", "integer"]
     },
     "menus": {
+      "description": "Collection of IVR menus",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual IVR menu item",
         "type": "object",
         "properties": {
           "default": {
+            "description": "Flag indicating if this menu is set as default",
             "type": ["null", "boolean"]
           },
           "greeting_id": {
+            "description": "Identifier of the greeting associated with this IVR menu",
             "type": ["null", "integer"]
           },
           "id": {
+            "description": "Unique identifier of the IVR menu item",
             "type": ["null", "integer"]
           },
           "ivr_id": {
+            "description": "Identifier of the IVR this menu belongs to",
             "type": ["null", "integer"]
           },
           "name": {
+            "description": "Name of the IVR menu item",
             "type": ["null", "string"]
           },
           "routes": {
+            "description": "List of available routes within the IVR menu",
             "type": ["array", "null"],
             "items": {
+              "description": "Individual route within the IVR menu",
               "type": "object",
               "properties": {
                 "action": {
+                  "description": "Action to be taken when this route is selected",
                   "type": ["null", "string"]
                 },
                 "greeting": {
+                  "description": "Text or audio greeting associated with this route",
                   "type": ["null", "string"]
                 },
                 "id": {
+                  "description": "Unique identifier of the route",
                   "type": ["null", "integer"]
                 },
                 "keypress": {
+                  "description": "Keypress for selecting this route",
                   "type": ["null", "string"]
                 },
                 "option_text": {
+                  "description": "Text of the option presented to the user",
                   "type": ["null", "string"]
                 },
                 "options": {
+                  "description": "Additional options available for this route",
                   "type": ["null", "object"]
                 },
                 "overflow_options": {
+                  "description": "Options for handling overflow calls",
                   "type": ["null", "array"]
                 }
               }
@@ -58,17 +75,22 @@
       }
     },
     "name": {
+      "description": "Name of the IVR menu",
       "type": ["null", "string"]
     },
     "phone_number_ids": {
+      "description": "List of phone number IDs associated with the IVR data",
       "type": ["null", "array"],
       "items": {
+        "description": "Identifiers of phone numbers associated with this IVR menu",
         "type": ["string", "integer"]
       }
     },
     "phone_number_names": {
+      "description": "List of phone number names associated with the IVR data",
       "type": ["null", "array"],
       "items": {
+        "description": "Names of phone numbers associated with this IVR menu",
         "type": ["integer", "string"]
       }
     }

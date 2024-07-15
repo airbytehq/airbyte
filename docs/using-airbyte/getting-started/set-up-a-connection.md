@@ -9,7 +9,7 @@ import TabItem from "@theme/TabItem";
 
 Now that you've learned how to set up your first [source](./add-a-source) and [destination](./add-a-destination), it's time to finish the setup by creating your very first connection!
 
-On the left side of your main Airbyte dashboard, select **Connections**. You will be prompted to choose which source and destination to use for this connection. For this example, we'll use the **Google Sheets** source and the destination you previously set up, either **Local JSON**  or **Google Sheets**.
+On the left side of your main Airbyte dashboard, select **Connections**. You will be prompted to choose which source and destination to use for this connection. For this example, we'll use the **Google Sheets** source and the destination you previously set up, either **Local JSON** or **Google Sheets**.
 
 ## Configure the connection
 
@@ -17,9 +17,9 @@ Once you've chosen your source and destination you can configure the connection.
 
 Most users select "Mirror Source", which will simply copy the data from the source to the destination where you'll see one row in the destination for each row in the source. If you prefer to Append Historical Changes or take a Full Snapshot with each sync, you can optionally select those options, but keep in mind those will create duplicate records in your destination. The sync mode we choose for all the enabled streams will reflect your selection here.
 
-<Arcade id="9E7CQiWoHtFvB12Yd5zN" title="Getting Started (Select Streams)" />
+<Arcade id="9E7CQiWoHtFvB12Yd5zN" title="Getting Started (Select Streams)" paddingBottom="calc(61.37931034482759% + 41px)" />
 
-Next, you can toggle which streams you want to replicate.  Our test data consists of three streams, which we've enabled and set to `Incremental - Append + Deduped` sync mode.
+Next, you can toggle which streams you want to replicate. Our test data consists of three streams, which we've enabled and set to `Incremental - Append + Deduped` sync mode.
 
 ![Setup streams](./assets/getting-started-select-streams.png)
 
@@ -30,7 +30,7 @@ You can also select individual fields to sync on this page. Expand the fields av
 
 Click **Next** to complete your stream setup and move to the connection configuration. This is where you'll set up how often your data will sync and where it will live in the destination. For this demo, we'll set the connection to run at 8 AM every day and sync the connection to a custom namespace with a stream prefix.
 
-<Arcade id="KdySgaUBwroRxkYLnemX" title="Getting Started (Configure Connection)" />
+<Arcade id="KdySgaUBwroRxkYLnemX" title="Getting Started (Configure Connection)" paddingBottom="calc(61.37931034482759% + 41px)" />
 
 :::note
 To ensure your data is synced to the correct place, see our examples for [Destination Namespace](/using-airbyte/core-concepts/namespaces.md)
@@ -50,7 +50,7 @@ Here's a basic overview of the tabs and their use:
 2. The **Job History** tab allows you to check the logs for each sync. If you encounter any errors or unexpected behaviors during a sync, checking the logs is always a good first step to finding the cause and solution.
 3. The **Schema** tab allows you to modify the streams you chose during the connection setup.
 4. The **Transformation** tab allows you to set up a custom post-sync transformations using dbt.
-4. The **Settings** tab contains the connection settings, and the option to delete the connection if you no longer wish to use it.
+5. The **Settings** tab contains the connection settings, and the option to delete the connection if you no longer wish to use it.
 
 ### Check the data from your first sync
 
@@ -70,7 +70,7 @@ Once the first sync has completed, you can verify the sync has completed by chec
 
     You should see a list of JSON objects, each containing a unique `airbyte_ab_id`, an `emitted_at` timestamp, and `airbyte_data` containing the extracted record.
 
-:::tip 
+:::tip
 If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](/integrations/locating-files-local-destination.md) to locate the replicated folder and file.
 :::
 

@@ -42,7 +42,7 @@ Hit **Register** to create the application.
 
 To create Client credentials for Airbyte to talk to your application head to **Certificates & Secrets** on the detail screen of your application and select the **Client secrets** tab.
 
-Click **New client secret**, specify any Description you want and any expiry date you want. 
+Click **New client secret**, specify any Description you want and any expiry date you want.
 
 :::tip
 We recommend to chose an expiry date of at least 12 months. You'll need to pass in the new client secret every time the old one expires to continue being able to log in via Entra ID.
@@ -54,9 +54,9 @@ Copy the **Value** (the Client Secret itself) immediately after creation. You wo
 
 You'll need to pass your Airbyte contact the following information of the created application.
 
-* **Client Secret**: as copied above
-* **Application (client) ID**: You'll find this in the **Essentials** section on the **Overview** page of the application you created
-* **OpenID Connect metadata document**: You'll find this in the **Endpoints** panel, that you can open from the top bar on the **Overview** page
+- **Client Secret**: as copied above
+- **Application (client) ID**: You'll find this in the **Essentials** section on the **Overview** page of the application you created
+- **OpenID Connect metadata document**: You'll find this in the **Endpoints** panel, that you can open from the top bar on the **Overview** page
 
 Once we've received this information from you, We'll setup SSO for you and let you know once it's ready to be used.
 
@@ -84,6 +84,7 @@ Hit **Register** to create the application.
 ### Create client credentials
 
 To create client credentials for Airbyte to interface with your application, head to **Certificates & Secrets** on the detail screen of your application and select the **Client secrets** tab. Then:
+
 1. Click **New client secret**, and enter the expiry date of your choosing. You'll need to pass in the new client secret every time the old one expires to continue being able to log in via Entra ID.
 2. Copy the **Value** (the client secret itself) immediately after creation. You won't be able to view this later on.
 
@@ -92,7 +93,6 @@ Depending on the default "Admin consent require' value for your organization you
 :::
 
 <img width="928" alt="Admin Consent Option" src="https://github.com/airbytehq/airbyte/assets/156025126/30818c10-de4f-4411-ba1d-8d82b74326fd" />
-
 
 ### Setup information needed
 
@@ -107,5 +107,3 @@ Use this information to configure the auth details of your `airbyte.yml` for you
 
 </TabItem>
 </Tabs>
-
-

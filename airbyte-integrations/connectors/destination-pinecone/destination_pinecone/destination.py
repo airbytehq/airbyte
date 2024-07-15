@@ -24,28 +24,44 @@ class DestinationPinecone(Destination):
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        self.embedder = create_from_config(config.embedding, config.processing)
-        self.indexer = PineconeIndexer(config.indexing, self.embedder.embedding_dimensions)
+        try:
+            self.embedder = create_from_config(config.embedding, config.processing)
+            self.indexer = PineconeIndexer(config.indexing, self.embedder.embedding_dimensions)
+        except Exception as e:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-        config_model = ConfigModel.parse_obj(config)
-        self._init_indexer(config_model)
-        writer = Writer(
-            config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE, omit_raw_text=config_model.omit_raw_text
-        )
-        yield from writer.write(configured_catalog, input_messages)
+        try:
+            config_model = ConfigModel.parse_obj(config)
+            self._init_indexer(config_model)
+            writer = Writer(
+                config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE, omit_raw_text=config_model.omit_raw_text
+            )
+            yield from writer.write(configured_catalog, input_messages)
+        except Exception as e:
+            yield AirbyteMessage(type="LOG", log=AirbyteLogger(level="ERROR", message=str(e)))
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        parsed_config = ConfigModel.parse_obj(config)
-        self._init_indexer(parsed_config)
-        checks = [self.embedder.check(), self.indexer.check(), DocumentProcessor.check_config(parsed_config.processing)]
-        errors = [error for error in checks if error is not None]
-        if len(errors) > 0:
-            return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join(errors))
-        else:
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        try:
+            parsed_config = ConfigModel.parse_obj(config)
+            init_status = self._init_indexer(parsed_config)
+            if init_status and init_status.status == Status.FAILED:
+                logger.error(f"Initialization failed with message: {init_status.message}")
+                return init_status  # Return the failure status immediately if initialization fails
+
+            checks = [self.embedder.check(), self.indexer.check(), DocumentProcessor.check_config(parsed_config.processing)]
+            errors = [error for error in checks if error is not None]
+            if len(errors) > 0:
+                error_message = "\n".join(errors)
+                logger.error(f"Configuration check failed: {error_message}")
+                return AirbyteConnectionStatus(status=Status.FAILED, message=error_message)
+            else:
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        except Exception as e:
+            logger.error(f"Exception during configuration check: {str(e)}")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=str(e))
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(

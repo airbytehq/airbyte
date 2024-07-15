@@ -5,78 +5,102 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier for the application fee.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object, which should have a value of 'application_fee'.",
       "type": ["null", "string"]
     },
     "account": {
+      "description": "The ID of the Stripe account that received the application fee.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The total amount in cents that was collected by the application fee.",
       "type": ["null", "number"]
     },
     "amount_refunded": {
+      "description": "The total amount in cents that was refunded for the application fee.",
       "type": ["null", "number"]
     },
     "application": {
+      "description": "The ID of the application that the fee was collected for.",
       "type": ["null", "string"]
     },
     "balance_transaction": {
+      "description": "The ID of the balance transaction associated with the application fee.",
       "type": ["null", "string"]
     },
     "charge": {
+      "description": "The ID of the charge that the application fee was collected from.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the application fee was created.",
       "type": ["null", "number"]
     },
     "updated": {
+      "description": "The timestamp when the application fee was last updated.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the amount collected for the application fee.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates whether it was collected in live mode or test mode.",
       "type": "boolean"
     },
     "originating_transaction": {
+      "description": "The ID of the transaction that originated the application fee.",
       "type": ["null", "string"]
     },
     "refunded": {
+      "description": "Indicates whether the application fee has been fully refunded.",
       "type": "boolean"
     },
     "refunds": {
+      "description": "Contains information about any refunds associated with the application fees.",
       "type": ["null", "object"],
       "properties": {
         "object": {
+          "description": "Type of object, which should have a value of 'list'.",
           "type": ["null", "string"]
         },
         "data": {
+          "description": "An array of objects representing refunds issued for this application fee.",
           "type": "array",
           "items": {}
         },
         "has_more": {
+          "description": "Indicates whether there are more refunds to be fetched.",
           "type": "boolean"
         },
         "url": {
+          "description": "The URL from which additional refunds can be fetched.",
           "type": ["null", "string"]
         }
       }
     },
     "source": {
+      "description": "Contains details about the source of the application fee payment.",
       "type": ["null", "object"],
       "properties": {
         "fee_type": {
+          "description": "The type of the fee that was collected.",
           "type": ["null", "string"]
         },
         "resource": {
+          "description": "Contains information about the resource used for the payment of the application fee.",
           "type": ["null", "object"],
           "properties": {
             "charge": {
+              "description": "The ID of the charge associated with the application fee.",
               "type": ["null", "string"]
             },
             "type": {
+              "description": "The type of the resource that was charged.",
               "type": ["null", "string"]
             }
           }

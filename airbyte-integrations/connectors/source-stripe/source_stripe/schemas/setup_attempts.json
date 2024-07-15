@@ -4,87 +4,113 @@
   "type": ["null", "object"],
   "properties": {
     "application": {
+      "description": "The application associated with the setup attempt.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the setup attempt was created.",
       "type": ["null", "integer"]
     },
     "customer": {
+      "description": "The customer associated with the setup attempt.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the setup attempt.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the setup attempt is in live mode.",
       "type": ["null", "boolean"]
     },
     "object": {
+      "description": "The object type, typically 'setup_attempt'.",
       "type": ["null", "string"]
     },
     "on_behalf_of": {
+      "description": "The entity on whose behalf the setup attempt is being made.",
       "type": ["null", "string"]
     },
     "payment_method": {
+      "description": "The payment method associated with the setup attempt.",
       "type": ["null", "string"]
     },
     "payment_method_details": {
+      "description": "Detailed information about the payment method associated with the setup attempt.",
       "type": ["null", "object"],
       "properties": {
         "au_becs_debit": {
+          "description": "Details specific to an AU BECS Debit payment method.",
           "type": ["null", "object"],
           "additional_properties": true,
           "properties": {}
         },
         "bacs_debit": {
+          "description": "Details specific to a BACS Debit payment method.",
           "type": ["null", "object"],
           "additional_properties": true,
           "properties": {}
         },
         "bancontact": {
+          "description": "Details specific to a Bancontact payment method.",
           "type": ["null", "object"],
           "properties": {
             "bank_code": {
+              "description": "The bank code associated with the Bancontact payment method.",
               "type": ["null", "string"]
             },
             "bank_name": {
+              "description": "The name of the bank associated with the Bancontact payment method.",
               "type": ["null", "string"]
             },
             "bic": {
+              "description": "The BIC of the Bancontact payment method.",
               "type": ["null", "string"]
             },
             "generated_sepa_debit": {
+              "description": "Indicates if a SEPA debit was generated.",
               "type": ["null", "string"]
             },
             "generated_sepa_debit_mandate": {
+              "description": "Indicates if a SEPA debit mandate was generated.",
               "type": ["null", "string"]
             },
             "iban_last4": {
+              "description": "The last 4 digits of the IBAN associated with the Bancontact payment method.",
               "type": ["null", "string"]
             },
             "preferred_language": {
+              "description": "The preferred language for the Bancontact payment method.",
               "type": ["null", "string"]
             },
             "verified_name": {
+              "description": "The verified name associated with the Bancontact payment method.",
               "type": ["null", "string"]
             }
           }
         },
         "card": {
+          "description": "Details specific to a card payment method.",
           "type": ["null", "object"],
           "properties": {
             "three_d_secure": {
+              "description": "Details related to 3D Secure authentication.",
               "type": ["null", "object"],
               "properties": {
                 "authentication_flow": {
+                  "description": "The authentication flow for 3D Secure.",
                   "type": ["null", "string"]
                 },
                 "result": {
+                  "description": "The authentication result for 3D Secure.",
                   "type": ["null", "string"]
                 },
                 "result_reason": {
+                  "description": "The reason for the authentication result.",
                   "type": ["null", "string"]
                 },
                 "version": {
+                  "description": "The version of 3D Secure used.",
                   "type": ["null", "string"]
                 }
               }
@@ -92,390 +118,497 @@
           }
         },
         "card_present": {
+          "description": "Details specific to a card-present payment method.",
           "type": ["null", "object"],
           "properties": {
             "generated_card": {
+              "description": "Indicates if a card was generated.",
               "type": ["null", "string"]
             }
           }
         },
         "ideal": {
+          "description": "Details specific to an iDEAL payment method.",
           "type": ["null", "object"],
           "properties": {
             "bank": {
+              "description": "The bank associated with the iDEAL payment method.",
               "type": ["null", "string"]
             },
             "bic": {
+              "description": "The BIC of the iDEAL payment method.",
               "type": ["null", "string"]
             },
             "generated_sepa_debit": {
+              "description": "Indicates if a SEPA debit was generated.",
               "type": ["null", "string"]
             },
             "generated_sepa_debit_mandate": {
+              "description": "Indicates if a SEPA debit mandate was generated.",
               "type": ["null", "string"]
             },
             "iban_last4": {
+              "description": "The last 4 digits of the IBAN associated with the iDEAL payment method.",
               "type": ["null", "string"]
             },
             "verified_name": {
+              "description": "The verified name associated with the iDEAL payment method.",
               "type": ["null", "string"]
             }
           }
         },
         "sepa_debit": {
+          "description": "Details specific to a SEPA debit payment method.",
           "type": ["null", "object"],
           "additional_properties": true,
           "properties": {}
         },
         "sofort": {
+          "description": "Details specific to a Sofort payment method.",
           "type": ["null", "object"],
           "properties": {
             "bank_code": {
+              "description": "The bank code associated with the Sofort payment method.",
               "type": ["null", "string"]
             },
             "bank_name": {
+              "description": "The name of the bank associated with the Sofort payment method.",
               "type": ["null", "string"]
             },
             "bic": {
+              "description": "The BIC of the Sofort payment method.",
               "type": ["null", "string"]
             },
             "generated_sepa_debit": {
+              "description": "Indicates if a SEPA debit was generated.",
               "type": ["null", "string"]
             },
             "generated_sepa_debit_mandate": {
+              "description": "Indicates if a SEPA debit mandate was generated.",
               "type": ["null", "string"]
             },
             "iban_last4": {
+              "description": "The last 4 digits of the IBAN associated with the Sofort payment method.",
               "type": ["null", "string"]
             },
             "preferred_language": {
+              "description": "The preferred language for the Sofort payment method.",
               "type": ["null", "string"]
             },
             "verified_name": {
+              "description": "The verified name associated with the Sofort payment method.",
               "type": ["null", "string"]
             }
           }
         },
         "type": {
+          "description": "The type of payment method.",
           "type": ["null", "string"]
         }
       }
     },
     "setup_error": {
+      "description": "Details about any setup errors encountered.",
       "type": ["null", "object"],
       "properties": {
         "charge": {
+          "description": "The charge associated with the setup error.",
           "type": ["null", "string"]
         },
         "code": {
+          "description": "The error code.",
           "type": ["null", "string"]
         },
         "decline_code": {
+          "description": "The decline code if applicable.",
           "type": ["null", "string"]
         },
         "doc_url": {
+          "description": "The URL to documentation related to the error.",
           "type": ["null", "string"]
         },
         "message": {
+          "description": "The error message.",
           "type": ["null", "string"]
         },
         "param": {
+          "description": "The parameter related to the error.",
           "type": ["null", "string"]
         },
         "payment_intent": {
+          "description": "The payment intent associated with the setup error.",
           "$ref": "payment_intent.json"
         },
         "payment_method": {
+          "description": "The payment method associated with the setup error.",
           "type": ["null", "object"],
           "properties": {
             "afterpay_clearpay": {
+              "description": "Details specific to an Afterpay Clearpay payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "alipay": {
+              "description": "Details specific to an Alipay payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "au_becs_debit": {
+              "description": "Details specific to an AU BECS Debit payment method.",
               "additionalProperties": true,
               "type": ["null", "object"],
               "properties": {
                 "bsb_number": {
+                  "description": "The BSB number associated with the AU BECS Debit payment method.",
                   "type": ["null", "string"]
                 },
                 "fingerprint": {
+                  "description": "The fingerprint of the AU BECS Debit payment method.",
                   "type": ["null", "string"]
                 },
                 "last4": {
+                  "description": "The last 4 digits of the account number.",
                   "type": ["null", "string"]
                 }
               }
             },
             "bacs_debit": {
+              "description": "Details specific to a BACS Debit payment method.",
               "additionalProperties": true,
               "type": ["null", "object"],
               "properties": {
                 "fingerprint": {
+                  "description": "The fingerprint of the BACS Debit payment method.",
                   "type": ["null", "string"]
                 },
                 "last4": {
+                  "description": "The last 4 digits of the account number.",
                   "type": ["null", "string"]
                 },
                 "sort_code": {
+                  "description": "The sort code associated with the BACS Debit payment method.",
                   "type": ["null", "string"]
                 }
               }
             },
             "bancontact": {
+              "description": "Details specific to a Bancontact payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "billing_details": {
+              "description": "Details about the billing information associated with the payment method.",
               "additionalProperties": true,
               "type": ["null", "object"],
               "properties": {
                 "address": {
+                  "description": "The billing address.",
                   "$ref": "address.json"
                 },
                 "email": {
+                  "description": "The email address associated with the billing details.",
                   "type": ["null", "string"]
                 },
                 "name": {
+                  "description": "The name associated with the billing details.",
                   "type": ["null", "string"]
                 },
                 "phone": {
+                  "description": "The phone number associated with the billing details.",
                   "type": ["null", "string"]
                 }
               }
             },
             "card": {
+              "description": "Details specific to a card payment method.",
               "additionalProperties": true,
               "type": ["null", "object"],
               "properties": {
                 "brand": {
+                  "description": "The brand of the card.",
                   "type": ["null", "string"]
                 },
                 "checks": {
+                  "description": "The various card checks performed.",
                   "additionalProperties": true,
                   "type": ["null", "object"],
                   "properties": {
                     "address_line1_check": {
+                      "description": "The result of the address line 1 check.",
                       "type": ["null", "string"]
                     },
                     "address_postal_code_check": {
+                      "description": "The result of the address postal code check.",
                       "type": ["null", "string"]
                     },
                     "cvc_check": {
+                      "description": "The result of the CVC check.",
                       "type": ["null", "string"]
                     }
                   }
                 },
                 "country": {
+                  "description": "The country associated with the card.",
                   "type": ["null", "string"]
                 },
                 "exp_month": {
+                  "description": "The expiration month of the card.",
                   "type": ["null", "integer"]
                 },
                 "exp_year": {
+                  "description": "The expiration year of the card.",
                   "type": ["null", "integer"]
                 },
                 "fingerprint": {
+                  "description": "The fingerprint of the card.",
                   "type": ["null", "string"]
                 },
                 "funding": {
+                  "description": "The funding source of the card.",
                   "type": ["null", "string"]
                 },
                 "generated_from": {
+                  "description": "Indicates the origin of the card generation.",
                   "additionalProperties": true,
                   "type": ["null", "object"]
                 },
                 "last4": {
+                  "description": "The last 4 digits of the card number.",
                   "type": ["null", "string"]
                 },
                 "networks": {
+                  "description": "Details about card networks.",
                   "additionalProperties": true,
                   "type": ["null", "object"],
                   "properties": {
                     "available": {
+                      "description": "Available card networks.",
                       "type": ["null", "array"],
                       "items": {
+                        "description": "Available card network item.",
                         "type": ["null", "string"]
                       }
                     },
                     "preferred": {
+                      "description": "Preferred card network.",
                       "type": ["null", "string"]
                     }
                   }
                 },
                 "three_d_secure_usage": {
+                  "description": "Details about 3D Secure usage.",
                   "additionalProperties": true,
                   "type": ["null", "object"],
                   "properties": {
                     "supported": {
+                      "description": "Indicates if 3D Secure is supported.",
                       "type": ["null", "boolean"]
                     }
                   }
                 },
                 "wallet": {
+                  "description": "The wallet associated with the card.",
                   "additionalProperties": true,
                   "type": ["null", "object"]
                 }
               }
             },
             "card_present": {
+              "description": "Details specific to a card-present payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "created": {
+              "description": "The timestamp when the payment method was created.",
               "type": ["null", "integer"]
             },
             "updated": {
+              "description": "The timestamp when the payment method was last updated.",
               "type": ["null", "integer"]
             },
             "customer": {
+              "description": "The customer associated with the payment method.",
               "type": ["null", "string"]
             },
             "eps": {
+              "description": "Details specific to an EPS payment method.",
               "additionalProperties": true,
               "type": ["null", "object"],
               "properties": {
                 "bank": {
+                  "description": "The bank associated with the EPS payment method.",
                   "type": ["null", "string"]
                 }
               }
             },
             "fpx": {
+              "description": "Details specific to an FPX payment method.",
               "additionalProperties": true,
               "type": ["null", "object"],
               "properties": {
                 "bank": {
+                  "description": "The bank associated with the FPX payment method.",
                   "type": ["null", "string"]
                 }
               }
             },
             "giropay": {
+              "description": "Details specific to a Giropay payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "grabpay": {
+              "description": "Details specific to a Grabpay payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "id": {
+              "description": "The unique identifier for the payment method.",
               "type": ["null", "string"]
             },
             "ideal": {
+              "description": "Details specific to an iDEAL payment method.",
               "additionalProperties": true,
               "type": ["null", "object"],
               "properties": {
                 "bank": {
+                  "description": "The bank associated with the iDEAL payment method.",
                   "type": ["null", "string"]
                 },
                 "bic": {
+                  "description": "The BIC of the iDEAL payment method.",
                   "type": ["null", "string"]
                 }
               }
             },
             "interac_present": {
+              "description": "Details specific to an Interac Present payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "livemode": {
+              "description": "Indicates if the payment method is in live mode.",
               "type": ["null", "boolean"]
             },
             "metadata": {
+              "description": "Metadata associated with the payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "object": {
+              "description": "The object type, typically 'payment_method'.",
               "type": ["null", "string"]
             },
             "oxxo": {
+              "description": "Details specific to an OXXO payment method.",
               "additionalProperties": true,
               "type": ["null", "object"]
             },
             "p24": {
+              "description": "Details specific to a P24 payment method.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "bank": {
+                  "description": "The bank associated with the P24 payment method.",
                   "type": ["null", "string"]
                 }
               }
             },
             "sepa_debit": {
+              "description": "Details specific to a SEPA debit payment method.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "bank_code": {
+                  "description": "The bank code associated with the SEPA debit payment method.",
                   "type": ["null", "string"]
                 },
                 "branch_code": {
+                  "description": "The branch code associated with the SEPA debit payment method.",
                   "type": ["null", "string"]
                 },
                 "country": {
+                  "description": "The country associated with the SEPA debit payment method.",
                   "type": ["null", "string"]
                 },
                 "fingerprint": {
+                  "description": "The fingerprint of the SEPA debit payment method.",
                   "type": ["null", "string"]
                 },
                 "generated_from": {
+                  "description": "Indicates the origin of the SEPA debit generation.",
                   "type": ["null", "object"],
                   "properties": {
                     "charge": {
+                      "description": "The charge associated with the SEPA debit generation.",
                       "type": ["null", "string"]
                     },
                     "setup_attempt": {
+                      "description": "The setup attempt associated with the SEPA debit generation.",
                       "type": ["null", "string"]
                     }
                   }
                 },
                 "last4": {
+                  "description": "The last 4 digits of the account number.",
                   "type": ["null", "string"]
                 }
               }
             },
             "sofort": {
+              "description": "Details specific to a Sofort payment method.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "country": {
+                  "description": "The country associated with the Sofort payment method.",
                   "type": ["null", "string"]
                 }
               }
             },
             "type": {
+              "description": "The type of payment method.",
               "type": ["null", "string"]
             }
           }
         },
         "payment_method_type": {
+          "description": "The type of payment method.",
           "type": ["null", "string"]
         },
         "setup_intent": {
+          "description": "The setup intent associated with the setup error.",
           "$ref": "setup_intent.json"
         },
         "source": {
+          "description": "The source of the error.",
           "type": ["null", "object"],
           "properties": {}
         },
         "type": {
+          "description": "The type of error.",
           "type": ["null", "string"]
         }
       }
     },
     "setup_intent": {
+      "description": "The setup intent associated with the setup attempt.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the setup attempt.",
       "type": ["null", "string"]
     },
     "usage": {
+      "description": "The usage of the setup attempt.",
       "type": ["null", "string"]
     },
     "flow_directions": {
+      "description": "The flow directions for the setup attempt.",
       "type": ["null", "array"],
       "items": {
+        "description": "Flow direction item.",
         "type": ["null", "string"]
       }
     }

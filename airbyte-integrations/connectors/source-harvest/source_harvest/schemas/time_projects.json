@@ -3,33 +3,43 @@
   "type": "object",
   "properties": {
     "project_id": {
+      "description": "The unique identifier for the project.",
       "type": ["null", "integer"]
     },
     "project_name": {
+      "description": "The name of the project.",
       "type": ["null", "string"]
     },
     "client_id": {
+      "description": "The unique identifier for the client associated with this project.",
       "type": ["null", "integer"]
     },
     "client_name": {
+      "description": "The name of the client associated with this project.",
       "type": ["null", "string"]
     },
     "total_hours": {
+      "description": "The total number of hours spent on this project.",
       "type": ["null", "number"]
     },
     "billable_hours": {
+      "description": "The number of billable hours spent on this project.",
       "type": ["null", "number"]
     },
     "currency": {
+      "description": "The currency in which the billable amount is specified.",
       "type": ["null", "string"]
     },
     "billable_amount": {
+      "description": "The total amount that can be billed for this project in the given currency.",
       "type": ["null", "number"]
     },
     "from": {
+      "description": "The start date for the project time frame.",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "The end date for the project time frame.",
       "type": ["null", "string"]
     }
   }

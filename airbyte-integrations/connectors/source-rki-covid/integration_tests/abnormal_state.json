@@ -1,44 +1,74 @@
-{
-  "germany_history_cases": {
-    "date": "2024-04-06T00:00:00.000Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "germany_history_cases",
+        "namespace": null
+      },
+      "stream_state": {
+        "date": "2024-05-30T00:00:00.000Z"
+      }
+    }
   },
-  "german_history_incidence": {
-    "date": "2024-04-06T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "german_history_incidence",
+        "namespace": null
+      },
+      "stream_state": {
+        "date": "2024-05-30T00:00:00.000Z"
+      }
+    }
   },
-  "german_history_deaths": {
-    "date": "2024-04-06T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "german_history_deaths",
+        "namespace": null
+      },
+      "stream_state": {
+        "date": "2024-05-30T00:00:00.000Z"
+      }
+    }
   },
-  "german_history_recovered": {
-    "date": "2024-04-06T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "german_history_recovered",
+        "namespace": null
+      },
+      "stream_state": {
+        "date": "2024-05-30T00:00:00.000Z"
+      }
+    }
   },
-  "german_history_hospitalization": {
-    "date": "2024-04-07T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "german_history_hospitalization",
+        "namespace": null
+      },
+      "stream_state": {
+        "date": "2024-05-31T00:00:00.000Z"
+      }
+    }
   },
-  "german_history_frozen_incidence": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "germany_states": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "germany_states_age_groups": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "states_history_cases": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "states_history_incidence": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "states_history_frozen_incidence": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "states_history_deaths": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "states_history_recovered": {
-    "date": "2024-01-01T00:00:00.000Z"
-  },
-  "states_history_hospitalization": {
-    "date": "2024-01-01T00:00:00.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "german_history_frozen_incidence",
+        "namespace": null
+      },
+      "stream_state": {
+        "date": "2024-05-31T00:00:00.000Z"
+      }
+    }
   }
-}
+]

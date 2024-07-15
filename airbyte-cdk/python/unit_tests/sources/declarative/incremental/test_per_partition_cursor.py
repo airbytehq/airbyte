@@ -6,10 +6,10 @@ from collections import OrderedDict
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, PerPartitionKeySerializer, StreamSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 
 PARTITION = {
     "partition_key string": "partition value",
@@ -97,7 +97,7 @@ class MockedCursorBuilder:
         return self
 
     def build(self):
-        cursor = Mock(spec=Cursor)
+        cursor = Mock(spec=DeclarativeCursor)
         cursor.get_stream_state.return_value = self._stream_state
         cursor.stream_slices.return_value = self._stream_slices
         return cursor

@@ -17,16 +17,15 @@ import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataC
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
-import java.util.stream.Collectors
 import org.apache.commons.lang3.RandomStringUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.mockito.Mockito.mock
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * When adding a new S3 destination acceptance test, extend this class and do the following:
  * * Implement [.getFormatConfig] that returns a [UploadFormatConfig]
@@ -90,16 +89,14 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
             s3Client!!
                 .listObjects(s3DestinationConfig.bucketName, parentFolder)
                 .objectSummaries
-                .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
-                .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
-                .collect(Collectors.toList())
+                .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
+
         LOGGER.info(
             "All objects: {}",
-            objectSummaries
-                .stream()
-                .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .collect(Collectors.toList()),
+            objectSummaries.map { o: S3ObjectSummary ->
+                String.format("%s/%s", o.bucketName, o.key)
+            },
         )
         return objectSummaries
     }
@@ -127,7 +124,11 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
             .set<JsonNode>("format", formatConfig)
         this.configJson = configJson
         this.s3DestinationConfig =
-            S3DestinationConfig.getS3DestinationConfig(configJson, storageProvider())
+            S3DestinationConfig.getS3DestinationConfig(
+                configJson,
+                storageProvider(),
+                getConnectorEnv()
+            )
         LOGGER.info(
             "Test full path: {}/{}",
             s3DestinationConfig.bucketName,
@@ -184,8 +185,7 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
     }
 
     companion object {
-        protected val LOGGER: Logger =
-            LoggerFactory.getLogger(S3DestinationAcceptanceTest::class.java)
+
         @JvmStatic protected val MAPPER: ObjectMapper = MoreMappers.initMapper()
     }
 }

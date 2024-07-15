@@ -16,7 +16,7 @@ Important note: any objects referenced via `$ref` should be placed in the `share
 
 If you are implementing a connector to pull data from an API which publishes an [OpenAPI/Swagger spec](https://swagger.io/specification/), you can use a tool we've provided for generating JSON schemas from the OpenAPI definition file. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/master/tools/openapi2jsonschema/).
 
-### Generating schemas using the output of your connector's read command 
+### Generating schemas using the output of your connector's read command
 
 We also provide a tool for generating schemas using a connector's `read` command output. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/master/tools/schema_generator/).
 
@@ -43,7 +43,7 @@ def get_json_schema(self):
 
 It is important to ensure output data conforms to the declared json schema. This is because the destination receiving this data to load into tables may strictly enforce schema \(e.g. when data is stored in a SQL database, you can't put CHAR type into INTEGER column\). In the case of changes to API output \(which is almost guaranteed to happen over time\) or a minor mistake in jsonschema definition, data syncs could thus break because of mismatched datatype schemas.
 
-To remain robust in operation, the CDK provides a transformation ability to perform automatic object mutation to align with desired schema before outputting to the destination. All streams inherited from airbyte_cdk.sources.streams.core.Stream class have this transform configuration available. It is \_disabled_ by default and can be configured per stream within a source connector.
+To remain robust in operation, the CDK provides a transformation ability to perform automatic object mutation to align with desired schema before outputting to the destination. All streams inherited from airbyte*cdk.sources.streams.core.Stream class have this transform configuration available. It is \_disabled* by default and can be configured per stream within a source connector.
 
 ### Default type transformation
 
@@ -81,7 +81,7 @@ And objects inside array of referenced by $ref attribute.
 
 If the value cannot be cast \(e.g. string "asdf" cannot be casted to integer\), the field would retain its original value. Schema type transformation support any jsonschema types, nested objects/arrays and reference types. Types described as array of more than one type \(except "null"\), types under oneOf/anyOf keyword wont be transformed.
 
-_Note:_ This transformation is done by the source, not the stream itself. I.e. if you have overriden "read\_records" method in your stream it wont affect object transformation. All transformation are done in-place by modifing output object before passing it to "get\_updated\_state" method, so "get\_updated\_state" would receive the transformed object.
+_Note:_ This transformation is done by the source, not the stream itself. I.e. if you have overriden "read_records" method in your stream it wont affect object transformation. All transformation are done in-place by modifing output object before passing it to "get_updated_state" method, so "get_updated_state" would receive the transformed object.
 
 ### Custom schema type transformation
 
@@ -99,13 +99,13 @@ class MyStream(Stream):
         return transformed_value
 ```
 
-Where original\_value is initial field value and field\_schema is part of jsonschema describing field type. For schema
+Where original_value is initial field value and field_schema is part of jsonschema describing field type. For schema
 
 ```javascript
 {"type": "object", "properties": {"value": {"type": "string", "format": "date-time"}}}
 ```
 
-field\_schema variable would be equal to
+field_schema variable would be equal to
 
 ```javascript
 {"type": "string", "format": "date-time"}
@@ -145,7 +145,7 @@ class MyStream(Stream):
 
 Transforming each object on the fly would add some time for each object processing. This time is depends on object/schema complexity and hardware configuration.
 
-There are some performance benchmarks we've done with ads\_insights facebook schema \(it is complex schema with objects nested inside arrays ob object and a lot of references\) and example object. Here is the average transform time per single object, seconds:
+There are some performance benchmarks we've done with ads_insights facebook schema \(it is complex schema with objects nested inside arrays ob object and a lot of references\) and example object. Here is the average transform time per single object, seconds:
 
 ```text
 regular transform:
@@ -162,4 +162,3 @@ just traverse/validate through json schema and object fields:
 ```
 
 On my PC \(AMD Ryzen 7 5800X\) it took 0.8 milliseconds per object. As you can see most time \(~ 75%\) is taken by jsonschema traverse/validation routine and very little \(less than 10 %\) by actual converting. Processing time can be reduced by skipping jsonschema type checking but it would be no warnings about possible object jsonschema inconsistency.
-

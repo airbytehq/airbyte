@@ -5,9 +5,9 @@
 import json
 from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 class PerPartitionKeySerializer:
@@ -29,14 +29,14 @@ class PerPartitionKeySerializer:
 
 
 class CursorFactory:
-    def __init__(self, create_function: Callable[[], Cursor]):
+    def __init__(self, create_function: Callable[[], DeclarativeCursor]):
         self._create_function = create_function
 
-    def create(self) -> Cursor:
+    def create(self) -> DeclarativeCursor:
         return self._create_function()
 
 
-class PerPartitionCursor(Cursor):
+class PerPartitionCursor(DeclarativeCursor):
     """
     Given a stream has many partitions, it is important to provide a state per partition.
 
@@ -65,7 +65,7 @@ class PerPartitionCursor(Cursor):
     def __init__(self, cursor_factory: CursorFactory, partition_router: StreamSlicer):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
-        self._cursor_per_partition: MutableMapping[str, Cursor] = {}
+        self._cursor_per_partition: MutableMapping[str, DeclarativeCursor] = {}
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -141,7 +141,7 @@ class PerPartitionCursor(Cursor):
 
         return self._get_state_for_partition(stream_slice.partition)
 
-    def _create_cursor(self, cursor_state: Any) -> Cursor:
+    def _create_cursor(self, cursor_state: Any) -> DeclarativeCursor:
         cursor = self._cursor_factory.create()
         cursor.set_initial_state(cursor_state)
         return cursor
@@ -248,7 +248,7 @@ class PerPartitionCursor(Cursor):
             StreamSlice(partition={}, cursor_slice=record.associated_slice.cursor_slice) if record.associated_slice else None,
         )
 
-    def _get_cursor(self, record: Record) -> Cursor:
+    def _get_cursor(self, record: Record) -> DeclarativeCursor:
         if not record.associated_slice:
             raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
         partition_key = self._to_partition_key(record.associated_slice.partition)

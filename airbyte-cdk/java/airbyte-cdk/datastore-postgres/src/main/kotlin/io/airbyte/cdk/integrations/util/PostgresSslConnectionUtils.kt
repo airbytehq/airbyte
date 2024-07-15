@@ -215,7 +215,7 @@ object PostgresSslConnectionUtils {
 
     @Throws(IOException::class, InterruptedException::class)
     private fun runProcess(cmd: String, run: Runtime) {
-        val pr = run.exec(cmd)
+        @Suppress("deprecation") val pr = run.exec(cmd)
         if (!pr.waitFor(30, TimeUnit.SECONDS)) {
             pr.destroy()
             throw RuntimeException("Timeout while executing: $cmd")

@@ -3,413 +3,549 @@
   "type": "object",
   "properties": {
     "ym:s:visitID": {
+      "description": "Unique identifier of the visit.",
       "type": "string"
     },
     "ym:s:counterID": {
+      "description": "Unique identifier of the counter where the session data is recorded.",
       "type": "string"
     },
     "ym:s:watchIDs": {
+      "description": "IDs associated with the video watched during the visit.",
       "type": "string"
     },
     "ym:s:date": {
+      "description": "Date when the session occurred.",
       "type": "string",
       "format": "date"
     },
     "ym:s:dateTime": {
+      "description": "Date and time when the session occurred.",
       "type": "string",
       "format": "date-time"
     },
     "ym:s:isNewUser": {
+      "description": "Boolean indicating if the visitor is a new user.",
       "type": "string"
     },
     "ym:s:startURL": {
+      "description": "The URL where the session started.",
       "type": "string"
     },
     "ym:s:endURL": {
+      "description": "The URL where the session ended.",
       "type": "string"
     },
     "ym:s:pageViews": {
+      "description": "The number of pages viewed during the session.",
       "type": "string"
     },
     "ym:s:visitDuration": {
+      "description": "Duration of the visit in seconds.",
       "type": "string"
     },
     "ym:s:bounce": {
+      "description": "Boolean indicating if the session resulted in a bounce.",
       "type": "string"
     },
     "ym:s:ipAddress": {
+      "description": "IP address of the visitor.",
       "type": "string"
     },
     "ym:s:regionCountry": {
+      "description": "Country of the visitor's region.",
       "type": "string"
     },
     "ym:s:regionCity": {
+      "description": "City of the visitor's region.",
       "type": "string"
     },
     "ym:s:regionCountryID": {
+      "description": "Country ID of the visitor's region.",
       "type": "string"
     },
     "ym:s:regionCityID": {
+      "description": "City ID of the visitor's region.",
       "type": "string"
     },
     "ym:s:clientID": {
+      "description": "Client ID assigned to the session.",
       "type": "string"
     },
     "ym:s:networkType": {
+      "description": "The type of network the visitor is connected to.",
       "type": "string"
     },
     "ym:s:goalsID": {
+      "description": "Unique identifier of the completed goal.",
       "type": "string"
     },
     "ym:s:goalsSerialNumber": {
+      "description": "Serial number associated with the completed goal.",
       "type": "string"
     },
     "ym:s:goalsDateTime": {
+      "description": "Date and time of the goal completion.",
       "type": "string"
     },
     "ym:s:goalsPrice": {
+      "description": "Price associated with the completed goal.",
       "type": "string"
     },
     "ym:s:goalsOrder": {
+      "description": "Order in which the goals were completed.",
       "type": "string"
     },
     "ym:s:goalsCurrency": {
+      "description": "Currency used for goal transactions.",
       "type": "string"
     },
     "ym:s:lastTrafficSource": {
+      "description": "The last traffic source of the visitor.",
       "type": "string"
     },
     "ym:s:lastAdvEngine": {
+      "description": "The last advertising engine the visitor interacted with.",
       "type": "string"
     },
     "ym:s:lastReferalSource": {
+      "description": "The last referral source of the visitor.",
       "type": "string"
     },
     "ym:s:lastSearchEngineRoot": {
+      "description": "The root search engine from the last search.",
       "type": "string"
     },
     "ym:s:lastSearchEngine": {
+      "description": "The last search engine used by the visitor.",
       "type": "string"
     },
     "ym:s:lastSocialNetwork": {
+      "description": "The last social network the visitor interacted with.",
       "type": "string"
     },
     "ym:s:lastSocialNetworkProfile": {
+      "description": "The profile of the visitor on the last social network.",
       "type": "string"
     },
     "ym:s:referer": {
+      "description": "The URL of the referring page.",
       "type": "string"
     },
     "ym:s:lastDirectClickOrder": {
+      "description": "The order of the last direct click.",
       "type": "string"
     },
     "ym:s:lastDirectBannerGroup": {
+      "description": "The last direct banner group the visitor interacted with.",
       "type": "string"
     },
     "ym:s:lastDirectClickBanner": {
+      "description": "The last direct click banner the visitor interacted with.",
       "type": "string"
     },
     "ym:s:lastDirectClickOrderName": {
+      "description": "The name of the order from the last direct click.",
       "type": "string"
     },
     "ym:s:lastClickBannerGroupName": {
+      "description": "The banner group name from the last click.",
       "type": "string"
     },
     "ym:s:lastDirectClickBannerName": {
+      "description": "The name of the last direct click banner.",
       "type": "string"
     },
     "ym:s:lastDirectPhraseOrCond": {
+      "description": "The phrase or condition from the last direct interaction.",
       "type": "string"
     },
     "ym:s:lastDirectPlatformType": {
+      "description": "The platform type from the last direct interaction.",
       "type": "string"
     },
     "ym:s:lastDirectPlatform": {
+      "description": "The platform from the last direct interaction.",
       "type": "string"
     },
     "ym:s:lastDirectConditionType": {
+      "description": "The condition type from the last direct interaction.",
       "type": "string"
     },
     "ym:s:lastCurrencyID": {
+      "description": "Currency identifier from the last interaction.",
       "type": "string"
     },
     "ym:s:from": {
+      "description": "The source where the user came from to the website or app.",
       "type": "string"
     },
     "ym:s:UTMCampaign": {
+      "description": "The campaign name specified in the UTM parameters of the session URL.",
       "type": "string"
     },
     "ym:s:UTMContent": {
+      "description": "The content specified in the UTM parameters of the session URL.",
       "type": "string"
     },
     "ym:s:UTMMedium": {
+      "description": "The medium specified in the UTM parameters of the session URL.",
       "type": "string"
     },
     "ym:s:UTMSource": {
+      "description": "The source specified in the UTM parameters of the session URL.",
       "type": "string"
     },
     "ym:s:UTMTerm": {
+      "description": "The term specified in the UTM parameters of the session URL.",
       "type": "string"
     },
     "ym:s:openstatAd": {
+      "description": "Ad information from the Openstat service.",
       "type": "string"
     },
     "ym:s:openstatCampaign": {
+      "description": "Campaign information from the Openstat service.",
       "type": "string"
     },
     "ym:s:openstatService": {
+      "description": "Service information from the Openstat service.",
       "type": "string"
     },
     "ym:s:openstatSource": {
+      "description": "Source information from the Openstat service.",
       "type": "string"
     },
     "ym:s:hasGCLID": {
+      "description": "Boolean indicating if the session has a Google Click Identifier.",
       "type": "string"
     },
     "ym:s:lastGCLID": {
+      "description": "The last Google Click Identifier associated with the session.",
       "type": "string"
     },
     "ym:s:firstGCLID": {
+      "description": "The first Google Click Identifier associated with the session.",
       "type": "string"
     },
     "ym:s:lastSignificantGCLID": {
+      "description": "The last significant Google Click Identifier.",
       "type": "string"
     },
     "ym:s:browserLanguage": {
+      "description": "The language preference of the visitor's browser.",
       "type": "string"
     },
     "ym:s:browserCountry": {
+      "description": "The country of the visitor based on their browser information.",
       "type": "string"
     },
     "ym:s:clientTimeZone": {
+      "description": "Timezone of the client's system.",
       "type": "string"
     },
     "ym:s:deviceCategory": {
+      "description": "The category of the visitor's device (desktop, mobile, tablet, etc.).",
       "type": "string"
     },
     "ym:s:mobilePhone": {
+      "description": "Boolean indicating if the visitor's device is a mobile phone.",
       "type": "string"
     },
     "ym:s:mobilePhoneModel": {
+      "description": "The model of the visitor's mobile phone.",
       "type": "string"
     },
     "ym:s:operatingSystemRoot": {
+      "description": "The root operating system of the visitor.",
       "type": "string"
     },
     "ym:s:operatingSystem": {
+      "description": "The visitor's operating system.",
       "type": "string"
     },
     "ym:s:browser": {
+      "description": "The browser used by the visitor.",
       "type": "string"
     },
     "ym:s:browserMajorVersion": {
+      "description": "The major version of the visitor's browser.",
       "type": "string"
     },
     "ym:s:browserMinorVersion": {
+      "description": "The minor version of the visitor's browser.",
       "type": "string"
     },
     "ym:s:browserEngine": {
+      "description": "The engine of the browser used by the visitor.",
       "type": "string"
     },
     "ym:s:browserEngineVersion1": {
+      "description": "The major version of the browser engine.",
       "type": "string"
     },
     "ym:s:browserEngineVersion2": {
+      "description": "The minor version of the browser engine.",
       "type": "string"
     },
     "ym:s:browserEngineVersion3": {
+      "description": "The patch version of the browser engine.",
       "type": "string"
     },
     "ym:s:browserEngineVersion4": {
+      "description": "The build version of the browser engine.",
       "type": "string"
     },
     "ym:s:cookieEnabled": {
+      "description": "Boolean indicating if cookies are enabled in the visitor's browser.",
       "type": "string"
     },
     "ym:s:javascriptEnabled": {
+      "description": "Boolean indicating if JavaScript is enabled in the visitor's browser.",
       "type": "string"
     },
     "ym:s:screenFormat": {
+      "description": "The format of the visitor's screen.",
       "type": "string"
     },
     "ym:s:screenColors": {
+      "description": "The color depth of the visitor's screen.",
       "type": "string"
     },
     "ym:s:screenOrientation": {
+      "description": "Orientation of the visitor's screen.",
       "type": "string"
     },
     "ym:s:screenWidth": {
+      "description": "Width of the visitor's screen.",
       "type": "string"
     },
     "ym:s:screenHeight": {
+      "description": "Height of the visitor's screen.",
       "type": "string"
     },
     "ym:s:physicalScreenWidth": {
+      "description": "Physical width of the visitor's screen.",
       "type": "string"
     },
     "ym:s:physicalScreenHeight": {
+      "description": "Physical height of the visitor's screen.",
       "type": "string"
     },
     "ym:s:windowClientWidth": {
+      "description": "Width of the visitor's browser window.",
       "type": "string"
     },
     "ym:s:windowClientHeight": {
+      "description": "Height of the visitor's browser window.",
       "type": "string"
     },
     "ym:s:purchaseID": {
+      "description": "Unique identifier of the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseDateTime": {
+      "description": "Date and time of the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseAffiliation": {
+      "description": "Affiliation associated with the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseRevenue": {
+      "description": "Revenue from the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseTax": {
+      "description": "Tax amount in the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseShipping": {
+      "description": "Shipping cost in the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseCoupon": {
+      "description": "Coupon used in the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseCurrency": {
+      "description": "Currency of the purchase transaction.",
       "type": "string"
     },
     "ym:s:purchaseProductQuantity": {
+      "description": "Quantity of products in the purchase transaction.",
       "type": "string"
     },
     "ym:s:productsPurchaseID": {
+      "description": "Unique identifier of the purchase transaction.",
       "type": "string"
     },
     "ym:s:productsID": {
+      "description": "Unique identifier of the product.",
       "type": "string"
     },
     "ym:s:productsName": {
+      "description": "Name of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsBrand": {
+      "description": "Brand of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsCategory": {
+      "description": "Category of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsCategory1": {
+      "description": "Category level 1 of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsCategory2": {
+      "description": "Category level 2 of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsCategory3": {
+      "description": "Category level 3 of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsCategory4": {
+      "description": "Category level 4 of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsCategory5": {
+      "description": "Category level 5 of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsVariant": {
+      "description": "Variant of the product purchased or viewed.",
       "type": "string"
     },
     "ym:s:productsPosition": {
+      "description": "Position of the product in the list of products.",
       "type": "string"
     },
     "ym:s:productsPrice": {
+      "description": "Price of the product.",
       "type": "string"
     },
     "ym:s:productsCurrency": {
+      "description": "Currency of the product.",
       "type": "string"
     },
     "ym:s:productsCoupon": {
+      "description": "Coupon associated with the product.",
       "type": "string"
     },
     "ym:s:productsQuantity": {
+      "description": "Quantity of the product purchased.",
       "type": "string"
     },
     "ym:s:impressionsURL": {
+      "description": "URL where the impression occurred.",
       "type": "string"
     },
     "ym:s:impressionsDateTime": {
+      "description": "Date and time of the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductID": {
+      "description": "Unique identifier of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductName": {
+      "description": "Name of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductBrand": {
+      "description": "Brand of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCategory": {
+      "description": "Category of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCategory1": {
+      "description": "Category level 1 of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCategory2": {
+      "description": "Category level 2 of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCategory3": {
+      "description": "Category level 3 of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCategory4": {
+      "description": "Category level 4 of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCategory5": {
+      "description": "Category level 5 of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductVariant": {
+      "description": "Variant of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductPrice": {
+      "description": "Price of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCurrency": {
+      "description": "Currency of the product in the impression.",
       "type": "string"
     },
     "ym:s:impressionsProductCoupon": {
+      "description": "Coupon associated with the product in the impression.",
       "type": "string"
     },
     "ym:s:offlineCallTalkDuration": {
+      "description": "The duration of the offline call conversation.",
       "type": "string"
     },
     "ym:s:offlineCallHoldDuration": {
+      "description": "The duration the caller was put on hold for in an offline call.",
       "type": "string"
     },
     "ym:s:offlineCallMissed": {
+      "description": "Boolean indicating if the offline call was missed.",
       "type": "string"
     },
     "ym:s:offlineCallTag": {
+      "description": "Tag associated with the offline call.",
       "type": "string"
     },
     "ym:s:offlineCallFirstTimeCaller": {
+      "description": "Boolean indicating if the offline call is made by a first-time caller.",
       "type": "string"
     },
     "ym:s:offlineCallURL": {
+      "description": "URL related to the offline call.",
       "type": "string"
     },
     "ym:s:parsedParamsKey1": {
+      "description": "Parsed parameter key 1 value.",
       "type": "string"
     },
     "ym:s:parsedParamsKey2": {
+      "description": "Parsed parameter key 2 value.",
       "type": "string"
     },
     "ym:s:parsedParamsKey3": {
+      "description": "Parsed parameter key 3 value.",
       "type": "string"
     },
     "ym:s:parsedParamsKey4": {
+      "description": "Parsed parameter key 4 value.",
       "type": "string"
     },
     "ym:s:parsedParamsKey5": {
+      "description": "Parsed parameter key 5 value.",
       "type": "string"
     },
     "ym:s:parsedParamsKey6": {
+      "description": "Parsed parameter key 6 value.",
       "type": "string"
     }
   }

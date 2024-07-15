@@ -3,186 +3,240 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the time entry.",
       "type": ["null", "integer"]
     },
     "spent_date": {
+      "description": "The date when the time was spent.",
       "type": ["null", "string"],
       "format": "date"
     },
     "user": {
+      "description": "The user who created the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the user.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the user.",
           "type": ["null", "string"]
         }
       }
     },
     "client": {
+      "description": "The client associated with the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the client.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the client.",
           "type": ["null", "string"]
         },
         "currency": {
+          "description": "The currency used by the client.",
           "type": ["null", "string"]
         }
       }
     },
     "project": {
+      "description": "The project where the time entry was tracked",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the project.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the project.",
           "type": ["null", "string"]
         },
         "code": {
+          "description": "The project code associated with the time entry.",
           "type": ["null", "string"]
         }
       }
     },
     "task": {
+      "description": "The task performed during the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the task.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the task.",
           "type": ["null", "string"]
         }
       }
     },
     "user_assignment": {
+      "description": "The user assignment details for the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the user assignment.",
           "type": ["null", "integer"]
         },
         "is_project_manager": {
+          "description": "Indicates if the user is a project manager.",
           "type": ["null", "boolean"]
         },
         "is_active": {
+          "description": "Indicates if the user assignment is active.",
           "type": ["null", "boolean"]
         },
         "budget": {
+          "description": "The budget associated with the user assignment.",
           "type": ["null", "number"]
         },
         "created_at": {
+          "description": "The date and time when the user assignment was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
+          "description": "The date and time when the user assignment was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hourly_rate": {
+          "description": "The hourly rate associated with the user assignment.",
           "type": ["null", "number"]
         }
       }
     },
     "task_assignment": {
+      "description": "The task assignment details for the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the task assignment.",
           "type": ["null", "integer"]
         },
         "billable": {
+          "description": "Indicates if the task assignment is billable.",
           "type": ["null", "boolean"]
         },
         "is_active": {
+          "description": "Indicates if the task assignment is active.",
           "type": ["null", "boolean"]
         },
         "created_at": {
+          "description": "The date and time when the task assignment was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "updated_at": {
+          "description": "The date and time when the task assignment was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hourly_rate": {
+          "description": "The hourly rate associated with the task assignment.",
           "type": ["null", "number"]
         },
         "budget": {
+          "description": "The budget associated with the task assignment.",
           "type": ["null", "number"]
         }
       }
     },
     "hours": {
+      "description": "The total hours logged in the time entry.",
       "type": ["null", "number"]
     },
     "hours_without_timer": {
+      "description": "Hours logged without using a timer.",
       "type": ["null", "number"]
     },
     "rounded_hours": {
+      "description": "The total hours rounded to a specific precision.",
       "type": ["null", "number"]
     },
     "notes": {
+      "description": "Any additional notes associated with the time entry.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the time entry was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the time entry was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "is_locked": {
+      "description": "Indicates if the time entry is locked.",
       "type": ["null", "boolean"]
     },
     "locked_reason": {
+      "description": "The reason why the time entry is locked.",
       "type": ["null", "string"]
     },
     "is_closed": {
+      "description": "Indicates if the time entry is closed.",
       "type": ["null", "boolean"]
     },
     "is_billed": {
+      "description": "Indicates if the time entry has been billed.",
       "type": ["null", "boolean"]
     },
     "timer_started_at": {
+      "description": "The time when the timer for the time entry was started.",
       "type": ["null", "string"]
     },
     "started_time": {
+      "description": "The time when the time entry started.",
       "type": ["null", "string"]
     },
     "ended_time": {
+      "description": "The time when the time entry ended.",
       "type": ["null", "string"]
     },
     "is_running": {
+      "description": "Indicates if the time entry is currently running.",
       "type": ["null", "boolean"]
     },
     "invoice": {
+      "description": "The invoice related to the time entry",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the associated invoice.",
           "type": "integer"
         },
         "number": {
+          "description": "The invoice number associated with the time entry.",
           "type": "string"
         }
       }
     },
     "external_reference": {
+      "description": "An external reference linked to the time entry.",
       "type": ["null", "string"]
     },
     "billable": {
+      "description": "Indicates if the time entry is billable or not.",
       "type": ["null", "boolean"]
     },
     "budgeted": {
+      "description": "Indicates if the time entry is within the budget.",
       "type": ["null", "boolean"]
     },
     "billable_rate": {
+      "description": "The rate at which the time entry is billable.",
       "type": ["null", "number"]
     },
     "cost_rate": {
+      "description": "The cost rate associated with the time entry.",
       "type": ["null", "number"]
     }
   }

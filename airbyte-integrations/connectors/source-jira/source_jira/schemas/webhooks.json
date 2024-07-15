@@ -3,17 +3,18 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
-      "description": "The ID of the webhook."
+      "description": "The unique identifier for the webhook.",
+      "type": "integer"
     },
     "jqlFilter": {
-      "type": "string",
-      "description": "The JQL filter that specifies which issues the webhook is sent for."
+      "description": "The JQL filter that specifies which issues the webhook is triggered for.",
+      "type": "string"
     },
     "events": {
-      "type": "array",
       "description": "The Jira events that trigger the webhook.",
+      "type": "array",
       "items": {
+        "description": "The specific event name.",
         "type": "string",
         "enum": [
           "jira:issue_created",
@@ -28,6 +29,7 @@
       }
     },
     "expirationDate": {
+      "description": "The date and time when the webhook expires.",
       "type": "integer",
       "readOnly": true
     }

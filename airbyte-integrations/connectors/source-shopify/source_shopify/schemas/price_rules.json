@@ -3,171 +3,212 @@
   "additionalProperties": true,
   "properties": {
     "allocation_method": {
+      "description": "The method used to allocate the discount",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "The unique identifier for the price rule in the GraphQL Admin API",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the price rule was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "customer_segment_prerequisite_ids": {
+      "description": "An array of customer segment IDs as prerequisites for the discount",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "updated_at": {
+      "description": "The date and time when the price rule was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "customer_selection": {
+      "description": "The customer selection criteria for the discount",
       "type": ["null", "string"]
     },
     "ends_at": {
+      "description": "The date and time when the discount ends",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "entitled_collection_ids": {
+      "description": "An array of collection IDs entitled to the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "entitled_country_ids": {
+      "description": "An array of country IDs entitled to the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "entitled_product_ids": {
+      "description": "An array of product IDs entitled to the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "entitled_variant_ids": {
+      "description": "An array of variant IDs entitled to the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "id": {
+      "description": "The unique identifier for the price rule",
       "type": ["null", "integer"]
     },
     "once_per_customer": {
+      "description": "Whether the discount can only be applied once per customer",
       "type": ["null", "boolean"]
     },
     "prerequisite_customer_ids": {
+      "description": "An array of customer IDs required as prerequisites for the discount",
       "items": {
         "type": ["null", "number"]
       },
       "type": ["null", "array"]
     },
     "prerequisite_quantity_range": {
+      "description": "The required quantity range for the discount",
       "properties": {
         "greater_than_or_equal_to": {
+          "description": "The minimum quantity required for the discount",
           "type": ["null", "integer"]
         }
       },
       "type": ["null", "object"]
     },
     "prerequisite_saved_search_ids": {
+      "description": "An array of saved search IDs that act as prerequisites for the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "prerequisite_shipping_price_range": {
+      "description": "The maximum shipping price required for the discount",
       "properties": {
         "less_than_or_equal_to": {
+          "description": "The maximum shipping price allowed for the discount",
           "type": ["null", "number"]
         }
       },
       "type": ["null", "object"]
     },
     "prerequisite_subtotal_range": {
+      "description": "The required subtotal range for the discount",
       "properties": {
         "greater_than_or_equal_to": {
+          "description": "The minimum subtotal required for the discount",
           "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
     },
     "prerequisite_to_entitlement_purchase": {
+      "description": "The amount required for a purchase to be entitled to the discount",
       "properties": {
         "prerequisite_amount": {
+          "description": "The required amount for entitlement to the discount",
           "type": ["null", "number"]
         }
       },
       "type": ["null", "object"]
     },
     "starts_at": {
+      "description": "The date and time when the discount starts",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "target_selection": {
+      "description": "The target selection criteria for the discount",
       "type": ["null", "string"]
     },
     "target_type": {
+      "description": "The type of target for the discount",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "The title of the price rule",
       "type": ["null", "string"]
     },
     "usage_limit": {
+      "description": "The limit on the total number of times the discount can be used",
       "type": ["null", "integer"]
     },
     "prerequisite_product_ids": {
+      "description": "An array of product IDs required as prerequisites for the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "prerequisite_variant_ids": {
+      "description": "An array of variant IDs required as prerequisites for the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "prerequisite_collection_ids": {
+      "description": "An array of collection IDs required as prerequisites for the discount",
       "items": {
         "type": ["null", "integer"]
       },
       "type": ["null", "array"]
     },
     "value": {
+      "description": "The value of the discount",
       "type": ["null", "string"]
     },
     "value_type": {
+      "description": "The type of value for the discount",
       "type": ["null", "string"]
     },
     "prerequisite_to_entitlement_quantity_ratio": {
+      "description": "The quantity ratio required for entitlement to the discount",
       "properties": {
         "prerequisite_quantity": {
+          "description": "The quantity required as prerequisites for the discount",
           "type": ["null", "integer"]
         },
         "entitled_quantity": {
+          "description": "The quantity entitled to the discount",
           "type": ["null", "integer"]
         }
       },
       "type": ["null", "object"]
     },
     "allocation_limit": {
+      "description": "The maximum number of times the discount can be applied",
       "type": ["null", "integer"]
     },
     "shop_url": {
+      "description": "The URL of the shop where the price rule is applied",
       "type": ["null", "string"]
     },
     "deleted_at": {
+      "description": "The date and time when the price rule was deleted",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deleted_message": {
+      "description": "Message displayed when the price rule is deleted",
       "type": ["null", "string"]
     },
     "deleted_description": {
+      "description": "Description of why the price rule was deleted",
       "type": ["null", "string"]
     }
   }

@@ -8,17 +8,18 @@ import com.amazonaws.services.s3.model.DeleteObjectsRequest
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val LOGGER = KotlinLogging.logger {}
 
 class GcsStorageOperations(
     nameTransformer: NamingConventionTransformer,
     s3Client: AmazonS3,
     s3Config: S3DestinationConfig
-) : S3StorageOperations(nameTransformer!!, s3Client!!, s3Config!!) {
+) : S3StorageOperations(nameTransformer, s3Client, s3Config) {
     /** GCS only supports the legacy AmazonS3#doesBucketExist method. */
     override fun doesBucketExist(bucket: String?): Boolean {
-        return s3Client.doesBucketExist(bucket)
+        @Suppress("deprecation") return s3Client.doesBucketExist(bucket)
     }
 
     /**
@@ -31,7 +32,7 @@ class GcsStorageOperations(
         keysToDelete: List<DeleteObjectsRequest.KeyVersion>
     ) {
         for (keyToDelete in keysToDelete) {
-            LOGGER.info("Deleting object {}", keyToDelete.key)
+            LOGGER.info { "Deleting object ${keyToDelete.key}" }
             s3Client.deleteObject(bucket, keyToDelete.key)
         }
     }
@@ -40,7 +41,5 @@ class GcsStorageOperations(
         return HashMap()
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(GcsStorageOperations::class.java)
-    }
+    companion object {}
 }

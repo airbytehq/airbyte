@@ -4,41 +4,53 @@
   "type": ["null", "object"],
   "properties": {
     "html_url": {
+      "description": "The URL of the topic in HTML format.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the topic.",
       "type": ["null", "number"]
     },
     "name": {
+      "description": "The name/title of the topic.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL of the topic in API format.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when this topic was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "community_id": {
+      "description": "The unique identifier of the community to which this topic belongs.",
       "type": ["null", "integer"]
     },
     "updated_at": {
+      "description": "The date and time when this topic was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "description": {
+      "description": "The textual description of the topic.",
       "type": ["null", "string"]
     },
     "manageable_by": {
+      "description": "The user or group who can manage this topic.",
       "type": ["null", "string"]
     },
     "follower_count": {
+      "description": "The count of users following this topic.",
       "type": ["null", "number"]
     },
     "position": {
+      "description": "The order position of this topic relative to others.",
       "type": ["null", "number"]
     },
     "user_segment_id": {
+      "description": "The identifier of the user segment associated with this topic.",
       "type": ["null", "number"]
     }
   }
