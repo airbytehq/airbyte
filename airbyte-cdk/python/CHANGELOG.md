@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.5.0
+Clean invalid fields from configured catalog
+
 ## 3.4.1
 resumable full refresh: Fix bug where checkpoint reader stops syncing too early if first partition is complete
 
