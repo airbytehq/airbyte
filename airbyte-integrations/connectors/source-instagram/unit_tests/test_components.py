@@ -9,11 +9,14 @@ from records import (
     clear_url_record_transformed,
     expected_breakdown_record_transformed,
     expected_children_transformed,
+    insights_record,
+    insights_record_transformed,
 )
 from source_instagram.components import (
     GRAPH_URL,
     InstagramBreakDownResultsTransformation,
     InstagramClearUrlTransformation,
+    InstagramInsightsTransformation,
     InstagramMediaChildrenTransformation,
 )
 
@@ -43,3 +46,8 @@ def test_instagram_clear_url_transformation():
 def test_break_down_results_transformation():
     record_transformation_result = InstagramBreakDownResultsTransformation().transform(breakdowns_record)
     assert record_transformation_result == expected_breakdown_record_transformed
+
+
+def test_instagram_insights_transformation(config):
+    record_transformation = InstagramInsightsTransformation().transform(insights_record)
+    assert record_transformation == insights_record_transformed
