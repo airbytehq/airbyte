@@ -104,6 +104,7 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.3 | 2024-07-13 | [41848](https://github.com/airbytehq/airbyte/pull/41848) | Update dependencies |
 | 6.2.2 | 2024-07-10 | [41467](https://github.com/airbytehq/airbyte/pull/41467) | Update dependencies |
 | 6.2.1 | 2024-07-09 | [41180](https://github.com/airbytehq/airbyte/pull/41180) | Update dependencies |
 | 6.2.0 | 2024-07-07 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update CDK to 2.0. |
