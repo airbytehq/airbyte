@@ -4,6 +4,7 @@
 
 from unittest.mock import MagicMock
 
+import logging
 import pytest
 from requests import Response
 from source_airtable.airtable_backoff_strategy import AirtableBackoffStrategy
@@ -17,7 +18,8 @@ from source_airtable.airtable_backoff_strategy import AirtableBackoffStrategy
     ]
 )
 def test_backoff_time(response_code, expected_backoff_time):
-    backoff = AirtableBackoffStrategy()
+    mocked_logger = MagicMock(spec=logging.Logger)
+    backoff = AirtableBackoffStrategy(logger=mocked_logger)
     response = MagicMock(spec=Response)
     response.status_code = response_code
     assert backoff.backoff_time(response) == expected_backoff_time

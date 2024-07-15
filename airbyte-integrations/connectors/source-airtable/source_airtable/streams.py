@@ -22,7 +22,7 @@ URL_BASE: str = "https://api.airtable.com/v0/"
 class AirtableBases(HttpStream):
     def __init__(self, **kwargs):
         authenticator = kwargs.get("authenticator")
-        backoff_strategy = AirtableBackoffStrategy()
+        backoff_strategy = AirtableBackoffStrategy(self.logger)
         error_handler = AirtableErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING, authenticator=authenticator)
 
         self._http_client = HttpClient(
@@ -104,7 +104,7 @@ class AirtableStream(HttpStream, ABC):
         self.stream_schema = stream_schema
         self.table_name = table_name
 
-        backoff_strategy = AirtableBackoffStrategy()
+        backoff_strategy = AirtableBackoffStrategy(self.logger)
         error_handler = HttpStatusErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING)
 
         self._http_client = HttpClient(
