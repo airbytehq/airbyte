@@ -544,4 +544,30 @@ class Stream(ABC):
 
     @configured_json_schema.setter
     def configured_json_schema(self, json_schema: Dict[str, Any]) -> None:
-        self._configured_json_schema = json_schema
+        self._configured_json_schema = self._filter_schema_invalid_properties(json_schema)
+
+    def _filter_schema_invalid_properties(self, configured_catalog_json_schema: Dict[str, Any | Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Filters the properties in json_schema that are not present in the stream schema.
+        Configured Schemas can have very old fields, so we need to housekeeping ourselves.
+        """
+        configured_schema: Any = configured_catalog_json_schema.get("properties", {})
+        stream_schema_properties: Any = self.get_json_schema().get("properties", {})
+
+        configured_keys = configured_schema.keys()
+        stream_keys = stream_schema_properties.keys()
+        invalid_properties = configured_keys - stream_keys
+        if not invalid_properties:
+            return configured_catalog_json_schema
+
+        self.logger.warning(
+            f"Stream {self.name}: the following fields are deprecated and cannot be synced. {invalid_properties}. Refresh the connection's source schema to resolve this warning."
+        )
+
+        valid_configured_schema_properties_keys = stream_keys & configured_keys
+        valid_configured_schema_properties = {}
+
+        for configured_schema_property in valid_configured_schema_properties_keys:
+            valid_configured_schema_properties[configured_schema_property] = stream_schema_properties[configured_schema_property]
+
+        return {**configured_catalog_json_schema, "properties": valid_configured_schema_properties}
