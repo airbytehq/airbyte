@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from datetime import date, datetime, timedelta
-from typing import Any, MutableMapping, Optional, Tuple, Union
+from datetime import date, datetime, timedelta, timezone
+from typing import Any, MutableMapping, Optional, Tuple, Union, Callable
 
 import pendulum
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
@@ -115,3 +115,7 @@ class GadsStateConverter(EpochValueConcurrentStreamStateConverter):
             else:
                 new_state[customer_id] = customer_state
         return new_state
+
+    @classmethod
+    def get_end_provider(cls) -> Callable[[], datetime.date]:
+        return lambda: datetime.now(timezone.utc).date()

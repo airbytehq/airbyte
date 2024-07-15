@@ -360,6 +360,7 @@ class SourceGoogleAds(ConcurrentSourceAdapter):
             cursor_field,
             ("start_date", "end_date"),
             fallback_start,
+            converter.get_end_provider()
         )
         return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
 
