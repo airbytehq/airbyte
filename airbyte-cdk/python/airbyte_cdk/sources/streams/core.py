@@ -546,26 +546,26 @@ class Stream(ABC):
     def configured_json_schema(self, json_schema: Dict[str, Any]) -> None:
         self._configured_json_schema = self._filter_schema_invalid_properties(json_schema)
 
-    def _filter_schema_invalid_properties(self, json_schema: Dict[str, Any | Dict[str, Any]]) -> Dict[str, Any]:
+    def _filter_schema_invalid_properties(self, configured_catalog_json_schema: Dict[str, Any | Dict[str, Any]]) -> Dict[str, Any]:
         """
         Filters the properties in json_schema that are not present in the stream schema.
         Configured Schemas can have very old fields, so we need to housekeeping ourselves.
         """
-        received_schema_properties: Any = json_schema.get("properties", {})
+        configured_schema: Any = configured_catalog_json_schema.get("properties", {})
         stream_schema_properties: Any = self.get_json_schema().get("properties", {})
-        valid_configured_schema_properties = {
-            stream_property: property_value
-            for stream_property, property_value in received_schema_properties.items()
-            if stream_property in stream_schema_properties
-        }
-        invalid_properties = []
-        for stream_property, property_value in received_schema_properties.items():
-            if stream_property in stream_schema_properties:
-                valid_configured_schema_properties[stream_property] = property_value
-            else:
-                invalid_properties.append(stream_property)
+
+        configured_keys = configured_schema.keys()
+        stream_keys = stream_schema_properties.keys()
+        invalid_properties = configured_keys - stream_keys
         if invalid_properties:
             self.logger.warning(
-                f"For {self.name} the following properties in the configured catalog were not found in the the current stream schema and will be filtered: {invalid_properties}"
+                f"Stream {self.name}: the following fields are deprecated and cannot be synced. {invalid_properties}. Refresh the connection's source schema to resolve this warning."
             )
-        return {**json_schema, "properties": valid_configured_schema_properties}
+
+        valid_configured_schema_properties_keys = stream_keys & configured_keys
+        valid_configured_schema_properties = {}
+
+        for configured_schema_property in valid_configured_schema_properties_keys:
+            valid_configured_schema_properties[configured_schema_property] = stream_schema_properties[configured_schema_property]
+
+        return {**configured_catalog_json_schema, "properties": valid_configured_schema_properties}

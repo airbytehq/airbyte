@@ -517,8 +517,12 @@ def test_configured_json_schema_with_invalid_properties():
     assert not stream.configured_json_schema
     _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config)
     assert stream.configured_json_schema != configured_json_schema
-    assert old_user_insights not in stream.configured_json_schema["properties"]
-    assert old_feature_info not in stream.configured_json_schema["properties"]
+    configured_json_schema_properties = stream.configured_json_schema["properties"]
+    assert old_user_insights not in configured_json_schema_properties
+    assert old_feature_info not in configured_json_schema_properties
+    for stream_schema_property in stream_schema["properties"]:
+        assert stream_schema_property in configured_json_schema_properties, f"Stream schema property: {stream_schema_property} missing in configured schema"
+        assert stream_schema["properties"][stream_schema_property] == configured_json_schema_properties[stream_schema_property]
 
 
 def _read(stream, configured_stream, logger, slice_logger, message_repository, state_manager, internal_config):
