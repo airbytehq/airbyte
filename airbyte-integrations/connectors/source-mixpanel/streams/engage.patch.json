@@ -31,6 +31,14 @@
           "null",
           "array"
         ]
+      },
+      "transactions": {
+        "items": {},
+        "required": null,
+        "type": [
+          "null",
+          "array"
+        ]
       }
     }
 }
