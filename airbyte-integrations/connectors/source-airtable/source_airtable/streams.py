@@ -11,8 +11,9 @@ from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_airtable.backoff_strategy import AirtableBackoffStrategy
-from source_airtable.error_mapping import AIRTABLE_ERROR_MAPPING
+from source_airtable.airtable_backoff_strategy import AirtableBackoffStrategy
+from source_airtable.airtable_error_handler import AirtableErrorHandler
+from source_airtable.airtable_error_mapping import AIRTABLE_ERROR_MAPPING
 from source_airtable.schema_helpers import SchemaHelpers
 
 URL_BASE: str = "https://api.airtable.com/v0/"
@@ -20,21 +21,21 @@ URL_BASE: str = "https://api.airtable.com/v0/"
 
 class AirtableBases(HttpStream):
     def __init__(self, **kwargs):
+        authenticator = kwargs.get("authenticator")
         backoff_strategy = AirtableBackoffStrategy()
-        error_handler = HttpStatusErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING)
+        error_handler = AirtableErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING, authenticator=authenticator)
 
         self._http_client = HttpClient(
             name=self.name,
             logger=self.logger,
             error_handler=error_handler,
             backoff_strategy=backoff_strategy,
-            authenticator=kwargs.get("authenticator"),
+            authenticator=authenticator,
         )
 
     url_base = URL_BASE
     primary_key = None
     name = "bases"
-    raise_on_http_errors = True
 
     def path(self, **kwargs) -> str:
         """
@@ -70,7 +71,7 @@ class AirtableBases(HttpStream):
         records = response.json().get(self.name)
         for base in records:
             if base.get("permissionLevel") == "none":
-                if isinstance(self._session.auth, TokenAuthenticator):
+                if isinstance(self._http_client._session.auth, TokenAuthenticator):
                     additional_message = "if you'd like to see tables from this base, add base to the Access list for Personal Access Token, see Airtable docs for more info: https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions"
                 else:
                     additional_message = "reauthenticate and add this base to the Access list, see Airtable docs for more info: https://support.airtable.com/docs/third-party-integrations-via-oauth-overview#granting-access-to-airtable-workspaces-bases"
@@ -117,7 +118,6 @@ class AirtableStream(HttpStream, ABC):
     url_base = URL_BASE
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    raise_on_http_errors = True
 
     @property
     def name(self):
