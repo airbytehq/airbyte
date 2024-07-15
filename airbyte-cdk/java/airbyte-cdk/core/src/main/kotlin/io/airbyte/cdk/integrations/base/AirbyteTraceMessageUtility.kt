@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.protocol.models.v0.*
@@ -17,7 +18,16 @@ object AirbyteTraceMessageUtility {
 
     @JvmStatic
     fun emitConfigErrorTrace(e: Throwable, displayMessage: String?) {
-        emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+        if (e is ConfigErrorException) {
+            emitErrorTrace(
+                e,
+                displayMessage,
+                AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+                e.internalMessage,
+            )
+        } else {
+            emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+        }
     }
 
     @JvmStatic
