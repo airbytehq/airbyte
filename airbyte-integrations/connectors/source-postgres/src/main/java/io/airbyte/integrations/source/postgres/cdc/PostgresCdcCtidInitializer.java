@@ -240,9 +240,9 @@ public class PostgresCdcCtidInitializer {
       initialSyncCtidIterators.addAll(ctidHandler.getInitialSyncCtidIterator(
           new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt, /*
                                                                                                                          * decorateWithStartedStatus=
-                                                                                                                         */ true, /*
-                                                                                                                                   * decorateWithCompletedStatus=
-                                                                                                                                   */ false,
+                                                                                                                         */ false, /*
+                                                                                                                                    * decorateWithCompletedStatus=
+                                                                                                                                    */ false,
           Optional.of(initialLoadTimeout)));
     } else {
       LOGGER.info("No streams will be synced via ctid");
@@ -270,7 +270,7 @@ public class PostgresCdcCtidInitializer {
     final var eventConverter = new RelationalDbDebeziumEventConverter(new PostgresCdcConnectorMetadataInjector(), emittedAt);
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = catalog.getStreams().stream()
-        .filter(stream -> !finalListOfStreamsToBeSyncedViaCtid.contains(stream))
+        .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(
             new AirbyteStreamStatusHolder(
                 new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
