@@ -5,17 +5,14 @@ package io.airbyte.commons.concurrency
 
 import io.airbyte.commons.functional.Either
 import java.time.Duration
-import java.util.*
+import java.util.Arrays
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
-import java.util.concurrent.TimeUnit
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
 
 internal class CompletableFuturesTest {
-    @Timeout(value = 1, unit = TimeUnit.DAYS)
     @Test
     fun testAllOf() {
         // Complete in random order
