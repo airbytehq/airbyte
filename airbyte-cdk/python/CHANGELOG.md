@@ -17,6 +17,7 @@ resumable full refresh: Fix bug where checkpoint reader stops syncing too early 
 
 ## 3.4.0
 file-based cdk: add config option to limit number of files for schema discover
+resumable full refresh: Fix bug for substreams depending on RFR parent stream would not paginate over parent
 
 ## 3.3.0
 CDK: add incomplete status to availability check during read
