@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement.
 To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart) guide.
-If setting up an Airbyte server does not fit your usecase needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../using-airbyte/pyairbyte/getting-started) documentation useful. 
+If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../using-airbyte/pyairbyte/getting-started) documentation useful. 
 
 :::tip
 Enterprise Customers should follow the steps outlined in our docs on [Airbyte Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
@@ -35,9 +35,9 @@ This guide assumes that you already have a running kubernetes cluster. If you're
 
 ### 1. Add the Helm Repository
 
-Charts are stored in `helm-repo`. As a result, you do not need to clone the repo each time you need to deploy the chart.
+The deployment will use a Helm chart which is a package for Kubernetes applications, acting like a blueprint or template that defines the resources needed to deploy an application on a Kubernetes cluster. Charts are stored in `helm-repo`.
 
-To add remote helm repo:
+To add a remote helm repo:
 1. Run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`. In this example, `airbyte` is being used to represent the name of the repository that will be indexed locally.
 
 2. After adding the repo, perform the repo indexing process by running `helm repo update`.
@@ -74,7 +74,7 @@ airbyte/workload-launcher          	0.290.0      	0.63.6     	Helm chart to depl
 While it is not strictly necessary to isolate the Airbyte installation into its own namespace, it is good practice and recommended as a part of the installation.
 This documentation assumes that you chose the name `airbyte` for the namespace, but you may choose a different name if required.
 
-To create a namespace run the following
+To create a namespace run the following:
 
 ```sh
 kubectl create namespace airbyte
@@ -141,3 +141,7 @@ export POD_NAME=$(kubectl get pods --namespace airbyte -l "app.kubernetes.io/nam
 You can now access the UI in your browser at: http://127.0.0.1:8080.
 
 If you'd like to set up a more permanent ingress checkout our ingress customization. For a deployment to a local machine we recommend using [nginx](./integrations/ingress.md) as an easy-to-setup option.
+
+:::note
+As part of maintainging your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
+:::
