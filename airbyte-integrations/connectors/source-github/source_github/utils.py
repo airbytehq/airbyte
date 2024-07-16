@@ -5,21 +5,14 @@
 import time
 from dataclasses import dataclass
 from itertools import cycle
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, Union
 
 import pendulum
 import requests
-from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
-from airbyte_protocol.models import FailureType
-
-from . import constants
 
 
 def getter(D: Dict[str, Any], key_or_keys: Union[List[Any], Any], strict: bool = True) -> Dict[str, Any]:
@@ -157,158 +150,3 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         else:
             self.update_token()
         return False
-
-
-GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
-    401: ErrorResolution(
-        response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
-        error_message="Conflict.",
-    ),
-    403: ErrorResolution(
-        response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
-        error_message="Conflict.",
-    ),
-    404: ErrorResolution(
-        response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
-        error_message="Conflict.",
-    ),
-    409: ErrorResolution(
-        response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
-        error_message="Conflict.",
-    ),
-    410: ErrorResolution(
-        response_action=ResponseAction.RETRY,
-        failure_type=FailureType.config_error,
-        error_message="Gone. Please ensure the url is valid.",
-    ),
-}
-
-
-class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
-    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
-        self.stream = stream
-        super().__init__(**kwargs)
-
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        if isinstance(response_or_exception, requests.Response):
-            retry_flag = (
-                # The GitHub GraphQL API has limitations
-                # https://docs.github.com/en/graphql/overview/resource-limitations
-                (
-                    response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                    and self.stream.check_graphql_rate_limited(response_or_exception.json())
-                )
-                # Rate limit HTTP headers
-                # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-                or (response_or_exception.status_code != 200 and response_or_exception.headers.get("X-RateLimit-Remaining") == "0")
-                # Secondary rate limits
-                # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-                or "Retry-After" in response_or_exception.headers
-            )
-            if retry_flag:
-                headers = [
-                    "X-RateLimit-Resource",
-                    "X-RateLimit-Remaining",
-                    "X-RateLimit-Reset",
-                    "X-RateLimit-Limit",
-                    "X-RateLimit-Used",
-                    "Retry-After",
-                ]
-                string_headers = ", ".join(
-                    [f"{h}: {response_or_exception.headers[h]}" for h in headers if h in response_or_exception.headers]
-                )
-                if string_headers:
-                    string_headers = f"HTTP headers: {string_headers},"
-
-                self._logger.info(
-                    f"Rate limit handling for stream `{self.stream.name}` for the response with {response_or_exception.status_code} status code, {string_headers} with message: {response_or_exception.text}"
-                )
-                return ErrorResolution(
-                    response_action=ResponseAction.RATE_LIMITED,
-                    failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
-                )
-
-        return super().interpret_response(response_or_exception)
-
-
-class ContributorActivityErrorHandler(HttpStatusErrorHandler):
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.ACCEPTED:
-            return ErrorResolution(
-                response_action=ResponseAction.RETRY,
-                failure_type=FailureType.transient_error,
-                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
-            )
-
-        return super().interpret_response(response_or_exception)
-
-
-class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        if isinstance(response_or_exception, requests.Response):
-            if response_or_exception.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
-                self.stream.page_size = int(self.stream.page_size / 2)
-                return ErrorResolution(
-                    response_action=ResponseAction.RETRY,
-                    failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
-                )
-
-            self.stream.page_size = (
-                constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
-            )
-
-            if response_or_exception.json().get("errors"):
-                return ErrorResolution(
-                    response_action=ResponseAction.RETRY,
-                    failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
-                )
-
-        return super().interpret_response(response_or_exception)
-
-
-class GithubStreamABCBackoffStrategy(BackoffStrategy):
-    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
-        self.stream = stream
-        super().__init__(**kwargs)
-
-    def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
-    ) -> Optional[float]:
-        # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
-        # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
-        # we again could have 5000 per another hour.
-        if isinstance(response_or_exception, requests.Response):
-            min_backoff_time = 60.0
-            retry_after = response_or_exception.headers.get("Retry-After")
-            if retry_after is not None:
-                backoff_time_in_seconds = max(float(retry_after), min_backoff_time)
-                return self.get_waiting_time(backoff_time_in_seconds)
-
-            reset_time = response_or_exception.headers.get("X-RateLimit-Reset")
-            if reset_time:
-                backoff_time_in_seconds = max(float(reset_time) - time.time(), min_backoff_time)
-                return self.get_waiting_time(backoff_time_in_seconds)
-        return None
-
-    def get_waiting_time(self, backoff_time_in_seconds: Optional[float]) -> Optional[float]:
-        if backoff_time_in_seconds < 60 * 10:  # type: ignore[operator]
-            return backoff_time_in_seconds
-        else:
-            self.stream._http_client._session.auth.update_token()  # New token will be used in next request
-            return 1
-
-
-class ContributorActivityBackoffStrategy(BackoffStrategy):
-    def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
-    ) -> Optional[float]:
-        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.ACCEPTED:
-            return 90
-        return None

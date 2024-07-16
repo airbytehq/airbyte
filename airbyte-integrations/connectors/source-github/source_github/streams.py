@@ -21,6 +21,13 @@ from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
 from . import constants
+from .backoff_strategies import ContributorActivityBackoffStrategy, GithubStreamABCBackoffStrategy
+from .errors_handlers import (
+    GITHUB_DEFAULT_ERROR_MAPPING,
+    ContributorActivityErrorHandler,
+    GitHubGraphQLErrorHandler,
+    GithubStreamABCErrorHandler,
+)
 from .graphql import (
     CursorStorage,
     QueryReactions,
@@ -29,16 +36,7 @@ from .graphql import (
     get_query_pull_requests,
     get_query_reviews,
 )
-from .utils import (
-    GITHUB_DEFAULT_ERROR_MAPPING,
-    ContributorActivityBackoffStrategy,
-    ContributorActivityErrorHandler,
-    GitHubAPILimitException,
-    GitHubGraphQLErrorHandler,
-    GithubStreamABCBackoffStrategy,
-    GithubStreamABCErrorHandler,
-    getter,
-)
+from .utils import GitHubAPILimitException, getter
 
 
 class GithubStreamABC(HttpStream, ABC):
