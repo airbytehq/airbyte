@@ -169,6 +169,10 @@ airbyte/airbyte
 
 After the installation has completed, you can configure your [Ingress](./integrations/ingress) by following the directions for your specific Ingress provider.
 
+:::note
+As part of maintainging your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
+:::
+
 <!--
 ##TODO
 
