@@ -76,6 +76,7 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.10 | 2024-07-15 | [38930](https://github.com/airbytehq/airbyte/pull/38930) | Make compatible with builder |
 | 0.1.9 | 2024-07-13 | [41932](https://github.com/airbytehq/airbyte/pull/41932) | Update dependencies |
 | 0.1.8 | 2024-07-10 | [41349](https://github.com/airbytehq/airbyte/pull/41349) | Update dependencies |
 | 0.1.7 | 2024-07-09 | [41077](https://github.com/airbytehq/airbyte/pull/41077) | Update dependencies |
@@ -85,6 +86,6 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 | 0.1.3 | 2024-06-06 | [39216](https://github.com/airbytehq/airbyte/pull/39216) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.2 | 2024-05-21 | [38458](https://github.com/airbytehq/airbyte/pull/38458) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2024-05-21 | [38458](https://github.com/airbytehq/airbyte/pull/38458) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/18854) | Initial commit |
+| 0.1.0 | 2022-11-02 | [Init](https://github.com/airbytehq/airbyte/pull/18854)  | Initial commit |
 
 </details>
