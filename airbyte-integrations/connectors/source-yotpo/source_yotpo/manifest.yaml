@@ -5,12 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - email_analytics
-    - raw_data
-    - reviews
-    - unsubscribers
     - webhooks
-    - webhook_events
 
 definitions:
   streams:
