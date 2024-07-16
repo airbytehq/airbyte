@@ -12,13 +12,13 @@ import psycopg2
 from psycopg2 import sql
 
 catalog_write_file = "/connector/integration_tests/configured_catalog_copy.json"
-catalog_source_file = "/connector/integration_tests/configured_catalog.json"
-catalog_view_write_file = "/connector/integration_tests/configured_catalog_view_copy.json"
-catalog_view_source_file = "/connector/integration_tests/configured_catalog_view.json"
+catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
+# catalog_view_write_file = "/connector/integration_tests/configured_catalog_view_copy.json"
+# catalog_view_source_file = "/connector/integration_tests/configured_catalog_view.json"
 catalog_incremental_write_file = "/connector/integration_tests/incremental_configured_catalog_copy.json"
-catalog_incremental_source_file = "/connector/integration_tests/incremental_configured_catalog.json"
+catalog_incremental_source_file = "/connector/integration_tests/incremental_configured_catalog_template.json"
 abnormal_state_write_file = "/connector/integration_tests/abnormal_state_copy.json"
-abnormal_state_file = "/connector/integration_tests/abnormal_state.json"
+abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
 secret_config_file = '/connector/secrets/config.json'
 
@@ -80,9 +80,9 @@ def write_supporting_file(schema_name):
     with open(catalog_write_file, "w") as file:
         with open(catalog_source_file, 'r') as source_file:
             file.write(source_file.read() % schema_name)
-    with open(catalog_view_write_file, "w") as file:
-        with open(catalog_view_source_file, 'r') as source_file:
-            file.write(source_file.read() % schema_name)
+    # with open(catalog_view_write_file, "w") as file:
+    #     with open(catalog_view_source_file, 'r') as source_file:
+    #         file.write(source_file.read() % schema_name)
     with open(catalog_incremental_write_file, "w") as file:
         with open(catalog_incremental_source_file, 'r') as source_file:
             file.write(source_file.read() % schema_name)

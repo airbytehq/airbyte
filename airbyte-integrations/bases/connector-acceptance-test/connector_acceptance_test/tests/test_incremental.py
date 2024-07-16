@@ -285,9 +285,10 @@ class TestIncremental(BaseTest):
         self, inputs: IncrementalConfig, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
-        output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state, enable_caching=False)
+        output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state)
         records = filter_output(output, type_=Type.RECORD)
         states = filter_output(output, type_=Type.STATE)
+
         assert (
             not records
         ), f"The sync should produce no records when run with the state with abnormally large values {records[0].record.stream}"
@@ -316,10 +317,6 @@ class TestIncremental(BaseTest):
             for state in future_state
             if state["stream"]["stream_descriptor"]["name"] in cursor_fields_per_stream
         }
-
-        print(f"actual state: {states}")
-
-        print(f"cursor_fields_per_stream: {cursor_fields_per_stream}")
 
         assert all(future_state_cursor_values_per_stream.values()), "Future state must be set up for all given streams"
 
@@ -411,9 +408,7 @@ class TestIncremental(BaseTest):
             if isinstance(current_node, dict):
                 for key, value in current_node.items():
                     # DB sources use a hardcoded field `cursor` to denote cursor value.
-                    if key == "cursor":
-                        values.append(value)
-                    elif key == cursor_field:
+                    if key == "cursor" || key == cursor_field:
                         values.append(value)
                     nodes_to_visit.append(value)
             elif isinstance(current_node, list):
