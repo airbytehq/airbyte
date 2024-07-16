@@ -115,15 +115,19 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
         if (
             !(schemaMatchesExpectation(
                 existingV2AirbyteRawTable,
-                JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META
+                JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITHOUT_META,
             ) ||
                 schemaMatchesExpectation(
                     existingV2AirbyteRawTable,
-                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES
+                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES,
+                ) ||
+                schemaMatchesExpectation(
+                    existingV2AirbyteRawTable,
+                    JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES_WITH_GENERATION,
                 ))
         ) {
             throw UnexpectedSchemaException(
-                "Destination V2 Raw Table does not match expected Schema"
+                "Destination V2 Raw Table does not match expected Schema",
             )
         }
     }

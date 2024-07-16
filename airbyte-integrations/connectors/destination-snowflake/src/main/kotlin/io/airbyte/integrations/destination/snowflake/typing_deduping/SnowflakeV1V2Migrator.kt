@@ -26,19 +26,19 @@ class SnowflakeV1V2Migrator(
     @SneakyThrows
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
-        return !database
+        return database
             .queryJsons(
                 """
-            SELECT SCHEMA_NAME
-            FROM information_schema.schemata
-            WHERE schema_name = ?
-            AND catalog_name = ?;
-            
-            """.trimIndent(),
+                SELECT SCHEMA_NAME
+                FROM information_schema.schemata
+                WHERE schema_name = ?
+                AND catalog_name = ?;
+                
+                """.trimIndent(),
                 streamConfig!!.id.rawNamespace,
                 databaseName
             )
-            .isEmpty()
+            .isNotEmpty()
     }
 
     override fun schemaMatchesExpectation(

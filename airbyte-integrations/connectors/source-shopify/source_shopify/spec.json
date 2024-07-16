@@ -97,6 +97,13 @@
         "title": "Add `user_id` to Transactions (slower)",
         "description": "Defines which API type (REST/BULK) to use to fetch `Transactions` data. If you are a `Shopify Plus` user, leave the default value to speed up the fetch.",
         "default": false
+      },
+      "job_termination_threshold": {
+        "type": "integer",
+        "title": "BULK Job termination threshold",
+        "description": "The max time in seconds, after which the single BULK Job should be `CANCELED` and retried. The bigger the value the longer the BULK Job is allowed to run.",
+        "default": 3600,
+        "minimum": 1
       }
     }
   },

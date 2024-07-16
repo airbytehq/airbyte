@@ -18,7 +18,7 @@ dependencies {
     api 'com.fasterxml.jackson.module:jackson-module-kotlin'
     api 'com.google.guava:guava:33.0.0-jre'
     api 'commons-io:commons-io:2.15.1'
-    api ('io.airbyte.airbyte-protocol:protocol-models:0.9.0') { exclude group: 'com.google.api-client', module: 'google-api-client' }
+    api ('io.airbyte.airbyte-protocol:protocol-models:0.11.0') { exclude group: 'com.google.api-client', module: 'google-api-client' }
     api 'javax.annotation:javax.annotation-api:1.3.2'
     api 'org.apache.commons:commons-compress:1.25.0'
     api 'org.apache.commons:commons-lang3:3.14.0'

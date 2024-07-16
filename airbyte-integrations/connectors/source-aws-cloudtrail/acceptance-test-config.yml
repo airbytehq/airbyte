@@ -1,23 +1,36 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-aws-cloudtrail:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_aws_cloudtrail/spec.json"
+    tests:
+      - spec_path: "source_aws_cloudtrail/spec.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.11 # The spec has additional filtering property
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-  incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      #future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.11 # The management_events stream changed it's EventTime field from integer to float
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: []
+  incremental:
+    # bypass_reason: "This connector does not implement incremental sync"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

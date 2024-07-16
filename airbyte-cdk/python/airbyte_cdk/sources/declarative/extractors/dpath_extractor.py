@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, Union
 
-import dpath.util
+import dpath
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -56,7 +56,7 @@ class DpathExtractor(RecordExtractor):
     field_path: List[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
@@ -71,9 +71,9 @@ class DpathExtractor(RecordExtractor):
         else:
             path = [path.eval(self.config) for path in self._field_path]
             if "*" in path:
-                extracted = dpath.util.values(response_body, path)
+                extracted = dpath.values(response_body, path)
             else:
-                extracted = dpath.util.get(response_body, path, default=[])
+                extracted = dpath.get(response_body, path, default=[])
         if isinstance(extracted, list):
             yield from extracted
         elif extracted:

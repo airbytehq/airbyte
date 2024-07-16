@@ -2,7 +2,7 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
 
-    api 'org.postgresql:postgresql:42.6.0'
+    api 'org.postgresql:postgresql:42.6.2'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 

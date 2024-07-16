@@ -6,8 +6,7 @@ from datetime import timedelta
 from typing import Any, Iterator, Mapping
 
 import pendulum
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, FailureType
 from boto3 import session as boto3session
 from botocore import UNSIGNED
 from botocore.config import Config

@@ -5,7 +5,7 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
+from airbyte_cdk import AirbyteEntrypoint, launch
 from source_sftp_bulk import SourceSFTPBulk
 
 

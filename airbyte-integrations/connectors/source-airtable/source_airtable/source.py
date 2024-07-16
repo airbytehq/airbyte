@@ -1,12 +1,11 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 
 import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Tuple, Union
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -24,7 +23,7 @@ class SourceAirtable(AbstractSource):
     streams_catalog: Iterable[Mapping[str, Any]] = []
     _auth: AirtableAuth = None
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         auth = AirtableAuth(config)
         try:
             # try reading first table from each base, to check the connectivity,
@@ -66,7 +65,7 @@ class SourceAirtable(AbstractSource):
         catalog = self._remove_missed_streams_from_catalog(logger, config, catalog)
         return super().read(logger, config, catalog, state)
 
-    def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config) -> AirbyteCatalog:
         """
         Override to provide the dynamic schema generation capabilities,
         using resource available for authenticated user.

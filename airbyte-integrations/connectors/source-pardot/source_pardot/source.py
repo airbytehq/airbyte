@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .api import Pardot
 from .stream import Campaigns, EmailClicks, ListMembership, Lists, ProspectAccounts, Prospects, Users, VisitorActivities, Visitors, Visits

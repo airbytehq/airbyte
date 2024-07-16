@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -90,7 +90,7 @@ class DefaultPaginator(Paginator):
     config: Config
     url_base: Union[InterpolatedString, str]
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestPath, RequestOption]] = None
 

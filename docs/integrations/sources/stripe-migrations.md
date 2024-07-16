@@ -1,5 +1,15 @@
 # Stripe Migration Guide
 
+## Upgrading to 5.4.0
+
+This change fixes incremental sync issues with the `Refunds` stream:
+
+- Stream cursor has changed from `created` to `updated`.
+
+The `Reset` for the affected stream `Refunds` is required. It's safe to do, since before this update the `Refunds` stream didn't use the `events` endpoint that have `30 Days data retention` period.
+
+Because of the changed cursor field of the `Refunds` stream, incremental syncs are now fixed and the stream receives the updates using the `events` endpoint.
+
 ## Upgrading to 5.0.0
 
 This change fixes multiple incremental sync issues with the `Refunds`, `Checkout Sessions` and `Checkout Sessions Line Items` streams:

@@ -90,14 +90,13 @@ def test_check_stream_with_no_stream_slices_aborts():
 @pytest.mark.parametrize(
     "test_name, response_code, available_expectation, expected_messages",
     [
-        ("test_stream_unavailable_unhandled_error", 404, False, ["Unable to connect to stream mock_http_stream", "404 Client Error"]),
+        ("test_stream_unavailable_unhandled_error", 404, False, ["Not found. The requested resource was not found on the server."]),
         (
             "test_stream_unavailable_handled_error",
             403,
             False,
             [
-                "Unable to read mock_http_stream stream",
-                "This is most likely due to insufficient permissions on the credentials in use.",
+                "Forbidden. You don't have permission to access this resource."
             ],
         ),
         ("test_stream_available", 200, True, []),

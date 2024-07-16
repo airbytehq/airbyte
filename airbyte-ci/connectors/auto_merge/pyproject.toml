@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "auto-merge"
-version = "0.1.0"
+version = "0.1.2"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -38,5 +38,6 @@ type_check = "mypy src --disallow-untyped-defs"
 lint = "ruff check src"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "lint",]

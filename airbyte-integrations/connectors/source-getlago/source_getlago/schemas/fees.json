@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "lago_id": {
+      "type": ["null", "string"]
+    },
+    "lago_group_id": {
+      "type": ["null", "string"]
+    },
+    "lago_invoice_id": {
+      "type": ["null", "string"]
+    },
+    "lago_true_up_fee_id": {
+      "type": ["null", "string"]
+    },
+    "lago_true_up_parent_fee_id": {
+      "type": ["null", "string"]
+    },
+    "lago_subscription_id": {
+      "type": ["null", "string"]
+    },
+    "lago_customer_id": {
+      "type": ["null", "string"]
+    },
+    "external_customer_id": {
+      "type": ["null", "string"]
+    },
+    "external_subscription_id": {
+      "type": ["null", "string"]
+    },
+    "invoice_display_name": {
+      "type": ["null", "string"]
+    },
+    "amout_cents": {
+      "type": ["null", "integer"]
+    },
+    "amount_currency": {
+      "type": ["null", "string"]
+    },
+    "taxes_amount_cents": {
+      "type": ["null", "integer"]
+    },
+    "taxes_rate": {
+      "type": ["null", "number"]
+    },
+    "units": {
+      "type": ["null", "string"]
+    },
+    "precise_unit_amount": {
+      "type": ["null", "string"]
+    },
+    "total_amount_cents": {
+      "type": ["null", "integer"]
+    },
+    "total_amount_currency": {
+      "type": ["null", "string"]
+    },
+    "events_count": {
+      "type": ["null", "integer"]
+    },
+    "pay_in_advance": {
+      "type": ["null", "boolean"]
+    },
+    "invoiceable": {
+      "type": ["null", "boolean"]
+    },
+    "from_date": {
+      "type": ["null", "string"]
+    },
+    "to_date": {
+      "type": ["null", "string"]
+    },
+    "payment_status": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "succeeded_at": {
+      "type": ["null", "string"]
+    },
+    "failed_at": {
+      "type": ["null", "string"]
+    },
+    "refunded_at": {
+      "type": ["null", "string"]
+    },
+    "event_transaction_id": {
+      "type": ["null", "string"]
+    },
+    "amount_details": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "graduated_ranges": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "units": {
+                "type": ["null", "string"]
+              },
+              "from_value": {
+                "type": ["null", "integer"]
+              },
+              "to_value": {
+                "type": ["null", "integer"]
+              },
+              "flat_unit_amount": {
+                "type": ["null", "string"]
+              },
+              "per_unit_amount": {
+                "type": ["null", "string"]
+              },
+              "per_unit_total_amount": {
+                "type": ["null", "string"]
+              },
+              "total_with_flat_amount": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "graduated_percentage_ranges": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "unit": {
+                "type": ["null", "string"]
+              },
+              "from_value": {
+                "type": ["null", "integer"]
+              },
+              "to_value": {
+                "type": ["null", "integer"]
+              },
+              "flat_unit_amount": {
+                "type": ["null", "string"]
+              },
+              "rate": {
+                "type": ["null", "string"]
+              },
+              "per_unit_total_amount": {
+                "type": ["null", "string"]
+              },
+              "total_with_flat_amount": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "free_units": {
+          "type": ["null", "string"]
+        },
+        "paid_units": {
+          "type": ["null", "string"]
+        },
+        "per_package_size": {
+          "type": ["null", "integer"]
+        },
+        "per_package_unit_amount": {
+          "type": ["null", "string"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        },
+        "free_events": {
+          "type": ["null", "integer"]
+        },
+        "rate": {
+          "type": ["null", "string"]
+        },
+        "per_unit_total_amount": {
+          "type": ["null", "string"]
+        },
+        "paid_events": {
+          "type": ["null", "integer"]
+        },
+        "fixed_fee_unit_amount": {
+          "type": ["null", "string"]
+        },
+        "fixed_fee_total_amount": {
+          "type": ["null", "string"]
+        },
+        "min_max_adjustment_total_amount": {
+          "type": ["null", "string"]
+        },
+        "volume_ranges": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "per_unit_amount": {
+                "type": ["null", "string"]
+              },
+              "flat_unit_amount": {
+                "type": ["null", "string"]
+              },
+              "per_unit_total_amount": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "item": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "code": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "invoice_display_name": {
+          "type": ["null", "string"]
+        },
+        "group_invoice_display_name": {
+          "type": ["null", "string"]
+        },
+        "lago_item_id": {
+          "type": ["null", "string"]
+        },
+        "item_type": {
+          "type": ["null", "string"]
+        },
+        "grouped_by": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {}
+        }
+      }
+    },
+    "applied_taxes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "lago_id": {
+            "type": ["null", "string"]
+          },
+          "lago_tax_id": {
+            "type": ["null", "string"]
+          },
+          "tax_name": {
+            "type": ["null", "string"]
+          },
+          "tax_code": {
+            "type": ["null", "string"]
+          },
+          "tax_rate": {
+            "type": ["null", "number"]
+          },
+          "tax_description": {
+            "type": ["null", "string"]
+          },
+          "amount_cents": {
+            "type": ["null", "integer"]
+          },
+          "amount_currency": {
+            "type": ["null", "string"]
+          },
+          "created_at": {
+            "type": ["null", "string"]
+          },
+          "lago_fee_id": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

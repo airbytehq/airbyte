@@ -1,0 +1,20 @@
+{
+  "properties": {
+    "id": {
+      "description": "Unique ID of the video.",
+      "type": "string"
+    },
+    "ad_breaks": {
+      "description": "Information about ad breaks within the video.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "integer"
+      }
+    },
+    "backdated_time": {
+      "description": "The time when the video was backdated.",
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

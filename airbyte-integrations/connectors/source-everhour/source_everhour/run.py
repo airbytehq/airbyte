@@ -1,12 +1,13 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_everhour import SourceEverhour
+
+from .source import SourceEverhour
 
 
 def run():

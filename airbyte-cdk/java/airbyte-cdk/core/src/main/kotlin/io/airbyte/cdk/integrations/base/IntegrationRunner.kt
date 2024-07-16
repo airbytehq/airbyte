@@ -213,6 +213,7 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
+            LOGGER.error(e) { "caught exception!" }
             // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
             // attempt is made
             // to
@@ -253,6 +254,7 @@ internal constructor(
                     ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
                 )
                 // On receiving a config error, the container should be immediately shut down.
+                System.exit(1)
             } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
                 AirbyteTraceMessageUtility.emitTransientErrorTrace(
                     e,
@@ -385,8 +387,8 @@ internal constructor(
             }
 
         @JvmStatic
-        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo {
-            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo
+        fun getThreadCreationInfo(thread: Thread): ThreadCreationInfo? {
+            return getMethod.invoke(threadCreationInfo, thread) as ThreadCreationInfo?
         }
 
         /**

@@ -13,7 +13,6 @@ from abc import ABC
 from contextlib import closing
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-import backoff
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
@@ -21,13 +20,13 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import JSONDecodeError, exceptions
+from requests import exceptions
 from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -372,9 +371,7 @@ class BulkSalesforceStream(SalesforceStream):
         This method should be used when you don't have to read data from the HTTP body. Else, you will have to retry when you actually read
         the response buffer (which is either by calling `json` or `iter_content`)
         """
-        headers = (
-            self.authenticator.get_auth_header() if not headers else headers | self.authenticator.get_auth_header()
-        )  # FIXME can we remove this?
+        headers = headers if headers else self._http_client._session.auth.get_auth_header()
         return self._http_client.send_request(method, url, headers=headers, json=json, request_kwargs={})[1]
 
     @default_backoff_handler(max_tries=5, retry_on=RESPONSE_CONSUMPTION_EXCEPTIONS)
@@ -695,7 +692,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
     return instance
 
 
-class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
+class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC):
     state_checkpoint_interval = 500
     _slice = None
 
@@ -704,6 +701,7 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         self.replication_key = replication_key
         self._stream_slice_step = stream_slice_step
         self._stream_slicer_cursor = None
+        self._state = {}
 
     def set_cursor(self, cursor: Cursor) -> None:
         self._stream_slicer_cursor = cursor
@@ -764,7 +762,15 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     def cursor_field(self) -> str:
         return self.replication_key
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not

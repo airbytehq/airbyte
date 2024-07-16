@@ -36,17 +36,24 @@ class DatabricksStorageOperation(
     //  Hoist them to SqlGenerator interface in CDK, until then using concrete instance.
     private val databricksSqlGenerator = sqlGenerator as DatabricksSqlGenerator
 
-    override fun writeToStage(streamId: StreamId, data: SerializableBuffer) {
+    override fun writeToStage(streamConfig: StreamConfig, data: SerializableBuffer) {
+        val streamId = streamConfig.id
         val stagedFile = "${stagingDirectory(streamId, database)}/${data.filename}"
         workspaceClient.files().upload(stagedFile, data.inputStream)
         destinationHandler.execute(
             Sql.of(
+                // schema inference sees _airbyte_generation_id as an int (int32),
+                // which can't be loaded into a bigint (int64) column.
+                // So we have to explicitly cast it to a bigint.
                 """
-                        COPY INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
-                        FROM '$stagedFile'
-                        FILEFORMAT = CSV
-                        FORMAT_OPTIONS ('header'='true', 'inferSchema'='true', 'escape'='"');
-                    """.trimIndent(),
+                COPY INTO `$database`.`${streamId.rawNamespace}`.`${streamId.rawName}`
+                FROM (
+                  SELECT _airbyte_generation_id :: bigint, * except (_airbyte_generation_id)
+                  FROM '$stagedFile'
+                )
+                FILEFORMAT = CSV
+                FORMAT_OPTIONS ('header'='true', 'inferSchema'='true', 'escape'='"');
+                """.trimIndent(),
             ),
         )
         // Databricks recommends that partners delete files in the staging directory once the data
@@ -120,12 +127,6 @@ class DatabricksStorageOperation(
             log.info { "Deleting Staging directory ${stagingDirectory(streamId, database)}" }
             workspaceClient.files().deleteDirectory(stagingDirectory(streamId, database))
         }
-    }
-
-    override fun createFinalNamespace(streamId: StreamId) {
-        val finalSchema = streamId.finalNamespace
-        // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
-        destinationHandler.execute(sqlGenerator.createSchema(finalSchema))
     }
 
     override fun createFinalTable(streamConfig: StreamConfig, suffix: String, replace: Boolean) {

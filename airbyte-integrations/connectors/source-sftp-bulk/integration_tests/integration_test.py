@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import logging
 from copy import deepcopy
 from typing import Any, Mapping
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
+from airbyte_cdk import ConfiguredAirbyteCatalog, Status
 from airbyte_cdk.test.entrypoint_wrapper import read
 from source_sftp_bulk import SourceSFTPBulk
 

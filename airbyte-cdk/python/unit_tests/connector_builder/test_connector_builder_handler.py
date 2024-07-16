@@ -45,6 +45,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, update_secrets
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -53,17 +54,11 @@ _stream_url_base = "https://api.sendgrid.com"
 _stream_options = {"name": _stream_name, "primary_key": _stream_primary_key, "url_base": _stream_url_base}
 _page_size = 2
 
-_A_STATE = [AirbyteStateMessage(
-    type="STREAM",
-    stream=AirbyteStreamState(
-        stream_descriptor=StreamDescriptor(
-            name=_stream_name
-        ),
-        stream_state={
-            "key": "value"
-        }
+_A_STATE = [
+    AirbyteStateMessage(
+        type="STREAM", stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=_stream_name), stream_state={"key": "value"})
     )
-)]
+]
 
 MANIFEST = {
     "version": "0.30.3",
@@ -125,7 +120,7 @@ OAUTH_MANIFEST = {
                 "page_token_option": {"inject_into": "path", "type": "RequestPath"},
                 "pagination_strategy": {
                     "type": "CursorPagination",
-                    "cursor_value": "{{ response._metadata.next }}",
+                    "cursor_value": "{{ response.next }}",
                     "page_size": _page_size,
                 },
             },
@@ -281,7 +276,9 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
     config["__command"] = command
     source = ManifestDeclarativeSource(MANIFEST)
     limits = TestReadLimits()
-    resolved_manifest = handle_connector_builder_request(source, command, config, create_configured_catalog("dummy_stream"), _A_STATE, limits)
+    resolved_manifest = handle_connector_builder_request(
+        source, command, config, create_configured_catalog("dummy_stream"), _A_STATE, limits
+    )
 
     expected_resolved_manifest = {
         "type": "DeclarativeSource",
@@ -565,6 +562,21 @@ def test_read_returns_error_response(mock_from_exception):
     assert response == expected_message
 
 
+def test_handle_429_response():
+    response = _create_429_page_response({"result": [{"error": "too many requests"}], "_metadata": {"next": "next"}})
+
+    config = TEST_READ_CONFIG
+    limits = TestReadLimits()
+    source = create_source(config, limits)
+
+    with patch("requests.Session.send", return_value=response) as mock_send:
+        response = handle_connector_builder_request(
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits
+        )
+
+        mock_send.assert_called_once()
+
+
 @pytest.mark.parametrize(
     "command",
     [
@@ -663,7 +675,6 @@ def test_create_source():
     assert isinstance(source, ManifestDeclarativeSource)
     assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
     assert source._constructor._limit_slices_fetched == limits.max_slices
-    assert source.streams(config={})[0].retriever.requester.max_retries == 0
 
 
 def request_log_message(request: dict) -> AirbyteMessage:
@@ -689,9 +700,23 @@ def _create_response(body, request):
     return response
 
 
+def _create_429_response(body, request):
+    response = requests.Response()
+    response.status_code = 429
+    response._content = bytes(json.dumps(body), "utf-8")
+    response.headers["Content-Type"] = "application/json"
+    response.request = request
+    return response
+
+
 def _create_page_response(response_body):
     request = _create_request()
     return _create_response(response_body, request)
+
+
+def _create_429_page_response(response_body):
+    request = _create_request()
+    return _create_429_response(response_body, request)
 
 
 @patch.object(
@@ -897,3 +922,38 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
             error_message = output_data["logs"][0]
             assert error_message["level"] == "ERROR"
             assert expected_error in error_message["message"]
+
+
+def test_read_stream_exception_with_secrets():
+    # Define the test parameters
+    config = {"__injected_declarative_manifest": "test_manifest", "api_key": "super_secret_key"}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
+    state = []
+    limits = TestReadLimits()
+
+    # Add the secret to be filtered
+    update_secrets([config["api_key"]])
+
+    # Mock the source
+    mock_source = MagicMock()
+
+    # Patch the handler to raise an exception
+    with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups") as mock_handler:
+        mock_handler.side_effect = Exception("Test exception with secret key: super_secret_key")
+
+        # Call the read_stream function and check for the correct error message
+        response = read_stream(mock_source, config, catalog, state, limits)
+
+        # Check if the error message contains the filtered secret
+        filtered_message = filter_secrets("Test exception with secret key: super_secret_key")
+        assert response.type == Type.TRACE
+        assert filtered_message in response.trace.error.message
+        assert "super_secret_key" not in response.trace.error.message

@@ -79,9 +79,6 @@ async def migrate_to_base_image(
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
-        pull_request_number,
-        changelog,
-        bump,
     )
 
     return True
