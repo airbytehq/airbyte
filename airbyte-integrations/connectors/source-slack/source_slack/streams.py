@@ -6,17 +6,16 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from pendulum import DateTime
-
 from source_slack.components.slack_backoff_strategy import SlackBackoffStrategy
+
 from .components.join_channels import JoinChannelsStream
 from .utils import chunk_date_range
 
@@ -259,7 +258,9 @@ class Threads(IncrementalMessageStream):
 
         stream_state = stream_state or {}
         channels_stream = Channels(
-            authenticator=self._http_client._session.auth, channel_filter=self.channel_filter, include_private_channels=self.include_private_channels
+            authenticator=self._http_client._session.auth,
+            channel_filter=self.channel_filter,
+            include_private_channels=self.include_private_channels,
         )
 
         if self.cursor_field in stream_state:

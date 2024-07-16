@@ -3,8 +3,10 @@
 #
 import logging
 from typing import Optional, Union
-from requests import Response, RequestException
+
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
+from requests import RequestException, Response
+
 
 class SlackBackoffStrategy(BackoffStrategy):
     def __init__(self, logger: logging.Logger):
