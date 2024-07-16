@@ -57,6 +57,7 @@ Here are some optional fields for different streams:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.8 | 2024-07-15 | [38344](https://github.com/airbytehq/airbyte/pull/38344) | Make connector compatible with builder |
 | 0.1.7 | 2024-07-10 | [41397](https://github.com/airbytehq/airbyte/pull/41397) | Update dependencies |
 | 0.1.6 | 2024-07-09 | [41301](https://github.com/airbytehq/airbyte/pull/41301) | Update dependencies |
 | 0.1.5 | 2024-07-06 | [40936](https://github.com/airbytehq/airbyte/pull/40936) | Update dependencies |
