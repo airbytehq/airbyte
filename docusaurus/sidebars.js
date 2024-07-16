@@ -416,6 +416,15 @@ const deployAirbyte = {
         "deploying-airbyte/integrations/ingress",
       ],
     },
+
+    {
+      type: "doc",
+      label: "Creating a Secret",
+      link: {
+        type: "doc",
+        id: "deploying-airbyte/creating-secrets",
+      }
+    },
   ],
 };
 
