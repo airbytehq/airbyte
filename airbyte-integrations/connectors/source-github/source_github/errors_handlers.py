@@ -83,7 +83,7 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RATE_LIMITED,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
                 )
 
         return super().interpret_response(response_or_exception)
@@ -95,7 +95,7 @@ class ContributorActivityErrorHandler(HttpStatusErrorHandler):
             return ErrorResolution(
                 response_action=ResponseAction.RETRY,
                 failure_type=FailureType.transient_error,
-                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
             )
 
         return super().interpret_response(response_or_exception)
@@ -109,7 +109,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
                 )
 
             self.stream.page_size = (
@@ -120,7 +120,7 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
                 )
 
         return super().interpret_response(response_or_exception)

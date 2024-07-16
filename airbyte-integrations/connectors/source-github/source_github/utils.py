@@ -5,17 +5,17 @@
 import time
 from dataclasses import dataclass
 from itertools import cycle
-from typing import Any, Dict, Iterable, List, Mapping, Union
+from typing import Any, List, Mapping
 
 import pendulum
 import requests
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 
-def getter(D: Dict[str, Any], key_or_keys: Union[List[Any], Any], strict: bool = True) -> Dict[str, Any]:
+def getter(D: dict, key_or_keys, strict=True):
     if not isinstance(key_or_keys, list):
         key_or_keys = [key_or_keys]
     for k in key_or_keys:
@@ -26,7 +26,7 @@ def getter(D: Dict[str, Any], key_or_keys: Union[List[Any], Any], strict: bool =
     return D
 
 
-def read_full_refresh(stream_instance: Stream) -> Iterable[Mapping[str, Any]]:
+def read_full_refresh(stream_instance: Stream):
     slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
     for _slice in slices:
         records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
@@ -75,7 +75,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             return {self.auth_header: self.token}
         return {}
 
-    def __call__(self, request: Any) -> Any:
+    def __call__(self, request):
         """Attach the HTTP headers required to authenticate on the HTTP request"""
         while True:
             current_token = self._tokens[self.current_active_token]
@@ -111,7 +111,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     def max_time(self, value: int) -> None:
         self._max_time = value
 
-    def _check_token_limits(self, token: str) -> None:
+    def _check_token_limits(self, token: str):
         """check that token is not limited"""
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         rate_limit_info = (
@@ -132,11 +132,11 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             remaining_info_graphql.get("reset")
         )
 
-    def check_all_tokens(self) -> None:
+    def check_all_tokens(self):
         for token in self._tokens:
             self._check_token_limits(token)
 
-    def process_token(self, current_token: Any, count_attr: str, reset_attr: str) -> bool:
+    def process_token(self, current_token, count_attr, reset_attr):
         if getattr(current_token, count_attr) > 0:
             setattr(current_token, count_attr, getattr(current_token, count_attr) - 1)
             return True
