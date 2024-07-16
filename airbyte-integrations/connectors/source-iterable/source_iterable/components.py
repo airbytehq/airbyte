@@ -3,7 +3,7 @@
 #
 
 from dataclasses import dataclass
-from typing import Iterable, Mapping, Any
+from typing import Any, Iterable, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
