@@ -204,13 +204,12 @@ public class PostgresCdcCtidInitializer {
 
       // Any stream currently undergoing full vacuum should not be synced via CTID as it is not a stable
       // cursor. In practice, this will never happen
-      // during a sync as a full vacuum in Postgres locks the entire database, so thrown a TransientError in this case and try again.
+      // during a sync as a full vacuum in Postgres locks the entire database, so thrown a TransientError
+      // in this case and try again.
       if (!streamsUnderVacuum.isEmpty()) {
         throw new TransientErrorException(
             "Postgres database is undergoing a full vacuum - cannot proceed with the sync. Please sync again when the vacuum is finished.");
       }
-
-      finalListOfStreamsToBeSyncedViaCtid.addAll(ctidStreams.streamsForCtidSync());
 
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
           ctidStreams.streamsForCtidSync(),
@@ -219,13 +218,11 @@ public class PostgresCdcCtidInitializer {
       // Check if a full vacuum occurred between syncs. If we are unable to determine whether this has
       // occurred, we will exclude the tables for which
       // we were unable to determine this from the initial CTID sync.
-      if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
-        finalListOfStreamsToBeSyncedViaCtid.clear();
-        finalListOfStreamsToBeSyncedViaCtid.addAll(finalListOfStreamsToBeSyncedViaCtid.stream()
-            .filter(stream -> !fileNodeHandler.getFailedToQuery().contains(
-                new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())))
-            .collect(Collectors.toList()));
-      }
+      finalListOfStreamsToBeSyncedViaCtid.addAll(ctidStreams.streamsForCtidSync().stream()
+          .filter(stream -> !fileNodeHandler.getFailedToQuery().contains(
+              new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace())))
+          .collect(Collectors.toList()));
+
       LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
 
       try {
