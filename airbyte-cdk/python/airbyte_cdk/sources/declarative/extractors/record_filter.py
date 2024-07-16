@@ -61,9 +61,7 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
 
     @property
     def _cursor_field(self) -> str:
-        return self._date_time_based_cursor.cursor_field.eval(
-            self._date_time_based_cursor.config
-        )  # type: ignore # eval returns a string in this context
+        return self._date_time_based_cursor.cursor_field.eval(self._date_time_based_cursor.config)  # type: ignore # eval returns a string in this context
 
     @property
     def _start_date_from_config(self) -> datetime.datetime:
@@ -111,7 +109,7 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
             return partition_state.get(self._cursor_field) if partition_state else None
 
         if self._is_global_parent_cursor:
-            return stream_state.get("state", {}).get(self._cursor_field)
+            return stream_state.get("state", {}).get(self._cursor_field)  # type: ignore  # state is inside a dict for GlobalParentCursor
 
         return stream_state.get(self._cursor_field)
 

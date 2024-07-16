@@ -225,10 +225,10 @@ SUBSTREAM_MANIFEST: MutableMapping[str, Any] = {
 
 
 def _run_read(
-    manifest: Mapping[str, Any],
-    config: Mapping[str, Any],
-    stream_name: str,
-    state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        manifest: Mapping[str, Any],
+        config: Mapping[str, Any],
+        stream_name: str,
+        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
 ) -> List[AirbyteMessage]:
     source = ManifestDeclarativeSource(source_config=manifest)
     catalog = ConfiguredAirbyteCatalog(
@@ -629,221 +629,225 @@ def test_incremental_parent_state_no_incremental_dependency(
         assert final_state[-1] == expected_state
 
 
+
+SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR: MutableMapping[str, Any] = {
+    "version": "0.51.42",
+    "type": "DeclarativeSource",
+    "check": {"type": "CheckStream", "stream_names": ["post_comment_votes"]},
+    "definitions": {
+        "basic_authenticator": {
+            "type": "BasicHttpAuthenticator",
+            "username": "{{ config['credentials']['email'] + '/token' }}",
+            "password": "{{ config['credentials']['api_token'] }}",
+        },
+        "retriever": {
+            "type": "SimpleRetriever",
+            "requester": {
+                "type": "HttpRequester",
+                "url_base": "https://api.example.com",
+                "http_method": "GET",
+                "authenticator": "#/definitions/basic_authenticator",
+            },
+            "record_selector": {
+                "type": "RecordSelector",
+                "extractor": {
+                    "type": "DpathExtractor",
+                    "field_path": ["{{ parameters.get('data_path') or parameters['name'] }}"],
+                },
+                "schema_normalization": "Default",
+            },
+            "paginator": {
+                "type": "DefaultPaginator",
+                "page_size_option": {"type": "RequestOption", "field_name": "per_page", "inject_into": "request_parameter"},
+                "pagination_strategy": {
+                    "type": "CursorPagination",
+                    "page_size": 100,
+                    "cursor_value": "{{ response.get('next_page', {}) }}",
+                    "stop_condition": "{{ not response.get('next_page', {}) }}",
+                },
+                "page_token_option": {"type": "RequestPath"},
+            },
+        },
+        "cursor_incremental_sync": {
+            "type": "DatetimeBasedCursor",
+            "cursor_datetime_formats": ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"],
+            "datetime_format": "%Y-%m-%dT%H:%M:%SZ",
+            "cursor_field": "{{ parameters.get('cursor_field',  'updated_at') }}",
+            "start_datetime": {"datetime": "{{ config.get('start_date')}}"},
+            "start_time_option": {"inject_into": "request_parameter", "field_name": "start_time", "type": "RequestOption"},
+        },
+        "posts_stream": {
+            "type": "DeclarativeStream",
+            "name": "posts",
+            "primary_key": ["id"],
+            "schema_loader": {
+                "type": "InlineSchemaLoader",
+                "schema": {
+                    "$schema": "http://json-schema.org/schema#",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "updated_at": {"type": "string", "format": "date-time"},
+                        "title": {"type": "string"},
+                        "content": {"type": "string"},
+                    },
+                    "type": "object",
+                },
+            },
+            "retriever": {
+                "type": "SimpleRetriever",
+                "requester": {
+                    "type": "HttpRequester",
+                    "url_base": "https://api.example.com",
+                    "path": "/community/posts",
+                    "http_method": "GET",
+                    "authenticator": "#/definitions/basic_authenticator",
+                },
+                "record_selector": "#/definitions/retriever/record_selector",
+                "paginator": "#/definitions/retriever/paginator",
+            },
+            "incremental_sync": "#/definitions/cursor_incremental_sync",
+            "$parameters": {
+                "name": "posts",
+                "path": "community/posts",
+                "data_path": "posts",
+                "cursor_field": "updated_at",
+                "primary_key": "id",
+            },
+        },
+        "post_comments_stream": {
+            "type": "DeclarativeStream",
+            "name": "post_comments",
+            "primary_key": ["id"],
+            "schema_loader": {
+                "type": "InlineSchemaLoader",
+                "schema": {
+                    "$schema": "http://json-schema.org/schema#",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "updated_at": {"type": "string", "format": "date-time"},
+                        "post_id": {"type": "integer"},
+                        "comment": {"type": "string"},
+                    },
+                    "type": "object",
+                },
+            },
+            "retriever": {
+                "type": "SimpleRetriever",
+                "requester": {
+                    "type": "HttpRequester",
+                    "url_base": "https://api.example.com",
+                    "path": "/community/posts/{{ stream_slice.id }}/comments",
+                    "http_method": "GET",
+                    "authenticator": "#/definitions/basic_authenticator",
+                },
+                "record_selector": {
+                    "type": "RecordSelector",
+                    "extractor": {"type": "DpathExtractor", "field_path": ["comments"]},
+                    "record_filter": {
+                        "condition": "{{ record['updated_at'] >= stream_state.get('updated_at', config.get('start_date')) }}"
+                    },
+                },
+                "paginator": "#/definitions/retriever/paginator",
+                "partition_router": {
+                    "type": "SubstreamPartitionRouter",
+                    "parent_stream_configs": [
+                        {
+                            "stream": "#/definitions/posts_stream",
+                            "parent_key": "id",
+                            "partition_field": "id",
+                            "incremental_dependency": True,
+                        }
+                    ],
+                },
+            },
+            "incremental_sync": {
+                "type": "DatetimeBasedCursor",
+                "cursor_datetime_formats": ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"],
+                "datetime_format": "%Y-%m-%dT%H:%M:%SZ",
+                "cursor_field": "{{ parameters.get('cursor_field',  'updated_at') }}",
+                "start_datetime": {"datetime": "{{ config.get('start_date') }}"},
+            },
+            "$parameters": {
+                "name": "post_comments",
+                "path": "community/posts/{{ stream_slice.id }}/comments",
+                "data_path": "comments",
+                "cursor_field": "updated_at",
+                "primary_key": "id",
+            },
+        },
+        "post_comment_votes_stream": {
+            "type": "DeclarativeStream",
+            "name": "post_comment_votes",
+            "primary_key": ["id"],
+            "schema_loader": {
+                "type": "InlineSchemaLoader",
+                "schema": {
+                    "$schema": "http://json-schema.org/schema#",
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "created_at": {"type": "string", "format": "date-time"},
+                        "comment_id": {"type": "integer"},
+                        "vote": {"type": "number"},
+                    },
+                    "type": "object",
+                },
+            },
+            "retriever": {
+                "type": "SimpleRetriever",
+                "requester": {
+                    "type": "HttpRequester",
+                    "url_base": "https://api.example.com",
+                    "path": "/community/posts/{{ stream_slice.parent_slice.id }}/comments/{{ stream_slice.id }}/votes",
+                    "http_method": "GET",
+                    "authenticator": "#/definitions/basic_authenticator",
+                },
+                "record_selector": "#/definitions/retriever/record_selector",
+                "paginator": "#/definitions/retriever/paginator",
+                "partition_router": {
+                    "type": "SubstreamPartitionRouter",
+                    "parent_stream_configs": [
+                        {
+                            "stream": "#/definitions/post_comments_stream",
+                            "parent_key": "id",
+                            "partition_field": "id",
+                            "incremental_dependency": True,
+                        }
+                    ],
+                },
+            },
+            "incremental_sync": {
+                "type": "DatetimeBasedCursor",
+                "cursor_datetime_formats": ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"],
+                "datetime_format": "%Y-%m-%dT%H:%M:%SZ",
+                "cursor_field": "{{ parameters.get('cursor_field',  'updated_at') }}",
+                "start_datetime": {"datetime": "{{ config.get('start_date')}}"},
+                "start_time_option": {"inject_into": "request_parameter", "field_name": "start_time",
+                                      "type": "RequestOption"},
+                "global_parent_cursor": True
+            },
+            "$parameters": {
+                "name": "post_comment_votes",
+                "path": "community/posts/{{ stream_slice.parent_slice.id }}/comments/{{ stream_slice.id }}/votes",
+                "data_path": "votes",
+                "cursor_field": "created_at",
+                "primary_key": "id",
+            },
+        },
+    },
+    "streams": [
+        {"$ref": "#/definitions/posts_stream"},
+        {"$ref": "#/definitions/post_comments_stream"},
+        {"$ref": "#/definitions/post_comment_votes_stream"},
+    ],
+}
+
+
 @pytest.mark.parametrize(
     "test_name, manifest, mock_requests, expected_records, initial_state, expected_state",
     [
         (
                 "test_incremental_parent_state",
-                {
-                    "version": "0.51.42",
-                    "type": "DeclarativeSource",
-                    "check": {"type": "CheckStream", "stream_names": ["post_comment_votes"]},
-                    "definitions": {
-                        "basic_authenticator": {
-                            "type": "BasicHttpAuthenticator",
-                            "username": "{{ config['credentials']['email'] + '/token' }}",
-                            "password": "{{ config['credentials']['api_token'] }}",
-                        },
-                        "retriever": {
-                            "type": "SimpleRetriever",
-                            "requester": {
-                                "type": "HttpRequester",
-                                "url_base": "https://api.example.com",
-                                "http_method": "GET",
-                                "authenticator": "#/definitions/basic_authenticator",
-                            },
-                            "record_selector": {
-                                "type": "RecordSelector",
-                                "extractor": {
-                                    "type": "DpathExtractor",
-                                    "field_path": ["{{ parameters.get('data_path') or parameters['name'] }}"],
-                                },
-                                "schema_normalization": "Default",
-                            },
-                            "paginator": {
-                                "type": "DefaultPaginator",
-                                "page_size_option": {"type": "RequestOption", "field_name": "per_page", "inject_into": "request_parameter"},
-                                "pagination_strategy": {
-                                    "type": "CursorPagination",
-                                    "page_size": 100,
-                                    "cursor_value": "{{ response.get('next_page', {}) }}",
-                                    "stop_condition": "{{ not response.get('next_page', {}) }}",
-                                },
-                                "page_token_option": {"type": "RequestPath"},
-                            },
-                        },
-                        "cursor_incremental_sync": {
-                            "type": "DatetimeBasedCursor",
-                            "cursor_datetime_formats": ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"],
-                            "datetime_format": "%Y-%m-%dT%H:%M:%SZ",
-                            "cursor_field": "{{ parameters.get('cursor_field',  'updated_at') }}",
-                            "start_datetime": {"datetime": "{{ config.get('start_date')}}"},
-                            "start_time_option": {"inject_into": "request_parameter", "field_name": "start_time", "type": "RequestOption"},
-                        },
-                        "posts_stream": {
-                            "type": "DeclarativeStream",
-                            "name": "posts",
-                            "primary_key": ["id"],
-                            "schema_loader": {
-                                "type": "InlineSchemaLoader",
-                                "schema": {
-                                    "$schema": "http://json-schema.org/schema#",
-                                    "properties": {
-                                        "id": {"type": "integer"},
-                                        "updated_at": {"type": "string", "format": "date-time"},
-                                        "title": {"type": "string"},
-                                        "content": {"type": "string"},
-                                    },
-                                    "type": "object",
-                                },
-                            },
-                            "retriever": {
-                                "type": "SimpleRetriever",
-                                "requester": {
-                                    "type": "HttpRequester",
-                                    "url_base": "https://api.example.com",
-                                    "path": "/community/posts",
-                                    "http_method": "GET",
-                                    "authenticator": "#/definitions/basic_authenticator",
-                                },
-                                "record_selector": "#/definitions/retriever/record_selector",
-                                "paginator": "#/definitions/retriever/paginator",
-                            },
-                            "incremental_sync": "#/definitions/cursor_incremental_sync",
-                            "$parameters": {
-                                "name": "posts",
-                                "path": "community/posts",
-                                "data_path": "posts",
-                                "cursor_field": "updated_at",
-                                "primary_key": "id",
-                            },
-                        },
-                        "post_comments_stream": {
-                            "type": "DeclarativeStream",
-                            "name": "post_comments",
-                            "primary_key": ["id"],
-                            "schema_loader": {
-                                "type": "InlineSchemaLoader",
-                                "schema": {
-                                    "$schema": "http://json-schema.org/schema#",
-                                    "properties": {
-                                        "id": {"type": "integer"},
-                                        "updated_at": {"type": "string", "format": "date-time"},
-                                        "post_id": {"type": "integer"},
-                                        "comment": {"type": "string"},
-                                    },
-                                    "type": "object",
-                                },
-                            },
-                            "retriever": {
-                                "type": "SimpleRetriever",
-                                "requester": {
-                                    "type": "HttpRequester",
-                                    "url_base": "https://api.example.com",
-                                    "path": "/community/posts/{{ stream_slice.id }}/comments",
-                                    "http_method": "GET",
-                                    "authenticator": "#/definitions/basic_authenticator",
-                                },
-                                "record_selector": {
-                                    "type": "RecordSelector",
-                                    "extractor": {"type": "DpathExtractor", "field_path": ["comments"]},
-                                    "record_filter": {
-                                        "condition": "{{ record['updated_at'] >= stream_state.get('updated_at', config.get('start_date')) }}"
-                                    },
-                                },
-                                "paginator": "#/definitions/retriever/paginator",
-                                "partition_router": {
-                                    "type": "SubstreamPartitionRouter",
-                                    "parent_stream_configs": [
-                                        {
-                                            "stream": "#/definitions/posts_stream",
-                                            "parent_key": "id",
-                                            "partition_field": "id",
-                                            "incremental_dependency": True,
-                                        }
-                                    ],
-                                },
-                            },
-                            "incremental_sync": {
-                                "type": "DatetimeBasedCursor",
-                                "cursor_datetime_formats": ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"],
-                                "datetime_format": "%Y-%m-%dT%H:%M:%SZ",
-                                "cursor_field": "{{ parameters.get('cursor_field',  'updated_at') }}",
-                                "start_datetime": {"datetime": "{{ config.get('start_date') }}"},
-                            },
-                            "$parameters": {
-                                "name": "post_comments",
-                                "path": "community/posts/{{ stream_slice.id }}/comments",
-                                "data_path": "comments",
-                                "cursor_field": "updated_at",
-                                "primary_key": "id",
-                            },
-                        },
-                        "post_comment_votes_stream": {
-                            "type": "DeclarativeStream",
-                            "name": "post_comment_votes",
-                            "primary_key": ["id"],
-                            "schema_loader": {
-                                "type": "InlineSchemaLoader",
-                                "schema": {
-                                    "$schema": "http://json-schema.org/schema#",
-                                    "properties": {
-                                        "id": {"type": "integer"},
-                                        "created_at": {"type": "string", "format": "date-time"},
-                                        "comment_id": {"type": "integer"},
-                                        "vote": {"type": "number"},
-                                    },
-                                    "type": "object",
-                                },
-                            },
-                            "retriever": {
-                                "type": "SimpleRetriever",
-                                "requester": {
-                                    "type": "HttpRequester",
-                                    "url_base": "https://api.example.com",
-                                    "path": "/community/posts/{{ stream_slice.parent_slice.id }}/comments/{{ stream_slice.id }}/votes",
-                                    "http_method": "GET",
-                                    "authenticator": "#/definitions/basic_authenticator",
-                                },
-                                "record_selector": "#/definitions/retriever/record_selector",
-                                "paginator": "#/definitions/retriever/paginator",
-                                "partition_router": {
-                                    "type": "SubstreamPartitionRouter",
-                                    "parent_stream_configs": [
-                                        {
-                                            "stream": "#/definitions/post_comments_stream",
-                                            "parent_key": "id",
-                                            "partition_field": "id",
-                                            "incremental_dependency": True,
-                                        }
-                                    ],
-                                },
-                            },
-                            "incremental_sync": {
-                                "type": "DatetimeBasedCursor",
-                                "cursor_datetime_formats": ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"],
-                                "datetime_format": "%Y-%m-%dT%H:%M:%SZ",
-                                "cursor_field": "{{ parameters.get('cursor_field',  'updated_at') }}",
-                                "start_datetime": {"datetime": "{{ config.get('start_date')}}"},
-                                "start_time_option": {"inject_into": "request_parameter", "field_name": "start_time",
-                                                      "type": "RequestOption"},
-                                "global_parent_cursor": True
-                            },
-                            "$parameters": {
-                                "name": "post_comment_votes",
-                                "path": "community/posts/{{ stream_slice.parent_slice.id }}/comments/{{ stream_slice.id }}/votes",
-                                "data_path": "votes",
-                                "cursor_field": "created_at",
-                                "primary_key": "id",
-                            },
-                        },
-                    },
-                    "streams": [
-                        {"$ref": "#/definitions/posts_stream"},
-                        {"$ref": "#/definitions/post_comments_stream"},
-                        {"$ref": "#/definitions/post_comment_votes_stream"},
-                    ],
-                },
+                SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR,
                 [
                     # Fetch the first page of posts
                     (
@@ -992,5 +996,4 @@ def test_incremental_global_parent_state(test_name, manifest, mock_requests, exp
 
         assert output_data == expected_records
         final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
-        print("final_state", final_state[-1])
         assert final_state[-1] == expected_state
