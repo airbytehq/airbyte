@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.5.3
+Add failure_type to HttpResponseFilter(retry after pypi read error)
+
+## 3.5.2
+Add failure_type to HttpResponseFilter
+
 ## 3.5.1
 Remove 3.11-style union
 
