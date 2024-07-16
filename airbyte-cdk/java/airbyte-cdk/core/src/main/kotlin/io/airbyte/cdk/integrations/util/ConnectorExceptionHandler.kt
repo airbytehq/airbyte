@@ -31,7 +31,7 @@ data class ConnectorErrorProfile(
     val failureType: FailureType,
     val externalMessage: String,
     val sampleInternalMessage: String,
-    val referenceLinks: List<String>,
+    val referenceLinks: List<String> = emptyList(),
 ) {
     init {
         require(isValidRegex(regexMatchingPattern)) {
@@ -49,44 +49,6 @@ data class ConnectorErrorProfile(
             false
         }
     }
-}
-
-/**
- * The builder provides an expressive way to construct error profile by allowing user to specify the
- * name of each field. This is useful when the error profile is constructed in Java code For Kotlin
- * code that constructs error profile, it is recommended to use the data class directly which
- * supports named parameters.
- */
-class ConnectorErrorProfileBuilder {
-    private var errorClass: String = ""
-    private var regexMatchingPattern: String = ""
-    private var failureType: FailureType = FailureType.CONFIG // Default value, adjust as needed
-    private var externalMessage: String = ""
-    private var sampleInternalMessage: String = ""
-    private var referenceLinks: List<String> = emptyList()
-
-    fun errorClass(errorClass: String) = apply { this.errorClass = errorClass }
-    fun regexMatchingPattern(regexMatchingPattern: String) = apply {
-        this.regexMatchingPattern = regexMatchingPattern
-    }
-    fun failureType(failureType: FailureType) = apply { this.failureType = failureType }
-    fun externalMessage(externalMessage: String) = apply { this.externalMessage = externalMessage }
-    fun sampleInternalMessage(sampleInternalMessage: String) = apply {
-        this.sampleInternalMessage = sampleInternalMessage
-    }
-    fun referenceLinks(referenceLinks: List<String>) = apply {
-        this.referenceLinks = referenceLinks
-    }
-
-    fun build() =
-        ConnectorErrorProfile(
-            errorClass,
-            regexMatchingPattern,
-            failureType,
-            externalMessage,
-            sampleInternalMessage,
-            referenceLinks
-        )
 }
 
 /**

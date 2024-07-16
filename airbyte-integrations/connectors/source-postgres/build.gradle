@@ -45,3 +45,9 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
 }
+
+compileKotlin {
+    dependsOn {
+        generateJsonSchema2Pojo
+    }
+}
