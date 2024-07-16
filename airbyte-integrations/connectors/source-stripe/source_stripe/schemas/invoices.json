@@ -127,6 +127,7 @@
             "properties": {
               "metadata": {
                 "type": ["null", "object"],
+                "additionalProperties": true,
                 "properties": {}
               },
               "valid": {
