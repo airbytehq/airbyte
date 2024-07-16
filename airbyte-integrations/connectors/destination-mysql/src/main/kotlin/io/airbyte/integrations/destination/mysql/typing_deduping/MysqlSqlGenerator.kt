@@ -7,15 +7,9 @@ package io.airbyte.integrations.destination.mysql.typing_deduping
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
-import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
-import io.airbyte.integrations.base.destination.typing_deduping.Sql
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
-import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.destination.mysql.MySQLNameTransformer
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.time.Instant
@@ -217,7 +211,7 @@ class MysqlSqlGenerator : JdbcSqlGenerator(namingTransformer = MySQLNameTransfor
         // fully-qualified
         // name, which isn't valid mysql syntax.
         // mysql indexes only need to unique per-table, so we can just hardcode some names here.
-        if (stream.destinationSyncMode === DestinationSyncMode.APPEND_DEDUP) {
+        if (stream.postImportAction === PostImportAction.DEDUPE) {
             // An index for our ROW_NUMBER() PARTITION BY pk ORDER BY cursor, extracted_at function
             val indexColumns: List<Field<*>> =
                 Stream.of(

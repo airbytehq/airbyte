@@ -8,6 +8,7 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -32,22 +33,14 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         database.executeWithinTransaction(queries)
     }
 
-    @Throws(SQLException::class)
-    public override fun insertRecordsInternal(
-        database: JdbcDatabase,
-        records: List<PartialAirbyteMessage>,
-        schemaName: String?,
-        tmpTableName: String?
-    ) {
-        throw UnsupportedOperationException("Mysql requires V2")
-    }
-
     @Throws(Exception::class)
     override fun insertRecordsInternalV2(
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     ) {
         if (records.isEmpty()) {
             return
@@ -63,6 +56,8 @@ class MySQLSqlOperations : JdbcSqlOperations() {
                 schemaName,
                 tableName,
                 tmpFile,
+                syncId,
+                generationId,
                 JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
                 JavaBaseConstants.COLUMN_NAME_DATA,
                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
@@ -75,6 +70,52 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         }
     }
 
+    override fun isOtherGenerationIdInTable(
+        database: JdbcDatabase,
+        generationId: Long,
+        namespace: String,
+        name: String
+    ): Boolean {
+        val res1 =
+            database
+                .unsafeQuery(
+                    """SELECT 1 
+            |               FROM information_schema.tables
+            |               WHERE table_schema = ? 
+            |               AND table_name = ?
+            |               LIMIT 1
+        """.trimMargin(),
+                    namespace,
+                    name,
+                )
+                .toList()
+        val retVal: Boolean
+        if (res1.isEmpty()) {
+            retVal = false
+        } else {
+            val res2 =
+                database
+                    .unsafeQuery("SELECT _airbyte_generation_id FROM $namespace.$name LIMIT 1;")
+                    .toList()
+            if (res2.isEmpty()) {
+                retVal = false
+            } else {
+                val genIdInTable = res2.first().get("_airbyte_generation_id").asLong()
+                retVal = genIdInTable != generationId
+            }
+        }
+        return retVal
+    }
+
+    override fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String) {
+        val tmpName = rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX
+        database.executeWithinTransaction(
+            listOf(
+                "ALTER TABLE $rawNamespace.$tmpName TO $rawNamespace.$rawName, $rawNamespace.$rawName TO $rawNamespace.$tmpName"
+            )
+        )
+    }
+
     @Throws(SQLException::class)
     private fun loadDataIntoTable(
         database: JdbcDatabase,
@@ -82,11 +123,13 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         schemaName: String?,
         tmpTableName: String?,
         tmpFile: File,
+        syncId: Long,
+        generationId: Long,
         vararg columnNames: String
     ) {
         database.execute { connection: Connection ->
             try {
-                writeBatchToFile(tmpFile, records)
+                writeBatchToFile(tmpFile, records, syncId, generationId)
 
                 val absoluteFile = "'" + tmpFile.absolutePath + "'"
 
@@ -262,7 +305,8 @@ class MySQLSqlOperations : JdbcSqlOperations() {
         %s JSON,
         %s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
         %s TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
-        %s JSON
+        %s JSON,
+        %s INTEGER
         );
         
         """.trimIndent(),
@@ -272,7 +316,8 @@ class MySQLSqlOperations : JdbcSqlOperations() {
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
         )
     }
 

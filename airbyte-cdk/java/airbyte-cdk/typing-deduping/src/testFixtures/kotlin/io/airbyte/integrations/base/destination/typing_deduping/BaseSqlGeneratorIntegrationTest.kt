@@ -377,7 +377,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             {
               "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_data": {"id1": 1, "id2": 100}
+              "_airbyte_data": {"id1": 1, "id2": 100}, 
+              "_airbyte_generation_id": 42
             }
 
             """.trimIndent()
@@ -611,7 +612,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 {
                   "_airbyte_raw_id": "899d3bc3-7921-44f0-8517-c748a28fe338",
                   "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
+                  "_airbyte_data": {}, 
+                  "_airbyte_generation_id": 42
                 }
 
                 """.trimIndent()
@@ -621,7 +623,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 {
                   "_airbyte_raw_id": "47f46eb6-fcae-469c-a7fc-31d4b9ce7474",
                   "_airbyte_extracted_at": "2023-01-02T00:00:00Z",
-                  "_airbyte_data": {}
+                  "_airbyte_data": {}, 
+                  "_airbyte_generation_id": 42
                 }
 
                 """.trimIndent()
@@ -675,7 +678,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             {
               "_airbyte_raw_id": "899d3bc3-7921-44f0-8517-c748a28fe338",
               "_airbyte_extracted_at": "2023-01-01T12:00:00Z",
-              "_airbyte_data": {}
+              "_airbyte_data": {}, 
+              "_airbyte_generation_id": 42
             }
 
             """.trimIndent()
@@ -825,7 +829,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_extracted_at": "2022-01-01T00:00:00Z",
                   "_airbyte_data": {
                     "string": "foo"
-                  }
+                  }, 
+                  "_airbyte_generation_id": 42
                 }
 
                 """.trimIndent()
@@ -837,7 +842,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                   "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
                   "_airbyte_data": {
                     "string": "bar"
-                  }
+                  }, 
+                  "_airbyte_generation_id": 42
                 }
 
                 """.trimIndent()
@@ -908,7 +914,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
     @Test
     @Throws(Exception::class)
-    fun timestampFormats() {
+    open fun timestampFormats() {
         createRawTable(streamId)
         createFinalTable(incrementalAppendStream, "")
         insertRawTableRecords(
@@ -1002,7 +1008,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "id1": 1,
                     "id2": 100,
                     "string": "foo"
-                  }
+                  }, 
+                  "_airbyte_generation_id": 42
                 }
 
                 """.trimIndent()
@@ -1016,7 +1023,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     "id1": 1,
                     "id2": 100,
                     "string": "bar"
-                  }
+                  }, 
+                  "_airbyte_generation_id": 42
                 }
 
                 """.trimIndent()
@@ -1118,7 +1126,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "id2": 100,
                 "updated_at": "2023-01-01T00:00:00Z",
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-              }
+              }, 
+              "_airbyte_generation_id": 42
             }
 
             """.trimIndent()
@@ -1159,7 +1168,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "id2": 100,
                 "updated_at": "2023-01-01T00:00:00Z",
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-              }
+              }, 
+              "_airbyte_generation_id": 42}
             }
 
             """.trimIndent()
@@ -1316,7 +1326,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
      */
     @Test
     @Throws(Exception::class)
-    fun softReset() {
+    open fun softReset() {
         createRawTable(streamId)
         createFinalTable(cdcIncrementalAppendStream, "")
         insertRawTableRecords(
@@ -1332,7 +1342,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                 "id1": 1,
                 "id2": 100,
                 "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"
-              }
+              },
+              "_airbyte_generation_id": 42
             }
 
             """.trimIndent()
@@ -1459,7 +1470,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                             "_airbyte_extracted_at",
                             "2023-01-01T00:00:00Z",
                             "_airbyte_data",
-                            java.util.Map.of(str, "bar")
+                            java.util.Map.of(str, "bar"),
+                            "_airbyte_generation_id",
+                            "42"
                         )
                     )
                 )
@@ -1542,7 +1555,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             {
               "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
               "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-              "_airbyte_data": {}
+              "_airbyte_data": {}, 
+              "_airbyte_generation_id": 42
             }
 
             """.trimIndent()
@@ -1842,7 +1856,8 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                         mapOf(
                             "_airbyte_raw_id" to "ad3e8c84-e02e-4df4-b146-3d5a007b21b4",
                             "_airbyte_extracted_at" to "2023-01-01T00:00:00Z",
-                            "_airbyte_data" to mapOf(columnName1 to "foo", columnName2 to "bar")
+                            "_airbyte_data" to mapOf(columnName1 to "foo", columnName2 to "bar"),
+                            "_airbyte_generation_id" to 42,
                         )
                     )
                 )

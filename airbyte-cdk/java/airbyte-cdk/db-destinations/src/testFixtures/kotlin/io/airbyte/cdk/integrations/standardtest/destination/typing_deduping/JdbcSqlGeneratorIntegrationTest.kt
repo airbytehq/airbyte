@@ -21,12 +21,15 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.SQLException
 import java.util.*
 import org.jooq.*
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
+
+private val LOGGER = KotlinLogging.logger {  }
 
 abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestinationState> :
     BaseSqlGeneratorIntegrationTest<DestinationState>() {
@@ -82,6 +85,7 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                     }
                 )
         }
+        LOGGER.info {"executing SQL statement: ${insert.sql}"}
         database.execute(insert.getSQL(ParamType.INLINED))
     }
 
@@ -125,7 +129,8 @@ abstract class JdbcSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             sqlGenerator.columns.rawColumns,
             records,
             COLUMN_NAME_DATA,
-            COLUMN_NAME_AB_META
+            COLUMN_NAME_AB_META,
+            COLUMN_NAME_AB_GENERATION_ID,
         )
     }
 

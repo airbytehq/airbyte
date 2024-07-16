@@ -65,6 +65,10 @@ class MysqlDestinationHandler(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
         )
 
+    override fun createNamespaces(schemas: Set<String>) {
+        TODO("Not yet implemented")
+    }
+
     // Mysql doesn't have schemas. Pass the namespace as the database name.
     override fun findExistingTable(id: StreamId): Optional<TableDefinition> =
         findExistingTable(jdbcDatabase, id.finalNamespace, null, id.finalName)
