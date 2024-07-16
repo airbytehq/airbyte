@@ -37,6 +37,7 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     def __init__(self, authenticator: Optional[AuthBase] = None, api_budget: Optional[APIBudget] = None):
+        self._exit_on_rate_limit: bool = False
         self._http_client = HttpClient(
             name=self.name,
             logger=self.logger,
@@ -47,6 +48,17 @@ class HttpStream(Stream, ABC):
             backoff_strategy=self.get_backoff_strategy(),
             message_repository=InMemoryMessageRepository(),
         )
+
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        """
+        :return: False if the stream will retry endlessly when rate limited
+        """
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self._exit_on_rate_limit = value
 
     @property
     def cache_filename(self) -> str:
@@ -314,7 +326,9 @@ class HttpStream(Stream, ABC):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
+            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+            stream_slice,
+            stream_state,
         )
 
     def _read_pages(
@@ -359,6 +373,7 @@ class HttpStream(Stream, ABC):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             dedupe_query_params=True,
             log_formatter=self.get_log_formatter(),
+            exit_on_rate_limit=self.exit_on_rate_limit,
         )
 
         return request, response
@@ -416,29 +431,43 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, Exception):
             return super().interpret_response(response_or_exception)
-        should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
-        if should_retry:
-            return ErrorResolution(
-                response_action=ResponseAction.RETRY,
-                failure_type=FailureType.transient_error,
-                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
-            )
-        else:
-            if response_or_exception.ok:  # type: ignore # noqa
+        elif isinstance(response_or_exception, requests.Response):
+            should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
+            if should_retry:
+                if response_or_exception.status_code == 429:
+                    return ErrorResolution(
+                        response_action=ResponseAction.RATE_LIMITED,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    )
                 return ErrorResolution(
-                    response_action=ResponseAction.SUCCESS,
-                    failure_type=None,
-                    error_message=None,
-                )
-            if self.stream.raise_on_http_errors:
-                return ErrorResolution(
-                    response_action=ResponseAction.FAIL,
+                    response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
                 )
             else:
-                return ErrorResolution(
-                    response_action=ResponseAction.IGNORE,
-                    failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
-                )
+                if response_or_exception.ok:  # type: ignore # noqa
+                    return ErrorResolution(
+                        response_action=ResponseAction.SUCCESS,
+                        failure_type=None,
+                        error_message=None,
+                    )
+                if self.stream.raise_on_http_errors:
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
+                    )
+                else:
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
+                    )
+        else:
+            self._logger.error(f"Received unexpected response type: {type(response_or_exception)}")
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message=f"Received unexpected response type: {type(response_or_exception)}",
+            )

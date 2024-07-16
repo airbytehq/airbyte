@@ -341,6 +341,13 @@ class Stream(ABC):
         """
         return True
 
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        """
+        :return: False if the stream will retry endlessly when rate limited
+        """
+        return False
+
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
         Checks whether this stream is available.
