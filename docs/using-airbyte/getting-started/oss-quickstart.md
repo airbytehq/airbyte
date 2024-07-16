@@ -15,11 +15,15 @@ If you're getting started with Airbyte Cloud, you can skip ahead to moving data 
 
 This quickstart guides you through creating a locally deployed instance of Airbyte in just minutes using `abctl` ([Airbyte Command Line Tool](https://github.com/airbytehq/abctl)). You'll be able to move data with minimal setup while you're exploring what Airbyte can do!
 
+If you've already set up an Airbyte instance using Docker Compose and want to move to abctl, see the section on [migrating from Docker Compose](#migrating-from-docker-compose-optional).
+
 :::tip
 **When you're ready to put an Airbyte instance into production, you'll want to review our guides on deployment.**
 
-For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/on-kubernetes-via-helm.md). 
+For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/deploying-airbyte.md). 
 :::
+
+If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../pyairbyte/getting-started.mdx) documentation useful.
 
 ## Prerequisites
 
