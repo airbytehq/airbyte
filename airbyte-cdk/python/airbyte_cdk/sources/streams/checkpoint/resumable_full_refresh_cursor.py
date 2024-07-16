@@ -9,6 +9,12 @@ from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 @dataclass
 class ResumableFullRefreshCursor(Cursor):
+    """
+    Cursor that allows for the checkpointing of sync progress according to a synthetic cursor based on the pagination state
+    of the stream. Resumable full refresh syncs are only intended to retain state in between sync attempts of the same job
+    with the platform responsible for removing said state.
+    """
+
     def __init__(self) -> None:
         self._cursor: StreamState = {}
 

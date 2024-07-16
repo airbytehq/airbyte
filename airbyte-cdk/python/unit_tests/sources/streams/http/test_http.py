@@ -693,7 +693,7 @@ class StubParentHttpStream(HttpStream, CheckpointMixin):
 
 
 
-    def _read_page(
+    def _read_single_page(
         self,
         records_generator_fn: Callable[
             [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
@@ -923,7 +923,7 @@ def test_resumable_full_refresh_read_from_start(mocker):
     mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
-    mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
+    mocker.patch.object(stream, "_read_single_page", wraps=getattr(stream, "_read_single_page"))
     methods = ["request_params", "request_headers", "request_body_json"]
     for method in methods:
         mocker.patch.object(stream, method, wraps=getattr(stream, method))
@@ -944,7 +944,7 @@ def test_resumable_full_refresh_read_from_start(mocker):
         next_stream_slice = checkpoint_reader.next()
         i += 1
 
-    assert getattr(stream, "_read_page").call_count == 5
+    assert getattr(stream, "_read_single_page").call_count == 5
 
     # Since we have 5 pages, and we don't pass in the first page, we expect 4 tokens starting at {"page":2}, {"page":3}, etc...
     expected_next_page_tokens = expected_checkpoints[:4]
@@ -972,7 +972,7 @@ def test_resumable_full_refresh_read_from_state(mocker):
     mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
-    mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
+    mocker.patch.object(stream, "_read_single_page", wraps=getattr(stream, "_read_single_page"))
     methods = ["request_params", "request_headers", "request_body_json"]
     for method in methods:
         mocker.patch.object(stream, method, wraps=getattr(stream, method))
@@ -996,7 +996,7 @@ def test_resumable_full_refresh_read_from_state(mocker):
         next_stream_slice = checkpoint_reader.next()
         i += 1
 
-    assert getattr(stream, "_read_page").call_count == 3
+    assert getattr(stream, "_read_single_page").call_count == 3
 
     # Since we start at page 3, we expect 3 tokens starting at {"page":3}, {"page":4}, etc...
     expected_next_page_tokens = [{"page": 3}, {"page": 4}, {"page": 5}]
@@ -1021,7 +1021,7 @@ def test_resumable_full_refresh_legacy_stream_slice(mocker):
     mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
 
     # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
-    mocker.patch.object(stream, "_read_page", wraps=getattr(stream, "_read_page"))
+    mocker.patch.object(stream, "_read_single_page", wraps=getattr(stream, "_read_single_page"))
     methods = ["request_params", "request_headers", "request_body_json"]
     for method in methods:
         mocker.patch.object(stream, method, wraps=getattr(stream, method))
@@ -1045,7 +1045,7 @@ def test_resumable_full_refresh_legacy_stream_slice(mocker):
         next_stream_slice = checkpoint_reader.next()
         i += 1
 
-    assert getattr(stream, "_read_page").call_count == 4
+    assert getattr(stream, "_read_single_page").call_count == 4
 
     # Since we start at page 3, we expect 3 tokens starting at {"page":3}, {"page":4}, etc...
     expected_next_page_tokens = [{"page": 2}, {"page": 3}, {"page": 4}, {"page": 5}]

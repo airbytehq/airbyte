@@ -331,7 +331,7 @@ class HttpStream(Stream, CheckpointMixin, ABC):
                 stream_state,
             )
         else:
-            yield from self._read_page(
+            yield from self._read_single_page(
                 lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
                 stream_slice,
                 stream_state,
@@ -384,7 +384,7 @@ class HttpStream(Stream, CheckpointMixin, ABC):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-    def _read_page(
+    def _read_single_page(
         self,
         records_generator_fn: Callable[
             [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]

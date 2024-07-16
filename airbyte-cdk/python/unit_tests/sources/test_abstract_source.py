@@ -1237,7 +1237,6 @@ class TestIncrementalRead:
             mock_get_property,
         )
 
-        # mocker.patch.object(MockStreamWithState, "get_updated_state", return_value=state)
         mocker.patch.object(MockStreamWithState, "supports_incremental", return_value=True)
         mocker.patch.object(MockStreamWithState, "get_json_schema", return_value={})
         mocker.patch.object(MockStreamWithState, "stream_slices", return_value=slices)

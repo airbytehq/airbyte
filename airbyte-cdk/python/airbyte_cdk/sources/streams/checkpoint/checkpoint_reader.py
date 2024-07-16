@@ -140,11 +140,24 @@ class CursorBasedCheckpointReader(CheckpointReader):
 
         if self._read_state_from_cursor:
             if self.current_slice is None:
+                # current_slice is None represents the first time we are iterating over a stream's slices. The first slice to
+                # sync not been assigned yet and must first be read from the iterator
                 next_slice = self.read_and_convert_slice()
                 state_for_slice = self._cursor.select_state(self.current_slice)
                 if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                     # Skip every slice that already has the terminal complete value indicating that a previous attempt
                     # successfully synced the slice
+                    has_more = True
+                    while has_more:
+                        next_slice = self.read_and_convert_slice()
+                        state_for_slice = self._cursor.select_state(next_slice)
+                        has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
+                return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
+            else:
+                state_for_slice = self._cursor.select_state(self.current_slice)
+                if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
+                    # If the current slice is is complete, move to the next slice and skip the next slices that already
+                    # have the terminal complete value indicating that a previous attempt was successfully read.
                     # Dummy initialization for mypy since we'll iterate at least once to get the next slice
                     next_candidate_slice = StreamSlice(cursor_slice={}, partition={})
                     has_more = True
@@ -153,22 +166,8 @@ class CursorBasedCheckpointReader(CheckpointReader):
                         state_for_slice = self._cursor.select_state(next_candidate_slice)
                         has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
                     return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
-                else:
-                    return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
-            else:
-                state_for_slice = self._cursor.select_state(self.current_slice)
-                if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
-                    # Skip every slice that already has the terminal complete value indicating that a previous attempt
-                    # successfully synced the slice
-                    next_candidate_slice = StreamSlice(cursor_slice={}, partition={})
-                    has_more = True
-                    while has_more:
-                        next_candidate_slice = self.read_and_convert_slice()
-                        state_for_slice = self._cursor.select_state(next_candidate_slice)
-                        has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
-                    return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
-                else:
-                    return StreamSlice(cursor_slice=state_for_slice or {}, partition=self.current_slice.partition)
+                # The reader continues to process the current partition if it's state is still in progress
+                return StreamSlice(cursor_slice=state_for_slice or {}, partition=self.current_slice.partition)
         else:
             # Unlike RFR cursors that iterate dynamically according to how stream state is updated, most cursors operate
             # on a fixed set of slices determined before reading records. They just iterate to the next slice

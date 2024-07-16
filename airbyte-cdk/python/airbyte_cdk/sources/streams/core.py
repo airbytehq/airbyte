@@ -454,7 +454,6 @@ class Stream(ABC):
         # has now normalized this behavior for connector developers. Now some connectors return [None]. This is objectively
         # misleading and a more ideal interface is [{}] to indicate we still want to iterate over one slice, but with no
         # specific slice values. None is bad, and now I feel bad that I have to write this hack.
-        # if mappings_or_slices == [None] or mappings_or_slices == []:
         if mappings_or_slices == [None]:
             mappings_or_slices = [{}]
 
@@ -466,7 +465,6 @@ class Stream(ABC):
         # a backup. So if this value was already assigned to True by the stream, we don't need to reassign it
         self.has_multiple_slices = self.has_multiple_slices or stream_classification.has_multiple_slices
 
-        # self.cursor = None  # todo: This doesn't work for file-based streams because it doesn't support cursor reassignment. Need to fix
         cursor = self.get_cursor()
         if cursor:
             cursor.set_initial_state(stream_state=stream_state)
@@ -589,27 +587,18 @@ class Stream(ABC):
         method is used as a fallback method.
         """
 
-        # This is a very weird inversion of the original logic. Now all HttpStream classes implement default state getter/setter
-        # methods, we should actually default to the incoming stream_state parameter that is populated via the legacy state
-        # implementation if it is overridden. The default get_updated_state() method returns an empty mapping {} so if it is
-        # empty, we know to use
-        # f it is not, then we attempt to
-        # use the new state getter
+        # This is an inversion of the original logic that used to try state getter/setters first. As part of the work to
+        # automatically apply resumable full refresh to all streams, all HttpStream classes implement default state
+        # getter/setter methods, we should default to only using the incoming stream_state parameter value is {} which
+        # indicates the stream does not override the default get_updated_state() implementation. When the default method
+        # is not overridden, then the stream defers to self.state getter
         if stream_state:
             checkpoint_reader.observe(stream_state)
         else:
             try:
-                new_state = self.state  # type: ignore # we know the field might not exist...
+                new_state = self.state  # type: ignore # This will always exist on HttpStreams, but may not for Stream
                 if new_state:
-                    # This _could_ be breaking?
                     checkpoint_reader.observe(new_state)
-
-                # I had originally had this but got rid of it for some reason why?: This was to protect against a bad implementation of
-                # read_records() that did not give a terminal {__ab_full_refresh_success: True} but really that should be fixed
-                # per-connector and the base default implementation I write already protects against that
-                # But when testing TestMockServerAbstractSource using the legacy case, because self.state was returning {} on
-                # then we would then overwrite the previous observed record values, so we lose the state of legacy sync case
-                # checkpoint_reader.observe(new_state)
             except AttributeError:
                 pass
 
