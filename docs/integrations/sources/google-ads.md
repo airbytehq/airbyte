@@ -310,7 +310,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 3.6.0 | 2024-07-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate to CDK v1.8.0 |
+| 3.6.0 | 2024-07-17 | [42020](https://github.com/airbytehq/airbyte/pull/42020) | Migrate to CDK v1.8.0 |
 | 3.5.8 | 2024-07-13 | [41911](https://github.com/airbytehq/airbyte/pull/41911) | Update dependencies |
 | 3.5.7 | 2024-07-10 | [41528](https://github.com/airbytehq/airbyte/pull/41528) | Update dependencies |
 | 3.5.6 | 2024-07-09 | [41323](https://github.com/airbytehq/airbyte/pull/41323) | Update dependencies |
