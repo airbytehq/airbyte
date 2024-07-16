@@ -180,9 +180,9 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             is From ->
                 if (this.namespace == null) "FROM $name" else "FROM $namespace.$name"
             is FromSample -> {
-                val innerFrom: String = From(name, namespace).sql()
-                val sampleArg: String = sampleRatePercentage.toPlainString()
-                val inner = "SELECT * $innerFrom SAMPLE($sampleArg) ORDER BY dbms_random.value"
+                val sample: String = if (sampleRateInv == 1L) "" else " SAMPLE(${sampleRatePercentage.toPlainString()})"
+                val innerFrom: String = From(name, namespace).sql() + sample
+                val inner = "SELECT * $innerFrom ORDER BY dbms_random.value"
                 "FROM (SELECT * FROM ($inner) WHERE ROWNUM <= $sampleSize)"
             }
         }

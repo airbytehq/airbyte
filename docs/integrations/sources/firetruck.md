@@ -7,3 +7,4 @@ Placeholder for documentation
 The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
 - 0.0.1
 - 0.0.2
+- 0.0.3
