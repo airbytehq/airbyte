@@ -122,6 +122,14 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),
                 true
             )
+        } else if (!state.isFinalTablePresent) {
+            log.info {
+                "skipping migration of generation_id for table ${stream.id.finalNamespace}.${stream.id.finalName} because final table doesn't exist"
+            }
+        } else {
+            log.info {
+                "skipping migration of generation_id for table ${stream.id.finalNamespace}.${stream.id.finalName} because schemas match"
+            }
         }
 
         // Final table is untouched, so we don't need to fetch the initial status

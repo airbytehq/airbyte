@@ -21,7 +21,6 @@ import io.airbyte.commons.json.Jsons.deserializeExact
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
 import io.airbyte.integrations.destination.redshift.RedshiftDestination
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer
-import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations.Companion.escapeStringLiteral
 import java.nio.file.Files
 import java.nio.file.Path
 import java.sql.ResultSet
@@ -272,6 +271,10 @@ class RedshiftSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Reds
         @Throws(Exception::class)
         fun teardownRedshift() {
             close(dataSource)
+        }
+
+        fun escapeStringLiteral(str: String?): String? {
+            return str?.replace("\\", "\\\\")
         }
     }
 }

@@ -127,6 +127,11 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.9 | 2024-07-13 | [41842](https://github.com/airbytehq/airbyte/pull/41842) | Update dependencies |
+| 3.0.8 | 2024-07-10 | [41453](https://github.com/airbytehq/airbyte/pull/41453) | Update dependencies |
+| 3.0.7 | 2024-07-09 | [41175](https://github.com/airbytehq/airbyte/pull/41175) | Update dependencies |
+| 3.0.6 | 2024-07-06 | [40785](https://github.com/airbytehq/airbyte/pull/40785) | Update dependencies |
+| 3.0.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 3.0.4 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
 | 3.0.3 | 2024-06-25 | [40444](https://github.com/airbytehq/airbyte/pull/40444) | Update dependencies |
 | 3.0.2 | 2024-06-21 | [40121](https://github.com/airbytehq/airbyte/pull/40121) | Update dependencies |

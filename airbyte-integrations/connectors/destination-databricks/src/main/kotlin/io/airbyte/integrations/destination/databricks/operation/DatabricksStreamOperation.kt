@@ -27,10 +27,12 @@ class DatabricksStreamOperation(
     private val storageOperation: StorageOperation<SerializableBuffer>,
     destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>,
     private val fileUploadFormat: FileUploadFormat,
+    disableTypeDedupe: Boolean,
 ) :
     AbstractStreamOperation<MinimumDestinationState.Impl, SerializableBuffer>(
         storageOperation,
         destinationInitialStatus,
+        disableTypeDedupe = disableTypeDedupe
     ) {
     private val log = KotlinLogging.logger {}
     override fun writeRecords(streamConfig: StreamConfig, stream: Stream<PartialAirbyteMessage>) {
@@ -40,6 +42,7 @@ class DatabricksStreamOperation(
                 it.accept(
                     record.serialized!!,
                     Jsons.serialize(record.record!!.meta),
+                    streamConfig.generationId,
                     record.record!!.emittedAt,
                 )
             }
@@ -51,7 +54,7 @@ class DatabricksStreamOperation(
                     )
                 }) to staging"
             }
-            storageOperation.writeToStage(streamConfig.id, writeBuffer)
+            storageOperation.writeToStage(streamConfig, writeBuffer)
         }
     }
 }
