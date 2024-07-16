@@ -203,7 +203,11 @@ curl -LsfS https://get.airbyte.com | bash -
 abctl local install --migrate
 ```
 
+:::note
 
+If you're using a version of Airbyte that you've installed with `abctl`, you can find instructions on upgrading your Airbyte installation [here](../../operator-guides/upgrading-airbyte.md#upgrading-with-abctl). 
+
+:::
 
 ## Troubleshooting
 
