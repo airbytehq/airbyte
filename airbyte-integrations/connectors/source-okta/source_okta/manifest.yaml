@@ -1,0 +1,1904 @@
+version: 0.65.0
+type: DeclarativeSource
+
+definitions:
+  custom_oauth_authenticator:
+    type: CustomAuthenticator
+    class_name: source_okta.custom_authenticators.CustomOauth2Authenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    refresh_request_body: {}
+    token_refresh_endpoint: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
+    grant_type: refresh_token
+
+  custom_bearer_authenticator:
+    type: CustomAuthenticator
+    class_name: source_okta.custom_authenticators.CustomBearerAuthenticator
+
+  selective_authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "auth_type"]
+    authenticators:
+      oauth2.0: "#/definitions/custom_oauth_authenticator"
+      api_token: "#/definitions/custom_bearer_authenticator"
+
+  paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestPath
+    page_size_option:
+      inject_into: request_parameter
+      type: RequestOption
+      field_name: limit
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 200
+      cursor_value: "{{ headers['link']['next']['url'] }}"
+      stop_condition: >-
+        {{ headers.link.next is not defined or not headers.link.next or
+        (headers.link.self is defined and headers.link.self and
+        headers.link.next.url == headers.link.self.url) }}
+
+  error_handler:
+    type: CompositeErrorHandler
+    error_handlers:
+      - type: DefaultErrorHandler
+        backoff_strategies:
+          - type: WaitUntilTimeFromHeader
+            header: X-Rate-Limit-Reset
+            min_wait: "60"
+
+  groups_stream:
+    $parameters:
+      name: "groups"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/groups
+        http_method: GET
+        request_parameters:
+          filter: >-
+            lastUpdated gt "{{ format_datetime(stream_interval.start_time,
+            '%Y-%m-%dT%H:%M:%S') }}.000Z"
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdated
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+          created:
+            format: date-time
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastMembershipUpdated:
+            format: date-time
+            type:
+              - string
+              - "null"
+          lastUpdated:
+            format: date-time
+            type:
+              - string
+              - "null"
+          objectClass:
+            items:
+              type:
+                - string
+                - "null"
+            type:
+              - array
+              - "null"
+          profile:
+            properties:
+              description:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          type:
+            type:
+              - string
+              - "null"
+
+  users_stream:
+    $parameters:
+      name: "users"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/users
+        http_method: GET
+        request_parameters:
+          filter: >-
+            lastUpdated gt "{{ format_datetime(stream_interval.start_time,
+            '%Y-%m-%dT%H:%M:%S') }}.000Z" and (status eq "ACTIVE" or status eq
+            "DEPROVISIONED" or status eq "LOCKED_OUT" or status eq
+            "PASSWORD_EXPIRED" or status eq "PROVISIONED" or status eq
+            "RECOVERY" or status eq "STAGED" or status eq "SUSPENDED")
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: lastUpdated
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          _links:
+            type:
+              - object
+              - "null"
+          activated:
+            format: date-time
+            type:
+              - string
+              - "null"
+          created:
+            format: date-time
+            type:
+              - string
+              - "null"
+          credentials:
+            type:
+              - object
+              - "null"
+            additionalProperties: true
+            properties:
+              password:
+                type:
+                  - object
+                  - "null"
+                additionalProperties: true
+                properties:
+                  hash:
+                    additionalProperties: true
+                    properties:
+                      algorithm:
+                        type:
+                          - string
+                          - "null"
+                      salt:
+                        type:
+                          - string
+                          - "null"
+                      saltOrder:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                      workFactor:
+                        type:
+                          - integer
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  hook:
+                    additionalProperties: true
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  value:
+                    type:
+                      - string
+                      - "null"
+              provider:
+                additionalProperties: true
+                properties:
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  type:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              recovery_question:
+                additionalProperties: true
+                properties:
+                  answer:
+                    type:
+                      - string
+                      - "null"
+                  question:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+          id:
+            type:
+              - string
+              - "null"
+          lastLogin:
+            format: date-time
+            type:
+              - string
+              - "null"
+          lastUpdated:
+            format: date-time
+            type:
+              - string
+              - "null"
+          passwordChanged:
+            format: date-time
+            type:
+              - string
+              - "null"
+          profile:
+            additionalProperties: true
+            properties:
+              city:
+                type:
+                  - string
+                  - "null"
+              costCenter:
+                type:
+                  - string
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              department:
+                type:
+                  - string
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+              division:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              employeeNumber:
+                type:
+                  - string
+                  - "null"
+              firstName:
+                type:
+                  - string
+                  - "null"
+              honorificPrefix:
+                type:
+                  - string
+                  - "null"
+              honorificSuffix:
+                type:
+                  - string
+                  - "null"
+              lastName:
+                type:
+                  - string
+                  - "null"
+              locale:
+                type:
+                  - string
+                  - "null"
+              login:
+                type:
+                  - string
+                  - "null"
+              manager:
+                type:
+                  - string
+                  - "null"
+              managerId:
+                type:
+                  - string
+                  - "null"
+              middleName:
+                type:
+                  - string
+                  - "null"
+              mobilePhone:
+                type:
+                  - string
+                  - "null"
+              nickName:
+                type:
+                  - string
+                  - "null"
+              organization:
+                type:
+                  - string
+                  - "null"
+              postalAddress:
+                type:
+                  - string
+                  - "null"
+              preferredLanguage:
+                type:
+                  - string
+                  - "null"
+              primaryPhone:
+                type:
+                  - string
+                  - "null"
+              profileUrl:
+                type:
+                  - string
+                  - "null"
+              secondEmail:
+                type:
+                  - string
+                  - "null"
+              state:
+                type:
+                  - string
+                  - "null"
+              streetAddress:
+                type:
+                  - string
+                  - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+              userType:
+                type:
+                  - string
+                  - "null"
+              zipCode:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          statusChanged:
+            format: date-time
+            type:
+              - string
+              - "null"
+          type:
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+        additionalProperties: true
+
+  custom_roles_stream:
+    $parameters:
+      name: "custom_roles"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/iam/roles
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - roles
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        description: Gets a paginated list of Custom Roles
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          label:
+            type:
+              - "null"
+              - string
+          created:
+            format: date-time
+            type:
+              - "null"
+              - string
+          lastUpdated:
+            format: date-time
+            type:
+              - "null"
+              - string
+          _links:
+            type:
+              - "null"
+              - object
+            properties:
+              assignee:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  self:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  permissions:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+        additionalProperties: true
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+streams:
+  - type: DeclarativeStream
+    name: groups
+    $ref: "#/definitions/groups_stream"
+
+  - type: DeclarativeStream
+    name: group_members
+    $parameters:
+      name: "group_members"
+    primary_key:
+      - groupId
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/groups/{{ stream_partition['parent_id'] }}/users
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: groups
+                $ref: "#/definitions/groups_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - groupId
+            value: "{{ stream_partition['parent_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          _links:
+            type:
+              - "null"
+              - object
+          activated:
+            format: date-time
+            type:
+              - "null"
+              - string
+          created:
+            format: date-time
+            type:
+              - "null"
+              - string
+          credentials:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties:
+              password:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  hash:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      algorithm:
+                        type:
+                          - "null"
+                          - string
+                      salt:
+                        type:
+                          - "null"
+                          - string
+                      saltOrder:
+                        type:
+                          - "null"
+                          - string
+                      value:
+                        type:
+                          - "null"
+                          - string
+                      workFactor:
+                        type:
+                          - "null"
+                          - integer
+                  hook:
+                    type:
+                      - "null"
+                      - object
+                    properties:
+                      type:
+                        type:
+                          - "null"
+                          - string
+                  value:
+                    type:
+                      - "null"
+                      - string
+              provider:
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+              recovery_question:
+                properties:
+                  answer:
+                    type:
+                      - "null"
+                      - string
+                  question:
+                    type:
+                      - "null"
+                      - string
+                type:
+                  - "null"
+                  - object
+          groupId:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          lastLogin:
+            format: date-time
+            type:
+              - "null"
+              - string
+          lastUpdated:
+            format: date-time
+            type:
+              - "null"
+              - string
+          passwordChanged:
+            format: date-time
+            type:
+              - "null"
+              - string
+          profile:
+            additionalProperties: true
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              costCenter:
+                type:
+                  - "null"
+                  - string
+              countryCode:
+                type:
+                  - "null"
+                  - string
+              department:
+                type:
+                  - "null"
+                  - string
+              displayName:
+                type:
+                  - "null"
+                  - string
+              division:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              employeeNumber:
+                type:
+                  - "null"
+                  - string
+              firstName:
+                type:
+                  - "null"
+                  - string
+              honorificPrefix:
+                type:
+                  - "null"
+                  - string
+              honorificSuffix:
+                type:
+                  - "null"
+                  - string
+              lastName:
+                type:
+                  - "null"
+                  - string
+              locale:
+                type:
+                  - "null"
+                  - string
+              login:
+                type:
+                  - "null"
+                  - string
+              manager:
+                type:
+                  - "null"
+                  - string
+              managerId:
+                type:
+                  - "null"
+                  - string
+              middleName:
+                type:
+                  - "null"
+                  - string
+              mobilePhone:
+                type:
+                  - "null"
+                  - string
+              nickName:
+                type:
+                  - "null"
+                  - string
+              organization:
+                type:
+                  - "null"
+                  - string
+              postalAddress:
+                type:
+                  - "null"
+                  - string
+              preferredLanguage:
+                type:
+                  - "null"
+                  - string
+              primaryPhone:
+                type:
+                  - "null"
+                  - string
+              profileUrl:
+                type:
+                  - "null"
+                  - string
+              secondEmail:
+                type:
+                  - "null"
+                  - string
+              state:
+                type:
+                  - "null"
+                  - string
+              streetAddress:
+                type:
+                  - "null"
+                  - string
+              timezone:
+                type:
+                  - "null"
+                  - string
+              title:
+                type:
+                  - "null"
+                  - string
+              userType:
+                type:
+                  - "null"
+                  - string
+              zipCode:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          status:
+            type:
+              - "null"
+              - string
+          statusChanged:
+            format: date-time
+            type:
+              - "null"
+              - string
+          type:
+            additionalProperties: true
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+        "required": ["groupId", "id"]
+        additionalProperties: true
+
+  - type: DeclarativeStream
+    name: group_role_assignments
+    $parameters:
+      name: "group_role_assignments"
+    primary_key:
+      - groupId
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/groups/{{ stream_partition['parent_id'] }}/roles
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: groups
+                $ref: "#/definitions/groups_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - groupId
+            value: "{{ stream_partition['parent_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          groupId:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          label:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          created:
+            format: date-time
+            type:
+              - "null"
+              - string
+          lastUpdated:
+            format: date-time
+            type:
+              - "null"
+              - string
+          assignmentType:
+            type:
+              - "null"
+              - string
+          resource-set:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - "null"
+              - string
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              assignee:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  assignee:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  role:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  resource-set:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  permissions:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  member:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+        "required": ["groupId", "id"]
+
+  - type: DeclarativeStream
+    name: logs
+    $parameters:
+      name: "logs"
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/logs
+        http_method: GET
+        request_parameters:
+          since: >-
+            {{ stream_state.published if stream_state else config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') 
+            }}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitUntilTimeFromHeader
+                  header: X-Rate-Limit-Reset
+                  min_wait: "60"
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  predicate: "{{ response.errorCode == 'E0000001' }}"
+                  http_codes:
+                    - 400
+                  error_message: "{{ response.errorSummary }}"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - published
+            value: "{{ format_datetime(record['published'], '%Y-%m-%dT%H:%M:%SZ') }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: published
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] if 'start_date' in config else day_delta(-7, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          actor:
+            properties:
+              alternateId:
+                type:
+                  - string
+                  - "null"
+              detailEntry:
+                type:
+                  - object
+                  - "null"
+              displayName:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              type:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          authenticationContext:
+            properties:
+              authenticationProvider:
+                type:
+                  - string
+                  - "null"
+              authenticationStep:
+                type:
+                  - integer
+              credentialProvider:
+                type:
+                  - string
+                  - "null"
+              credentialType:
+                type:
+                  - string
+                  - "null"
+              externalSessionId:
+                type:
+                  - string
+                  - "null"
+              interface:
+                type:
+                  - string
+                  - "null"
+              issuer:
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  type:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+            type:
+              - object
+              - "null"
+          client:
+            properties:
+              device:
+                type:
+                  - string
+                  - "null"
+              geographicalContext:
+                properties:
+                  city:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  geolocation:
+                    properties:
+                      lat:
+                        type:
+                          - number
+                          - "null"
+                      lon:
+                        type:
+                          - number
+                          - "null"
+                    type:
+                      - object
+                      - "null"
+                  postalCode:
+                    type:
+                      - string
+                      - "null"
+                  state:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              ipAddress:
+                type:
+                  - string
+                  - "null"
+              userAgent:
+                properties:
+                  browser:
+                    type:
+                      - string
+                      - "null"
+                  os:
+                    type:
+                      - string
+                      - "null"
+                  rawUserAgent:
+                    type:
+                      - string
+                      - "null"
+                type:
+                  - object
+                  - "null"
+              zone:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          debugContext:
+            properties:
+              debugData:
+                type:
+                  - object
+                  - "null"
+            type:
+              - object
+              - "null"
+          device:
+            type:
+              - string
+              - "null"
+          displayMessage:
+            type:
+              - string
+              - "null"
+          eventType:
+            type:
+              - string
+              - "null"
+          legacyEventType:
+            type:
+              - string
+              - "null"
+          outcome:
+            properties:
+              reason:
+                type:
+                  - string
+                  - "null"
+              result:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          published:
+            format: date-time
+            type:
+              - string
+              - "null"
+          request:
+            properties:
+              ipChain:
+                items:
+                  properties:
+                    geographicalContext:
+                      properties:
+                        city:
+                          type:
+                            - string
+                            - "null"
+                        country:
+                          type:
+                            - string
+                            - "null"
+                        geolocation:
+                          properties:
+                            lat:
+                              type:
+                                - number
+                                - "null"
+                            lon:
+                              type:
+                                - number
+                                - "null"
+                          type:
+                            - object
+                            - "null"
+                        postalCode:
+                          type:
+                            - string
+                            - "null"
+                        state:
+                          type:
+                            - string
+                            - "null"
+                      type:
+                        - object
+                        - "null"
+                    ip:
+                      type:
+                        - string
+                        - "null"
+                    source:
+                      type:
+                        - string
+                        - "null"
+                    version:
+                      type:
+                        - string
+                        - "null"
+                  type:
+                    - object
+                    - "null"
+                type:
+                  - array
+                  - "null"
+            type:
+              - object
+              - "null"
+          securityContext:
+            properties:
+              asNumber:
+                type:
+                  - integer
+                  - "null"
+              asOrg:
+                type:
+                  - string
+                  - "null"
+              domain:
+                type:
+                  - string
+                  - "null"
+              isProxy:
+                type:
+                  - boolean
+                  - "null"
+              isp:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          severity:
+            type:
+              - string
+              - "null"
+          target:
+            items:
+              properties:
+                alternateId:
+                  type:
+                    - string
+                    - "null"
+                detailEntry:
+                  type:
+                    - object
+                    - "null"
+                displayName:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+              type:
+                - object
+                - "null"
+            type:
+              - array
+              - "null"
+          transaction:
+            properties:
+              detail:
+                type:
+                  - object
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              type:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          uuid:
+            type:
+              - string
+              - "null"
+          version:
+            type:
+              - string
+              - "null"
+
+  - type: DeclarativeStream
+    name: users
+    $ref: "#/definitions/users_stream"
+
+  - type: DeclarativeStream
+    name: resource_sets
+    $parameters:
+      name: "resource_sets"
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/iam/resource-sets
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - resource-sets
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 200
+          cursor_value: "{{ response['_links']['next']['href'] }}"
+          stop_condition: >-
+            {{ response._links.next is not defined or not response._links.next
+            or (response._links.self is defined and response._links.self and
+            response._links.next.url == response._links.self.url) }}
+      partition_router: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          label:
+            type: string
+          description:
+            type: string
+          created:
+            format: date-time
+            type:
+              - string
+              - "null"
+          lastUpdated:
+            format: date-time
+            type:
+              - string
+              - "null"
+          _links:
+            properties:
+              assignee:
+                properties:
+                  self:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                    description: gets this Resource Set
+                  resources:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                    description: gets a paginable list of resources included in this set
+                  bindings:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                    description:
+                      gets a paginable list of admin Role Bindings assigned to
+                      this set
+                  next:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                    description:
+                      the link for the next page, 'after' is the query string,
+                      the cursor field is id
+            type:
+              - object
+              - "null"
+
+  - type: DeclarativeStream
+    name: custom_roles
+    $ref: "#/definitions/custom_roles_stream"
+
+  - type: DeclarativeStream
+    name: user_role_assignments
+    $parameters:
+      name: "user_role_assignments"
+    primary_key:
+      - userId
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/users/{{ stream_partition['parent_id'] }}/roles
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: users
+                $ref: "#/definitions/users_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - userId
+            value: "{{ stream_partition['parent_id'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          userId:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          label:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          created:
+            format: date-time
+            type:
+              - "null"
+              - string
+          lastUpdated:
+            format: date-time
+            type:
+              - "null"
+              - string
+          assignmentType:
+            type:
+              - "null"
+              - string
+          resource-set:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              assignee:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  assignee:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  role:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  resource-set:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  permissions:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  member:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+        "required": ["userId", "id"]
+
+  - type: DeclarativeStream
+    name: permissions
+    $parameters:
+      name: "permissions"
+    primary_key:
+      - label
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['domain'] }}.okta.com
+        path: /api/v1/iam/roles/{{ stream_partition['parent_id'] }}/permissions
+        http_method: GET
+        request_parameters: {}
+        authenticator:
+          $ref: "#/definitions/selective_authenticator"
+        error_handler:
+          $ref: "#/definitions/error_handler"
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - permissions
+      paginator:
+        $ref: "#/definitions/paginator"
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                type: DeclarativeStream
+                name: custom_roles
+                $ref: "#/definitions/custom_roles_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        description:
+          Gets the list of permissions included in a Custom Role identified by
+          its id
+        properties:
+          label:
+            enum:
+              - okta.users.manage
+              - okta.users.create
+              - okta.users.read
+              - okta.users.credentials.manage
+              - okta.users.credentials.resetFactors
+              - okta.users.credentials.resetPassword
+              - okta.users.credentials.expirePassword
+              - okta.users.userprofile.manage
+              - okta.users.lifecycle.manage
+              - okta.users.lifecycle.activate
+              - okta.users.lifecycle.deactivate
+              - okta.users.lifecycle.suspend
+              - okta.users.lifecycle.unsuspend
+              - okta.users.lifecycle.delete
+              - okta.users.lifecycle.unlock
+              - okta.users.lifecycle.clearSessions
+              - okta.users.groupMembership.manage
+              - okta.users.appAssignment.manage
+              - okta.groups.manage
+              - okta.groups.create
+              - okta.groups.members.manage
+              - okta.groups.read
+              - okta.groups.appAssignment.manage
+              - okta.apps.read
+              - okta.apps.manage
+              - okta.apps.assignment.manage
+              - okta.profilesources.import.run
+              - okta.authzServers.read
+              - okta.authzServers.manage
+              - okta.customizations.read
+              - okta.customizations.manage
+              - okta.workflows.invoke
+            type: string
+            description: Type of permissions
+          conditions:
+            type:
+              - "null"
+              - object
+            properties:
+              included:
+                type: array
+                items:
+                  type: object
+              excluded:
+                type: array
+                items:
+                  type: object
+          created:
+            format: date-time
+            type: string
+          lastUpdated:
+            format: date-time
+            type: string
+          _links:
+            properties:
+              assignee:
+                properties:
+                  self:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+                  role:
+                    type:
+                      - "null"
+                      - object
+                    additionalProperties: true
+                    properties:
+                      href:
+                        type:
+                          - "null"
+                          - string
+            type:
+              - object
+              - "null"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/okta
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required: []
+    properties:
+      credentials:
+        title: Authorization Method
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your OAuth application.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your OAuth application.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh Token to obtain new Access Token, when it's expired.
+                airbyte_secret: true
+          - type: object
+            title: API Token
+            required:
+              - auth_type
+              - api_token
+            properties:
+              auth_type:
+                type: string
+                const: api_token
+                order: 0
+              api_token:
+                type: string
+                title: Personal API Token
+                description: >-
+                  An Okta token. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/okta">docs</a>
+                  for instructions on how to generate it.
+                airbyte_secret: true
+        order: 0
+      domain:
+        type: string
+        title: Okta domain
+        description: >-
+          The Okta domain. See the <a
+          href="https://docs.airbyte.com/integrations/sources/okta">docs</a> for
+          instructions on how to find it.
+        airbyte_secret: false
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        description: >-
+          UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Any data before
+          this date will not be replicated.
+        examples:
+          - "2022-07-22T00:00:00Z"
+        order: 2
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    groups: false
+    group_members: false
+    group_role_assignments: false
+    logs: false
+    users: false
+    resource_sets: false
+    custom_roles: false
+    user_role_assignments: false
+    permissions: false

@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 
 from .source import SourceAdjust
 
-__all__ = ["SourceAdjust"]
+__all__ = ["SourceAdjust", "components"]

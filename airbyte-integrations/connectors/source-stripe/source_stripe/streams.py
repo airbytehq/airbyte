@@ -356,7 +356,7 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         # as each event holds the latest value of a record.
         # `start_date_max_days_from_now` represents the events API limitation.
         self.events_stream = Events(
-            authenticator=self.authenticator,
+            authenticator=kwargs.get("authenticator"),
             lookback_window_days=0,
             start_date_max_days_from_now=30,
             account_id=self.account_id,
@@ -506,7 +506,7 @@ class CustomerBalanceTransactions(StripeStream):
             path="customers",
             use_cache=USE_CACHE,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
-            authenticator=self.authenticator,
+            authenticator=kwargs.get("authenticator"),
             account_id=self.account_id,
             start_date=self.start_date,
         )

@@ -12,21 +12,53 @@
       "description": "The identifier for the mobile app associated with the ad.",
       "type": ["null", "string"]
     },
+    "body_asset_id": {
+      "description": "The ID of the main content or message of the ad.",
+      "type": ["null", "string"]
+    },
     "body_asset": {
       "description": "The main content or message of the ad.",
+      "type": ["null", "object"],
+      "properties": {
+        "text": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
+    },
+    "call_to_action_asset_id": {
+      "description": "The ID of the specific action encouraged by the ad.",
       "type": ["null", "string"]
     },
     "call_to_action_asset": {
       "description": "The specific action encouraged by the ad.",
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "country": {
       "description": "The country where the ad is being displayed.",
       "type": ["null", "string"]
     },
+    "description_asset_id": {
+      "description": "The ID of additional descriptive text accompanying the ad content.",
+      "type": ["null", "string"]
+    },
     "description_asset": {
       "description": "Additional descriptive text accompanying the ad content.",
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "text": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "device_platform": {
       "description": "The device platform (e.g., mobile, desktop) targeted by the ad.",
@@ -52,17 +84,34 @@
       "description": "Hourly statistical data aggregated based on the audience's time zone.",
       "type": ["null", "string"]
     },
+    "image_asset_id": {
+      "description": "The ID of the image asset used in the ad.",
+      "type": ["null", "string"]
+    },
     "image_asset": {
       "description": "The image asset used in the ad.",
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "hash": { "type": ["null", "string"] },
+        "url": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
     },
     "impression_device": {
       "description": "The device type (e.g., smartphone, tablet) that generated the ad impression.",
       "type": ["null", "string"]
     },
+    "link_url_asset_id": {
+      "description": "The ID of the URL linked to by the ad.",
+      "type": ["null", "string"]
+    },
     "link_url_asset": {
       "description": "The URL linked to by the ad.",
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "website_url": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
     },
     "place_page_id": {
       "description": "The identifier of the Facebook Page associated with the ad.",
@@ -88,13 +137,32 @@
       "description": "The identifier used for measurement and attribution in the SkAdNetwork framework.",
       "type": ["null", "string"]
     },
+    "title_asset_id": {
+      "description": "The ID of the title or headline of the ad.",
+      "type": ["null", "string"]
+    },
     "title_asset": {
       "description": "The title or headline of the ad.",
+      "type": ["null", "object"],
+      "properties": {
+        "text": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
+    },
+    "video_asset_id": {
+      "description": "The ID of the video asset used in the ad.",
       "type": ["null", "string"]
     },
     "video_asset": {
       "description": "The video asset used in the ad.",
-      "type": ["null", "string"]
+      "type": ["null", "object"],
+      "properties": {
+        "video_id": { "type": ["null", "string"] },
+        "url": { "type": ["null", "string"] },
+        "thumbnail_url": { "type": ["null", "string"] },
+        "video_name": { "type": ["null", "string"] },
+        "id": { "type": ["null", "string"] }
+      }
     }
   }
 }

@@ -49,7 +49,8 @@ protected constructor(@JvmField protected val driverClassName: String) : BaseCon
                                 ChronoUnit.SECONDS
                             )
                             .or { Optional.of<Duration>(POSTGRES_CONNECT_TIMEOUT_DEFAULT_DURATION) }
-                    DatabaseDriver.MYSQL ->
+                    DatabaseDriver.MYSQL,
+                    DatabaseDriver.SINGLESTORE ->
                         maybeParseDuration(
                             connectionProperties["connectTimeout"],
                             ChronoUnit.MILLIS

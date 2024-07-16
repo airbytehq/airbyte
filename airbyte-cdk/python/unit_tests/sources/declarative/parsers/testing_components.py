@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
@@ -18,7 +18,7 @@ class TestingSomeComponent(DefaultErrorHandler):
     A basic test class with various field permutations used to test manifests with custom components
     """
 
-    subcomponent_field_with_hint: DpathExtractor = DpathExtractor(field_path=[], config={}, parameters={})
+    subcomponent_field_with_hint: DpathExtractor = field(default_factory=lambda: DpathExtractor(field_path=[], config={}, parameters={}))
     basic_field: str = ""
     optional_subcomponent_field: Optional[RequestOption] = None
     list_of_subcomponents: List[RequestOption] = None

@@ -18,6 +18,7 @@ from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
+from pipelines.models.secrets import Secret
 from pipelines.models.steps import MountPath, Step, StepResult
 
 # STEPS
@@ -36,14 +37,9 @@ class MetadataValidation(SimpleDockerStep):
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
             ],
-            secrets={
-                k: v
-                for k, v in {
-                    "DOCKER_HUB_USERNAME": context.docker_hub_username_secret,
-                    "DOCKER_HUB_PASSWORD": context.docker_hub_password_secret,
-                }.items()
-                if v
-            },
+            secret_env_variables={"DOCKER_HUB_USERNAME": context.docker_hub_username, "DOCKER_HUB_PASSWORD": context.docker_hub_password}
+            if context.docker_hub_username and context.docker_hub_password
+            else None,
             command=[
                 "metadata_service",
                 "validate",
@@ -61,9 +57,9 @@ class MetadataUpload(SimpleDockerStep):
         self,
         context: ConnectorContext,
         metadata_bucket_name: str,
-        metadata_service_gcs_credentials_secret: dagger.Secret,
-        docker_hub_username_secret: dagger.Secret,
-        docker_hub_password_secret: dagger.Secret,
+        metadata_service_gcs_credentials: Secret,
+        docker_hub_username: Secret,
+        docker_hub_password: Secret,
         pre_release: bool = False,
         pre_release_tag: Optional[str] = None,
     ) -> None:
@@ -91,10 +87,10 @@ class MetadataUpload(SimpleDockerStep):
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
             ],
-            secrets={
-                "DOCKER_HUB_USERNAME": docker_hub_username_secret,
-                "DOCKER_HUB_PASSWORD": docker_hub_password_secret,
-                "GCS_CREDENTIALS": metadata_service_gcs_credentials_secret,
+            secret_env_variables={
+                "DOCKER_HUB_USERNAME": docker_hub_username,
+                "DOCKER_HUB_PASSWORD": docker_hub_password,
+                "GCS_CREDENTIALS": metadata_service_gcs_credentials,
             },
             env_variables={
                 # The cache buster ensures we always run the upload command (in case of remote bucket change)
@@ -117,13 +113,13 @@ class DeployOrchestrator(Step):
         "--organization",
         "airbyte-connectors",
         "--python-version",
-        "3.9",
+        "3.10",
     ]
 
     async def _run(self) -> StepResult:
         # mount metadata_service/lib and metadata_service/orchestrator
         parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
-        python_base = with_python_base(self.context, "3.9")
+        python_base = with_python_base(self.context, "3.10")
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud[serverless]==1.5.14", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
             self.context.dagger_client, "DAGSTER_CLOUD_METADATA_API_TOKEN"

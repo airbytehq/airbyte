@@ -37,7 +37,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
         return Optional.ofNullable(timeOfLastMessage.get())
     }
 
-    fun peek(): Optional<MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>> {
+    fun peek(): Optional<MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta>> {
         return Optional.ofNullable(memoryAwareQueue.peek())
     }
 
@@ -59,11 +59,11 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
     }
 
     @Throws(InterruptedException::class)
-    fun take(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?> {
+    fun take(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta> {
         return memoryAwareQueue.take()
     }
 
-    fun poll(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>? {
+    fun poll(): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta>? {
         return memoryAwareQueue.poll()
     }
 
@@ -71,7 +71,7 @@ class StreamAwareQueue(maxMemoryUsage: Long) {
     fun poll(
         timeout: Long,
         unit: TimeUnit,
-    ): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta?>? {
+    ): MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta>? {
         return memoryAwareQueue.poll(timeout, unit)
     }
 

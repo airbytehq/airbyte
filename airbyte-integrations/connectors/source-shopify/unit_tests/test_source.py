@@ -108,12 +108,12 @@ def test_path(stream, stream_slice, expected_path, config) -> None:
 @pytest.mark.parametrize(
     "stream,stream_slice,expected_path",
     [
-        (OrderRisks, {"order_id": 12345}, "orders/12345/risks.json"),
         (Transactions, {"order_id": 12345}, "orders/12345/transactions.json"),
         # Nested Substreams
         (OrderRefunds, None, ""),
         (Fulfillments, None, ""),
         # GQL BULK stream
+        (OrderRisks, None, "graphql.json"),
         (DiscountCodes, None, "graphql.json"),
         (FulfillmentOrders, None, "graphql.json"),
         (InventoryLevels, None, "graphql.json"),

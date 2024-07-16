@@ -8,7 +8,6 @@ from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.types import StreamSlice, StreamState
 
@@ -66,18 +65,6 @@ class Requester(RequestOptionsProvider):
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
-        """
-
-    @abstractmethod
-    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
-        """
-        Specifies conditions for backoff, error handling and reporting based on the response from the server.
-
-        By default, back off on the following HTTP response statuses:
-         - 429 (Too Many Requests) indicating rate limiting
-         - 500s to handle transient server errors
-
-        Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
 
     @abstractmethod

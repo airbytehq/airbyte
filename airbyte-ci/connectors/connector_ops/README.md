@@ -37,5 +37,7 @@ poetry run pytest
 ```
 
 ## Changelog
-
+- 0.6.1: Simplified gradle dependency discovery logic.
+- 0.6.0: Added manifest-only build.
+- 0.5.0: Added `cloud_usage` property to `Connector` class.
 - 0.4.0: Removed acceptance test configuration and allowed hosts checks as they're not used.

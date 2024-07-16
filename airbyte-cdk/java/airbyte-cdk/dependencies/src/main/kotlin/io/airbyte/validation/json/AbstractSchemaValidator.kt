@@ -16,7 +16,7 @@ constructor(private val jsonSchemaValidator: JsonSchemaValidator = JsonSchemaVal
         return JsonSchemaValidator.Companion.getSchema(getSchemaPath(configType).toFile())
     }
 
-    override fun validate(configType: T, objectJson: JsonNode): Set<String?>? {
+    override fun validate(configType: T, objectJson: JsonNode): Set<String>? {
         return jsonSchemaValidator.validate(getSchemaJson(configType), objectJson)
     }
 

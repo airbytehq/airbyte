@@ -53,9 +53,15 @@ your employees to the right projects.
 - Primetric [client secret](https://app.primetric.com/administrator/integrations)
 - Primetric client id
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
-| 1.0.0   | 2024-04-01 | [36508](https://github.com/airbytehq/airbyte/pull/36508) | Migrate to low code cdk |
-| 0.1.0   | 2022-09-05 | [15880](https://github.com/airbytehq/airbyte/pull/15880) | Initial implementation  |
+| 1.0.1 | 2024-06-04 | [38956](https://github.com/airbytehq/airbyte/pull/38956) | [autopull] Upgrade base image to v1.2.1 |
+| 1.0.0 | 2024-04-01 | [36508](https://github.com/airbytehq/airbyte/pull/36508) | Migrate to low code cdk |
+| 0.1.0 | 2022-09-05 | [15880](https://github.com/airbytehq/airbyte/pull/15880) | Initial implementation |
+
+</details>

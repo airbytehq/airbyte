@@ -10,7 +10,6 @@ from datetime import datetime
 from typing import Any, Iterable, Iterator, Mapping, MutableMapping
 from urllib.parse import urlparse
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -109,7 +108,7 @@ class SourceFile(Source):
             raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
-    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """Returns the json schema for the spec"""
         spec = super().spec(logger)
 
@@ -142,7 +141,7 @@ class SourceFile(Source):
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 
-    def discover(self, logger: AirbyteLogger, config: Mapping) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: Mapping) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration. For example, given valid credentials to a
         Remote CSV File, returns an Airbyte catalog where each csv file is a stream, and each column is a field.

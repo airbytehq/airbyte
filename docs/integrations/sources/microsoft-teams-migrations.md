@@ -22,7 +22,7 @@ Depending on your destination, you may be prompted to **Reset all streams**. Alt
 
 5. Select **Save connection**. This will reset the data in your destination (if selected) and initiate a fresh sync.
 
-For more information on resetting your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
+For more information on resetting your data in Airbyte, see [this page](/operator-guides/clear).
 
 ### Changes in 1.0.0
 

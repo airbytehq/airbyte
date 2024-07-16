@@ -15,7 +15,7 @@ class NonContainer(
     private val jdbcUrl: String?,
     private val driverClassName: String?,
     dockerImageName: String
-) : JdbcDatabaseContainer<NonContainer?>(dockerImageName) {
+) : JdbcDatabaseContainer<NonContainer>(dockerImageName) {
     override fun getDriverClassName(): String? {
         return driverClassName
     }

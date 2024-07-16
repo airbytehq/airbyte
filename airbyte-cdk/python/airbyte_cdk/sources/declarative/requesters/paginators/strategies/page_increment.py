@@ -51,8 +51,13 @@ class PageIncrement(PaginationStrategy):
             self._page += 1
             return self._page
 
-    def reset(self) -> None:
-        self._page = self.start_from_page
+    def reset(self, reset_value: Optional[Any] = None) -> None:
+        if reset_value is None:
+            self._page = self.start_from_page
+        elif not isinstance(reset_value, int):
+            raise ValueError(f"Reset value {reset_value} for PageIncrement pagination strategy was not an integer")
+        else:
+            self._page = reset_value
 
     def get_page_size(self) -> Optional[int]:
         return self._page_size

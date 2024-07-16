@@ -4,11 +4,11 @@
 package io.airbyte.cdk.db.jdbc.streaming
 
 import com.google.common.annotations.VisibleForTesting
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import kotlin.math.max
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This estimator first uses the [InitialSizeEstimator] to calculate an initial fetch size by
  * sampling the first N rows consecutively, and then switches to [SamplingSizeEstimator] to
@@ -57,7 +57,6 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(TwoStageSizeEstimator::class.java)
 
         val instance: TwoStageSizeEstimator
             get() = TwoStageSizeEstimator()
@@ -65,10 +64,9 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
         @VisibleForTesting
         fun getTargetBufferByteSize(maxMemory: Long?): Long {
             if (maxMemory == null || maxMemory == Long.MAX_VALUE) {
-                LOGGER.info(
-                    "No max memory limit found, use min JDBC buffer size: {}",
-                    FetchSizeConstants.MIN_BUFFER_BYTE_SIZE
-                )
+                LOGGER.info {
+                    "No max memory limit found, use min JDBC buffer size: ${FetchSizeConstants.MIN_BUFFER_BYTE_SIZE}"
+                }
                 return FetchSizeConstants.MIN_BUFFER_BYTE_SIZE
             }
             val targetBufferByteSize =
@@ -79,11 +77,7 @@ class TwoStageSizeEstimator private constructor() : FetchSizeEstimator {
                         targetBufferByteSize.toDouble()
                     )
                     .toLong()
-            LOGGER.info(
-                "Max memory limit: {}, JDBC buffer size: {}",
-                maxMemory,
-                finalBufferByteSize
-            )
+            LOGGER.info { "Max memory limit: $maxMemory, JDBC buffer size: $finalBufferByteSize" }
             return finalBufferByteSize
         }
     }

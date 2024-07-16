@@ -9,6 +9,7 @@ from typing import Optional, Type
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_URL
+from pipelines.models.secrets import Secret
 
 
 @dataclass
@@ -20,7 +21,7 @@ class PythonPackageMetadata:
 class PythonRegistryPublishContext(PipelineContext):
     def __init__(
         self,
-        python_registry_token: str,
+        python_registry_token: Secret,
         registry_check_url: str,
         package_path: str,
         report_output_prefix: str,
@@ -35,7 +36,7 @@ class PythonRegistryPublishContext(PipelineContext):
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
-        ci_gcs_credentials: Optional[str] = None,
+        ci_gcp_credentials: Optional[Secret] = None,
         package_name: Optional[str] = None,
         version: Optional[str] = None,
     ) -> None:
@@ -60,7 +61,7 @@ class PythonRegistryPublishContext(PipelineContext):
             dagger_logs_url=dagger_logs_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
-            ci_gcs_credentials=ci_gcs_credentials,
+            ci_gcp_credentials=ci_gcp_credentials,
         )
 
     @classmethod
@@ -90,8 +91,9 @@ class PythonRegistryPublishContext(PipelineContext):
             release_candidate_tag = datetime.now().strftime("%Y%m%d%H%M")
             version = f"{version}.dev{release_candidate_tag}"
 
+        assert connector_context.python_registry_token is not None, "The connector context must have python_registry_token Secret attribute"
         pypi_context = cls(
-            python_registry_token=str(connector_context.python_registry_token),
+            python_registry_token=connector_context.python_registry_token,
             registry=str(connector_context.python_registry_url),
             registry_check_url=str(connector_context.python_registry_check_url),
             package_path=str(connector_context.connector.code_directory),
@@ -108,7 +110,7 @@ class PythonRegistryPublishContext(PipelineContext):
             dagger_logs_url=connector_context.dagger_logs_url,
             pipeline_start_timestamp=connector_context.pipeline_start_timestamp,
             ci_context=connector_context.ci_context,
-            ci_gcs_credentials=connector_context.ci_gcs_credentials,
+            ci_gcp_credentials=connector_context.ci_gcp_credentials,
         )
         pypi_context.dagger_client = connector_context.dagger_client
         return pypi_context

@@ -9,9 +9,9 @@
         "history": {
           "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/TestFile.csv": "2130-11-17T13:52:35.000000Z",
           "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_folder_2/TestFileSharePoint.csv": "2130-12-15T17:34:08.000000Z",
-          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv": "2130-01-16T12:45:20.000000Z"
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv": "2130-12-16T12:45:20.000000Z"
         },
-        "_ab_source_file_last_modified": "2130-01-16T12:45:20.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv"
+        "_ab_source_file_last_modified": "2130-12-16T12:45:20.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv"
       }
     }
   },

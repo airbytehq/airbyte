@@ -5,12 +5,13 @@ package io.airbyte.cdk.integrations.base
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.regex.Pattern
 import javax.validation.constraints.NotNull
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
     override fun uncaughtException(thread: Thread, throwable: Throwable) {
@@ -27,7 +28,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
         // from the spec:
         // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
         try {
-            LOGGER.error(logMessage, throwable)
+            LOGGER.error(throwable) { logMessage }
             // Attempt to deinterpolate the error message before emitting a trace message
             val mangledMessage: String?
             // If any exception in the chain is of a deinterpolatable type, find it and
@@ -74,7 +75,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
                 AirbyteTraceMessageUtility.emitCustomErrorTrace(throwable.message, mangledMessage)
             }
         } catch (t: Throwable) {
-            LOGGER.error("exception in the exception handler", t)
+            LOGGER.error(t) { "exception in the exception handler" }
         } finally {
             terminate()
         }
@@ -87,7 +88,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(AirbyteExceptionHandler::class.java)
+
         const val logMessage: String =
             "Something went wrong in the connector. See the logs for more details."
 
@@ -111,7 +112,7 @@ class AirbyteExceptionHandler : Thread.UncaughtExceptionHandler {
          * 1. Contain the original exception message as the external message, and a mangled message
          * as the internal message.
          */
-        @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String?> = HashSet()
+        @VisibleForTesting val STRINGS_TO_DEINTERPOLATE: MutableSet<String> = HashSet()
 
         init {
             addCommonStringsToDeinterpolate()

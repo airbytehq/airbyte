@@ -9,12 +9,11 @@ import TabItem from '@theme/TabItem';
 
 [Airbyte Self-Managed Enterprise](./README.md) is in an early access stage for select priority users. Once you [are qualified for a Self-Managed Enterprise license key](https://airbyte.com/company/talk-to-sales), you can deploy Airbyte with the following instructions.
 
-Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core components \(api server, scheduler, etc\) run as deployments while the scheduler launches connector-related pods on different nodes.
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `webapp`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
 ## Prerequisites
 
 ### Infrastructure Prerequisites
-
 For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
@@ -23,11 +22,18 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Kubernetes Cluster       | Amazon EKS cluster running in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
+| Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
 | Ingress                  | [Amazon ALB](#configuring-ingress) and a URL for users to access the Airbyte UI or make API requests.                                                                     |
 | Object Storage           | [Amazon S3 bucket](#configuring-external-logging) with two directories for log and state storage.                                                                         |
 | Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
 | External Secrets Manager | [Amazon Secrets Manager](/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
+
+
+A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
+* We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
+* We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+* While we support GKE Autopilot, we do not support Amazon EKS on Fargate. 
+* We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -105,6 +111,10 @@ stringData:
   instance-admin-email: ## e.g. admin@company.example
   instance-admin-password: ## e.g. password
 
+  # SSO OIDC Credentials
+  client-id: ## e.g. e83bbc57-1991-417f-8203-3affb47636cf
+  client-secret: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
   # AWS S3 Secrets
   s3-access-key-id: ## e.g. AKIAIOSFODNN7EXAMPLE
   s3-secret-access-key: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
@@ -158,9 +168,13 @@ stringData:
   database-user: ## e.g. airbyte
   database-password: ## e.g. password
 
-  # Instance Admin
+  # Instance Admin Credentials
   instance-admin-email: ## e.g. admin@company.example
   instance-admin-password: ## e.g. password
+
+  # SSO OIDC Credentials
+  client-id: ## e.g. e83bbc57-1991-417f-8203-3affb47636cf
+  client-secret: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
   # GCP Secrets
   gcp.json: <CREDENTIALS_JSON_BLOB>
@@ -202,15 +216,62 @@ Follow these instructions to add the Airbyte helm repository:
 
 2. Paste the following into your newly created `values.yaml` file. This is required to deploy Airbyte Self-Managed Enterprise:
 
-```yml
+```yaml
 global:
   edition: enterprise
-
-  # This must be set to the public facing URL of your Airbyte instance.
-  airbyteUrl: #https://airbyte.company.example
 ```
 
-3. The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 3](#step-3-deploy-self-managed-enterprise).
+3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
+
+```yaml
+auth:
+  instanceAdmin:
+    firstName: ## First name of admin user.
+    lastName: ## Last name of admin user.
+  identityProvider:
+    type: oidc
+    secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
+    oidc:
+      domain: ## e.g. company.example
+      app-name: ## e.g. airbyte
+      clientIdSecretKey: client-id
+      clientSecretSecretKey: client-secret
+```
+
+
+
+4. You must configure the public facing URL of your Airbyte instance to your `values.yaml` file, under `global`:
+
+```yaml
+airbyteUrl: # e.g. https://airbyte.company.example
+```
+
+5. Verify the configuration of your `values.yml` so far. Ensure `license-key`, `instance-admin-email` and `instance-admin-password` are all available via Kubernetes Secrets (configured in [prerequisites](#creating-a-kubernetes-secret)). It should appear as follows:
+
+<details>
+<summary>Sample initial values.yml file</summary>
+
+```yaml
+global:
+  edition: enterprise
+  airbyteUrl: # e.g. https://airbyte.company.example
+  auth:
+    instanceAdmin:
+      firstName: ## First name of admin user.
+      lastName: ## Last name of admin user.
+    identityProvider:
+      type: oidc
+      secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
+      oidc:
+        domain: ## e.g. company.example
+        app-name: ## e.g. airbyte
+        clientIdSecretKey: client-id
+        clientSecretSecretKey: client-secret
+```
+
+</details>
+
+The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 3](#step-3-deploy-self-managed-enterprise).
 
 #### Configuring the Airbyte Database
 
@@ -360,22 +421,6 @@ secretsManager:
 </Tabs>
 
 </details>
-
-#### Configuring External OIDC Provider (Optional)
-
-To enable SSO authentication, add [SSO auth details](/access-management/sso) to your `values.yaml` file.
-```yaml
-auth:
-  identityProvider:
-    type: oidc
-    oidc:
-      domain: #company.example
-      app-name: #airbyte
-      client-id: #e83bbc57-1991-417f-8203-3affb47636cf
-      client-secret: #$OKTA_CLIENT_SECRET
-```
-
-See the [following guide](/access-management/sso-providers/okta) on how to collect this information for Okta.
 
 #### Configuring Ingress
 

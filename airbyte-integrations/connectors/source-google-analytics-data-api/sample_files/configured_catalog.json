@@ -1,0 +1,793 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "daily_active_users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "weekly_active_users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "four_weekly_active_users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "devices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [
+          ["property_id"],
+          ["date"],
+          ["deviceCategory"],
+          ["operatingSystem"],
+          ["browser"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        ["property_id"],
+        ["date"],
+        ["deviceCategory"],
+        ["operatingSystem"],
+        ["browser"]
+      ]
+    },
+    {
+      "stream": {
+        "name": "locations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [
+          ["property_id"],
+          ["region"],
+          ["country"],
+          ["city"],
+          ["date"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        ["property_id"],
+        ["region"],
+        ["country"],
+        ["city"],
+        ["date"]
+      ]
+    },
+    {
+      "stream": {
+        "name": "pages",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [
+          ["property_id"],
+          ["date"],
+          ["hostName"],
+          ["pagePathPlusQueryString"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        ["property_id"],
+        ["date"],
+        ["hostName"],
+        ["pagePathPlusQueryString"]
+      ]
+    },
+    {
+      "stream": {
+        "name": "traffic_sources",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [
+          ["property_id"],
+          ["date"],
+          ["sessionSource"],
+          ["sessionMedium"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [
+        ["property_id"],
+        ["date"],
+        ["sessionSource"],
+        ["sessionMedium"]
+      ]
+    },
+    {
+      "stream": {
+        "name": "website_overview",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "user_acquisition_first_user_medium_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "user_acquisition_first_user_source_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "user_acquisition_first_user_source_medium_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "user_acquisition_first_user_source_platform_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "user_acquisition_first_user_campaign_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "user_acquisition_first_user_google_ads_ad_network_type_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "user_acquisition_first_user_google_ads_ad_group_name_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "traffic_acquisition_session_source_medium_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "traffic_acquisition_session_medium_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "traffic_acquisition_session_source_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "traffic_acquisition_session_campaign_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "traffic_acquisition_session_default_channel_grouping_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "traffic_acquisition_session_source_platform_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "events_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "conversions_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "pages_title_and_screen_class_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "pages_path_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "pages_title_and_screen_name_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "content_group_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_name_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_id_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_category_report_combined",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_category_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_category_2_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_category_3_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_category_4_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_category_5_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "ecommerce_purchases_item_brand_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "publisher_ads_ad_unit_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "publisher_ads_page_path_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "publisher_ads_ad_format_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "publisher_ads_ad_source_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "demographic_country_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "demographic_region_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "demographic_city_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "demographic_language_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "demographic_age_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "demographic_gender_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "demographic_interest_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_browser_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_device_category_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_device_model_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_screen_resolution_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_app_version_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_platform_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_platform_device_category_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_operating_system_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "tech_os_with_version_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["property_id"], ["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["date"]]
+    },
+    {
+      "stream": {
+        "name": "weekly_events_report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["yearWeek"],
+        "source_defined_primary_key": [
+          ["property_id"],
+          ["yearWeek"],
+          ["eventName"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["property_id"], ["yearWeek"], ["eventName"]]
+    }
+  ]
+}

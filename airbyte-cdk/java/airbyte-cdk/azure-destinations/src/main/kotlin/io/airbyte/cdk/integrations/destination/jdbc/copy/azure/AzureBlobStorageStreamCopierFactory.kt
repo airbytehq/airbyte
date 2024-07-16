@@ -22,7 +22,7 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
         sqlOperations: SqlOperations?
-    ): StreamCopier? {
+    ): StreamCopier {
         try {
             val stream = configuredStream!!.stream
             val syncMode = configuredStream.destinationSyncMode
@@ -62,5 +62,5 @@ abstract class AzureBlobStorageStreamCopierFactory : StreamCopierFactory<AzureBl
         azureBlobConfig: AzureBlobStorageConfig?,
         nameTransformer: StandardNameTransformer?,
         sqlOperations: SqlOperations?
-    ): StreamCopier?
+    ): StreamCopier
 }
