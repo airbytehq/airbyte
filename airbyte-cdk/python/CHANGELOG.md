@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.5.2
+Add failure_type to HttpResponseFilter
+
 ## 3.5.1
 Remove 3.11-style union
 
