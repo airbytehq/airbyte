@@ -24,8 +24,17 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
     JsonErrorMessageParser,
     ResponseAction,
 )
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.streams.http.exceptions import (
+    DefaultBackoffException,
+    RateLimitBackoffException,
+    RequestBodyException,
+    UserDefinedBackoffException,
+)
+from airbyte_cdk.sources.streams.http.rate_limiting import (
+    http_client_default_backoff_handler,
+    rate_limit_default_backoff_handler,
+    user_defined_backoff_handler,
+)
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -195,6 +204,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
         """
         Sends a request with retry logic.
@@ -212,9 +222,10 @@ class HttpClient:
         max_time = self._max_time
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
+        rate_limit_backoff_handler = rate_limit_default_backoff_handler()
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time)
         # backoff handlers wrap _send, so it will always return a response
-        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
+        response = backoff_handler(rate_limit_backoff_handler(user_backoff_handler))(request, request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
         return response
 
@@ -223,6 +234,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
 
         if request not in self._request_attempt_count:
@@ -309,6 +321,9 @@ class HttpClient:
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
+
+            retry_endlessly = error_resolution.response_action == ResponseAction.RATE_LIMITED and not exit_on_rate_limit
+
             if user_defined_backoff_time:
                 raise UserDefinedBackoffException(
                     backoff=user_defined_backoff_time,
@@ -316,10 +331,13 @@ class HttpClient:
                     response=(response if response is not None else exc),
                     error_message=error_message,
                 )
-            else:
-                raise DefaultBackoffException(
-                    request=request, response=(response if response is not None else exc), error_message=error_message
-                )
+
+            elif retry_endlessly:
+                raise RateLimitBackoffException(request=request, response=response or exc, error_message=error_message)
+
+            raise DefaultBackoffException(
+                request=request, response=(response if response is not None else exc), error_message=error_message
+            )
 
         elif response:
             try:
@@ -341,6 +359,7 @@ class HttpClient:
         data: Optional[Union[str, Mapping[str, Any]]] = None,
         dedupe_query_params: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
         Prepares and sends request and return request and response objects.
@@ -350,6 +369,8 @@ class HttpClient:
             http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
         )
 
-        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs, log_formatter=log_formatter)
+        response: requests.Response = self._send_with_retry(
+            request=request, request_kwargs=request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit
+        )
 
         return request, response
