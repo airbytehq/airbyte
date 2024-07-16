@@ -202,18 +202,18 @@ public class PostgresCdcCtidInitializer {
       streamsUnderVacuum.addAll(streamsUnderVacuum(database,
           ctidStreams.streamsForCtidSync(), quoteString).result());
 
+      // Any stream currently undergoing full vacuum should not be synced via CTID as it is not a stable
+      // cursor. In practice, this will never happen
+      // during a sync as a full vacuum in Postgres locks the entire database, so thrown a TransientError in this case and try again.
       if (!streamsUnderVacuum.isEmpty()) {
         throw new TransientErrorException(
             "Postgres database is undergoing a full vacuum - cannot proceed with the sync. Please sync again when the vacuum is finished.");
       }
 
-      // Any stream currently undergoing full vacuum should not be synced via CTID as it is not a stable
-      // cursor. In practice, this will never happen
-      // during a sync as a full vacuum in Postgres locks the entire databa
       finalListOfStreamsToBeSyncedViaCtid.addAll(ctidStreams.streamsForCtidSync());
 
       final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
-          finalListOfStreamsToBeSyncedViaCtid,
+          ctidStreams.streamsForCtidSync(),
           quoteString);
       final PostgresCtidHandler ctidHandler;
       // Check if a full vacuum occurred between syncs. If we are unable to determine whether this has
