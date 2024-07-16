@@ -63,17 +63,17 @@ class MixpanelHttpRequester(HttpRequester):
 
     def send_request(self, **kwargs) -> Optional[requests.Response]:
 
-        if self.reqs_per_hour_limit:
-            if self.is_first_request:
-                self.is_first_request = False
-            else:
-                # we skip this block, if self.reqs_per_hour_limit = 0,
-                # in all other cases wait for X seconds to match API limitations
-                # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
-                self.logger.info(
-                    f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}"
-                )
-                time.sleep(3600 / self.reqs_per_hour_limit)
+        # if self.reqs_per_hour_limit:
+        #     if self.is_first_request:
+        #         self.is_first_request = False
+        #     else:
+        #         # we skip this block, if self.reqs_per_hour_limit = 0,
+        #         # in all other cases wait for X seconds to match API limitations
+        #         # https://help.mixpanel.com/hc/en-us/articles/115004602563-Rate-Limits-for-Export-API-Endpoints#api-export-endpoint-rate-limits
+        #         self.logger.info(
+        #             f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}"
+        #         )
+        #         time.sleep(3600 / self.reqs_per_hour_limit)
 
         return super().send_request(**kwargs)
 
@@ -277,7 +277,7 @@ class EngagePaginationStrategy(PageIncrement):
 
     _total = 0
 
-    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         """
         Determines page and subpage numbers for the `items` stream
 
