@@ -1,3 +1,6 @@
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 # Preconfiguring Kubernetes Secrets
 
 Deploying Airbyte requires specifying a number of sensitive values. These can be API keys, usernames and passwords, etc.

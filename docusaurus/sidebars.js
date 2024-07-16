@@ -420,10 +420,7 @@ const deployAirbyte = {
     {
       type: "doc",
       label: "Creating a Secret",
-      link: {
-        type: "doc",
-        id: "deploying-airbyte/creating-secrets",
-      }
+      id: "deploying-airbyte/creating-secrets",
     },
   ],
 };
