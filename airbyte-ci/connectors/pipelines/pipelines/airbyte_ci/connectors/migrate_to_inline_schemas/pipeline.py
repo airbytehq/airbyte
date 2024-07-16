@@ -49,7 +49,7 @@ class CheckIsInlineCandidate(Step):
         connector = self.context.connector
         manifest_path = connector.manifest_path
         python_path = connector.python_source_dir_path
-        if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+        if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE, ConnectorLanguage.MANIFEST_ONLY]:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
