@@ -28,6 +28,7 @@ def test_interpret_response_handles_403_error(auth, json_response, error_message
     mocked_response = MagicMock(spec=Response)
     mocked_response.status_code = 403
     mocked_response.json.return_value = json_response
+    mocked_response.ok = False
     error_handler = AirtableErrorHandler(logger=mocked_logger, authenticator=mocked_authenticator, error_mapping=AIRTABLE_ERROR_MAPPING)
     error_resolution = error_handler.interpret_response(mocked_response)
     assert error_resolution.response_action == ResponseAction.FAIL
