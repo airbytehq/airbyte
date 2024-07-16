@@ -173,10 +173,9 @@ class ResumableFullRefreshCheckpointReader(CheckpointReader):
         if self._first_page:
             self._first_page = False
             return self._state
-        elif self._state == {"__ab_full_refresh_sync_complete": True}:
+        if "__ab_full_refresh_sync_complete" in self._state and self._state["__ab_full_refresh_sync_complete"]:
             return None
-        else:
-            return self._state
+        return self._state
 
     def observe(self, new_state: Mapping[str, Any]) -> None:
         self._state = new_state
