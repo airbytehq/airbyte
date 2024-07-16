@@ -11,16 +11,13 @@ class ConfigErrorException : RuntimeException {
     val internalMessage: String
     val displayMessage: String
 
-    constructor(displayMessage: String) : super(displayMessage) {
-        this.displayMessage = displayMessage
-        this.internalMessage = ""
-    }
-
+    @JvmOverloads
     constructor(displayMessage: String, internalMessage: String = "") : super(displayMessage) {
         this.displayMessage = displayMessage
         this.internalMessage = internalMessage
     }
 
+    @JvmOverloads
     constructor(
         displayMessage: String,
         exception: Throwable?,
