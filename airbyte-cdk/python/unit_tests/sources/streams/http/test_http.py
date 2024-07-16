@@ -365,6 +365,9 @@ class TestRequestBody:
 class CacheHttpStream(StubBasicReadHttpStream):
     use_cache = True
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
 
 class CacheHttpSubStream(HttpSubStream):
     url_base = "https://example.com"
@@ -715,6 +718,9 @@ class StubParentHttpStream(HttpStream, CheckpointMixin):
     ) -> Iterable[Mapping[str, Any]]:
         return []
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
 
 class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
     primary_key = "primary_key"
@@ -761,6 +767,9 @@ class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
             next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Mapping[str, Any]]:
         return []
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
 
 
 class StubHttpSubstream(HttpSubStream):
