@@ -92,6 +92,7 @@ def get_connection_objects(
     retrieval_reason: Optional[str],
     fail_if_missing_objects: bool = True,
     connector_image: Optional[str] = None,
+    connector_version: Optional[str] = None,
     auto_select_connection: bool = False,
     selected_streams: Optional[set[str]] = None,
 ) -> ConnectionObjects:
@@ -109,6 +110,7 @@ def get_connection_objects(
         retrieval_reason (Optional[str]): The reason to access the connection objects.
         fail_if_missing_objects (bool, optional): Whether to raise a ValueError if a required object is missing. Defaults to True.
         connector_image (Optional[str]): The image name for the connector under test.
+        connector_version (Optional[str]): The version for the connector under test.
         auto_select_connection (bool, optional): Whether to automatically select a connection if no connection id is passed. Defaults to False.
         selected_streams (Optional[Set[str]]): The set of selected streams to use when auto selecting a connection.
     Raises:
@@ -137,6 +139,7 @@ def get_connection_objects(
             requested_objects,
             retrieval_reason=retrieval_reason,
             source_docker_repository=connector_image,
+            source_docker_image_tag=connector_version,
             prompt_for_connection_selection=False,
             selected_streams=selected_streams,
             connection_id=connection_id,
@@ -151,6 +154,7 @@ def get_connection_objects(
                 requested_objects,
                 retrieval_reason=retrieval_reason,
                 source_docker_repository=connector_image,
+                source_docker_image_tag=connector_version,
                 prompt_for_connection_selection=not is_ci,
                 selected_streams=selected_streams,
                 custom_config=custom_config,
@@ -187,6 +191,7 @@ def _get_connection_objects_from_retrieved_objects(
     requested_objects: Set[ConnectionObject],
     retrieval_reason: str,
     source_docker_repository: str,
+    source_docker_image_tag: str,
     prompt_for_connection_selection: bool,
     selected_streams: Optional[Set[str]],
     connection_id: Optional[str] = None,
@@ -199,6 +204,7 @@ def _get_connection_objects_from_retrieved_objects(
         requested_objects,
         retrieval_reason=retrieval_reason,
         source_docker_repository=source_docker_repository,
+        source_docker_image_tag=source_docker_image_tag,
         prompt_for_connection_selection=prompt_for_connection_selection,
         with_streams=selected_streams,
         connection_id=connection_id,

@@ -280,6 +280,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.17.7
+
+Explicitly pass the control version to the connection retriever. Defaults to the latest released version of the connector under test.
+
 ### 0.17.6
 
 Display diagnostic test with warning.
