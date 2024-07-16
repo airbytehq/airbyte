@@ -280,10 +280,6 @@ class DebeziumRecordIterator<T>(
         }
     }
 
-    private fun isTest(): Boolean {
-        return config.has("is_test") && config["is_test"].asBoolean()
-    }
-
     /**
      * [DebeziumRecordIterator.heartbeatEventSourceField] acts as a cache so that we avoid using
      * reflection to setAccessible for each event
