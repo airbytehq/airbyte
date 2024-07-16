@@ -10,8 +10,8 @@ import requests
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_airtable.auth import AirtableOAuth
 from source_airtable.airtable_error_mapping import AIRTABLE_ERROR_MAPPING
+from source_airtable.auth import AirtableOAuth
 
 
 class AirtableErrorHandler(HttpStatusErrorHandler):
