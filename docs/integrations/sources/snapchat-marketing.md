@@ -1,6 +1,6 @@
 # Snapchat Marketing
 
-This page guides you through the process of setting up the Snapchat Marketing source connector.
+This page guides you through the process of setting up the [Snapchat Marketing](https://marketingapi.snapchat.com/docs/) source connector.
 
 ## Prerequisites
 
@@ -8,28 +8,24 @@ This page guides you through the process of setting up the Snapchat Marketing so
 
 **For Airbyte Cloud:**
 
-- A Snapchat Marketing account with permission to access data from accounts you want to sync
+- An existing Snapchat Marketing business account
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-- client_id
-- client_secret
-- refresh_token
-- start_date
-- end_date
-- action_report_time (Optional, Default value is conversion) It specifies the principle for conversion reporting.
-- swipe_up_attribution_window (Optional, Default value is 1_DAY) This is the attribution window for swipe up.
-- view_attribution_window (Optional, Default value is 28_DAY) This is the attribution window for views.
+- Client ID
+- Client Secret
+- Refresh Token
+
 <!-- /env:oss -->
 
 ## Setup guide
 
 ### Step 1: Set up Snapchat
 
-1. [Set up Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US)
+1. [Set up a Snapchat Business account](https://businesshelp.snapchat.com/s/article/get-started?language=en_US)
 
 <!-- env:oss -->
 
@@ -38,25 +34,32 @@ This page guides you through the process of setting up the Snapchat Marketing so
 2. [Activate Access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US)
 3. Add the OAuth2 app:
    - Adding the OAuth2 app requires the `redirect_url` parameter.
-     - If you have the API endpoint that will handle next OAuth process - write it to this parameter.
-     - If not - just use some valid url. Here's the discussion about it: [Snapchat Redirect URL - Clarity in documentation please](https://github.com/Snap-Kit/bitmoji-sample/issues/3)
-   - save **Client ID** and **Client Secret**
-4. Get refresh token using OAuth2 authentication workflow:
-   - Open the authorize link in a browser: [https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUmF7hwvU](https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUmF7hwvU)
+     - If you have the API endpoint that will handle next OAuth process, write it to this parameter.
+     - If you do not have the API endpoint, simply use a valid URL.Refer to the discussion here for more information: [Snapchat Redirect URL - Clarity in documentation please](https://github.com/Snap-Kit/bitmoji-sample/issues/3)
+   - Save the **Client ID** and **Client Secret**
+4. Obtain a refresh token using OAuth2 authentication workflow.
+   - Open the authorize link in a browser. It will look similar to this: 
+   ```
+   https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUwerf-m 
+   ```
    - Login & Authorize via UI
-   - Locate "code" query parameter in the redirect
-   - Exchange code for access token + refresh token
-   `text
-      curl -X POST \  
+   - Locate the `code` query parameter in the redirect
+   - Exchange the `code` for an access token and refresh token. 
+
+   Your request will appear similar to the following: 
+
+   ```text
+      curl -X POST \      
       -d "code={one_time_use_code}" \  
       -d "client_id={client_id}" \  
       -d "client_secret={client_secret}"  \  
       -d "grant_type=authorization_code"  \  
       -d "redirect_uri=redirect_uri"  
-      https://accounts.snapchat.com/login/oauth2/access_token
-      `
-   You will receive the API key and refresh token in response. Use this refresh token in the connector specifications.  
-   The useful link to Authentication process is [here](https://marketingapi.snapchat.com/docs/#authentication)
+      https://accounts.snapchat.com/login/oauth2/access_token`
+   ```
+
+For more information on authenticating into the Snapchat API, read their documentation [here](https://marketingapi.snapchat.com/docs/#authentication)
+   You will receive the API key and refresh token in the response. Use this refresh token for the connector.
    <!-- /env:oss -->
 
 ### Step 2: Set up the source connector in Airbyte
@@ -68,54 +71,70 @@ This page guides you through the process of setting up the Snapchat Marketing so
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
-4. lick `Authenticate your account`.
-5. Log in and Authorize to the Snapchat account
-6. Choose required Start date
-7. click `Set up source`.
+4. Click `Authenticate your account`.
+5. In the authentication window, log in and authorize access to your Snapchat account
+6. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced. 
+
+:::tip
+The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below). 
+:::
+7. (Optional) Choose an End Date. All data created on or before this date will be synced. If left blank, all records will be synced. 
+8. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is set to `conversion`, and can be modified to `impression`.
+9. (Optional) Choose the 'Swip Up Attribution Window', which specifies the length of the attribution window for swipe up actions. The default is 28 days and can be adjusted.
+10. (Optional) Choose the `View Attribution Window`, which specifies the length of the attribution window for views. The default is 28 days and can be adjusted.
+11. Click 'Set up source' 
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
+1. Open the Airbyte UI.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
-4. Add **Client ID**, **Client Secret**, **Refresh Token**
-5. Choose required Start date
-6. Click `Set up source`.
+4. Add the **Client ID**, **Client Secret**, and **Refresh Token** obtained from the setup.
+5. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced. 
+
+:::tip
+The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below). 
+:::
+6. (Optional) Choose an End Date. All data created on or before this date will be synced.
+7. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is set to `conversion`, and can be modified to `impression`.
+8. (Optional) Choose the 'Swip Up Attribution Window', which specifies the length of the attribution window for swipe up actions. The default is 28 days and can be adjusted.
+9. (Optional) Choose the `View Attribution Window`, which specifies the length of the attribution window for views. The default is 28 days and can be adjusted.
+10. Click 'Set up source' 
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
 
 | Stream                  | Incremental | Key                                 |
 |:------------------------|:------------|-------------------------------------|
-| Adaccounts              | Yes         | "id"                                |
+| AdAccounts              | Yes         | "id"                                |
 | Ads                     | Yes         | "id"                                |
-| Adsquads                | Yes         | "id"                                |
+| AdSquads                | Yes         | "id"                                |
 | Campaigns               | Yes         | "id"                                |
 | Creatives               | Yes         | "id"                                |
 | Media                   | Yes         | "id"                                |
 | Organizations           | Yes         | "id"                                |
 | Segments                | Yes         | "id"                                |
-| AdaccountsStatsHourly   | Yes         | ["id", "granularity", "start_time"] |
-| AdaccountsStatsDaily    | Yes         | ["id", "granularity", "start_time"] |
-| AdaccountsStatsLifetime | No          | ["id", "granularity"]               |
-| AdsStatsHourly          | Yes         | ["id", "granularity", "start_time"] |
-| AdsStatsDaily           | Yes         | ["id", "granularity", "start_time"] |
-| AdsStatsLifetime        | No          | ["id", "granularity"]               |
-| AdsquadsStatsHourly     | Yes         | ["id", "granularity", "start_time"] |
-| AdsquadsStatsDaily      | Yes         | ["id", "granularity", "start_time"] |
-| AdsquadsStatsLifetime   | No          | ["id", "granularity"]               |
-| CampaignsStatsHourly    | Yes         | ["id", "granularity", "start_time"] |
-| CampaignsStatsDaily     | Yes         | ["id", "granularity", "start_time"] |
-| CampaignsStatsLifetime  | No          | ["id", "granularity"]               |
+| AdAccounts_Stats_Hourly   | Yes         | ["id", "granularity", "start_time"] |
+| AdAccounts_Stats_Daily    | Yes         | ["id", "granularity", "start_time"] |
+| AdAccounts_Stats_Lifetime | No          | ["id", "granularity"]               |
+| Ads_Stats_Hourly          | Yes         | ["id", "granularity", "start_time"] |
+| Ads_Stats_Daily           | Yes         | ["id", "granularity", "start_time"] |
+| Ads_Stats_Lifetime        | No          | ["id", "granularity"]               |
+| AdSquads_Stats_Hourly     | Yes         | ["id", "granularity", "start_time"] |
+| AdSquads_Stats_Daily      | Yes         | ["id", "granularity", "start_time"] |
+| AdSquads_Stats_Lifetime   | No          | ["id", "granularity"]               |
+| Campaigns_Stats_Hourly    | Yes         | ["id", "granularity", "start_time"] |
+| Campaigns_Stats_Daily     | Yes         | ["id", "granularity", "start_time"] |
+| Campaigns_Stats_Lifetime  | No          | ["id", "granularity"]               |
 
 ## Performance considerations
 
-Hourly streams can be slowly because they generate a lot of records.
+The Snapchat Marketing API limits requests to 1,000 items per page.
 
-Snapchat Marketing API has limitations to 1000 items per page.
+Syncing data with an hourly granularity often generates large data volumes and can take longer times to sync. We recommend syncing at a day granularity.
 
 ## Changelog
 
