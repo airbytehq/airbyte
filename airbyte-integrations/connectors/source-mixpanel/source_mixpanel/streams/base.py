@@ -206,12 +206,14 @@ class DateSlicesMixin:
         stream_state: Mapping[str, Any],
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
+    ) -> Union[MutableMapping[str, Any], Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)  # type: ignore[misc]
+        if stream_slice is None:
+            return params
         return {
             **params,
-            "from_date": stream_slice["start_date"],  # type: ignore[index]
-            "to_date": stream_slice["end_date"],  # type: ignore[index]
+            "from_date": stream_slice["start_date"],
+            "to_date": stream_slice["end_date"],
         }
 
 
