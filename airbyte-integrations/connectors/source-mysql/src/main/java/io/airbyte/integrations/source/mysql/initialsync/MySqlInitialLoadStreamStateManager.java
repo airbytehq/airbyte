@@ -58,11 +58,6 @@ public class MySqlInitialLoadStreamStateManager extends MySqlInitialLoadStateMan
   }
 
   @Override
-  public PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair) {
-    return pairToPrimaryKeyLoadStatus.get(pair);
-  }
-
-  @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
     var pkStatus = getPrimaryKeyLoadStatus(pair);

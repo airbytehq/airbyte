@@ -11,6 +11,10 @@ package io.airbyte.commons.exceptions
 class TransientErrorException : RuntimeException {
     val internalMessage: String
 
+    constructor(displayMessage: String) : super(displayMessage) {
+        this.internalMessage = "internalMessage"
+    }
+
     constructor(displayMessage: String, internalMessage: String = "") : super(displayMessage) {
         this.internalMessage = internalMessage
     }

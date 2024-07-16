@@ -157,11 +157,6 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   }
 
   @Override
-  public PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    return pairToPrimaryKeyLoadStatus.get(pair);
-  }
-
-  @Override
   public PrimaryKeyInfo getPrimaryKeyInfo(final AirbyteStreamNameNamespacePair pair) {
     return pairToPrimaryKeyInfo.get(pair);
   }

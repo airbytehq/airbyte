@@ -103,7 +103,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
           getAirbyteStream().get(), cdcInitialLoadTimeout.get());
       LOGGER.info(cdcInitialLoadTimeoutMessage);
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
-      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+      throw new TransientErrorException("test", cdcInitialLoadTimeoutMessage);
     }
     if (shouldBuildNextSubquery()) {
       try {

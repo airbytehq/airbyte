@@ -157,7 +157,7 @@ public class MySqlInitialReadUtil {
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcCursorInvalidMessage());
       if (!sourceConfig.get("replication_method").has(INVALID_CDC_CURSOR_POSITION_PROPERTY) || sourceConfig.get("replication_method").get(
           INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
-        throw new ConfigErrorException(
+        throw new ConfigErrorException("test",
             "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency. See https://docs.airbyte.com/integrations/sources/mysql/mysql-troubleshooting#under-cdc-incremental-mode-there-are-still-full-refresh-syncs for more details.");
       }
       LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
@@ -175,7 +175,7 @@ public class MySqlInitialReadUtil {
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     return new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
-        initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+        initPairToPrimaryKeyInfoMap(database, catalog, tableNameToTable, quoteString),
         stateManager, catalog, savedOffsetStillPresentOnServer, getDefaultCdcState(database, catalog));
   }
 
@@ -338,7 +338,7 @@ public class MySqlInitialReadUtil {
                       initialLoadIterator,
                       cdcStreamsEndStatusEmitters,
                       List.of(new TransientErrorTraceEmitterIterator(
-                          new TransientErrorException("Forcing a new sync after the initial load to read the binlog"))))
+                          new TransientErrorException("test", "Forcing a new sync after the initial load to read the binlog"))))
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
@@ -502,14 +502,14 @@ public class MySqlInitialReadUtil {
   // currently undergoing initial primary key syncs.
   public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> initPairToPrimaryKeyInfoMap(
                                                                                                                            final JdbcDatabase database,
-                                                                                                                           final InitialLoadStreams initialLoadStreams,
+                                                                                                                           final ConfiguredAirbyteCatalog catalog,
                                                                                                                            final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                                                                            final String quoteString) {
     final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPkInfoMap = new HashMap<>();
     // For every stream that was in primary initial key sync, we want to maintain information about the
     // current primary key info associated with the
     // stream
-    initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
+    catalog.getStreams().forEach(stream -> {
       final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
           new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final Optional<PrimaryKeyInfo> pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);
