@@ -16,8 +16,8 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from pendulum import Date
 from requests.auth import AuthBase
-from source_mixpanel.utils import MixpanelStreamBackoffStrategy, fix_date_time
 from source_mixpanel.errors_handlers import DateSlicesMixinErrorHandler, MixpanelStreamErrorHandler
+from source_mixpanel.utils import MixpanelStreamBackoffStrategy, fix_date_time
 
 
 class MixpanelStream(HttpStream, ABC):

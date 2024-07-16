@@ -12,9 +12,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-
-from source_mixpanel.property_transformation import transform_property_names
 from source_mixpanel.errors_handlers import ExportErrorHandler
+from source_mixpanel.property_transformation import transform_property_names
+
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
 
 

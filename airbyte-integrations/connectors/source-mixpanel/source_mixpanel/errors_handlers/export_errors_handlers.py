@@ -8,6 +8,7 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_protocol.models import FailureType
+
 from .base_errors_handlers import DateSlicesMixinErrorHandler, MixpanelStreamErrorHandler
 
 
