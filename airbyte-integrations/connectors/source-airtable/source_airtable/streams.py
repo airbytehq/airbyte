@@ -13,7 +13,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_airtable.airtable_backoff_strategy import AirtableBackoffStrategy
 from source_airtable.airtable_error_handler import AirtableErrorHandler
-from source_airtable.airtable_error_mapping import AIRTABLE_ERROR_MAPPING
 from source_airtable.schema_helpers import SchemaHelpers
 
 URL_BASE: str = "https://api.airtable.com/v0/"
@@ -23,7 +22,7 @@ class AirtableBases(HttpStream):
     def __init__(self, **kwargs):
         authenticator = kwargs.get("authenticator")
         backoff_strategy = AirtableBackoffStrategy(self.logger)
-        error_handler = AirtableErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING, authenticator=authenticator)
+        error_handler = AirtableErrorHandler(logger=self.logger, authenticator=authenticator)
 
         self._http_client = HttpClient(
             name=self.name,
@@ -105,7 +104,7 @@ class AirtableStream(HttpStream, ABC):
         self.table_name = table_name
 
         backoff_strategy = AirtableBackoffStrategy(self.logger)
-        error_handler = HttpStatusErrorHandler(logger=self.logger, error_mapping=AIRTABLE_ERROR_MAPPING)
+        error_handler = HttpStatusErrorHandler(logger=self.logger)
 
         self._http_client = HttpClient(
             name=self.name,

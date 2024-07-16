@@ -11,13 +11,14 @@ from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandl
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_airtable.auth import AirtableOAuth
+from source_airtable.airtable_error_mapping import AIRTABLE_ERROR_MAPPING
 
 
 class AirtableErrorHandler(HttpStatusErrorHandler):
     def __init__(
         self,
         logger: logging.Logger,
-        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
+        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = AIRTABLE_ERROR_MAPPING,
         max_retries: int = 5,
         max_time: timedelta = timedelta(seconds=600),
         authenticator: Optional[Union[TokenAuthenticator, AirtableOAuth]] = None,
@@ -38,13 +39,5 @@ class AirtableErrorHandler(HttpStatusErrorHandler):
                 error_message = "Access Token does not have required permissions, please reauthenticate."
 
             return ErrorResolution(response_action=ResponseAction.FAIL, failure_type=FailureType.config_error, error_message=error_message)
-        elif isinstance(response_or_exception, requests.Response) and (
-            response_or_exception.status_code == 403 or response_or_exception.status_code == 422
-        ):
-            return ErrorResolution(
-                response_action=ResponseAction.FAIL,
-                failure_type=FailureType.config_error,
-                error_message="Permission denied or entity is unprocessable.",
-            )
         else:
             return super().interpret_response(response_or_exception)
