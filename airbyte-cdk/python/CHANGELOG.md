@@ -1,5 +1,47 @@
 # Changelog
 
+## 3.5.1
+Remove 3.11-style union
+
+## 3.5.0
+Clean invalid fields from configured catalog
+
+## 3.4.1
+resumable full refresh: Fix bug where checkpoint reader stops syncing too early if first partition is complete
+
+## 3.4.0
+file-based cdk: add config option to limit number of files for schema discover
+
+## 3.3.0
+CDK: add incomplete status to availability check during read
+
+## 3.2.1
+CDK: flush buffer for each RATE_LIMITED message print
+
+## 3.2.0
+CDK: add running stream status with rate limit reason to backoff approach
+
+## 3.1.0
+CDK: add incomplete stream status to nonexistent stream handling
+
+## 3.0.0
+Integrate HttpClient into HttpStream class. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
+
+## 2.4.0
+CDK: Add support for input format parsing at jinja macro format_datetime
+
+## 2.3.1
+
+
+## 2.3.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
+## 2.2.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
+## 2.1.0
+Add with_json_schema method to ConfiguredAirbyteStreamBuilder
+
 ## 2.0.0
 Update  dependency to pydantic v2, and  dependency to pydantic v2 models. See [migration guide](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/cdk-migrations.md) for more details.
 

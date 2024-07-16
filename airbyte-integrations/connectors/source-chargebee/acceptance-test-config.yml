@@ -40,6 +40,8 @@ acceptance_tests:
             bypass_reason: "Tested with mocker server tests."
           - name: "hosted_page"
             bypass_reason: "Tested with mocker server tests."
+          - name: subscription_with_scheduled_changes
+            bypass_reason: "Tested with mocker server tests."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
@@ -58,6 +60,8 @@ acceptance_tests:
             - name: quote_line_group
               bypass_reason: "This stream is Full-Refresh only"
             - name: attached_item
+              bypass_reason: "This stream is Full-Refresh only"
+            - name: subscription_with_scheduled_changes
               bypass_reason: "This stream is Full-Refresh only"
   full_refresh:
     tests:
