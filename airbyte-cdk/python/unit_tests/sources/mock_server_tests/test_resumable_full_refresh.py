@@ -238,4 +238,4 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         assert actual_messages.errors[0].trace.error.failure_type == FailureType.system_error
         assert actual_messages.errors[0].trace.error.stream_descriptor.name == "justice_songs"
-        assert "400" in actual_messages.errors[0].trace.error.internal_message
+        assert "Bad request" in actual_messages.errors[0].trace.error.message
