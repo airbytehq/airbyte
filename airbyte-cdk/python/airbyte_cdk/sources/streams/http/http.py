@@ -9,7 +9,8 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 from urllib.parse import urljoin
 
 import requests
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget
@@ -18,6 +19,7 @@ from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabil
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
+from airbyte_cdk.sources.types import Record
 from airbyte_cdk.sources.utils.types import JsonType
 from deprecated import deprecated
 from requests.auth import AuthBase
@@ -380,19 +382,18 @@ class HttpSubStream(HttpStream, ABC):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
-        )
-
-        # iterate over all parent stream_slices
-        for stream_slice in parent_stream_slices:
-            parent_records = self.parent.read_records(
-                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-
-            # iterate over all parent records with current stream_slice
-            for record in parent_records:
-                yield {"parent": record}
+        # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
+        # not support either substreams or RFR, but something that needs to be considered once we do
+        for parent_record in self.parent.read_only_records(stream_state):
+            # Skip non-records (eg AirbyteLogMessage)
+            if isinstance(parent_record, AirbyteMessage):
+                if parent_record.type == MessageType.RECORD:
+                    parent_record = parent_record.record.data
+                else:
+                    continue
+            elif isinstance(parent_record, Record):
+                parent_record = parent_record.data
+            yield {"parent": parent_record}
 
 
 @deprecated(version="3.0.0", reason="You should set backoff_strategies explicitly in HttpStream.get_backoff_strategy() instead.")
