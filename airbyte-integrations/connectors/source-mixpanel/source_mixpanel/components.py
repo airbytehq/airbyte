@@ -57,11 +57,11 @@ class MixpanelHttpRequester(HttpRequester):
         """
         next_page_token = None  # reset it, pagination data is in extra_params
         if extra_params:
-            page = extra_params.pop("page", {})  # type: ignore[attr-defined]
-            extra_params.update(page)  # type: ignore[attr-defined]
-        return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)  # type: ignore[no-any-return]
+            page = extra_params.pop("page", {})
+            extra_params.update(page)
+        return super()._request_params(stream_state, stream_slice, next_page_token, extra_params)
 
-    def send_request(self, **kwargs: Any) -> Optional[requests.Response]:
+    def send_request(self, **kwargs) -> Optional[requests.Response]:
 
         if self.reqs_per_hour_limit:
             if self.is_first_request:
@@ -75,7 +75,7 @@ class MixpanelHttpRequester(HttpRequester):
                 )
                 time.sleep(3600 / self.reqs_per_hour_limit)
 
-        return super().send_request(**kwargs)  # type: ignore[no-any-return]
+        return super().send_request(**kwargs)
 
 
 class AnnotationsHttpRequester(MixpanelHttpRequester):
@@ -111,10 +111,10 @@ class EngagesHttpRequester(MixpanelHttpRequester):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if "start_time" in stream_slice:  # type: ignore[operator]
-            params["where"] = f'properties["$last_seen"] >= "{stream_slice["start_time"]}"'  # type: ignore[index]
+        if "start_time" in stream_slice:
+            params["where"] = f'properties["$last_seen"] >= "{stream_slice["start_time"]}"'
         elif "start_date" in self.config:
-            params["where"] = f'properties["$last_seen"] >= "{self.config["start_date"]}"'  # type: ignore[index]
+            params["where"] = f'properties["$last_seen"] >= "{self.config["start_date"]}"'
         return params
 
 
@@ -126,7 +126,7 @@ class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         # https://developer.mixpanel.com/reference/engage-query
-        cohort_id = stream_slice["id"]  # type: ignore[index]
+        cohort_id = stream_slice["id"]
         return {"filter_by_cohort": f'{{"id":{cohort_id}}}'}
 
 
@@ -184,7 +184,7 @@ class RevenueDpathExtractor(DpathExtractor):
             'status': 'ok'
         }
         """
-        new_records: List[Mapping[str, Any]] = []
+        new_records = []
         for record in super().extract_records(response):
             for date_entry in record:
                 if date_entry != "$overall":
@@ -215,7 +215,7 @@ class FunnelsDpathExtractor(DpathExtractor):
             'status': 'ok'
         }
         """
-        new_records: List[Mapping[str, Any]] = []
+        new_records = []
         for record in super().extract_records(response):
             for date_entry in record:
                 list.append(new_records, {"date": date_entry, **record[date_entry]})
@@ -275,15 +275,14 @@ class EngagePaginationStrategy(PageIncrement):
     page - incremental page number
     """
 
-    _total: Optional[int] = 0
+    _total = 0
 
-    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
+    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
         Determines page and subpage numbers for the `items` stream
 
         Attributes:
             response: Contains `boards` and corresponding lists of `items` for each `board`
-            last_page_size: the number of records read from the response
             last_records: Parsed `items` from the response
         """
         decoded_response = response.json()
@@ -308,8 +307,8 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
 
     schema: Mapping[str, Any]
 
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        if not self.file_path:  # type: ignore[has-type]
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        if not self.file_path:
             self.file_path = _default_file_path()
         self.file_path = InterpolatedString.create(self.file_path, parameters=parameters)
         self.schema = {}
@@ -357,4 +356,4 @@ class EngageJsonFileSchemaLoader(JsonFileSchemaLoader):
             if property_name not in schema["properties"]:
                 schema["properties"][property_name] = types.get(property_type, {"type": ["null", "string"]})
         self.schema = schema
-        return schema  # type: ignore[no-any-return]
+        return schema

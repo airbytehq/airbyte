@@ -3,13 +3,12 @@
 #
 
 import re
-from typing import Any, Dict, Iterable, List, Mapping, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 
 
-def read_full_refresh(stream_instance: Stream) -> Iterable[Mapping[str, Any]]:
+def read_full_refresh(stream_instance: Stream):
     slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
     for _slice in slices:
         records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
@@ -39,7 +38,7 @@ def to_iso_format(s: str) -> str:
     return s
 
 
-def fix_date_time(record: Union[Mapping[str, Any], Dict[str, Any], List[Any]]) -> None:
+def fix_date_time(record):
     """
     Recursively process a data structure to fix date and time formats.
 
@@ -62,5 +61,3 @@ def fix_date_time(record: Union[Mapping[str, Any], Dict[str, Any], List[Any]]) -
     elif isinstance(record, list):
         for entry in record:
             fix_date_time(entry)
-
-    return None
