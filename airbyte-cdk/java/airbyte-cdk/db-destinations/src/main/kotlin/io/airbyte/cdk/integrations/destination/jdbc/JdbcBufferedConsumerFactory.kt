@@ -63,16 +63,24 @@ object JdbcBufferedConsumerFactory {
         optimalBatchSizeBytes: Long = DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
         parsedCatalog: ParsedCatalog,
     ): SerializedAirbyteMessageConsumer {
-        val writeConfigs =
-            createWriteConfigs(
-                namingResolver,
-                config,
-                sqlOperations.isSchemaRequired,
-                parsedCatalog
+        if (sqlOperations.isSchemaRequired) {
+            Preconditions.checkState(
+                config.has("schema"),
+                "jdbc destinations must specify a schema."
             )
+        }
+        val writeConfigs = mutableListOf<WriteConfig>()
+
         return AsyncStreamConsumer(
             outputRecordCollector,
-            onStartFunction(database, sqlOperations, writeConfigs, typerDeduper),
+            onStartFunction(
+                database,
+                sqlOperations,
+                writeConfigs,
+                typerDeduper,
+                namingResolver,
+                parsedCatalog
+            ),
             onCloseFunction(typerDeduper),
             JdbcInsertFlushFunction(
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
@@ -88,16 +96,8 @@ object JdbcBufferedConsumerFactory {
 
     private fun createWriteConfigs(
         namingResolver: NamingConventionTransformer,
-        config: JsonNode,
-        schemaRequired: Boolean,
         parsedCatalog: ParsedCatalog,
     ): List<WriteConfig> {
-        if (schemaRequired) {
-            Preconditions.checkState(
-                config.has("schema"),
-                "jdbc destinations must specify a schema."
-            )
-        }
         return parsedCatalog.streams
             .map { parsedStreamToWriteConfig(namingResolver, rawTableSuffix = "").apply(it) }
             .toList()
@@ -145,11 +145,14 @@ object JdbcBufferedConsumerFactory {
     private fun onStartFunction(
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
-        writeConfigs: Collection<WriteConfig>,
-        typerDeduper: TyperDeduper
+        writeConfigs: MutableList<WriteConfig>,
+        typerDeduper: TyperDeduper,
+        namingResolver: NamingConventionTransformer,
+        parsedCatalog: ParsedCatalog,
     ): OnStartFunction {
         return OnStartFunction {
             typerDeduper.prepareSchemasAndRunMigrations()
+            writeConfigs.addAll(createWriteConfigs(namingResolver, parsedCatalog))
             LOGGER.info {
                 "Preparing raw tables in destination started for ${writeConfigs.size} streams"
             }
@@ -198,12 +201,16 @@ object JdbcBufferedConsumerFactory {
         writeConfigs: List<WriteConfig>,
         catalog: ConfiguredAirbyteCatalog,
     ): RecordWriter<PartialAirbyteMessage> {
-        val pairToWriteConfig: Map<AirbyteStreamNameNamespacePair, WriteConfig> =
-            writeConfigs.associateBy { toNameNamespacePair(it) }
+        var pairToWriteConfig: Map<AirbyteStreamNameNamespacePair, WriteConfig> = emptyMap()
 
         return RecordWriter {
             pair: AirbyteStreamNameNamespacePair,
             records: List<PartialAirbyteMessage> ->
+            if (!pairToWriteConfig.containsKey(pair)) {
+                synchronized(JdbcBufferedConsumerFactory) {
+                    pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it) }
+                }
+            }
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(
                     "Message contained record from a stream that was not in the catalog. \ncatalog: %s, \nstream identifier: %s\nkeys: %s",
