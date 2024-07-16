@@ -532,6 +532,13 @@ class Action(Enum):
     FAIL = 'FAIL'
     RETRY = 'RETRY'
     IGNORE = 'IGNORE'
+    RATE_LIMITED = 'RATE_LIMITED'
+
+
+class FailureType(Enum):
+    system_error = 'system_error'
+    config_error = 'config_error'
+    transient_error = 'transient_error'
 
 
 class HttpResponseFilter(BaseModel):
@@ -539,8 +546,14 @@ class HttpResponseFilter(BaseModel):
     action: Optional[Action] = Field(
         None,
         description='Action to execute if a response matches the filter.',
-        examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE'],
+        examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE', 'RATE_LIMITED'],
         title='Action',
+    )
+    failure_type: Optional[FailureType] = Field(
+        None,
+        description='Failure type of traced exception if a response matches the filter.',
+        examples=['system_error', 'config_error', 'transient_error'],
+        title='Failure Type',
     )
     error_message: Optional[str] = Field(
         None,

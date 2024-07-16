@@ -9,7 +9,7 @@ import inspect
 import re
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.jwt import JwtAlgorithm
@@ -818,12 +818,16 @@ class ModelToComponentFactory:
             action = ResponseAction(model.action.value)
         else:
             action = None
+
+        failure_type = FailureType(model.failure_type.value) if model.failure_type else None
+
         http_codes = (
             set(model.http_codes) if model.http_codes else set()
         )  # JSON schema notation has no set data type. The schema enforces an array of unique elements
 
         return HttpResponseFilter(
             action=action,
+            failure_type=failure_type,
             error_message=model.error_message or "",
             error_message_contains=model.error_message_contains or "",
             http_codes=http_codes,
