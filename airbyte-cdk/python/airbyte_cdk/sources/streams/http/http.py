@@ -430,35 +430,43 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, Exception):
             return super().interpret_response(response_or_exception)
-        should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
-        if should_retry:
-            if response_or_exception.status_code == 429:  # type: ignore[union-attr]
+        elif isinstance(response_or_exception, requests.Response):
+            should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
+            if should_retry:
+                if response_or_exception.status_code == 429:
+                    return ErrorResolution(
+                        response_action=ResponseAction.RATE_LIMITED,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    )
                 return ErrorResolution(
-                    response_action=ResponseAction.RATE_LIMITED,
+                    response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
                     error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
                 )
-            return ErrorResolution(
-                response_action=ResponseAction.RETRY,
-                failure_type=FailureType.transient_error,
-                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
-            )
-        else:
-            if response_or_exception.ok:  # type: ignore # noqa
-                return ErrorResolution(
-                    response_action=ResponseAction.SUCCESS,
-                    failure_type=None,
-                    error_message=None,
-                )
-            if self.stream.raise_on_http_errors:
-                return ErrorResolution(
-                    response_action=ResponseAction.FAIL,
-                    failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
-                )
             else:
-                return ErrorResolution(
-                    response_action=ResponseAction.IGNORE,
-                    failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
-                )
+                if response_or_exception.ok:  # type: ignore # noqa
+                    return ErrorResolution(
+                        response_action=ResponseAction.SUCCESS,
+                        failure_type=None,
+                        error_message=None,
+                    )
+                if self.stream.raise_on_http_errors:
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
+                    )
+                else:
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
+                    )
+        else:
+            self._logger.error(f"Received unexpected response type: {type(response_or_exception)}")
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message=f"Received unexpected response type: {type(response_or_exception)}",
+            )

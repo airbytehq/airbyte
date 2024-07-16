@@ -62,7 +62,7 @@ class DeclarativeStream(Stream):
 
     @property
     def exit_on_rate_limit(self) -> bool:
-        return self.retriever.requester.exit_on_rate_limit  # type: ignore
+        return self.retriever.requester.exit_on_rate_limit  # type: ignore # abstract Retriever class has not requester attribute
 
     @exit_on_rate_limit.setter
     def exit_on_rate_limit(self, value: bool) -> None:
