@@ -50,8 +50,8 @@ brew upgrade abctl
 
 **1: Download the latest release of `abctl`.**
 
-<a class="abctl-download button button--primary disabled" data-architecture="linux-amd64" href="#" style={{ marginRight: '10px' }} download>Loading...</a>
-<a class="abctl-download button button--primary disabled" data-architecture="linux-arm64" href="#" download>Loading...</a>
+<a class="abctl-download button button--primary" data-architecture="linux-amd64" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" style={{ marginRight: '10px' }} download>Latest linux-amd64 Release</a>
+<a class="abctl-download button button--primary" data-architecture="linux-arm64" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest linux-arm64 Release</a>
 <br/>
 <br/>
 
@@ -108,7 +108,7 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 
 **1: Download the latest release of `abctl`.**
 
-<a class="abctl-download button button--primary disabled" data-architecture="windows-amd64" href="#" download>Loading...</a>
+<a class="abctl-download button button--primary" data-architecture="windows-amd64" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest windows-amd64 Release</a>
 <br/>
 <br/>
 
