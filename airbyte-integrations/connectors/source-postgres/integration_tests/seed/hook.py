@@ -21,6 +21,7 @@ abnormal_state_write_file = "/connector/integration_tests/abnormal_state_copy.js
 abnormal_state_file = "/connector/integration_tests/abnormal_state.json"
 
 secret_config_file = '/connector/secrets/config.json'
+secret_config_cdc_file = '/connector/secrets/config_cdc.json'
 
 def connect_to_db():
     f = open(secret_config_file)
@@ -46,7 +47,7 @@ def insert_records(connection, schema_name, table_name, records):
         cursor = connection.cursor()
         insert_query = sql.SQL("""
             INSERT INTO {}.{} (id, name)
-            VALUES (%s, %s)
+            VALUES (%s, %s) ON CONFLICT DO NOTHING
         """).format(sql.Identifier(schema_name), sql.Identifier(table_name))
 
         for record in records:
@@ -95,6 +96,39 @@ def write_supporting_file(schema_name):
       secret["schemas"] = [schema_name]
       with open(secret_config_file, 'w') as f:
         json.dump(secret, f)
+    with open(secret_config_cdc_file) as base_config:
+        secret = json.load(base_config)
+        secret["schemas"] = [schema_name]
+        secret["replication_method"]["replication_slot"] = schema_name
+        secret["replication_method"]["publication"] = schema_name
+
+        with open(secret_config_cdc_file, 'w') as f:
+            json.dump(secret, f)
+
+def replication_slot_existed(connection, replication_slot_name):
+    cursor = connection.cursor()
+    cursor.execute("SELECT slot_name FROM pg_replication_slots;")
+    # Fetch all results
+    slots = cursor.fetchall()
+    for slot in slots:
+        if slot[0] == replication_slot_name:
+            return True
+
+    return False
+
+# will reuse schema name as replication slot name.
+def setup_cdc(connection, replication_slot_and_publication_name):
+    cursor = connection.cursor()
+    if replication_slot_existed(connection, replication_slot_and_publication_name):
+        return
+    create_logical_replication_query = sql.SQL("SELECT pg_create_logical_replication_slot({}, 'pgoutput')").format(sql.Literal(replication_slot_and_publication_name))
+    cursor.execute(create_logical_replication_query)
+    alter_table_replica_query = sql.SQL("ALTER TABLE {}.id_and_name_hook REPLICA IDENTITY DEFAULT").format(sql.Identifier(replication_slot_and_publication_name))
+    cursor.execute(alter_table_replica_query)
+    create_publication_query = sql.SQL("CREATE PUBLICATION {} FOR TABLE {}.id_and_name_hook").format(sql.Identifier(replication_slot_and_publication_name), sql.Identifier(replication_slot_and_publication_name))
+    cursor.execute(create_publication_query)
+    connection.commit()
+
 
 def create_table(connection, schema_name, table_name):
     try:
@@ -119,15 +153,27 @@ def create_table(connection, schema_name, table_name):
 
 def generate_schema_date_with_suffix():
     current_date = datetime.datetime.now().strftime("%Y%m%d")
-    suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-    return f"{current_date}-{suffix}"
+    suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    return f"{current_date}_{suffix}"
 
 def prepare():
     schema_name = generate_schema_date_with_suffix()
     with open("./generated_schema.txt", "w") as f:
         f.write(schema_name)
 
-def setup():
+def cdc_insert():
+    schema_name = load_schema_name_from_catalog()
+    new_records = [
+        ('4', 'four'),
+        ('5', 'five')
+    ]
+    connection = connect_to_db()
+    table_name = 'id_and_name_hook'
+    if connection:
+        insert_records(connection, schema_name, table_name, new_records)
+        connection.close()
+
+def setup(with_cdc=False):
     schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
     table_name = "id_and_name_hook"
@@ -143,6 +189,8 @@ def setup():
     connection = connect_to_db()
 
     if connection:
+        if (with_cdc):
+            setup_cdc(connection, replication_slot_and_publication_name=schema_name)
         # Create the schema
         create_schema(connection, schema_name)
         create_table(connection, schema_name, table_name)
@@ -205,8 +253,12 @@ def teardown():
 if __name__ == "__main__":
     command = sys.argv[1]
     if command == "setup":
-        setup()
+        setup(with_cdc=False)
+    if command == "setup_cdc":
+        setup(with_cdc=True)
     elif command == "teardown":
         teardown()
     elif command == "prepare":
         prepare()
+    elif command == "insert":
+        cdc_insert()

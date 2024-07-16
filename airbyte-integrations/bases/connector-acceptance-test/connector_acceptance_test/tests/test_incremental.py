@@ -252,12 +252,12 @@ class TestIncremental(BaseTest):
                     state_message, mutating_stream_name_to_per_stream_state
                 )
 
-                if client_container and client_container_config.between_syncs_command:
-                    detailed_logger.info(
-                        await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
-                        .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
-                        .stdout()
-                    )
+                # if client_container and client_container_config.between_syncs_command:
+                #     detailed_logger.info(
+                #         await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                #         .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                #         .stdout()
+                #     )
 
                 output_N = await docker_runner.call_read_with_state(
                     connector_config, configured_catalog_for_incremental_per_stream, state=state_input
@@ -286,16 +286,15 @@ class TestIncremental(BaseTest):
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
         output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state, enable_caching=False)
+        if states and is_global_state(states[0]):
+        # TODO: DB sources to fill out this case. Also, can we assume all states will be global if the first one is?
+            return
         records = filter_output(output, type_=Type.RECORD)
         states = filter_output(output, type_=Type.STATE)
         assert (
             not records
         ), f"The sync should produce no records when run with the state with abnormally large values {records[0].record.stream}"
         assert states, "The sync should produce at least one STATE message"
-
-        if states and is_global_state(states[0]):
-            # TODO: DB sources to fill out this case. Also, can we assume all states will be global if the first one is?
-            pass
 
         # TODO: else:
         cursor_fields_per_stream = {

@@ -74,5 +74,27 @@ acceptance_tests:
             - "python"
             - "./hook.py"
             - "teardown"
+          between_syncs_command:
+            - "python"
+            - "./hook.py"
+            - "insert"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state_copy.json"
+      - config_path: "secrets/config_cdc.json"
+        configured_catalog_path: "integration_tests/incremental_configured_catalog_copy.json"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup_cdc"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
+          between_syncs_command:
+            - "python"
+            - "./hook.py"
+            - "insert"
         future_state:
           future_state_path: "integration_tests/abnormal_state_copy.json"
