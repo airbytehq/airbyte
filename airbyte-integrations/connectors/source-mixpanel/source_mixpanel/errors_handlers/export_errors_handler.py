@@ -37,6 +37,6 @@ class ExportErrorHandler(MixpanelStreamErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
                 )
         return super().interpret_response(response_or_exception)
