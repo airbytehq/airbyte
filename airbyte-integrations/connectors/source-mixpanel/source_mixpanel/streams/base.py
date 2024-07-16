@@ -12,7 +12,6 @@ import requests
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from pendulum import Date
 from requests.auth import AuthBase
 from source_mixpanel.backoff_strategy import MixpanelStreamBackoffStrategy
@@ -113,16 +112,11 @@ class MixpanelStream(HttpStream, ABC):
             self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
             time.sleep(3600 / self.reqs_per_hour_limit)
 
-    @property
-    def max_retries(self) -> Union[int, None]:
-        # we want to limit the max sleeping time by 2^3 * 60 = 8 minutes
-        return 3
-
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         return MixpanelStreamBackoffStrategy(stream=self)
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        return MixpanelStreamErrorHandler(logger=self.logger, max_retries=self.max_retries, error_mapping=DEFAULT_ERROR_MAPPING)
+        return MixpanelStreamErrorHandler(logger=self.logger)
 
     def get_stream_params(self) -> Mapping[str, Any]:
         """

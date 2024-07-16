@@ -10,7 +10,6 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_mixpanel.errors_handlers import ExportErrorHandler
 from source_mixpanel.property_transformation import transform_property_names
@@ -92,7 +91,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         return "export"
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        return ExportErrorHandler(logger=self.logger, max_retries=self.max_retries, error_mapping=DEFAULT_ERROR_MAPPING, stream=self)
+        return ExportErrorHandler(logger=self.logger, stream=self)
 
     def iter_dicts(self, lines):
         """
