@@ -141,7 +141,6 @@ class AbstractSource(Source, ABC):
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.COMPLETE)
 
                 except Exception as e:
-                    print(e)
                     yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
