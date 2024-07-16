@@ -814,12 +814,6 @@ def product_images_response_expected_result():
             "product_id": 456,
             "shop_url": "test_shop",
         },
-        {
-            "created_at": "2024-06-12T23:41:27+00:00",
-            "updated_at": "2024-06-12T23:41:28+00:00",
-            "image": None,
-            "shop_url": "test_shop"
-        },
     ]
 
 

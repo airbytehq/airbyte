@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!Dockerfile.test
-!main.py
-!source_zendesk_support
-!setup.py
-!secrets
