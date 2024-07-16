@@ -493,18 +493,14 @@ definitions:
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
-              - type: ParentStreamConfig
+              - stream: "#/definitions/streams/Flows"
                 parent_key: sid
                 partition_field: flow_sid
-                stream:
-                  $ref: "#/definitions/streams/Flows"
           - type: SubstreamPartitionRouter
             parent_stream_configs:
-              - type: ParentStreamConfig
+              - stream: "#/definitions/streams/Executions"
                 parent_key: sid
                 partition_field: execution_sid
-                stream:
-                  $ref: "#/definitions/streams/Executions"
       transformations:
         - type: AddFields
           fields:
