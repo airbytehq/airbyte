@@ -1625,7 +1625,7 @@ class ProjectCards(GithubStream):
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
-                self.state = self._get_updated_state(self.state, record)  # type: ignore[has-type]
+                self.state = self._get_updated_state(self.state, record)
 
     def get_starting_point(
         self, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None
@@ -1687,7 +1687,7 @@ class Workflows(SemiIncrementalMixin, GithubStream):
     ) -> Iterable[Mapping[str, Any]]:
         response = response.json().get("workflows")
         for record in response:
-            yield self.transform(record=record, stream_slice=stream_slice)  # type: ignore[arg-type]
+            yield self.transform(record=record, stream_slice=stream_slice)
 
     def convert_cursor_value(self, value: Union[str, pendulum.DateTime]) -> Union[str, Any]:
         return pendulum.parse(value).in_tz(tz="UTC").format("YYYY-MM-DDTHH:mm:ss[Z]")
@@ -1723,7 +1723,7 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     ) -> Iterable[Mapping[str, Any]]:
         response = response.json().get("workflow_runs")
         for record in response:
-            yield record  # type: ignore[misc]
+            yield record
 
     def read_records(
         self,
@@ -1994,7 +1994,7 @@ class IssueTimelineEvents(GithubStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> str:
-        return f"repos/{stream_slice.get('repository')}/issues/{stream_slice.get('number')}/timeline"  # type: ignore[union-attr]
+        return f"repos/{stream_slice.get('repository')}/issues/{stream_slice.get('number')}/timeline"
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
