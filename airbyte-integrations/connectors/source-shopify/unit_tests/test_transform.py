@@ -125,7 +125,7 @@ def test_enforcer_correct_type(transform_object, schema, checks):
                     "path": [
                         "total_discounts",
                     ],
-                    "expected_type": Decimal,
+                    "expected_type": float,
                 },
             ],
         ),
@@ -144,7 +144,7 @@ def test_enforcer_correct_type(transform_object, schema, checks):
                     "path": [
                         "total_price",
                     ],
-                    "expected_type": Decimal,
+                    "expected_type": float,
                 },
             ],
         ),
@@ -168,7 +168,7 @@ def test_enforcer_string_to_number(transform_object, schema, checks):
                 },
             },
             [
-                {"path": ["customer", "total_spent"], "expected_type": Decimal},
+                {"path": ["customer", "total_spent"], "expected_type": float},
             ],
         )
     ],
@@ -194,7 +194,7 @@ def test_enforcer_nested_object(transform_object, schema, checks):
                 },
             },
             [
-                {"path": ["shipping_lines", 0, "price"], "expected_type": Decimal},
+                {"path": ["shipping_lines", 0, "price"], "expected_type": float},
             ],
         ),
         (
@@ -219,7 +219,7 @@ def test_enforcer_nested_object(transform_object, schema, checks):
                 },
             },
             [
-                {"path": ["line_items", 0, "line_price"], "expected_type": Decimal},
+                {"path": ["line_items", 0, "line_price"], "expected_type": float},
             ],
         ),
     ],
@@ -247,8 +247,8 @@ def test_enforcer_nested_array(transform_object, schema, checks):
                 },
             },
             [
-                {"path": ["line_items", 0], "expected_type": Decimal},
-                {"path": ["line_items", 1], "expected_type": Decimal},
+                {"path": ["line_items", 0], "expected_type": float},
+                {"path": ["line_items", 1], "expected_type": float},
             ],
         ),
     ],

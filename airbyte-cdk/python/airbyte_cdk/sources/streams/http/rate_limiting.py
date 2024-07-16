@@ -107,7 +107,7 @@ def user_defined_backoff_handler(
     def log_give_up(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, RequestException):
-            logger.error(f"Max retry limit reached. Request: {exc.request}, Response: {exc.response}")
+            logger.error(f"Max retry limit reached in {details['elapsed']}s. Request: {exc.request}, Response: {exc.response}")
         else:
             logger.error("Max retry limit reached for unknown request and response")
 

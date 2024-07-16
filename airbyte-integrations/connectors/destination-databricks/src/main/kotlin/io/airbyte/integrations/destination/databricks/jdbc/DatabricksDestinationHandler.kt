@@ -6,8 +6,13 @@ package io.airbyte.integrations.destination.databricks.jdbc
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_META
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.STRING
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
@@ -29,14 +34,12 @@ import java.util.*
 import kotlin.streams.asSequence
 
 class DatabricksDestinationHandler(
+    private val sqlGenerator: DatabricksSqlGenerator,
     private val databaseName: String,
     private val jdbcDatabase: JdbcDatabase,
 ) : DestinationHandler<MinimumDestinationState.Impl> {
 
     private val log = KotlinLogging.logger {}
-    private val abRawId = DatabricksSqlGenerator.AB_RAW_ID
-    private val abExtractedAt = DatabricksSqlGenerator.AB_EXTRACTED_AT
-    private val abMeta = DatabricksSqlGenerator.AB_META
 
     override fun execute(sql: Sql) {
         val transactions: List<List<String>> = sql.transactions
@@ -111,6 +114,13 @@ class DatabricksDestinationHandler(
             .toList()
     }
 
+    override fun createNamespaces(schemas: Set<String>) {
+        for (schema in schemas) {
+            // TODO: Optimize by running SHOW SCHEMAS; rather than CREATE SCHEMA if not exists
+            execute(sqlGenerator.createSchema(schema))
+        }
+    }
+
     private fun findExistingTable(
         streamIds: List<StreamId>
     ): Map<String, LinkedHashMap<String, TableDefinition>> {
@@ -161,18 +171,23 @@ class DatabricksDestinationHandler(
         tableDefinition: TableDefinition
     ): Boolean {
         val isAbRawIdMatch =
-            tableDefinition.columns.contains(abRawId) &&
+            tableDefinition.columns.contains(COLUMN_NAME_AB_RAW_ID) &&
                 DatabricksSqlGenerator.toDialectType(STRING) ==
-                    tableDefinition.columns[abRawId]?.type
+                    tableDefinition.columns[COLUMN_NAME_AB_RAW_ID]?.type
         val isAbExtractedAtMatch =
-            tableDefinition.columns.contains(abExtractedAt) &&
+            tableDefinition.columns.contains(COLUMN_NAME_AB_EXTRACTED_AT) &&
                 DatabricksSqlGenerator.toDialectType(TIMESTAMP_WITH_TIMEZONE) ==
-                    tableDefinition.columns[abExtractedAt]?.type
+                    tableDefinition.columns[COLUMN_NAME_AB_EXTRACTED_AT]?.type
         val isAbMetaMatch =
-            tableDefinition.columns.contains(abMeta) &&
+            tableDefinition.columns.contains(COLUMN_NAME_AB_META) &&
                 DatabricksSqlGenerator.toDialectType(STRING) ==
-                    tableDefinition.columns[abMeta]?.type
-        if (!isAbRawIdMatch || !isAbExtractedAtMatch || !isAbMetaMatch) return false
+                    tableDefinition.columns[COLUMN_NAME_AB_META]?.type
+        val isAbGenerationMatch =
+            tableDefinition.columns.contains(COLUMN_NAME_AB_GENERATION_ID) &&
+                DatabricksSqlGenerator.toDialectType(AirbyteProtocolType.INTEGER) ==
+                    tableDefinition.columns[COLUMN_NAME_AB_GENERATION_ID]?.type
+        if (!isAbRawIdMatch || !isAbExtractedAtMatch || !isAbMetaMatch || !isAbGenerationMatch)
+            return false
 
         val expectedColumns =
             streamConfig.columns.entries.associate {
@@ -180,9 +195,14 @@ class DatabricksDestinationHandler(
             }
         val actualColumns =
             tableDefinition.columns.entries
-                .filter { (it.key != abRawId && it.key != abExtractedAt && it.key != abMeta) }
+                .filter {
+                    (it.key != COLUMN_NAME_AB_RAW_ID &&
+                        it.key != COLUMN_NAME_AB_EXTRACTED_AT &&
+                        it.key != COLUMN_NAME_AB_META &&
+                        it.key != COLUMN_NAME_AB_GENERATION_ID)
+                }
                 .associate {
-                    it.key!! to if (it.value.type != "DECIMAL") it.value.type else "DECIMAL(38, 10)"
+                    it.key to if (it.value.type != "DECIMAL") it.value.type else "DECIMAL(38, 10)"
                 }
         return actualColumns == expectedColumns
     }
@@ -221,7 +241,7 @@ class DatabricksDestinationHandler(
                 // Handle resultset call in the function which will be closed
                 // after the scope is exited
                 val resultSet =
-                    metadata?.getTables(
+                    metadata.getTables(
                         databaseName,
                         id.rawNamespace,
                         id.rawName,
@@ -241,13 +261,13 @@ class DatabricksDestinationHandler(
 
         val minExtractedAtLoadedNotNullQuery =
             """
-            |SELECT min(`${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT}`) as last_loaded_at
+            |SELECT min(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
             |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE)}
             |WHERE ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} IS NULL
             |""".trimMargin()
         val maxExtractedAtQuery =
             """
-            |SELECT max(`${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT}`) as last_loaded_at
+            |SELECT max(`$COLUMN_NAME_AB_EXTRACTED_AT`) as last_loaded_at
             |FROM $databaseName.${id.rawTableId(DatabricksSqlGenerator.QUOTE)}
         """.trimMargin()
 

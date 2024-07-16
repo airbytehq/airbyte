@@ -10,6 +10,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "subscription_with_scheduled_changes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
       "stream_descriptor": { "name": "coupon" }
     }
   },

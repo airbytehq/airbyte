@@ -97,7 +97,7 @@ class JinjaInterpolation(Interpolation):
                     return self._literal_eval(result, valid_types)
             else:
                 # If input is not a string, return it as is
-                raise Exception(f"Expected a string. got {input_str}")
+                raise Exception(f"Expected a string, got {input_str}")
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
