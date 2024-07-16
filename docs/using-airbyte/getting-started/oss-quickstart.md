@@ -15,11 +15,15 @@ If you're getting started with Airbyte Cloud, you can skip ahead to moving data 
 
 This quickstart guides you through creating a locally deployed instance of Airbyte in just minutes using `abctl` ([Airbyte Command Line Tool](https://github.com/airbytehq/abctl)). You'll be able to move data with minimal setup while you're exploring what Airbyte can do!
 
+If you've already set up an Airbyte instance using Docker Compose and want to move to abctl, see the section on [migrating from Docker Compose](#migrating-from-docker-compose-optional).
+
 :::tip
 **When you're ready to put an Airbyte instance into production, you'll want to review our guides on deployment.**
 
-For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/on-kubernetes-via-helm.md). 
+For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/deploying-airbyte.md). 
 :::
+
+If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../pyairbyte/getting-started.mdx) documentation useful.
 
 ## Prerequisites
 
@@ -48,11 +52,16 @@ brew upgrade abctl
 </TabItem>
 <TabItem value="abctl-linux" label="Linux" default>
 
-**1: Download the latest release of `abctl` [here](https://github.com/airbytehq/abctl/releases)**
+**1: Download the latest release of `abctl`.**
+
+<a class="abctl-download button button--primary" data-architecture="linux-amd64" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" style={{ marginRight: '10px' }} download>Latest linux-amd64 Release</a>
+<a class="abctl-download button button--primary" data-architecture="linux-arm64" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest linux-arm64 Release</a>
+<br/>
+<br/>
 
 :::info
-Be sure to download the file that is compatible with your machine's processor architecture. 
-:::
+<details>
+<summary>Be sure to download the file that is compatible with your machine's processor architecture.</summary>
 
 You'll see two options: `linux-amd64` and `linux-arm64`
 If you're unsure which one you need, running the following command will help:
@@ -63,6 +72,8 @@ uname -m
 
 - If the output is `x86_64`, you have an x86-64 processor.
 - If the output is `aarch64` or something similar, you have an ARM-based processor.
+</details>
+:::
 
 **2: Extract the archive**
 
@@ -99,7 +110,11 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 </TabItem>
 <TabItem value="abctl-windows" label="Windows" default>
 
-**1: Download the latest release of `abctl` [here](https://github.com/airbytehq/abctl/releases)**
+**1: Download the latest release of `abctl`.**
+
+<a class="abctl-download button button--primary" data-architecture="windows-amd64" href="https://github.com/airbytehq/abctl/releases/latest" target="_blank" download>Latest windows-amd64 Release</a>
+<br/>
+<br/>
 
 **2: Extract the archive**
 - Right click the zip file you've downloaded and select `Extract All...`, then choose a destination folder. 
@@ -192,7 +207,11 @@ curl -LsfS https://get.airbyte.com | bash -
 abctl local install --migrate
 ```
 
+:::note
 
+If you're using a version of Airbyte that you've installed with `abctl`, you can find instructions on upgrading your Airbyte installation [here](../../operator-guides/upgrading-airbyte.md#upgrading-with-abctl). 
+
+:::
 
 ## Troubleshooting
 
@@ -211,3 +230,5 @@ On Udemy, [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/
 
 **Bug Reports:**<br/>If you find an issue with the `abctl` command, please report it as a github
 issue [here](https://github.com/airbytehq/airbyte/issues) with the type of `🐛 [abctl] Report an issue with the abctl tool`.
+
+**Releases:**<br/>If you'd like to select which release of abctl to run, you can find the list of releases [here](https://github.com/airbytehq/abctl/releases/).
