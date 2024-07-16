@@ -456,6 +456,8 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     SLICE_DEBUG_LOG_COUNT = 1
     TRACE_STATUS_COUNT = 3
     STATE_COUNT = 1
+    # Read operation has an extra get_json_schema call when filtering invalid fields
+    GET_JSON_SCHEMA_COUNT_WHEN_FILTERING = 1
     logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
@@ -465,8 +467,8 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 * (5 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT)
     assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 5
-    assert non_http_stream.get_json_schema.call_count == 5
+    assert http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
+    assert non_http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
 
 
 def test_source_config_transform(mocker, abstract_source, catalog):
