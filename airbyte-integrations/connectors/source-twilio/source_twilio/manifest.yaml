@@ -33,6 +33,20 @@ definitions:
             type: DpathExtractor
             field_path:
               - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: Page
+          page_size_option:
+            type: RequestOption
+            field_name: PageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1000
+            start_from_page: 0
       transformations:
         - type: AddFields
           fields:
@@ -158,7 +172,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Local.json
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.parent_slice.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Local.json
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -181,20 +195,13 @@ definitions:
             page_size: 1000
             start_from_page: 0
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: account_sid
-                stream:
-                  $ref: "#/definitions/streams/Accounts"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: country_code
-                partition_field: country_code
-                stream:
-                  $ref: "#/definitions/streams/Available Phone Number Countries"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: country_code
+              partition_field: country_code
+              stream:
+                $ref: "#/definitions/streams/Available Phone Number Countries"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -207,7 +214,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Mobile.json
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.parent_slice.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Mobile.json
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -230,20 +237,13 @@ definitions:
             page_size: 1000
             start_from_page: 0
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: account_sid
-                stream:
-                  $ref: "#/definitions/streams/Accounts"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: country_code
-                partition_field: country_code
-                stream:
-                  $ref: "#/definitions/streams/Available Phone Number Countries"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: country_code
+              partition_field: country_code
+              stream:
+                $ref: "#/definitions/streams/Available Phone Number Countries"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -256,7 +256,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/TollFree.json
+            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.parent_slice.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/TollFree.json
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -287,20 +287,13 @@ definitions:
             page_size: 1000
             start_from_page: 0
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: account_sid
-                stream:
-                  $ref: "#/definitions/streams/Accounts"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: country_code
-                partition_field: country_code
-                stream:
-                  $ref: "#/definitions/streams/Available Phone Number Countries"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: country_code
+              partition_field: country_code
+              stream:
+                $ref: "#/definitions/streams/Available Phone Number Countries"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -460,22 +453,14 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            https://studio.twilio.com/v1/Flows/{{stream_partition.flow_sid}}/Executions/{{stream_partition.execution_sid}}/Steps
+            https://studio.twilio.com/v1/Flows/{{stream_partition.parent_slice.flow_sid}}/Executions/{{stream_partition.execution_sid}}/Steps
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - http_codes: [404]
-                    action: IGNORE
-                    error_message: "The requested resource was not found."
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path:
-              - step
+              - steps
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -491,29 +476,11 @@ definitions:
             page_size: 1000
             start_from_page: 0
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - stream: "#/definitions/streams/Flows"
-                parent_key: sid
-                partition_field: flow_sid
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - stream: "#/definitions/streams/Executions"
-                parent_key: sid
-                partition_field: execution_sid
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_created
-              value: '{% set formatted_datetime = format_datetime(record["date_created"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - date_updated
-              value: '{% set formatted_datetime = format_datetime(record["date_updated"], "%Y-%m-%dT%H:%M:%SZ", "%a, %d %b %Y %H:%M:%S %z") %}{{ formatted_datetime }}'
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/streams/Executions"
+              parent_key: sid
+              partition_field: execution_sid
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -637,7 +604,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             https://api.twilio.com/2010-04-01/Accounts/{{
-            stream_partition.account_sid }}/Addresses/{{
+            stream_partition.parent_slice.account_sid }}/Addresses/{{
             stream_partition.address_sid }}/DependentPhoneNumbers.json
           http_method: GET
         record_selector:
@@ -661,20 +628,13 @@ definitions:
             page_size: 1000
             start_from_page: 0
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: account_sid
-                stream:
-                  $ref: "#/definitions/streams/Accounts"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: address_sid
-                stream:
-                  $ref: "#/definitions/streams/Addresses"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: address_sid
+              stream:
+                $ref: "#/definitions/streams/Addresses"
       transformations:
         - type: AddFields
           fields:
@@ -898,7 +858,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             https://api.twilio.com/2010-04-01/Accounts/{{
-            stream_partition.account_sid }}/Conferences/{{
+            stream_partition.parent_slice.account_sid }}/Conferences/{{
             stream_partition.conference_sid }}/Participants.json
           http_method: GET
         record_selector:
@@ -922,20 +882,13 @@ definitions:
             page_size: 1000
             start_from_page: 0
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: account_sid
-                stream:
-                  $ref: "#/definitions/streams/Accounts"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: conference_sid
-                stream:
-                  $ref: "#/definitions/streams/Conferences"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: conference_sid
+              stream:
+                $ref: "#/definitions/streams/Conferences"
       transformations:
         - type: AddFields
           fields:
@@ -1485,7 +1438,7 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: >-
             https://api.twilio.com/2010-04-01/Accounts/{{
-            stream_partition.account_sid }}/Messages/{{
+            stream_partition.parent_slice.account_sid }}/Messages/{{
             stream_partition.message_sid }}/Media.json
           http_method: GET
         record_selector:
@@ -1509,20 +1462,13 @@ definitions:
             page_size: 1000
             start_from_page: 0
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: account_sid
-                stream:
-                  $ref: "#/definitions/streams/Accounts"
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: message_sid
-                stream:
-                  $ref: "#/definitions/streams/Messages"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: message_sid
+              stream:
+                $ref: "#/definitions/streams/Messages"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date_created
