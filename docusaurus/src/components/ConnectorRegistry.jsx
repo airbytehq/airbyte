@@ -1,5 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
+import { getSupportLevelDisplay } from "../connector_registry";
 
 import styles from "./ConnectorRegistry.module.css";
 import { REGISTRY_URL } from "../connector_registry";
@@ -86,7 +87,7 @@ export default function ConnectorRegistry({ type }) {
                   ) : null}
                 </td>
                 <td>
-                  <small>{connector.supportLevel_oss}</small>
+                  <small>{getSupportLevelDisplay(connector.supportLevel_oss)}</small>
                 </td>
                 <td>{connector.is_oss ? "✅" : "❌"}</td>
                 <td>{connector.is_cloud ? "✅" : "❌"}</td>
