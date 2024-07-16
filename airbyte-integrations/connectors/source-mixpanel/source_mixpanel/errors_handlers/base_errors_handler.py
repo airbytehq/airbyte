@@ -32,24 +32,3 @@ class MixpanelStreamErrorHandler(HttpStatusErrorHandler):
                     error_message=message,
                 )
         return super().interpret_response(response_or_exception)
-
-
-class DateSlicesMixinErrorHandler(HttpStatusErrorHandler):
-    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
-        self.stream = stream
-        super().__init__(**kwargs)
-
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        if isinstance(response_or_exception, requests.Response):
-            if (
-                response_or_exception.status_code == requests.codes.bad_request
-                and "to_date cannot be later than today" in response_or_exception.text
-            ):
-                self.stream._timezone_mismatch = True
-                message = "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. Stopping current stream sync."
-                return ErrorResolution(
-                    response_action=ResponseAction.IGNORE,
-                    failure_type=FailureType.config_error,
-                    error_message=message,
-                )
-        return super().interpret_response(response_or_exception)

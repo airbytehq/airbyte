@@ -1,8 +1,7 @@
-from .base_errors_handlers import MixpanelStreamErrorHandler, DateSlicesMixinErrorHandler
-from .export_errors_handlers import ExportErrorHandler
+from .base_errors_handler import MixpanelStreamErrorHandler
+from .export_errors_handler import ExportErrorHandler
 
 __all__ = [
     "MixpanelStreamErrorHandler",
-    "DateSlicesMixinErrorHandler",
     "ExportErrorHandler",
 ]

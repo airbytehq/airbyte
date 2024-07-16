@@ -3,15 +3,10 @@
 #
 
 import re
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, Union
 
-import requests
-from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
-from airbyte_protocol.models import FailureType
 
 
 def read_full_refresh(stream_instance: Stream) -> Iterable[Mapping[str, Any]]:
@@ -69,21 +64,3 @@ def fix_date_time(record: Union[Mapping[str, Any], Dict[str, Any], List[Any]]) -
             fix_date_time(entry)
 
     return None
-
-
-class MixpanelStreamBackoffStrategy(BackoffStrategy):
-    def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
-        self.stream = stream
-        super().__init__(**kwargs)
-
-    def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
-    ) -> Optional[float]:
-        if isinstance(response_or_exception, requests.Response):
-            retry_after = response_or_exception.headers.get("Retry-After")
-            if retry_after:
-                self._logger.debug(f"API responded with `Retry-After` header: {retry_after}")
-                return float(retry_after)
-
-        self.stream.retries += 1
-        return 2**self.stream.retries * 60  # type: ignore[no-any-return]
