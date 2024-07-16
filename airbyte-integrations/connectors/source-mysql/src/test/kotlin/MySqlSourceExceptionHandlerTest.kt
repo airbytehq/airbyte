@@ -3,11 +3,11 @@
  */
 
 import io.airbyte.integrations.source.mysql.MySqlSourceExceptionHandler
+import java.io.EOFException
+import java.sql.SQLSyntaxErrorException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.EOFException
-import java.sql.SQLSyntaxErrorException
 
 class MySqlSourceExceptionHandlerTest {
     private var exceptionHandler: MySqlSourceExceptionHandler? = null
@@ -30,7 +30,9 @@ class MySqlSourceExceptionHandlerTest {
     @Test
     fun testTranslateEOFException() {
         val exception =
-            EOFException("Can not read response from server. Expected to read 4 bytes, read 0 bytes before connection was unexpectedly lost.")
+            EOFException(
+                "Can not read response from server. Expected to read 4 bytes, read 0 bytes before connection was unexpectedly lost."
+            )
         val externalMessage = exceptionHandler!!.getExternalMessage(exception)
         Assertions.assertEquals("Can not read data from MySQL server", externalMessage)
     }

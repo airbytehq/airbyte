@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.integrations.util.ConnectorErrorProfile
@@ -8,7 +12,7 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
     override fun initializeErrorDictionary() {
         val POSTGRES_RECOVERY_CONNECTION_ERROR_MESSAGE =
             "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
-                    "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds"
+                "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds"
 
         val DATABASE_READ_ERROR = "Encountered an error while reading the database"
 
@@ -22,11 +26,13 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 regexMatchingPattern = ".*temporary file size exceeds temp_file_limit.*",
                 failureType = FailureType.TRANSIENT,
                 externalMessage = "Encountered an error while reading the database",
-                sampleInternalMessage = "org.postgresql.util.PSQLException: ERROR: temporary file size exceeds temp_file_limit",
-                referenceLinks = mutableListOf(
-                    "https://github.com/airbytehq/airbyte/issues/27090",
-                    "https://github.com/airbytehq/oncall/issues/1822",
-                ),
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: ERROR: temporary file size exceeds temp_file_limit",
+                referenceLinks =
+                    mutableListOf(
+                        "https://github.com/airbytehq/airbyte/issues/27090",
+                        "https://github.com/airbytehq/oncall/issues/1822",
+                    ),
             ),
         )
 
@@ -36,7 +42,8 @@ class PostgresSourceExceptionHandler : ConnectorExceptionHandler() {
                 regexMatchingPattern = ".*an i/o error occurred while sending to the backend.*",
                 failureType = FailureType.TRANSIENT,
                 externalMessage = DATABASE_READ_ERROR,
-                sampleInternalMessage = "org.postgresql.util.PSQLException: An I/O error occured while sending to the backend.",
+                sampleInternalMessage =
+                    "org.postgresql.util.PSQLException: An I/O error occured while sending to the backend.",
             ),
         )
 

@@ -18,7 +18,8 @@ class PostgresSourceExceptionHandlerTest {
 
     @Test
     fun testTranslateTemporaryFileSizeExceedsLimitException() {
-        val exception = PSQLException("ERROR: temporary file size exceeds temp_file_limit (500kB)", null)
+        val exception =
+            PSQLException("ERROR: temporary file size exceeds temp_file_limit (500kB)", null)
         val externalMessage = exceptionHandler!!.getExternalMessage(exception)
         Assertions.assertEquals("Encountered an error while reading the database", externalMessage)
     }
