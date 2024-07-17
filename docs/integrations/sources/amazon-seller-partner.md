@@ -178,6 +178,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.0 | 2024-07-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate to CDK v1.8.0 |
 | 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
 | 4.3.10 | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345) | Update dependencies |
 | 4.3.9 | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158) | Update dependencies |
