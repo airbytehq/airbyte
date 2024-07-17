@@ -234,7 +234,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| 0.6.0 | 2024-07-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrated to CDK v1.8.0 |
+| 0.6.0 | 2024-07-17 | [42059](https://github.com/airbytehq/airbyte/pull/42059) | Migrated to CDK v1.8.0 |
 | 0.5.3 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.5.2 | 2024-06-06 | [39192](https://github.com/airbytehq/airbyte/pull/39192) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.1 | 2024-05-03 | [37799](https://github.com/airbytehq/airbyte/pull/37799) | Add fastparquet engine for parquet file reader. |
