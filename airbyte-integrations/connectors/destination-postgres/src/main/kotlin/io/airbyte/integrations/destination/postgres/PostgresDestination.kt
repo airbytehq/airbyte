@@ -47,36 +47,39 @@ class PostgresDestination(override val featureFlags: FeatureFlags = EnvVariableF
     Destination {
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
-        if (
-            (config.has(SshTunnel.TUNNEL_METHOD_KEY) &&
-                config[SshTunnel.TUNNEL_METHOD_KEY].has(SshTunnel.TUNNEL_METHOD_KEY)) &&
-                config[SshTunnel.TUNNEL_METHOD_KEY][SshTunnel.TUNNEL_METHOD_KEY].asText() ==
-                    SshTunnel.TunnelMethod.NO_TUNNEL.name
-        ) {
-            // If no SSH tunnel
+        if (isCloudDeployment()) {
             if (
-                config.has(JdbcUtils.SSL_MODE_KEY) &&
-                    config[JdbcUtils.SSL_MODE_KEY].has(JdbcUtils.SSL_MODE_KEY)
+                (config.has(SshTunnel.TUNNEL_METHOD_KEY) &&
+                    config[SshTunnel.TUNNEL_METHOD_KEY].has(SshTunnel.TUNNEL_METHOD_KEY)) &&
+                    config[SshTunnel.TUNNEL_METHOD_KEY][SshTunnel.TUNNEL_METHOD_KEY].asText() ==
+                        SshTunnel.TunnelMethod.NO_TUNNEL.name
             ) {
+                // If no SSH tunnel
                 if (
-                    setOf(
-                            JdbcSSLConnectionUtils.SslMode.DISABLED,
-                            JdbcSSLConnectionUtils.SslMode.ALLOWED,
-                            JdbcSSLConnectionUtils.SslMode.PREFERRED
-                        )
-                        .contains(
-                            JdbcSSLConnectionUtils.SslMode.bySpec(
-                                    config[JdbcUtils.SSL_MODE_KEY][JdbcUtils.SSL_MODE_KEY].asText()
-                                )
-                                .get()
-                        )
+                    config.has(JdbcUtils.SSL_MODE_KEY) &&
+                        config[JdbcUtils.SSL_MODE_KEY].has(JdbcUtils.SSL_MODE_KEY)
                 ) {
-                    // Fail in case SSL mode is disable, allow or prefer
-                    return AirbyteConnectionStatus()
-                        .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                        .withMessage(
-                            "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full"
-                        )
+                    if (
+                        setOf(
+                                JdbcSSLConnectionUtils.SslMode.DISABLED,
+                                JdbcSSLConnectionUtils.SslMode.ALLOWED,
+                                JdbcSSLConnectionUtils.SslMode.PREFERRED
+                            )
+                            .contains(
+                                JdbcSSLConnectionUtils.SslMode.bySpec(
+                                        config[JdbcUtils.SSL_MODE_KEY][JdbcUtils.SSL_MODE_KEY]
+                                            .asText()
+                                    )
+                                    .get()
+                            )
+                    ) {
+                        // Fail in case SSL mode is disable, allow or prefer
+                        return AirbyteConnectionStatus()
+                            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                            .withMessage(
+                                "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full"
+                            )
+                    }
                 }
             }
         }
@@ -262,11 +265,6 @@ class PostgresDestination(override val featureFlags: FeatureFlags = EnvVariableF
                     if (realDestination.isCloudDeployment) {
                         println("in cloud deployment mode. Editing spec")
                         val spec: ConnectorSpecification = Jsons.clone(originalSpec)
-                        println(
-                            (spec.connectionSpecification[JsonSchemas.JSON_SCHEMA_PROPERTIES_KEY]
-                                    as ObjectNode)
-                                .get(JdbcUtils.SSL_KEY)
-                        )
                         (spec.connectionSpecification[JsonSchemas.JSON_SCHEMA_PROPERTIES_KEY]
                                 as ObjectNode)
                             .remove(JdbcUtils.SSL_KEY)
