@@ -224,7 +224,12 @@ class SourceAmazonSellerPartner(AbstractSource):
             if not report_kwargs:
                 report_kwargs.append((stream.report_name, {}))
             for name, options in report_kwargs:
-                kwargs = {"stream_name": name, "report_options": options, **stream_kwargs}
+                kwargs = {
+                    "stream_name": name,
+                    "report_options": options,
+                    "wait_to_avoid_fatal_errors": config.get("wait_to_avoid_fatal_errors", False),
+                    **stream_kwargs,
+                }
                 streams.append(stream(**kwargs))
         return streams
 
