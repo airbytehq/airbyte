@@ -83,7 +83,8 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
   @Override
   public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(@NotNull ConfiguredAirbyteStream airbyteStream,
                                                                     @NotNull TableInfo<CommonField<PostgresType>> table,
-                                                                    @NotNull Instant emittedAt) {
+                                                                    @NotNull Instant emittedAt,
+  @NotNull Optional<Duration> duration) {
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();
     final String namespace = stream.getNamespace();
@@ -134,7 +135,7 @@ public class PostgresCtidHandler implements InitialLoadHandler<PostgresType> {
         // Grab the selected fields to sync
         final TableInfo<CommonField<PostgresType>> table = tableNameToTable
             .get(fullyQualifiedTableName);
-        final var iterator = getIteratorForStream(airbyteStream, table, emmitedAt);
+        final var iterator = getIteratorForStream(airbyteStream, table, emmitedAt, Optional.empty());
         iteratorList.add(iterator);
 
         if (decorateWithCompletedStatus) {

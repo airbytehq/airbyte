@@ -13,6 +13,7 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -30,12 +31,13 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   protected final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
   protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-  protected String lastCtid;
+  protected Map<AirbyteStreamNameNamespacePair, String> pairToLastCtid;
   protected FileNodeHandler fileNodeHandler;
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
     this.pairToCtidStatus = pairToCtidStatus;
     this.streamStateForIncrementalRunSupplier = namespacePair -> Jsons.emptyObject();
+    this.pairToLastCtid = new HashMap<>();
   }
 
   public CtidStatus getCtidStatus(final AirbyteStreamNameNamespacePair pair) {
@@ -81,6 +83,7 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   protected CtidStatus generateCtidStatusForState(final AirbyteStreamNameNamespacePair pair) {
     final Long fileNode = fileNodeHandler.getFileNode(pair);
     assert fileNode != null;
+    final String lastCtid = pairToLastCtid.get(pair);
     // If the table is empty, lastCtid will be set to zero for the final state message.
     final String lastCtidInState = (Objects.nonNull(lastCtid)
         && StringUtils.isNotBlank(lastCtid)) ? lastCtid : Ctid.ZERO.toString();
@@ -98,7 +101,9 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, AirbyteMessageWithCtid message) {
     if (Objects.nonNull(message.ctid())) {
-      this.lastCtid = message.ctid();
+      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
+          stream.getStream().getNamespace());
+      pairToLastCtid.put(pair, message.ctid());
     }
     return message.recordMessage();
   }
@@ -121,6 +126,9 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
    */
   @Override
   public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
+        stream.getStream().getNamespace());
+    final String lastCtid = pairToLastCtid.get(pair);
     return Objects.nonNull(lastCtid)
         && StringUtils.isNotBlank(lastCtid);
   }
