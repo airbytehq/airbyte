@@ -21,7 +21,7 @@ The following migration steps are relevant for those who would like to sync `Ref
 The stream `Refunds` will need to be synced historically again to ensure the connection continues syncing smoothly. If available for your destination, we recommend doing a `Refresh` for the stream. 
 
 1. Navigate to the connection's `Schema` tab. Find the `refunds` stream.
-2. Update the `Refunds` stream to use `Incremental | Append + Dedup` sync mode. This ensures your data will sync efficiently and capture all updates efficiently. If your stream already has a sync mode of either `Incremental | Append + Dedup` or `Incremental | Append`, simply update the cursor from `created_at` to `updated_at`.
+2. Update the `Refunds` stream to use `Incremental | Append + Dedup` sync mode. This ensures your data will sync correctly and capture all updates efficiently. If your stream already has a sync mode of either `Incremental | Append + Dedup` or `Incremental | Append`, simply update the cursor from `created_at` to `updated_at`.
 3. Save the connection.
 4. Review the prompt to `Refresh` the `Refunds` stream. Select `Refresh and retain records` to ensure any data no longer found in Stripe is retained in your destination.
 5. Confirm the modal to save the connection and initiate a `Refresh`. This will start to pull in all historical data for the stream without removing the existing data first and update your destination with all data once complete. 
