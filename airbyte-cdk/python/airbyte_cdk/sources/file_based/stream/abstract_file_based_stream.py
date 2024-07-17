@@ -18,6 +18,7 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSc
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
+from deprecated import deprecated
 
 
 class AbstractFileBasedStream(Stream):
@@ -152,6 +153,7 @@ class AbstractFileBasedStream(Stream):
             )
 
     @cached_property
+    @deprecated(version="3.7.0")
     def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._availability_strategy
 
