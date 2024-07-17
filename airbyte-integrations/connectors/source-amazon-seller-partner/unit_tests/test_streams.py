@@ -139,7 +139,8 @@ class TestReportsAmazonSPStream:
             )
         assert e.value.internal_message == (
             f"Failed to retrieve the report 'GET_TEST_REPORT' for period {stream_start}-{stream_end}. "
-            "This will be read during the next sync. Report ID: some_report_id. Error: Failed to retrieve the report result document."
+            "This will be read during the next sync. Report ID: some_report_id. Error: Failed to retrieve the report result document. "
+            "Visit https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting for more info."
         )
 
     def test_read_records_retrieve_cancelled(self, report_init_kwargs, mocker, requests_mock, caplog):
