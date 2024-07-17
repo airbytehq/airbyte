@@ -86,7 +86,7 @@ def do_regression_test_status_check(ctx: click.Context, status_check_name: str, 
     run_url = ctx.obj["gha_workflow_run_url"]
     should_send = ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST
 
-    if not is_automerge_pull_request(ctx.obj["pull_request"]) and any(
+    if not is_automerge_pull_request(ctx.obj.get("pull_request")) and any(
         [
             (connector.language == ConnectorLanguage.PYTHON and connector.support_level == "certified")
             for connector in ctx.obj["selected_connectors_with_modified_files"]
