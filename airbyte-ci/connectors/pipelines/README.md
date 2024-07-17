@@ -767,6 +767,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.24.3  | [#42040](https://github.com/airbytehq/airbyte/pull/42040) | Always send regression test approval status check; skip on auto-merge PRs.                                                   |
 | 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676) | Send regression test approval status check when skipped.                                                                     |
 | 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642) | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                           |
 | 4.24.0  | [#41627](https://github.com/airbytehq/airbyte/pull/41627) | Require manual regression test approval for certified connectors                                                             |
