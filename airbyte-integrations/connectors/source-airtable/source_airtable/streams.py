@@ -46,7 +46,8 @@ class AirtableBases(HttpStream):
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
             setattr(self, "raise_on_http_errors", False)
             return False
-        return super().should_retry(response)
+        return False
+        # return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -112,11 +113,11 @@ class AirtableTables(AirtableBases):
 
 class AirtableStream(HttpStream, ABC):
     def __init__(self, stream_path: str, stream_name: str, stream_schema, table_name: str, **kwargs):
-        super().__init__(**kwargs)
         self.stream_path = stream_path
         self.stream_name = stream_name
         self.stream_schema = stream_schema
         self.table_name = table_name
+        super().__init__(**kwargs)
 
     url_base = URL_BASE
     primary_key = "id"
@@ -132,7 +133,8 @@ class AirtableStream(HttpStream, ABC):
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
             setattr(self, "raise_on_http_errors", False)
             return False
-        return super().should_retry(response)
+        return False
+        # return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -157,7 +159,7 @@ class AirtableStream(HttpStream, ABC):
         """
         All available params: https://airtable.com/developers/web/api/list-records#query
         """
-        params = {"pageSize": 5}
+        params = {}
         if next_page_token:
             params.update(next_page_token)
         return params
