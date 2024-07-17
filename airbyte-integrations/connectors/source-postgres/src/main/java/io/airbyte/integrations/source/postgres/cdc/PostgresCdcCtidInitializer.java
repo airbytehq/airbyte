@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.wassOccurrenceMessage;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.postgres.PostgresSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
@@ -332,6 +333,7 @@ public class PostgresCdcCtidInitializer {
        * sync to clear the WAL. We cannot simply add the same cdc iterators as their target end position
        * is fixed to the tip of the WAL at the start of the sync.
        */
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(wassOccurrenceMessage());
       final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
           PostgresCdcProperties.getDebeziumDefaultProperties(database), sourceConfig, catalog, startedCdcStreamList);
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = getCdcIncrementalIteratorsSupplier(handler,
