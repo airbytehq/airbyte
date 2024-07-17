@@ -28,10 +28,6 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated import deprecated
 
-if typing.TYPE_CHECKING:
-    from airbyte_cdk.sources import Source
-    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
 # AirbyteMessage: An AirbyteMessage. Could be of any type
@@ -347,30 +343,6 @@ class Stream(ABC):
         :return: False if the stream will retry endlessly when rate limited
         """
         return False
-
-    @deprecated(version="3.7.0")
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Checks whether this stream is available.
-
-        :param logger: source logger
-        :param source: (optional) source
-        :return: A tuple of (boolean, str). If boolean is true, then this stream
-          is available, and no str is required. Otherwise, this stream is unavailable
-          for some reason and the str should describe what went wrong and how to
-          resolve the unavailability, if possible.
-        """
-        if self.availability_strategy:
-            return self.availability_strategy.check_availability(self, logger, source)
-        return True, None
-
-    @property
-    @deprecated(version="3.7.0")
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        """
-        :return: The AvailabilityStrategy used to check whether this stream is available.
-        """
-        return None
 
     @property
     @abstractmethod

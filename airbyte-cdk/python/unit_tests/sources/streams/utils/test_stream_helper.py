@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for_slice
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 
 class MockStream:
@@ -45,9 +45,9 @@ def test_get_first_record_for_slice(records, stream_slice, exit_on_rate_limit, h
 
     if raises_exception:
         with pytest.raises(StopIteration):
-            get_first_record_for_slice(stream, stream_slice)
+            HttpAvailabilityStrategy().get_first_record_for_slice(stream, stream_slice)
     else:
-        result = get_first_record_for_slice(stream, stream_slice)
+        result = HttpAvailabilityStrategy().get_first_record_for_slice(stream, stream_slice)
         assert result == expected_result
 
     if has_setter:

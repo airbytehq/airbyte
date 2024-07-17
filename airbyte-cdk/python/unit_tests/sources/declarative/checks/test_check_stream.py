@@ -60,7 +60,6 @@ def mock_read_records(responses, default_response=None, **kwargs):
 def test_check_empty_stream():
     stream = MagicMock()
     stream.name = "s1"
-    stream.availability_strategy = None
     stream.read_records.return_value = iter([])
     stream.stream_slices.return_value = iter([None])
 
@@ -75,7 +74,6 @@ def test_check_empty_stream():
 def test_check_stream_with_no_stream_slices_aborts():
     stream = MagicMock()
     stream.name = "s1"
-    stream.availability_strategy = None
     stream.stream_slices.return_value = iter([])
 
     source = MagicMock()
@@ -126,7 +124,6 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
 
     http_stream = MockHttpStream()
     assert isinstance(http_stream, HttpStream)
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
     source = MagicMock()
     source.streams.return_value = [http_stream]
