@@ -153,7 +153,7 @@ class AbstractFileBasedStream(Stream):
             )
 
     @cached_property
-    @deprecated(version="3.1.0")
+    @deprecated(version="3.7.0")
     def availability_strategy(self) -> AbstractFileBasedAvailabilityStrategy:
         return self._availability_strategy
 
