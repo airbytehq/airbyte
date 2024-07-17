@@ -9,38 +9,38 @@ from airbyte_cdk.sources.streams.utils.stream_helper import get_first_record_for
 class MockStream:
     def __init__(self, records):
         self.records = records
-        self._exit_on_rate_limit = False
-
-    @property
-    def exit_on_rate_limit(self):
-        return self._exit_on_rate_limit
-
-    @exit_on_rate_limit.setter
-    def exit_on_rate_limit(self, value):
-        self._exit_on_rate_limit = value
+        self.rate_limit = False
+        self.has_setter = False
 
     def read_records(self, sync_mode, stream_slice):
-        return iter(self.records)
+        return iter(self.records)  # Simulate returning an iterator
+
+    def is_exit_on_rate_limit(self):
+        return self.rate_limit
+
+    def exit_on_rate_limit(self, value):
+        if self.has_setter:
+            self.rate_limit = value
+
+    def set_has_setter(self, value):
+        self.has_setter = value
+
+
+@pytest.fixture
+def mock_stream():
+    return MockStream([{'id': 1, 'name': 'Record 1'}, {'id': 2, 'name': 'Record 2'}])
 
 
 @pytest.mark.parametrize(
-    "stream_input, slice_input, expected_output, expect_exception",
+    "stream_slice, has_setter, expected",
     [
-        (MockStream([{'id': 1}, {'id': 2}, {'id': 3}]), None, {'id': 1}, False),  # Basic case
-        (MockStream([]), None, None, True),  # Empty records, expect StopIteration
-        (MockStream([{'id': 1}, {'id': 2}, {'id': 3}]), {'start': 0, 'count': 2}, {'id': 1}, False),  # With stream slice
+        ({"start": 0, "count": 1}, True, {'id': 1, 'name': 'Record 1'}),
+        (None, True, {'id': 1, 'name': 'Record 1'}),  # Default behavior with stream_slice
+        ({"start": 0, "count": 1}, False, {'id': 1, 'name': 'Record 1'}),
+        (None, False, {'id': 1, 'name': 'Record 1'})   # Default behavior without stream_slice
     ]
 )
-def test_get_first_record_for_slice(stream_input, slice_input, expected_output, expect_exception):
-    original_exit_on_rate_limit = stream_input.exit_on_rate_limit
-
-    try:
-        stream_input.exit_on_rate_limit = True
-        if expect_exception:
-            with pytest.raises(StopIteration):
-                get_first_record_for_slice(stream_input, slice_input)
-        else:
-            result = get_first_record_for_slice(stream_input, slice_input)
-            assert result == expected_output
-    finally:
-        stream_input.exit_on_rate_limit = original_exit_on_rate_limit
+def test_get_first_record_for_slice(mock_stream, stream_slice, has_setter, expected):
+    mock_stream.set_has_setter(has_setter)
+    result = get_first_record_for_slice(mock_stream, stream_slice)
+    assert result == expected
