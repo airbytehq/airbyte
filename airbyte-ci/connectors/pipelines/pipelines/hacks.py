@@ -82,6 +82,10 @@ def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name:
 
     Only required for certified connectors.
     """
+    commit = ctx.obj["git_revision"]
+    run_url = ctx.obj["gha_workflow_run_url"]
+    should_send = ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST
+
     if any(
         [
             (connector.language == ConnectorLanguage.PYTHON and connector.support_level == "certified")
@@ -89,12 +93,23 @@ def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name:
         ]
     ):
         update_commit_status_check(
-            ctx.obj["git_revision"],
+            commit,
             "failure",
-            ctx.obj["gha_workflow_run_url"],
+            run_url,
             description="Check if regression tests have been manually approved",
             context=status_check_name,
             is_optional=False,
-            should_send=ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST,
+            should_send=should_send,
+            logger=logger,
+        )
+    else:
+        update_commit_status_check(
+            commit,
+            "success",
+            run_url,
+            description="[Skipped]",
+            context=status_check_name,
+            is_optional=True,
+            should_send=should_send,
             logger=logger,
         )
