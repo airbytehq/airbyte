@@ -767,7 +767,8 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642) | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                             |
+| 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676) | Send regression test approval status check when skipped.                                                                     |
+| 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642) | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                           |
 | 4.24.0  | [#41627](https://github.com/airbytehq/airbyte/pull/41627) | Require manual regression test approval for certified connectors                                                             |
 | 4.23.1  | [#41541](https://github.com/airbytehq/airbyte/pull/41541)  | Add support for submodule use-case.                                                                                          |
 | 4.23.0  | [#39906](https://github.com/airbytehq/airbyte/pull/39906)  | Add manifest only build pipeline                                                          |
