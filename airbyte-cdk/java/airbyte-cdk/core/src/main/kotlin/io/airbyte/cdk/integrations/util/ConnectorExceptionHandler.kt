@@ -106,7 +106,7 @@ open class ConnectorExceptionHandler {
 
     /**
      * Initializes the error dictionary for the connector. This method shall include all the errors
-     * that are shared by all connectors. For instance, Debezium errors
+     * that are shared by all connectors.
      */
     open fun initializeErrorDictionary() {}
 
