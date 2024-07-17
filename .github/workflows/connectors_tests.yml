@@ -57,6 +57,15 @@ jobs:
             "context": "Connectors CI tests",
             "target_url": "${{ github.event.workflow_run.html_url }}"
             }' \
+          curl --request POST \
+          --url https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }} \
+          --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          --header 'content-type: application/json' \
+          --data '{
+            "state": "success",
+            "context": "Regression Test Results Reviewed and Approved",
+            "target_url": "${{ github.event.workflow_run.html_url }}"
+            }' \
 
   connectors_ci:
     needs: changes
