@@ -36,7 +36,7 @@ def get_first_record_for_slice(stream: Stream, stream_slice: Optional[Mapping[st
     :return: StreamData containing the first record in the slice
     """
     # Store the original value of exit_on_rate_limit
-    exit_on_rate_limit_has_setter = type(stream).exit_on_rate_limit.fset
+    exit_on_rate_limit_has_setter = type(stream).exit_on_rate_limit.fset  # type: ignore[attr-defined] # Stream always has property exit_on_rate_limit
     original_exit_on_rate_limit = stream.exit_on_rate_limit
 
     try:
