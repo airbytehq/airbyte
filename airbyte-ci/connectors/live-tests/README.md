@@ -280,6 +280,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.18.0
+
+Add support for selecting from a subset of connections.
+
 ### 0.17.8
 
 Fix the self-signed certificate path we bind to Python connectors.

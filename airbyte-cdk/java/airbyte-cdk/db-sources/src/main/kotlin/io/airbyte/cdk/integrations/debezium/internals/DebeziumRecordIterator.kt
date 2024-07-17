@@ -255,16 +255,8 @@ class DebeziumRecordIterator<T>(
     private fun heartbeatPosNotChanging(): Boolean {
         if (this.tsLastHeartbeat == null) {
             return false
-        } else if (!isTest() && receivedFirstRecord) {
-            // Closing debezium due to heartbeat position not changing only exists as an escape
-            // hatch
-            // for testing setups. In production, we rely on the platform heartbeats to kill the
-            // sync
-            // ONLY if we haven't received a record from Debezium. If a record has not been received
-            // from Debezium and the heartbeat isn't changing, the sync should be shut down due to
-            // heartbeat position not changing.
-            return false
         }
+
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime) > 0
@@ -286,10 +278,6 @@ class DebeziumRecordIterator<T>(
         if (!hasSnapshotFinished) {
             throw RuntimeException("Closing down debezium engine but snapshot has not finished")
         }
-    }
-
-    private fun isTest(): Boolean {
-        return config.has("is_test") && config["is_test"].asBoolean()
     }
 
     /**
