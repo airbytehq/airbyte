@@ -27,7 +27,7 @@ class ReportRateLimits:
         return (self.period_in_minutes / self.threshold) * 60
 
 
-# TODO: Add docs about this magic values
+# https://github.com/airbytehq/alpha-beta-issues/issues/3717#issuecomment-2203717834
 STREAM_THRESHOLD_PERIOD = {
     "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL": ReportRateLimits(threshold=12, period_in_minutes=480),
     "GET_AFN_INVENTORY_DATA": ReportRateLimits(threshold=2, period_in_minutes=25),
