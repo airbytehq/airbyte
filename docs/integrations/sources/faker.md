@@ -99,8 +99,20 @@ None!
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.3 | 2024-07-13 | [41848](https://github.com/airbytehq/airbyte/pull/41848) | Update dependencies |
+| 6.2.2 | 2024-07-10 | [41467](https://github.com/airbytehq/airbyte/pull/41467) | Update dependencies |
+| 6.2.1 | 2024-07-09 | [41180](https://github.com/airbytehq/airbyte/pull/41180) | Update dependencies |
+| 6.2.0 | 2024-07-07 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update CDK to 2.0. |
+| 6.1.6 | 2024-07-06 | [40956](https://github.com/airbytehq/airbyte/pull/40956) | Update dependencies |
+| 6.1.5 | 2024-06-25 | [40426](https://github.com/airbytehq/airbyte/pull/40426) | Update dependencies |
+| 6.1.4 | 2024-06-21 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update dependencies |
+| 6.1.3 | 2024-06-04 | [39029](https://github.com/airbytehq/airbyte/pull/39029) | [autopull] Upgrade base image to v1.2.1 |
+| 6.1.2 | 2024-06-03 | [38831](https://github.com/airbytehq/airbyte/pull/38831) | Bump CDK to allow and prefer versions `1.x` |
 | 6.1.1 | 2024-05-20 | [38256](https://github.com/airbytehq/airbyte/pull/38256) | Replace AirbyteLogger with logging.Logger |
 | 6.1.0 | 2024-04-08 | [36898](https://github.com/airbytehq/airbyte/pull/36898) | Update car prices and years |
 | 6.0.3 | 2024-03-15 | [36167](https://github.com/airbytehq/airbyte/pull/36167) | Make 'count' an optional config parameter. |
@@ -131,3 +143,5 @@ None!
 | 0.1.2   | 2022-05-26 | [13248](https://github.com/airbytehq/airbyte/pull/13293)                                                              | Test publication flow                                                                                           |
 | 0.1.1   | 2022-05-26 | [13235](https://github.com/airbytehq/airbyte/pull/13235)                                                              | Publish for AMD and ARM (M1 Macs) & remove User.birthdate                                                       |
 | 0.1.0   | 2022-04-12 | [11738](https://github.com/airbytehq/airbyte/pull/11738)                                                              | The Faker Source is created                                                                                     |
+
+</details>

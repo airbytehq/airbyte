@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from typing import Any
 
-from airbyte_cdk.sources.declarative.models import OAuthConfigSpecification
+from airbyte_cdk import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
-from airbyte_protocol.models import AdvancedAuth, ConnectorSpecification
 
 
 class SourceAzureBlobStorage(FileBasedSource):

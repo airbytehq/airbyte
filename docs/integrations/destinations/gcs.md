@@ -6,17 +6,6 @@ This destination writes data to GCS bucket.
 
 The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
 
-### Sync overview
-
-#### Features
-
-| Feature                        | Support | Notes                                                                                                                                                                                                    |
-| :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
-| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
-| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
-| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
-
 ## Getting started
 
 ### Requirements
@@ -45,6 +34,17 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
   - **Secret Access Key**
     - Corresponding key to the above access ID.
 - Make sure your GCS bucket is accessible from the machine running Airbyte. This depends on your networking setup. The easiest way to verify if Airbyte is able to connect to your GCS bucket is via the check connection tool in the UI.
+
+### Sync mode support
+
+#### Features
+
+| Feature                        | Support | Notes                                                                                                                                                                                                    |
+| :----------------------------- | :-----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                     |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/using-airbyte/core-concepts/sync-modes/incremental-append#inclusive-cursors) |
+| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                          |
+| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                              |
 
 ## Configuration
 
@@ -97,6 +97,8 @@ Each stream will be outputted to its dedicated directory according to the config
 
 - Under Full Refresh Sync mode, old output files will be purged before new files are created.
 - Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
+
+
 
 ### Avro
 
@@ -233,7 +235,10 @@ These parameters are related to the `ParquetOutputFormat`. See the [Java doc](ht
 
 Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
@@ -276,3 +281,5 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 | 0.1.2   | 2021-09-12 | [\#5720](https://github.com/airbytehq/airbyte/issues/5720) | Added configurable block size for stream. Each stream is limited to 10,000 by GCS                                          |
 | 0.1.1   | 2021-08-26 | [\#5296](https://github.com/airbytehq/airbyte/issues/5296) | Added storing gcsCsvFileLocation property for CSV format. This is used by destination-bigquery \(GCS Staging upload type\) |
 | 0.1.0   | 2021-07-16 | [\#4329](https://github.com/airbytehq/airbyte/pull/4784)   | Initial release.                                                                                                           |
+
+</details>

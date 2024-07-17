@@ -180,60 +180,6 @@
                 "description": "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details.",
                 "default": true,
                 "order": 6
-              },
-              "encryption": {
-                "title": "Encryption",
-                "type": "object",
-                "description": "How to encrypt the staging data",
-                "default": { "encryption_type": "none" },
-                "oneOf": [
-                  {
-                    "title": "No encryption",
-                    "description": "Staging data will be stored in plaintext.",
-                    "type": "object",
-                    "required": ["encryption_type"],
-                    "properties": {
-                      "encryption_type": {
-                        "type": "string",
-                        "const": "none",
-                        "enum": ["none"],
-                        "default": "none"
-                      }
-                    }
-                  },
-                  {
-                    "title": "AES-CBC envelope encryption",
-                    "description": "Staging data will be encrypted using AES-CBC envelope encryption.",
-                    "type": "object",
-                    "required": ["encryption_type"],
-                    "properties": {
-                      "encryption_type": {
-                        "type": "string",
-                        "const": "aes_cbc_envelope",
-                        "enum": ["aes_cbc_envelope"],
-                        "default": "aes_cbc_envelope"
-                      },
-                      "key_encrypting_key": {
-                        "type": "string",
-                        "title": "Key",
-                        "description": "The key, base64-encoded. Must be either 128, 192, or 256 bits. Leave blank to have Airbyte generate an ephemeral key for each sync.",
-                        "airbyte_secret": true
-                      }
-                    }
-                  }
-                ],
-                "order": 7
-              }
-            }
-          },
-          {
-            "title": "Standard",
-            "required": ["method"],
-            "description": "<i>(not recommended)</i> Direct loading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use S3 uploading.",
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Standard"
               }
             }
           }

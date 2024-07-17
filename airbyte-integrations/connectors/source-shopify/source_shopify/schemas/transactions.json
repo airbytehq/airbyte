@@ -32,6 +32,102 @@
       "description": "The amount of the transaction",
       "type": ["null", "number"]
     },
+    "amount_set": {
+      "description": "The amount and currency of the transaction in shop",
+      "type": ["null", "object"],
+      "properties": {
+        "shop_money": {
+          "description": "Amount in the shop currency",
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "description": "Amount in the shop currency",
+              "type": ["null", "number"]
+            },
+            "currency": {
+              "description": "Currency of the shop amount",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "fees": {
+      "description": "The transaction fees charged on the order transaction. Only present for Shopify Payments transactions.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "description": "A globally-unique ID.",
+            "type": ["null", "string"]
+          },
+          "admin_graphql_api_id": {
+            "description": "Unique identifier for the resource in the GraphQL Admin API",
+            "type": ["null", "string"]
+          },
+          "rate": {
+            "description": "Percentage charge.",
+            "type": ["null", "number"]
+          },
+          "type": {
+            "description": "Name of the type of fee.",
+            "type": ["null", "string"]
+          },
+          "flat_fee_name": {
+            "description": "Name of the credit card flat fee.",
+            "type": ["null", "string"]
+          },
+          "rate_name": {
+            "description": "Percentage charge.",
+            "type": ["null", "string"]
+          },
+          "amount": {
+            "description": "Amount in the shop currency",
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "Amount in the shop currency",
+                "type": ["null", "number"]
+              },
+              "currency": {
+                "description": "Currency of the shop amount",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "flat_fee": {
+            "description": "Amount in the shop currency",
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "Amount in the shop currency",
+                "type": ["null", "number"]
+              },
+              "currency": {
+                "description": "Currency of the shop amount",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "tax_amount": {
+            "description": "Amount in the shop currency",
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "Amount in the shop currency",
+                "type": ["null", "number"]
+              },
+              "currency": {
+                "description": "Currency of the shop amount",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
     "authorization": {
       "description": "Authorization code for the transaction",
       "type": ["null", "string"]
@@ -196,6 +292,18 @@
     "location_id": {
       "description": "ID of the location where the transaction took place",
       "type": ["null", "integer"]
+    },
+    "accountNumber": {
+      "description": "The masked account number associated with the payment method.",
+      "type": ["null", "integer"]
+    },
+    "formattedGateway": {
+      "description": "The human-readable payment gateway name used to process the transaction.",
+      "type": ["null", "string"]
+    },
+    "manuallyCapturable": {
+      "description": "Whether the transaction can be manually captured.",
+      "type": ["null", "boolean"]
     },
     "shop_url": {
       "description": "URL of the shop where the transaction occurred",

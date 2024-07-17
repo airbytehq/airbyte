@@ -86,7 +86,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withIsResumable(true)),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -97,7 +98,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withIsResumable(true))));
   }
 
   protected ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
@@ -112,7 +114,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
             /* no name field */)
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withIsResumable(true)),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -123,7 +126,8 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withIsResumable(true))));
   }
 
   @Override

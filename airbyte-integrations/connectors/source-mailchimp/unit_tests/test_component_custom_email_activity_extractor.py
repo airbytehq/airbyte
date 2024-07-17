@@ -63,4 +63,4 @@ def test_email_activity_extractor():
         },
     ]
 
-    assert extractor.extract_records(response=response) == expected_records
+    assert list(extractor.extract_records(response=response)) == expected_records

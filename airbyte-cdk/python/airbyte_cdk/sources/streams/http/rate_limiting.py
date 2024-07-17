@@ -66,7 +66,7 @@ def default_backoff_handler(
 
 
 def http_client_default_backoff_handler(
-    max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
+    max_tries: Optional[int], max_time: Optional[int] = None, **kwargs: Any
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
@@ -88,7 +88,6 @@ def http_client_default_backoff_handler(
         giveup=should_give_up,
         max_tries=max_tries,
         max_time=max_time,
-        factor=factor,
         **kwargs,
     )
 
@@ -108,7 +107,7 @@ def user_defined_backoff_handler(
     def log_give_up(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, RequestException):
-            logger.error(f"Max retry limit reached. Request: {exc.request}, Response: {exc.response}")
+            logger.error(f"Max retry limit reached in {details['elapsed']}s. Request: {exc.request}, Response: {exc.response}")
         else:
             logger.error("Max retry limit reached for unknown request and response")
 

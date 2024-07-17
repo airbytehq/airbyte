@@ -3,10 +3,7 @@
 #
 
 
-from typing import Literal, Union
-
 from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
-from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field
 
 
@@ -44,7 +41,7 @@ class SnowflakeCortexIndexingModel(BaseModel):
         ...,
         title="Warehouse",
         order=3,
-        description="Enter the name of the warehouse that you want to sync data into",
+        description="Enter the name of the warehouse that you want to use as a compute cluster",
         examples=["AIRBYTE_WAREHOUSE"],
     )
     database: str = Field(
@@ -72,7 +69,7 @@ class SnowflakeCortexIndexingModel(BaseModel):
     credentials: PasswordBasedAuthorizationModel
 
     class Config:
-        title = "Indexing"
+        title = "Snowflake Connection"
         schema_extra = {
             "description": "Snowflake can be used to store vector data and retrieve embeddings.",
             "group": "indexing",

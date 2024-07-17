@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from source_instatus.components import ListAddFields, UpdatesSubstreamPartitionRouter
 
@@ -40,11 +41,11 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
     parent_stream = MagicMock()
     parent_stream.stream.read_records = MagicMock(return_value=records)
     parent_stream.stream.stream_slices = MagicMock(return_value=stream_slices)
-    parent_stream.parent_key = "updates_ids"
-    parent_stream.partition_field = "parent_stream_update_id"
+    parent_stream.parent_key = InterpolatedString(string="updates_ids", default="updates_ids", parameters={})
+    parent_stream.partition_field = InterpolatedString(string="parent_stream_update_id", default="parent_stream_update_id", parameters={})
     slicer = UpdatesSubstreamPartitionRouter(parent_stream_configs=[parent_stream], parameters={}, config={})
 
-    for stream_slice, expected_slice in zip(slicer.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}), expected):
+    for stream_slice, expected_slice in zip(slicer.stream_slices(), expected):
         assert stream_slice == expected_slice
 
 
@@ -64,5 +65,5 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
     ],
 )
 def test_list_add_fields_transformer(input_record, field, kwargs, expected):
-    inputs = [AddedFieldDefinition(path=v[0], value=v[1], parameters={}) for v in field]
+    inputs = [AddedFieldDefinition(path=v[0], value=v[1], value_type="string", parameters={}) for v in field]
     assert ListAddFields(fields=inputs, parameters={"parameter": "test"}).transform(input_record, **kwargs) == expected

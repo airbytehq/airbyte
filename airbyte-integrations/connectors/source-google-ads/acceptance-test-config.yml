@@ -30,7 +30,7 @@ acceptance_tests:
           - name: "shopping_performance_view"
             bypass_reason: "No shopping campaign, need item for sale"
           - name: "topic_view"
-            bypass_reason: "No data for this date range, tested in next config"
+            bypass_reason: "No data for this date range, tested in integration tests"
           - name: "click_view"
             bypass_reason: "Stream has data only for last 90 days, next config is used for testing it"
       - config_path: "secrets/config_click_view.json"
@@ -44,8 +44,8 @@ acceptance_tests:
             bypass_reason: "No shopping campaign, need item for sale"
           - name: "display_keyword_view"
             bypass_reason: "No data for this date range, tested in previous config"
-          - name: "keyword_view"
-            bypass_reason: "No data for this date range, tested in previous config"
+          - name: "topic_view"
+            bypass_reason: "No data for this date range, tested in integration tests"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

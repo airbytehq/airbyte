@@ -22,9 +22,9 @@ from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.execution.run_steps import RunStepOptions
-from pipelines.helpers.github import update_commit_status_check
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import AIRBYTE_REPO_URL, java_log_scrub_pattern
+from pipelines.helpers.utils import java_log_scrub_pattern
 from pipelines.models.reports import Report
 from pipelines.models.secrets import Secret, SecretStore
 
@@ -159,7 +159,7 @@ class PipelineContext:
 
     @property
     def repo(self) -> GitRepository:
-        return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
+        return self.dagger_client.git(AIRBYTE_GITHUB_REPO_URL, keep_git_dir=True)
 
     @property
     def report(self) -> Report | ConnectorReport | None:
@@ -295,7 +295,7 @@ class PipelineContext:
         """
         if exception_value is not None or report is None:
             return ContextState.ERROR
-        if report is not None and report.failed_steps:
+        if report is not None and report.considered_failed_steps:
             return ContextState.FAILURE
         if report is not None and report.success:
             return ContextState.SUCCESSFUL

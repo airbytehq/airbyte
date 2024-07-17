@@ -1,6 +1,4 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import pytest
 from destination_duckdb.destination import DestinationDuckdb, validated_sql_name

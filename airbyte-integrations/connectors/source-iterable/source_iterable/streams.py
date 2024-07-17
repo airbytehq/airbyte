@@ -12,7 +12,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -128,7 +128,7 @@ class IterableStream(HttpStream, ABC):
             raise e
 
 
-class IterableExportStream(IterableStream, ABC):
+class IterableExportStream(IterableStream, CheckpointMixin, ABC):
     """
     This stream utilize "export" Iterable api for getting large amount of data.
     It can return data in form of new line separater strings each of each
@@ -142,6 +142,14 @@ class IterableExportStream(IterableStream, ABC):
 
     cursor_field = "createdAt"
     primary_key = None
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
 
     def __init__(self, start_date=None, end_date=None, **kwargs):
         super().__init__(**kwargs)
@@ -162,7 +170,12 @@ class IterableExportStream(IterableStream, ABC):
             raise ValueError(f"Unsupported type of datetime field {type(value)}")
         return value
 
-    def get_updated_state(
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(**kwargs):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
+
+    def _get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],

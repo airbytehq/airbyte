@@ -11,7 +11,11 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.configoss.WorkerDestinationConfig
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+import io.airbyte.protocol.models.AirbyteTraceMessage
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.StreamDescriptor
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.workers.internal.AirbyteDestination
 import io.airbyte.workers.internal.DefaultAirbyteDestination
@@ -225,17 +229,20 @@ abstract class BaseTypingDedupingTest {
      * records are written to the destination table. Then run a second sync, and verify that the
      * records are overwritten.
      */
-    @Test
     @Throws(Exception::class)
-    fun fullRefreshOverwrite() {
-        val catalog =
+    @Test
+    open fun truncateRefresh() {
+        val catalog1 =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(43)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             .withSyncMode(SyncMode.FULL_REFRESH)
-                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
@@ -248,7 +255,7 @@ abstract class BaseTypingDedupingTest {
         // First sync
         val messages1 = readMessages("dat/sync1_messages.jsonl")
 
-        runSync(catalog, messages1)
+        runSync(catalog1, messages1)
 
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
@@ -256,13 +263,34 @@ abstract class BaseTypingDedupingTest {
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
+        val catalog2 =
+            io.airbyte.protocol.models.v0
+                .ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(44)
+                            .withMinimumGenerationId(44)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
 
-        runSync(catalog, messages2)
+        runSync(catalog2, messages2)
 
         val expectedRawRecords2 =
-            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl")
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_with_new_gen_id_raw.jsonl")
         val expectedFinalRecords2 =
-            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+            readRecords(
+                "dat/sync2_expectedrecords_fullrefresh_overwrite_with_new_gen_id_final.jsonl"
+            )
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
@@ -271,17 +299,20 @@ abstract class BaseTypingDedupingTest {
      * records are written to the destination table. Then run a second sync, and verify that the old
      * and new records are all present.
      */
-    @Test
     @Throws(Exception::class)
-    fun fullRefreshAppend() {
-        val catalog =
+    @Test
+    open fun mergeRefresh() {
+        val catalog1 =
             io.airbyte.protocol.models.v0
                 .ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
-                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
                             .withStream(
                                 AirbyteStream()
                                     .withNamespace(streamNamespace)
@@ -294,7 +325,7 @@ abstract class BaseTypingDedupingTest {
         // First sync
         val messages1 = readMessages("dat/sync1_messages.jsonl")
 
-        runSync(catalog, messages1)
+        runSync(catalog1, messages1)
 
         val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
@@ -302,12 +333,31 @@ abstract class BaseTypingDedupingTest {
 
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
+        val catalog2 =
+            io.airbyte.protocol.models.v0
+                .ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(44)
+                            .withMinimumGenerationId(0)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
 
-        runSync(catalog, messages2)
+        runSync(catalog2, messages2)
 
-        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_with_new_gen_id_raw.jsonl")
         val expectedFinalRecords2 =
-            readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
+            readRecords("dat/sync2_expectedrecords_fullrefresh_append_with_new_gen_id_final.jsonl")
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
@@ -326,7 +376,10 @@ abstract class BaseTypingDedupingTest {
                 .ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
-                        ConfiguredAirbyteStream() // These two lines are literally the only
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0) // These two lines are literally the only
                             // difference between this test and
                             // fullRefreshAppend
                             .withSyncMode(SyncMode.INCREMENTAL)
@@ -375,6 +428,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -424,6 +480,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -460,6 +519,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -545,6 +607,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -593,6 +658,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(43)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
@@ -626,6 +694,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -637,6 +708,9 @@ abstract class BaseTypingDedupingTest {
                                     .withJsonSchema(SCHEMA)
                             ),
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -716,6 +790,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -736,6 +813,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.INCREMENTAL)
                             .withCursorField(listOf("updated_at"))
                             .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -765,6 +845,7 @@ abstract class BaseTypingDedupingTest {
         for (i in 0..nTimes - 1) {
             pushMessages(messages2, sync2)
         }
+        pushStatusMessages(catalog1, sync1, AirbyteStreamStatus.COMPLETE)
         endSync(sync1, outFuture1)
         // Write some more messages to the second sync. It should not be affected by the first
         // sync's
@@ -772,6 +853,7 @@ abstract class BaseTypingDedupingTest {
         for (i in 0..nTimes - 1) {
             pushMessages(messages2, sync2)
         }
+        pushStatusMessages(catalog2, sync2, AirbyteStreamStatus.COMPLETE)
         endSync(sync2, outFuture2)
 
         // For simplicity, just assert on raw record count.
@@ -843,6 +925,9 @@ abstract class BaseTypingDedupingTest {
         )
         val configuredStream =
             ConfiguredAirbyteStream()
+                .withSyncId(42)
+                .withGenerationId(43)
+                .withMinimumGenerationId(0)
                 .withSyncMode(SyncMode.INCREMENTAL)
                 .withCursorField(listOf("old_cursor"))
                 .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
@@ -921,6 +1006,9 @@ abstract class BaseTypingDedupingTest {
                 .withStreams(
                     listOf(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(43)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
@@ -967,6 +1055,7 @@ abstract class BaseTypingDedupingTest {
         disableFinalTableComparison: Boolean
     ) {
         val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
+
         if (disableFinalTableComparison) {
             DIFFER!!.diffRawTableRecords(expectedRawRecords, actualRawRecords)
         } else {
@@ -984,18 +1073,54 @@ abstract class BaseTypingDedupingTest {
      * !!!!!! WARNING !!!!!! The code below was mostly copypasted from DestinationAcceptanceTest. If you
      * make edits here, you probably want to also edit there.
      */
+    /**
+     * @param streamStatus After pushing all the messages in [messages], push a stream status
+     * message for each stream. If this parameter is `null`, then instead do NOT push any status
+     * messages.
+     */
     @JvmOverloads
     @Throws(Exception::class)
     protected fun runSync(
         catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>,
         imageName: String = this.imageName,
-        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
+        configTransformer: Function<JsonNode?, JsonNode?> = Function.identity(),
+        streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE
     ) {
         val destination = startSync(catalog, imageName, configTransformer)
         val outputFuture = destinationOutputFuture(destination)
         pushMessages(messages, destination)
+        if (streamStatus != null) {
+            pushStatusMessages(catalog, destination, streamStatus)
+        }
         endSync(destination, outputFuture)
+    }
+
+    private fun pushStatusMessages(
+        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        destination: AirbyteDestination,
+        streamStatus: AirbyteStreamStatus
+    ) {
+        catalog.streams.forEach {
+            destination.accept(
+                io.airbyte.protocol.models
+                    .AirbyteMessage()
+                    .withType(io.airbyte.protocol.models.AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(
+                                        StreamDescriptor()
+                                            .withNamespace(it.stream.namespace)
+                                            .withName(it.stream.name),
+                                    )
+                                    .withStatus(streamStatus),
+                            ),
+                    ),
+            )
+        }
     }
 
     // In the background, read messages from the destination until it terminates. We need to clear
@@ -1111,10 +1236,10 @@ abstract class BaseTypingDedupingTest {
         return Companion.readRecords(filename)
     }
 
-    protected val schema: JsonNode = SCHEMA
+    val schema: JsonNode = SCHEMA
 
     companion object {
-        @JvmField protected val SCHEMA: JsonNode
+        @JvmStatic val SCHEMA: JsonNode
 
         init {
             try {
