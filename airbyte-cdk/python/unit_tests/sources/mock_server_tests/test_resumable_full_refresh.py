@@ -165,12 +165,6 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         state = StateBuilder().with_stream_state("justice_songs", {"page": 100}).build()
 
-        # Needed to handle the availability check request to get the first record
-        http_mocker.get(
-            _create_justice_songs_request().build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
-        )
-
         http_mocker.get(
             _create_justice_songs_request().with_page(100).build(),
             _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),

@@ -348,6 +348,7 @@ class Stream(ABC):
         """
         return False
 
+    @deprecated(version="3.7.0")
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
         Checks whether this stream is available.
@@ -364,6 +365,7 @@ class Stream(ABC):
         return True, None
 
     @property
+    @deprecated(version="3.7.0")
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         """
         :return: The AvailabilityStrategy used to check whether this stream is available.

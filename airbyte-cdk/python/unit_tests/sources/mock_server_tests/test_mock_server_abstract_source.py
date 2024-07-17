@@ -383,12 +383,6 @@ class IncrementalStreamTest(TestCase):
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
-        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
-        )
-
         last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_legacies_request().with_start_date(_NOW - timedelta(days=1)).with_end_date(_NOW).build(),
@@ -411,14 +405,6 @@ class IncrementalStreamTest(TestCase):
         config = {
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
-
-        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
-                record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
-                record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
-        )
 
         last_record_date_1 = _NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
 
