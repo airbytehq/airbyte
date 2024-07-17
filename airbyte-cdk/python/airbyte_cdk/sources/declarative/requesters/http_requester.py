@@ -54,6 +54,7 @@ class HttpRequester(Requester):
     disable_retries: bool = False
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
+    _exit_on_rate_limit: bool = False
     stream_response: bool = False
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
@@ -86,6 +87,14 @@ class HttpRequester(Requester):
             disable_retries=self.disable_retries,
             message_repository=self.message_repository,
         )
+
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self._exit_on_rate_limit = value
 
     def get_authenticator(self) -> DeclarativeAuthenticator:
         return self._authenticator
@@ -306,6 +315,7 @@ class HttpRequester(Requester):
             data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
             dedupe_query_params=True,
             log_formatter=log_formatter,
+            exit_on_rate_limit=self._exit_on_rate_limit,
         )
 
         return response

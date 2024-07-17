@@ -19,7 +19,7 @@ However, we do artificially generate Dockerfiles for debugging and documentation
 
 ### Example for `airbyte/python-connector-base`:
 ```dockerfile
-FROM docker.io/python:3.9.19-slim-bookworm@sha256:e6941b744e8eb9df6cf6baf323d2b9ad1dfe17d118f5efee14634aff4d47c76f
+FROM docker.io/python:3.10.14-slim-bookworm@sha256:3b37199fbc5a730a551909b3efa7b29105c859668b7502451c163f2a4a7ae1ed
 RUN ln -snf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN pip install --upgrade pip==24.0 setuptools==70.0.0
 ENV POETRY_VIRTUALENVS_CREATE=false
@@ -41,6 +41,7 @@ RUN mkdir /usr/share/nltk_data
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  2.0.0 | ✅| docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916 | Use Python 3.10 |
 |  1.2.3 | ✅| docker.io/airbyte/python-connector-base:1.2.3@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696 | Use latest root image version and update system packages |
 |  1.2.2 | ✅| docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0 | Fix Python 3.9.19 image digest |
 |  1.2.2-rc.1 | ✅| docker.io/airbyte/python-connector-base:1.2.2-rc.1@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696 |  |
