@@ -9,11 +9,11 @@
         "cursor_field": ["id"],
         "cursor": "4",
         "cursor_record_count": 1,
-        "stream_namespace": "20240716_11xwyn3f"
+        "stream_namespace": "20240717-wi6jVvl4"
       },
       "stream_descriptor": {
         "name": "id_and_name_hook",
-        "namespace": "20240716_11xwyn3f"
+        "namespace": "20240717-wi6jVvl4"
       }
     }
   }
