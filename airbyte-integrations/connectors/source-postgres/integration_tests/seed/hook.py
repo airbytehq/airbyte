@@ -13,8 +13,6 @@ from psycopg2 import sql
 
 catalog_write_file = "/connector/integration_tests/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
-# catalog_view_write_file = "/connector/integration_tests/configured_catalog_view_copy.json"
-# catalog_view_source_file = "/connector/integration_tests/configured_catalog_view.json"
 catalog_incremental_write_file = "/connector/integration_tests/incremental_configured_catalog_copy.json"
 catalog_incremental_source_file = "/connector/integration_tests/incremental_configured_catalog_template.json"
 abnormal_state_write_file = "/connector/integration_tests/abnormal_state_copy.json"
@@ -82,9 +80,6 @@ def write_supporting_file(schema_name):
     with open(catalog_write_file, "w") as file:
         with open(catalog_source_file, 'r') as source_file:
             file.write(source_file.read() % schema_name)
-    # with open(catalog_view_write_file, "w") as file:
-    #     with open(catalog_view_source_file, 'r') as source_file:
-    #         file.write(source_file.read() % schema_name)
     with open(catalog_incremental_write_file, "w") as file:
         with open(catalog_incremental_source_file, 'r') as source_file:
             file.write(source_file.read() % schema_name)
@@ -162,14 +157,12 @@ def load_schema_name_from_catalog():
 def remove_all_write_files():
     print("***removing write files***")
     os.remove(catalog_write_file)
-    os.remove(catalog_view_write_file)
     os.remove(catalog_incremental_write_file)
     os.remove(abnormal_state_write_file)
 
 def delete_schemas_with_prefix(conn, date_prefix):
     try:
         # Connect to the PostgreSQL database
-        conn.autocommit = True
         cursor = conn.cursor()
 
         # Query to find all schemas that start with the specified date prefix
@@ -188,6 +181,7 @@ def delete_schemas_with_prefix(conn, date_prefix):
             cursor.execute(drop_query)
             print(f"Schema {schema[0]} has been dropped.")
 
+        conn.commit()
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
@@ -200,7 +194,8 @@ def teardown():
     connection = connect_to_db()
     today = datetime.datetime.now()
     yesterday = today - timedelta(days=1)
-    formatted_yesterday = yesterday.strftime('%y%m%d')
+    formatted_yesterday = yesterday.strftime('%Y%m%d')
+    print(f"formatted_yesterday: {formatted_yesterday}")
     delete_schemas_with_prefix(connection, formatted_yesterday)
     remove_all_write_files()
 

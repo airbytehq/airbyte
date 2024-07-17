@@ -408,7 +408,7 @@ class TestIncremental(BaseTest):
             if isinstance(current_node, dict):
                 for key, value in current_node.items():
                     # DB sources use a hardcoded field `cursor` to denote cursor value.
-                    if key == "cursor" || key == cursor_field:
+                    if key == "cursor" or key == cursor_field:
                         values.append(value)
                     nodes_to_visit.append(value)
             elif isinstance(current_node, list):

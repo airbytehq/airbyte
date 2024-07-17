@@ -17,7 +17,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "default_cursor_field": [],
         "source_defined_primary_key": [],
-        "namespace": "20240715-n6xJ4YRw"
+        "namespace": "20240717-wi6jVvl4"
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "append",
