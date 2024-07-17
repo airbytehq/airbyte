@@ -76,7 +76,7 @@ def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
     return never_fail_exec_inner
 
 
-def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
+def do_regression_test_status_check(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
     """
     Emit a failing status check that requires a manual override, via a /-command.
 
