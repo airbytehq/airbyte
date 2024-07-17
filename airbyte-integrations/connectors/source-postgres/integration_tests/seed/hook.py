@@ -75,6 +75,8 @@ def create_schema(connection, schema_name):
     finally:
         cursor.close()
 
+# We need to dynamically generate catalog and config files, by feeding them schema_name;
+# These files will be used in acceptance-test-config.yml as inputs of various test cases.
 def write_supporting_file(schema_name):
     print(f"writting schema name to files: {schema_name}")
     with open(catalog_write_file, "w") as file:
