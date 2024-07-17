@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "integer"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "source": {
+          "type": ["null", "string"]
+        },
+        "medium": {
+          "type": ["null", "string"]
+        },
+        "visit_route": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {}
+        },
+        "page_depth": {
+          "type": ["null", "string"]
+        },
+        "visit_length": {
+          "type": ["null", "string"]
+        },
+        "started_at": {
+          "type": ["null", "string"]
+        },
+        "lf_client_id": {
+          "type": ["null", "string"]
+        },
+        "lead_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
+    }
+  }
+}

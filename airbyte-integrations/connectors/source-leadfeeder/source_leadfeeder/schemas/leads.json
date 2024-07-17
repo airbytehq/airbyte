@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "integer"]
+    },
+    "last_visit_date": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "facebook_url": {
+          "type": ["null", "string"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        },
+        "twitter_handle": {
+          "type": ["null", "string"]
+        },
+        "first_visit_date": {
+          "type": ["null", "string"]
+        },
+        "last_visit_date": {
+          "type": ["null", "string"]
+        },
+        "linkedin_url": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "view_in_leadfeeder": {
+          "type": ["null", "string"]
+        },
+        "industry": {
+          "type": ["null", "string"]
+        },
+        "logo_url": {
+          "type": ["null", "string"]
+        },
+        "crm_organization_id": {
+          "type": ["null", "string"]
+        },
+        "employee_count": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
+    }
+  }
+}
