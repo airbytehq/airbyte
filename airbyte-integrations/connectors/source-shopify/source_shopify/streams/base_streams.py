@@ -215,7 +215,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         if self.filter_by_state_checkpoint:
             # set checkpoint cursor
             if not self._checkpoint_cursor:
-                self._checkpoint_cursor = self.config.get("start_date")
+                self._checkpoint_cursor = self.default_state_comparison_value
             # track checkpoint cursor
             if record_value >= self._checkpoint_cursor:
                 self._checkpoint_cursor = record_value
@@ -629,6 +629,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     data_field = "graphql"
 
     parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
+    filter_by_state_checkpoint = True
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
@@ -642,7 +643,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             query=self.query,
             job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
-            job_size=config.get("bulk_window_in_days", 0.0),
+            job_size=config.get("bulk_window_in_days", 30.0),
         )
 
         # define Record Producer instance
@@ -738,7 +739,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.emit_slice_message(start, slice_end)
                 yield {"start": start.to_rfc3339_string(), "end": slice_end.to_rfc3339_string()}
                 # increment the end of the slice or reduce the next slice
-                start = self.job_manager.get_adjusted_job_end(start, slice_end)
+                start = self.job_manager.get_adjusted_job_end(start, slice_end, self._checkpoint_cursor)
         else:
             # for the streams that don't support filtering
             yield {}

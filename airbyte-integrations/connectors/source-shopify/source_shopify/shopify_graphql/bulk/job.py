@@ -66,8 +66,15 @@ class ShopifyBulkManager:
 
     # 0.1 ~= P2H, default value, lower boundary for slice size
     _job_size_min: Final[float] = 0.1
-    # P365D, upper boundary for slice size
-    _job_size_max: Final[float] = 365.0
+
+    # last running job object count
+    _job_last_rec_count: int = field(init=False, default=0)
+    # how many records should be collected before we use the checkpoining
+    _job_checkpoint_interval: Final[int] = 200000
+    # the flag to adjust the next slice from the checkpointed cursor vaue
+    _job_adjust_slice_from_checkpoint: bool = field(init=False, default=False)
+    # flag to mark the long running BULK job
+    _job_long_running_cancelation: bool = field(init=False, default=False)
 
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
@@ -82,6 +89,8 @@ class ShopifyBulkManager:
     def __post_init__(self):
         self._http_client = HttpClient(self.stream_name, self.logger, ShopifyErrorHandler(), session=self.session)
         self._job_size = self.job_size
+        # The upper boundary for slice size is limited by the value from the config, default value is `P30D`
+        self._job_size_max = self.job_size
         # Each job ideally should be executed within the specified time (in sec),
         # to maximize the performance for multi-connection syncs and control the bulk job size within +- 1 hours (3600 sec),
         # Ideally the source will balance on it's own rate, based on the time taken to return the data for the slice.
@@ -143,6 +152,10 @@ class ShopifyBulkManager:
         self._job_should_revert_slice = False
         return False
 
+    @property
+    def _job_should_checkpoint(self) -> bool:
+        return self._job_last_rec_count >= self._job_checkpoint_interval
+
     def _expand_job_size(self) -> None:
         self._job_size += self._job_size_adjusted_expand_factor
 
@@ -176,6 +189,8 @@ class ShopifyBulkManager:
         self._job_self_canceled = False
         # set the running job message counter to default
         self._log_job_msg_count = 0
+        # set the running job object count to default
+        self._job_last_rec_count = 0
 
     def _job_completed(self) -> bool:
         return self._job_state == ShopifyBulkJobStatus.COMPLETED.value
@@ -206,6 +221,9 @@ class ShopifyBulkManager:
             self._log_job_msg_count += 1
         else:
             message = f"Elapsed time: {self._job_elapsed_time_in_state} sec"
+            if self._job_last_rec_count > 0:
+                count_message = f". Lines collected: {self._job_last_rec_count}"
+                message = message + count_message
             self._log_state(message)
             self._log_job_msg_count = 0
 
@@ -218,7 +236,7 @@ class ShopifyBulkManager:
 
     def _job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
         parsed_response = response.json().get("data", {}).get("node", {}) if response else None
-        job_result_url = parsed_response.get("url") if parsed_response and not self._job_self_canceled else None
+        job_result_url = parsed_response.get("url") if parsed_response else None
         if job_result_url:
             # save to local file using chunks to avoid OOM
             filename = self._tools.filename_from_url(job_result_url)
@@ -234,8 +252,16 @@ class ShopifyBulkManager:
     def _job_update_state(self, response: Optional[requests.Response] = None) -> None:
         if response:
             self._job_state = response.json().get("data", {}).get("node", {}).get("status")
-            if self._job_state in [ShopifyBulkJobStatus.RUNNING.value, ShopifyBulkJobStatus.CANCELING.value]:
+            self._job_last_rec_count = int(response.json().get("data", {}).get("node", {}).get("objectCount", 0))
+
+            if self._job_state == ShopifyBulkJobStatus.RUNNING.value:
                 self._log_job_state_with_count()
+            elif self._job_state in [ShopifyBulkJobStatus.CANCELED.value, ShopifyBulkJobStatus.CANCELING.value]:
+                # do not emit `CANCELED / CANCELING` Bulk Job status, while checkpointing
+                if self._job_should_checkpoint:
+                    pass
+                else:
+                    self._log_job_state_with_count()
             else:
                 self._log_state()
 
@@ -245,19 +271,36 @@ class ShopifyBulkManager:
     def _on_canceled_job(self, response: requests.Response) -> Optional[AirbyteTracedException]:
         if not self._job_self_canceled:
             raise ShopifyBulkExceptions.BulkJobCanceled(
-                f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
+                f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}"
             )
+        else:
+            if self._job_should_checkpoint:
+                # set the flag to adjust the next slice from the checkpointed cursor value
+                self._job_adjust_slice_from_checkpoint = True
+                # fetch the collected records from CANCELED Job on checkpointing
+                self._job_result_filename = self._job_get_result(response)
 
     def _on_canceling_job(self, **kwargs) -> None:
         sleep(self._job_check_interval)
 
+    def _cancel_on_long_running_job(self) -> None:
+        self.logger.info(
+            f"Stream: `{self.stream_name}` the BULK Job: {self._job_id} runs longer than expected ({self._job_max_elapsed_time} sec). Retry with the reduced `Slice Size` after self-cancelation."
+        )
+        self._job_long_running_cancelation = True
+        self._job_cancel()
+
+    def _cancel_on_checkpointing(self) -> None:
+        self.logger.info(f"Stream: `{self.stream_name}`, checkpointing after >= `{self._job_checkpoint_interval}` lines collected.")
+        # set the flag to adjust the next slice from the checkpointed cursor value
+        self._job_adjust_slice_from_checkpoint = True
+        self._job_cancel()
+
     def _on_running_job(self, **kwargs) -> None:
         if self._is_long_running_job:
-            self.logger.info(
-                f"Stream: `{self.stream_name}` the BULK Job: {self._job_id} runs longer than expected ({self._job_max_elapsed_time} sec). Retry with the reduced `Slice Size` after self-cancelation."
-            )
-            # cancel the long-running bulk job
-            self._job_cancel()
+            self._cancel_on_long_running_job()
+        elif self._job_should_checkpoint:
+            self._cancel_on_checkpointing()
         else:
             sleep(self._job_check_interval)
 
@@ -311,7 +354,6 @@ class ShopifyBulkManager:
             request_kwargs={},
         )
         self._job_healthcheck(response)
-
         self._job_update_state(response)
         self._job_state_to_fn_map.get(self._job_state)(response=response)
 
@@ -396,12 +438,15 @@ class ShopifyBulkManager:
         step = self._job_size if self._job_size else self._job_size_min
         return slice_start.add(days=step)
 
-    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime) -> datetime:
+    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[datetime] = None) -> datetime:
+        if self._job_adjust_slice_from_checkpoint:
+            return pdm.parse(checkpointed_cursor) if checkpointed_cursor else slice_end
+
         if self._is_long_running_job:
             self._job_size_reduce_next()
             return slice_start
-        else:
-            return slice_end
+
+        return slice_end
 
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def job_check_for_completion(self) -> Optional[str]:

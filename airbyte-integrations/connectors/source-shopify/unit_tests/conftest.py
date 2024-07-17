@@ -408,6 +408,118 @@ def bulk_job_running_response():
             }
         },
     }
+    
+    
+@pytest.fixture
+def bulk_job_running_with_object_count_and_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "RUNNING",
+                "errorCode": None,
+                "objectCount": "15",
+                "fileSize": None,
+                "url": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8',
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_job_canceled_with_object_count_and_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "CANCELED",
+                "errorCode": None,
+                "objectCount": "15",
+                "fileSize": None,
+                "url": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8',
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_job_running_with_object_count_no_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "RUNNING",
+                "errorCode": None,
+                "objectCount": "4",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
+
+
+@pytest.fixture
+def bulk_job_canceled_with_object_count_no_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/4047052112061",
+                "status": "CANCELED",
+                "errorCode": None,
+                "objectCount": "4",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": None,
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 1000.0,
+                    "currentlyAvailable": 999,
+                    "restoreRate": 50.0,
+                },
+            }
+        },
+    }
 
 
 @pytest.fixture

@@ -3,6 +3,8 @@
 #
 
 
+from os import remove
+
 import pytest
 import requests
 from airbyte_protocol.models import SyncMode
@@ -235,6 +237,58 @@ def test_job_check_with_running_scenario(request, requests_mock, job_response, a
     # calling the sceario processing
     stream.job_manager._job_track_running()
     assert stream.job_manager._job_state == expected
+
+
+@pytest.mark.parametrize(
+    "running_job_response, canceled_job_response, expected",
+    [
+        (
+            "bulk_job_running_with_object_count_and_url_response", 
+            "bulk_job_canceled_with_object_count_and_url_response", 
+            "bulk-123456789.jsonl",
+        ),
+        (
+            "bulk_job_running_with_object_count_no_url_response", 
+            "bulk_job_canceled_with_object_count_no_url_response", 
+            None,
+        ),
+    ],
+    ids=[
+        "self-canceled with url",
+        "self-canceled with no url",
+    ],
+)
+def test_job_running_with_canceled_scenario(request, requests_mock, running_job_response, canceled_job_response, auth_config, expected) -> None:
+    stream = MetafieldOrders(auth_config)
+    # modify the sleep time for the test
+    stream.job_manager._job_check_interval = 0
+    # get job_id from FIXTURE
+    job_id = request.getfixturevalue(running_job_response).get("data", {}).get("node", {}).get("id")
+    # mocking the response for STATUS CHECKS
+    requests_mock.post(
+        stream.job_manager.base_url, 
+        [
+            {"json": request.getfixturevalue(running_job_response)},
+            {"json": request.getfixturevalue(canceled_job_response)},
+        ],
+    )
+    job_result_url = request.getfixturevalue(canceled_job_response).get("data", {}).get("node", {}).get("url")
+    # test the state of the job isn't assigned
+    assert stream.job_manager._job_state == None
+    
+    stream.job_manager._job_id = job_id
+    stream.job_manager._job_checkpoint_interval = 5
+    # faking self-canceled job
+    stream.job_manager._job_self_canceled = True
+    # mocking the nested request call to retrieve the data from result URL
+    requests_mock.get(job_result_url, json=request.getfixturevalue(canceled_job_response))
+    # calling the sceario processing
+    assert not stream.job_manager._job_long_running_cancelation
+    assert stream.job_manager.job_check_for_completion() == expected
+    # clean up
+    if expected:
+        remove(expected)
+
 
 
 def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
