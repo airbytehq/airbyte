@@ -28,6 +28,9 @@ definitions:
 
   default_error_handler:
     type: DefaultErrorHandler
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: "{{ None }}"  # We need to use default backoff logic
     response_filters:
       - http_codes: [400]
         action: FAIL
