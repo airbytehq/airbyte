@@ -9,6 +9,9 @@ import java.util.function.Function
 
 private val LOGGER = KotlinLogging.logger {}
 
+// TODO is this class unused? I see one reference in
+//   `airbyte-integrations/connectors-performance/source-harness`
+//   but that seems to be referencing a different jar file?
 class EnvConfigs @JvmOverloads constructor(envMap: Map<String?, String?> = System.getenv()) :
     Configs {
     private val getEnv = Function { key: String -> envMap[key] }
