@@ -21,7 +21,7 @@ logger = logging.getLogger("airbyte")
             False,
             (
                 "Unable to connect to stream metrics - "
-                "Request to https://a.klaviyo.com/api/metrics failed with status code 400 and error message None"
+                "Bad request. Please check your request parameters."
             ),
         ),
         (
