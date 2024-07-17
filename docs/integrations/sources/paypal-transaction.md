@@ -264,7 +264,7 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| 2.6.0 | 2024-06-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate to CDK v1.8.0 |
+| 2.6.0 | 2024-06-17 | [42056](https://github.com/airbytehq/airbyte/pull/42056) | Migrate to CDK v1.8.0 |
 | 2.5.7 | 2024-06-25 | [40269](https://github.com/airbytehq/airbyte/pull/40269) | Update dependencies |
 | 2.5.6 | 2024-06-22 | [40110](https://github.com/airbytehq/airbyte/pull/40110) | Update dependencies |
 | 2.5.5 | 2024-06-04 | [38983](https://github.com/airbytehq/airbyte/pull/38983) | [autopull] Upgrade base image to v1.2.1 |
