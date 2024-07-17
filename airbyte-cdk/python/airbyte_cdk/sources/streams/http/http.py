@@ -371,7 +371,7 @@ class HttpStream(Stream, ABC):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             dedupe_query_params=True,
             log_formatter=self.get_log_formatter(),
-            exit_on_rate_limit=self.exit_on_rate_limit,
+            exit_on_rate_limit=self.is_exit_on_rate_limit,
         )
 
         return request, response
