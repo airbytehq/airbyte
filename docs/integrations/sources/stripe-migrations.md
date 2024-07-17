@@ -6,13 +6,10 @@ The `Refunds` stream previously did not sync incrementally correctly. Incrementa
 
 ### Summary of changes: 
 
-- The stream `Refunds` cursor changed from the field `created` to `updated`.
-- The stream `Refunds` incrementally syncs using the `events` endpoint.
-
+- The stream `Refunds` cursor changed from the field `created` to `updated` when syncing incrementally.
+- The stream `Refunds` now incrementally syncs using the `events` endpoint.
 
 ### Migration Steps
-
-The `Refunds` stream previously did not sync using the `events` endpoint, so it retained records beyond 30 days. The `Refunds` stream now uses the `events` endpoint, which limits the results synced to the last 30 days. We recommend retaining a version of your historical data during this process to ensure no data loss occurs.
 
 1. Upgrade the Stripe connector by pressing the upgrade button and following the instructions on the screen.
 
