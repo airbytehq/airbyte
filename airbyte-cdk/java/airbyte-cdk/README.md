@@ -175,6 +175,7 @@ corresponds to that version.
 =======
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:------------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.41.8      | 2024-07-18 | [\#42068](https://github.com/airbytehq/airbyte/pull/42068) | Add analytics message for WASS occurrence.                                                                |
 | 0.41.7      | 2024-07-17 | [\#42055](https://github.com/airbytehq/airbyte/pull/42055) | Add debezium heartbeat timeout back to shutdown debezium.                                                                |
 | 0.41.6      | 2024-07-17 | [\#41996](https://github.com/airbytehq/airbyte/pull/41996) | Fix java interop compilation issue in Config/TransientErrorException.                                                                |
 | 0.41.5      | 2024-07-16 | [\#42011] (https://github.com/airbytehq/airbyte/pull/42011) | Async consumer accepts null default namespace |
