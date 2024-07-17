@@ -4,12 +4,12 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, MutableMapping, Optional
+from typing import Any, MutableMapping
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
-from airbyte_cdk.sources.file_based.types import StreamState, StreamSlice
+from airbyte_cdk.sources.file_based.types import StreamState
 
 logger = logging.Logger("source-S3")
 

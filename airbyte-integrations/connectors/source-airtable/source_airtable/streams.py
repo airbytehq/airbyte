@@ -46,8 +46,7 @@ class AirtableBases(HttpStream):
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
             setattr(self, "raise_on_http_errors", False)
             return False
-        return False
-        # return super().should_retry(response)
+        return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -133,8 +132,7 @@ class AirtableStream(HttpStream, ABC):
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
             setattr(self, "raise_on_http_errors", False)
             return False
-        return False
-        # return super().should_retry(response)
+        return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
