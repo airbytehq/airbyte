@@ -68,11 +68,7 @@ def filter_output(records: Iterable[AirbyteMessage], type_) -> List[AirbyteMessa
 
 
 class SecretDict(UserDict):
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}(******)"
-
-    def __repr__(self) -> str:
-        return str(self)
+    pass
 
 
 def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:

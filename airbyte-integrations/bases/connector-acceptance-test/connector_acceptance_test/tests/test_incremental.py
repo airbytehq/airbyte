@@ -159,6 +159,10 @@ class TestIncremental(BaseTest):
         records_1 = filter_output(output_1, type_=Type.RECORD)
         states_1 = filter_output(output_1, type_=Type.STATE)
 
+        print(f"connector_config: {connector_config}")
+        print(f"catalog: {configured_catalog_for_incremental}")
+
+
         assert states_1, "First Read should produce at least one state"
         assert records_1, "First Read should produce at least one record"
 
@@ -286,9 +290,9 @@ class TestIncremental(BaseTest):
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
         output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state, enable_caching=False)
-        if states and is_global_state(states[0]):
-        # TODO: DB sources to fill out this case. Also, can we assume all states will be global if the first one is?
-            return
+        # if states and is_global_state(states[0]):
+        # # TODO: DB sources to fill out this case. Also, can we assume all states will be global if the first one is?
+        #     return
         records = filter_output(output, type_=Type.RECORD)
         states = filter_output(output, type_=Type.STATE)
         assert (

@@ -91,4 +91,4 @@ acceptance_tests:
             - "./hook.py"
             - "insert"
         future_state:
-          future_state_path: "integration_tests/abnormal_state_copy.json"
+          future_state_path: "integration_tests/abnormal_state_cdc_copy.json"

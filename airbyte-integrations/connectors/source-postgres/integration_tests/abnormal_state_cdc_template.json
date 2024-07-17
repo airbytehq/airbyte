@@ -1,0 +1,25 @@
+[
+  {
+    "type": "GLOBAL",
+    "global": {
+      "shared_state": {
+        "state": {
+          "[\"%s\",{\"server\":\"%s\"}]": "{\"transaction_id\":null,\"lsn\":78700672,\"txId\":990,\"ts_usec\":1721174581902296}"
+        }
+      },
+      "stream_states": [
+        {
+          "stream_descriptor": {
+            "name": "id_and_name_hook",
+            "namespace": "%s"
+          },
+          "stream_state": {
+            "stream_name":"id_and_name_hook",
+            "stream_namespace":"%s",
+            "cursor_field":[]
+          }
+        }
+      ]
+    }
+  }
+]

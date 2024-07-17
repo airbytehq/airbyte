@@ -18,6 +18,9 @@ catalog_incremental_source_file = "/connector/integration_tests/incremental_conf
 abnormal_state_write_file = "/connector/integration_tests/abnormal_state_copy.json"
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
+abnormal_state_cdc_write_file = "/connector/integration_tests/abnormal_state_cdc_copy.json"
+abnormal_state_cdc_file = "/connector/integration_tests/abnormal_state_cdc_template.json"
+
 secret_config_file = '/connector/secrets/config.json'
 secret_config_cdc_file = '/connector/secrets/config_cdc.json'
 
@@ -87,6 +90,9 @@ def write_supporting_file(schema_name):
     with open(abnormal_state_write_file, "w") as file:
         with open(abnormal_state_file, 'r') as source_file:
             file.write(source_file.read() % (schema_name, schema_name))
+    with open(abnormal_state_cdc_write_file, "w") as file:
+        with open(abnormal_state_cdc_file, 'r') as source_file:
+            file.write(source_file.read() % (schema_name, schema_name, schema_name, schema_name))
     # update configs:
     with open(secret_config_file) as base_config:
       secret = json.load(base_config)
@@ -243,7 +249,6 @@ def teardown():
     today = datetime.datetime.now()
     yesterday = today - timedelta(days=1)
     formatted_yesterday = yesterday.strftime('%Y%m%d')
-    print(f"formatted_yesterday: {formatted_yesterday}")
     delete_schemas_with_prefix(connection, formatted_yesterday)
     remove_all_write_files()
 
