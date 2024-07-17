@@ -41,6 +41,7 @@ def _get_source(args: List[str]):
 
 
 def run():
+    print("test!!!")
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
