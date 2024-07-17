@@ -60,11 +60,11 @@ class DeclarativeStream(Stream):
         if not isinstance(value, property):
             self._primary_key = value
 
-    # Using distinct names for the methods 'is_exit_on_rate_limit' and 'exit_on_rate_limit'
-    # to avoid name collision when conditionally setting value in get_first_record_for_slice
-    def is_exit_on_rate_limit(self) -> bool:
+    @property
+    def exit_on_rate_limit(self) -> bool:
         return self.retriever.requester.exit_on_rate_limit  # type: ignore # abstract Retriever class has not requester attribute
 
+    @exit_on_rate_limit.setter
     def exit_on_rate_limit(self, value: bool) -> None:
         self.retriever.requester.exit_on_rate_limit = value  # type: ignore[attr-defined]
 

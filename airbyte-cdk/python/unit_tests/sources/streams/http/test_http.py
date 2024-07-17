@@ -227,7 +227,7 @@ def test_raise_on_http_errors_off_429(mocker):
 
     mocker.patch.object(requests.Session, "send", return_value=req)
     with pytest.raises(DefaultBackoffException, match="Too many requests"):
-        stream.exit_on_rate_limit(True)
+        stream.exit_on_rate_limit = True
         list(stream.read_records(SyncMode.full_refresh))
 
 

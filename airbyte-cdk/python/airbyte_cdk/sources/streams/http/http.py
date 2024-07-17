@@ -49,14 +49,14 @@ class HttpStream(Stream, ABC):
             message_repository=InMemoryMessageRepository(),
         )
 
-    # Using distinct names for the methods 'is_exit_on_rate_limit' and 'exit_on_rate_limit'
-    # to avoid name collision when conditionally setting value in get_first_record_for_slice
-    def is_exit_on_rate_limit(self) -> bool:
+    @property
+    def exit_on_rate_limit(self) -> bool:
         """
         :return: False if the stream will retry endlessly when rate limited
         """
         return self._exit_on_rate_limit
 
+    @exit_on_rate_limit.setter
     def exit_on_rate_limit(self, value: bool) -> None:
         self._exit_on_rate_limit = value
 
@@ -374,7 +374,7 @@ class HttpStream(Stream, ABC):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             dedupe_query_params=True,
             log_formatter=self.get_log_formatter(),
-            exit_on_rate_limit=self.is_exit_on_rate_limit(),
+            exit_on_rate_limit=self.exit_on_rate_limit,
         )
 
         return request, response
