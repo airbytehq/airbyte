@@ -703,7 +703,6 @@ class TestIncrementalRead:
             [({"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": {}}, stream_output)],
             name="s2",
         )
-        mocker.patch.object(MockStreamWithState, "get_updated_state", return_value={})
 
         # Mock the stream's getter property for each time the stream reads self.state while syncing a stream
         getter_mock = Mock(wraps=MockStreamWithState.state.fget)

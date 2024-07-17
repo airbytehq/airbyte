@@ -603,7 +603,8 @@ class Stream(ABC):
         # is not overridden, then the stream defers to self.state getter
         if stream_state:
             checkpoint_reader.observe(stream_state)
-        else:
+        elif type(self).get_updated_state == Stream.get_updated_state:
+            # We only default to the state getter/setter if the stream does not use the legacy get_updated_state() method
             try:
                 new_state = self.state  # type: ignore # This will always exist on HttpStreams, but may not for Stream
                 if new_state:

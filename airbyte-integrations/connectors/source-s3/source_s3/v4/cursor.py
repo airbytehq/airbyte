@@ -4,12 +4,12 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
-from airbyte_cdk.sources.file_based.types import StreamState
+from airbyte_cdk.sources.file_based.types import StreamState, StreamSlice
 
 logger = logging.Logger("source-S3")
 
@@ -51,11 +51,6 @@ class Cursor(DefaultFileBasedCursor):
             }
         else:
             return state
-
-    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
-        # File-based cursors operate over slices made up files. Stream state is based on the progress
-        # through each slice and does not belong to a specific slice. We just return stream state as it is.
-        return self.get_stream_state()
 
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         """
