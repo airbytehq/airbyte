@@ -695,8 +695,6 @@ class StubParentHttpStream(HttpStream, CheckpointMixin):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return {"__ab_full_refresh_sync_complete": True}
 
-
-
     def _read_single_page(
         self,
         records_generator_fn: Callable[
