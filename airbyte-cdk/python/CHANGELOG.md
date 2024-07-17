@@ -1,7 +1,29 @@
 # Changelog
 
+## 3.7.0
+Deprecate AvailabilityStrategy
+
+## 3.6.0
+CDK: add not exiting when rate limited
+
+## 3.5.3
+Add failure_type to HttpResponseFilter(retry after pypi read error)
+
+## 3.5.2
+Add failure_type to HttpResponseFilter
+
+## 3.5.1
+Remove 3.11-style union
+
+## 3.5.0
+Clean invalid fields from configured catalog
+
+## 3.4.1
+resumable full refresh: Fix bug where checkpoint reader stops syncing too early if first partition is complete
+
 ## 3.4.0
 file-based cdk: add config option to limit number of files for schema discover
+resumable full refresh: Fix bug for substreams depending on RFR parent stream would not paginate over parent
 
 ## 3.3.0
 CDK: add incomplete status to availability check during read
