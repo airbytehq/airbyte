@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.7.0
+Deprecate AvailabilityStrategy
+
 ## 3.6.0
 CDK: add not exiting when rate limited
 
