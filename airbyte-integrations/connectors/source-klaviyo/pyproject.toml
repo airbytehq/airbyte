@@ -17,7 +17,7 @@ include = "source_klaviyo"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte_cdk = "^3"
+airbyte_cdk = "^2"
 
 [tool.poetry.scripts]
 source-klaviyo = "source_klaviyo.run:run"

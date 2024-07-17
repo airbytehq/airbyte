@@ -26,7 +26,7 @@ definitions:
               header: "Retry-After"
           response_filters:
             - type: HttpResponseFilter
-              action: RATE_LIMITED
+              action: RETRY
               http_codes: [429]
         - type: DefaultErrorHandler # adding this DefaultErrorHandler for 5XX error codes
         - type: DefaultErrorHandler
