@@ -1303,14 +1303,7 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_without_state_attribute_for_stream_with_desc_records(self, mocker, use_legacy):
+    def test_without_state_attribute_for_stream_with_desc_records(self, mocker):
         """
         This test will check that the state resolved by get_updated_state is used and returned in the state message.
         In this scenario records are returned in descending order, but we keep the "highest" cursor in the state.
@@ -1319,17 +1312,14 @@ class TestIncrementalRead:
         stream_output = [{f"k{cursor_id}": f"v{cursor_id}", stream_cursor: cursor_id} for cursor_id in range(5, 1, -1)]
         initial_state = {stream_cursor: 1}
         stream_name = "stream_with_cursor"
-        if use_legacy:
-            input_state = {stream_name: initial_state}
-        else:
-            input_state = [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(initial_state)
-                    ),
+        input_state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(initial_state)
                 ),
-            ]
+            ),
+        ]
         stream_with_cursor = MockStreamWithCursor(
             [
                 (
