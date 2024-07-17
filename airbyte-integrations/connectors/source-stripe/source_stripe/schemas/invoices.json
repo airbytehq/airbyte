@@ -111,7 +111,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
-        "additionalProperties": true
+        "additionalProperties": true,
         "properties": {
           "id": {
             "type": ["null", "string"]
