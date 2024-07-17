@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Callable, List
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines import consts
-from pipelines.helpers.github import update_commit_status_check
+from pipelines.helpers.github import is_automerge_pull_request, update_commit_status_check
 
 if TYPE_CHECKING:
     from dagger import Container
@@ -76,7 +76,7 @@ def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
     return never_fail_exec_inner
 
 
-def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
+def do_regression_test_status_check(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
     """
     Emit a failing status check that requires a manual override, via a /-command.
 
@@ -86,7 +86,7 @@ def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name:
     run_url = ctx.obj["gha_workflow_run_url"]
     should_send = ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST
 
-    if any(
+    if not is_automerge_pull_request(ctx.obj.get("pull_request")) and any(
         [
             (connector.language == ConnectorLanguage.PYTHON and connector.support_level == "certified")
             for connector in ctx.obj["selected_connectors_with_modified_files"]
