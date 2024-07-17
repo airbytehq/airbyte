@@ -20,7 +20,7 @@ class BufferEnqueue(
     private val memoryManager: GlobalMemoryManager,
     private val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>,
     private val stateManager: GlobalAsyncStateManager,
-    private val defaultNamespace: String,
+    private val defaultNamespace: String?,
 ) {
     /**
      * Buffer a record. Contains memory management logic to dynamically adjust queue size based via
@@ -62,7 +62,7 @@ class BufferEnqueue(
         // All our internal handling is on the true (null) namespace,
         // we just set the default namespace when handing off to destination-specific code.
         val mangledMessage =
-            if (message.record!!.namespace.isNullOrEmpty()) {
+            if (defaultNamespace != null && message.record!!.namespace.isNullOrEmpty()) {
                 val clone = Jsons.clone(message)
                 clone.record!!.namespace = defaultNamespace
                 clone
