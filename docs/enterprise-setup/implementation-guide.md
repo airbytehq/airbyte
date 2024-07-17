@@ -290,27 +290,23 @@ postgresql:
 
 global:
   database:
-    # -- Secret name where database credentials are stored
-    secretName: "" # e.g. "airbyte-config-secrets"
+    secretName: airbyte-config-secrets ## Secret name where database credentials are stored.
 
-    # -- The database host
-    host: ""
+    host: "" ## The database host.
     # -- The key within `secretName` where host is stored 
-    #hostSecretKey: "" # e.g. "database-host"
+    # hostSecretKey: "" # e.g. "database-host"
 
-    # -- The database port
-    port: ""
+    port: "" ## The database port.
     # -- The key within `secretName` where port is stored 
-    #portSecretKey: "" # e.g. "database-port" 
+    # portSecretKey: "" # e.g. "database-port" 
 
-    # -- The database name
-    database: ""
+    database: "" ## The database name.
     # -- The key within `secretName` where the database name is stored 
-    #databaseSecretKey: "" # e.g. "database-name" 
+    # databaseSecretKey: "" # e.g. "database-name" 
 
-    # -- The database user
-    user: "" # -- The key within `secretName` where the user is stored 
-    #userSecretKey: "" # e.g. "database-user"
+    user: "" ## The database user.
+    # -- The key within `secretName` where the user is stored 
+    # userSecretKey: "" # e.g. "database-user"
 
     # -- The key within `secretName` where password is stored
     passwordSecretKey: "" # e.g."database-password"
