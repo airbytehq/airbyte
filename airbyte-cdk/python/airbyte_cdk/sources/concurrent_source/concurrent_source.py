@@ -4,7 +4,7 @@
 import concurrent
 import logging
 from queue import Queue
-from typing import Iterable, Iterator, List, Optional, Tuple
+from typing import Iterable, Iterator, List
 
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.concurrent_source.concurrent_read_processor import ConcurrentReadProcessor
@@ -145,22 +145,3 @@ class ConcurrentSource:
             yield from concurrent_stream_processor.on_record(queue_item)
         else:
             raise ValueError(f"Unknown queue item type: {type(queue_item)}")
-
-    def _get_streams_to_read_from(
-        self, streams: List[AbstractStream]
-    ) -> Tuple[List[AbstractStream], List[Tuple[AbstractStream, Optional[str]]]]:
-        """
-        Iterate over the configured streams and return a list of streams to read from.
-        If a stream is not configured, it will be skipped.
-        If a stream is configured but does not exist in the source and self.raise_exception_on_missing_stream is True, an exception will be raised
-        If a stream is not available, it will be skipped
-        """
-        stream_instances_to_read_from = []
-        not_available_streams = []
-        for stream in streams:
-            stream_availability = stream.check_availability()
-            if not stream_availability.is_available():
-                not_available_streams.append((stream, stream_availability.message()))
-                continue
-            stream_instances_to_read_from.append(stream)
-        return stream_instances_to_read_from, not_available_streams
