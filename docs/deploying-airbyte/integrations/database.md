@@ -1,3 +1,7 @@
+---
+products: oss-community, oss-enterprise
+---
+
 # External Database
 
 For production deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
@@ -14,7 +18,7 @@ metadata:
 type: Opaque
 stringData:
   # Database Secrets
-  ## database-host: ## e.g. database.internla
+  ## database-host: ## e.g. database.internal
   ## database-port: ## e.g. 5432
   ## database-name: ## e.g. airbyte
   ## database-user: ## e.g. airbyte

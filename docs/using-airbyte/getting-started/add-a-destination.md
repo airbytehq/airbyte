@@ -36,7 +36,7 @@ Read more about the [specific limitations](/integrations/destinations/google-she
     Authenticate into your Google account by clicking "Sign in with Google" and granting permissions to Airbyte. Because this is a simple Google Sheets destination, there is only one more required field, **Spreadsheet Link**. This is the path to your spreadsheet that can be copied directly from your browser.
 
   </TabItem>
-  <TabItem value="self-managed" label="Self Hosted">
+  <TabItem value="self-managed" label="Self-Managed">
     As an example, we'll be setting up a simple JSON file that will be saved on our local system as the destination. Select **Local JSON** from the list of destinations. This will take you to the destination setup page.
 
     The left half of the page contains a set of fields that you will have to fill out. In the **Destination name** field, you can enter a name of your choosing to help you identify this instance of the connector. By default, this will be set to the name of the destination (i.e., `Local JSON`).
