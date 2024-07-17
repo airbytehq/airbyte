@@ -175,7 +175,7 @@ corresponds to that version.
 =======
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:------------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.41.6      | 2024-07-16 | [\#41996](https://github.com/airbytehq/airbyte/pull/41996) | Add back dbz heartbeats + fix java interop compilation issue in Config/TransientErrorException.                                                                |
+| 0.41.6      | 2024-07-17 | [\#41996](https://github.com/airbytehq/airbyte/pull/41996) | Fix java interop compilation issue in Config/TransientErrorException.                                                                |
 | 0.41.5      | 2024-07-16 | [\#42011] (https://github.com/airbytehq/airbyte/pull/42011) | Async consumer accepts null default namespace |
 | 0.41.4      | 2024-07-15 | [\#41959](https://github.com/airbytehq/airbyte/pull/41959) | Allow setting `internal_message` in Config/TransientErrorException. Destinations: shorten error message for INCOMPLETE stream status.                          |
 | 0.41.3      | 2024-07-15 | [\#41680](https://github.com/airbytehq/airbyte/pull/41680) | Fix: CompletableFutures.allOf now handles empty list and `Throwable`                                                                                           |
