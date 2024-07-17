@@ -203,7 +203,7 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.0 | 2024-07-17 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate to CDK v1.8.0 |
+| 2.1.0 | 2024-07-17 | [42060](https://github.com/airbytehq/airbyte/pull/42060) | Migrate to CDK v1.8.0 |
 | 2.0.5 | 2024-07-13 | [41765](https://github.com/airbytehq/airbyte/pull/41765) | Update dependencies |
 | 2.0.4 | 2024-07-10 | [41449](https://github.com/airbytehq/airbyte/pull/41449) | Update dependencies |
 | 2.0.3 | 2024-07-06 | [39972](https://github.com/airbytehq/airbyte/pull/39972) | Update dependencies |
