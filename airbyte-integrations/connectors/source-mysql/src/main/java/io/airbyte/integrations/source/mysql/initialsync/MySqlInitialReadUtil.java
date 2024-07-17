@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.wassOccurrenceMessage;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
@@ -325,6 +326,7 @@ public class MySqlInitialReadUtil {
        * sync to clear the binlog. We cannot simply add the same cdc iterators as their target end
        * position is fixed to the tip of the binlog at the start of the sync.
        */
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(wassOccurrenceMessage());
       final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
           MySqlCdcProperties.getDebeziumProperties(database), sourceConfig, catalog, startedCdcStreamList);
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = getCdcIncrementalIteratorsSupplier(handler,
