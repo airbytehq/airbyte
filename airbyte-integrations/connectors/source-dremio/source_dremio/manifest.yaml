@@ -45,8 +45,9 @@ streams:
 
 spec:
   documentation_url: "https://docs.airbyte.com/integrations/sources/dremio"
-  type: Spec
   connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Dremio Spec
     type: object
     additionalProperties: true
     required:
@@ -55,7 +56,7 @@ spec:
     properties:
       api_key:
         type: string
-        title: API Key
+        description: "API Key that is generated when you authenticate to Dremio API"
         airbyte_secret: true
       base_url:
         type: string
