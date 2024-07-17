@@ -227,6 +227,7 @@ def test_raise_on_http_errors_off_429(mocker):
 
     mocker.patch.object(requests.Session, "send", return_value=req)
     with pytest.raises(DefaultBackoffException, match="Too many requests"):
+        stream.exit_on_rate_limit = True
         list(stream.read_records(SyncMode.full_refresh))
 
 
@@ -511,7 +512,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch.object(requests.Session, "send", return_value=res)
     mocker.patch.object(stream._http_client, "_logger")
     with pytest.raises(requests.exceptions.HTTPError):
-        response = stream._http_client.send_request("GET", "https://g", {})
+        response = stream._http_client.send_request("GET", "https://g", {}, exit_on_rate_limit=True)
         stream._http_client.logger.error.assert_called_with(response.text)
         assert response.status_code == status_code
 
