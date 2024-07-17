@@ -179,10 +179,15 @@ constructor(
                 if (terminalStatusFromSource == AirbyteStreamStatus.INCOMPLETE) {
                     unsuccessfulStreams.add(streamDescriptor)
                 }
-                StreamDescriptorUtils.withDefaultNamespace(
-                    streamDescriptor,
-                    bufferManager.defaultNamespace,
-                ) to
+
+                if (bufferManager.defaultNamespace == null) {
+                    streamDescriptor
+                } else {
+                    StreamDescriptorUtils.withDefaultNamespace(
+                        streamDescriptor,
+                        bufferManager.defaultNamespace,
+                    )
+                } to
                     StreamSyncSummary(
                         getRecordCounter(streamDescriptor).get(),
                         terminalStatusFromSource,
