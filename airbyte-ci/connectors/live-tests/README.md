@@ -280,6 +280,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.18.1
+
+Fix extra argument.
+
 ### 0.18.0
 
 Add support for selecting from a subset of connections.
