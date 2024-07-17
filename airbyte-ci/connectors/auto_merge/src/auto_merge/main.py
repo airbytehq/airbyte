@@ -49,7 +49,7 @@ def check_if_pr_is_auto_mergeable(head_commit: GithubCommit, pr: PullRequest, re
     Returns:
         bool: True if the PR is auto-mergeable, False otherwise
     """
-    print("test!")
+    print("test!!")
     for validator in ENABLED_VALIDATORS:
         is_valid, error = validator(head_commit, pr, required_checks)
         if not is_valid:
