@@ -147,8 +147,6 @@ from pydantic.v1 import BaseModel
 ComponentDefinition = Mapping[str, Any]
 
 
-
-
 class ModelToComponentFactory:
     def __init__(
         self,
