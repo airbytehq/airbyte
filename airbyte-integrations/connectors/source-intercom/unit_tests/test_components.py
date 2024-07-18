@@ -10,9 +10,9 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
 from source_intercom.components import (
-    IntercomHttpRequester,
     IncrementalSingleSliceCursor,
     IncrementalSubstreamSlicerCursor,
+    IntercomHttpRequester,
     IntercomRateLimiter,
 )
 
