@@ -12,9 +12,9 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.41.8'
+    cdkVersionRequired = '0.42.1'
     features = ['db-sources', 'datastore-postgres']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 application {
@@ -44,4 +44,10 @@ jsonSchema2Pojo {
     generateBuilders = true
     includeConstructors = false
     includeSetters = true
+}
+
+compileKotlin {
+    dependsOn {
+        generateJsonSchema2Pojo
+    }
 }
