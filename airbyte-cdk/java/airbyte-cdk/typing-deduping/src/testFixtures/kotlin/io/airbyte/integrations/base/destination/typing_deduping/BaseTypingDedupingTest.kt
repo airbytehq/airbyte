@@ -1056,10 +1056,14 @@ abstract class BaseTypingDedupingTest {
     ) {
         val actualRawRecords = dumpRawTableRecords(streamNamespace, streamName)
 
+        println("SGX expectedRawRecords=${expectedRawRecords.joinToString("\n  ")}")
+        println("SGX actualRawRecords=${actualRawRecords.joinToString("\n  ")}")
         if (disableFinalTableComparison) {
             DIFFER!!.diffRawTableRecords(expectedRawRecords, actualRawRecords)
         } else {
             val actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName)
+            println("SGX expectedFinalRecords=${expectedFinalRecords.joinToString("\n  ")}")
+            println("SGX actualFinalRecords=${actualFinalRecords.joinToString("\n  ")}")
             DIFFER!!.verifySyncResult(
                 expectedRawRecords,
                 actualRawRecords,

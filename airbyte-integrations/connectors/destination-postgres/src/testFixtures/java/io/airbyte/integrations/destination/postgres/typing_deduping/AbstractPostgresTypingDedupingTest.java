@@ -72,7 +72,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
                 .withName(getStreamName())
                 .withJsonSchema(getSchema()))
             .withMinimumGenerationId(0L)
-            .withSyncId(13L)
+            .withSyncId(42L)
             .withGenerationId(43L)));
 
     // First sync
