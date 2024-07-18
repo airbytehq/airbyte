@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "connectors-blue-green"
+version = "1.5.0"
+description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
+authors = ["Airbyte <contact@airbyte.io>"]
+readme = "README.md"
+packages = [{ include = "connectors_canary_testing", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.7"
+requests = "^2.32.3"
+pyyaml = "^6.0.1"
+genson = "^1.3.0"
+airbyte-protocol-models = "<1.0.0"
+mitmproxy = "==10.2.4"
+asyncclick = "^8.1.7.2"
+semver = "^3.0.2"
+google-cloud-storage = "^2.17.0"
+pytest = "^8.3.1"
+deepdiff = "^7.0.1"
+
+
+[tool.poetry.scripts]
+connectors-blue-green = "connectors_canary_testing.cli:connectors_canary_testing"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
