@@ -22,8 +22,14 @@ definitions:
       Intercom-Version: "'2.10'"
       Accept: "application/json"
     error_handler:
-      type: "CustomErrorHandler"
+      type: CustomErrorHandler
       class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+      response_filters:
+        - type: HttpResponseFilter
+          error_message_contains: "Active subscription needed"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Failed to perform request. Error: Active subscription needed. Please, validate your current Intercom plan to continue using API."
   retriever:
     description: "Base Retriever for Full Refresh streams"
     record_selector:
