@@ -501,8 +501,8 @@ def test_config_update():
         "expires_in": 3600,
     }
     with patch(
-        "airbyte_cdk.sources.streams.http.requests_native_auth.SingleUseRefreshTokenOauth2Authenticator._get_refresh_access_token_response",
-        return_value=refresh_request_response,
+            "airbyte_cdk.sources.streams.http.requests_native_auth.SingleUseRefreshTokenOauth2Authenticator._get_refresh_access_token_response",
+            return_value=refresh_request_response,
     ):
         output = handle_connector_builder_request(
             source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, TestReadLimits()
@@ -564,6 +564,16 @@ def test_read_returns_error_response(mock_from_exception):
 
 def test_handle_429_response():
     response = _create_429_page_response({"result": [{"error": "too many requests"}], "_metadata": {"next": "next"}})
+
+    # Add backoff strategy to avoid default endless backoff loop
+    TEST_READ_CONFIG["__injected_declarative_manifest"]['definitions']['retriever']['requester']['error_handler'] = {
+        "backoff_strategies": [
+            {
+                "type": "ConstantBackoffStrategy",
+                "backoff_time_in_seconds": 5
+            }
+        ]
+    }
 
     config = TEST_READ_CONFIG
     limits = TestReadLimits()
@@ -639,18 +649,18 @@ def create_mock_declarative_stream(http_stream):
     "test_name, config, expected_max_records, expected_max_slices, expected_max_pages_per_slice",
     [
         (
-            "test_no_test_read_config",
-            {},
-            DEFAULT_MAXIMUM_RECORDS,
-            DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
-            DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
+                "test_no_test_read_config",
+                {},
+                DEFAULT_MAXIMUM_RECORDS,
+                DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
+                DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
         ),
         (
-            "test_no_values_set",
-            {"__test_read_config": {}},
-            DEFAULT_MAXIMUM_RECORDS,
-            DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
-            DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
+                "test_no_values_set",
+                {"__test_read_config": {}},
+                DEFAULT_MAXIMUM_RECORDS,
+                DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
+                DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
         ),
         ("test_values_are_set", {"__test_read_config": {"max_slices": 1, "max_pages_per_slice": 2, "max_records": 3}}, 3, 1, 2),
     ],
@@ -723,10 +733,10 @@ def _create_429_page_response(response_body):
     requests.Session,
     "send",
     side_effect=(
-        _create_page_response({"result": [{"id": 0}, {"id": 1}], "_metadata": {"next": "next"}}),
-        _create_page_response({"result": [{"id": 2}], "_metadata": {"next": "next"}}),
-    )
-    * 10,
+                        _create_page_response({"result": [{"id": 0}, {"id": 1}], "_metadata": {"next": "next"}}),
+                        _create_page_response({"result": [{"id": 2}], "_metadata": {"next": "next"}}),
+                )
+                * 10,
 )
 def test_read_source(mock_http_stream):
     """
@@ -778,8 +788,8 @@ def test_read_source(mock_http_stream):
     requests.Session,
     "send",
     side_effect=(
-        _create_page_response({"result": [{"id": 0}, {"id": 1}], "_metadata": {"next": "next"}}),
-        _create_page_response({"result": [{"id": 2}], "_metadata": {"next": "next"}}),
+            _create_page_response({"result": [{"id": 0}, {"id": 1}], "_metadata": {"next": "next"}}),
+            _create_page_response({"result": [{"id": 2}], "_metadata": {"next": "next"}}),
     ),
 )
 def test_read_source_single_page_single_slice(mock_http_stream):
