@@ -18,6 +18,7 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSc
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.checkpoint import Cursor
 from deprecated import deprecated
 
 
@@ -160,3 +161,12 @@ class AbstractFileBasedStream(Stream):
     @property
     def name(self) -> str:
         return self.config.name
+
+    def get_cursor(self) -> Optional[Cursor]:
+        """
+        This is a temporary hack. Because file-based, declarative, and concurrent have _slightly_ different cursor implementations
+        the file-based cursor isn't compatible with the cursor-based iteration flow in core.py top-level CDK. By setting this to
+        None, we defer to the regular incremental checkpoint flow. Once all cursors are consolidated under a common interface
+        then this override can be removed.
+        """
+        return None
