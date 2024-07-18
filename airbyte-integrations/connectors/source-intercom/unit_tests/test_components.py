@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.streams import Stream
 from source_intercom.components import (
-    HttpRequesterWithRateLimiter,
+    IntercomHttpRequester,
     IncrementalSingleSliceCursor,
     IncrementalSubstreamSlicerCursor,
     IntercomRateLimiter,
@@ -37,7 +37,7 @@ def get_requester():
 
     config = {"url": "https://airbyte.io"}
 
-    return HttpRequesterWithRateLimiter(
+    return IntercomHttpRequester(
         name="stream_name",
         url_base=InterpolatedString.create("{{ config['url'] }}", parameters={}),
         path=InterpolatedString.create("v1/{{ stream_slice['id'] }}", parameters={}),

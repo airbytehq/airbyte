@@ -10,7 +10,7 @@ definitions:
   requester:
     description: "Base Requester for Full Refresh streams"
     type: CustomRequester
-    class_name: source_intercom.components.HttpRequesterWithRateLimiter
+    class_name: source_intercom.components.IntercomHttpRequester
     url_base: "https://api.intercom.io/"
     http_method: "GET"
     authenticator:
@@ -22,7 +22,8 @@ definitions:
       Intercom-Version: "'2.10'"
       Accept: "application/json"
     error_handler:
-      type: "DefaultErrorHandler"
+      type: "CustomErrorHandler"
+      class_name: source_intercom.components.ErrorHandlerWithRateLimiter
   retriever:
     description: "Base Retriever for Full Refresh streams"
     record_selector:
