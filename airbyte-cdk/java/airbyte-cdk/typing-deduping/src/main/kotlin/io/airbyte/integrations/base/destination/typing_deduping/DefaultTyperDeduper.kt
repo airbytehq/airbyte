@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.prepareSchemas
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
@@ -294,7 +295,10 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 // records,
                 // then the raw table has some unprocessed records right now.
                 // Run T+D if either of those conditions are true.
-                val shouldRunTypingDeduping = nonzeroRecords || unprocessedRecordsPreexist
+                val shouldRunTypingDeduping =
+                    (nonzeroRecords || unprocessedRecordsPreexist) &&
+                        streamSyncSummary.terminalStatus ==
+                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
                 if (!shouldRunTypingDeduping) {
                     LOGGER.info {
                         "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} because it had no records during this sync and no unprocessed records from a previous sync."

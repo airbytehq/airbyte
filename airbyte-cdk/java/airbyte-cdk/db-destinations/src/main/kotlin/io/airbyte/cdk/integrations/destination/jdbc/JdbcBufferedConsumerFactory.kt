@@ -285,7 +285,11 @@ object JdbcBufferedConsumerFactory {
                                 it.generationId,
                                 it.id.rawNamespace,
                                 it.id.rawName
-                            )
+                            ) &&
+                            streamSyncSummaries
+                                .getValue(it.id.asStreamDescriptor())
+                                .terminalStatus ==
+                                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
                     ) {
                         sqlOperations.overwriteRawTable(database, it.id.rawNamespace, it.id.rawName)
                     }

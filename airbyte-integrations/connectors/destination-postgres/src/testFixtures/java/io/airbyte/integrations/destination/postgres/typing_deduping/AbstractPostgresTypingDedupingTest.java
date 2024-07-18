@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -72,7 +73,7 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
                 .withName(getStreamName())
                 .withJsonSchema(getSchema()))
             .withMinimumGenerationId(0L)
-            .withSyncId(13L)
+            .withSyncId(42L)
             .withGenerationId(43L)));
 
     // First sync
@@ -255,6 +256,15 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     // First sync
     List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
     runSync(catalog, messages1, "airbyte/destination-postgres:2.0.15", Function.identity(), null);
+    List<JsonNode> actualRawRecords1 = dumpRawTableRecords(getStreamNamespace(), getStreamName());
+    Set<JsonNode> loadedAtValues1 =
+        actualRawRecords1.stream()
+            .map((JsonNode record) -> record.get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT))
+            .collect(Collectors.toSet());
+    assertEquals(
+        1,
+        loadedAtValues1.size(),
+        "Expected only one value for _airbyte_loaded_at after the 1st sync!");
 
     // Second sync
     List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
@@ -292,14 +302,18 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     // (only do this if T+D is enabled to begin with; otherwise loaded_at will just be null)
     if (!disableFinalTableComparison()) {
       List<JsonNode> actualRawRecords2 = dumpRawTableRecords(getStreamNamespace(), getStreamName());
-      Set<JsonNode> loadedAtValues =
+      Set<JsonNode> loadedAtValues2 =
           actualRawRecords2.stream()
               .map((JsonNode record) -> record.get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT))
               .collect(Collectors.toSet());
       assertEquals(
           2,
-          loadedAtValues.size(),
+          loadedAtValues2.size(),
           "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?");
+      assertTrue(
+          loadedAtValues2.containsAll(loadedAtValues1),
+          "expected the loaded_at value from the 1st sync. If it's not there, then we incorrectly triggered a soft reset.");
+
     }
   }
 
