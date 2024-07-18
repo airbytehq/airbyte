@@ -556,7 +556,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                                                                          * decorateWithStartedStatus=
                                                                                                                          */ true, /*
                                                                                                                                    * decorateWithCompletedStatus=
-                                                                                                                                   */ true));
+                                                                                                                                   */ true,
+          Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>(xminHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(xminStreams.streamsForXminSync()), tableNameToTable, emittedAt));
 
@@ -600,7 +601,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
               tableNameToTable,
-              emittedAt, /* decorateWithStartedStatus= */ true, /* decorateWithCompletedStatus= */ true));
+              emittedAt, /* decorateWithStartedStatus= */ true, /* decorateWithCompletedStatus= */ true, Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterators = new ArrayList<>(super.getIncrementalIterators(database,
           new ConfiguredAirbyteCatalog().withStreams(
               cursorBasedStreamsCategorised.remainingStreams()
@@ -688,8 +689,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   public static void main(final String[] args) throws Exception {
     final Source source = PostgresSource.sshWrappedSource(new PostgresSource());
+    final PostgresSourceExceptionHandler exceptionHandler = new PostgresSourceExceptionHandler();
     LOGGER.info("starting source: {}", PostgresSource.class);
-    new IntegrationRunner(source).run(args);
+    new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
 
