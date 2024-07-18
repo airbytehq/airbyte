@@ -77,7 +77,8 @@ the underlying role executing the container workload in AWS.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
-| :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
+|:--------|:-----------|:----------------------------------------------------------|:---------------------------------------------------------------------|
+| 0.3.3   | 2024-07-19 | [41936](https://github.com/airbytehq/airbyte/pull/41936)       | Fix incorrect type check for incremental read                        |
 | 0.3.2   | 2024-05-01 | [27045](https://github.com/airbytehq/airbyte/pull/27045)  | Fix missing scan permissions                                         |
 | 0.3.1   | 2024-05-01 | [31935](https://github.com/airbytehq/airbyte/pull/31935)  | Fix list more than 100 tables                                        |
 | 0.3.0   | 2024-04-24 | [37530](https://github.com/airbytehq/airbyte/pull/37530)  | Allow role based access                                              |
