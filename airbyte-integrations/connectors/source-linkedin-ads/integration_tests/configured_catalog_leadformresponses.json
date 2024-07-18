@@ -1,0 +1,31 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "lead_form_responses",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": ["null", "object"],
+          "title": "Lead Form responses",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "description": "The unique identifier of the Lead Form response.",
+              "type": ["null", "string"]
+            },
+            "leadType": {
+              "description": "The type of the lead representing the origination of the lead.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

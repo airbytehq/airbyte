@@ -1,0 +1,511 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "id"
+  ],
+  "properties": {
+    "id": {
+      "type": "number"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "sponsoredAccount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "state": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "content": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "headline": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "localized": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "da_DK": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "de_DE": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "en_US": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fr_FR": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "legalInfo": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "consents": {
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "legalInfoId": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "privacyPolicyUrl": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "questions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "question": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "localized": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "da_DK": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "de_DE": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "en_US": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "fr_FR": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "questionId": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "predefinedField": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "questionDetails": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "textQuestionDetails": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "maxResponseLength": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      }
+                    }
+                  },
+                  "multipleChoiceQuestionDetails": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "properties": {
+                      "options": {
+                        "type": [
+                          "array",
+                          "null"
+                        ],
+                        "items": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": [
+                                "number",
+                                "null"
+                              ]
+                            },
+                            "text": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "localized": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "da_DK": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "de_DE": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "en_US": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "fr_FR": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "label": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responseEditable": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "responseRequired": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "description": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "localized": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "da_DK": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "de_DE": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "en_US": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fr_FR": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "postSubmissionInfo": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "message": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "localized": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "properties": {
+                    "da_DK": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "de_DE": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "en_US": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "fr_FR": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "callToAction": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "callToActionLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "callToActionTarget": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "properties": {
+                    "landingPageUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "created": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "versionId": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "reviewInfo": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "lastUpdated": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reviewStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rejectionReasons": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "hiddenFields": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "lastModified": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "creationLocale": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "country": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
