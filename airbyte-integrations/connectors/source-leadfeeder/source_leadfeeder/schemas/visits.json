@@ -11,7 +11,7 @@
     "account_id": {
       "type": ["null", "integer"]
     },
-    "date": {
+    "started_at": {
       "type": ["null", "string"]
     },
     "attributes": {

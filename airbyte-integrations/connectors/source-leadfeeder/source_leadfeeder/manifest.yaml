@@ -57,9 +57,6 @@ definitions:
       inject_on_first_request: true
   incremental_sync:
     type: DatetimeBasedCursor
-    cursor_datetime_formats:
-      - "%Y-%m-%d"
-    datetime_format: "%Y-%m-%d"
     start_datetime:
       type: MinMaxDatetime
       datetime: '{{ config["start_date"] }}'
@@ -129,6 +126,9 @@ definitions:
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
       cursor_field: last_visit_date
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_leadfeeder/schemas/leads.json"
@@ -160,11 +160,14 @@ definitions:
       - type: AddFields
         fields:
           - path:
-              - date
-            value: "{{record['attributes']['date']}}"
+              - started_at
+            value: "{{record['attributes']['started_at']}}"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      cursor_field: date
+      cursor_field: started_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_leadfeeder/schemas/visits.json"
