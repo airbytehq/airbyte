@@ -3,11 +3,14 @@
 #
 
 import json
+import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, Generator, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -28,6 +31,7 @@ class JsonDecoder(Decoder):
                 body_json = [body_json]
             yield from body_json
         except requests.exceptions.JSONDecodeError:
+            logger.warning(f"Response cannot be parsed into json: {response.status_code=}, {response.text=}")
             yield {}
 
 
