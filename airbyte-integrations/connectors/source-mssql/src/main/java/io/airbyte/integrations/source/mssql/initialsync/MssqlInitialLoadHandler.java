@@ -142,7 +142,8 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final Instant emittedAt,
                                                                              final boolean decorateWithStartedStatus,
-                                                                             final boolean decorateWithCompletedStatus) {
+                                                                             final boolean decorateWithCompletedStatus,
+                                                                             @NotNull final Optional<Duration> cdcInitialLoadTimeout) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -159,7 +160,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
           iteratorList.add(
               new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
         }
-        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt, Optional.empty()));
+        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt, cdcInitialLoadTimeout));
         if (decorateWithCompletedStatus) {
           iteratorList.add(new StreamStatusTraceEmitterIterator(
               new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
@@ -174,7 +175,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
   public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(@NotNull final ConfiguredAirbyteStream airbyteStream,
                                                                     @NotNull final TableInfo<CommonField<JDBCType>> table,
                                                                     @NotNull final Instant emittedAt,
-      @NotNull final Optional<Duration> duration) {
+                                                                    @NotNull final Optional<Duration> cdcInitialLoadTimeout) {
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();
     final String namespace = stream.getNamespace();
@@ -186,7 +187,7 @@ public class MssqlInitialLoadHandler implements InitialLoadHandler<JDBCType> {
         .toList();
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
         new MssqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
+            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream), emittedAt, cdcInitialLoadTimeout);
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream);

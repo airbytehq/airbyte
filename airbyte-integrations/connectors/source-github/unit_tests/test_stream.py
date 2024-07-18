@@ -11,7 +11,9 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
+from airbyte_protocol.models import FailureType
 from requests import HTTPError
 from responses import matchers
 from source_github import SourceGithub, constants
@@ -24,6 +26,7 @@ from source_github.streams import (
     Commits,
     ContributorActivity,
     Deployments,
+    GithubStreamABCBackoffStrategy,
     IssueEvents,
     IssueLabels,
     IssueMilestones,
@@ -54,7 +57,7 @@ from source_github.utils import read_full_refresh
 
 from .utils import ProjectsResponsesAPI, read_incremental
 
-DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
+DEFAULT_BACKOFF_DELAYS = [1, 2, 4, 8, 16]
 
 
 @responses.activate
@@ -88,34 +91,41 @@ def test_internal_server_error_retry(time_mock):
 )
 @patch("time.time", return_value=1655804424.0)
 def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
-    response_mock = MagicMock()
+    response_mock = MagicMock(spec=requests.Response)
     response_mock.status_code = http_status
     response_mock.headers = response_headers
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
 
 
 @pytest.mark.parametrize(
-    ("http_status", "response_headers", "text"),
+    ("http_status", "response_headers", "text", "response_action", "error_message"),
     [
-        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}'),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, ""),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, ""),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, ""),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, ""),
-        (HTTPStatus.BAD_GATEWAY, {}, ""),
-        (HTTPStatus.SERVICE_UNAVAILABLE, {}, ""),
+        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}', ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.OK}. Retrying..."),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, "", ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying..."),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, "", ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying..."),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, "", ResponseAction.RATE_LIMITED, f"Response status code: {HTTPStatus.FORBIDDEN}. Retrying..."),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", ResponseAction.RETRY, "Internal server error."),
+        (HTTPStatus.BAD_GATEWAY, {}, "", ResponseAction.RETRY, "Bad gateway."),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, "", ResponseAction.RETRY, "Service unavailable."),
     ],
 )
-def test_should_retry(http_status, response_headers, text):
+def test_error_handler(http_status, response_headers, text, response_action, error_message):
     stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
-    response_mock = MagicMock()
+    response_mock = MagicMock(spec=requests.Response)
     response_mock.status_code = http_status
     response_mock.headers = response_headers
     response_mock.text = text
+    response_mock.ok = False
     response_mock.json = lambda: json.loads(text)
-    assert stream.should_retry(response_mock)
+
+    expected = ErrorResolution(
+        response_action=response_action,
+        failure_type=FailureType.transient_error,
+        error_message=error_message,  # type: ignore[union-attr]
+    )
+    assert stream.get_error_handler().interpret_response(response_mock) == expected
 
 
 @responses.activate
@@ -178,7 +188,8 @@ def test_graphql_rate_limited(time_mock, sleep_mock):
 
 
 @responses.activate
-def test_stream_teams_404():
+@patch("time.sleep")
+def test_stream_teams_404(time_mock):
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)
 
@@ -190,7 +201,7 @@ def test_stream_teams_404():
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 6
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/teams?per_page=100"
 
 
@@ -234,7 +245,7 @@ def test_stream_organizations_read():
 def test_stream_teams_read():
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Teams(**organization_args)
-    stream._session.cache.clear()
+    stream._http_client._session.cache.clear()
     responses.add("GET", "https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
     responses.add("GET", "https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = list(read_full_refresh(stream))
@@ -258,7 +269,8 @@ def test_stream_users_read():
 
 
 @responses.activate
-def test_stream_repositories_404():
+@patch("time.sleep")
+def test_stream_repositories_404(time_mock):
     organization_args = {"organizations": ["org_name"]}
     stream = Repositories(**organization_args)
 
@@ -270,12 +282,13 @@ def test_stream_repositories_404():
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 6
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
 
 
 @responses.activate
-def test_stream_repositories_401(caplog):
+@patch("time.sleep")
+def test_stream_repositories_401(time_mock, caplog):
     organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
     stream = Repositories(**organization_args)
 
@@ -289,7 +302,7 @@ def test_stream_repositories_401(caplog):
     with pytest.raises(HTTPError):
         assert list(read_full_refresh(stream)) == []
 
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 6
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
     assert "Personal Access Token renewal is required: Bad credentials" in caplog.messages
 
@@ -315,7 +328,8 @@ def test_stream_repositories_read():
 
 
 @responses.activate
-def test_stream_projects_disabled():
+@patch("time.sleep")
+def test_stream_projects_disabled(time_mock):
 
     repository_args_with_start_date = {"start_date": "start_date", "page_size_for_large_streams": 30, "repositories": ["test_repo"]}
 
@@ -328,7 +342,7 @@ def test_stream_projects_disabled():
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 6
     assert responses.calls[0].request.url == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
 
 
@@ -563,8 +577,8 @@ def test_stream_project_columns():
 
     projects_stream = Projects(**repository_args_with_start_date)
     stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
-    projects_stream._session.cache.clear()
-    stream._session.cache.clear()
+    projects_stream._http_client._session.cache.clear()
+    stream._http_client._session.cache.clear()
     stream_state = {}
 
     records = read_incremental(stream, stream_state=stream_state)
@@ -605,8 +619,8 @@ def test_stream_project_columns():
 
     ProjectsResponsesAPI.register(data)
 
-    projects_stream._session.cache.clear()
-    stream._session.cache.clear()
+    projects_stream._http_client._session.cache.clear()
+    stream._http_client._session.cache.clear()
     records = read_incremental(stream, stream_state=stream_state)
     assert records == [
         {"id": 24, "name": "column_24", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-04-01T10:00:00Z"},
@@ -678,8 +692,8 @@ def test_stream_project_cards():
 
     stream_state = {}
 
-    projects_stream._session.cache.clear()
-    project_columns_stream._session.cache.clear()
+    projects_stream._http_client._session.cache.clear()
+    project_columns_stream._http_client._session.cache.clear()
     records = read_incremental(stream, stream_state=stream_state)
 
     assert records == [
@@ -949,7 +963,8 @@ def test_stream_reviews_incremental_read():
 
 
 @responses.activate
-def test_stream_team_members_full_refresh(caplog, rate_limit_mock_response):
+@patch("time.sleep")
+def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_response):
     organization_args = {"organizations": ["org1"]}
     repository_args = {"repositories": [], "page_size_for_large_streams": 100}
 
@@ -963,7 +978,7 @@ def test_stream_team_members_full_refresh(caplog, rate_limit_mock_response):
 
     teams_stream = Teams(**organization_args)
     stream = TeamMembers(parent=teams_stream, **repository_args)
-    teams_stream._session.cache.clear()
+    teams_stream._http_client._session.cache.clear()
     records = list(read_full_refresh(stream))
 
     assert records == [
@@ -990,7 +1005,7 @@ def test_stream_commit_comment_reactions_incremental_read():
 
     repository_args = {"repositories": ["airbytehq/integration-test"], "page_size_for_large_streams": 100}
     stream = CommitCommentReactions(**repository_args)
-    stream._parent_stream._session.cache.clear()
+    stream._parent_stream._http_client._session.cache.clear()
 
     responses.add(
         "GET",
@@ -1057,7 +1072,7 @@ def test_stream_commit_comment_reactions_incremental_read():
         json=[{"id": 154935433, "created_at": "2022-02-01T17:00:00Z"}],
     )
 
-    stream._parent_stream._session.cache.clear()
+    stream._parent_stream._http_client._session.cache.clear()
     records = read_incremental(stream, stream_state)
 
     assert records == [
@@ -1337,7 +1352,8 @@ def test_stream_pull_request_comment_reactions_read():
 
 
 @responses.activate
-def test_stream_projects_v2_graphql_retry(rate_limit_mock_response):
+@patch("time.sleep")
+def test_stream_projects_v2_graphql_retry(time_mock, rate_limit_mock_response):
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 20,
@@ -1349,9 +1365,12 @@ def test_stream_projects_v2_graphql_retry(rate_limit_mock_response):
         "https://api.github.com/graphql",
         json={"errors": "not found"},
         status=200,
+        headers={'Retry-After': '5'}
     )
 
-    with patch.object(stream, "backoff_time", return_value=0.01), pytest.raises(UserDefinedBackoffException):
+    backoff_strategy = GithubStreamABCBackoffStrategy(stream)
+
+    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(UserDefinedBackoffException):
         read_incremental(stream, stream_state={})
     assert resp.call_count == stream.max_retries + 1
 

@@ -213,6 +213,11 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     }
   }
 
+  @Override
+  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
+    return Optional.of(pair);
+  }
+
   private boolean isCdcSync(MySqlInitialLoadStateManager initialLoadStateManager) {
     if (initialLoadStateManager instanceof MySqlInitialLoadGlobalStateManager) {
       LOGGER.info("Running a cdc sync");
