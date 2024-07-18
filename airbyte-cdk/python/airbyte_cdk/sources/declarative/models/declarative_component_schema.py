@@ -1177,7 +1177,7 @@ class DefaultPaginator(BaseModel):
         description='Strategy defining how records are paginated.',
         title='Pagination Strategy',
     )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+    decoder: Optional[JsonDecoder] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
         title='Decoder',

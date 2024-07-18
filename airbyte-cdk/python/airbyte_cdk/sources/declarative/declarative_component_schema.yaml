@@ -1259,10 +1259,7 @@ definitions:
       decoder:
         title: Decoder
         description: Component decoding the response so records can be extracted.
-        anyOf:
-          - "$ref": "#/definitions/JsonDecoder"
-          - "$ref": "#/definitions/JsonlDecoder"
-          - "$ref": "#/definitions/IterableDecoder"
+        "$ref": "#/definitions/JsonDecoder"
       page_size_option:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
