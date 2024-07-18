@@ -127,6 +127,6 @@ No workaround has been identified to manage this issue for now.
 
 | Version | Date       | Pull Request                                           | Subject                                                 |
 | :------ |:-----------|:-------------------------------------------------------|:--------------------------------------------------------|
-| 0.1.0 | 2024-07-18 | [TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Initial release of LinkedIn Leads connector for Airbyte |
+| 0.1.0 | 2024-07-18 | [42101](https://github.com/airbytehq/airbyte/pull/42101) | Initial release of LinkedIn Leads connector for Airbyte |
 
 </details>
