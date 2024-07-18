@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.8.0
+resumable full refresh: Automatically apply RFR to streams (not including substreams) that are not incremental and implement next_page_token
+
 ## 3.7.0
 Deprecate AvailabilityStrategy
 

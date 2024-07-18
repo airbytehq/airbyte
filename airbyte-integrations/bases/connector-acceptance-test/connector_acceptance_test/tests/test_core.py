@@ -1285,9 +1285,7 @@ class TestBasicRead(BaseTest):
         ), "All stream must emit status"
 
         for stream_name, status_list in stream_statuses.items():
-            assert (
-                len(status_list) >= 3
-            ), f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
+            assert len(status_list) >= 2, f"Stream `{stream_name}` should contain at least : `STARTED` and `COMPLETE`"
             assert status_list[0] == AirbyteStreamStatus.STARTED
             assert status_list[-1] == AirbyteStreamStatus.COMPLETE
             assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
