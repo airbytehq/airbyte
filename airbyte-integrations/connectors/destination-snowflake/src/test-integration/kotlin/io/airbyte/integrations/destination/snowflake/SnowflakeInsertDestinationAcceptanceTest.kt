@@ -290,7 +290,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
         private val NAME_TRANSFORMER: NamingConventionTransformer = SnowflakeSQLNameTransformer()
         @JvmStatic
         protected val NO_ACTIVE_WAREHOUSE_ERR_MSG: String =
-            "No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command."
+            "No active warehouse selected in the current session or insufficient permissions.  Select a viable warehouse  with the 'use warehouse' command."
 
         @JvmStatic
         protected val NO_USER_PRIVILEGES_ERR_MSG: String =
