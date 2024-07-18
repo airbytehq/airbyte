@@ -516,6 +516,7 @@ class LiveTests(Step):
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
         if self.selected_streams:
             command_options += ["--stream", self.selected_streams]
+        command_options += ["--connection-subset", self.connection_subset]
         return command_options
 
     def _run_command_with_proxy(self, command: str) -> List[str]:
@@ -565,11 +566,12 @@ class LiveTests(Step):
 
         self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
         self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
-        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
+        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
+        self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
