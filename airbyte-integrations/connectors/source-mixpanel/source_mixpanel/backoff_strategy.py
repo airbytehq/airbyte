@@ -22,6 +22,4 @@ class MixpanelStreamBackoffStrategy(BackoffStrategy):
             if retry_after:
                 self._logger.debug(f"API responded with `Retry-After` header: {retry_after}")
                 return float(retry_after)
-
-        self.stream.retries += 1
-        return 2**self.stream.retries * 60
+        return None

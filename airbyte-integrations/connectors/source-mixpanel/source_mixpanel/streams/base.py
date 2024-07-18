@@ -71,7 +71,6 @@ class MixpanelStream(HttpStream, ABC):
         self.region = region
         self.project_timezone = project_timezone
         self.project_id = project_id
-        self.retries = 0
         self._reqs_per_hour_limit = reqs_per_hour_limit
         super().__init__(authenticator=authenticator)
 
