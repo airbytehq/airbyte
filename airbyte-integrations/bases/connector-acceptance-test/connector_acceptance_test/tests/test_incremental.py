@@ -159,10 +159,6 @@ class TestIncremental(BaseTest):
         records_1 = filter_output(output_1, type_=Type.RECORD)
         states_1 = filter_output(output_1, type_=Type.STATE)
 
-        print(f"connector_config: {connector_config}")
-        print(f"catalog: {configured_catalog_for_incremental}")
-
-
         assert states_1, "First Read should produce at least one state"
         assert records_1, "First Read should produce at least one record"
 

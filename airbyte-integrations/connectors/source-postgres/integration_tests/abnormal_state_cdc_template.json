@@ -4,7 +4,7 @@
     "global": {
       "shared_state": {
         "state": {
-          "[\"%s\",{\"server\":\"%s\"}]": "{\"transaction_id\":null,\"lsn\":78700672,\"txId\":990,\"ts_usec\":1721174581902296}"
+          "[\"postgres\",{\"server\":\"%s\"}]": "{\"transaction_id\":null,\"lsn\":78700672,\"txId\":990,\"ts_usec\":1721174581902296}"
         }
       },
       "stream_states": [

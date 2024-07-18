@@ -104,7 +104,8 @@ def write_supporting_file(schema_name):
         secret["schemas"] = [schema_name]
         secret["replication_method"]["replication_slot"] = schema_name
         secret["replication_method"]["publication"] = schema_name
-
+        secret["ssl_mode"] = {}
+        secret["ssl_mode"]["mode"] = "require"
         with open(secret_config_cdc_file, 'w') as f:
             json.dump(secret, f)
 
@@ -214,6 +215,28 @@ def remove_all_write_files():
     os.remove(catalog_incremental_write_file)
     os.remove(abnormal_state_write_file)
 
+def delete_cdc_with_prefix(conn, date_prefix):
+    try:
+        # Connect to the PostgreSQL database
+        cursor = conn.cursor()
+        cursor.execute("SELECT slot_name FROM pg_replication_slots;")
+        # Fetch all results
+        slots = cursor.fetchall()
+        for slot in slots:
+            if slot[0].startswith(date_prefix):
+                print(f"Start dropping replication slot and publication {slot}")
+                drop_replication_slot_query = sql.SQL("SELECT pg_drop_replication_slot(%s);").format(sql.Identifier(slot))
+                drop_publication_query = sql.SQL("DROP PUBLICATION (%s);").format(sql.Identifier(slot))
+                cursor.execute(drop_publication_query)
+                cursor.execute(drop_replication_slot_query)
+                print(f"Dropping {slot} done")
+        conn.commit()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
 def delete_schemas_with_prefix(conn, date_prefix):
     try:
         # Connect to the PostgreSQL database
@@ -241,8 +264,6 @@ def delete_schemas_with_prefix(conn, date_prefix):
     finally:
         if cursor:
             cursor.close()
-        if conn:
-            conn.close()
 
 def teardown():
     connection = connect_to_db()
@@ -250,6 +271,7 @@ def teardown():
     yesterday = today - timedelta(days=1)
     formatted_yesterday = yesterday.strftime('%Y%m%d')
     delete_schemas_with_prefix(connection, formatted_yesterday)
+    delete_cdc_with_prefix(connection, formatted_yesterday)
     remove_all_write_files()
 
 if __name__ == "__main__":
