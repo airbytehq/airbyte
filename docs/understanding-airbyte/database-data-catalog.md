@@ -8,7 +8,9 @@
   - Each record represents a connector that Airbyte supports, e.g. Postgres. This table represents all the connectors that is supported by the current running platform.
   - The `actor_type` column tells us whether the record represents a Source or a Destination.
   - The `spec` column is a JSON blob. The schema of this JSON blob matches the [spec](airbyte-protocol.md#actor-specification) model in the Airbyte Protocol. Because the protocol object is JSON, this has to be a JSON blob.
-  - The `support_level` describes the support level of the connector (e.g. community, certified).
+  - The `support_level` describes the support level of the connector (e.g. `community`, `certified`, or `archived`).
+    - In the product UI, the Marketplace tab contains connectors with `community` support level, and Airbyte Connectors tab contains `certified` connectors.
+    - `support_level: archived` signals that this connector is no longer supported, and it's not available to install for any new connections. 
   - The `docker_repository` field is the name of the docker image associated with the connector definition. `docker_image_tag` is the tag of the docker image and the version of the connector definition.
   - The `source_type` field is only used for Sources, and represents the category of the connector definition (e.g. API, Database).
   - The `resource_requirements` field sets a default resource requirement for any connector of this type. This overrides the default we set for all connector definitions, and it can be overridden by a connection-specific resource requirement. The column is a JSON blob with the schema defined in [ActorDefinitionResourceRequirements.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config-oss/config-models-oss/src/main/resources/types/ActorDefinitionResourceRequirements.yaml)

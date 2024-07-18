@@ -18,7 +18,7 @@ definitions:
       # from-date: "{{ config['start_date'] }}"
       # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
   incremental_sync:
-    type: "DatetimeBasedCursor"
+    type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
