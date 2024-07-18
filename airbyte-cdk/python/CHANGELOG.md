@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.8.2
+low-code: fix overwrite for default backoff strategy
+
+## 3.8.1
+CDK: fix handling for rate limit errors when checking connection
+
+## 3.8.0
+resumable full refresh: Automatically apply RFR to streams (not including substreams) that are not incremental and implement next_page_token
+
 ## 3.7.0
 Deprecate AvailabilityStrategy
 
