@@ -337,6 +337,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.15 | 2024-07-31 | [42688]() | Add support for Deal Splits |
 | 4.2.14 | 2024-07-27 | [42688](https://github.com/airbytehq/airbyte/pull/42688) | Update dependencies |
 | 4.2.13 | 2024-07-20 | [42264](https://github.com/airbytehq/airbyte/pull/42264) | Update dependencies |
 | 4.2.12 | 2024-07-13 | [41766](https://github.com/airbytehq/airbyte/pull/41766) | Update dependencies |
