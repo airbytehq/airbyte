@@ -153,10 +153,10 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(page=2)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob()
+        assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 1.0
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob()
+        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 0.0
 
     @HttpMocker()
@@ -194,10 +194,10 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(page=102)
         assert actual_messages.state_messages[1].state.sourceStats.recordCount == 3.0
         assert actual_messages.state_messages[2].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob()
+        assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "justice_songs"
-        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob()
+        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[3].state.sourceStats.recordCount == 0.0
 
     @HttpMocker()
