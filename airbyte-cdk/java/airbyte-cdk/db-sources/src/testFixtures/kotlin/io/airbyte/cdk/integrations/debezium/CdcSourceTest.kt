@@ -1324,7 +1324,6 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         assertExpectedRecords(HashSet(MODEL_RECORDS), recordsFromFirstBatch, HashSet())
     }
 
-
     protected open fun validateStreamStateInResumableFullRefresh(streamStateToBeTested: JsonNode) {}
 
     @Test
@@ -1405,10 +1404,12 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         stateAfterFirstBatch.map { state -> assertStateDoNotHaveDuplicateStreams(state) }
 
-        // Test for recovery - it should be able to resume using any previous state. Using the 3rd state to test.
+        // Test for recovery - it should be able to resume using any previous state. Using the 3rd
+        // state to test.
         val recoveryState = Jsons.jsonNode(listOf(stateAfterFirstBatch[2]))
 
-        val recoverySyncIterator = source().read(config()!!, fullRefreshConfiguredCatalog, recoveryState)
+        val recoverySyncIterator =
+            source().read(config()!!, fullRefreshConfiguredCatalog, recoveryState)
         val dataFromRecoverySync = AutoCloseableIterators.toListAndClose(recoverySyncIterator)
         val recordsFromRecoverySync = extractRecordMessages(dataFromRecoverySync)
         val stateAfterRecoverySync = extractStateMessages(dataFromRecoverySync)

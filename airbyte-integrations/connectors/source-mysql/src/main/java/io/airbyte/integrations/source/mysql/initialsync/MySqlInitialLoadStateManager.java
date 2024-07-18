@@ -49,7 +49,6 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateMessage
     }
   }
 
-
   // Returns the current {@PrimaryKeyInfo}, associated with the stream. This includes the data type &
   // the column name associated with the stream.
   public abstract PrimaryKeyInfo getPrimaryKeyInfo(final AirbyteStreamNameNamespacePair pair);
