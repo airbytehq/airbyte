@@ -13,13 +13,14 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum as pdm
 import requests
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_protocol.models import SyncMode
 from requests.exceptions import RequestException
+from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
-from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery, ShopifyBulkTemplates
+from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery
 from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
 from source_shopify.transform import DataTypeEnforcer
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
@@ -637,17 +638,22 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
-            session=self._http_client._session,
+            http_client=self.bulk_http_client,
             base_url=f"{self.url_base}{self.path()}",
-            stream_name=self.name,
             query=self.query,
             job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
             job_size=config.get("bulk_window_in_days", 30.0),
+            # provide the job checkpoint interval value, default value is 200k lines collected
+            job_checkpoint_interval=config.get("job_checkpoint_interval", 200000),
         )
 
         # define Record Producer instance
         self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+
+    @property
+    def bulk_http_client(self) -> HttpClient:
+        return HttpClient(self.name, self.logger, ShopifyErrorHandler(), session=self._http_client._session)
 
     @cached_property
     def parent_stream(self) -> object:

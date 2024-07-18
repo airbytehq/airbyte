@@ -29,6 +29,54 @@ _ANY_SLICE = {}
 _ANY_FILTER_FIELD = "any_filter_field"
 
 
+def test_job_manager_default_values(auth_config) -> None:
+    stream = Products(auth_config)
+    
+    # 10Mb chunk size to save the file
+    assert stream.job_manager._retrieve_chunk_size == 10485760 # 1024 * 1024 * 10
+    assert stream.job_manager._job_max_retries == 6
+    assert stream.job_manager._job_backoff_time == 5
+    # running job logger constrain, every 100-ish message will be printed
+    assert stream.job_manager._log_job_msg_frequency == 100
+    assert stream.job_manager._log_job_msg_count == 0
+    # attempt counter
+    assert stream.job_manager._concurrent_attempt == 0
+    # sleep time per creation attempt
+    assert stream.job_manager._concurrent_interval == 30
+    # max attempts for job creation
+    assert stream.job_manager._concurrent_max_retry == 120
+    # currents: _job_id, _job_state, _job_created_at, _job_self_canceled
+    assert not stream.job_manager._job_id
+    # this string is based on ShopifyBulkJobStatus
+    assert not stream.job_manager._job_state 
+    # completed and saved Bulk Job result filename
+    assert not stream.job_manager._job_result_filename
+    # date-time when the Bulk Job was created on the server
+    assert not stream.job_manager._job_created_at
+    # indicated whether or not we manually force-cancel the current job
+    assert not stream.job_manager._job_self_canceled
+    # time between job status checks
+    assert stream.job_manager. _job_check_interval == 3
+    # 0.1 ~= P2H, default value, lower boundary for slice size
+    assert stream.job_manager._job_size_min == 0.1
+    # last running job object count
+    assert stream.job_manager._job_last_rec_count == 0
+    # how many records should be collected before we use the checkpoining
+    assert stream.job_manager._job_checkpoint_interval == 200000
+    # the flag to adjust the next slice from the checkpointed cursor vaue
+    assert not stream.job_manager._job_adjust_slice_from_checkpoint
+    # flag to mark the long running BULK job
+    assert not stream.job_manager._job_long_running_cancelation
+    # expand slice factor
+    assert stream.job_manager._job_size_expand_factor == 2
+    # reduce slice factor
+    assert stream.job_manager._job_size_reduce_factor == 2
+    # whether or not the slicer should revert the previous start value
+    assert not stream.job_manager._job_should_revert_slice
+    # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
+    assert stream.job_manager._job_last_elapsed_time == 2.0
+
+
 def test_get_errors_from_response_invalid_response(auth_config) -> None:
     expected = "Couldn't check the `response` for `errors`"
     stream = MetafieldOrders(auth_config)
@@ -288,7 +336,6 @@ def test_job_running_with_canceled_scenario(request, requests_mock, running_job_
     # clean up
     if expected:
         remove(expected)
-
 
 
 def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
