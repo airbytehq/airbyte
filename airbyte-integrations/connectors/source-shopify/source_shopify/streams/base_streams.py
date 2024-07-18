@@ -217,7 +217,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
             if not self._checkpoint_cursor:
                 self._checkpoint_cursor = self.default_state_comparison_value
             # track checkpoint cursor
-            if record_value >= self._checkpoint_cursor:
+            if str(record_value) >= str(self._checkpoint_cursor):
                 self._checkpoint_cursor = record_value
 
     def should_checkpoint(self, index: int) -> bool:

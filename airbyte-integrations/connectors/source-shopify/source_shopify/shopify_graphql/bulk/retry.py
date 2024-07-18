@@ -54,6 +54,11 @@ def bulk_retry_on_exception(logger: logging.Logger, more_exceptions: Optional[Tu
                         f"Stream: `{self.stream_name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, attempt: {self._concurrent_attempt}.",
                     )
                     sleep(self._concurrent_interval)
+                except ShopifyBulkExceptions.BulkJobRedirectToOtherShopError:
+                    logger.warning(
+                        f"Stream: `{self.stream_name}`, the `shop name` differs from the provided by the User: `{self.base_url}`. Switching to the `{self._new_base_url}`.",
+                    )
+                    self._switch_base_url()
 
         return wrapper
 

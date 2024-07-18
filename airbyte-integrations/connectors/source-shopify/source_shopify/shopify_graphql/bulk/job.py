@@ -328,12 +328,17 @@ class ShopifyBulkManager:
     def _on_non_handable_job_error(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobNonHandableError(f"The Stream: `{self.stream_name}`, Non-handable error occured: {errors}")
 
+    def _get_server_errors(self, response: requests.Response) -> List[Optional[dict]]:
+        server_errors = response.json().get("errors", [])
+        return [server_errors] if isinstance(server_errors, str) else server_errors
+
+    def _get_user_errors(self, response: requests.Response) -> List[Optional[dict]]:
+        user_errors = response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
+        return [user_errors] if isinstance(user_errors, str) else user_errors
+
     def _collect_bulk_errors(self, response: requests.Response) -> List[Optional[dict]]:
         try:
-            server_errors = response.json().get("errors", [])
-            user_errors = response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
-            errors = server_errors + user_errors
-            return errors
+            return self._get_server_errors(response) + self._get_user_errors(response)
         except (Exception, JSONDecodeError) as e:
             raise ShopifyBulkExceptions.BulkJobBadResponse(
                 f"Couldn't check the `response` for `errors`, status: {response.status_code}, response: `{response.text}`. Trace: {repr(e)}."
@@ -381,6 +386,32 @@ class ShopifyBulkManager:
     def _has_reached_max_concurrency(self) -> bool:
         return self._concurrent_attempt == self._concurrent_max_retry
 
+    def _switch_base_url(self) -> None:
+        if self._new_base_url:
+            self.base_url = self._new_base_url
+        else:
+            self.logger.warning(f"Failed switching the `base url`, no `new base url` has been retrieved.")
+
+    def _should_switch_shop_name(self, response: requests.Response) -> bool:
+        """
+        Sometimes the API returns the redirected response that points to the same Store but with different Name:
+        >> case:
+           -- The user inputs the `shop name` as "A":
+                while attempting to place the BULK Job
+           -- The response contains the redirected results to the `shop name` as "B", like:
+           response.url == "https://B.myshopify.com"
+
+        This redirection is related to:
+        1) `aliased` or `hidden` store names from being exposed
+        2) migrated to data to the new store, but referenced within the old one stil.
+
+        reference issue: https://github.com/airbytehq/oncall/issues/5866
+        """
+        if self.base_url != response.url:
+            self._new_base_url = response.url
+            return True
+        return False
+
     @bulk_retry_on_exception(logger)
     def _job_check_state(self) -> None:
         while not self._job_completed():
@@ -408,6 +439,9 @@ class ShopifyBulkManager:
             # when the concurrent job takes place, another job could not be created
             # we typically need to wait and retry, but no longer than 10 min. (see retry in `bulk_retry_on_exception`)
             raise ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError(f"Failed to create job for stream {self.stream_name}")
+        elif self._should_switch_shop_name(response):
+            # assign new shop name, since the one that specified in `config` was redirected to the different one.
+            raise ShopifyBulkExceptions.BulkJobRedirectToOtherShopError(f"Switching the `store` name, redirected to: {response.url}")
         else:
             # There were no concurrent error for this job so even if there were other errors, we can reset this
             self._concurrent_attempt = 0
