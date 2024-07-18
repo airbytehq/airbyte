@@ -11,14 +11,14 @@ import sys
 import psycopg2
 from psycopg2 import sql
 
-catalog_write_file = "/connector/integration_tests/configured_catalog_copy.json"
+catalog_write_file = "/connector/secrets/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
-catalog_incremental_write_file = "/connector/integration_tests/incremental_configured_catalog_copy.json"
+catalog_incremental_write_file = "/connector/secrets/incremental_configured_catalog_copy.json"
 catalog_incremental_source_file = "/connector/integration_tests/incremental_configured_catalog_template.json"
-abnormal_state_write_file = "/connector/integration_tests/abnormal_state_copy.json"
+abnormal_state_write_file = "/connector/secrets/abnormal_state_copy.json"
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
-abnormal_state_cdc_write_file = "/connector/integration_tests/abnormal_state_cdc_copy.json"
+abnormal_state_cdc_write_file = "/connector/secrets/abnormal_state_cdc_copy.json"
 abnormal_state_cdc_file = "/connector/integration_tests/abnormal_state_cdc_template.json"
 
 secret_config_file = '/connector/secrets/config.json'
@@ -208,12 +208,6 @@ def setup(with_cdc=False):
 def load_schema_name_from_catalog():
     with open("./generated_schema.txt", "r") as f:
         return f.read()
-
-def remove_all_write_files():
-    print("***removing write files***")
-    os.remove(catalog_write_file)
-    os.remove(catalog_incremental_write_file)
-    os.remove(abnormal_state_write_file)
 
 def delete_cdc_with_prefix(conn, date_prefix):
     try:
