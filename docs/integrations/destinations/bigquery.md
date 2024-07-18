@@ -223,6 +223,7 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.4   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                      |
 | 2.8.3   | 2024-07-12 | [41674](https://github.com/airbytehq/airbyte/pull/41674)   | Upgrade to latest CDK                                                                                                                                           |
 | 2.8.2   | 2024-07-08 | [41041](https://github.com/airbytehq/airbyte/pull/41041)   | Fix resume logic in truncate refreshes to prevent data loss                                                                                                     |
 | 2.8.1   | 2024-06-25 | [39379](https://github.com/airbytehq/airbyte/pull/39379)   | Removing requirement of a redundant permission bigquery.datasets.create permission                                                                              |

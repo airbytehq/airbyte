@@ -1,8 +1,11 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.clickup.com
   connectorSubtype: api
   connectorType: source
   definitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/source-clickup-api
   githubIssueLabel: source-clickup-api
   icon: clickup.svg
@@ -17,6 +20,7 @@ data:
       enabled: true
     oss:
       enabled: true
+  releaseDate: 2023-02-10
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickup-api
   tags:

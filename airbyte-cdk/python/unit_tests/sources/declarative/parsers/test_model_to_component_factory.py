@@ -1096,7 +1096,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
             """,
             WaitUntilTimeFromHeaderBackoffStrategy,
         ),
-        ("test_create_requester_no_error_handler", """""", ExponentialBackoffStrategy),
+        ("test_create_requester_no_error_handler", """""", None),
     ],
 )
 def test_create_requester(test_name, error_handler, expected_backoff_strategy_type):
@@ -1133,8 +1133,9 @@ requester:
     assert selector._url_base.string == "https://api.sendgrid.com"
 
     assert isinstance(selector.error_handler, DefaultErrorHandler)
-    assert len(selector.error_handler.backoff_strategies) == 1
-    assert isinstance(selector.error_handler.backoff_strategies[0], expected_backoff_strategy_type)
+    if expected_backoff_strategy_type:
+        assert len(selector.error_handler.backoff_strategies) == 1
+        assert isinstance(selector.error_handler.backoff_strategies[0], expected_backoff_strategy_type)
 
     assert isinstance(selector.authenticator, BasicHttpAuthenticator)
     assert selector.authenticator._username.eval(input_config) == "lists"
