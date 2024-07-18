@@ -1570,11 +1570,25 @@ definitions:
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
         examples:
           - SUCCESS
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
+      failure_type:
+        title: Failure Type
+        description: Failure type of traced exception if a response matches the filter.
+        type: string
+        enum:
+          - system_error
+          - config_error
+          - transient_error
+        examples:
+          - system_error
+          - config_error
+          - transient_error
       error_message:
         title: Error Message
         description: Error Message to display if the response matches the filter.

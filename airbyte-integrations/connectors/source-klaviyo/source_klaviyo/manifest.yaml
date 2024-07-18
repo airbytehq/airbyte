@@ -232,7 +232,7 @@ definitions:
   events_detailed_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_event
     name: "events_detailed"
-    $ref: "#/definitions/base_semi_incremental_stream"
+    $ref: "#/definitions/base_incremental_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/events_detailed_schema"
@@ -249,22 +249,9 @@ definitions:
         request_parameters:
           "include": "metric"
           "fields[metric]": "name"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: "id"
-            stream: "#/definitions/events_stream"
-            partition_field: "event_id"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "datetime"
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%S%z"
-        - "%Y-%m-%d %H:%M:%S%z"
-      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_klaviyo.components.per_partition_state_migration.PerPartitionToSingleStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -272,7 +259,8 @@ definitions:
             path: ["datetime"]
             value: "{{ record.get('attributes', {}).get('datetime') }}"
     $parameters:
-      path: "events/{{ stream_slice.event_id }}"
+      path: "events"
+      cursor_field: "datetime"
 
   # Schemas
   shared:
