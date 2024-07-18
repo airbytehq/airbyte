@@ -116,6 +116,7 @@ class Stream(ABC):
     """
 
     _configured_json_schema: Optional[Dict[str, Any]] = None
+    _exit_on_rate_limit: bool = False
 
     # Use self.logger in subclasses to log any messages
     @property
@@ -357,10 +358,13 @@ class Stream(ABC):
 
     @property
     def exit_on_rate_limit(self) -> bool:
-        """
-        :return: False if the stream will retry endlessly when rate limited
-        """
-        return False
+        """Exit on rate limit getter, should return bool value. False if the stream will retry endlessly when rate limited."""
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        """Exit on rate limit setter, accept bool value."""
+        self._exit_on_rate_limit = value
 
     @deprecated(version="3.7.0")
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
