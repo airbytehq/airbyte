@@ -642,8 +642,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   public static void main(final String[] args) throws Exception {
     final Source source = MySqlSource.sshWrappedSource(new MySqlSource());
+    final MySqlSourceExceptionHandler exceptionHandler = new MySqlSourceExceptionHandler();
     LOGGER.info("starting source: {}", MySqlSource.class);
-    new IntegrationRunner(source).run(args);
+    new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", MySqlSource.class);
   }
 

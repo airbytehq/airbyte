@@ -233,6 +233,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.0   | 2024-07-17 | [40208](https://github.com/airbytehq/airbyte/pull/40208) | Start using the new error MySql source error handler that comes with a new error translation layer.                                             | 
 | 3.5.1   | 2024-07-17 | [42043](https://github.com/airbytehq/airbyte/pull/42043) | Adopt latest CDK + fixes.                                                                                                                       |
 | 3.5.0   | 2024-07-11 | [38240](https://github.com/airbytehq/airbyte/pull/38240) | Implement WASS.                                                                                                                                 |
 | 3.4.12  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz heartbeat.                                                                                                                           |
