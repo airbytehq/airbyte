@@ -11,11 +11,11 @@ import sys
 import psycopg2
 from psycopg2 import sql
 
-catalog_write_file = "/connector/integration_tests/configured_catalog_copy.json"
+catalog_write_file = "/connector/secrets/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
-catalog_incremental_write_file = "/connector/integration_tests/incremental_configured_catalog_copy.json"
+catalog_incremental_write_file = "/connector/secrets/incremental_configured_catalog_copy.json"
 catalog_incremental_source_file = "/connector/integration_tests/incremental_configured_catalog_template.json"
-abnormal_state_write_file = "/connector/integration_tests/abnormal_state_copy.json"
+abnormal_state_write_file = "/connector/secrets/abnormal_state_copy.json"
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
 secret_config_file = '/connector/secrets/config.json'
@@ -154,12 +154,6 @@ def load_schema_name_from_catalog():
     with open("./generated_schema.txt", "r") as f:
         return f.read()
 
-def remove_all_write_files():
-    print("***removing write files***")
-    os.remove(catalog_write_file)
-    os.remove(catalog_incremental_write_file)
-    os.remove(abnormal_state_write_file)
-
 def delete_schemas_with_prefix(conn, date_prefix):
     try:
         # Connect to the PostgreSQL database
@@ -197,7 +191,6 @@ def teardown():
     formatted_yesterday = yesterday.strftime('%Y%m%d')
     print(f"formatted_yesterday: {formatted_yesterday}")
     delete_schemas_with_prefix(connection, formatted_yesterday)
-    remove_all_write_files()
 
 if __name__ == "__main__":
     command = sys.argv[1]
