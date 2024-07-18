@@ -5,6 +5,9 @@ acceptance_tests:
         timeout_seconds: 7200
         expect_records:
           path: integration_tests/expected_records.jsonl
+        empty_streams:
+          - name: "lists_detailed"
+            bypass_reason: "Low rate limit threshold"
   connection:
     tests:
       - config_path: secrets/config.json
