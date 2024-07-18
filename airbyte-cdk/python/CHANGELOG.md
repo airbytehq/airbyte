@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.8.2
+low-code: fix overwrite for default backoff strategy
+
 ## 3.8.1
 CDK: fix handling for rate limit errors when checking connection
 
