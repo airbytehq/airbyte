@@ -30,11 +30,11 @@ definitions:
             page_size: 1000
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /leadForms?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_partition.account_id }})
           http_method: GET
           request_headers:
-            LinkedIn-Version: '202406'
+            LinkedIn-Version: "202406"
             X-Restli-Protocol-Version: 2.0.0
           request_parameters:
             q: owner
@@ -70,11 +70,11 @@ definitions:
             page_size: 1000
             inject_on_first_request: true
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_partition.account_id }})&leadType=(leadType:SPONSORED)
           http_method: GET
           request_headers:
-            LinkedIn-Version: '202406'
+            LinkedIn-Version: "202406"
             X-Restli-Protocol-Version: 2.0.0
           request_parameters:
             q: owner
@@ -111,8 +111,8 @@ definitions:
       token_refresh_endpoint: https://www.linkedin.com/oauth/v2/accessToken
 
 streams:
-  - $ref: '#/definitions/streams/lead_form_response'
-  - $ref: '#/definitions/streams/lead_form'
+  - $ref: "#/definitions/streams/lead_form_response"
+  - $ref: "#/definitions/streams/lead_form"
 
 spec:
   type: Spec
