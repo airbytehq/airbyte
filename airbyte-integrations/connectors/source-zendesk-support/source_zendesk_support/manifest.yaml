@@ -38,7 +38,8 @@ definitions:
           - type: DefaultErrorHandler
             response_filters:
               - http_codes: [403, 404]
-                action: IGNORE
+                action: FAIL
+                failure_type: config_error
                 error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
           - type: DefaultErrorHandler
             backoff_strategies:
