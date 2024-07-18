@@ -1,0 +1,27 @@
+{
+    "properties": {
+      "custom_fields": {
+        "items": {
+          "properties": {
+            "name": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "value": {
+              "type": [
+                "null",
+                "integer", 
+                "string"
+              ]
+            }
+          },
+          "type": [
+            "null",
+            "object"
+          ]
+        }
+    }
+}
+}
