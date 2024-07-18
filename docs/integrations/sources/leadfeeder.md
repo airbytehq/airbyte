@@ -10,7 +10,7 @@ The Leadfeeder API provides information from the web-based version of Leadfeeder
 ### Requirements
 
 - **[API Token](https://docs.leadfeeder.com/api/#authentication)**
-- **Start date**. use for incremental sync in the format YYYY-MM-DD
+- **Start date**. use for incremental sync in the format %Y-%m-%dT%H:%M:%SZ
   
 ## This Source Supports the Following Streams
 
