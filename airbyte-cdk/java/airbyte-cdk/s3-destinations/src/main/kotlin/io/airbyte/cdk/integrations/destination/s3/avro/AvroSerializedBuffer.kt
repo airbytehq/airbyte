@@ -40,7 +40,10 @@ class AvroSerializedBuffer(
         this.codecFactory = codecFactory
         this.schema = schema
         val converter =
-            if (useV2FieldNames) AvroConstants.JSON_CONVERTER_V2 else AvroConstants.JSON_CONVERTER
+            if (useV2FieldNames)
+                AvroRecordFactory.createV2JsonToAvroConverter()
+            else
+                AvroRecordFactory.createV1JsonToAvroConverter()
         avroRecordFactory = AvroRecordFactory(schema, converter)
         dataFileWriter = null
     }
