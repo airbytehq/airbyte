@@ -245,7 +245,7 @@ class CampaignsDetailed(Campaigns):
             url=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
             request_kwargs={},
             headers=self.request_headers(),
-            http_method="GET"
+            http_method="GET",
         )
         record["estimated_recipient_count"] = (
             recipient_count_response.json().get("data", {}).get("attributes", {}).get("estimated_recipient_count", 0)
@@ -255,10 +255,7 @@ class CampaignsDetailed(Campaigns):
         message_id = record.get("attributes", {}).get("message")
         if message_id:
             _, campaign_message_response = self._http_client.send_request(
-                url=f"{self.url_base}campaign-messages/{message_id}",
-                request_kwargs={},
-                headers=self.request_headers(),
-                http_method="GET"
+                url=f"{self.url_base}campaign-messages/{message_id}", request_kwargs={}, headers=self.request_headers(), http_method="GET"
             )
             record["campaign_message"] = campaign_message_response.json().get("data")
 
