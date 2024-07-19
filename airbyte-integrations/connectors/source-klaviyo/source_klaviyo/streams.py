@@ -12,7 +12,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from requests import Response
+from source_klaviyo.components.klaviyo_backoff_strategy import KlaviyoBackoffStrategy
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -111,15 +113,8 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
         current_stream_state[self.cursor_field] = latest_cursor.isoformat()
         return current_stream_state
 
-    def backoff_time(self, response: Response) -> Optional[float]:
-        if response.status_code == 429:
-            retry_after = response.headers.get("Retry-After")
-            retry_after = float(retry_after) if retry_after else None
-            if retry_after and retry_after >= self.max_time:
-                raise KlaviyoBackoffError(
-                    f"Stream {self.name} has reached rate limit with 'Retry-After' of {retry_after} seconds, exit from stream."
-                )
-            return retry_after
+    def get_backoff_strategy(self) -> BackoffStrategy:
+        return KlaviyoBackoffStrategy(max_time=self.max_time, name=self.name)
 
     def read_records(
         self,
