@@ -258,14 +258,6 @@ definitions:
           path: >-
             https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.parent_slice.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/TollFree.json
           http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - http_codes: [404]
-                    action: IGNORE
-                    error_message: "The requested resource was not found."
         record_selector:
           type: RecordSelector
           extractor:
@@ -488,6 +480,8 @@ definitions:
     Alerts:
       type: DeclarativeStream
       name: alerts
+      primary_key:
+        - sid
       retriever:
         type: SimpleRetriever
         requester:
