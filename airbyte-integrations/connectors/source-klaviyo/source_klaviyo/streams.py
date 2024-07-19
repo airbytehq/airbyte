@@ -241,11 +241,12 @@ class CampaignsDetailed(Campaigns):
 
     def _set_recipient_count(self, record: Mapping[str, Any]) -> None:
         campaign_id = record["id"]
-        recipient_count_request = self._create_prepared_request(
-            path=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
+        _, recipient_count_response = self._http_client.send_request(
+            url=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
+            request_kwargs={},
             headers=self.request_headers(),
+            http_method="GET"
         )
-        recipient_count_response = self._send_request(recipient_count_request, {})
         record["estimated_recipient_count"] = (
             recipient_count_response.json().get("data", {}).get("attributes", {}).get("estimated_recipient_count", 0)
         )
@@ -253,10 +254,12 @@ class CampaignsDetailed(Campaigns):
     def _set_campaign_message(self, record: Mapping[str, Any]) -> None:
         message_id = record.get("attributes", {}).get("message")
         if message_id:
-            campaign_message_request = self._create_prepared_request(
-                path=f"{self.url_base}campaign-messages/{message_id}", headers=self.request_headers()
+            _, campaign_message_response = self._http_client.send_request(
+                url=f"{self.url_base}campaign-messages/{message_id}",
+                request_kwargs={},
+                headers=self.request_headers(),
+                http_method="GET"
             )
-            campaign_message_response = self._send_request(campaign_message_request, {})
             record["campaign_message"] = campaign_message_response.json().get("data")
 
 

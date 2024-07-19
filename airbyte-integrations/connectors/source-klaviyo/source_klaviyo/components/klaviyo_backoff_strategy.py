@@ -28,5 +28,5 @@ class KlaviyoBackoffStrategy(DefaultBackoffStrategy):
                     raise KlaviyoBackoffError(
                         f"Stream {self._name} has reached rate limit with 'Retry-After' of {retry_after} seconds, exit from stream."
                     )
-                return float(retry_after)
+                return float(retry_after) if retry_after else None
         return None
