@@ -65,8 +65,6 @@ def test_job_manager_default_values(auth_config) -> None:
     assert stream.job_manager._job_checkpoint_interval == 200000
     # the flag to adjust the next slice from the checkpointed cursor vaue
     assert not stream.job_manager._job_adjust_slice_from_checkpoint
-    # flag to mark the long running BULK job
-    assert not stream.job_manager._job_long_running_cancelation
     # expand slice factor
     assert stream.job_manager._job_size_expand_factor == 2
     # reduce slice factor
@@ -330,8 +328,6 @@ def test_job_running_with_canceled_scenario(request, requests_mock, running_job_
     stream.job_manager._job_self_canceled = True
     # mocking the nested request call to retrieve the data from result URL
     requests_mock.get(job_result_url, json=request.getfixturevalue(canceled_job_response))
-    # calling the sceario processing
-    assert not stream.job_manager._job_long_running_cancelation
     assert stream.job_manager.job_check_for_completion() == expected
     # clean up
     if expected:

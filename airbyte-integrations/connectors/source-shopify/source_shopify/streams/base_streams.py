@@ -653,6 +653,9 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     @property
     def bulk_http_client(self) -> HttpClient:
+        """
+        Returns the instance of the `HttpClient`, with the stream info.
+        """
         return HttpClient(self.name, self.logger, ShopifyErrorHandler(), session=self._http_client._session)
 
     @cached_property

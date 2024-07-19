@@ -15,7 +15,6 @@ from requests.exceptions import JSONDecodeError
 from source_shopify.utils import ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
-from ...http_request import ShopifyErrorHandler
 from .exceptions import AirbyteTracedException, ShopifyBulkExceptions
 from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .retry import bulk_retry_on_exception
@@ -71,8 +70,6 @@ class ShopifyBulkManager:
     _job_last_rec_count: int = field(init=False, default=0)
     # the flag to adjust the next slice from the checkpointed cursor vaue
     _job_adjust_slice_from_checkpoint: bool = field(init=False, default=False)
-    # flag to mark the long running BULK job
-    _job_long_running_cancelation: bool = field(init=False, default=False)
 
     # expand slice factor
     _job_size_expand_factor: int = field(init=False, default=2)
@@ -154,6 +151,10 @@ class ShopifyBulkManager:
     @property
     def _job_should_checkpoint(self) -> bool:
         return self._job_last_rec_count >= self._job_checkpoint_interval
+
+    @property
+    def _job_any_lines_collected(self) -> bool:
+        return self._job_last_rec_count > 0
 
     def _expand_job_size(self) -> None:
         self._job_size += self._job_size_adjusted_expand_factor
@@ -257,9 +258,7 @@ class ShopifyBulkManager:
                 self._log_job_state_with_count()
             elif self._job_state in [ShopifyBulkJobStatus.CANCELED.value, ShopifyBulkJobStatus.CANCELING.value]:
                 # do not emit `CANCELED / CANCELING` Bulk Job status, while checkpointing
-                if self._job_should_checkpoint:
-                    pass
-                else:
+                if not self._job_should_checkpoint:
                     self._log_job_state_with_count()
             else:
                 self._log_state()
@@ -273,7 +272,7 @@ class ShopifyBulkManager:
                 f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}"
             )
         else:
-            if self._job_should_checkpoint:
+            if self._job_any_lines_collected or self._job_should_checkpoint:
                 # set the flag to adjust the next slice from the checkpointed cursor value
                 self._job_adjust_slice_from_checkpoint = True
                 # fetch the collected records from CANCELED Job on checkpointing
@@ -286,13 +285,11 @@ class ShopifyBulkManager:
         self.logger.info(
             f"Stream: `{self.http_client._name}` the BULK Job: {self._job_id} runs longer than expected ({self._job_max_elapsed_time} sec). Retry with the reduced `Slice Size` after self-cancelation."
         )
-        self._job_long_running_cancelation = True
         self._job_cancel()
 
     def _cancel_on_checkpointing(self) -> None:
         self.logger.info(f"Stream: `{self.http_client._name}`, checkpointing after >= `{self._job_checkpoint_interval}` lines collected.")
         # set the flag to adjust the next slice from the checkpointed cursor value
-        self._job_adjust_slice_from_checkpoint = True
         self._job_cancel()
 
     def _on_running_job(self, **kwargs) -> None:
@@ -327,15 +324,15 @@ class ShopifyBulkManager:
     def _on_non_handable_job_error(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobNonHandableError(f"The Stream: `{self.http_client._name}`, Non-handable error occured: {errors}")
 
-    def _get_server_errors(self, response: requests.Response) -> List[Optional[dict]]:
+    def _get_server_errors(self, response: requests.Response) -> List[Optional[Mapping[str, Any]]]:
         server_errors = response.json().get("errors", [])
         return [server_errors] if isinstance(server_errors, str) else server_errors
 
-    def _get_user_errors(self, response: requests.Response) -> List[Optional[dict]]:
+    def _get_user_errors(self, response: requests.Response) -> List[Optional[Mapping[str, Any]]]:
         user_errors = response.json().get("data", {}).get("bulkOperationRunQuery", {}).get("userErrors", [])
         return [user_errors] if isinstance(user_errors, str) else user_errors
 
-    def _collect_bulk_errors(self, response: requests.Response) -> List[Optional[dict]]:
+    def _collect_bulk_errors(self, response: requests.Response) -> List[Optional[Mapping[str, Any]]]:
         try:
             return self._get_server_errors(response) + self._get_user_errors(response)
         except (Exception, JSONDecodeError) as e:
@@ -471,9 +468,15 @@ class ShopifyBulkManager:
         step = self._job_size if self._job_size else self._job_size_min
         return slice_start.add(days=step)
 
-    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[datetime] = None) -> datetime:
+    def _adjust_slice_end(self, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
+        """
+        Choose between the existing `slice_end` value or `checkpointed_cursor` value, if provided.
+        """
+        return pdm.parse(checkpointed_cursor) if checkpointed_cursor else slice_end
+
+    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
         if self._job_adjust_slice_from_checkpoint:
-            return pdm.parse(checkpointed_cursor) if checkpointed_cursor else slice_end
+            return self._adjust_slice_end(slice_end, checkpointed_cursor)
 
         if self._is_long_running_job:
             self._job_size_reduce_next()
