@@ -268,6 +268,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                          |
 |:----------------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.4          | 2024-07-18 | [\#41940](https://github.com/airbytehq/airbyte/pull/41940) | Update host regex to allow connecting to LocalStack Snowflake |
 | 3.11.3          | 2024-07-15 | [\#41968](https://github.com/airbytehq/airbyte/pull/41968) | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                       |
 | 3.11.2          | 2024-07-12 | [\#41674](https://github.com/airbytehq/airbyte/pull/41674) | Upgrade to latest CDK                                                                                                                                            |
 | 3.11.1          | 2024-07-08 | [\#41041](https://github.com/airbytehq/airbyte/pull/41041) | Fix resume logic in truncate refreshes to prevent data loss                                                                                                      |
