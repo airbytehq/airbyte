@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_fauna"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = ">=3.9,<3.10"
 airbyte-cdk = "0.60.0"
 faunadb = "4.2.0"
 
