@@ -311,6 +311,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.1  | 2024-07-05 | [40716](https://github.com/airbytehq/airbyte/pull/40716) | Fix typo in connector specification |
 | 3.6.0   | 2024-07-17 | [40208](https://github.com/airbytehq/airbyte/pull/40208) | Start using the new error Postgres source error handler that comes with a new error translation layer.                                                                    | 
 | 3.5.2   | 2024-07-17 | [42068](https://github.com/airbytehq/airbyte/pull/42068) | Add analytics for WASS case occurrence.                                                                                                                                    |
 | 3.5.1   | 2024-07-17 | [42055](https://github.com/airbytehq/airbyte/pull/42055) | Add debezium heartbeat timeout back to shutdown debezium.                                                                                                                  |
