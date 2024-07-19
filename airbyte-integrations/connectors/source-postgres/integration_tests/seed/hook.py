@@ -1,21 +1,21 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
-from datetime import timedelta
 import json
 import os
 import random
 import string
 import sys
+from datetime import timedelta
 
 import psycopg2
 from psycopg2 import sql
 
-catalog_write_file = "/connector/secrets/configured_catalog_copy.json"
+catalog_write_file = "/connector/integration_tests/temp/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
-catalog_incremental_write_file = "/connector/secrets/incremental_configured_catalog_copy.json"
+catalog_incremental_write_file = "/connector/integration_tests/temp/incremental_configured_catalog_copy.json"
 catalog_incremental_source_file = "/connector/integration_tests/incremental_configured_catalog_template.json"
-abnormal_state_write_file = "/connector/secrets/abnormal_state_copy.json"
+abnormal_state_write_file = "/connector/integration_tests/temp/abnormal_state_copy.json"
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
 secret_config_file = '/connector/secrets/config.json'
