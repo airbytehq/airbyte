@@ -14,6 +14,8 @@ COPY seed/requirement.txt .
 
 RUN pip install --no-cache-dir -r ./requirement.txt
 
+RUN mkdir -p /connectors/integration_tests/temp
+
 # Give execution rights to the script and pre-generate all scripts.
 RUN chmod +x ./hook.py
 RUN python ./hook.py prepare
