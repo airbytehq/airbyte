@@ -8,9 +8,7 @@ import java.util.function.Function
 
 private val log = KotlinLogging.logger {}
 
-/**
- * A [FeatureFlags] implementation which checks [System.getenv] and [System.getProperty].
- */
+/** A [FeatureFlags] implementation which checks [System.getenv] and [System.getProperty]. */
 class EnvVariableFeatureFlags : FeatureFlags {
     override fun autoDetectSchema(): Boolean {
         return getEnvOrDefault(AUTO_DETECT_SCHEMA, true) { s: String -> s.toBoolean() }
@@ -50,7 +48,9 @@ class EnvVariableFeatureFlags : FeatureFlags {
     }
 
     override fun logInvalidJsonDeserialization(): Boolean {
-        return getEnvOrDefault(LOG_INVALID_JSON_DESERIALIZATION, false) { s: String -> s.toBoolean() }
+        return getEnvOrDefault(LOG_INVALID_JSON_DESERIALIZATION, false) { s: String ->
+            s.toBoolean()
+        }
     }
 
     // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

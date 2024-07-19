@@ -447,7 +447,8 @@ object Jsons {
      */
     fun obfuscateDeserializationException(
         throwable: Throwable,
-        showFullExceptionMessage: Boolean = EnvVariableFeatureFlags().logInvalidJsonDeserialization(),
+        showFullExceptionMessage: Boolean =
+            EnvVariableFeatureFlags().logInvalidJsonDeserialization(),
     ): String {
         if (showFullExceptionMessage) {
             return ExceptionUtils.getStackTrace(throwable)
