@@ -8,17 +8,23 @@ packages = [{ include = "yoink", from = "src" }]
 
 
 [tool.poetry.scripts]
-yoink = 'yoink.cli:yoink'
+yoink = 'yoink.cli:cli'
 
 [tool.poetry.dependencies]
 python = "^3.10"
 click = "^8.1.7"
 pyyaml = "^6.0.1"
 jinja2 = "^3.1.4"
+ruamel-yaml = "^0.18.6"
+requests = "^2.32.3"
 
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.3"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
 
 [build-system]
 requires = ["poetry-core"]
