@@ -56,7 +56,7 @@ public class CdcConfigurationHelper {
             connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
             resultSet -> resultSet);
       } catch (final SQLException e) {
-        throw new ConfigErrorException("test", "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+        throw new ConfigErrorException(Please grant REPLICATION CLIENT privilege, so that binary log files are available"
             + " for CDC mode.");
       }
     };

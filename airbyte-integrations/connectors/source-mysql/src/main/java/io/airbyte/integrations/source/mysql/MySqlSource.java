@@ -631,8 +631,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         } else if (split.length == 3 && kv.contains("sessionVariables")) {
           parameters.put(split[0], split[1] + "=" + split[2]);
         } else {
-          throw new ConfigErrorException(
-              "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
+          throw new ConfigErrorException("jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
                   + jdbcPropertiesString);
         }
       }
