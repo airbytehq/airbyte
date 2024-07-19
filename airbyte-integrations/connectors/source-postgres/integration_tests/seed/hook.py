@@ -92,7 +92,7 @@ def write_supporting_file(schema_name):
             file.write(source_file.read() % (schema_name, schema_name))
     with open(abnormal_state_cdc_write_file, "w") as file:
         with open(abnormal_state_cdc_file, 'r') as source_file:
-            file.write(source_file.read() % (schema_name, schema_name, schema_name, schema_name))
+            file.write(source_file.read() % (schema_name, schema_name))
     # update configs:
     with open(secret_config_file) as base_config:
       secret = json.load(base_config)
@@ -266,7 +266,6 @@ def teardown():
     formatted_yesterday = yesterday.strftime('%Y%m%d')
     delete_schemas_with_prefix(connection, formatted_yesterday)
     delete_cdc_with_prefix(connection, formatted_yesterday)
-    remove_all_write_files()
 
 if __name__ == "__main__":
     command = sys.argv[1]
