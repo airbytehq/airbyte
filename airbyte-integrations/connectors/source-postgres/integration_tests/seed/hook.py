@@ -44,7 +44,7 @@ def insert_records(connection, schema_name, table_name, records):
         cursor = connection.cursor()
         insert_query = sql.SQL("""
             INSERT INTO {}.{} (id, name)
-            VALUES (%s, %s)
+            VALUES (%s, %s) ON CONFLICT DO NOTHING
         """).format(sql.Identifier(schema_name), sql.Identifier(table_name))
 
         for record in records:
@@ -116,7 +116,7 @@ def create_table(connection, schema_name, table_name):
 
 def generate_schema_date_with_suffix():
     current_date = datetime.datetime.now().strftime("%Y%m%d")
-    suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     return f"{current_date}-{suffix}"
 
 def prepare():
