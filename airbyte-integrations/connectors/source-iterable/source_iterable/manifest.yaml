@@ -67,6 +67,8 @@ streams:
     type: DeclarativeStream
     retriever:
       type: SimpleRetriever
+      decoder:
+        type: IterableDecoder
       paginator:
         type: NoPagination
       requester:
@@ -87,9 +89,8 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_iterable.components.ListUsersRecordExtractor
-          field_path:
-            - getUsers
+          type: DpathExtractor
+          field_path: []
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -139,6 +140,12 @@ streams:
           - path:
               - listId
             value: "{{ stream_slice.list_id }}"
+          - path:
+              - email
+            value: "{{ record.record }}"
+      - type: RemoveFields
+        field_pointers:
+          - - record
   - name: campaigns
     type: DeclarativeStream
     retriever:

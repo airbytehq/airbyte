@@ -26,6 +26,6 @@ source-iterable = "source_iterable.run:run"
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1"
 pytest-mock = "^3.6.1"
-freezegun = "==1.1.0"
+freezegun = "==1.5.1"
 requests-mock = "^1.9.3"
 responses = "==0.23.1"
