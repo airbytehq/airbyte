@@ -39,7 +39,6 @@ interface StateManager {
      */
     val rawStateMessages: List<AirbyteStateMessage>?
 
-
     /**
      * Retrieves the map of stream name/namespace tuple to the current cursor information for that
      * stream.

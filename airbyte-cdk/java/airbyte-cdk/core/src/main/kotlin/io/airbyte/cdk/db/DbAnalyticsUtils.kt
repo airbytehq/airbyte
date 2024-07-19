@@ -50,15 +50,11 @@ object DbAnalyticsUtils {
 
     @JvmStatic
     fun cdcResyncMessage(): AirbyteAnalyticsTraceMessage {
-        return AirbyteAnalyticsTraceMessage()
-            .withType(CDC_RESYNC_KEY)
-            .withValue("1")
+        return AirbyteAnalyticsTraceMessage().withType(CDC_RESYNC_KEY).withValue("1")
     }
 
     @JvmStatic
     fun debeziumShutdownError(): AirbyteAnalyticsTraceMessage {
-        return AirbyteAnalyticsTraceMessage()
-            .withType(DEBEZIUM_SHUTDOWN_ERROR)
-            .withValue("1")
+        return AirbyteAnalyticsTraceMessage().withType(DEBEZIUM_SHUTDOWN_ERROR).withValue("1")
     }
 }

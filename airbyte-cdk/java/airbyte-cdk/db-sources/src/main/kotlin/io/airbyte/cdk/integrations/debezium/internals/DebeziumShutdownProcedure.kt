@@ -91,9 +91,7 @@ class DebeziumShutdownProcedure<T>(
             debeziumThreadRequestClose.call()
         } catch (e: Exception) {
             exceptionDuringEngineClose = e
-            AirbyteTraceMessageUtility.emitAnalyticsTrace(
-                DbAnalyticsUtils.debeziumShutdownError()
-            )
+            AirbyteTraceMessageUtility.emitAnalyticsTrace(DbAnalyticsUtils.debeziumShutdownError())
             throw RuntimeException(e)
         } finally {
             try {
