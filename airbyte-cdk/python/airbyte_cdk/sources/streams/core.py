@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 import inspect
 import itertools
 import logging
@@ -187,6 +187,7 @@ class Stream(ABC):
                 stream_state=stream_state,
                 cursor_field=cursor_field or None,
             )
+            stream_state_tracker = copy.deepcopy(stream_state)
             for record_data_or_message in records:
                 yield record_data_or_message
                 if isinstance(record_data_or_message, Mapping) or (
@@ -204,8 +205,8 @@ class Stream(ABC):
                     if self.cursor_field:
                         # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
                         # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
-                        stream_state = self.get_updated_state(stream_state, record_data)
-                        self._observe_state(checkpoint_reader, stream_state)
+                        stream_state_tracker = self.get_updated_state(stream_state_tracker, record_data)
+                        self._observe_state(checkpoint_reader, stream_state_tracker)
                     record_counter += 1
 
                     checkpoint_interval = self.state_checkpoint_interval
