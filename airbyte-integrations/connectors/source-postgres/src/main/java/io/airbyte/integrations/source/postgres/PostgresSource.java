@@ -314,17 +314,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     } else if (isXmin(config)) {
       try {
         JdbcDatabase database = createDatabase(config);
+        Map<String, List<String>> viewsBySchema = PostgresCatalogHelper.getViewsForAllSchemas(database, schemas);
         // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
         // from being able to pick their own cursor.
         final List<AirbyteStream> streams = catalog.getStreams().stream()
-            .map(PostgresCatalogHelper::overrideSyncModes)
-            .map(stream -> {
-              try {
-                return PostgresCatalogHelper.setFullRefreshToView(database, stream);
-              } catch (SQLException e) {
-                throw new RuntimeException(e);
-              }
-            })
+            .map(stream -> PostgresCatalogHelper.overrideSyncModes(stream, viewsBySchema))
             .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
             .collect(toList());
         catalog.setStreams(streams);
