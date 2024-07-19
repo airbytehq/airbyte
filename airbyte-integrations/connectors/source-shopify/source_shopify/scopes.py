@@ -31,6 +31,7 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "OrderRefunds": ("read_orders",),
     "OrderRisks": ("read_orders",),
     "MetafieldOrders": ("read_orders",),
+    "ExchangeV2s": ("read_orders",),
     # SCOPE: read_draft_orders
     "DraftOrders": ("read_draft_orders",),
     "MetafieldDraftOrders": ("read_draft_orders",),

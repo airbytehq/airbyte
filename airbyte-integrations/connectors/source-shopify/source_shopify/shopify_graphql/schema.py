@@ -18743,6 +18743,7 @@ class QueryRoot(sgqlc.types.Type):
         "draft_order_saved_searches",
         "draft_order_tag",
         "draft_orders",
+        "exchange_V2s",
         "file_saved_searches",
         "files",
         "fulfillment",

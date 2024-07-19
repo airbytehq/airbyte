@@ -1346,6 +1346,61 @@ class InventoryLevel(ShopifyBulkQuery):
         record = self.tools.fields_names_to_snake_case(record)
         yield record
 
+class ExchangeV2(ShopifyBulkQuery):
+    """
+    Output example to BULK query `fulfillmentOrders` from `orders` with `filter query` by `updated_at`, sorted by `UPDATED_AT`:
+        {
+            orders(query: "updated_at:>='2023-04-13T05:00:09Z' and updated_at:<='2023-04-15T05:00:09Z'", sortKey: UPDATED_AT){
+                edges {
+                    node {
+                        __typename
+                        id
+                        exchangeV2s {
+                            edges {
+                                node {
+                                    __typename
+                                    id
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
+
+    query_name = "orders"
+    sort_key = "UPDATED_AT"
+
+    exchange_v2_fields = [
+        "__typename",
+        "id"
+    ]
+
+    query_nodes: List[Field] = [
+        "__typename",
+        "id",
+        Field(name="fulfillmentOrders", fields=[Field(name="edges", fields=[Field(name="node", fields=exchange_v2_fields)])]),
+    ]
+
+    record_composition = {
+        "new_record": "FulfillmentOrder",
+    }
+
+    def process_exchange_v2(self, record: MutableMapping[str, Any], shop_id: int) -> MutableMapping[str, Any]:
+        # addings
+        record["shop_id"] = shop_id
+        record["order_id"] = record.get(BULK_PARENT_KEY)
+        # cleaning
+        record.pop(BULK_PARENT_KEY)
+        # order id
+        record["order_id"] = self.tools.resolve_str_id(record.get("order_id"))
+        return record
+
+    
+
+    
 
 class FulfillmentOrder(ShopifyBulkQuery):
     """

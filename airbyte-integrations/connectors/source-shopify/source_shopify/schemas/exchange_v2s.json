@@ -1,0 +1,10 @@
+{
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "id": {
+            "description": "The unique identifier of the exchange v2",
+            "type": ["null", "integer"]
+        }
+    }
+}

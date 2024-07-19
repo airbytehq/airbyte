@@ -31,6 +31,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     ProductImage,
     ProductVariant,
     Transaction,
+    ExchangeV2
 )
 from source_shopify.shopify_graphql.graphql import get_query_products
 from source_shopify.utils import ApiTypeEnum
@@ -361,6 +362,8 @@ class InventoryItems(IncrementalShopifyGraphQlBulkStream):
 class FulfillmentOrders(IncrementalShopifyGraphQlBulkStream):
     bulk_query: FulfillmentOrder = FulfillmentOrder
 
+class ExchangeV2s(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: ExchangeV2 = ExchangeV2
 
 class Fulfillments(IncrementalShopifyNestedStream):
     parent_stream_class = Orders
