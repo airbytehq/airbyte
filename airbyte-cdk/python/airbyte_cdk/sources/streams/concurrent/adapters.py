@@ -12,6 +12,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream,
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
@@ -38,7 +39,7 @@ This module contains adapters to help enabling concurrency on Stream objects wit
 """
 
 
-@deprecated("This class is experimental. Use at your own risk.")
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
     """
     The StreamFacade is a Stream that wraps an AbstractStream and exposes it as a Stream.
@@ -326,7 +327,7 @@ class StreamPartitionGenerator(PartitionGenerator):
             )
 
 
-@deprecated("This class is experimental. Use at your own risk.")
+@deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy

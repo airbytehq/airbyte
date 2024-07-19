@@ -552,6 +552,12 @@ Bump source-openweather:
 | `BUMP_TYPE`       | major, minor or patch                                                  |
 | `CHANGELOG_ENTRY` | The changelog entry that will get added to the connector documentation |
 
+#### Options
+
+| Option      | Description                                                                               |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| --pr-number | Explicitly set the PR number in the changelog entry, a placeholder will be set otherwise. |
+
 ### <a id="connectors-upgrade_cdk"></a>`connectors upgrade_cdk` command
 
 Upgrade the CDK version of the selected connectors by updating the dependency in the setup.py file.
@@ -760,7 +766,20 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+|---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.25.0  | [#42044](https://github.com/airbytehq/airbyte/pull/42044) | Live/regression tests: add support for selecting from a subset of connections                                                |
+| 4.24.3  | [#42040](https://github.com/airbytehq/airbyte/pull/42040) | Always send regression test approval status check; skip on auto-merge PRs.                                                   |
+| 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676) | Send regression test approval status check when skipped.                                                                     |
+| 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642) | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                           |
+| 4.24.0  | [#41627](https://github.com/airbytehq/airbyte/pull/41627) | Require manual regression test approval for certified connectors                                                             |
+| 4.23.1  | [#41541](https://github.com/airbytehq/airbyte/pull/41541)  | Add support for submodule use-case.                                                                                          |
+| 4.23.0  | [#39906](https://github.com/airbytehq/airbyte/pull/39906)  | Add manifest only build pipeline                                                                                             |
+| 4.22.0  | [#41623](https://github.com/airbytehq/airbyte/pull/41623)  | Make `airbyte-ci` run on private forks.                                                                                      |
+| 4.21.1  | [#41029](https://github.com/airbytehq/airbyte/pull/41029)  | `up-to-date`: mount local docker config to `Syft` to pull private images and benefit from increased DockerHub rate limits.   |
+| 4.21.0  | [#40547](https://github.com/airbytehq/airbyte/pull/40547)  | Make bump-version accept a `--pr-number` option.                                                                             |
+| 4.20.3  | [#40754](https://github.com/airbytehq/airbyte/pull/40754)  | Accept and ignore additional args in `migrate-to-poetry` pipeline                                                            |
+| 4.20.2  | [#40709](https://github.com/airbytehq/airbyte/pull/40709)  | Fix use of GH token.                                                                                                         |
+| 4.20.1  | [#40698](https://github.com/airbytehq/airbyte/pull/40698)  | Add live tests evaluation mode options.                                                                                      |
 | 4.20.0  | [#38816](https://github.com/airbytehq/airbyte/pull/38816)  | Add command for running all live tests (validation + regression).                                                            |
 | 4.19.0  | [#39600](https://github.com/airbytehq/airbyte/pull/39600)  | Productionize the `up-to-date` command                                                                                       |
 | 4.18.3  | [#39341](https://github.com/airbytehq/airbyte/pull/39341)  | Fix `--use-local-cdk` option: change `no-deps` to `force-reinstall`                                                          |

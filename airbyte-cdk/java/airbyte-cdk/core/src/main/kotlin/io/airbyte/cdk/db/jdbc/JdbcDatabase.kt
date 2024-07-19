@@ -39,13 +39,17 @@ abstract class JdbcDatabase(protected val sourceOperations: JdbcCompatibleSource
     }
 
     @Throws(SQLException::class)
-    fun executeWithinTransaction(queries: List<String>) {
+    fun executeWithinTransaction(queries: List<String>, logStatements: Boolean = true) {
         execute { connection: Connection ->
             connection.autoCommit = false
             for (s in queries) {
-                LOGGER.info("executing query within transaction: $s")
+                if (logStatements) {
+                    LOGGER.info("executing query within transaction: $s")
+                }
                 connection.createStatement().execute(s)
-                LOGGER.info("done executing query within transaction: $s")
+                if (logStatements) {
+                    LOGGER.info("done executing query within transaction: $s")
+                }
             }
             connection.commit()
             connection.autoCommit = true

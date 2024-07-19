@@ -14,6 +14,8 @@ object DbAnalyticsUtils {
     const val CDC_CURSOR_INVALID_KEY: String = "db-sources-cdc-cursor-invalid"
     const val DATA_TYPES_SERIALIZATION_ERROR_KEY = "db-sources-data-serialization-error"
     const val CDC_SNAPSHOT_FORCE_SHUTDOWN_KEY = "db-sources-snapshot-force-shutdown"
+    const val DEBEZIUM_CLOSE_REASON_KEY = "db-sources-debezium-close-reason"
+    const val WASS_OCCURRENCE_KEY = "db-sources-wass-occurrence"
 
     @JvmStatic
     fun cdcCursorInvalidMessage(): AirbyteAnalyticsTraceMessage {
@@ -32,5 +34,15 @@ object DbAnalyticsUtils {
         return AirbyteAnalyticsTraceMessage()
             .withType(CDC_SNAPSHOT_FORCE_SHUTDOWN_KEY)
             .withValue("1")
+    }
+
+    @JvmStatic
+    fun debeziumCloseReasonMessage(reason: String): AirbyteAnalyticsTraceMessage {
+        return AirbyteAnalyticsTraceMessage().withType(DEBEZIUM_CLOSE_REASON_KEY).withValue(reason)
+    }
+
+    @JvmStatic
+    fun wassOccurrenceMessage(): AirbyteAnalyticsTraceMessage {
+        return AirbyteAnalyticsTraceMessage().withType(WASS_OCCURRENCE_KEY).withValue("1")
     }
 }

@@ -179,6 +179,11 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
 | 3.0.0   | 2024-06-18 | [38314](https://github.com/airbytehq/airbyte/pull/38314) | Migrate to low-code                                                                                             |
+| 2.1.10  | 2024-07-13 | [41710](https://github.com/airbytehq/airbyte/pull/41710) | Update dependencies                                                                                             |
+| 2.1.9   | 2024-07-10 | [41517](https://github.com/airbytehq/airbyte/pull/41517) | Update dependencies                                                                                             |
+| 2.1.8   | 2024-07-09 | [41315](https://github.com/airbytehq/airbyte/pull/41315) | Update dependencies                                                                                             |
+| 2.1.7   | 2024-07-06 | [40868](https://github.com/airbytehq/airbyte/pull/40868) | Update dependencies                                                                                             |
+| 2.1.6   | 2024-06-25 | [40331](https://github.com/airbytehq/airbyte/pull/40331) | Update dependencies                                                                                             |
 | 2.1.5   | 2024-06-22 | [39998](https://github.com/airbytehq/airbyte/pull/39998) | Update dependencies                                                                                             |
 | 2.1.4   | 2024-06-16 | [39442](https://github.com/airbytehq/airbyte/pull/39442) | Fix README commands, change spec from json to yaml, fix schema states to object                                 |
 | 2.1.3   | 2024-06-06 | [39240](https://github.com/airbytehq/airbyte/pull/39240) | [autopull] Upgrade base image to v1.2.2                                                                         |

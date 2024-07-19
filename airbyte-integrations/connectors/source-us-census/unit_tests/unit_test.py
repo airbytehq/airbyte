@@ -6,7 +6,6 @@
 import pytest
 import requests
 import responses
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_us_census.source import UsCensusStream
 
 
@@ -16,7 +15,7 @@ def us_census_stream():
         query_params={},
         query_path="data/test",
         api_key="MY_API_KEY",
-        authenticator=NoAuth(),
+        authenticator=None,
     )
 
 

@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_adjust import SourceAdjust
+
+from .source import SourceAdjust
 
 
 def run():
