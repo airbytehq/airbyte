@@ -75,6 +75,19 @@ public final class PostgresCatalogHelper {
     return stream;
   }
 
+  public static boolean isStreamAView(final JdbcDatabase database, final AirbyteStream stream) throws SQLException {
+    final String query = "SELECT COUNT(*) FROM pg_catalog.pg_views WHERE schemaname = ? AND viewname = ?";
+    final List<JsonNode> result = database.queryJsons(query, stream.getNamespace(), stream.getName());
+    return result.get(0).get("count").asInt() > 0;
+  }
+
+  public static AirbyteStream setFullRefreshToView(final JdbcDatabase database, final AirbyteStream stream) throws SQLException {
+    if (isStreamAView(database, stream)) {
+      return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
+    }
+    return stream;
+  }
+
   // Note: in place mutation.
   public static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
