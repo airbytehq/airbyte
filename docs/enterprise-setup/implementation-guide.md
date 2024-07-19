@@ -460,14 +460,6 @@ spec:
                   number: 8180
             path: /auth
             pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte--server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
-            pathType: Prefix
 ```
 
 </TabItem>
@@ -512,14 +504,6 @@ spec:
                 port:
                   number: 8180
             path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
             pathType: Prefix
 ```
 
