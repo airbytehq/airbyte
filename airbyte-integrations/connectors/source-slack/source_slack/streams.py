@@ -11,7 +11,10 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from pendulum import DateTime
+from source_slack.components.slack_backoff_strategy import SlackBackoffStrategy
 
 from .components.join_channels import JoinChannelsStream
 from .utils import chunk_date_range
@@ -21,11 +24,6 @@ class SlackStream(HttpStream, ABC):
     url_base = "https://slack.com/api/"
     primary_key = "id"
     page_size = 1000
-
-    @property
-    def max_retries(self) -> int:
-        # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
-        return 20
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
@@ -58,26 +56,23 @@ class SlackStream(HttpStream, ABC):
         json_response = response.json()
         yield from json_response.get(self.data_field, [])
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """This method is called if we run into the rate limit.
-        Slack puts the retry time in the `Retry-After` response header so we
-        we return that value. If the response is anything other than a 429 (e.g: 5XX)
-        fall back on default retry behavior.
-        Rate Limits Docs: https://api.slack.com/docs/rate-limits#web"""
-
-        if "Retry-After" in response.headers:
-            return int(response.headers["Retry-After"])
-        else:
-            self.logger.info("Retry-after header not found. Using default backoff value")
-            return 5
+    def get_backoff_strategy(self) -> BackoffStrategy:
+        return SlackBackoffStrategy(logger=self.logger)
 
     @property
     @abstractmethod
     def data_field(self) -> str:
         """The name of the field in the response which contains the data"""
 
-    def should_retry(self, response: requests.Response) -> bool:
-        return response.status_code == requests.codes.REQUEST_TIMEOUT or super().should_retry(response)
+    def get_error_handler(self) -> ErrorHandler:
+        # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
+        max_retries = 20
+
+        return HttpStatusErrorHandler(
+            logger=self.logger,
+            error_mapping=DEFAULT_ERROR_MAPPING,
+            max_retries=max_retries,
+        )
 
 
 class ChanneledStream(SlackStream, ABC):
@@ -263,7 +258,9 @@ class Threads(IncrementalMessageStream):
 
         stream_state = stream_state or {}
         channels_stream = Channels(
-            authenticator=self._session.auth, channel_filter=self.channel_filter, include_private_channels=self.include_private_channels
+            authenticator=self._http_client._session.auth,
+            channel_filter=self.channel_filter,
+            include_private_channels=self.include_private_channels,
         )
 
         if self.cursor_field in stream_state:
@@ -279,7 +276,7 @@ class Threads(IncrementalMessageStream):
 
         messages_stream = ChannelMessages(
             parent=channels_stream,
-            authenticator=self._session.auth,
+            authenticator=self._http_client._session.auth,
             default_start_date=messages_start_date,
             end_date=self._end_ts and pendulum.from_timestamp(self._end_ts),
         )

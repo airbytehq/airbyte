@@ -242,7 +242,7 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
 
     @HttpMocker()
@@ -383,12 +383,6 @@ class IncrementalStreamTest(TestCase):
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
-        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
-        )
-
         last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_legacies_request().with_start_date(_NOW - timedelta(days=1)).with_end_date(_NOW).build(),
@@ -411,14 +405,6 @@ class IncrementalStreamTest(TestCase):
         config = {
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
-
-        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
-                record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
-                record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
-        )
 
         last_record_date_1 = _NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -499,7 +485,7 @@ class MultipleStreamTest(TestCase):
             Type.STATE
         ], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_0)

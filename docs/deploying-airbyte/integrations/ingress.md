@@ -11,23 +11,25 @@ import TabItem from '@theme/TabItem';
 If you are using `abctl` to manage your deployment, a nginx ingress is automatically provided for you. There is no need to provision an additional ingress.
 :::
 
-To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment.
+To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. These guides assume that you have already deployed an Ingress Controller.
 The following is a simplified definition of an ingress resource you could use for your Airbyte instance:
 
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 
+If you don't already have an NGINX controller installed, you can do it by running `helm install my-release oci://ghcr.io/nginxinc/charts/nginx-ingress --version 1.3.1` or following the [instructions](https://docs.nginx.com/nginx-ingress-controller/installation/installing-nic/installation-with-helm/) from NGINX.
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: # ingress name, example: airbyte-production
+  name: airbyte-ingress # ingress name, example: airbyte-production-ingress
   annotations:
     ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - host: # host, example: airbyte.company.example
+    - host: localhost # host, example: airbyte.company.example
       http:
         paths:
           - backend:
@@ -38,25 +40,19 @@ spec:
                   number: 80 # service port, example: 8080
             path: /
             pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-keycloak-svc
-                name: airbyte-airbyte-keycloak-svc
-                port:
-                  number: 8180
-            path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte--server-svc
-                name: airbyte-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
-            pathType: Prefix
 ```
 </TabItem>
 <TabItem value="Amazon ALB" label="Amazon ALB">
+
+First you need to have an ALB deployed. You can read more about ALBs in the detail below. Reference AWS on how to set these up.
+
+<details>
+    <summary>AWS ALBs</summary>
+
+The recommended method for Cluster Ingress is an AWS ALB. This configuration is outside the scope of this documentation. You can find more information on how to correctly configure an ALB Ingress Controller by reading the official [Route application and HTTP traffic with Application Load Balancers](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html) documentation provided by Amazon.
+
+Once the AWS Load Balancer Controller has been correctly installed the Airbyte installation process will be able to automatically create an ALB for you. You can combine the ALB with AWS Certificate Manager (ACM) to secure your instance with TLS. The ACM documentation can be found here: [Getting Started with AWS Certificate Manager](https://aws.amazon.com/certificate-manager/getting-started/). To use the ACM certificate, you can specify the certificate-arn when creating the Kubernetes Ingress. For more information see the [Kubernetes Ingress Annotations documentation](https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.1/guide/ingress/annotations/#certificate-arn).
+</details>
 
 If you intend to use Amazon Application Load Balancer (ALB) for ingress, this ingress definition will be close to what's needed to get up and running:
 
@@ -65,7 +61,7 @@ If you intend to use Amazon Application Load Balancer (ALB) for ingress, this in
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: # ingress name, e.g. airbyte-production
+  name: airbyte-ingress # ingress name, e.g. airbyte-production-ingress
   annotations:
     # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
@@ -82,7 +78,7 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-    - host: # e.g. airbyte.company.example
+    - host: localhost # e.g. airbyte.company.example
       http:
         paths:
           - backend:
@@ -91,21 +87,6 @@ spec:
                 port:
                   number: 80
             path: /
-            pathType: Prefix
-          - backend:
-              service:
-                name: airbyte-airbyte-keycloak-svc
-                port:
-                  number: 8180
-            path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
             pathType: Prefix
 ```
 
