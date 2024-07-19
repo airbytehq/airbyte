@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "yoink"
+version = "0.1.0"
+description = ""
+authors = ["Natik Gadzhi <natik@respawn.io>"]
+readme = "README.md"
+packages = [{ include = "yoink", from = "src" }]
+
+
+[tool.poetry.scripts]
+yoink = 'yoink.cli:yoink'
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.1.7"
+pyyaml = "^6.0.1"
+jinja2 = "^3.1.4"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.5.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
