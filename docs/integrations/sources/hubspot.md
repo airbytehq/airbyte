@@ -71,7 +71,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                                                    |
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
-| `contact_lists`             | `crm.objects.lists.read`                                                                                     |
+| `contact_lists`             | `crm.lists.read`                                                                                     |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
 | `contacts_form_submissions` | `crm.objects.contacts.read`                                                                                  |
