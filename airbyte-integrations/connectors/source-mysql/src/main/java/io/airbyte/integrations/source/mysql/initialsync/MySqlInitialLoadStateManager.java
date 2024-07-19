@@ -42,11 +42,7 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateMessage
   // Returns the previous state emitted, represented as a {@link PrimaryKeyLoadStatus} associated with
   // the stream.
   public PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    if (pairToPrimaryKeyLoadStatus.containsKey(pair)) {
       return pairToPrimaryKeyLoadStatus.get(pair);
-    } else {
-      return null;
-    }
   }
 
   // Returns the current {@PrimaryKeyInfo}, associated with the stream. This includes the data type &
