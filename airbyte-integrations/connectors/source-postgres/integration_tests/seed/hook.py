@@ -2,7 +2,7 @@
 
 import datetime
 import json
-import os
+from pathlib import Path
 import random
 import string
 import sys
@@ -77,6 +77,8 @@ def create_schema(connection, schema_name):
 # These files will be used in acceptance-test-config.yml as inputs of various test cases.
 def write_supporting_file(schema_name):
     print(f"writting schema name to files: {schema_name}")
+    Path("/connector/integration_tests/temp").mkdir(parents=False, exist_ok=True)
+
     with open(catalog_write_file, "w") as file:
         with open(catalog_source_file, 'r') as source_file:
             file.write(source_file.read() % schema_name)
