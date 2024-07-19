@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.9.0
+low code: add new Decoders: JsonlDecoder, IterableDecoder
+
+## 3.8.2
+low-code: fix overwrite for default backoff strategy
+
 ## 3.8.1
 CDK: fix handling for rate limit errors when checking connection
 
