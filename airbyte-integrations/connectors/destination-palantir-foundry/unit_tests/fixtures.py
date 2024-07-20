@@ -19,3 +19,5 @@ FOUNDRY_CONFIG = FoundryConfig(
 
 NAMESPACE = "test-namespace"
 STREAM_NAME = "test-stream-name"
+
+DATASET_RID = "ri.foundry.main.dataset.id1"
