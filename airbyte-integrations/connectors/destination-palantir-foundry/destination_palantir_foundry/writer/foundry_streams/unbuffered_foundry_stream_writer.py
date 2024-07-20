@@ -11,6 +11,27 @@ logger = logging.getLogger("airbyte")
 
 
 class UnbufferedFoundryStreamWriter(Writer):
+    SCOPES = [
+        "streaming:read",
+        "streaming:create",
+        "streaming:delete",
+        "streaming:manage-resource",
+        "streaming:write",
+        "streaming:read-resource",
+        "streaming:read",
+        "streaming:create",
+        "streaming:delete",
+        "streaming:manage-resource",
+        "streaming:write",
+        "streaming:read-resource",
+        "api:datasets-write",
+        "api:datasets-read",
+        "compass:read-branch",
+        "compass:discover",
+        "compass:view",
+        "compass:read-resource",
+    ]
+
     def __init__(self, compass: Compass, stream_catalog: StreamCatalog, stream_proxy: StreamProxy, dataset_registry: DatasetRegistry, parent_rid: str) -> None:
         self.compass = compass
         self.stream_catalog = stream_catalog

@@ -3,6 +3,7 @@ from pydantic import RootModel, BaseModel
 from foundry._core.auth_utils import Auth
 from typing import Dict
 from foundry.api_client import RequestInfo
+from destination_palantir_foundry.config.foundry_config import FoundryConfig
 
 
 STREAM_PROXY = "stream-proxy"
@@ -35,3 +36,8 @@ class StreamProxy:
         )
 
         return self.api_client.call_api(put_json_record_request)
+
+
+class StreamProxyFactory:
+    def create(self, config: FoundryConfig, api_auth: Auth) -> StreamProxy:
+        return StreamProxy(config.host, api_auth)

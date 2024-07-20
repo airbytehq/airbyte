@@ -43,7 +43,7 @@ class DestinationPalantirFoundry(Destination):
         """
         foundry_config = FoundryConfig.from_raw(config)
 
-        foundry_writer = self.foundry_writer_factory.create()
+        foundry_writer = self.foundry_writer_factory.create(foundry_config)
 
         for stream in configured_catalog.streams:
             foundry_writer.ensure_registered(

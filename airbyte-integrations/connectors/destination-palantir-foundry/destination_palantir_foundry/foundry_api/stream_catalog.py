@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from foundry._core.auth_utils import Auth
 from typing import List
 from foundry.api_client import RequestInfo
+from destination_palantir_foundry.config.foundry_config import FoundryConfig
 
 
 STREAM_CATALOG = "stream-catalog"
@@ -62,3 +63,8 @@ class StreamCatalog:
         )
 
         return self.api_client.call_api(create_stream_request)
+
+
+class StreamCatalogFactory:
+    def create(self, config: FoundryConfig, api_auth: Auth) -> StreamCatalog:
+        return StreamCatalog(config.host, api_auth)
