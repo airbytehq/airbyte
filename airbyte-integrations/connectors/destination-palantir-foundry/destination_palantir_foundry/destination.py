@@ -46,8 +46,7 @@ class DestinationPalantirFoundry(Destination):
         foundry_writer = self.foundry_writer_factory.create(foundry_config)
 
         for stream in configured_catalog.streams:
-            foundry_writer.ensure_registered(
-                stream.stream.namespace, stream.stream.name)
+            foundry_writer.ensure_registered(stream)
 
         for message in input_messages:
             if message.type == Type.RECORD:

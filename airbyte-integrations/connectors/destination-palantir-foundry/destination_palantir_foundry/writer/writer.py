@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Dict
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream
 
 
 class Writer(ABC):
     """
-    Register a message stream if one doesn't exist. Returns a boolean indicating whether or not a new resource was created.
+    Register a message stream if one doesn't exist.
     """
     @abstractmethod
-    def ensure_registered(self, namespace: str, stream_name):
+    def ensure_registered(self, airbyte_stream: AirbyteStream):
         pass
 
     """

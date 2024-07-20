@@ -1,5 +1,6 @@
 from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig
 from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode
 
 FOUNDRY_HOST = "acme.palantirfoundry.com"
 CLIENT_ID = "testclientid"
@@ -18,8 +19,6 @@ FOUNDRY_CONFIG = FoundryConfig(
     )
 )
 
-NAMESPACE = "test-namespace"
-STREAM_NAME = "test-stream-name"
 
 DATASET_RID = "ri.foundry.main.dataset.id1"
 
@@ -39,3 +38,18 @@ STREAM_VIEW = StreamView(
 )
 
 CREATE_STREAM_OR_VIEW_RESPONSE = CreateStreamOrViewResponse(view=STREAM_VIEW)
+
+NAMESPACE = "test-namespace"
+STREAM_NAME = "test-stream-name"
+
+EMPTY_JSON_SCHEMA = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object"
+}
+
+MINIMAL_AIRBYTE_STREAM = AirbyteStream(
+    name=STREAM_NAME,
+    json_schema=EMPTY_JSON_SCHEMA,
+    namespace=NAMESPACE,
+    supported_sync_modes=[SyncMode.incremental],
+)
