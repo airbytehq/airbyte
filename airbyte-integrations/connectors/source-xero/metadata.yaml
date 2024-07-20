@@ -16,7 +16,7 @@ data:
       3.0.0:
         upgradeDeadline: "2024-08-30"
         message:
-          Due to limitations on the number of OAuth users permitted for the Airbyte application, OAuth support has been disabled. 
+          Due to limitations on the number of OAuth users permitted for the Airbyte application, OAuth support has been disabled.
           Consequently, the bearer authentication method has been adopted as the primary authentication type.
       2.0.0:
         upgradeDeadline: "2024-06-30"
