@@ -4,6 +4,7 @@ from foundry._core.auth_utils import Auth
 from foundry.api_client import RequestInfo
 from pydantic import BaseModel, RootModel
 
+from destination_palantir_foundry.foundry_api.config import REQUEST_TIMEOUT
 from destination_palantir_foundry.foundry_api.service import FoundryApiClient
 from destination_palantir_foundry.foundry_api.service import FoundryService
 
@@ -35,7 +36,8 @@ class Compass(FoundryService):
             path_params={"rid": rid},
             header_params={},
             body=None,
-            body_type=None
+            body_type=None,
+            request_timeout=REQUEST_TIMEOUT,
         )
 
         return self.api_client.call_api(get_resource_request)
@@ -49,7 +51,9 @@ class Compass(FoundryService):
             path_params={},
             header_params={},
             body_type=Rids,
-            body=rids
+            body=rids,
+            request_timeout=REQUEST_TIMEOUT,
+
         )
 
         return self.api_client.call_api(get_paths_request)
@@ -66,7 +70,8 @@ class Compass(FoundryService):
             path_params={},
             header_params={},
             body_type=None,
-            body=None
+            body=None,
+            request_timeout=REQUEST_TIMEOUT,
         )
 
         return self.api_client.api_client(get_resource_by_path_request)

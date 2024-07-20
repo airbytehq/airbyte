@@ -12,16 +12,12 @@ from airbyte_cdk.models.airbyte_protocol import Type
 from destination_palantir_foundry.config.foundry_config import FoundryConfig
 from destination_palantir_foundry.config.validation import ConfigValidator
 from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialClientAuthFactory
-from destination_palantir_foundry.writer.writer_factory import WriterFactory
+from destination_palantir_foundry.writer.writer_factory import create_writer
 
 logger = logging.getLogger("airbyte")
 
 
 class DestinationPalantirFoundry(Destination):
-    def __init__(self, foundry_writer_factory: WriterFactory) -> None:
-        super().__init__()
-        self.foundry_writer_factory = foundry_writer_factory
-
     def write(
             self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -41,7 +37,7 @@ class DestinationPalantirFoundry(Destination):
         """
         foundry_config = FoundryConfig.from_raw(config)
 
-        foundry_writer = self.foundry_writer_factory.create(foundry_config)
+        foundry_writer = create_writer(foundry_config)
 
         for stream in configured_catalog.streams:
             foundry_writer.ensure_registered(stream)

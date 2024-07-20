@@ -4,6 +4,7 @@ from foundry._core.auth_utils import Auth
 from foundry.api_client import RequestInfo
 from pydantic import BaseModel, RootModel
 
+from destination_palantir_foundry.foundry_api.config import REQUEST_TIMEOUT
 from destination_palantir_foundry.foundry_api.service import FoundryApiClient
 from destination_palantir_foundry.foundry_api.service import FoundryService
 
@@ -61,7 +62,8 @@ class StreamCatalog(FoundryService):
             branch="master",
             settings={"streamTypes": ["HIGH_THROUGHPUT"]},
             isRaw=True,
-            markings=[]
+            markings=[],
+            request_timeout=REQUEST_TIMEOUT,
         )
 
         create_stream_request = RequestInfo(
@@ -74,7 +76,8 @@ class StreamCatalog(FoundryService):
             },
             header_params={},
             body_type=CreateStream2Request,
-            body=request_body
+            body=request_body,
+            request_timeout=REQUEST_TIMEOUT,
         )
 
         return self.api_client.call_api(create_stream_request)
@@ -90,7 +93,8 @@ class StreamCatalog(FoundryService):
             },
             header_params={},
             body_type=None,
-            body=None
+            body=None,
+            request_timeout=REQUEST_TIMEOUT,
         )
 
         return self.api_client.call_api(get_stream_request)

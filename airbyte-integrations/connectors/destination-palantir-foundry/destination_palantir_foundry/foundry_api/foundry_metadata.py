@@ -2,6 +2,7 @@ from foundry._core.auth_utils import Auth
 from foundry.api_client import RequestInfo
 from pydantic import BaseModel
 
+from destination_palantir_foundry.foundry_api.config import REQUEST_TIMEOUT
 from destination_palantir_foundry.foundry_api.service import FoundryApiClient
 from destination_palantir_foundry.foundry_api.service import FoundryService
 from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
@@ -30,7 +31,8 @@ class FoundryMetadata(FoundryService):
             },
             header_params={},
             body_type=FoundrySchema,
-            body=foundry_schema
+            body=foundry_schema,
+            request_timeout=REQUEST_TIMEOUT,
         )
 
         return self.api_client.call_api(get_resource_request)
