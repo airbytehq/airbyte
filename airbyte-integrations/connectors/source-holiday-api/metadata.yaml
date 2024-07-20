@@ -1,0 +1,38 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+    - holidayapi.com
+  connectorBuildOptions:
+    baseImage: airbyte/source-declarative-manifest
+  connectorSubtype: api
+  connectorType: source
+  definitionId:
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-holiday-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api
+  githubIssueLabel: source-holiday-api
+  icon: holiday-api.svg
+  license: MIT
+  maxSecondsBetweenMessages: 60
+  name: Holiday-api
+  remoteRegistries:
+    pypi:
+      enabled: false
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+  - language:python
+  - cdk:python
+  connectorTestSuitesOptions:
+  - suite: unitTests
+  - suite: acceptanceTests
+    testSecrets:
+metadataSpecVersion: '1.0'
