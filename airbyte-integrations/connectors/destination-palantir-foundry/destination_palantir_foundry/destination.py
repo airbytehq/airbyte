@@ -49,9 +49,7 @@ class DestinationPalantirFoundry(Destination):
 
         for message in input_messages:
             if message.type == Type.RECORD:
-                record = message.record
-                foundry_writer.add_record(
-                    record.namespace, record.stream, record.data)
+                foundry_writer.add_record(message.record)
 
             elif message.type == Type.STATE:
                 stream_descriptor = message.state.stream.stream_descriptor

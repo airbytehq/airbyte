@@ -1,6 +1,6 @@
 from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig
 from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode, AirbyteRecordMessage
 
 FOUNDRY_HOST = "acme.palantirfoundry.com"
 CLIENT_ID = "testclientid"
@@ -52,4 +52,11 @@ MINIMAL_AIRBYTE_STREAM = AirbyteStream(
     json_schema=EMPTY_JSON_SCHEMA,
     namespace=NAMESPACE,
     supported_sync_modes=[SyncMode.incremental],
+)
+
+MINIMAL_AIRBYTE_RECORD_MESSAGE = AirbyteRecordMessage(
+    namespace=NAMESPACE,
+    stream=STREAM_NAME,
+    data={},
+    emitted_at=0
 )

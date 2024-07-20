@@ -3,7 +3,7 @@ from mockito import unstub, mock, when, verifyZeroInteractions, verify
 from destination_palantir_foundry.foundry_api import compass, stream_catalog, stream_proxy, foundry_metadata
 from destination_palantir_foundry.foundry_schema.providers import stream_schema_provider
 from destination_palantir_foundry.writer.foundry_streams.unbuffered_foundry_stream_writer import UnbufferedFoundryStreamWriter
-from unit_tests.fixtures import PROJECT_RID, NAMESPACE, STREAM_NAME, DATASET_RID, CREATE_STREAM_OR_VIEW_RESPONSE, MINIMAL_AIRBYTE_STREAM
+from unit_tests.fixtures import PROJECT_RID, NAMESPACE, STREAM_NAME, DATASET_RID, CREATE_STREAM_OR_VIEW_RESPONSE, MINIMAL_AIRBYTE_STREAM, MINIMAL_AIRBYTE_RECORD_MESSAGE
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 from destination_palantir_foundry.writer import dataset_registry
 from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
@@ -108,7 +108,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.unbuffered_foundry_stream_writer.add_record(
-                NAMESPACE, STREAM_NAME, {})
+                MINIMAL_AIRBYTE_RECORD_MESSAGE)
 
         verifyZeroInteractions(self.stream_proxy)
 
@@ -118,8 +118,11 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
 
         record = {"test": 1}
 
+        when(self.stream_schema_provider).get_converted_record(
+            MINIMAL_AIRBYTE_RECORD_MESSAGE).thenReturn(record)
+
         self.unbuffered_foundry_stream_writer.add_record(
-            NAMESPACE, STREAM_NAME, record)
+            MINIMAL_AIRBYTE_RECORD_MESSAGE)
 
         verify(self.stream_proxy, times=1).put_json_record(DATASET_RID, record)
 

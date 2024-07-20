@@ -8,13 +8,13 @@ from destination_palantir_foundry.utils.resource_names import get_foundry_resour
 from destination_palantir_foundry.writer.dataset_registry import DatasetRegistry
 from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
 import logging
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, AirbyteRecordMessage
 
 logger = logging.getLogger("airbyte")
 
 
 class UnbufferedFoundryStreamWriter(Writer):
-    SCOPES = [
+    SCOPES = [  # TODO(jcrowson): scope down...
         "streaming:read",
         "streaming:create",
         "streaming:delete",
@@ -90,13 +90,15 @@ class UnbufferedFoundryStreamWriter(Writer):
         self.foundry_metadata.put_schema(
             foundry_stream_dataset_rid, foundry_stream_schema)
 
-    def add_record(self, namespace: str, stream_name: str, record: Dict):
-        stream_dataset_rid = self.dataset_registry.get(namespace, stream_name)
+    def add_record(self, airbyte_record: AirbyteRecordMessage):
+        stream_dataset_rid = self.dataset_registry.get(
+            airbyte_record.namespace, airbyte_record.stream)
         if stream_dataset_rid is None:
             raise ValueError(
-                f"Tried to add row to an unregistered stream for '{get_foundry_resource_name(namespace, stream_name)}'")
+                f"Tried to add row to an unregistered stream for '{get_foundry_resource_name(airbyte_record.namespace, airbyte_record.stream)}'")
 
-        self.stream_proxy.put_json_record(stream_dataset_rid, record)
+        self.stream_proxy.put_json_record(
+            stream_dataset_rid, self.stream_schema_provider.get_converted_record(airbyte_record))
 
     def ensure_flushed(self, _namespace: str, _stream_name: str):
         # No buffering, so always flushed

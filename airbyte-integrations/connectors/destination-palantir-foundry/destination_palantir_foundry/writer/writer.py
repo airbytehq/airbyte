@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, AirbyteRecordMessage
 
 
 class Writer(ABC):
@@ -15,7 +14,7 @@ class Writer(ABC):
     Add a row to the writer output
     """
     @abstractmethod
-    def add_record(self, namespace: str, stream_name: str, row: Dict):
+    def add_record(self, airbyte_record: AirbyteRecordMessage):
         pass
 
     """
