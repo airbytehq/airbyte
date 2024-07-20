@@ -444,7 +444,7 @@ streams:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
         field_name: after
