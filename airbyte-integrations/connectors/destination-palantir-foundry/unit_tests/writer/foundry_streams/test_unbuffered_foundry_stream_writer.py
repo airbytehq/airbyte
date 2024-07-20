@@ -68,3 +68,24 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
 
         verify(self.dataset_registry, times=1).add(
             NAMESPACE, STREAM_NAME, DATASET_RID)
+
+    def test_addRecord_noRegisteredDataset_raises(self):
+        when(self.dataset_registry).get(
+            NAMESPACE, STREAM_NAME).thenReturn(None)
+
+        with self.assertRaises(ValueError):
+            self.unbuffered_foundry_stream_writer.add_record(
+                NAMESPACE, STREAM_NAME, {})
+
+        verifyZeroInteractions(self.stream_proxy)
+
+    def test_addRecord_registeredDataset_writes(self):
+        when(self.dataset_registry).get(
+            NAMESPACE, STREAM_NAME).thenReturn(DATASET_RID)
+
+        record = {"test": 1}
+
+        self.unbuffered_foundry_stream_writer.add_record(
+            NAMESPACE, STREAM_NAME, record)
+
+        verify(self.stream_proxy, times=1).put_json_record(DATASET_RID, record)
