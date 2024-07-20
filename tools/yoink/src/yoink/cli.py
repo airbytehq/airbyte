@@ -24,7 +24,7 @@ def cli():
 @click.option("--docs-dir", help="Where to write the docs", default="./data/out/docs")
 @click.option("--csv-file", help="Path to the CSV file", default="./data/manifests-100.csv")
 @click.option("--yeet", help="Overwrite existing connectors", is_flag=True, default=False)
-def csv(connectors_dir: str, docs_dir: str, csv_file: str, yeet: bool = False):
+def hoard(connectors_dir: str, docs_dir: str, csv_file: str, yeet: bool = False):
     click.echo("🤖 Yoinking initialized")
     manifests = load_connectors_from_csv(Path(csv_file))
 
@@ -45,7 +45,7 @@ def csv(connectors_dir: str, docs_dir: str, csv_file: str, yeet: bool = False):
     default=Path("."),
     type=Path,
 )
-def bootstrap(manifest_path: Path, output_dir: Path):
+def shiny(manifest_path: Path, output_dir: Path):
     if manifest_path.exists() is False:
         click.echo(f"❌ Manifest path {manifest_path} does not exist.")
         exit(1)

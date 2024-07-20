@@ -23,3 +23,8 @@ yoink csv --help
 ## Caveats
 
 - Assumes there is only one allowed host (does not walk over all hosts in all streams)
+
+## TODO
+
+- [ ] Improve README template with links to connector development docs
+- [ ] Add manifest description to Builder and low-code CDK
