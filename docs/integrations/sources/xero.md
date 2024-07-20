@@ -120,6 +120,7 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 
 | Version    | Date       | Pull Request                                             | Subject                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------|
+| 3.0.0      | 2024-07-22 | [42128](https://github.com/airbytehq/airbyte/pull/42128) | Remove OAuth due to user limit restriction  |
 | 2.0.0      | 2024-06-06 | [39316](https://github.com/airbytehq/airbyte/pull/39316) | Add OAuth and Bearer strategies         |
 | 1.0.1      | 2024-06-06 | [39264](https://github.com/airbytehq/airbyte/pull/39264) | [autopull] Upgrade base image to v1.2.2 |
 | 1.0.0      | 2024-04-30 | [36878](https://github.com/airbytehq/airbyte/pull/36878) | Migrate to low code                     |
