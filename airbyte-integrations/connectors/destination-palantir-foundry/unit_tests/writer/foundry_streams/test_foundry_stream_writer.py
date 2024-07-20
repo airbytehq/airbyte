@@ -52,6 +52,25 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
         verifyZeroInteractions(self.buffer_registry)
         verifyZeroInteractions(self.stream_schema_provider)
 
+    def test_ensureRegistered_existingResourceNotStream_raises(self):
+        project_path = "/some/path"
+        get_paths_response = {PROJECT_RID: project_path}
+        when(self.compass).get_paths(
+            [PROJECT_RID]).thenReturn(get_paths_response)
+
+        resource_name = get_foundry_resource_name(
+            MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name)
+
+        when(self.compass).get_resource_by_path(
+            f"{project_path}/{resource_name}").thenReturn(compass.DecoratedResource(rid=DATASET_RID, name=resource_name))
+        when(self.stream_catalog).get_stream(DATASET_RID).thenReturn(None)
+
+        with self.assertRaises(ValueError):
+            self.foundry_stream_writer.ensure_registered(
+                MINIMAL_CONFIGURED_AIRBYTE_STREAM)
+
+        verifyZeroInteractions(self.foundry_metadata)
+
     def test_ensureRegistered_existingFoundryStream_doesNotCreateNew(self):
         project_path = "/some/path"
         get_paths_response = {PROJECT_RID: project_path}
