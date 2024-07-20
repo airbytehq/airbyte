@@ -1,14 +1,17 @@
 from destination_palantir_foundry.foundry_api.service import FoundryApiClient, FoundryService
 from pydantic import RootModel, BaseModel
 from foundry._core.auth_utils import Auth
-from typing import Dict
+from typing import Dict, List, Any
 from foundry.api_client import RequestInfo
-
 
 STREAM_PROXY = "stream-proxy"
 
 
-PutJsonRecordRequest = RootModel[Dict]
+class PutJsonRecordRequest(BaseModel):
+    value: List[Dict[str, Any]]
+
+
+PutJsonRecordsRequest = RootModel[List[PutJsonRecordRequest]]
 
 
 class OffsetAndPartitionId(BaseModel):
@@ -16,23 +19,29 @@ class OffsetAndPartitionId(BaseModel):
     partitionId: int
 
 
+class BatchStreamProxyResponse(BaseModel):
+    topic: str
+    offsetAndPartitionIds: List[OffsetAndPartitionId]
+
+
 class StreamProxy(FoundryService):
     def __init__(self, foundry_host: str, api_auth: Auth) -> None:
         self.api_client = FoundryApiClient(
             foundry_host, api_auth, STREAM_PROXY)
 
-    def put_json_record(self, dataset_rid: str, record: Dict) -> None:
+    def put_json_records(self, dataset_rid: str, view_rid: str, records: List[Dict[str, Any]]) -> BatchStreamProxyResponse:
         put_json_record_request = RequestInfo(
             method="POST",
-            resource_path="/streams/{datasetRid}/branches/master/jsonRecord",
-            response_type=OffsetAndPartitionId,
+            resource_path="/streams/{dataset_rid}/views/{view_rid}/jsonRecords",
+            response_type=BatchStreamProxyResponse,
             query_params={},
             path_params={
-                "dataset_rid": dataset_rid
+                "dataset_rid": dataset_rid,
+                "view_rid": view_rid
             },
             header_params={},
-            body_type=PutJsonRecordRequest,
-            body=record
+            body_type=PutJsonRecordsRequest,
+            body=[PutJsonRecordRequest(value=record) for record in records],
         )
 
         return self.api_client.call_api(put_json_record_request)

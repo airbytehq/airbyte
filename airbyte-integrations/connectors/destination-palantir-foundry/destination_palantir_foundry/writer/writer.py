@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, AirbyteRecordMessage
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStream, AirbyteRecordMessage
 
 
 class Writer(ABC):
@@ -7,7 +7,7 @@ class Writer(ABC):
     Register a message stream if one doesn't exist.
     """
     @abstractmethod
-    def ensure_registered(self, airbyte_stream: AirbyteStream):
+    def ensure_registered(self, airbyte_stream: ConfiguredAirbyteStream):
         pass
 
     """

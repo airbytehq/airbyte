@@ -1,6 +1,7 @@
 from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig
-from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode, AirbyteRecordMessage
+from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView, GetStreamResponse, \
+    StreamSettings
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode, DestinationSyncMode, AirbyteRecordMessage, ConfiguredAirbyteStream
 
 FOUNDRY_HOST = "acme.palantirfoundry.com"
 CLIENT_ID = "testclientid"
@@ -39,6 +40,13 @@ STREAM_VIEW = StreamView(
 
 CREATE_STREAM_OR_VIEW_RESPONSE = CreateStreamOrViewResponse(view=STREAM_VIEW)
 
+STREAM_SETTINGS = StreamSettings(
+    partitions=1,
+    streamTypes=["HIGH_THROUGHPUT"]
+)
+
+GET_STREAM_RESPONSE = GetStreamResponse(view=STREAM_VIEW, streamSettings=STREAM_SETTINGS)
+
 NAMESPACE = "test-namespace"
 STREAM_NAME = "test-stream-name"
 
@@ -52,6 +60,12 @@ MINIMAL_AIRBYTE_STREAM = AirbyteStream(
     json_schema=EMPTY_JSON_SCHEMA,
     namespace=NAMESPACE,
     supported_sync_modes=[SyncMode.incremental],
+)
+
+MINIMAL_CONFIGURED_AIRBYTE_STREAM = ConfiguredAirbyteStream(
+    stream=MINIMAL_AIRBYTE_STREAM,
+    sync_mode=SyncMode.incremental,
+    destination_sync_mode=DestinationSyncMode.append,
 )
 
 MINIMAL_AIRBYTE_RECORD_MESSAGE = AirbyteRecordMessage(
