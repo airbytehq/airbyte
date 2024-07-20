@@ -144,7 +144,7 @@ definitions:
                     predicate: >-
                       {{ 'error' in response and
                       response['error']['error_subcode'] == 2108006 }}
-                    http_codes: [ ]
+                    http_codes: []
                     error_message: >-
                       Insights error for business_account_id: {{
                       response['error']['message'] }}
@@ -169,7 +169,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -234,7 +234,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -468,7 +468,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: [ ]
+            field_path: []
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
