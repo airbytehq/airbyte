@@ -17,6 +17,7 @@ pyyaml = "^6.0.1"
 jinja2 = "^3.1.4"
 ruamel-yaml = "^0.18.6"
 requests = "^2.32.3"
+airbyte-cdk = "^3.9.0"
 
 
 [tool.poetry.group.dev.dependencies]

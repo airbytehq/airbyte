@@ -10,23 +10,25 @@ import jinja2
 import requests
 from ruamel.yaml import YAML
 
-from .models import ManifestRecord
+from .models import Connector
 
 
-def load_manifest_from_file(manifest_path: Path) -> ManifestRecord:
+def load_connector_manifest_from_file(manifest_path: Path) -> Connector:
     "Loads a Manifest from a yaml file, assumes the filename is the host name."
     with open(manifest_path, "r") as f:
-        return ManifestRecord(host=manifest_path.stem, manifest=YAML().load(f))
+        return Connector(filename=manifest_path.stem, raw_manifest=YAML().load(f))
 
 
-def csv_to_manifests(input_csv_path: Path) -> list[ManifestRecord]:
+def load_connectors_from_csv(input_csv_path: Path) -> list[Connector]:
     "Reads a CSV from Metabase into a list of Manifests."
     with open(input_csv_path, "r") as f:
         reader = csv.DictReader(f)
-        return [ManifestRecord(host=row["Host"], manifest=json.loads(row["manifest"])) for row in reader]
+        # The model has a field that maps best to a filename for _existing_ or builder connectors,
+        # but we put hostname there for csv connectors.
+        return [Connector(filename=row["Host"], raw_manifest=json.loads(row["manifest"])) for row in reader]
 
 
-def metadata_for_manifest(manifest: ManifestRecord, base_image: str, version: str) -> dict:
+def metadata_for_connector(connector: Connector, base_image: str, version: str) -> dict:
     """
     Generate a metadata.yaml file for a given manifest.
 
@@ -38,8 +40,8 @@ def metadata_for_manifest(manifest: ManifestRecord, base_image: str, version: st
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
     template = env.get_template("metadata.yaml.j2")
     rendered = template.render(
-        source_name=manifest.name,
-        host=manifest.host,
+        source_name=connector.name,
+        host=connector.hostname,
         version=version,
         base_image=base_image,
     )
@@ -53,19 +55,19 @@ def readme_for_connector(name: str) -> str:
     return rendered
 
 
-def docs_file_for_connector(manifest: ManifestRecord, metadata: dict) -> str:
+def docs_file_for_connector(connector: Connector, metadata: dict) -> str:
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
     template = env.get_template("documentation.md.j2")
-    rendered = template.render(manifest=manifest.manifest, source_name=manifest.name, metadata=metadata)
+    rendered = template.render(manifest=connector.resolved_manifest, source_name=connector.name, metadata=metadata)
     return rendered
 
 
-def write_connector_to_disk(connectors_dir: Path, docs_dir: Path, manifest: ManifestRecord, yeet: bool = False) -> bool:
+def write_connector_to_disk(connectors_dir: Path, docs_dir: Path, connector: Connector, yeet: bool = False) -> bool:
     """
     Bootstraps a new connector from a given manifest row, and writes it to disk at desired path.
     """
     # Make a new directory for this connector
-    connector_dir = connectors_dir / manifest.dir_name
+    connector_dir = connectors_dir / connector.dir_name
     try:
         connector_dir.mkdir(parents=True, exist_ok=yeet)
     except FileExistsError:
@@ -77,16 +79,16 @@ def write_connector_to_disk(connectors_dir: Path, docs_dir: Path, manifest: Mani
         return False
 
     # Prepare required items: metadata, README, and the docs file.
-    metadata = metadata_for_manifest(manifest, version="0.1.0", base_image="airbyte/source-declarative-manifest")
-    readme = readme_for_connector(manifest.name)
-    docs_file = docs_file_for_connector(manifest, metadata)
-    docs_file_name = f"{manifest.name}.md"
+    metadata = metadata_for_connector(connector, version="0.1.0", base_image="airbyte/source-declarative-manifest")
+    readme = readme_for_connector(connector.name)
+    docs_file = docs_file_for_connector(connector, metadata)
+    docs_file_name = f"{connector.name}.md"
 
     # Write everything to disk.
     yaml = YAML()
     yaml.default_flow_style = False
     yaml.dump(metadata, connector_dir / "metadata.yaml")
-    yaml.dump(manifest.manifest, connector_dir / "manifest.yaml")
+    yaml.dump(connector.raw_manifest, connector_dir / "manifest.yaml")
 
     with open(connector_dir / "README.md", "w") as f:
         f.write(readme)

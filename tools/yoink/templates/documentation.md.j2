@@ -11,10 +11,11 @@
 {% endfor %}
 
 ## Description
-{ custom description people can make in the builder}
-
-## Sync modes
-{ sync modes supported based on list of streams and cursors}
+TODO: { custom description people can make in the builder }
 
 ## Streams
-{ list of streams and columns and their types }
+| Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
+|-------------|-------------|------------|---------------------|----------------------|
+{% for stream in manifest.get('streams') -%}
+| {{ stream.name }} | {{ ", ".join(stream.get('primary_key', [])) }} | {{ stream.get('retriever', {}).get('paginator', {}).get('pagination_strategy', {}).get('type', 'No pagination') }} | ✅ | {% if stream.incremental_sync is defined %} ✅ {% endif %} |
+{% endfor %}
