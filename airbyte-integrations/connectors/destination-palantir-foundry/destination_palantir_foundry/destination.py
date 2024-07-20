@@ -12,9 +12,17 @@ from destination_palantir_foundry.config.foundry_config import FoundryConfig
 from destination_palantir_foundry.config.validation import ConfigValidator
 from destination_palantir_foundry.foundry_api.compass import CompassFactory
 from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialClientAuthFactory
+from destination_palantir_foundry.writer.writer_factory import WriterFactory
+from airbyte_cdk.models.airbyte_protocol import Type
+
+logger = logging.getLogger("airbyte")
 
 
 class DestinationPalantirFoundry(Destination):
+    def __init__(self, foundry_writer_factory: WriterFactory) -> None:
+        super().__init__()
+        self.foundry_writer_factory = foundry_writer_factory
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
@@ -33,8 +41,32 @@ class DestinationPalantirFoundry(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
+        foundry_config = FoundryConfig.from_raw(config)
 
-        pass
+        foundry_writer = self.foundry_writer_factory.create()
+
+        for stream in configured_catalog.streams:
+            foundry_writer.ensure_stream_registered(
+                stream.stream.namespace, stream.stream.name)
+
+        for message in input_messages:
+            if message.type == Type.RECORD:
+                record = message.record
+                foundry_writer.add_row(
+                    record.namespace, record.stream, record.data)
+
+            elif message.type == Type.STATE:
+                stream_descriptor = message.state.stream.stream_descriptor
+                foundry_writer.ensure_flushed(
+                    stream_descriptor.namespace, stream_descriptor.name)
+                logger.info(
+                    f"Ensured '[{stream_descriptor.namespace}] {stream_descriptor.name}' was flushed.")
+                yield message
+
+            else:
+                logger.info(
+                    f"Received unsupported message type {message.type}")
+                continue
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -51,7 +83,7 @@ class DestinationPalantirFoundry(Destination):
         try:
             foundry_config = FoundryConfig.from_raw(config)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Invalid format.")
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Invalid config spec format.")
 
         config_validator = ConfigValidator(
             logger, CompassFactory(), ConfidentialClientAuthFactory())
