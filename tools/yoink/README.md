@@ -11,13 +11,13 @@ and make manifest-only connectors out of them.
 ### Make a single connector from manifest
 
 ```bash
-yoink bootstrap path-to-manifest.yaml
+yoink shiny path-to-manifest.yaml
 ```
 
 ### Make multiple connectors from manifest
 
 ```bash
-yoink csv --help
+yoink hoard --help
 ```
 
 ## Caveats
