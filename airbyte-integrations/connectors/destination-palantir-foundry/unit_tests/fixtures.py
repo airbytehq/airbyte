@@ -1,4 +1,5 @@
 from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig
+from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView
 
 FOUNDRY_HOST = "acme.palantirfoundry.com"
 CLIENT_ID = "testclientid"
@@ -21,3 +22,20 @@ NAMESPACE = "test-namespace"
 STREAM_NAME = "test-stream-name"
 
 DATASET_RID = "ri.foundry.main.dataset.id1"
+
+VIEW_RID = "ri.foundry.main.view.id1"
+TOPIC_RID = "ri.foundry-streaming..topic.id1"
+TRANSACTION_RID = "ri.foundry.main.transaction.id1"
+
+BRANCH_MASTER = "master"
+
+STREAM_VIEW = StreamView(
+    viewRid=VIEW_RID,
+    datasetRid=DATASET_RID,
+    branch=BRANCH_MASTER,
+    topicRid=TOPIC_RID,
+    startTransactionRid=TRANSACTION_RID,
+    isRaw=True
+)
+
+CREATE_STREAM_OR_VIEW_RESPONSE = CreateStreamOrViewResponse(view=STREAM_VIEW)

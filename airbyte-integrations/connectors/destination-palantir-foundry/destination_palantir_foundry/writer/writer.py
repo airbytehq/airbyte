@@ -14,7 +14,7 @@ class Writer(ABC):
     Add a row to the writer output
     """
     @abstractmethod
-    def add_row(self, namespace: str, stream_name: str, row: Dict):
+    def add_record(self, namespace: str, stream_name: str, row: Dict):
         pass
 
     """

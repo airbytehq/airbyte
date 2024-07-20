@@ -52,7 +52,7 @@ class DestinationPalantirFoundry(Destination):
         for message in input_messages:
             if message.type == Type.RECORD:
                 record = message.record
-                foundry_writer.add_row(
+                foundry_writer.add_record(
                     record.namespace, record.stream, record.data)
 
             elif message.type == Type.STATE:

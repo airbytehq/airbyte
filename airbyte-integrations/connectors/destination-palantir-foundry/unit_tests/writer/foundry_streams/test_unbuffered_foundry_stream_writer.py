@@ -1,9 +1,11 @@
 import unittest
 from mockito import unstub, mock, when, verifyZeroInteractions, verify
-from destination_palantir_foundry.foundry_api import compass, stream_catalog
+from destination_palantir_foundry.foundry_api import compass, stream_catalog, stream_proxy
 from destination_palantir_foundry.writer.foundry_streams.unbuffered_foundry_stream_writer import UnbufferedFoundryStreamWriter
-from unit_tests.fixtures import PROJECT_RID, NAMESPACE, STREAM_NAME, DATASET_RID
+from unit_tests.fixtures import PROJECT_RID, NAMESPACE, STREAM_NAME, DATASET_RID, CREATE_STREAM_OR_VIEW_RESPONSE
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
+from destination_palantir_foundry.writer import dataset_registry
+from unittest.mock import MagicMock
 
 
 class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
@@ -11,9 +13,12 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
     def setUp(self):
         self.compass = mock(compass.Compass)
         self.stream_catalog = mock(stream_catalog.StreamCatalog, strict=False)
+        self.stream_proxy = mock(stream_proxy.StreamProxy, strict=False)
+        self.dataset_registry = mock(
+            dataset_registry.DatasetRegistry, strict=False)
 
         self.unbuffered_foundry_stream_writer = UnbufferedFoundryStreamWriter(
-            self.compass, self.stream_catalog, PROJECT_RID)
+            self.compass, self.stream_catalog, self.stream_proxy, self.dataset_registry, PROJECT_RID)
 
     def tearDown(self) -> None:
         unstub()
@@ -37,7 +42,11 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
         when(self.compass).get_resource_by_path(
             f"{project_path}/{resource_name}").thenReturn(compass.DecoratedResource(rid=DATASET_RID, name=resource_name))
 
+        self.unbuffered_foundry_stream_writer.ensure_registered(
+            NAMESPACE, STREAM_NAME)
+
         verifyZeroInteractions(self.stream_catalog)
+        verify(self.dataset_registry).add(NAMESPACE, STREAM_NAME, DATASET_RID)
 
     def test_ensureRegistered_noExistingFoundryStream_createsNew(self):
         project_path = "/some/path"
@@ -51,8 +60,11 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
         when(self.compass).get_resource_by_path(
             f"{project_path}/{resource_name}").thenReturn(None)
 
+        when(self.stream_catalog).create_stream(PROJECT_RID,
+                                                resource_name).thenReturn(CREATE_STREAM_OR_VIEW_RESPONSE)
+
         self.unbuffered_foundry_stream_writer.ensure_registered(
             NAMESPACE, STREAM_NAME)
 
-        verify(self.stream_catalog, times=1).create_stream(
-            PROJECT_RID, resource_name)
+        verify(self.dataset_registry, times=1).add(
+            NAMESPACE, STREAM_NAME, DATASET_RID)
