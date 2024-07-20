@@ -1,4 +1,4 @@
-from destination_palantir_foundry.config.foundry_config import FoundryConfig
+from destination_palantir_foundry.foundry_api import service_factory
 from destination_palantir_foundry.config import validation
 from destination_palantir_foundry.foundry_api import compass
 import foundry
@@ -6,7 +6,7 @@ from mockito import when, mock, unstub
 from destination_palantir_foundry.foundry_api import foundry_auth
 import unittest
 import logging
-from unit_tests.fixtures import FOUNDRY_CONFIG
+from unit_tests.fixtures import FOUNDRY_CONFIG, FOUNDRY_HOST
 from unit_tests.utils import stub_logger
 
 
@@ -21,12 +21,15 @@ class TestGetConfigErrors(unittest.TestCase):
         self.auth_factory = mock(
             spec=foundry_auth.ConfidentialClientAuthFactory, strict=True)
 
-        self.compass = mock(spec=compass.Compass)
-        self.compass_factory = mock(spec=compass.CompassFactory)
+        self.compass = mock(compass.Compass)
+        self.service_factory = mock(service_factory.FoundryServiceFactory)
+
+        when(validation).FoundryServiceFactory(
+            FOUNDRY_HOST, self.auth).thenReturn(self.service_factory)
+        when(self.service_factory).compass().thenReturn(self.compass)
 
         self.config_validator = validation.ConfigValidator(
             self.logger,
-            self.compass_factory,
             self.auth_factory
         )
 
@@ -48,8 +51,6 @@ class TestGetConfigErrors(unittest.TestCase):
                                        validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
         when(self.auth).sign_in_as_service_user().thenReturn(None)
 
-        when(self.compass_factory).create(
-            FOUNDRY_CONFIG, self.auth).thenReturn(self.compass)
         when(self.compass).get_resource(FOUNDRY_CONFIG.destination_config.project_rid).thenRaise(
             Exception("Resource doesn't exist"))
 
@@ -62,8 +63,6 @@ class TestGetConfigErrors(unittest.TestCase):
                                        validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
         when(self.auth).sign_in_as_service_user().thenReturn(None)
 
-        when(self.compass_factory).create(
-            FOUNDRY_CONFIG, self.auth).thenReturn(self.compass)
         when(self.compass).get_resource(
             FOUNDRY_CONFIG.destination_config.project_rid).thenReturn(None)
 

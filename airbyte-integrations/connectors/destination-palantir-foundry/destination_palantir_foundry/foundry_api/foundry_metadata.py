@@ -1,6 +1,6 @@
-from destination_palantir_foundry.config.foundry_config import FoundryConfig
-from destination_palantir_foundry.foundry_api.service import FoundryService
+from destination_palantir_foundry.foundry_api.service import FoundryApiClient
 from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
+from destination_palantir_foundry.foundry_api.service import FoundryService
 from foundry.api_client import RequestInfo
 from foundry._core.auth_utils import Auth
 from pydantic import BaseModel
@@ -14,9 +14,9 @@ class FoundrySchemaVersionIdResponse(BaseModel):
     versionId: str
 
 
-class FoundryMetadata:
+class FoundryMetadata(FoundryService):
     def __init__(self, foundry_host: str, api_auth: Auth) -> None:
-        self.api_client = FoundryService(
+        self.api_client = FoundryApiClient(
             foundry_host, api_auth, FOUNDRY_METADATA)
 
     def put_schema(self, dataset_rid: str, foundry_schema: FoundrySchema) -> FoundrySchemaVersionIdResponse:
@@ -28,13 +28,9 @@ class FoundryMetadata:
             path_params={
                 "dataset_rid": dataset_rid
             },
+            header_params={},
             body_type=FoundrySchema,
             body=foundry_schema
         )
 
         return self.api_client.call_api(get_resource_request)
-
-
-class FoundryMetadataFactory:
-    def create(self, config: FoundryConfig, api_auth: Auth) -> FoundryMetadata:
-        return FoundryMetadata(config.host, api_auth)

@@ -10,7 +10,6 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 from destination_palantir_foundry.config.foundry_config import FoundryConfig
 from destination_palantir_foundry.config.validation import ConfigValidator
-from destination_palantir_foundry.foundry_api.compass import CompassFactory
 from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialClientAuthFactory
 from destination_palantir_foundry.writer.writer_factory import WriterFactory
 from airbyte_cdk.models.airbyte_protocol import Type
@@ -85,7 +84,7 @@ class DestinationPalantirFoundry(Destination):
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Invalid config spec format.")
 
         config_validator = ConfigValidator(
-            logger, CompassFactory(), ConfidentialClientAuthFactory())
+            logger, ConfidentialClientAuthFactory())
         config_error = config_validator.get_config_errors(foundry_config)
         if config_error is not None:
             return AirbyteConnectionStatus(status=Status.FAILED, message=config_error)

@@ -1,9 +1,8 @@
-from destination_palantir_foundry.foundry_api.service import FoundryService
+from destination_palantir_foundry.foundry_api.service import FoundryApiClient, FoundryService
 from pydantic import RootModel, BaseModel
 from foundry._core.auth_utils import Auth
 from typing import Dict
 from foundry.api_client import RequestInfo
-from destination_palantir_foundry.config.foundry_config import FoundryConfig
 
 
 STREAM_PROXY = "stream-proxy"
@@ -17,9 +16,9 @@ class OffsetAndPartitionId(BaseModel):
     partitionId: int
 
 
-class StreamProxy:
+class StreamProxy(FoundryService):
     def __init__(self, foundry_host: str, api_auth: Auth) -> None:
-        self.api_client = FoundryService(
+        self.api_client = FoundryApiClient(
             foundry_host, api_auth, STREAM_PROXY)
 
     def put_json_record(self, dataset_rid: str, record: Dict) -> None:
@@ -31,13 +30,9 @@ class StreamProxy:
             path_params={
                 "dataset_rid": dataset_rid
             },
+            header_params={},
             body_type=PutJsonRecordRequest,
             body=record
         )
 
         return self.api_client.call_api(put_json_record_request)
-
-
-class StreamProxyFactory:
-    def create(self, config: FoundryConfig, api_auth: Auth) -> StreamProxy:
-        return StreamProxy(config.host, api_auth)

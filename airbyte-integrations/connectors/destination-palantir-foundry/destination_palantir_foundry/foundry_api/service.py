@@ -1,10 +1,16 @@
-from destination_palantir_foundry.config.foundry_config import FoundryConfig
 from foundry.api_client import ApiClient, RequestInfo
 from foundry._core.auth_utils import Auth
 from typing import Any
+from abc import ABC, abstractmethod
 
 
-class FoundryService:  # TODO(jcrowson): remove config here and just pass host
+class FoundryService(ABC):
+    @abstractmethod
+    def __init__(self, foundry_host: str, api_auth: Auth) -> None:
+        pass
+
+
+class FoundryApiClient:
     def __init__(self, host: str, api_auth: Auth, service_name: str) -> None:
         self.api_client = ApiClient(
             auth=api_auth,

@@ -1,9 +1,9 @@
-from destination_palantir_foundry.foundry_api.service import FoundryService
+from destination_palantir_foundry.foundry_api.service import FoundryApiClient
 from pydantic import BaseModel
+from destination_palantir_foundry.foundry_api.service import FoundryService
 from foundry._core.auth_utils import Auth
 from typing import List
 from foundry.api_client import RequestInfo
-from destination_palantir_foundry.config.foundry_config import FoundryConfig
 
 
 STREAM_CATALOG = "stream-catalog"
@@ -35,9 +35,9 @@ class CreateStreamOrViewResponse(BaseModel):
     view: StreamView
 
 
-class StreamCatalog:
+class StreamCatalog(FoundryService):
     def __init__(self, foundry_host: str, api_auth: Auth) -> None:
-        self.api_client = FoundryService(
+        self.api_client = FoundryApiClient(
             foundry_host, api_auth, STREAM_CATALOG)
 
     def create_stream(self, parent_rid: str, name: str) -> CreateStreamOrViewResponse:
@@ -58,13 +58,9 @@ class StreamCatalog:
             path_params={
                 "parent_rid": parent_rid
             },
+            header_params={},
             body_type=CreateStream2Request,
             body=request_body
         )
 
         return self.api_client.call_api(create_stream_request)
-
-
-class StreamCatalogFactory:
-    def create(self, config: FoundryConfig, api_auth: Auth) -> StreamCatalog:
-        return StreamCatalog(config.host, api_auth)
