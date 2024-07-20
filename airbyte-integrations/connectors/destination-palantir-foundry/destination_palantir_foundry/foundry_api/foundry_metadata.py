@@ -1,10 +1,10 @@
-from destination_palantir_foundry.foundry_api.service import FoundryApiClient
-from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
-from destination_palantir_foundry.foundry_api.service import FoundryService
-from foundry.api_client import RequestInfo
 from foundry._core.auth_utils import Auth
+from foundry.api_client import RequestInfo
 from pydantic import BaseModel
 
+from destination_palantir_foundry.foundry_api.service import FoundryApiClient
+from destination_palantir_foundry.foundry_api.service import FoundryService
+from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
 
 FOUNDRY_METADATA = "foundry-metadata"
 

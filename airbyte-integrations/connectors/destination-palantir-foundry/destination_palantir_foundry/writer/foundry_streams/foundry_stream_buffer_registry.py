@@ -1,6 +1,7 @@
-from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
-from typing import Optional, List, Dict, Any, Tuple
 from dataclasses import dataclass
+from typing import Optional, List, Dict, Any
+
+from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 
 
 @dataclass

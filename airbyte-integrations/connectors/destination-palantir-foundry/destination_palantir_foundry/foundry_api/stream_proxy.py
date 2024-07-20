@@ -1,8 +1,10 @@
-from destination_palantir_foundry.foundry_api.service import FoundryApiClient, FoundryService
-from pydantic import RootModel, BaseModel
-from foundry._core.auth_utils import Auth
 from typing import Dict, List, Any
+
+from foundry._core.auth_utils import Auth
 from foundry.api_client import RequestInfo
+from pydantic import RootModel, BaseModel
+
+from destination_palantir_foundry.foundry_api.service import FoundryApiClient, FoundryService
 
 STREAM_PROXY = "stream-proxy"
 

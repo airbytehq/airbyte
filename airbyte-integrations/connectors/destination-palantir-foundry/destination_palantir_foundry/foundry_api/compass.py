@@ -1,10 +1,11 @@
-from destination_palantir_foundry.foundry_api.service import FoundryApiClient
-from destination_palantir_foundry.foundry_api.service import FoundryService
-from foundry.api_client import RequestInfo
-from foundry._core.auth_utils import Auth
-from pydantic import BaseModel, RootModel
 from typing import List, Dict, Optional
 
+from foundry._core.auth_utils import Auth
+from foundry.api_client import RequestInfo
+from pydantic import BaseModel, RootModel
+
+from destination_palantir_foundry.foundry_api.service import FoundryApiClient
+from destination_palantir_foundry.foundry_api.service import FoundryService
 
 COMPASS = "compass"
 
@@ -17,7 +18,6 @@ class DecoratedResource(BaseModel):
 MaybeDecoratedResource = RootModel[Optional[DecoratedResource]]
 
 Rids = RootModel[List[str]]
-
 
 GetPathsResponse = RootModel[Dict[str, str]]
 

@@ -1,14 +1,17 @@
-from destination_palantir_foundry.writer.writer import Writer
-from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
-from destination_palantir_foundry.foundry_api.compass import Compass
-from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
-from destination_palantir_foundry.foundry_api.foundry_metadata import FoundryMetadata
-from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
-from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_registry import FoundryStreamBufferRegistry
-from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
 import logging
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStream, AirbyteRecordMessage
 from sys import getsizeof
+
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStream, AirbyteRecordMessage
+
+from destination_palantir_foundry.foundry_api.compass import Compass
+from destination_palantir_foundry.foundry_api.foundry_metadata import FoundryMetadata
+from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
+from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
+from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
+from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
+from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_registry import \
+    FoundryStreamBufferRegistry
+from destination_palantir_foundry.writer.writer import Writer
 
 logger = logging.getLogger("airbyte")
 

@@ -3,16 +3,16 @@
 #
 
 import logging
-
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models.airbyte_protocol import Type
+
 from destination_palantir_foundry.config.foundry_config import FoundryConfig
 from destination_palantir_foundry.config.validation import ConfigValidator
 from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialClientAuthFactory
 from destination_palantir_foundry.writer.writer_factory import WriterFactory
-from airbyte_cdk.models.airbyte_protocol import Type
 
 logger = logging.getLogger("airbyte")
 
@@ -23,10 +23,9 @@ class DestinationPalantirFoundry(Destination):
         self.foundry_writer_factory = foundry_writer_factory
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+            self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -55,8 +54,6 @@ class DestinationPalantirFoundry(Destination):
                 stream_descriptor = message.state.stream.stream_descriptor
                 foundry_writer.ensure_flushed(
                     stream_descriptor.namespace, stream_descriptor.name)
-                logger.info(
-                    f"Ensured '[{stream_descriptor.namespace}] {stream_descriptor.name}' was flushed.")
                 yield message
 
             else:

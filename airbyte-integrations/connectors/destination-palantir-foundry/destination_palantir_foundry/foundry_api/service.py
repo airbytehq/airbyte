@@ -1,7 +1,8 @@
-from foundry.api_client import ApiClient, RequestInfo
-from foundry._core.auth_utils import Auth
-from typing import Any
 from abc import ABC, abstractmethod
+from typing import Any
+
+from foundry._core.auth_utils import Auth
+from foundry.api_client import ApiClient, RequestInfo
 
 
 class FoundryService(ABC):

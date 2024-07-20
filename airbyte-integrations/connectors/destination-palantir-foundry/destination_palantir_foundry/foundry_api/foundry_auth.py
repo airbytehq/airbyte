@@ -1,4 +1,5 @@
 from foundry import ConfidentialClientAuth
+
 from destination_palantir_foundry.config.foundry_config import FoundryConfig
 
 

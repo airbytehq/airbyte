@@ -1,9 +1,10 @@
+from foundry._core.auth_utils import Auth
+
 from destination_palantir_foundry.foundry_api.compass import Compass
-from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
-from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
 from destination_palantir_foundry.foundry_api.foundry_metadata import FoundryMetadata
 from destination_palantir_foundry.foundry_api.service import FoundryService
-from foundry._core.auth_utils import Auth
+from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
+from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
 
 
 class FoundryServiceFactory:

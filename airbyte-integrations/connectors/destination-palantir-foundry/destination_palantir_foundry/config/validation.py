@@ -1,12 +1,12 @@
+import logging
+from typing import Optional
+
+from destination_palantir_foundry.config.foundry_config import FoundryConfig
 from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialClientAuthFactory
 from destination_palantir_foundry.foundry_api.service_factory import FoundryServiceFactory
-from destination_palantir_foundry.config.foundry_config import FoundryConfig
-from typing import Optional
-import logging
 
 FAILED_TO_AUTHENTICATE = "Failed to authenticate with Foundry. Please check your host name and credentials."
 PROJECT_DOESNT_EXIST = "Project doesn't exist or the user doesn't have access to it."
-
 
 CONFIG_VALIDATION_SCOPES = ["api:datasets-read"]
 
