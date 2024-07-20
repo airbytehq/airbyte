@@ -13,9 +13,6 @@ from unittest.mock import call, patch
 import pytest
 import requests
 import yaml
-from jsonschema.exceptions import ValidationError
-from pydantic import AnyUrl
-
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -30,6 +27,8 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from jsonschema.exceptions import ValidationError
+from pydantic import AnyUrl
 
 logger = logging.getLogger("airbyte")
 

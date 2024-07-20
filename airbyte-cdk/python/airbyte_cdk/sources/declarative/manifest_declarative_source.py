@@ -11,9 +11,6 @@ from importlib import metadata
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import yaml
-from jsonschema.exceptions import ValidationError
-from jsonschema.validators import validate
-
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -33,6 +30,8 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.types import ConnectionDefinition
 from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, DebugSliceLogger, SliceLogger
+from jsonschema.exceptions import ValidationError
+from jsonschema.validators import validate
 
 
 class ManifestDeclarativeSource(DeclarativeSource):
