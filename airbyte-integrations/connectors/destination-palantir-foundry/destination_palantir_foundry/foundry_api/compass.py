@@ -2,7 +2,7 @@ from destination_palantir_foundry.config.foundry_config import FoundryConfig
 from destination_palantir_foundry.foundry_api.service import FoundryService
 from foundry.api_client import RequestInfo
 from foundry._core.auth_utils import Auth
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 from typing import List, Dict, Optional
 
 
@@ -14,16 +14,12 @@ class DecoratedResource(BaseModel):
     name: str
 
 
-class MaybeDecoratedResource(BaseModel):
-    __root__: Optional[DecoratedResource]
+MaybeDecoratedResource = RootModel[Optional[DecoratedResource]]
+
+Rids = RootModel[List[str]]
 
 
-class Rids(BaseModel):
-    __root__: List[str]
-
-
-class GetPathsResponse(BaseModel):
-    __root__: Dict[str, str]
+GetPathsResponse = RootModel[Dict[str, str]]
 
 
 class Compass:

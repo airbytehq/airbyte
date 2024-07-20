@@ -1,2 +1,2 @@
-def get_resource_name_for_stream(namespace: str, name: str) -> str:
+def get_foundry_resource_name(namespace: str, name: str) -> str:
     return f"[{namespace}] {name}"

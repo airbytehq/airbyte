@@ -16,3 +16,6 @@ FOUNDRY_CONFIG = FoundryConfig(
         project_rid=PROJECT_RID
     )
 )
+
+NAMESPACE = "test-namespace"
+STREAM_NAME = "test-stream-name"

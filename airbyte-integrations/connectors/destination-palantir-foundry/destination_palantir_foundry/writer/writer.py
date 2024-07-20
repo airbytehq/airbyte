@@ -7,7 +7,7 @@ class Writer(ABC):
     Register a message stream if one doesn't exist. Returns a boolean indicating whether or not a new resource was created.
     """
     @abstractmethod
-    def ensure_stream_registered(self, namespace: str, stream_name):
+    def ensure_registered(self, namespace: str, stream_name):
         pass
 
     """
