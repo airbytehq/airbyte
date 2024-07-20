@@ -1,11 +1,13 @@
-from destination_palantir_foundry.foundry_api import service_factory
-from destination_palantir_foundry.config import validation
-from destination_palantir_foundry.foundry_api import compass
+import logging
+import unittest
+
 import foundry
 from mockito import when, mock, unstub
+
+from destination_palantir_foundry.config import validation
+from destination_palantir_foundry.foundry_api import compass
 from destination_palantir_foundry.foundry_api import foundry_auth
-import unittest
-import logging
+from destination_palantir_foundry.foundry_api import service_factory
 from unit_tests.fixtures import FOUNDRY_CONFIG, FOUNDRY_HOST
 from unit_tests.utils import stub_logger
 

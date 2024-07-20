@@ -1,7 +1,10 @@
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode, DestinationSyncMode, AirbyteRecordMessage, \
+    ConfiguredAirbyteStream
+
 from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig
-from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView, GetStreamResponse, \
+from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView, \
+    GetStreamResponse, \
     StreamSettings
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode, DestinationSyncMode, AirbyteRecordMessage, ConfiguredAirbyteStream
 
 FOUNDRY_HOST = "acme.palantirfoundry.com"
 CLIENT_ID = "testclientid"
@@ -19,7 +22,6 @@ FOUNDRY_CONFIG = FoundryConfig(
         project_rid=PROJECT_RID
     )
 )
-
 
 DATASET_RID = "ri.foundry.main.dataset.id1"
 

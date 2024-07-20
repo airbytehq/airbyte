@@ -1,5 +1,6 @@
-from mockito import ANY, when
 import logging
+
+from mockito import when
 
 
 def stub_logger(logger: logging.Logger):

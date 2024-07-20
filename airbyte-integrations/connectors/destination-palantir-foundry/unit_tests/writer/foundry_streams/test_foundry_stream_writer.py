@@ -1,15 +1,17 @@
 import unittest
+
 from mockito import unstub, mock, when, verifyZeroInteractions, verify
+
 from destination_palantir_foundry.foundry_api import compass, stream_catalog, stream_proxy, foundry_metadata
+from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
 from destination_palantir_foundry.foundry_schema.providers import stream_schema_provider
+from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
+from destination_palantir_foundry.writer.foundry_streams import foundry_stream_buffer_registry
+from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_registry import BufferRegistryEntry
 from destination_palantir_foundry.writer.foundry_streams.foundry_stream_writer import FoundryStreamWriter
 from unit_tests.fixtures import PROJECT_RID, NAMESPACE, STREAM_NAME, MINIMAL_CONFIGURED_AIRBYTE_STREAM, DATASET_RID, \
     CREATE_STREAM_OR_VIEW_RESPONSE, MINIMAL_AIRBYTE_STREAM, \
     MINIMAL_AIRBYTE_RECORD_MESSAGE, VIEW_RID, GET_STREAM_RESPONSE
-from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
-from destination_palantir_foundry.writer.foundry_streams import foundry_stream_buffer_registry
-from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
-from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_registry import BufferRegistryEntry
 
 
 class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
