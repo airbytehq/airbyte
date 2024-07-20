@@ -70,7 +70,7 @@ jobs:
             --header 'content-type: application/json' \
             --data '{
               "state": "success",
-              "context": "Regression tests manual approval",
+              "context": "Regression Test Results Reviewed and Approved",
               "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
             }')
           if [ $response -ne 201 ]; then
