@@ -2795,33 +2795,33 @@ spec:
         title: Authentication Method
         type: object
         oneOf:
-          - type: object
-            title: OAuth Custom Connection
-            required:
-              - auth_type
-              - client_id
-              - client_secret
-            properties:
-              auth_type:
-                type: string
-                title: Authentication Method
-                const: oauth2_confidential_application
-                order: 0
-              client_id:
-                title: Client ID
-                description: >-
-                  Your Xero application's Client ID.
-                type: string
-                examples:
-                  - "Client_ID"
-              client_secret:
-                title: Client Secret
-                description: >-
-                  Your Xero application's Client Secret.
-                type: string
-                examples:
-                  - "Client_Secret"
-                airbyte_secret: true
+          # - type: object
+          #   title: OAuth Custom Connection
+          #   required:
+          #     - auth_type
+          #     - client_id
+          #     - client_secret
+          #   properties:
+          #     auth_type:
+          #       type: string
+          #       title: Authentication Method
+          #       const: oauth2_confidential_application
+          #       order: 0
+          #     client_id:
+          #       title: Client ID
+          #       description: >-
+          #         Your Xero application's Client ID.
+          #       type: string
+          #       examples:
+          #         - "Client_ID"
+          #     client_secret:
+          #       title: Client Secret
+          #       description: >-
+          #         Your Xero application's Client Secret.
+          #       type: string
+          #       examples:
+          #         - "Client_Secret"
+          #       airbyte_secret: true
           - type: object
             title: Bearer Access Token
             required:
