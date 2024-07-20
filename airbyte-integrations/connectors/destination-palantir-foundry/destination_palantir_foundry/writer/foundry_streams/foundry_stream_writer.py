@@ -8,6 +8,7 @@ from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_r
 from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
 import logging
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStream, AirbyteRecordMessage
+from sys import getsizeof
 
 logger = logging.getLogger("airbyte")
 
@@ -109,4 +110,6 @@ class FoundryStreamWriter(Writer):
         if len(buffer_entry.records) == 0:
             return
 
+        logger.info(
+            f"Pushing {len(buffer_entry.records)} records to Foundry stream [rid: {buffer_entry.dataset_rid}, viewRid: {buffer_entry.view_rid}] - {getsizeof(buffer_entry.records)} bytes")
         self.stream_proxy.put_json_records(buffer_entry.dataset_rid, buffer_entry.view_rid, buffer_entry.records)
