@@ -45,7 +45,8 @@ def hoard(connectors_dir: str, docs_dir: str, csv_file: str, yeet: bool = False)
     default=Path("."),
     type=Path,
 )
-def shiny(manifest_path: Path, output_dir: Path):
+@click.option("--docs-dir", help="Where to write the docs", default="./docs", type=Path)
+def shiny(manifest_path: Path, output_dir: Path, docs_dir: Path):
     if manifest_path.exists() is False:
         click.echo(f"❌ Manifest path {manifest_path} does not exist.")
         exit(1)
@@ -56,5 +57,5 @@ def shiny(manifest_path: Path, output_dir: Path):
 
     # Make a connector and write to disk. Always overwrite in bootstrap mode.
     manifest = load_connector_manifest_from_file(Path(manifest_path))
-
-    write_connector_to_disk(connector=manifest, connectors_dir=output_dir, docs_dir=output_dir / "docs", yeet=True)
+    if write_connector_to_disk(connector=manifest, connectors_dir=output_dir, docs_dir=docs_dir, yeet=True):
+        click.echo(f"✅ Connector {manifest.name} has been written to disk!")
