@@ -30,6 +30,9 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
             self.unbuffered_foundry_stream_writer.ensure_registered(
                 NAMESPACE, STREAM_NAME)
 
+        verifyZeroInteractions(self.dataset_registry)
+        verifyZeroInteractions(self.stream_catalog)
+
     def test_ensureRegistered_existingFoundryStream_doesNotCreateNew(self):
         project_path = "/some/path"
         get_paths_response = {}
@@ -89,3 +92,9 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
             NAMESPACE, STREAM_NAME, record)
 
         verify(self.stream_proxy, times=1).put_json_record(DATASET_RID, record)
+
+    def test_ensureFlushed_doesNothing(self):
+        self.unbuffered_foundry_stream_writer.ensure_flushed(
+            NAMESPACE, STREAM_NAME)
+
+        verifyZeroInteractions(self.stream_proxy)
