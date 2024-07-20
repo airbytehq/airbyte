@@ -1301,6 +1301,10 @@ class DeclarativeSource(BaseModel):
         None,
         description='For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.',
     )
+    description: Optional[str] = Field(
+        None,
+        description='A description of the connector. It will be presented on the Source documentation page.',
+    )
 
 
 class SelectiveAuthenticator(BaseModel):

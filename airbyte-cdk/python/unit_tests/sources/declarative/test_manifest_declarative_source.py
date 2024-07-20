@@ -13,6 +13,9 @@ from unittest.mock import call, patch
 import pytest
 import requests
 import yaml
+from jsonschema.exceptions import ValidationError
+from pydantic import AnyUrl
+
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -27,8 +30,6 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from jsonschema.exceptions import ValidationError
-from pydantic import AnyUrl
 
 logger = logging.getLogger("airbyte")
 
@@ -69,8 +70,9 @@ class TestManifestDeclarativeSource:
 
     def test_valid_manifest(self):
         manifest = {
-            "version": "0.29.3",
+            "version": "3.8.2",
             "definitions": {},
+            "description": "This is a sample source connector that is very valid.",
             "streams": [
                 {
                     "type": "DeclarativeStream",
@@ -139,6 +141,7 @@ class TestManifestDeclarativeSource:
         assert len(streams) == 2
         assert isinstance(streams[0], DeclarativeStream)
         assert isinstance(streams[1], DeclarativeStream)
+        assert source.resolved_manifest["description"] == "This is a sample source connector that is very valid."
 
     def test_manifest_with_spec(self):
         manifest = {
