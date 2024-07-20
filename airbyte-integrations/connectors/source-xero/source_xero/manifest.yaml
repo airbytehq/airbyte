@@ -35,11 +35,13 @@ definitions:
     api_token: "{{ config['credentials']['access_token'] }}"
 
   authenticator:
-    type: SelectiveAuthenticator
-    authenticator_selection_path: ["credentials", "auth_type"]
-    authenticators:
-      oauth2_access_token: "#/definitions/bearer_authenticator"
-      oauth2_confidential_application: "#/definitions/oauth_authenticator"
+    # Disabling OAuth support due to restrictions for the number of users.
+    # type: SelectiveAuthenticator
+    # authenticator_selection_path: ["credentials", "auth_type"]
+    # authenticators:
+    #   oauth2_access_token: "#/definitions/bearer_authenticator"
+    #   oauth2_confidential_application: "#/definitions/oauth_authenticator"
+    $ref: "#/definitions/bearer_authenticator"
 
   requester:
     type: HttpRequester
