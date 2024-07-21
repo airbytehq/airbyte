@@ -138,6 +138,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - countries
+          record_filter:
+            condition: '{{ not parameters.get("subresource", False) or record["subresource_uris"].get(parameters.get("subresource", ""), False) }}'
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -160,6 +162,13 @@ definitions:
               partition_field: account_sid
               stream:
                 $ref: "#/definitions/streams/Accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - subresource_uri
+              value: '{{ record["subresource_uris"].get(parameters.get("subresource", ""), "") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -172,7 +181,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.parent_slice.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Local.json
+            https://api.twilio.com{{stream_partition.subresource_uri}}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -198,10 +207,12 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: country_code
-              partition_field: country_code
+              parent_key: subresource_uri
+              partition_field: subresource_uri
               stream:
                 $ref: "#/definitions/streams/Available Phone Number Countries"
+                $parameters:
+                  subresource: "local"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -214,7 +225,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.parent_slice.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/Mobile.json
+            https://api.twilio.com{{stream_partition.subresource_uri}}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -240,10 +251,12 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: country_code
-              partition_field: country_code
+              parent_key: subresource_uri
+              partition_field: subresource_uri
               stream:
                 $ref: "#/definitions/streams/Available Phone Number Countries"
+                $parameters:
+                  subresource: "mobile"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -256,7 +269,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            https://api.twilio.com/2010-04-01/Accounts/{{stream_partition.parent_slice.account_sid}}/AvailablePhoneNumbers/{{stream_partition.country_code}}/TollFree.json
+            https://api.twilio.com{{stream_partition.subresource_uri}}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -282,10 +295,12 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: country_code
-              partition_field: country_code
+              parent_key: subresource_uri
+              partition_field: subresource_uri
               stream:
                 $ref: "#/definitions/streams/Available Phone Number Countries"
+                $parameters:
+                  subresource: "toll_free"
       schema_loader:
         type: InlineSchemaLoader
         schema:
