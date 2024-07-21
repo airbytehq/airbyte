@@ -3,6 +3,7 @@ from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialCl
 from destination_palantir_foundry.foundry_api.service_factory import FoundryServiceFactory
 from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider_factory import \
     StreamSchemaProviderFactory
+from destination_palantir_foundry.utils.project_helper import ProjectHelper
 from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_registry import \
     FoundryStreamBufferRegistry
 from destination_palantir_foundry.writer.foundry_streams.foundry_stream_writer import FoundryStreamWriter
@@ -17,7 +18,7 @@ def create_writer(config: FoundryConfig) -> Writer:
     service_factory = FoundryServiceFactory(config.host, auth)
 
     return FoundryStreamWriter(
-        service_factory.compass(),
+        ProjectHelper(service_factory.compass()),
         service_factory.stream_catalog(),
         service_factory.stream_proxy(),
         service_factory.foundry_metadata(),

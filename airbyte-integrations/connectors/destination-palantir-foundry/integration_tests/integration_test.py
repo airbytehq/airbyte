@@ -17,6 +17,7 @@ from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialCl
 from destination_palantir_foundry.foundry_api.service_factory import FoundryServiceFactory
 from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
 from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
+from destination_palantir_foundry.utils.project_helper import ProjectHelper
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 from destination_palantir_foundry.writer.foundry_streams.foundry_stream_writer import FoundryStreamWriter
 from integration_tests.schema import JSON_SCHEMA_ALL_DATA_TYPES, SAMPLE_RECORDS
@@ -140,15 +141,13 @@ class TestDestinationPalantirFoundry(unittest.TestCase):
         compass.delete_permanently([dataset_rid])
 
     def _get_stream_dataset_and_view_rids(self, namespace: Optional[str], stream_name: str) -> Tuple[str, str]:
-        compass: Compass = self.service_factory.compass()
+        project_helper = ProjectHelper(self.service_factory.compass())
         stream_catalog: StreamCatalog = self.service_factory.stream_catalog()
 
-        project_path = compass.get_paths([self.config.destination_config.project_rid]).root[
-            self.config.destination_config.project_rid
-        ]
-
-        stream_path = f"{project_path}/{get_foundry_resource_name(namespace, stream_name)}"
-        stream_dataset_rid = compass.get_resource_by_path(stream_path).root.rid
+        stream_dataset_rid = project_helper.maybe_get_resource_by_name(
+            self.config.destination_config.project_rid,
+            get_foundry_resource_name(namespace, stream_name)
+        ).rid
 
         stream_view_rid = stream_catalog.get_stream(stream_dataset_rid).root.view.viewRid
 

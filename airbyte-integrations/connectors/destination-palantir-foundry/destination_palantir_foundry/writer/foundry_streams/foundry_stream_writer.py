@@ -3,11 +3,11 @@ from sys import getsizeof
 
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStream, AirbyteRecordMessage
 
-from destination_palantir_foundry.foundry_api.compass import Compass
 from destination_palantir_foundry.foundry_api.foundry_metadata import FoundryMetadata
 from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
 from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
 from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
+from destination_palantir_foundry.utils.project_helper import ProjectHelper
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_registry import \
     FoundryStreamBufferRegistry
@@ -41,7 +41,7 @@ class FoundryStreamWriter(Writer):
 
     def __init__(
             self,
-            compass: Compass,
+            project_helper: ProjectHelper,
             stream_catalog: StreamCatalog,
             stream_proxy: StreamProxy,
             foundry_metadata: FoundryMetadata,
@@ -49,7 +49,7 @@ class FoundryStreamWriter(Writer):
             stream_schema_provider: StreamSchemaProvider,
             parent_rid: str
     ) -> None:
-        self.compass = compass
+        self.project_helper = project_helper
         self.stream_catalog = stream_catalog
         self.stream_proxy = stream_proxy
         self.foundry_metadata = foundry_metadata
@@ -58,17 +58,11 @@ class FoundryStreamWriter(Writer):
         self.parent_rid = parent_rid
 
     def ensure_registered(self, airbyte_stream: ConfiguredAirbyteStream) -> None:
-        rids_to_paths = self.compass.get_paths([self.parent_rid])
-        parent_path = rids_to_paths.root.get(self.parent_rid)
-        if parent_path is None:
-            raise ValueError(
-                f"Could not resolve path for parent {self.parent_rid}. Please ensure the project exists and that the client has access to it.")
-
         namespace, stream_name = airbyte_stream.stream.namespace, airbyte_stream.stream.name
         resource_name = get_foundry_resource_name(namespace, stream_name)
 
-        maybe_resource = self.compass.get_resource_by_path(
-            f"{parent_path}/{resource_name}").root
+        maybe_resource = self.project_helper.maybe_get_resource_by_name(self.parent_rid, resource_name)
+
         if maybe_resource is not None:
             maybe_stream = self.stream_catalog.get_stream(maybe_resource.rid).root
             if maybe_stream is None:
