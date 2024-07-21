@@ -215,6 +215,8 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.1 | 2024-07-20 | [42342](https://github.com/airbytehq/airbyte/pull/42342) | Update dependencies |
+| 1.8.0 | 2024-07-16 | [41677](https://github.com/airbytehq/airbyte/pull/41677) | Update to 3.4.0 CDK |
 | 1.7.13 | 2024-07-13 | [41746](https://github.com/airbytehq/airbyte/pull/41746) | Update dependencies |
 | 1.7.12 | 2024-07-10 | [41354](https://github.com/airbytehq/airbyte/pull/41354) | Update dependencies |
 | 1.7.11 | 2024-07-09 | [41221](https://github.com/airbytehq/airbyte/pull/41221) | Update dependencies |
@@ -223,7 +225,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 1.7.8 | 2024-06-22 | [40128](https://github.com/airbytehq/airbyte/pull/40128) | Update dependencies |
 | 1.7.7 | 2024-06-17 | [39513](https://github.com/airbytehq/airbyte/pull/39513) | Update deprecated state handling method |
 | 1.7.6 | 2024-06-04 | [39078](https://github.com/airbytehq/airbyte/pull/39078) | [autopull] Upgrade base image to v1.2.1 |
-| 1.7.5 | 2024-05-29 | [38341](https://github.com/airbytehq/airbyte/pull/38341) | add `max_waiting_time` to configuration |
+| 1.7.5 | 2024-05-29 | [38341](https://github.com/airbytehq/airbyte/pull/38341) | Add `max_waiting_time` to configuration |
 | 1.7.4 | 2024-05-21 | [38341](https://github.com/airbytehq/airbyte/pull/38341) | Update CDK authenticator package |
 | 1.7.3 | 2024-05-20 | [38299](https://github.com/airbytehq/airbyte/pull/38299) | Fixed spec typo |
 | 1.7.2 | 2024-04-19 | [36636](https://github.com/airbytehq/airbyte/pull/36636) | Updating to 0.80.0 CDK |
@@ -271,7 +273,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 | 0.4.5   | 2023-03-23 | [24417](https://github.com/airbytehq/airbyte/pull/24417)                                                          | Add pattern_descriptors to fields with an expected format                                                                                                           |
 | 0.4.4   | 2023-03-17 | [24255](https://github.com/airbytehq/airbyte/pull/24255)                                                          | Add field groups and titles to improve display of connector setup form                                                                                              |
 | 0.4.3   | 2023-03-04 | [22993](https://github.com/airbytehq/airbyte/pull/22993)                                                          | Specified date formatting in specification                                                                                                                          |
-| 0.4.2   | 2023-03-03 | [23467](https://github.com/airbytehq/airbyte/pull/23467)                                                          | added user friendly messages, added AirbyteTracedException config_error, updated SAT                                                                                |
+| 0.4.2   | 2023-03-03 | [23467](https://github.com/airbytehq/airbyte/pull/23467)                                                          | Added user friendly messages, added AirbyteTracedException config_error, updated SAT                                                                                |
 | 0.4.1   | 2023-01-27 | [22039](https://github.com/airbytehq/airbyte/pull/22039)                                                          | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                         |
 | 0.4.0   | 2023-01-20 | [21457](https://github.com/airbytehq/airbyte/pull/21457)                                                          | Use GraphQL for `issue_reactions` stream                                                                                                                            |
 | 0.3.12  | 2023-01-18 | [21481](https://github.com/airbytehq/airbyte/pull/21481)                                                          | Handle 502 Bad Gateway error with proper log message                                                                                                                |
