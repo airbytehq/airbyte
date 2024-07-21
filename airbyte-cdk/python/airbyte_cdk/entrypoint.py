@@ -3,6 +3,7 @@
 #
 
 import argparse
+import contextlib
 import importlib
 import io
 import ipaddress
@@ -243,16 +244,17 @@ def launch(source: Source, args: List[str]) -> None:
         return
 
     while True:
-        buffer = io.StringIO()
-        end_time = time.monotonic() + parsed_args.flush
-        try:
-            while time.monotonic() < end_time:
-                message = next(messages)
-                buffer.write(f"{message}\n")
-        except StopIteration:
-            break
-        finally:
-            print(buffer.getvalue(), end="", flush=True)
+        with contextlib.closing(io.StringIO()) as buffer:
+            try:
+                with contextlib.redirect_stdout(buffer):
+                    end_time = time.monotonic() + parsed_args.flush
+                    while time.monotonic() < end_time:
+                        message = next(messages)
+                        buffer.write(f"{message}\n")
+            except StopIteration:
+                break
+            finally:
+                print(buffer.getvalue(), end="", flush=True)
 
 
 def _init_internal_request_filter() -> None:

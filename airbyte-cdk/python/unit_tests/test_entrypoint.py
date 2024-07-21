@@ -102,18 +102,18 @@ def test_airbyte_entrypoint_init(mocker):
 @pytest.mark.parametrize(
     ["cmd", "args", "expected_args"],
     [
-        ("spec", {"debug": ""}, {"command": "spec", "debug": True}),
-        ("check", {"config": "config_path"}, {"command": "check", "config": "config_path", "debug": False}),
-        ("discover", {"config": "config_path", "debug": ""}, {"command": "discover", "config": "config_path", "debug": True}),
+        ("spec", {"debug": ""}, {"command": "spec", "debug": True, "flush": 0}),
+        ("check", {"config": "config_path"}, {"command": "check", "config": "config_path", "debug": False, "flush": 0}),
+        ("discover", {"config": "config_path", "debug": ""}, {"command": "discover", "config": "config_path", "debug": True, "flush": 0}),
         (
                 "read",
-                {"config": "config_path", "catalog": "catalog_path", "state": "None"},
-                {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "None", "debug": False},
+                {"config": "config_path", "catalog": "catalog_path", "state": "None", "flush": "0.1"},
+                {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "None", "debug": False, "flush": 0.1},
         ),
         (
                 "read",
                 {"config": "config_path", "catalog": "catalog_path", "state": "state_path", "debug": ""},
-                {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "state_path", "debug": True},
+                {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "state_path", "debug": True, "flush": 0},
         ),
     ],
 )
