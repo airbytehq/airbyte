@@ -106,8 +106,6 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
         when(self.stream_schema_provider).get_foundry_stream_schema(
             MINIMAL_AIRBYTE_STREAM).thenReturn(mock_schema)
 
-        a = MINIMAL_CONFIGURED_AIRBYTE_STREAM
-
         self.foundry_stream_writer.ensure_registered(
             MINIMAL_CONFIGURED_AIRBYTE_STREAM)
 

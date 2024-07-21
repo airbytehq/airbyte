@@ -1,9 +1,12 @@
-from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
-from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema, FoundryFieldSchema, FoundryFieldType
-from destination_palantir_foundry.foundry_schema.providers.streams.common import DATA_FRAME_READER_CLASS
-from typing import Dict, Any
-from airbyte_cdk.models.airbyte_protocol import AirbyteStream, AirbyteRecordMessage
 import json
+from typing import Dict, Any
+
+from airbyte_cdk.models.airbyte_protocol import AirbyteStream, AirbyteRecordMessage
+
+from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema, TimestampFieldSchema, \
+    StringFieldSchema
+from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
+from destination_palantir_foundry.foundry_schema.providers.streams.common import STREAM_DATA_FRAME_READER_CLASS
 
 
 class BasicStreamSchemaProvider(StreamSchemaProvider):
@@ -16,22 +19,19 @@ class BasicStreamSchemaProvider(StreamSchemaProvider):
     """
 
     def get_foundry_stream_schema(self, _airbyte_stream: AirbyteStream) -> FoundrySchema:
+        # TODO(jcrowson): add generation id
         return FoundrySchema(
             fieldSchemaList=[
-                FoundryFieldSchema(
-                    type=FoundryFieldType.TIMESTAMP,
+                TimestampFieldSchema(
                     name="emittedAt",
                     nullable=False,
-                    customMetadata={}
                 ),
-                FoundryFieldSchema(
-                    type=FoundryFieldType.STRING,
+                StringFieldSchema(
                     name="message",
                     nullable=False,
-                    customMetadata={}
                 )
             ],
-            dataFrameReaderClass=DATA_FRAME_READER_CLASS,
+            dataFrameReaderClass=STREAM_DATA_FRAME_READER_CLASS,
             customMetadata={
                 "format": "avro",
                 "streaming": {
