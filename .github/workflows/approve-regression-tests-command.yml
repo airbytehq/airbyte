@@ -60,9 +60,29 @@ jobs:
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
       - name: Approve regression tests
-        id: approve
+        id: approve-regression-tests
         run: |
-          echo "approving ...."
+          echo "approving regression test status check if it exists ...."
+          response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
+            --request POST \
+            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data '{
+              "state": "success",
+              "context": "Regression Tests",
+              "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+            }')
+          if [ $response -ne 201 ]; then
+            echo "Failed to approve regression tests. HTTP status code: $response"
+          else
+            echo "Regression tests approved."
+          fi
+
+      - name: Update regression test approval
+        id: update-regression-test-approval
+        run: |
+          echo "updating regression test approval status check if it exists ...."
           response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
             --request POST \
             --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
@@ -74,10 +94,10 @@ jobs:
               "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
             }')
           if [ $response -ne 201 ]; then
-            echo "Failed to approve regression tests. HTTP status code: $response"
+            echo "Failed to update regression test approval status check. HTTP status code: $response"
             exit 1
           else
-            echo "Regression tests approved."
+            echo "Regression test status check updated."
           fi
 
       - name: Append success comment
