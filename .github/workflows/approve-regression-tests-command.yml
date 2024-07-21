@@ -45,6 +45,14 @@ jobs:
           LATEST_COMMIT=$(gh api repos/${{ github.repository }}/commits/$BRANCH | jq -r .sha)
           echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
 
+      - name: Checkout pull request
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+          fetch-depth: 0
+
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
         # comment with the job run link.
