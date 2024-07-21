@@ -9,8 +9,14 @@ class ClientCredentialsAuth:
 
 
 @dataclass
+class MaterializationMode:
+    instance: str
+
+
+@dataclass
 class DestinationConfig:
     project_rid: str
+    materialization_mode: MaterializationMode
 
 
 @dataclass
@@ -21,8 +27,13 @@ class FoundryConfig:
 
     @classmethod
     def from_raw(cls, data: Mapping[str, Any]):
+        materialization_mode = MaterializationMode(
+            instance=data["destination_config"]["materialization_mode"]["instance"]
+        )
+
         destination_config = DestinationConfig(
-            project_rid=data["destination_config"]["project_rid"]
+            project_rid=data["destination_config"]["project_rid"],
+            materialization_mode=materialization_mode
         )
 
         auth = ClientCredentialsAuth(

@@ -1,7 +1,8 @@
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode, DestinationSyncMode, AirbyteRecordMessage, \
     ConfiguredAirbyteStream
 
-from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig
+from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig, \
+    MaterializationMode
 from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView, \
     GetStreamResponse, \
     StreamSettings, MaybeGetStreamResponse
@@ -12,6 +13,8 @@ CLIENT_SECRET = "testclientsecret"
 
 PROJECT_RID = "ri.compass..folder.id"
 
+FOUNDRY_STREAMS_MATERIALIZATION_MODE = MaterializationMode(instance="foundry_streams")
+
 FOUNDRY_CONFIG = FoundryConfig(
     host=FOUNDRY_HOST,
     auth=ClientCredentialsAuth(
@@ -19,7 +22,8 @@ FOUNDRY_CONFIG = FoundryConfig(
         client_secret=CLIENT_SECRET
     ),
     destination_config=DestinationConfig(
-        project_rid=PROJECT_RID
+        project_rid=PROJECT_RID,
+        materialization_mode=FOUNDRY_STREAMS_MATERIALIZATION_MODE
     )
 )
 
