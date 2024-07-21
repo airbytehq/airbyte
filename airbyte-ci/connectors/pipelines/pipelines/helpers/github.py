@@ -62,6 +62,7 @@ def update_commit_status_check(
         logger (Logger, optional): A logger to log info about updates. Defaults to None.
     """
     if not should_send:
+        safe_log(logger, f"should_send={should_send}")
         return
 
     safe_log(logger, f"Attempting to create {state} status for commit {sha} on Github in {context} context.")
@@ -83,6 +84,8 @@ def update_commit_status_check(
         description = f"[WARNING] optional check failed {context}: {description}"
 
     context = context if bool(os.environ.get("PRODUCTION", False)) is True else f"[please ignore] {context}"
+    safe_log(logger, f"context={context}")
+
     airbyte_repo.get_commit(sha=sha).create_status(
         state=state,
         target_url=target_url,
@@ -108,6 +111,7 @@ def get_pull_request(pull_request_number: int, github_access_token: Secret) -> g
 
 def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Optional[Logger] = None) -> None:
 
+    main_logger.info(f"click_context.get('ci_context') == CIContext.PULL_REQUEST={click_context.get('ci_context') == CIContext.PULL_REQUEST}")
     update_commit_status_check(
         click_context["git_revision"],
         github_state,
