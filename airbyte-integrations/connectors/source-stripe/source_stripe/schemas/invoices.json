@@ -530,7 +530,7 @@
             "type": ["null", "boolean"]
           },
           "tax_rate": {
-            "type": ["null", "string"]
+            "$ref": "tax_rate.json"
           },
           "taxability_reason": {
             "type": ["null", "string"]
