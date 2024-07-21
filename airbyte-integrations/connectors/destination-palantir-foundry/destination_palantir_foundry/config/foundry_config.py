@@ -1,48 +1,27 @@
-from dataclasses import dataclass
-from typing import Mapping, Any
+from typing import Mapping, Any, Union, Literal
+
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class ClientCredentialsAuth:
+class ClientCredentialsAuth(BaseModel):
     client_id: str
     client_secret: str
 
 
-@dataclass
-class MaterializationMode:
-    instance: str
+class FoundryStreamsMaterializationMode(BaseModel):
+    instance: Literal["foundry_streams"]
 
 
-@dataclass
-class DestinationConfig:
+class DestinationConfig(BaseModel):
     project_rid: str
-    materialization_mode: MaterializationMode
+    materialization_mode: Union[FoundryStreamsMaterializationMode] = Field(..., discriminator="instance")
 
 
-@dataclass
-class FoundryConfig:
+class FoundryConfig(BaseModel):
     host: str
     auth: ClientCredentialsAuth
     destination_config: DestinationConfig
 
     @classmethod
     def from_raw(cls, data: Mapping[str, Any]):
-        materialization_mode = MaterializationMode(
-            instance=data["destination_config"]["materialization_mode"]["instance"]
-        )
-
-        destination_config = DestinationConfig(
-            project_rid=data["destination_config"]["project_rid"],
-            materialization_mode=materialization_mode
-        )
-
-        auth = ClientCredentialsAuth(
-            client_id=data["auth"]["client_id"],
-            client_secret=data["auth"]["client_secret"]
-        )
-
-        return cls(
-            host=data["host"],
-            auth=auth,
-            destination_config=destination_config
-        )
+        return FoundryConfig.model_validate(obj=data)
