@@ -25,12 +25,6 @@ acceptance_tests:
         status: "succeed"
       - config_path: "secrets/config_cdc.json"
         status: "succeed"
-  discovery:
-    tests:
-      - config_path: "secrets/config.json"
-      - config_path: "secrets/config_cdc.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "2.1.1"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
