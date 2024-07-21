@@ -50,6 +50,16 @@ class GetStreamResponse(BaseModel):
 MaybeGetStreamResponse = RootModel[Optional[GetStreamResponse]]
 
 
+class DeletedView(BaseModel):
+    viewRid: str
+    topicRid: str
+    branch: str
+
+
+class DeleteStreamResponse(BaseModel):
+    deletedViews: List[DeletedView]
+
+
 class StreamCatalog(FoundryService):
     def __init__(self, foundry_host: str, api_auth: Auth) -> None:
         self.api_client = FoundryApiClient(
@@ -96,3 +106,20 @@ class StreamCatalog(FoundryService):
         )
 
         return self.api_client.call_api(get_stream_request)
+
+    def delete_stream(self, dataset_rid: str) -> DeleteStreamResponse:
+        delete_stream_request = RequestInfo(
+            method="DELETE",
+            resource_path="/catalog/streams/{dataset_rid}",
+            response_type=DeleteStreamResponse,
+            query_params={},
+            path_params={
+                "dataset_rid": dataset_rid
+            },
+            header_params=HEADERS,
+            body_type=None,
+            body=None,
+            request_timeout=REQUEST_TIMEOUT,
+        )
+
+        return self.api_client.call_api(delete_stream_request)

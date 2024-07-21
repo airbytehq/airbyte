@@ -24,6 +24,14 @@ Rids = RootModel[List[str]]
 GetPathsResponse = RootModel[Dict[str, str]]
 
 
+class DeleteResult(BaseModel):
+    rid: str
+    type: str
+
+
+DeleteResults = RootModel[List[DeleteResult]]
+
+
 class Compass(FoundryService):
     def __init__(self, foundry_host: str, api_auth: Auth) -> None:
         self.api_client = FoundryApiClient(foundry_host, api_auth, COMPASS)
@@ -78,3 +86,20 @@ class Compass(FoundryService):
             return self.api_client.call_api(get_resource_by_path_request)
         except JSONDecodeError:
             return MaybeDecoratedResource(None)
+
+    def delete_permanently(self, rids: List[str]) -> DeleteResults:
+        delete_permanently_request = RequestInfo(
+            method="POST",
+            resource_path="/trash/delete",
+            response_type=DeleteResults,
+            query_params={
+                "deleteOptions": ["DO_NOT_REQUIRE_TRASHED"]
+            },
+            path_params={},
+            header_params=HEADERS,
+            body=Rids(rids),
+            body_type=Rids,
+            request_timeout=REQUEST_TIMEOUT,
+        )
+
+        return self.api_client.call_api(delete_permanently_request)

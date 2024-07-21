@@ -17,7 +17,7 @@ logger = logging.getLogger("airbyte")
 
 
 class FoundryStreamWriter(Writer):
-    SCOPES = [  # TODO(jcrowson): scope down...
+    SCOPES = [  # TODO(jcrowson): find better scoping strategy
         "streaming:read",
         "streaming:create",
         "streaming:delete",
@@ -36,6 +36,7 @@ class FoundryStreamWriter(Writer):
         "compass:discover",
         "compass:view",
         "compass:read-resource",
+        "compass:delete",
     ]
 
     def __init__(

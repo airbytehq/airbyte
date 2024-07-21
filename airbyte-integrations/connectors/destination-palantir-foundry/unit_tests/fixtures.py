@@ -4,7 +4,7 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteStream, SyncMode, Destina
 from destination_palantir_foundry.config.foundry_config import FoundryConfig, ClientCredentialsAuth, DestinationConfig
 from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView, \
     GetStreamResponse, \
-    StreamSettings
+    StreamSettings, MaybeGetStreamResponse
 
 FOUNDRY_HOST = "acme.palantirfoundry.com"
 CLIENT_ID = "testclientid"
@@ -47,7 +47,7 @@ STREAM_SETTINGS = StreamSettings(
     streamTypes=["HIGH_THROUGHPUT"]
 )
 
-GET_STREAM_RESPONSE = GetStreamResponse(view=STREAM_VIEW, streamSettings=STREAM_SETTINGS)
+GET_STREAM_RESPONSE = MaybeGetStreamResponse(GetStreamResponse(view=STREAM_VIEW, streamSettings=STREAM_SETTINGS))
 
 NAMESPACE = "test-namespace"
 STREAM_NAME = "test-stream-name"

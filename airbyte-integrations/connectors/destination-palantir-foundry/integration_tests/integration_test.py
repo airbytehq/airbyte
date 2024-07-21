@@ -1,95 +1,155 @@
-#
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-#
 import json
 import logging
-from typing import Dict, Any
+import time
+import unittest
+import uuid
+from typing import Optional, List, Dict, Any, Tuple
 
-import pytest
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, SyncMode, \
-    DestinationSyncMode, Status, AirbyteMessage, Type, AirbyteStateMessage, AirbyteRecordMessage, AirbyteStreamState, \
-    StreamDescriptor
+from airbyte_protocol.models import Status, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, AirbyteStream, SyncMode, \
+    DestinationSyncMode, AirbyteMessage, Type, AirbyteStateMessage, AirbyteStreamState, StreamDescriptor, \
+    AirbyteRecordMessage
+from mockito import unstub
 
 from destination_palantir_foundry import DestinationPalantirFoundry
 from destination_palantir_foundry.config.foundry_config import FoundryConfig
+from destination_palantir_foundry.foundry_api.compass import Compass
 from destination_palantir_foundry.foundry_api.foundry_auth import ConfidentialClientAuthFactory
 from destination_palantir_foundry.foundry_api.service_factory import FoundryServiceFactory
+from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
+from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
+from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
+from destination_palantir_foundry.writer.foundry_streams.foundry_stream_writer import FoundryStreamWriter
+from integration_tests.schema import JSON_SCHEMA_ALL_DATA_TYPES, SAMPLE_RECORDS
 
-logger = logging.getLogger()
+
+def get_current_milliseconds():
+    return int(time.time() * 1000)
 
 
-@pytest.fixture(name="raw_config")
-def raw_config_fixture() -> Dict:
+def load_config():
     with open("../secrets/config.json", "r") as f:
         return json.loads(f.read())
 
 
-@pytest.fixture(name="config")
-def parsed_config_fixture(raw_config: Dict) -> FoundryConfig:
-    return FoundryConfig.from_raw(raw_config)
+INCREMENTAL_STREAM_NAME = "incremental_stream"
 
 
-@pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
-    stream_schema = {"type": "object", "properties": {"string_col": {"type": "str"}, "int_col": {"type": "integer"}}}
-
-    append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="append_stream5", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental],
-                             namespace="test"),
-        sync_mode=SyncMode.incremental,
-        destination_sync_mode=DestinationSyncMode.append,
+def _get_configured_catalog_incremental(namespace: str):
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name=INCREMENTAL_STREAM_NAME,
+                    namespace=namespace,
+                    json_schema=JSON_SCHEMA_ALL_DATA_TYPES,
+                    supported_sync_modes=[SyncMode.incremental],
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
     )
 
-    return ConfiguredAirbyteCatalog(streams=[append_stream])
 
-
-@pytest.fixture(autouse=True)
-def teardown(config: FoundryConfig, configured_catalog: ConfiguredAirbyteCatalog):
-    auth = ConfidentialClientAuthFactory().create(config, ["streams:write"])
-    auth.sign_in_as_service_user()
-
-    service_factory = FoundryServiceFactory(config.host, auth)
-    stream_catalog = service_factory.stream_catalog()
-
-    # get all stream dataset rids
-
-
-def test_validConfig_succeeds(raw_config: Dict):
-    outcome = DestinationPalantirFoundry().check(logging.getLogger("airbyte"), raw_config)
-    assert outcome.status == Status.SUCCEEDED
-
-
-def test_invalidConfig_fails():
-    outcome = DestinationPalantirFoundry().check(logging.getLogger("airbyte"), {"project_id": "not_a_real_id"})
-    assert outcome.status == Status.FAILED
-
-
-def _state(data: Dict[str, Any], namespace: str, stream: str) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data, stream=AirbyteStreamState(
+def _get_state(namespace: Optional[str], stream: str, state: int) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"fake_state": state}, stream=AirbyteStreamState(
         stream_descriptor=StreamDescriptor(namespace=namespace, name=stream))))
 
 
-def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
+def _record(namespace: Optional[str], stream_name: str, data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD,
-        record=AirbyteRecordMessage(stream=stream, namespace="test", data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
+        record=AirbyteRecordMessage(stream=stream_name, namespace=namespace, data=data, emitted_at=get_current_milliseconds())
     )
 
 
-def test_write_append(raw_config: Dict, configured_catalog: ConfiguredAirbyteCatalog):
-    """
-    This test verifies that writing a stream in "append" mode appends new records without deleting the old ones
+class TestDestinationPalantirFoundry(unittest.TestCase):
 
-    It checks also if the correct state message is output by the connector at the end of the sync
-    """
-    stream = configured_catalog.streams[0].stream
-    destination = DestinationPalantirFoundry()
+    def setUp(self):
+        self.raw_config = load_config()
+        self.config = FoundryConfig.from_raw(self.raw_config)
+        self.destination = DestinationPalantirFoundry()
+        self.logger = logging.getLogger("airbyte")
 
-    state_message = _state({"state": "3"}, stream.namespace, stream.name)
-    record_chunk = [_record(stream.name, str(i), i) for i in range(1, 3)]
+        auth = ConfidentialClientAuthFactory().create(self.config, FoundryStreamWriter.SCOPES)
+        auth.sign_in_as_service_user()
 
-    output_states = list(destination.write(raw_config, configured_catalog, [*record_chunk, state_message]))
-    assert [state_message] == output_states
+        self.service_factory = FoundryServiceFactory(self.raw_config["host"], auth)
 
-    # expected_records = [_record(stream, str(i), i) for i in range(1, 3)]
-    # assert expected_records == records_in_destination
+    def tearDown(self):
+        unstub()
+
+    def test_check_validConfig_succeeds(self):
+        outcome = self.destination.check(self.logger, self.raw_config)
+        self.assertEqual(outcome.status, Status.SUCCEEDED)
+
+    def test_check_invalidConfig_fails(self):
+        invalid_config = {**self.raw_config, "host": "invalid_host"}
+        outcome = self.destination.check(self.logger, invalid_config)
+        self.assertEqual(outcome.status, Status.FAILED)
+
+    def test_write_incrementalStreamAppend_appendsData(self):
+        test_namespace = str(uuid.uuid4())
+
+        state_message = _get_state(test_namespace, INCREMENTAL_STREAM_NAME, 1)
+
+        catalog = _get_configured_catalog_incremental(test_namespace)
+        stream = catalog.streams[0].stream
+
+        output_states = list(self.destination.write(
+            self.raw_config, catalog,
+            [*[_record(stream.namespace, stream.name, data) for data in SAMPLE_RECORDS], state_message]
+        ))
+
+        self.assertEqual(len(output_states), 1)
+        self.assertEqual(state_message, output_states[0])
+
+        records = self._get_stream_records(stream.namespace, stream.name)
+
+        self.assertEqual(len(records), len(SAMPLE_RECORDS))
+
+        state_message_2 = _get_state(test_namespace, INCREMENTAL_STREAM_NAME, 2)
+        output_states_2 = list(self.destination.write(
+            self.raw_config, catalog,
+            [*[_record(stream.namespace, stream.name, data) for data in SAMPLE_RECORDS], state_message_2]
+        ))
+
+        self.assertEqual(len(output_states_2), 1)
+        self.assertEqual(state_message_2, output_states_2[0])
+
+        records_2 = self._get_stream_records(stream.namespace, stream.name)
+
+        self.assertEqual(len(records_2), len(SAMPLE_RECORDS) * 2)
+
+        self._delete_stream(stream.namespace, stream.name)
+
+    def _get_stream_records(self, namespace: Optional[str], stream_name: str) -> List[Dict[str, Any]]:
+        stream_proxy: StreamProxy = self.service_factory.stream_proxy()
+
+        dataset_rid, view_rid = self._get_stream_dataset_and_view_rids(namespace, stream_name)
+
+        return [record.value for record in stream_proxy.get_records(dataset_rid, view_rid, 100).records]
+
+    def _delete_stream(self, namespace: Optional[str], stream_name: str) -> None:
+        compass: Compass = self.service_factory.compass()
+        stream_catalog: StreamCatalog = self.service_factory.stream_catalog()
+
+        dataset_rid, _ = self._get_stream_dataset_and_view_rids(namespace, stream_name)
+
+        stream_catalog.delete_stream(dataset_rid)
+        compass.delete_permanently([dataset_rid])
+
+    def _get_stream_dataset_and_view_rids(self, namespace: Optional[str], stream_name: str) -> Tuple[str, str]:
+        compass: Compass = self.service_factory.compass()
+        stream_catalog: StreamCatalog = self.service_factory.stream_catalog()
+
+        project_path = compass.get_paths([self.config.destination_config.project_rid]).root[
+            self.config.destination_config.project_rid
+        ]
+
+        stream_path = f"{project_path}/{get_foundry_resource_name(namespace, stream_name)}"
+        stream_dataset_rid = compass.get_resource_by_path(stream_path).root.rid
+
+        stream_view_rid = stream_catalog.get_stream(stream_dataset_rid).root.view.viewRid
+
+        return stream_dataset_rid, stream_view_rid

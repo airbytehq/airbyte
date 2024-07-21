@@ -8,7 +8,6 @@ from destination_palantir_foundry.config import validation
 from destination_palantir_foundry.foundry_api import compass
 from destination_palantir_foundry.foundry_api import foundry_auth
 from destination_palantir_foundry.foundry_api import service_factory
-from destination_palantir_foundry.writer.writer_factory import create
 from unit_tests.fixtures import FOUNDRY_CONFIG, FOUNDRY_HOST
 from unit_tests.utils import stub_logger
 
@@ -40,8 +39,8 @@ class TestGetConfigErrors(unittest.TestCase):
         unstub()
 
     def test_getConfigErrors_invalidAuth_returnsError(self):
-        create(FOUNDRY_CONFIG,
-               validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
+        when(self.auth_factory).create(FOUNDRY_CONFIG,
+                                       validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
         when(self.auth).sign_in_as_service_user().thenRaise(
             Exception("Authentication failed"))
 
@@ -50,8 +49,8 @@ class TestGetConfigErrors(unittest.TestCase):
             result, validation.FAILED_TO_AUTHENTICATE)
 
     def test_getConfigErrors_invalidProjectRid_returnsError(self):
-        create(FOUNDRY_CONFIG,
-               validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
+        when(self.auth_factory).create(FOUNDRY_CONFIG,
+                                       validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
         when(self.auth).sign_in_as_service_user().thenReturn(None)
 
         when(self.compass).get_resource(FOUNDRY_CONFIG.destination_config.project_rid).thenRaise(
@@ -62,8 +61,8 @@ class TestGetConfigErrors(unittest.TestCase):
             result, validation.PROJECT_DOESNT_EXIST)
 
     def test_getConfigErrors_allValid_returnsNone(self):
-        create(FOUNDRY_CONFIG,
-               validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
+        when(self.auth_factory).create(FOUNDRY_CONFIG,
+                                       validation.CONFIG_VALIDATION_SCOPES).thenReturn(self.auth)
         when(self.auth).sign_in_as_service_user().thenReturn(None)
 
         when(self.compass).get_resource(

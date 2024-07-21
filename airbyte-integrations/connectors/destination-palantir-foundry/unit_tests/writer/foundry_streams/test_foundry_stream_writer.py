@@ -3,6 +3,8 @@ import unittest
 from mockito import unstub, mock, when, verifyZeroInteractions, verify
 
 from destination_palantir_foundry.foundry_api import compass, stream_catalog, stream_proxy, foundry_metadata
+from destination_palantir_foundry.foundry_api.compass import GetPathsResponse, MaybeDecoratedResource
+from destination_palantir_foundry.foundry_api.stream_catalog import MaybeGetStreamResponse
 from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
 from destination_palantir_foundry.foundry_schema.providers import stream_schema_provider
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
@@ -41,7 +43,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
         unstub()
 
     def test_ensureRegistered_cannotFindParentPath_raises(self):
-        when(self.compass).get_paths([PROJECT_RID]).thenReturn({})
+        when(self.compass).get_paths([PROJECT_RID]).thenReturn(GetPathsResponse({}))
 
         with self.assertRaises(ValueError):
             self.foundry_stream_writer.ensure_registered(
@@ -56,7 +58,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
 
     def test_ensureRegistered_existingResourceNotStream_raises(self):
         project_path = "/some/path"
-        get_paths_response = {PROJECT_RID: project_path}
+        get_paths_response = GetPathsResponse({PROJECT_RID: project_path})
         when(self.compass).get_paths(
             [PROJECT_RID]).thenReturn(get_paths_response)
 
@@ -64,8 +66,9 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
             MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name)
 
         when(self.compass).get_resource_by_path(
-            f"{project_path}/{resource_name}").thenReturn(compass.DecoratedResource(rid=DATASET_RID, name=resource_name))
-        when(self.stream_catalog).get_stream(DATASET_RID).thenReturn(None)
+            f"{project_path}/{resource_name}").thenReturn(
+            MaybeDecoratedResource(compass.DecoratedResource(rid=DATASET_RID, name=resource_name)))
+        when(self.stream_catalog).get_stream(DATASET_RID).thenReturn(MaybeGetStreamResponse(None))
 
         with self.assertRaises(ValueError):
             self.foundry_stream_writer.ensure_registered(
@@ -75,7 +78,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
 
     def test_ensureRegistered_existingFoundryStream_doesNotCreateNew(self):
         project_path = "/some/path"
-        get_paths_response = {PROJECT_RID: project_path}
+        get_paths_response = GetPathsResponse({PROJECT_RID: project_path})
         when(self.compass).get_paths(
             [PROJECT_RID]).thenReturn(get_paths_response)
 
@@ -83,7 +86,8 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
             MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name)
 
         when(self.compass).get_resource_by_path(
-            f"{project_path}/{resource_name}").thenReturn(compass.DecoratedResource(rid=DATASET_RID, name=resource_name))
+            f"{project_path}/{resource_name}").thenReturn(
+            MaybeDecoratedResource(compass.DecoratedResource(rid=DATASET_RID, name=resource_name)))
         when(self.stream_catalog).get_stream(DATASET_RID).thenReturn(GET_STREAM_RESPONSE)
 
         self.foundry_stream_writer.ensure_registered(
@@ -96,7 +100,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
 
     def test_ensureRegistered_noExistingFoundryStream_createsNewAndAddsSchema(self):
         project_path = "/some/path"
-        get_paths_response = {PROJECT_RID: project_path}
+        get_paths_response = GetPathsResponse({PROJECT_RID: project_path})
         when(self.compass).get_paths(
             [PROJECT_RID]).thenReturn(get_paths_response)
 
@@ -104,7 +108,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
             MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name)
 
         when(self.compass).get_resource_by_path(
-            f"{project_path}/{resource_name}").thenReturn(None)
+            f"{project_path}/{resource_name}").thenReturn(MaybeDecoratedResource(None))
 
         when(self.stream_catalog).create_stream(PROJECT_RID,
                                                 resource_name).thenReturn(CREATE_STREAM_OR_VIEW_RESPONSE)
