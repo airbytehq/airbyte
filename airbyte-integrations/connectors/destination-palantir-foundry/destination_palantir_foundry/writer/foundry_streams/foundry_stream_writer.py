@@ -58,7 +58,7 @@ class FoundryStreamWriter(Writer):
 
     def ensure_registered(self, airbyte_stream: ConfiguredAirbyteStream) -> None:
         rids_to_paths = self.compass.get_paths([self.parent_rid])
-        parent_path = rids_to_paths.get(self.parent_rid)
+        parent_path = rids_to_paths.root.get(self.parent_rid)
         if parent_path is None:
             raise ValueError(
                 f"Could not resolve path for parent {self.parent_rid}. Please ensure the project exists and that the client has access to it.")
@@ -67,9 +67,9 @@ class FoundryStreamWriter(Writer):
         resource_name = get_foundry_resource_name(namespace, stream_name)
 
         maybe_resource = self.compass.get_resource_by_path(
-            f"{parent_path}/{resource_name}")
+            f"{parent_path}/{resource_name}").root
         if maybe_resource is not None:
-            maybe_stream = self.stream_catalog.get_stream(maybe_resource.rid)
+            maybe_stream = self.stream_catalog.get_stream(maybe_resource.rid).root
             if maybe_stream is None:
                 raise ValueError(
                     f"Foundry resource '{resource_name}' ({maybe_resource.rid}) was found but it is not a stream.")

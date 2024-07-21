@@ -1,2 +1,7 @@
-def get_foundry_resource_name(namespace: str, name: str) -> str:
-    return f"[{namespace}] {name}"
+from typing import Optional
+
+
+def get_foundry_resource_name(namespace: Optional[str], name: str) -> str:
+    if namespace is None:
+        return f"[Airbyte] {name}"
+    return f"[Airbyte] {namespace} - {name}"

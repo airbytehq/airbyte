@@ -4,14 +4,14 @@ from foundry._core.auth_utils import Auth
 from foundry.api_client import RequestInfo
 from pydantic import RootModel, BaseModel
 
-from destination_palantir_foundry.foundry_api.config import REQUEST_TIMEOUT
+from destination_palantir_foundry.foundry_api.config import REQUEST_TIMEOUT, HEADERS
 from destination_palantir_foundry.foundry_api.service import FoundryApiClient, FoundryService
 
 STREAM_PROXY = "stream-proxy"
 
 
 class PutJsonRecordRequest(BaseModel):
-    value: List[Dict[str, Any]]
+    value: Dict[str, Any]
 
 
 PutJsonRecordsRequest = RootModel[List[PutJsonRecordRequest]]
@@ -42,9 +42,9 @@ class StreamProxy(FoundryService):
                 "dataset_rid": dataset_rid,
                 "view_rid": view_rid
             },
-            header_params={},
+            header_params=HEADERS,
             body_type=PutJsonRecordsRequest,
-            body=[PutJsonRecordRequest(value=record) for record in records],
+            body=PutJsonRecordsRequest([PutJsonRecordRequest(value=record) for record in records]),
             request_timeout=REQUEST_TIMEOUT,
         )
 

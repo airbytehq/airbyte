@@ -4,7 +4,7 @@ from foundry._core.auth_utils import Auth
 from foundry.api_client import RequestInfo
 from pydantic import BaseModel, RootModel
 
-from destination_palantir_foundry.foundry_api.config import REQUEST_TIMEOUT
+from destination_palantir_foundry.foundry_api.config import REQUEST_TIMEOUT, HEADERS
 from destination_palantir_foundry.foundry_api.service import FoundryApiClient
 from destination_palantir_foundry.foundry_api.service import FoundryService
 
@@ -67,14 +67,12 @@ class StreamCatalog(FoundryService):
         )
 
         create_stream_request = RequestInfo(
-            method="GET",
-            resource_path="/catalog/streams/{parent_rid}/branches/master/views/latest",
+            method="POST",
+            resource_path="/catalog/streams2",
             response_type=CreateStreamOrViewResponse,
             query_params={},
-            path_params={
-                "parent_rid": parent_rid
-            },
-            header_params={},
+            path_params={},
+            header_params=HEADERS,
             body_type=CreateStream2Request,
             body=request_body,
             request_timeout=REQUEST_TIMEOUT,
@@ -91,7 +89,7 @@ class StreamCatalog(FoundryService):
             path_params={
                 "dataset_rid": dataset_rid
             },
-            header_params={},
+            header_params=HEADERS,
             body_type=None,
             body=None,
             request_timeout=REQUEST_TIMEOUT,
