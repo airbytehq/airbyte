@@ -1,4 +1,3 @@
-import json
 import unittest
 
 from destination_palantir_foundry.foundry_schema import foundry_schema
@@ -14,13 +13,14 @@ class TestFoundryFields(unittest.TestCase):
             nullable=False,
             customMetadata={},
             arraySubtype=foundry_schema.StringFieldSchema(
-                name="string",
+                name=None,
                 nullable=False,
-                customMetadata={}
+                customMetadata={},
+                isUnnamed=True
             )
         )
 
-        result = json.loads(array_field.json(by_alias=True))
+        result = array_field.model_dump()
 
         self.assertEqual(result, {
             "type": "ARRAY",
@@ -29,7 +29,6 @@ class TestFoundryFields(unittest.TestCase):
             "customMetadata": {},
             "arraySubtype": {
                 "type": "STRING",
-                "name": "string",
                 "nullable": False,
                 "customMetadata": {},
             }
@@ -40,16 +39,14 @@ class TestFoundryFields(unittest.TestCase):
             name="array",
             nullable=False,
             arraySubtype=foundry_schema.ArrayFieldSchema(
-                name="array2",
                 nullable=False,
                 arraySubtype=foundry_schema.StringFieldSchema(
-                    name="string",
                     nullable=False,
                 )
             )
         )
 
-        result = json.loads(array_field.json(by_alias=True))
+        result = array_field.model_dump()
 
         self.assertEqual(result, {
             "type": "ARRAY",
@@ -58,14 +55,13 @@ class TestFoundryFields(unittest.TestCase):
             "customMetadata": {},
             "arraySubtype": {
                 "type": "ARRAY",
-                "name": "array2",
                 "nullable": False,
                 "customMetadata": {},
                 "arraySubtype": {
                     "type": "STRING",
-                    "name": "string",
                     "nullable": False,
                     "customMetadata": {},
                 }
             }
         })
+

@@ -1,117 +1,204 @@
-from typing import List, Dict, Union, Literal, Annotated
+from abc import abstractmethod
+from typing import List, Dict, Union, Literal, Annotated, Optional
 
-from pydantic import BaseModel, Field, Discriminator
+from pydantic import BaseModel, Field, Discriminator, model_serializer
 
 
-class ArrayFieldSchema(BaseModel):
+class FoundryFieldSchemaBase(BaseModel):
+    name: Optional[str] = Field(None)
+    nullable: bool
+    customMetadata: Dict = Field({})
+
+    def _base_to_dict(self):
+        dict_rep = {
+            "nullable": self.nullable,
+            "customMetadata": self.customMetadata,
+        }
+
+        if self.name is not None:
+            dict_rep["name"] = self.name
+
+        return dict_rep
+
+    @abstractmethod
+    def ser(self):
+        pass
+
+
+class ArrayFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["ARRAY"] = Field("ARRAY", alias='type')
-    name: str
     arraySubtype: 'FoundryFieldSchema'
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+            "arraySubtype": self.arraySubtype.ser()
+        }
 
 
-class BinaryFieldSchema(BaseModel):
+class BinaryFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["BINARY"] = Field("BINARY", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class BooleanFieldSchema(BaseModel):
+class BooleanFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["BOOLEAN"] = Field("BOOLEAN", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class ByteFieldSchema(BaseModel):
+class ByteFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["BYTE"] = Field("BYTE", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class DateFieldSchema(BaseModel):
+class DateFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["DATE"] = Field("DATE", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class DecimalFieldSchema(BaseModel):
+class DecimalFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["DECIMAL"] = Field("DECIMAL", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
     precision: int
     scale: int
 
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+            "precision": self.precision,
+            "scale": self.scale
+        }
 
-class DoubleFieldSchema(BaseModel):
+
+class DoubleFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["DOUBLE"] = Field("DOUBLE", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class FloatFieldSchema(BaseModel):
+class FloatFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["FLOAT"] = Field("FLOAT", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class IntegerFieldSchema(BaseModel):
+class IntegerFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["INTEGER"] = Field("INTEGER", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class LongFieldSchema(BaseModel):
+class LongFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["LONG"] = Field("LONG", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class MapFieldSchema(BaseModel):
+class MapFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["MAP"] = Field("MAP", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
     keyType: 'FoundryFieldSchema'
     valueType: 'FoundryFieldSchema'
 
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+            "keyType": self.keyType.ser(),
+            "valueType": self.valueType.ser()
+        }
 
-class ShortFieldSchema(BaseModel):
+
+class ShortFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["SHORT"] = Field("SHORT", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class StringFieldSchema(BaseModel):
+class StringFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["STRING"] = Field("STRING", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
-class StructFieldSchema(BaseModel):
+class StructFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["STRUCT"] = Field("STRUCT", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
     subSchemas: List['FoundryFieldSchema']
 
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
-class TimestampFieldSchema(BaseModel):
+
+class TimestampFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["TIMESTAMP"] = Field("TIMESTAMP", alias='type')
-    name: str
-    nullable: bool
-    customMetadata: Dict = Field({})
+
+    @model_serializer
+    def ser(self):
+        return {
+            **self._base_to_dict(),
+            "type": self.type_,
+        }
 
 
 FoundryFieldSchema = Annotated[Union[
