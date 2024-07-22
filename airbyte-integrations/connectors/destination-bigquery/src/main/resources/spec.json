@@ -98,7 +98,7 @@
           },
           {
             "title": "GCS Staging",
-            "description": "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery. Provides best-in-class speed, reliability and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
+            "description": "Writes large batches of records to a file, uploads the file to GCS, then uses COPY INTO to load your data into BigQuery.",
             "required": [
               "method",
               "gcs_bucket_name",
