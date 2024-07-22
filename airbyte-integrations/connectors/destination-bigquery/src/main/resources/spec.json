@@ -92,8 +92,7 @@
             "properties": {
               "method": {
                 "type": "string",
-                "const": "Standard",
-                "order": 0
+                "const": "Standard"
               }
             }
           },
@@ -109,8 +108,7 @@
             "properties": {
               "method": {
                 "type": "string",
-                "const": "GCS Staging",
-                "order": 1
+                "const": "GCS Staging"
               },
               "credential": {
                 "title": "Credential",
