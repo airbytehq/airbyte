@@ -4,7 +4,6 @@
 
 import json
 
-import pendulum
 import pytest
 import requests
 import responses
