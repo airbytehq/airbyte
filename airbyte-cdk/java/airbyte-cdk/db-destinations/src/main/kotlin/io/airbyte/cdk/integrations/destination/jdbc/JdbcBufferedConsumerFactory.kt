@@ -20,6 +20,7 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseF
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.RecordWriter
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
@@ -81,8 +82,9 @@ object JdbcBufferedConsumerFactory {
                 namingResolver,
                 parsedCatalog
             ),
-            onCloseFunction(typerDeduper),
+            onCloseFunction(database, sqlOperations, parsedCatalog, typerDeduper),
             JdbcInsertFlushFunction(
+                defaultNamespace,
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
                 optimalBatchSizeBytes
             ),
@@ -95,12 +97,28 @@ object JdbcBufferedConsumerFactory {
     }
 
     private fun createWriteConfigs(
+        database: JdbcDatabase,
+        sqlOperations: SqlOperations,
         namingResolver: NamingConventionTransformer,
         parsedCatalog: ParsedCatalog,
     ): List<WriteConfig> {
-        return parsedCatalog.streams
-            .map { parsedStreamToWriteConfig(namingResolver, rawTableSuffix = "").apply(it) }
-            .toList()
+        return parsedCatalog.streams.map {
+            val rawSuffix: String =
+                if (
+                    it.minimumGenerationId == it.generationId &&
+                        sqlOperations.isOtherGenerationIdInTable(
+                            database,
+                            it.generationId,
+                            it.id.rawNamespace,
+                            it.id.rawName
+                        )
+                ) {
+                    AbstractStreamOperation.TMP_TABLE_SUFFIX
+                } else {
+                    AbstractStreamOperation.NO_SUFFIX
+                }
+            parsedStreamToWriteConfig(namingResolver, rawSuffix).apply(it)
+        }
     }
 
     private fun parsedStreamToWriteConfig(
@@ -124,7 +142,7 @@ object JdbcBufferedConsumerFactory {
                 streamConfig.syncId,
                 streamConfig.generationId,
                 streamConfig.minimumGenerationId,
-                rawTableSuffix
+                rawTableSuffix,
             )
         }
     }
@@ -152,7 +170,9 @@ object JdbcBufferedConsumerFactory {
     ): OnStartFunction {
         return OnStartFunction {
             typerDeduper.prepareSchemasAndRunMigrations()
-            writeConfigs.addAll(createWriteConfigs(namingResolver, parsedCatalog))
+            writeConfigs.addAll(
+                createWriteConfigs(database, sqlOperations, namingResolver, parsedCatalog)
+            )
             LOGGER.info {
                 "Preparing raw tables in destination started for ${writeConfigs.size} streams"
             }
@@ -165,15 +185,30 @@ object JdbcBufferedConsumerFactory {
                 }
                 sqlOperations.createSchemaIfNotExists(database, schemaName)
                 sqlOperations.createTableIfNotExists(database, schemaName, dstTableName)
+                // if rawSuffix is empty, this is a no-op
+                sqlOperations.createTableIfNotExists(
+                    database,
+                    schemaName,
+                    dstTableName + writeConfig.rawTableSuffix
+                )
                 when (writeConfig.minimumGenerationId) {
                     writeConfig.generationId ->
-                        queryList.add(
-                            sqlOperations.truncateTableQuery(
+                        if (
+                            sqlOperations.isOtherGenerationIdInTable(
                                 database,
+                                writeConfig.generationId,
                                 schemaName,
-                                dstTableName,
+                                dstTableName + writeConfig.rawTableSuffix
                             )
-                        )
+                        ) {
+                            queryList.add(
+                                sqlOperations.truncateTableQuery(
+                                    database,
+                                    schemaName,
+                                    dstTableName + writeConfig.rawTableSuffix,
+                                )
+                            )
+                        }
                     0L -> {}
                     else ->
                         throw IllegalStateException(
@@ -224,7 +259,7 @@ object JdbcBufferedConsumerFactory {
                 database,
                 ArrayList(records),
                 writeConfig.rawNamespace,
-                writeConfig.rawTableName,
+                writeConfig.rawTableName + writeConfig.rawTableSuffix,
                 writeConfig.syncId,
                 writeConfig.generationId,
             )
@@ -232,11 +267,33 @@ object JdbcBufferedConsumerFactory {
     }
 
     /** Tear down functionality */
-    private fun onCloseFunction(typerDeduper: TyperDeduper): OnCloseFunction {
+    private fun onCloseFunction(
+        database: JdbcDatabase,
+        sqlOperations: SqlOperations,
+        catalog: ParsedCatalog,
+        typerDeduper: TyperDeduper
+    ): OnCloseFunction {
         return OnCloseFunction {
             _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             try {
+                catalog.streams.forEach {
+                    if (
+                        it.minimumGenerationId == it.generationId &&
+                            sqlOperations.isOtherGenerationIdInTable(
+                                database,
+                                it.generationId,
+                                it.id.rawNamespace,
+                                it.id.rawName
+                            ) &&
+                            streamSyncSummaries
+                                .getValue(it.id.asStreamDescriptor())
+                                .terminalStatus ==
+                                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                    ) {
+                        sqlOperations.overwriteRawTable(database, it.id.rawNamespace, it.id.rawName)
+                    }
+                }
                 typerDeduper.typeAndDedupe(streamSyncSummaries)
                 typerDeduper.commitFinalTables()
                 typerDeduper.cleanup()
