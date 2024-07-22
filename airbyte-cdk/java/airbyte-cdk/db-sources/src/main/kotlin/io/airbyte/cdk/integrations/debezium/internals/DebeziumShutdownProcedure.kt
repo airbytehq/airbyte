@@ -3,6 +3,8 @@
  */
 package io.airbyte.cdk.integrations.debezium.internals
 
+import io.airbyte.cdk.db.DbAnalyticsUtils
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility
 import io.airbyte.commons.concurrency.VoidCallable
 import io.airbyte.commons.lang.MoreBooleans
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -89,6 +91,7 @@ class DebeziumShutdownProcedure<T>(
             debeziumThreadRequestClose.call()
         } catch (e: Exception) {
             exceptionDuringEngineClose = e
+            AirbyteTraceMessageUtility.emitAnalyticsTrace(DbAnalyticsUtils.debeziumShutdownError())
             throw RuntimeException(e)
         } finally {
             try {
