@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import org.bson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Retrieves iterators used for the initial snapshot
@@ -49,7 +51,9 @@ public class InitialSnapshotHandler {
                                                                   final MongoDatabase database,
                                                                   final MongoDbSourceConfig config,
                                                                   final boolean decorateWithStartedStatus,
-                                                                  final boolean decorateWithCompletedStatus) {
+                                                                  final boolean decorateWithCompletedStatus,
+                                                                  final Instant emittedAt,
+                                                                  final Optional<Duration> cdcInitialLoadTimeout) {
     final boolean isEnforceSchema = config.getEnforceSchema();
     final var checkpointInterval = config.getCheckpointInterval();
     return streams
@@ -78,7 +82,7 @@ public class InitialSnapshotHandler {
 
           final Optional<CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(database, airbyteStream);
           final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema,
-              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream));
+              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream), emittedAt, cdcInitialLoadTimeout);
           final var stateIterator =
               new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));

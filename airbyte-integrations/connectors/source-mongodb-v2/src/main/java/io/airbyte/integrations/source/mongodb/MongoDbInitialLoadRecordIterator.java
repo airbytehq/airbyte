@@ -7,7 +7,10 @@ package io.airbyte.integrations.source.mongodb;
 import static io.airbyte.integrations.source.mongodb.state.IdType.idToStringRepresenation;
 import static io.airbyte.integrations.source.mongodb.state.IdType.parseBinaryIdString;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import com.google.common.collect.AbstractIterator;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -23,6 +26,10 @@ import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.time.Duration;
+import java.time.Instant;
+
+
 
 /**
  * This record iterator operates over a single stream. It continuously reads data from a table via
@@ -44,21 +51,37 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private int numSubqueries = 0;
 
+  private final Instant startInstant;
+  private Optional<Duration> cdcInitialLoadTimeout;
+
   MongoDbInitialLoadRecordIterator(final MongoCollection<Document> collection,
                                    final Bson fields,
                                    final Optional<MongoDbStreamState> existingState,
                                    final boolean isEnforceSchema,
-                                   final int chunkSize) {
+                                   final int chunkSize,
+                                   final Instant startInstant,
+                                   final Optional<Duration> cdcInitialLoadTimeout) {
     this.collection = collection;
     this.fields = fields;
     this.currentState = existingState;
     this.isEnforceSchema = isEnforceSchema;
     this.chunkSize = chunkSize;
     this.currentIterator = buildNewQueryIterator();
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
   }
 
   @Override
   protected Document computeNext() {
+    if (cdcInitialLoadTimeout.isPresent()
+            && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+              "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+              getAirbyteStream().get(), cdcInitialLoadTimeout.get());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     if (shouldBuildNextQuery()) {
       try {
         LOGGER.info("Finishing subquery number : {}, processing at id : {}", numSubqueries,
