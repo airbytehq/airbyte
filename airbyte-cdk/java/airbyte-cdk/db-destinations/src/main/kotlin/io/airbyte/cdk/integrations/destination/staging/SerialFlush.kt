@@ -88,14 +88,14 @@ object SerialFlush {
             }
 
             val writeConfig = pairToWriteConfig.getValue(pair)
-            val schemaName = writeConfig.outputSchemaName
-            val stageName = stagingOperations.getStageName(schemaName, writeConfig.outputTableName)
+            val schemaName = writeConfig.rawNamespace
+            val stageName = stagingOperations.getStageName(schemaName, writeConfig.rawTableName)
             val stagingPath =
                 stagingOperations.getStagingPath(
                     RANDOM_CONNECTION_ID,
                     schemaName,
                     writeConfig.streamName,
-                    writeConfig.outputTableName,
+                    writeConfig.rawTableName,
                     writeConfig.writeDatetime
                 )
             try {
@@ -114,7 +114,7 @@ object SerialFlush {
                         stageName,
                         stagingPath,
                         listOf(stagedFile),
-                        writeConfig.outputTableName,
+                        writeConfig.rawTableName,
                         schemaName,
                         stagingOperations,
                     )
