@@ -267,6 +267,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.1.0   | 2024-07-16 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
 | 2.0.15  | 2024-06-26 | [\#40554](https://github.com/airbytehq/airbyte/pull/40554) | Convert all strict-encrypt prod code to kotlin.                                                          |
 | 2.0.14  | 2024-06-26 | [\#40563](https://github.com/airbytehq/airbyte/pull/40563) | Convert all test code to kotlin.                                                          |
 | 2.0.13  | 2024-06-13 | [\#40159](https://github.com/airbytehq/airbyte/pull/40159) | Config error on drop failure when cascade is disabled                                                    |

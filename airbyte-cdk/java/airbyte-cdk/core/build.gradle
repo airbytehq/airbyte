@@ -57,7 +57,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres'))
 
     testImplementation 'mysql:mysql-connector-java:8.0.33'
-    testImplementation 'org.postgresql:postgresql:42.6.0'
+    testImplementation 'org.postgresql:postgresql:42.7.3'
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:postgresql:1.19.0'
     testImplementation 'org.xbib.elasticsearch:joptsimple:6.3.2.1'
