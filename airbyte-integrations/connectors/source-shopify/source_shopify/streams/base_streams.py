@@ -734,7 +734,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
         slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
-        self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
+        checkpointing_message = f"Checkpoint after `{self.job_manager.job_checkpoint_interval}` lines"
+        self.logger.info(
+            f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}. {checkpointing_message}."
+        )
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:

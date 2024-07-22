@@ -236,7 +236,8 @@ class ShopifyBulkManager:
 
     def _job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
         parsed_response = response.json().get("data", {}).get("node", {}) if response else None
-        job_result_url = parsed_response.get("url") if parsed_response else None
+        # get `complete` or `partial` result from collected Bulk Job results
+        job_result_url = parsed_response.get("url", parsed_response.get("partialDataUrl")) if parsed_response else None
         if job_result_url:
             # save to local file using chunks to avoid OOM
             filename = self._tools.filename_from_url(job_result_url)
@@ -248,6 +249,13 @@ class ShopifyBulkManager:
                 # add `<end_of_file>` line to the bottom  of the saved data for easy parsing
                 file.write(END_OF_FILE.encode())
             return filename
+
+    def _job_get_checkpointed_result(self, response: Optional[requests.Response]) -> None:
+        if self._job_any_lines_collected or self._job_should_checkpoint:
+            # set the flag to adjust the next slice from the checkpointed cursor value
+            self._job_adjust_slice_from_checkpoint = True
+            # fetch the collected records from CANCELED Job on checkpointing
+            self._job_result_filename = self._job_get_result(response)
 
     def _job_update_state(self, response: Optional[requests.Response] = None) -> None:
         if response:
@@ -272,11 +280,7 @@ class ShopifyBulkManager:
                 f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}"
             )
         else:
-            if self._job_any_lines_collected or self._job_should_checkpoint:
-                # set the flag to adjust the next slice from the checkpointed cursor value
-                self._job_adjust_slice_from_checkpoint = True
-                # fetch the collected records from CANCELED Job on checkpointing
-                self._job_result_filename = self._job_get_result(response)
+            self._job_get_checkpointed_result(response)
 
     def _on_canceling_job(self, **kwargs) -> None:
         sleep(self._job_check_interval)
@@ -304,9 +308,14 @@ class ShopifyBulkManager:
         self._job_result_filename = self._job_get_result(response)
 
     def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException:
-        raise ShopifyBulkExceptions.BulkJobFailed(
-            f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
-        )
+        if not self._job_any_lines_collected:
+            raise ShopifyBulkExceptions.BulkJobFailed(
+                f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
+            )
+        else:
+            # when the Bulk Job fails, usually there is a `partialDataUrl` available,
+            # we leverage the checkpointing in this case
+            self._job_get_checkpointed_result(response)
 
     def _on_timeout_job(self, **kwargs) -> AirbyteTracedException:
         raise ShopifyBulkExceptions.BulkJobTimout(
@@ -508,7 +517,7 @@ class ShopifyBulkManager:
         finally:
             job_current_elapsed_time = round((time() - job_started), 3)
             self.logger.info(
-                f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` time elapsed: {job_current_elapsed_time} sec."
+                f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` time elapsed: {job_current_elapsed_time} sec. Lines collected: `{self._job_last_rec_count}`."
             )
             # check whether or not we should expand or reduce the size of the slice
             self.__adjust_job_size(job_current_elapsed_time)
