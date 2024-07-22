@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers import git
 from pipelines.helpers.connectors import cdk_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -103,7 +104,10 @@ class SetCDKVersion(Step):
         context = self.context
         og_connector_dir = await context.get_connector_dir()
         
+        # Check for existing pyproject file and load contents
         pyproject_toml = og_connector_dir.file(PYPROJECT_FILENAME)
+        if not pyproject_toml:
+            raise ValueError(f"Could not find 'pyproject.toml' for {context.connector.technical_name}")
         pyproject_content = await pyproject_toml.contents()
         pyproject_data = toml.loads(pyproject_content)
 
@@ -111,19 +115,32 @@ class SetCDKVersion(Step):
         dependencies = pyproject_data.get("tool", {}).get("poetry", {}).get("dependencies", {})
         airbyte_cdk_dependency = dependencies.get("airbyte-cdk")
         if not airbyte_cdk_dependency:
-            raise ValueError("Could not find airbyte-cdk dependency in pyproject.toml")
+            raise ValueError("Could not find a valid airbyte-cdk dependency in 'pyproject.toml'")
         
         # Set the new version. If not explicitly provided, set it to the latest version and allow non-breaking changes
         if self.new_version == "latest":
             new_version = f"^{cdk_helpers.get_latest_python_cdk_version()}"
-            self.logger.info(f"Setting CDK version to {new_version}")
         else:
             new_version = self.new_version
+        self.logger.info(f"Setting CDK version to {new_version}")
         dependencies["airbyte_cdk"] = new_version
 
         updated_pyproject_toml_content = toml.dumps(pyproject_data)
-        self.logger.info(f"Updated pyproject.toml content: {updated_pyproject_toml_content}")
         updated_connector_dir = og_connector_dir.with_new_file(PYPROJECT_FILENAME, updated_pyproject_toml_content)
+
+        # Create a new container to run poetry lock
+        base_image = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
+        base_container = self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(base_image)
+        connector_container = base_container.with_mounted_directory("/connector", updated_connector_dir).with_workdir("/connector")
+
+        poetry_lock_file = await connector_container.file(POETRY_LOCK_FILENAME).contents()
+        updated_container = await connector_container.with_exec(["poetry", "lock"])
+        updated_poetry_lock_file = await updated_container.file(POETRY_LOCK_FILENAME).contents()
+
+        if poetry_lock_file != updated_poetry_lock_file:
+            updated_connector_dir = updated_connector_dir.with_new_file(POETRY_LOCK_FILENAME, updated_poetry_lock_file)
+        else:
+            raise ValueError("Poetry lock file did not change after running poetry lock")
 
         return updated_connector_dir
 
