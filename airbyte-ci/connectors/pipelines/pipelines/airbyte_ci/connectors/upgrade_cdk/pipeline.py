@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import re
+import toml
 from typing import TYPE_CHECKING
 
 from connector_ops.utils import ConnectorLanguage  # type: ignore
@@ -19,6 +20,11 @@ if TYPE_CHECKING:
     from typing import Optional
 
     from anyio import Semaphore
+
+# GLOBALS
+
+POETRY_LOCK_FILENAME = "poetry.lock"
+PYPROJECT_FILENAME = "pyproject.toml"
 
 
 class SetCDKVersion(Step):
@@ -96,35 +102,37 @@ class SetCDKVersion(Step):
     async def upgrade_cdk_version_for_python_connector(self, og_connector_dir: Directory) -> Optional[Directory]:
         context = self.context
         og_connector_dir = await context.get_connector_dir()
-        if "setup.py" not in await og_connector_dir.entries():
-            self.skip_reason = f"Python connector {self.context.connector.technical_name} does not have a setup.py file."
-            return None
-        setup_py = og_connector_dir.file("setup.py")
-        setup_py_content = await setup_py.contents()
+        
+        pyproject_toml = og_connector_dir.file(PYPROJECT_FILENAME)
+        pyproject_content = await pyproject_toml.contents()
+        pyproject_data = toml.loads(pyproject_content)
 
-        airbyte_cdk_dependency = re.search(
-            r"airbyte-cdk(?P<extra>\[[a-zA-Z0-9-]*\])?(?P<version>[<>=!~]+[0-9]*(?:\.[0-9]*)?(?:\.[0-9]*)?)?", setup_py_content
-        )
-        # If there is no airbyte-cdk dependency, add the version
-        if airbyte_cdk_dependency is None:
-            raise ValueError("Could not find airbyte-cdk dependency in setup.py")
-
+        # Grab the airbyte-cdk dependency from pyproject
+        dependencies = pyproject_data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+        airbyte_cdk_dependency = dependencies.get("airbyte-cdk")
+        if not airbyte_cdk_dependency:
+            raise ValueError("Could not find airbyte-cdk dependency in pyproject.toml")
+        
+        # Set the new version. If not explicitly provided, set it to the latest version and allow non-breaking changes
         if self.new_version == "latest":
-            new_version = cdk_helpers.get_latest_python_cdk_version()
+            new_version = f"^{cdk_helpers.get_latest_python_cdk_version()}"
+            self.logger.info(f"Setting CDK version to {new_version}")
         else:
             new_version = self.new_version
+        dependencies["airbyte_cdk"] = new_version
 
-        new_version_str = f"airbyte-cdk{airbyte_cdk_dependency.group('extra') or ''}>={new_version}"
-        updated_setup_py = setup_py_content.replace(airbyte_cdk_dependency.group(), new_version_str)
+        updated_pyproject_toml_content = toml.dumps(pyproject_data)
+        self.logger.info(f"Updated pyproject.toml content: {updated_pyproject_toml_content}")
+        updated_connector_dir = og_connector_dir.with_new_file(PYPROJECT_FILENAME, updated_pyproject_toml_content)
 
-        return og_connector_dir.with_new_file("setup.py", updated_setup_py)
+        return updated_connector_dir
 
 
 async def run_connector_cdk_upgrade_pipeline(
     context: ConnectorContext,
     semaphore: Semaphore,
     target_version: str,
-) -> Report:
+) -> ConnectorReport:
     """Run a pipeline to upgrade the CDK version for a single connector.
 
     Args:
