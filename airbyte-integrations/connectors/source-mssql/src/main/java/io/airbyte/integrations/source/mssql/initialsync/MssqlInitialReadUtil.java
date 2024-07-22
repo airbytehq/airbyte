@@ -5,9 +5,11 @@
 package io.airbyte.integrations.source.mssql.initialsync;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcResyncMessage;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.wassOccurrenceMessage;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.getDebeziumProperties;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.cdc.MssqlCdcStateConstants.MSSQL_CDC_OFFSET;
@@ -161,8 +163,10 @@ public class MssqlInitialReadUtil {
           INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
         throw new ConfigErrorException(
             "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency.");
+      } else if (sourceConfig.get("replication_method").get(INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(RESYNC_DATA_OPTION)) {
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcResyncMessage());
+        LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
       }
-      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
     }
     return savedOffsetStillPresentOnServer;
   }
