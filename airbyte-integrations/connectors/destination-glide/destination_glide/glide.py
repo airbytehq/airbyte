@@ -107,11 +107,11 @@ class GlideBigTableFactory:
         Creates a new instance of the default implementation for the GlideBigTable API client.
         """
         implementation_map = {
-            "tables": GlideBigTableRestStrategy()
+            "tables": lambda: GlideBigTableRestStrategy()
         }
         if strategy not in implementation_map:
             raise ValueError(f"Strategy '{strategy}' not found. Expected one of '{implmap.keys()}'.")  # nopep8
-        return implementation_map[strategy]
+        return implementation_map[strategy]()
 
 
 class GlideBigTableRestStrategy(GlideBigTableBase):
@@ -152,18 +152,12 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
                 "set_schema must be called before add_rows or commit")
 
     def _add_row_batch(self, rows: List[BigTableRow]) -> None:
-        # TODO: add rows to stash/serial https://web.postman.co/workspace/glideapps-Workspace~46b48d24-5fc1-44b6-89aa-8d6751db0fc5/request/9026518-c282ef52-4909-4806-88bf-08510ee80770
         logger.debug(f"Adding rows batch with size {len(rows)}")
         r = requests.post(
             self.url(f"stashes/{self.stash_id}/{self.stash_serial}"),
             headers=self.headers(),
-            json={
-                "data": rows,
-                "options": {
-                    # ignore columns in rows that are not part of schema:
-                    "unknownColumns": "ignore"
-                }
-            }
+            json=rows
+            
         )
         try:
             r.raise_for_status()
