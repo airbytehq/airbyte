@@ -78,11 +78,12 @@ the underlying role executing the container workload in AWS.
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
-| 0.3.2   | 2024-05-01 | [27045](https://github.com/airbytehq/airbyte/pull/27045)  | Fix missing scan permissions                                         |
-| 0.3.1   | 2024-05-01 | [31935](https://github.com/airbytehq/airbyte/pull/31935)  | Fix list more than 100 tables                                        |
-| 0.3.0   | 2024-04-24 | [37530](https://github.com/airbytehq/airbyte/pull/37530)  | Allow role based access                                              |
-| 0.2.3   | 2024-02-13 | [35232](https://github.com/airbytehq/airbyte/pull/35232)  | Adopt CDK 0.20.4                                                     |
-| 0.2.2   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453)  | bump CDK version                                                     |
+| 0.3.3 | 2024-07-22 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | fix primary key fetching |
+| 0.3.2 | 2024-05-01 | [27045](https://github.com/airbytehq/airbyte/pull/27045) | Fix missing scan permissions |
+| 0.3.1 | 2024-05-01 | [31935](https://github.com/airbytehq/airbyte/pull/31935) | Fix list more than 100 tables |
+| 0.3.0 | 2024-04-24 | [37530](https://github.com/airbytehq/airbyte/pull/37530) | Allow role based access |
+| 0.2.3 | 2024-02-13 | [35232](https://github.com/airbytehq/airbyte/pull/35232) | Adopt CDK 0.20.4 |
+| 0.2.2 | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version |
 | 0.2.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                                    |
 | 0.2.0   | 18-12-2023 | https://github.com/airbytehq/airbyte/pull/33485           | Remove LEGACY state                                                  |
 | 0.1.2   | 01-19-2023 | https://github.com/airbytehq/airbyte/pull/20172           | Fix reserved words in projection expression & make them configurable |
