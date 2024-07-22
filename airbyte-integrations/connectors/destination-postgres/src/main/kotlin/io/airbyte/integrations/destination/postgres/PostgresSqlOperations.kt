@@ -156,22 +156,25 @@ class PostgresSqlOperations : JdbcSqlOperations() {
             database
                 .unsafeQuery(
                     """SELECT 1 
-            |               FROM pg_namespace n
+            |               FROM pg_catalog.pg_namespace n
             |               JOIN pg_catalog.pg_class c
             |               ON c.relnamespace=n.oid
-            |               WHERE n.nspname='$namespace'
+            |               WHERE n.nspname=?
             |               AND c.relkind='r'
-            |               AND c.relname='$name'
-        """.trimMargin()
+            |               AND c.relname=?
+            |               LIMIT 1
+        """.trimMargin(),
+                    namespace,
+                    name
                 )
-                .toList()
+                .use { it.toList() }
         if (selectTableResultSet.isEmpty()) {
             return false
         } else {
             val selectGenIdResultSet =
                 database
                     .unsafeQuery("SELECT _airbyte_generation_id FROM $namespace.$name LIMIT 1;")
-                    .toList()
+                    .use { it.toList() }
             if (selectGenIdResultSet.isEmpty()) {
                 return false
             } else {
