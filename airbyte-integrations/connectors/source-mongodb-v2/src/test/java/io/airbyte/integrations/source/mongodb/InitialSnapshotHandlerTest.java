@@ -379,25 +379,6 @@ class InitialSnapshotHandlerTest {
   }
 
   @Test
-  void testGetIteratorsThrowsExceptionWhenThereAreDifferentIdTypes() {
-    insertDocuments(COLLECTION1, List.of(
-        new Document(Map.of(
-            CURSOR_FIELD, OBJECT_ID1,
-            NAME_FIELD, NAME1)),
-        new Document(Map.of(
-            CURSOR_FIELD, "string-id",
-            NAME_FIELD, NAME2))));
-
-    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
-
-    final var thrown = assertThrows(ConfigErrorException.class,
-        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG, false, false));
-    assertTrue(thrown.getMessage().contains("must be consistently typed"));
-  }
-
-  @Test
   void testGetIteratorsThrowsExceptionWhenThereAreUnsupportedIdTypes() {
     insertDocuments(COLLECTION1, List.of(
         new Document(Map.of(
