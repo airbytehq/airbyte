@@ -75,6 +75,7 @@ To cover more data from this source we use caching.
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.13 | 2024-07-20 | [42308](https://github.com/airbytehq/airbyte/pull/42308) | Update dependencies |
 | 0.3.12 | 2024-07-13 | [41701](https://github.com/airbytehq/airbyte/pull/41701) | Update dependencies |
 | 0.3.11 | 2024-07-10 | [41352](https://github.com/airbytehq/airbyte/pull/41352) | Update dependencies |
 | 0.3.10 | 2024-07-09 | [41258](https://github.com/airbytehq/airbyte/pull/41258) | Update dependencies |
