@@ -250,3 +250,74 @@ def test_substream_without_input_state():
             StreamSlice(partition={"parent_id": "2", "parent_slice": {}, },
                         cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
         ]
+
+
+def test_partition_limitation():
+    source = ManifestDeclarativeSource(
+        source_config=ManifestBuilder()
+        .with_list_partition_router("Rates", "partition_field", ["1", "2", "3"])
+        .with_incremental_sync(
+            "Rates",
+            start_datetime="2022-01-01",
+            end_datetime="2022-02-28",
+            datetime_format="%Y-%m-%d",
+            cursor_field=CURSOR_FIELD,
+            step="P1M",
+            cursor_granularity="P1D",
+        )
+        .build()
+    )
+    stream_instance = source.streams({})[0]
+
+    stream_slices = [
+        StreamSlice(partition={"partition_field": "1"},
+                    cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
+        StreamSlice(partition={"partition_field": "2"},
+                    cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
+        StreamSlice(partition={"partition_field": "3"},
+                    cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
+    ]
+
+    records_list = [
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, stream_slices[0])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, stream_slices[1])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-17"}, stream_slices[2])]
+    ]
+
+    configured_stream = ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+
+    logger = MagicMock()
+    return list(source.read(logger, config, catalog, state))
+
+    with patch.object(SimpleRetriever, "stream_slices", return_value=stream_slices):
+        stream_instance.retriever.cursor.DEFAULT_MAX_PARTITIONS_NUMBER = 2
+
+        with patch.object(
+                SimpleRetriever, "_read_pages",
+                side_effect=records_list
+        ):
+            list(
+                stream_instance.read(
+                    sync_mode=SYNC_MODE,
+                    stream_slice=stream_slice,
+                    stream_state={"states": []},
+                    cursor_field=CURSOR_FIELD,
+                )
+            )
+
+    assert stream_instance.state == {
+        "states": [
+            {
+                "partition": {"partition_field": "2"},
+                "cursor": {CURSOR_FIELD: "2022-01-15"},
+            },
+            {
+                "partition": {"partition_field": "3"},
+                "cursor": {CURSOR_FIELD: "2022-01-15"},
+            }
+        ]
+    }
