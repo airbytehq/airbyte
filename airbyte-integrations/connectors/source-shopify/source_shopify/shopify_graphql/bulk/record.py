@@ -162,7 +162,7 @@ class ShopifyBulkRecord:
             for record in self.process_line(jsonl_file):
                 self.output_buffer.append(self.tools.fields_names_to_snake_case(record))
                 if len(self.output_buffer) == self.checkpoint_interval:
-                    # emit records from output_buffer, sorted ASC 
+                    # emit records from output_buffer, sorted ASC
                     yield from self.output_sort_asc()
 
             # emit what's left in the output output_buffer, typically last record
