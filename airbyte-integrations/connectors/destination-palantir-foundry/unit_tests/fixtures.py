@@ -6,6 +6,7 @@ from destination_palantir_foundry.config.foundry_config import FoundryConfig, Cl
 from destination_palantir_foundry.foundry_api.stream_catalog import CreateStreamOrViewResponse, StreamView, \
     GetStreamResponse, \
     StreamSettings, MaybeGetStreamResponse
+from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema, StringFieldSchema
 
 FOUNDRY_HOST = "acme.palantirfoundry.com"
 CLIENT_ID = "testclientid"
@@ -77,6 +78,12 @@ MINIMAL_CONFIGURED_AIRBYTE_STREAM = ConfiguredAirbyteStream(
 MINIMAL_AIRBYTE_RECORD_MESSAGE = AirbyteRecordMessage(
     namespace=NAMESPACE,
     stream=STREAM_NAME,
-    data={},
+    data={"test": "test"},
     emitted_at=0
+)
+
+FOUNDRY_SCHEMA = FoundrySchema(
+    fieldSchemaList=[StringFieldSchema(name="test", nullable=False)],
+    dataFrameReaderClass="",
+    customMetadata={}
 )

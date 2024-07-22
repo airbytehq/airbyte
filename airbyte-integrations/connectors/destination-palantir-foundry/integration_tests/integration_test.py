@@ -122,7 +122,7 @@ class TestDestinationPalantirFoundry(unittest.TestCase):
 
         self.assertEqual(len(records_2), len(SAMPLE_RECORDS) * 2)
 
-        # self._delete_stream(stream.namespace, stream.name)
+        self._delete_stream(stream.namespace, stream.name)
 
     def _get_stream_records(self, namespace: Optional[str], stream_name: str) -> List[Dict[str, Any]]:
         stream_proxy: StreamProxy = self.service_factory.stream_proxy()

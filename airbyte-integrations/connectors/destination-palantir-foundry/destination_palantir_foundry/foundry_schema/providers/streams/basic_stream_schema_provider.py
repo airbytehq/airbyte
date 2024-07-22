@@ -40,7 +40,12 @@ class BasicStreamSchemaProvider(StreamSchemaProvider):
             }
         )
 
-    def get_converted_record(self, airbyte_record: AirbyteRecordMessage) -> Dict[str, Any]:
+    def get_converted_record(
+            self,
+            airbyte_record: AirbyteRecordMessage,
+            _foundry_schema: FoundrySchema,
+            _generation_id: int
+    ) -> Dict[str, Any]:
         return {
             "emittedAt": airbyte_record.emitted_at,
             "message": json.dumps(airbyte_record.data),

@@ -1,6 +1,9 @@
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 
+from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteStream
+
+from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 
 
@@ -8,19 +11,22 @@ from destination_palantir_foundry.utils.resource_names import get_foundry_resour
 class BufferRegistryEntry:
     dataset_rid: str
     view_rid: str
-    records: List[Dict]
+    records: List[AirbyteRecordMessage]
+    foundry_schema: FoundrySchema
+    configured_airbyte_stream: ConfiguredAirbyteStream
 
 
 class FoundryStreamBufferRegistry:
     def __init__(self) -> None:
         self._registry: Dict[str, BufferRegistryEntry] = {}
 
-    def register_foundry_stream(self, namespace: Optional[str], stream_name: str, dataset_rid: str, view_rid: str):
+    def register_foundry_stream(self, namespace: Optional[str], stream_name: str, dataset_rid: str, view_rid: str,
+                                foundry_schema: FoundrySchema, configured_airbyte_stream: ConfiguredAirbyteStream):
         self._registry[get_foundry_resource_name(
-            namespace, stream_name)] = BufferRegistryEntry(dataset_rid, view_rid, [])
+            namespace, stream_name)] = BufferRegistryEntry(dataset_rid, view_rid, [], foundry_schema, configured_airbyte_stream)
 
-    def add_record_to_buffer(self, namespace: Optional[str], stream_name: str, record: Dict[str, Any]):
-        resource_name = get_foundry_resource_name(namespace, stream_name)
+    def add_record_to_buffer(self, record: AirbyteRecordMessage):
+        resource_name = get_foundry_resource_name(record.namespace, record.stream)
 
         entry = self._registry.get(
             resource_name, None)
@@ -36,7 +42,7 @@ class FoundryStreamBufferRegistry:
 
         entry = self._registry.get(resource_name, None)
         if entry is not None:
-            self._registry[resource_name] = BufferRegistryEntry(entry.dataset_rid, entry.view_rid, [])
+            self._registry[resource_name] = BufferRegistryEntry(entry.dataset_rid, entry.view_rid, [], entry.foundry_schema)
             return entry
         else:
             raise ValueError(

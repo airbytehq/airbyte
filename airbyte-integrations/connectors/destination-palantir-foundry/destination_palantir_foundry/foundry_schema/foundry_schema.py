@@ -187,6 +187,7 @@ class StructFieldSchema(FoundryFieldSchemaBase):
         return {
             **self._base_to_dict(),
             "type": self.type_,
+            "subSchemas": [sub_schema.ser() for sub_schema in self.subSchemas]
         }
 
 
@@ -224,5 +225,13 @@ class FoundrySchema(BaseModel):
     fieldSchemaList: List[FoundryFieldSchema]
     dataFrameReaderClass: str
     customMetadata: Dict
+
+    @model_serializer
+    def ser(self):
+        return {
+            "fieldSchemaList": [field.ser() for field in self.fieldSchemaList],
+            "dataFrameReaderClass": self.dataFrameReaderClass,
+            "customMetadata": self.customMetadata
+        }
 
 # TODO(jcrowson): Subtypes don't need names, so can ignore in that case
