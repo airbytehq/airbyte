@@ -16,6 +16,8 @@ object DbAnalyticsUtils {
     const val CDC_SNAPSHOT_FORCE_SHUTDOWN_KEY = "db-sources-snapshot-force-shutdown"
     const val DEBEZIUM_CLOSE_REASON_KEY = "db-sources-debezium-close-reason"
     const val WASS_OCCURRENCE_KEY = "db-sources-wass-occurrence"
+    const val CDC_RESYNC_KEY = "db-sources-cdc-resync"
+    const val DEBEZIUM_SHUTDOWN_ERROR = "debezium-shutdown-error"
 
     @JvmStatic
     fun cdcCursorInvalidMessage(): AirbyteAnalyticsTraceMessage {
@@ -44,5 +46,15 @@ object DbAnalyticsUtils {
     @JvmStatic
     fun wassOccurrenceMessage(): AirbyteAnalyticsTraceMessage {
         return AirbyteAnalyticsTraceMessage().withType(WASS_OCCURRENCE_KEY).withValue("1")
+    }
+
+    @JvmStatic
+    fun cdcResyncMessage(): AirbyteAnalyticsTraceMessage {
+        return AirbyteAnalyticsTraceMessage().withType(CDC_RESYNC_KEY).withValue("1")
+    }
+
+    @JvmStatic
+    fun debeziumShutdownError(): AirbyteAnalyticsTraceMessage {
+        return AirbyteAnalyticsTraceMessage().withType(DEBEZIUM_SHUTDOWN_ERROR).withValue("1")
     }
 }
