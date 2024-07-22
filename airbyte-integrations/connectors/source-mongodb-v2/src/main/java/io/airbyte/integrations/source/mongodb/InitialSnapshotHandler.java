@@ -68,7 +68,8 @@ public class InitialSnapshotHandler {
           if (idTypes.size() > 1) {
             LOGGER.warn("The _id fields in this collection are not consistently typed, which may lead to data loss (collection = {}).",
                 collectionName);
-            AirbyteTraceMessageUtility.emitAnalyticsTrace(new AirbyteAnalyticsTraceMessage().withType(MULTIPLE_ID_TYPES_ANALYTICS_MESSAGE_KEY).withValue("1"));
+            AirbyteTraceMessageUtility
+                .emitAnalyticsTrace(new AirbyteAnalyticsTraceMessage().withType(MULTIPLE_ID_TYPES_ANALYTICS_MESSAGE_KEY).withValue("1"));
           }
 
           idTypes.stream().findFirst().ifPresent(idType -> {
