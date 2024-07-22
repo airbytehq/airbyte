@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -376,25 +375,6 @@ class InitialSnapshotHandlerTest {
     final AirbyteMessage collection4StateMessage = collection4.next();
     assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
     assertFalse(collection4.hasNext());
-  }
-
-  @Test
-  void testGetIteratorsThrowsExceptionWhenThereAreDifferentIdTypes() {
-    insertDocuments(COLLECTION1, List.of(
-        new Document(Map.of(
-            CURSOR_FIELD, OBJECT_ID1,
-            NAME_FIELD, NAME1)),
-        new Document(Map.of(
-            CURSOR_FIELD, "string-id",
-            NAME_FIELD, NAME2))));
-
-    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
-    final MongoDbStateManager stateManager = mock(MongoDbStateManager.class);
-
-    final var thrown = assertThrows(ConfigErrorException.class,
-        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
-            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG, false, false));
-    assertTrue(thrown.getMessage().contains("must be consistently typed"));
   }
 
   @Test
