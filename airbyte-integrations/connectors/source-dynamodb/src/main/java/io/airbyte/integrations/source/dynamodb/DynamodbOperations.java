@@ -80,8 +80,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
   public List<String> primaryKey(String tableName) {
     DescribeTableRequest describeTableRequest = DescribeTableRequest.builder().tableName(tableName).build();
-    return dynamoDbClient.describeTable(describeTableRequest).table().attributeDefinitions().stream()
-        .map(AttributeDefinition::attributeName)
+    return dynamoDbClient.describeTable(describeTableRequest).table().keySchema().stream()
+        .map(KeySchemaElement::attributeName)
         .toList();
   }
 
