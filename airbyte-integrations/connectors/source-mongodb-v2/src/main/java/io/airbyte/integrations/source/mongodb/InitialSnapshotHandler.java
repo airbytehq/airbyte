@@ -61,9 +61,9 @@ public class InitialSnapshotHandler {
           final var fields = Projections.fields(Projections.include(CatalogHelpers.getTopLevelFieldNames(airbyteStream).stream().toList()));
 
           final var idTypes = aggregateIdField(collection);
-          // if (idTypes.size() > 1) {
-          //   throw new ConfigErrorException("The _id fields in a collection must be consistently typed (collection = " + collectionName + ").");
-          // }
+          if (idTypes.size() > 1) {
+            LOGGER.warn("The _id fields in this collection are not consistently typed, which may lead to data loss (collection = " + collectionName + ").");
+          }
 
           idTypes.stream().findFirst().ifPresent(idType -> {
             if (IdType.findByBsonType(idType).isEmpty()) {
