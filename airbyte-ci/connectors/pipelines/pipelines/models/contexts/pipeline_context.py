@@ -219,7 +219,9 @@ class PipelineContext:
         return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
 
     def _should_send_status_check(self) -> bool:
-        return self.is_pr or any(self.pipeline_name.startswith(override) for override in MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES)
+        should_send = self.is_pr or any(self.pipeline_name.startswith(override) for override in MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES)
+        self.logger.info(f"Should send status check: {should_send}")
+        return should_send
 
     def get_repo_file(self, file_path: str) -> File:
         """Get a file from the current repository.
