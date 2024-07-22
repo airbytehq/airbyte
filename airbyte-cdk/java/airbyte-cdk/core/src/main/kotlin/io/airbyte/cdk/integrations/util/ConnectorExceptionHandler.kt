@@ -191,7 +191,7 @@ open class ConnectorExceptionHandler {
             return true
         }
         for (error in connectorErrorDictionary) {
-            if (e.message?.matches(error.regexMatchingPattern.toRegex())!!) return true
+            if (e.message!!.matches(error.regexMatchingPattern.toRegex())) return true
         }
         return false
     }

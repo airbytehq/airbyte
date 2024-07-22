@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:-----------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.43.1     | 2024-07-22 | [\#42417](https://github.com/airbytehq/airbyte/pull/42417) | Handle null exception message in ConnectorExceptionHandler. |
 | 0.43.0     | 2024-07-17 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | fix refreshes for connectors using the old SqlOperations                                                 |
 | 0.43.0     | 2024-07-17 | [\#42017](https://github.com/airbytehq/airbyte/pull/42017) | bump postgres-jdbc version                                                 |
 | 0.43.0     | 2024-07-17 | [\#42015](https://github.com/airbytehq/airbyte/pull/42015) | wait until migration before creating the Writeconfig objects                                                 |
