@@ -165,7 +165,11 @@ object JdbcBufferedConsumerFactory {
                 when (writeConfig.minimumGenerationId) {
                     writeConfig.generationId ->
                         queryList.add(
-                            sqlOperations.truncateTableQuery(database, schemaName, dstTableName)
+                            sqlOperations.truncateTableQuery(
+                                database,
+                                schemaName,
+                                dstTableName,
+                            )
                         )
                     0L -> {}
                     else ->
@@ -213,7 +217,9 @@ object JdbcBufferedConsumerFactory {
                 database,
                 ArrayList(records),
                 writeConfig.rawNamespace,
-                writeConfig.rawTableName
+                writeConfig.rawTableName,
+                writeConfig.syncId,
+                writeConfig.generationId,
             )
         }
     }

@@ -163,9 +163,9 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     override fun truncateTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        tableName: String?
+        database: JdbcDatabase,
+        schemaName: String,
+        tableName: String,
     ): String {
         return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName)
     }
@@ -225,10 +225,12 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long
     ) {
         if (isDestinationV2) {
-            insertRecordsInternalV2(database, records, schemaName, tableName)
+            insertRecordsInternalV2(database, records, schemaName, tableName, syncId, generationId)
         } else {
             insertRecordsInternal(database, records, schemaName, tableName)
         }
@@ -247,7 +249,9 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     companion object {
