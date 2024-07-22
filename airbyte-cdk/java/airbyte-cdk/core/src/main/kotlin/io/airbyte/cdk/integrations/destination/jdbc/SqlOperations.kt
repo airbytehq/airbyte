@@ -117,7 +117,7 @@ interface SqlOperations {
         database: JdbcDatabase?,
         schemaName: String?,
         sourceTableName: String?,
-        destinationTableName: String?
+        destinationTableName: String?,
     ): String?
 
     /**
@@ -131,6 +131,22 @@ interface SqlOperations {
 
     /** Check if the data record is valid and ok to be written to destination */
     fun isValidData(data: JsonNode?): Boolean
+
+    /**
+     * check if there's any row in table {@code rawNamespace.rawName} for which the value of the
+     * _airbyte_generation_id column is different from {@code generationId}
+     *
+     * @returns true if the table exists and contains such a row, false otherwise
+     */
+    fun isOtherGenerationIdInTable(
+        database: JdbcDatabase,
+        generationId: Long,
+        rawNamespace: String,
+        rawName: String
+    ): Boolean
+
+    /** overwrite the raw table with the temporary raw table */
+    fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String)
 
     /**
      * Denotes whether the destination has the concept of schema or not
