@@ -491,7 +491,20 @@ class ShopifyBulkManager:
             self._job_size_reduce_next()
             return slice_start
 
+        # reseting the checkpoint flag, if bulk job has completed normally
+        self._job_adjust_slice_from_checkpoint = False
+        
         return slice_end
+
+    def _emit_final_job_message(self, job_current_elapsed_time: int) -> None:
+        final_message = f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` time elapsed: {job_current_elapsed_time} sec."
+
+        if self._job_any_lines_collected:
+            lines_collected_message = f" Rows collected: `{self._job_last_rec_count}`."
+            final_message = final_message + lines_collected_message
+            
+        # emit final Bulk job status message
+        self.logger.info(f"{final_message}")
 
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
     def job_check_for_completion(self) -> Optional[str]:
@@ -516,9 +529,8 @@ class ShopifyBulkManager:
             raise bulk_job_error
         finally:
             job_current_elapsed_time = round((time() - job_started), 3)
-            self.logger.info(
-                f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` time elapsed: {job_current_elapsed_time} sec. Lines collected: `{self._job_last_rec_count}`."
-            )
+            # emit the final Bulk Job log message
+            self._emit_final_job_message(job_current_elapsed_time)
             # check whether or not we should expand or reduce the size of the slice
             self.__adjust_job_size(job_current_elapsed_time)
             # reset the state for COMPLETED job

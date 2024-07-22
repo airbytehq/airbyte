@@ -649,7 +649,11 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         )
 
         # define Record Producer instance
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(
+            self.query,
+            self.state_checkpoint_interval,
+            self.cursor_field,
+        )
 
     @property
     def bulk_http_client(self) -> HttpClient:
@@ -738,6 +742,10 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.logger.info(
             f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}. {checkpointing_message}."
         )
+        
+    def emit_checkpoint_message(self) -> None:
+        if self.job_manager._job_adjust_slice_from_checkpoint:
+            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._checkpoint_cursor}`.")
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -775,3 +783,5 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.record_producer.read_file(filename)
             )
             yield from self.filter_records_newer_than_state(stream_state, records)
+            # add log message about the checkpoint value
+            self.emit_checkpoint_message()

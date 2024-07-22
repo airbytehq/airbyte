@@ -18,6 +18,8 @@ from .tools import END_OF_FILE, BulkTools
 @dataclass
 class ShopifyBulkRecord:
     query: ShopifyBulkQuery
+    checkpoint_interval: int
+    cursor_field: Optional[Union[int, str]]
 
     # default buffer
     buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
@@ -33,6 +35,13 @@ class ShopifyBulkRecord:
     @property
     def tools(self) -> BulkTools:
         return BulkTools()
+
+    @property
+    def default_cursor_comparison_value(self) -> Union[int, str]:
+        if self.cursor_field:
+            return 0 if self.cursor_field == "id" else ""
+        else:
+            return None
 
     @staticmethod
     def check_type(record: Mapping[str, Any], types: Union[List[str], str]) -> bool:
@@ -69,6 +78,21 @@ class ShopifyBulkRecord:
                 yield from self.record_process_components(record)
             # clean the buffer
             self.buffer.clear()
+       
+    def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        """
+        Apply sorting for collected records, to guarantee the `asc` output.
+        This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
+        """
+        if self.cursor_field:
+            yield from sorted(
+                non_sorted_records, 
+                key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_cursor_comparison_value,
+            )
+            # clear sorted output
+            non_sorted_records.clear()
+        else:
+            yield from non_sorted_records
 
     def record_compose(self, record: Mapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
@@ -124,11 +148,20 @@ class ShopifyBulkRecord:
         The filename example: `bulk-4039263649981.jsonl`,
             where `4039263649981` is the `id` of the COMPLETED BULK Jobw with `result_url`.
             Note: typically the `filename` is taken from the `result_url` string provided in the response.
+        
+        The output is sorted by ASC, if `cursor_field` has been provided to the `ShopifyBulkRecord` instance.
+        Otherwise, the records are emitted `as is`.
         """
-
+        output_buffer: List[Mapping[str, Any]] = []
+                
         with open(filename, "r") as jsonl_file:
             for record in self.process_line(jsonl_file):
-                yield self.tools.fields_names_to_snake_case(record)
+                output_buffer.append(self.tools.fields_names_to_snake_case(record))
+                if len(output_buffer) == self.checkpoint_interval:
+                    yield from self.sort_output_asc(output_buffer)
+
+            # emit what's left in the output buffer, typically last record
+            yield from self.sort_output_asc(output_buffer)
 
     def read_file(self, filename: str, remove_file: Optional[bool] = True) -> Iterable[Mapping[str, Any]]:
         try:
