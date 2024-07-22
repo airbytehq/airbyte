@@ -90,7 +90,6 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 raise AirbyteTracedException(failure_type=FailureType.config_error, internal_message=internal_message, message=e.args[0])
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
-        print("test!")
         self._validate_stream_slice_step(config.get("stream_slice_step"))
         salesforce = self._get_sf_object(config)
         salesforce.describe()
