@@ -14,6 +14,7 @@ from source_salesforce import SourceSalesforce
 
 
 def _get_source(args: List[str]):
+    print("testing!")
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
