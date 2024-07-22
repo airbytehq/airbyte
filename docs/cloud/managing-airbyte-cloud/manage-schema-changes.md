@@ -29,7 +29,7 @@ Based on your configured settings for **Detect and propagate schema changes**, A
 | Detect changes and manually approve        | Schema changes will be detected, but not propagated. Syncs will continue running with the schema you've set up. To propagate the detected schema changes, you will need to approve the changes manually                                    |
 | Detect changes and pause connection        | Connections will be automatically disabled as soon as any schema changes are detected                                                                                                                                                      |
 
-Airbyte currently checks for any changes in your source schema immediately before syncing, at most once every 24 hours. This means that your schema may not always be propagated before your sync.
+Airbyte currently checks for any changes in your source schema immediately before syncing, at most once every 15 minutes. This means that your schema may not always be propagated before your sync.
 
 :::tip
 Ensure you receive schema notifications for your connection by enabling notifications in the connection's settings.
