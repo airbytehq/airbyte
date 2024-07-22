@@ -267,7 +267,7 @@ class MongoDbCdcInitializerTest {
   void testUnableToExtractOffsetFromStateException() {
     final MongoDbStateManager stateManager =
         MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.COMPLETE), CONFIG);
-    doReturn(Optional.empty()).when(mongoDbDebeziumStateUtil).savedOffset(any(), any(), any(), any(), any());
+    doReturn(Optional.empty()).when(mongoDbDebeziumStateUtil).savedOffset(any(), any(), any(), any());
     assertThrows(RuntimeException.class,
         () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
             CONFIG));
@@ -307,7 +307,7 @@ class MongoDbCdcInitializerTest {
 
   private static JsonNode createInitialDebeziumState(final InitialSnapshotStatus initialSnapshotStatus) {
     final StreamDescriptor streamDescriptor = new StreamDescriptor().withNamespace(STREAM_NAMESPACE).withName(STREAM_NAME);
-    final MongoDbCdcState cdcState = new MongoDbCdcState(MongoDbDebeziumStateUtil.formatState(DATABASE, REPLICA_SET, RESUME_TOKEN1));
+    final MongoDbCdcState cdcState = new MongoDbCdcState(MongoDbDebeziumStateUtil.formatState(DATABASE, RESUME_TOKEN1));
     final MongoDbStreamState mongoDbStreamState = new MongoDbStreamState(ID, initialSnapshotStatus, IdType.OBJECT_ID);
     final JsonNode sharedState = Jsons.jsonNode(cdcState);
     final JsonNode streamState = Jsons.jsonNode(mongoDbStreamState);

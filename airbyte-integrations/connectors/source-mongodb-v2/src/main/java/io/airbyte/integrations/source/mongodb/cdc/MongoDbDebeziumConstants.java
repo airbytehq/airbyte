@@ -49,8 +49,8 @@ public class MongoDbDebeziumConstants {
    */
   public static class OffsetState {
 
-    public static final String KEY_REPLICA_SET = SourceInfo.REPLICA_SET_NAME;
-    public static final String KEY_SERVER_ID = SourceInfo.SERVER_ID_KEY;
+    // public static final String KEY_REPLICA_SET = SourceInfo.REPLICA_SET_NAME;
+    public static final String KEY_SERVER_ID = "server_id";
     public static final String VALUE_INCREMENT = SourceInfo.ORDER;
     public static final String VALUE_RESUME_TOKEN = "resume_token";
     public static final String VALUE_SECONDS = SourceInfo.TIMESTAMP;

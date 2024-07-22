@@ -34,6 +34,22 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 - [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
 - [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
 
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Sentry connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+:::warning
+**Sentry API Restriction on Events Data**: Access to the events endpoint is guaranteed only for the last 90 days by Sentry. If you use the Full Refresh Overwrite sync, be aware that any events data older than 90 days will be **deleted** from your target destination and replaced with the data from the last 90 days only. Use an Append sync mode to ensure historical data is retained.
+Please be aware: this also means that any change older than 90 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 90 days.
+:::
+
+</details>
+
 ## Data type map
 
 | Integration Type    | Airbyte Type |
@@ -49,6 +65,7 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| 0.5.3 | 2024-06-06 | [39180](https://github.com/airbytehq/airbyte/pull/39180) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.2 | 2024-05-20 | [38263](https://github.com/airbytehq/airbyte/pull/38263) | Replace AirbyteLogger with logging.Logger |
 | 0.5.1 | 2024-04-01 | [36731](https://github.com/airbytehq/airbyte/pull/36731) | Add `%Y-%m-%dT%H:%M:%S%z` to date time formats. |
 | 0.5.0 | 2024-03-27 | [35755](https://github.com/airbytehq/airbyte/pull/35755) | Migrate to low-code. |

@@ -6,8 +6,11 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addStringForDeinterpolation
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
 import java.util.function.Consumer
@@ -19,9 +22,32 @@ class CatalogParser
 @JvmOverloads
 constructor(
     private val sqlGenerator: SqlGenerator,
-    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+    private val defaultNamespace: String,
+    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
 ) {
-    fun parseCatalog(catalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+    fun parseCatalog(originalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+        if (originalCatalog.streams.isEmpty()) {
+            throw ConfigErrorException(
+                "The catalog contained no streams. This likely indicates a platform/configuration error."
+            )
+        }
+
+        // Don't mutate the original catalog, just operate on a copy of it
+        // This is... probably the easiest way we have to deep clone a protocol model object?
+        val catalog = Jsons.clone(originalCatalog)
+        catalog.streams.onEach {
+            // Overwrite null namespaces
+            if (it.stream.namespace.isNullOrEmpty()) {
+                it.stream.namespace = defaultNamespace
+            }
+            // The refreshes project is the beginning of the end for OVERWRITE syncs.
+            // The sync mode still exists, but we are fully dependent on min_generation to trigger
+            // overwrite logic.
+            if (it.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+                it.destinationSyncMode = DestinationSyncMode.APPEND
+            }
+        }
+
         // this code is bad and I feel bad
         // it's mostly a port of the old normalization logic to prevent tablename collisions.
         // tbh I have no idea if it works correctly.
@@ -109,10 +135,10 @@ constructor(
 
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
-        if (stream.generationId == null) {
-            stream.generationId = 0
-            stream.minimumGenerationId = 0
-            stream.syncId = 0
+        if (stream.generationId == null || stream.minimumGenerationId == null) {
+            throw ConfigErrorException(
+                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7"
+            )
         }
         if (
             stream.minimumGenerationId != 0.toLong() &&
@@ -149,7 +175,11 @@ constructor(
 
         return StreamConfig(
             sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            stream.destinationSyncMode,
+            when (stream.destinationSyncMode!!) {
+                DestinationSyncMode.APPEND,
+                DestinationSyncMode.OVERWRITE -> ImportType.APPEND
+                DestinationSyncMode.APPEND_DEDUP -> ImportType.DEDUPE
+            },
             primaryKey,
             cursor,
             columns,

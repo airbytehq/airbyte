@@ -3,9 +3,13 @@
 #
 
 import json
+import re
+from logging import Logger
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+from uuid import uuid4
 
+import dagger
 import pytest
 from airbyte_protocol.models import (
     AirbyteMessage,
@@ -13,16 +17,29 @@ from airbyte_protocol.models import (
     AirbyteStateStats,
     AirbyteStateType,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
     SyncMode,
     Type,
 )
 from connector_acceptance_test import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import ClientContainerConfig, Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
 
 MIN_BATCHES_TO_TEST: int = 5
+
+SCHEMA_TYPES_MAPPING = {
+    "str": str,
+    "string": str,
+    "int": int,
+    "integer": int,
+    "int32": int,
+    "int64": int,
+    "float": float,
+    "double": float,
+    "number": float,
+}
 
 
 @pytest.fixture(name="future_state_configuration")
@@ -85,6 +102,10 @@ def is_per_stream_state(message: AirbyteMessage) -> bool:
     return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.STREAM
 
 
+def is_global_state(message: AirbyteMessage) -> bool:
+    return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.GLOBAL
+
+
 def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict[str, Mapping[str, Any]]:
     """
     Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
@@ -118,6 +139,9 @@ class TestIncremental(BaseTest):
         connector_config: SecretDict,
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
         docker_runner: ConnectorRunner,
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
+        detailed_logger: Logger,
     ):
         """
         This test makes two calls to the read method and verifies that the records returned are different.
@@ -140,8 +164,7 @@ class TestIncremental(BaseTest):
 
         # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
         # the complete final state of streams must be assembled by going through all prior state messages received
-        is_per_stream = is_per_stream_state(states_1[-1])
-        if is_per_stream:
+        if is_per_stream_state(states_1[-1]):
             latest_state = construct_latest_state_from_messages(states_1)
             state_input = []
             for stream_name, stream_state in latest_state.items():
@@ -154,10 +177,19 @@ class TestIncremental(BaseTest):
                         "stream": {"stream_descriptor": stream_descriptor, "stream_state": stream_state},
                     }
                 )
+        elif is_global_state(states_1[-1]):
+            # TODO: DB sources to fill out this case
+            state_input = states_1[-1].state.data
         else:
             state_input = states_1[-1].state.data
 
         # READ #2
+        if client_container and client_container_config.between_syncs_command:
+            detailed_logger.info(
+                await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                .stdout()
+            )
 
         output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
         records_2 = filter_output(output_2, type_=Type.RECORD)
@@ -168,7 +200,14 @@ class TestIncremental(BaseTest):
         ), f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner
+        self,
+        inputs: IncrementalConfig,
+        connector_config,
+        configured_catalog_for_incremental,
+        docker_runner: ConnectorRunner,
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
+        detailed_logger: Logger,
     ):
         """
         Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
@@ -213,6 +252,13 @@ class TestIncremental(BaseTest):
                     state_message, mutating_stream_name_to_per_stream_state
                 )
 
+                if client_container and client_container_config.between_syncs_command:
+                    detailed_logger.info(
+                        await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                        .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                        .stdout()
+                    )
+
                 output_N = await docker_runner.call_read_with_state(
                     connector_config, configured_catalog_for_incremental_per_stream, state=state_input
                 )
@@ -224,13 +270,19 @@ class TestIncremental(BaseTest):
                     >= expected_records_count
                 ), f"Read {idx + 1} of {len(states_with_expected_record_count)} should produce at least one record.\n\n state: {state_input} \n\n records_{idx + 1}: {records_N}"
 
-                diff = naive_diff_records(records_1, records_N)
-                assert (
-                    diff
-                ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 1}: {records_N} \n\n diff: {diff}"
+                # Temporary comment this to avoid fake failures while handling corner cases such as:
+                # - start date is equal to the latest state checkpoint date and date compare condition is >=, so we have two equal sets of data
+                # - ...
+
+                # See this issue for more details: https://github.com/airbytehq/airbyte-internal-issues/issues/8056
+
+                # diff = naive_diff_records(records_1, records_N)
+                # assert (
+                #     diff
+                # ), f"Records for subsequent reads with new state should be different.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_{idx + 1}: {records_N} \n\n diff: {diff}"
 
     async def test_state_with_abnormally_large_values(
-        self, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
+        self, inputs: IncrementalConfig, connector_config, configured_catalog, future_state, docker_runner: ConnectorRunner
     ):
         configured_catalog = incremental_only_catalog(configured_catalog)
         output = await docker_runner.call_read_with_state(config=connector_config, catalog=configured_catalog, state=future_state)
@@ -241,6 +293,88 @@ class TestIncremental(BaseTest):
             not records
         ), f"The sync should produce no records when run with the state with abnormally large values {records[0].record.stream}"
         assert states, "The sync should produce at least one STATE message"
+
+        if states and is_global_state(states[0]):
+            # TODO: DB sources to fill out this case. Also, can we assume all states will be global if the first one is?
+            pass
+
+        # TODO: else:
+        cursor_fields_per_stream = {
+            stream.stream.name: self._get_cursor_field(stream)
+            for stream in configured_catalog.streams
+            if stream.sync_mode == SyncMode.incremental
+        }
+        actual_state_cursor_values_per_stream = {
+            state.state.stream.stream_descriptor.name: self._get_cursor_values_from_states_by_cursor(
+                state.state.stream.stream_state.dict(), cursor_fields_per_stream[state.state.stream.stream_descriptor.name]
+            )
+            for state in states
+        }
+        future_state_cursor_values_per_stream = {
+            state["stream"]["stream_descriptor"]["name"]: self._get_cursor_values_from_states_by_cursor(
+                state["stream"]["stream_state"], cursor_fields_per_stream[state["stream"]["stream_descriptor"]["name"]]
+            )
+            for state in future_state
+            if state["stream"]["stream_descriptor"]["name"] in cursor_fields_per_stream
+        }
+
+        assert all(future_state_cursor_values_per_stream.values()), "Future state must be set up for all given streams"
+
+        expected_cursor_value_schema_per_stream = {
+            # TODO: Check if cursor value may be a nested property. If so, then should I use ._get_cursor_values_from_states ?
+            stream.stream.name: stream.stream.json_schema["properties"][cursor_fields_per_stream[stream.stream.name]]
+            for stream in configured_catalog.streams
+        }
+
+        future_state_formatrs_per_stream = {stream.name: stream for stream in inputs.future_state.cursor_format.streams}
+        for stream in configured_catalog.streams:
+            pattern = future_state_formatrs_per_stream.get(stream.stream.name, inputs.future_state.cursor_format).format
+
+            # All streams must be defined in the abnormal_state.json file due to the high test strictness level rule.
+            # However, a state may not be present in the output if a stream was unavailable during sync.
+            # Ideally, this should not be the case, but in reality, it often happens.
+            # It is not the purpose of this test to check for this, so we just skip it here.
+            if stream.stream.name not in actual_state_cursor_values_per_stream:
+                continue
+
+            actual_cursor_values = actual_state_cursor_values_per_stream[stream.stream.name]
+            future_state_cursor_values = future_state_cursor_values_per_stream[stream.stream.name]
+
+            expected_types = self._get_cursor_value_types(expected_cursor_value_schema_per_stream[stream.stream.name]["type"])
+
+            for actual_cursor_value, future_state_cursor_value in zip(actual_cursor_values, future_state_cursor_values):
+
+                for _type in expected_types:
+
+                    if actual_cursor_value:
+                        assert isinstance(
+                            actual_cursor_value, _type
+                        ), f"Cursor value {actual_cursor_value} is not of type {_type}. Expected {_type}, got {type(actual_cursor_value)}"
+
+                    if future_state_cursor_value:
+                        assert isinstance(
+                            future_state_cursor_value, _type
+                        ), f"Cursor value {future_state_cursor_value} is not of type {_type}. Expected {_type}, got {type(future_state_cursor_value)}"
+
+                if not (actual_cursor_value and future_state_cursor_value):
+                    continue
+
+                # If the cursor value is numeric and the type check has passed, it means the format is correct
+                if isinstance(actual_cursor_value, (int, float)):
+                    continue
+
+                # When the data is of string type, we need to ensure the format is correct for both cursor values
+                if pattern:
+                    assert self._check_cursor_by_regex_match(
+                        actual_cursor_value, pattern
+                    ), f"Actual cursor value {actual_cursor_value} does not match pattern: {pattern}"
+                    assert self._check_cursor_by_regex_match(
+                        future_state_cursor_value, pattern
+                    ), f"Future cursor value {future_state_cursor_value} does not match pattern: {pattern}"
+                else:
+                    assert self._check_cursor_by_char_types(
+                        actual_cursor_value, future_state_cursor_value
+                    ), f"Actual and future state formats do not match. Actual cursor value: {actual_cursor_value}, future cursor value: {future_state_cursor_value}"
 
     def get_next_state_input(
         self, state_message: AirbyteStateMessage, stream_name_to_per_stream_state: MutableMapping
@@ -254,11 +388,74 @@ class TestIncremental(BaseTest):
                 stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
                     per_stream.stream_state.dict() if per_stream.stream_state else {}
                 )
+        elif current_state and current_state.type == AirbyteStateType.GLOBAL:
+            # TODO: DB Sources to fill in this case
+            pass
         state_input = [
             {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
             for stream_name, stream_state in stream_name_to_per_stream_state.items()
         ]
         return state_input, stream_name_to_per_stream_state
+
+    @staticmethod
+    def _get_cursor_values_from_states_by_cursor(states: Union[list, dict], cursor_field: str) -> List[Union[str, int]]:
+        values = []
+        nodes_to_visit = [states]
+
+        while nodes_to_visit:
+            current_node = nodes_to_visit.pop()
+
+            if isinstance(current_node, dict):
+                for key, value in current_node.items():
+                    if key == cursor_field:
+                        values.append(value)
+                    nodes_to_visit.append(value)
+            elif isinstance(current_node, list):
+                nodes_to_visit.extend(current_node)
+
+        return values
+
+    @staticmethod
+    def _check_cursor_by_char_types(actual_cursor: str, expected_cursor: str) -> bool:
+        if len(actual_cursor) != len(expected_cursor):
+            return False
+
+        for char1, char2 in zip(actual_cursor, expected_cursor):
+            if char1.isalpha() and char2.isalpha():
+                continue
+            elif char1.isdigit() and char2.isdigit():
+                continue
+            elif not char1.isalnum() and not char2.isalnum() and char1 == char2:
+                continue
+            else:
+                return False
+
+        return True
+
+    @staticmethod
+    def _check_cursor_by_regex_match(cursor: str, pattern: str) -> bool:
+        return bool(re.match(pattern, cursor))
+
+    @staticmethod
+    def _get_cursor_field(stream: ConfiguredAirbyteStream) -> Optional[str]:
+        cursor_field = stream.cursor_field or stream.stream.default_cursor_field
+        if cursor_field:
+            return next(iter(cursor_field))
+
+    @staticmethod
+    def _get_cursor_value_types(schema_type: Union[list, str]) -> List[Callable[..., Any]]:
+        if isinstance(schema_type, str):
+            schema_type = [schema_type]
+        types = []
+        for _type in schema_type:
+            if _type == "null":
+                continue
+
+            if _type not in SCHEMA_TYPES_MAPPING:
+                pytest.fail(f"Unsupported type: {_type}. Update SCHEMA_TYPES_MAPPING with the {_type} and its corresponding function")
+
+            types.append(SCHEMA_TYPES_MAPPING[_type])
+        return types
 
     @staticmethod
     def _get_state(airbyte_message: AirbyteMessage) -> AirbyteStateMessage:

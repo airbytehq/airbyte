@@ -122,6 +122,8 @@ def retry_connection_handler(**kwargs):
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
     def giveup_handler(exc):
+        if isinstance(exc, json.decoder.JSONDecodeError):
+            return False
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
             return True
         return exc.response is not None and HTTPStatus.BAD_REQUEST <= exc.response.status_code < HTTPStatus.INTERNAL_SERVER_ERROR
@@ -1001,9 +1003,6 @@ class IncrementalStream(Stream, ABC):
         if self.last_slice:
             is_last_slice = stream_slice == self.last_slice
         self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        return self.state
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -2316,15 +2315,6 @@ class WebAnalyticsStream(CheckpointMixin, HttpSubStream, Stream):
             "$ref": "default_event_properties.json",
         }
         return ResourceSchemaLoader("source_hubspot")._resolve_schema_references(raw_schema=raw_schema)
-
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> MutableMapping[str, Any]:
-        """
-        Returns current state. At the moment when this method is called by sources we already have updated state stored in self._state,
-        because it is calculated each time we produce new record
-        """
-        return self.state
 
     def get_latest_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]

@@ -100,7 +100,7 @@ class SnowflakeStagingClientTest {
             inOrder
                 .verify(database)
                 .queryJsons(
-                    stagingClient.getCopyQuery(stageName, stagingPath, stagedFiles, streamId)
+                    stagingClient.getCopyQuery(stageName, stagingPath, stagedFiles, streamId, "")
                 )
             verifyNoMoreInteractions(database)
         }

@@ -2,8 +2,12 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
+        timeout_seconds: 7200
         expect_records:
           path: integration_tests/expected_records.jsonl
+        empty_streams:
+          - name: "lists_detailed"
+            bypass_reason: "Low rate limit threshold"
   connection:
     tests:
       - config_path: secrets/config.json
@@ -18,7 +22,8 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: secrets/config.json
-      - configured_catalog_path: integration_tests/configured_catalog.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        timeout_seconds: 7200
   incremental:
     tests:
       - config_path: secrets/config.json
@@ -26,6 +31,7 @@ acceptance_tests:
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         skip_comprehensive_incremental_tests: true
+        timeout_seconds: 7200
   spec:
     tests:
       - spec_path: source_klaviyo/spec.json

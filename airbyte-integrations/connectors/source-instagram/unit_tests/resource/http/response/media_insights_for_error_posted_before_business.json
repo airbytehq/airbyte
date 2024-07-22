@@ -1,0 +1,15 @@
+{
+  "error": {
+    "message": "Invalid parameter",
+    "type": "OAuthException",
+    "code": 100,
+    "error_data": {
+      "blame_field_specs": [[""]]
+    },
+    "error_subcode": 2108006,
+    "is_transient": false,
+    "error_user_title": "Media posted before business account conversion",
+    "error_user_msg": "The media was posted before the most recent time that the user's account was converted to a business account from a personal account.",
+    "fbtrace_id": "AVul-nTRBqOlFGJxWKQv1g-"
+  }
+}

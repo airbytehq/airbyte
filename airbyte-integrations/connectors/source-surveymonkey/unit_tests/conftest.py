@@ -8,7 +8,6 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_surveymonkey.source import SourceSurveymonkey
 
 
@@ -34,7 +33,7 @@ def read_records_fixture(config):
 @pytest.fixture
 def args_mock():
     return {
-        "authenticator": NoAuth(),
+        "authenticator": None,
         "start_date": pendulum.parse("2000-01-01"),
         "survey_ids": []
     }

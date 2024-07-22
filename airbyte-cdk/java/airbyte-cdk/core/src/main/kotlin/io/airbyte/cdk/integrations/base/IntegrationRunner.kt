@@ -8,8 +8,7 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions
 import com.google.common.collect.Lists
 import datadog.trace.api.Trace
-import io.airbyte.cdk.integrations.util.ApmTraceUtils
-import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
+import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.cdk.integrations.util.concurrent.ConcurrentStreamConsumer
 import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.features.FeatureFlags
@@ -110,17 +109,24 @@ internal constructor(
 
     @Trace(operationName = "RUN_OPERATION")
     @Throws(Exception::class)
-    fun run(args: Array<String>) {
+    @JvmOverloads
+    fun run(
+        args: Array<String>,
+        exceptionHandler: ConnectorExceptionHandler = ConnectorExceptionHandler()
+    ) {
         val parsed = cliParser.parse(args)
         try {
-            runInternal(parsed)
+            runInternal(parsed, exceptionHandler)
         } catch (e: Exception) {
             throw e
         }
     }
 
     @Throws(Exception::class)
-    private fun runInternal(parsed: IntegrationConfig) {
+    private fun runInternal(
+        parsed: IntegrationConfig,
+        exceptionHandler: ConnectorExceptionHandler
+    ) {
         LOGGER.info { "Running integration: ${integration.javaClass.name}" }
         LOGGER.info { "Command: ${parsed.command}" }
         LOGGER.info { "Integration config: $parsed" }
@@ -213,58 +219,8 @@ internal constructor(
                 }
             }
         } catch (e: Exception) {
-            // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An
-            // attempt is made
-            // to
-            // find the root exception that corresponds to a configuration error. If that does not
-            // exist, we
-            // just return the original exception.
-            ApmTraceUtils.addExceptionToTrace(e)
-            val rootConfigErrorThrowable = ConnectorExceptionUtil.getRootConfigError(e)
-            val rootTransientErrorThrowable = ConnectorExceptionUtil.getRootTransientError(e)
-            // If the source connector throws a config error, a trace message with the relevant
-            // message should
-            // be surfaced.
-            if (parsed.command == Command.CHECK) {
-                // Currently, special handling is required for the CHECK case since the user display
-                // information in
-                // the trace message is
-                // not properly surfaced to the FE. In the future, we can remove this and just throw
-                // an exception.
-                outputRecordCollector.accept(
-                    AirbyteMessage()
-                        .withType(AirbyteMessage.Type.CONNECTION_STATUS)
-                        .withConnectionStatus(
-                            AirbyteConnectionStatus()
-                                .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                                .withMessage(
-                                    ConnectorExceptionUtil.getDisplayMessage(
-                                        rootConfigErrorThrowable
-                                    )
-                                )
-                        )
-                )
-                return
-            }
-
-            if (ConnectorExceptionUtil.isConfigError(rootConfigErrorThrowable)) {
-                AirbyteTraceMessageUtility.emitConfigErrorTrace(
-                    e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootConfigErrorThrowable),
-                )
-                // On receiving a config error, the container should be immediately shut down.
-                System.exit(1)
-            } else if (ConnectorExceptionUtil.isTransientError(rootTransientErrorThrowable)) {
-                AirbyteTraceMessageUtility.emitTransientErrorTrace(
-                    e,
-                    ConnectorExceptionUtil.getDisplayMessage(rootTransientErrorThrowable)
-                )
-                // On receiving a transient error, the container should be immediately shut down.
-                System.exit(1)
-            }
-            throw e
+            exceptionHandler.handleException(e, parsed.command, outputRecordCollector)
         }
-
         LOGGER.info { "Completed integration: ${integration.javaClass.name}" }
     }
 

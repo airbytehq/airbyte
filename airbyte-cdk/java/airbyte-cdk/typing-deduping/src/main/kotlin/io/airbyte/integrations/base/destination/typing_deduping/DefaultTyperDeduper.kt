@@ -12,7 +12,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.prepareSchemas
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
@@ -154,7 +153,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info { "Final Table exists for stream ${stream.id.finalName}" }
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
-                        if (stream.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+                        if (stream.generationId == stream.minimumGenerationId) {
                             if (!initialState.isFinalTableEmpty || initialState.isSchemaMismatch) {
                                 // We want to overwrite an existing table. Write into a tmp table.
                                 // We'll overwrite the table at the
@@ -287,18 +286,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     return@filter false
                 }
                 // Skip if we don't have any records for this stream.
-                val streamSyncSummary =
-                    streamSyncSummaries.getOrDefault(
-                        streamConfig.id.asStreamDescriptor(),
-                        StreamSyncSummary.DEFAULT
-                    )
-                val nonzeroRecords =
-                    streamSyncSummary.recordsWritten
-                        .map { r: Long ->
-                            r > 0
-                        } // If we didn't track record counts during the sync, assume we had nonzero
-                        // records for this stream
-                        .orElse(true)
+                val streamSyncSummary = streamSyncSummaries[streamConfig.id.asStreamDescriptor()]!!
+                val nonzeroRecords = streamSyncSummary.recordsWritten > 0
                 val unprocessedRecordsPreexist =
                     initialRawTableStateByStream[streamConfig.id]!!.hasUnprocessedRecords
                 // If this sync emitted records, or the previous sync left behind some unprocessed
@@ -345,7 +334,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 }
                 continue
             }
-            if (DestinationSyncMode.OVERWRITE == streamConfig.destinationSyncMode) {
+            if (streamConfig.generationId == streamConfig.minimumGenerationId) {
                 tableCommitTasks.add(commitFinalTableTask(streamConfig))
             }
         }

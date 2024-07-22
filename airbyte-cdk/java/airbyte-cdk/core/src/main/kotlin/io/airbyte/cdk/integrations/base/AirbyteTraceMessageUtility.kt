@@ -3,6 +3,8 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import io.airbyte.commons.exceptions.ConfigErrorException
+import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder
 import io.airbyte.protocol.models.v0.*
 import java.time.Instant
@@ -16,12 +18,30 @@ object AirbyteTraceMessageUtility {
 
     @JvmStatic
     fun emitConfigErrorTrace(e: Throwable, displayMessage: String?) {
-        emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+        if (e is ConfigErrorException) {
+            emitErrorTrace(
+                e,
+                displayMessage,
+                AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR,
+                e.internalMessage,
+            )
+        } else {
+            emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+        }
     }
 
     @JvmStatic
     fun emitTransientErrorTrace(e: Throwable, displayMessage: String?) {
-        emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR)
+        if (e is TransientErrorException) {
+            emitErrorTrace(
+                e,
+                displayMessage,
+                AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR,
+                e.internalMessage,
+            )
+        } else {
+            emitErrorTrace(e, displayMessage, AirbyteErrorTraceMessage.FailureType.TRANSIENT_ERROR)
+        }
     }
 
     fun emitCustomErrorTrace(displayMessage: String?, internalMessage: String?) {
@@ -70,9 +90,10 @@ object AirbyteTraceMessageUtility {
     fun emitErrorTrace(
         e: Throwable,
         displayMessage: String?,
-        failureType: AirbyteErrorTraceMessage.FailureType
+        failureType: AirbyteErrorTraceMessage.FailureType,
+        internalMessage: String = "",
     ) {
-        emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType))
+        emitMessage(makeErrorTraceAirbyteMessage(e, displayMessage, failureType, internalMessage))
     }
 
     @JvmStatic
@@ -96,18 +117,25 @@ object AirbyteTraceMessageUtility {
         outputRecordCollector.accept(message)
     }
 
-    private fun makeErrorTraceAirbyteMessage(
+    fun makeErrorTraceAirbyteMessage(
         e: Throwable,
         displayMessage: String?,
-        failureType: AirbyteErrorTraceMessage.FailureType
+        failureType: AirbyteErrorTraceMessage.FailureType,
+        internalMessage: String = "",
     ): AirbyteMessage {
+        val actualInternalMessage: String =
+            if (internalMessage.isEmpty()) {
+                e.toString()
+            } else {
+                internalMessage + "\n" + e.toString()
+            }
         return makeAirbyteMessageFromTraceMessage(
             makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
                 .withError(
                     AirbyteErrorTraceMessage()
                         .withFailureType(failureType)
                         .withMessage(displayMessage)
-                        .withInternalMessage(e.toString())
+                        .withInternalMessage(actualInternalMessage)
                         .withStackTrace(ExceptionUtils.getStackTrace(e))
                 )
         )

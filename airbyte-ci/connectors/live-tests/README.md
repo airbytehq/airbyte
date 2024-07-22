@@ -280,6 +280,30 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.18.1
+
+Fix extra argument.
+
+### 0.18.0
+
+Add support for selecting from a subset of connections.
+
+### 0.17.8
+
+Fix the self-signed certificate path we bind to Python connectors.
+
+### 0.17.7
+
+Explicitly pass the control version to the connection retriever. Defaults to the latest released version of the connector under test.
+
+### 0.17.6
+
+Display diagnostic test with warning.
+
+### 0.17.5
+
+Performance improvements using caching.
+
 ### 0.17.4
 
 Fix control image when running tests in CI.
