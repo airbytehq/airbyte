@@ -188,11 +188,6 @@ class TestPostsCommentsStreamIncremental(TestCase):
         """
         api_token_authenticator = self._get_authenticator(self._config)
 
-        # Ticket Forms mock. Will be the same for check availability and read requests
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
-        # Posts mock for check availability request
-        _ = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
-
         state_start_date = pendulum.parse(self._config["start_date"]).add(years=1)
         first_page_record_updated_at = state_start_date.add(months=1)
         last_page_record_updated_at = first_page_record_updated_at.add(months=2)
@@ -204,15 +199,6 @@ class TestPostsCommentsStreamIncremental(TestCase):
 
         post_comments_first_record_builder = PostsCommentsRecordBuilder.posts_commetns_record().with_field(
             FieldPath("updated_at"), datetime_to_string(first_page_record_updated_at)
-        )
-
-        # Check availability request mock
-        http_mocker.get(
-            PostsCommentsRequestBuilder.posts_comments_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
-            PostsCommentsResponseBuilder.posts_comments_response().with_record(PostsCommentsRecordBuilder.posts_commetns_record()).build(),
         )
 
         # Read first page request mock

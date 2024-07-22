@@ -89,6 +89,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| 0.3.8 | 2024-07-20 | [42200](https://github.com/airbytehq/airbyte/pull/42200) | Update dependencies |
 | 0.3.7 | 2024-07-13 | [41780](https://github.com/airbytehq/airbyte/pull/41780) | Update dependencies |
 | 0.3.6 | 2024-07-10 | [41437](https://github.com/airbytehq/airbyte/pull/41437) | Update dependencies |
 | 0.3.5 | 2024-07-09 | [41088](https://github.com/airbytehq/airbyte/pull/41088) | Update dependencies |
