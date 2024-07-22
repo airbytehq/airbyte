@@ -12,7 +12,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction, FailureType
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from requests import Response
 from source_klaviyo.components.klaviyo_backoff_strategy import KlaviyoBackoffStrategy
 
@@ -258,6 +260,14 @@ class CampaignsDetailed(Campaigns):
                 url=f"{self.url_base}campaign-messages/{message_id}", request_kwargs={}, headers=self.request_headers(), http_method="GET"
             )
             record["campaign_message"] = campaign_message_response.json().get("data")
+
+    def get_error_handler(self) -> ErrorHandler:
+
+        error_mapping =  DEFAULT_ERROR_MAPPING |{
+            404: ErrorResolution(ResponseAction.IGNORE, FailureType.config_error, "Resource not found")
+        }
+
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
 
 
 class Flows(IncrementalKlaviyoStreamWithArchivedRecords):
