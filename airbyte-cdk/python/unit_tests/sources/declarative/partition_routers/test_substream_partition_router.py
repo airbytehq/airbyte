@@ -2,15 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pytest as pytest
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.incremental import ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.types import Record
+from airbyte_cdk.utils import AirbyteTracedException
 
 parent_records = [{"id": 1, "data": "data1"}, {"id": 2, "data": "data2"}]
 more_records = [{"id": 10, "data": "data10", "slice": "second_parent"}, {"id": 20, "data": "data20", "slice": "second_parent"}]
@@ -31,12 +35,18 @@ all_parent_data_with_cursor = data_first_parent_slice_with_cursor + data_second_
 
 
 class MockStream(DeclarativeStream):
-    def __init__(self, slices, records, name, cursor_field=None):
+    def __init__(self, slices, records, name, cursor_field="", cursor=None):
+        self.config = {}
         self._slices = slices
         self._records = records
-        self._cursor_field = cursor_field
+        self._stream_cursor_field = (
+            InterpolatedString.create(cursor_field, parameters={})
+            if isinstance(cursor_field, str)
+            else cursor_field
+        )
         self._name = name
         self._state = {"states": []}
+        self._cursor = cursor
 
     @property
     def name(self) -> str:
@@ -53,6 +63,13 @@ class MockStream(DeclarativeStream):
     @state.setter
     def state(self, value: Mapping[str, Any]) -> None:
         self._state = value
+
+    @property
+    def is_resumable(self) -> bool:
+        return bool(self._cursor)
+
+    def get_cursor(self) -> Optional[Cursor]:
+        return self._cursor
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -76,13 +93,74 @@ class MockStream(DeclarativeStream):
         if not stream_slice:
             result = self._records
         else:
-            result = [r for r in self._records if r["slice"] == stream_slice["slice"]]
+            result = [Record(data=r, associated_slice=stream_slice) for r in self._records if r["slice"] == stream_slice["slice"]]
 
         yield from result
 
         # Update the state only after reading the full slice
-        if stream_slice and self._cursor_field and result:
-            self._state["states"].append({self._cursor_field: result[-1][self._cursor_field], "partition": stream_slice["slice"]})
+        cursor_field = self._stream_cursor_field.eval(config=self.config)
+        if stream_slice and cursor_field and result:
+            self._state["states"].append({cursor_field: result[-1][cursor_field], "partition": stream_slice["slice"]})
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
+
+class MockIncrementalStream(MockStream):
+    def __init__(self, slices, records, name, cursor_field="", cursor=None, date_ranges=None):
+        super().__init__(slices, records, name, cursor_field, cursor)
+        if date_ranges is None:
+            date_ranges = []
+        self._date_ranges = date_ranges
+        self._state = {}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        results = [record for record in self._records if stream_slice["start_time"] <= record["updated_at"] <= stream_slice["end_time"]]
+        print(f"about to emit {results}")
+        yield from results
+        print(f"setting state to {stream_slice}")
+        self._state = stream_slice
+
+
+class MockResumableFullRefreshStream(MockStream):
+    def __init__(self, slices, name, cursor_field="", cursor=None, record_pages: Optional[List[List[Mapping[str, Any]]]] = None):
+        super().__init__(slices, [], name, cursor_field, cursor)
+        if record_pages:
+            self._record_pages = record_pages
+        else:
+            self._record_pages = []
+        self._state: MutableMapping[str, Any] = {}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        page_number = self.state.get("next_page_token") or 1
+        yield from self._record_pages[page_number - 1]
+
+        cursor = self.get_cursor()
+        if page_number < len(self._record_pages):
+            cursor.close_slice(StreamSlice(cursor_slice={"next_page_token": page_number + 1}, partition={}))
+        else:
+            cursor.close_slice(StreamSlice(cursor_slice={"__ab_full_refresh_sync_complete": True}, partition={}))
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        cursor = self.get_cursor()
+        return cursor.get_stream_state() if cursor else {}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]) -> None:
+        self._state = value
 
 
 @pytest.mark.parametrize(
@@ -218,7 +296,7 @@ class MockStream(DeclarativeStream):
         "test_dpath_extraction",
     ],
 )
-def test_substream_slicer(parent_stream_configs, expected_slices):
+def test_substream_partition_router(parent_stream_configs, expected_slices):
     if expected_slices is None:
         try:
             SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
@@ -228,6 +306,23 @@ def test_substream_slicer(parent_stream_configs, expected_slices):
     partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
     slices = [s for s in partition_router.stream_slices()]
     assert slices == expected_slices
+
+
+def test_substream_partition_router_invalid_parent_record_type():
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[ParentStreamConfig(
+            stream=MockStream([{}], [list()], "first_stream"),
+            parent_key="id",
+            partition_field="first_stream_id",
+            parameters={},
+            config={},
+        )],
+        parameters={},
+        config={}
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        _ = [s for s in partition_router.stream_slices()]
 
 
 @pytest.mark.parametrize(
@@ -465,3 +560,172 @@ def test_given_record_is_record_object_when_stream_slices_then_use_record_data()
 
     slices = list(partition_router.stream_slices())
     assert slices == [{"partition_field": "record value", "parent_slice": parent_slice}]
+
+
+def test_substream_using_incremental_parent_stream():
+    mock_slices = [
+        StreamSlice(cursor_slice={"start_time": "2024-04-27", "end_time": "2024-05-27"}, partition={}),
+        StreamSlice(cursor_slice={"start_time": "2024-05-27", "end_time": "2024-06-27"}, partition={}),
+    ]
+
+    expected_slices = [
+        {"partition_field": "may_record_0", "parent_slice": {}},
+        {"partition_field": "may_record_1", "parent_slice": {}},
+        {"partition_field": "jun_record_0", "parent_slice": {}},
+        {"partition_field": "jun_record_1", "parent_slice": {}},
+    ]
+
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockIncrementalStream(
+                    slices=mock_slices,
+                    records=[
+                        Record({"id": "may_record_0", "updated_at": "2024-05-15"}, mock_slices[0]),
+                        Record({"id": "may_record_1", "updated_at": "2024-05-16"}, mock_slices[0]),
+                        Record({"id": "jun_record_0", "updated_at": "2024-06-15"}, mock_slices[1]),
+                        Record({"id": "jun_record_1", "updated_at": "2024-06-16"}, mock_slices[1]),
+                    ],
+                    name="first_stream",
+                ),
+                parent_key="id",
+                partition_field="partition_field",
+                parameters={},
+                config={},
+            )
+        ],
+        parameters={},
+        config={},
+    )
+
+    actual_slices = list(partition_router.stream_slices())
+    assert actual_slices == expected_slices
+
+
+def test_substream_checkpoints_after_each_parent_partition():
+    """
+    This test validates the specific behavior that when getting all parent records for a substream,
+    we are still updating state so that the parent stream's state is updated after we finish getting all
+    parent records for the parent slice (not just the substream)
+    """
+    mock_slices = [
+        StreamSlice(cursor_slice={"start_time": "2024-04-27", "end_time": "2024-05-27"}, partition={}),
+        StreamSlice(cursor_slice={"start_time": "2024-05-27", "end_time": "2024-06-27"}, partition={}),
+    ]
+
+    expected_slices = [
+        {"partition_field": "may_record_0", "parent_slice": {}},
+        {"partition_field": "may_record_1", "parent_slice": {}},
+        {"partition_field": "jun_record_0", "parent_slice": {}},
+        {"partition_field": "jun_record_1", "parent_slice": {}},
+    ]
+
+    expected_parent_state = [
+        {"start_time": "2024-04-27", "end_time": "2024-05-27"},
+        {"start_time": "2024-04-27", "end_time": "2024-05-27"},
+        {"start_time": "2024-05-27", "end_time": "2024-06-27"},
+        {"start_time": "2024-05-27", "end_time": "2024-06-27"},
+    ]
+
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockIncrementalStream(
+                    slices=mock_slices,
+                    records=[
+                        Record({"id": "may_record_0", "updated_at": "2024-05-15"}, mock_slices[0]),
+                        Record({"id": "may_record_1", "updated_at": "2024-05-16"}, mock_slices[0]),
+                        Record({"id": "jun_record_0", "updated_at": "2024-06-15"}, mock_slices[1]),
+                        Record({"id": "jun_record_1", "updated_at": "2024-06-16"}, mock_slices[1]),
+                    ],
+                    name="first_stream",
+                ),
+                incremental_dependency=True,
+                parent_key="id",
+                partition_field="partition_field",
+                parameters={},
+                config={},
+            )
+        ],
+        parameters={},
+        config={},
+    )
+
+    expected_counter = 0
+    for actual_slice in partition_router.stream_slices():
+        assert actual_slice == expected_slices[expected_counter]
+        assert partition_router._parent_state["first_stream"] == expected_parent_state[expected_counter]
+        expected_counter += 1
+
+
+@pytest.mark.parametrize(
+    "use_incremental_dependency",
+    [
+        pytest.param(False, id="test_resumable_full_refresh_stream_without_parent_checkpoint"),
+        pytest.param(True, id="test_resumable_full_refresh_stream_with_use_incremental_dependency_for_parent_checkpoint"),
+    ]
+)
+def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_dependency):
+    mock_slices = [
+        StreamSlice(cursor_slice={}, partition={}),
+        StreamSlice(cursor_slice={"next_page_token": 2}, partition={}),
+        StreamSlice(cursor_slice={"next_page_token": 3}, partition={}),
+    ]
+
+    expected_slices = [
+        {"partition_field": "makoto_yuki", "parent_slice": {}},
+        {"partition_field": "yukari_takeba", "parent_slice": {}},
+        {"partition_field": "mitsuru_kirijo", "parent_slice": {}},
+        {"partition_field": "akihiko_sanada", "parent_slice": {}},
+        {"partition_field": "junpei_iori", "parent_slice": {}},
+        {"partition_field": "fuuka_yamagishi", "parent_slice": {}},
+    ]
+
+    expected_parent_state = [
+        {"next_page_token": 2},
+        {"next_page_token": 2},
+        {"next_page_token": 3},
+        {"next_page_token": 3},
+        {'__ab_full_refresh_sync_complete': True},
+        {'__ab_full_refresh_sync_complete': True},
+    ]
+
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockResumableFullRefreshStream(
+                    slices=[StreamSlice(partition={}, cursor_slice={})],
+                    cursor=ResumableFullRefreshCursor(parameters={}),
+                    record_pages=[
+                        [
+                            Record(data={"id": "makoto_yuki"}, associated_slice=mock_slices[0]),
+                            Record(data={"id": "yukari_takeba"}, associated_slice=mock_slices[0]),
+                        ],
+                        [
+                            Record(data={"id": "mitsuru_kirijo"}, associated_slice=mock_slices[1]),
+                            Record(data={"id": "akihiko_sanada"}, associated_slice=mock_slices[1]),
+                        ],
+                        [
+                            Record(data={"id": "junpei_iori"}, associated_slice=mock_slices[2]),
+                            Record(data={"id": "fuuka_yamagishi"}, associated_slice=mock_slices[2]),
+                        ],
+                    ],
+                    name="persona_3_characters",
+                ),
+                incremental_dependency=use_incremental_dependency,
+                parent_key="id",
+                partition_field="partition_field",
+                parameters={},
+                config={},
+            )
+        ],
+        parameters={},
+        config={},
+    )
+
+    expected_counter = 0
+    for actual_slice in partition_router.stream_slices():
+        assert actual_slice == expected_slices[expected_counter]
+        if use_incremental_dependency:
+            assert partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter]
+        expected_counter += 1

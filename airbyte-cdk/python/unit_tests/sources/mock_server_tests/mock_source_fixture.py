@@ -371,9 +371,9 @@ class JusticeSongs(HttpStream, CheckpointMixin, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_page(cursor_field, stream_slice, stream_state)
+        yield from self._read_single_page(cursor_field, stream_slice, stream_state)
 
-    def _read_page(
+    def _read_single_page(
         self,
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
@@ -383,16 +383,19 @@ class JusticeSongs(HttpStream, CheckpointMixin, ABC):
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        request, response = self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(
+                self.url_base,
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
+            request_kwargs=self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=request_headers,
             params=request_params,
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            dedupe_query_params=True,
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-        response = self._send_request(request, request_kwargs)
         yield from self.parse_response(response=response)
 
         self.next_page_token(response)
@@ -403,7 +406,7 @@ class JusticeSongs(HttpStream, CheckpointMixin, ABC):
         if has_more:
             self._state = {"page": current_page + 1}
         else:
-            self._state = None
+            self._state = {"__ab_full_refresh_sync_complete": True}
 
 
 class SourceFixture(AbstractSource):

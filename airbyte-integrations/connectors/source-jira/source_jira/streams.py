@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
+import logging as Logger
 import re
 import urllib.parse as urlparse
 from abc import ABC
@@ -29,9 +29,7 @@ class JiraAvailabilityStrategy(HttpAvailabilityStrategy):
     Inherit from HttpAvailabilityStrategy with slight modification to 403 and 401 error messages.
     """
 
-    def reasons_for_unavailable_status_codes(
-        self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError
-    ) -> Dict[int, str]:
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "Please check the 'READ' permission(Scopes for Connect apps) and/or the user has Jira Software rights and access.",
             requests.codes.UNAUTHORIZED: "Invalid creds were provided, please check your api token, domain and/or email.",

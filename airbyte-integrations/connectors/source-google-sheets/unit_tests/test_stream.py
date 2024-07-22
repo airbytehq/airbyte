@@ -187,6 +187,13 @@ def test_discover_could_not_run_discover(mocker, invalid_config):
     assert e.value.args[0] == expected_message
 
 
+def test_discover_invalid_credentials_error_message(mocker, invalid_config):
+    source = SourceGoogleSheets()
+    with pytest.raises(AirbyteTracedException) as e:
+        source.discover(logger=mocker.MagicMock(), config=invalid_config)
+    assert e.value.args[0] == 'Access to the spreadsheet expired or was revoked. Re-authenticate to restore access.'
+
+
 def test_get_credentials(invalid_config):
     expected_config = {
         "auth_type": "Client",

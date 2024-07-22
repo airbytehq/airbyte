@@ -565,6 +565,16 @@ def test_read_returns_error_response(mock_from_exception):
 def test_handle_429_response():
     response = _create_429_page_response({"result": [{"error": "too many requests"}], "_metadata": {"next": "next"}})
 
+    # Add backoff strategy to avoid default endless backoff loop
+    TEST_READ_CONFIG["__injected_declarative_manifest"]['definitions']['retriever']['requester']['error_handler'] = {
+        "backoff_strategies": [
+            {
+                "type": "ConstantBackoffStrategy",
+                "backoff_time_in_seconds": 5
+            }
+        ]
+    }
+
     config = TEST_READ_CONFIG
     limits = TestReadLimits()
     source = create_source(config, limits)

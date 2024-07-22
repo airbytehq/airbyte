@@ -8,6 +8,7 @@ from collections import defaultdict
 from collections.abc import Iterable, Iterator, MutableMapping
 from dataclasses import dataclass, field
 from enum import Enum
+from functools import cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -145,6 +146,11 @@ class TargetOrControl(Enum):
 class ActorType(Enum):
     SOURCE = "source"
     DESTINATION = "destination"
+
+
+class ConnectionSubset(Enum):
+    SANDBOXES = "sandboxes"
+    ALL = "all"
 
 
 @dataclass
@@ -348,6 +354,7 @@ class ExecutionResult:
                 statuses[message.trace.stream_status.stream_descriptor.name].append(message.trace.stream_status)
         return statuses
 
+    @cache
     def get_message_count_per_type(self) -> dict[AirbyteMessageType, int]:
         message_count: dict[AirbyteMessageType, int] = defaultdict(int)
         for message in self.airbyte_messages:
@@ -439,6 +446,9 @@ class ExecutionResult:
             self.logger.error(f"Failed to update {self.connector_under_test.name} configuration on actor {self.actor_id}: {e}")
             self.logger.error(f"Response: {response.text}")
         self.logger.info(f"Updated configuration for {self.connector_under_test.name}, actor {self.actor_id}")
+
+    def __hash__(self):
+        return hash(self.connector_under_test.version)
 
 
 @dataclass(kw_only=True)

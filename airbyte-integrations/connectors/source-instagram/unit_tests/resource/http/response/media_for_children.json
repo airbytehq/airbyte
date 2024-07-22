@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "caption": "a caption",
+      "comments_count": 0,
+      "id": "66123508374641123",
+      "ig_id": "2521545922090007555",
+      "is_comment_enabled": true,
+      "like_count": 8,
+      "media_type": "CAROUSEL_ALBUM",
+      "media_product_type": "FEED",
+      "media_url": "https://fakecontent.com/path/to/content",
+      "owner": {
+        "id": "41408147298757123"
+      },
+      "permalink": "https://instagram.com/permalink/123",
+      "shortcode": "HGagdsy38",
+      "timestamp": "2021-03-03T22:48:39+0000",
+      "username": "username",
+      "children": {
+        "data": [
+          {
+            "id": "07608776690540123"
+          },
+          {
+            "id": "52896800415362123"
+          },
+          {
+            "id": "39559889460059123"
+          },
+          {
+            "id": "17359925580923123"
+          }
+        ]
+      }
+    }
+  ],
+  "paging": {
+    "cursors": {
+      "before": "QVFIUnZA1cW5ldERDZAlFPOWdfN1NKal9PU2o3R0s5ekY4eGNfRXczN09ud2k2NlFuZA3IzVHd0dlU3cFdJYWw5aXdna0xPVHpCRjRMSUdTYUUzeEtBalp0VDd3"
+    }
+  }
+}
