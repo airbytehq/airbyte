@@ -80,7 +80,7 @@ def test_record_new(record, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
     record_instance = ShopifyBulkRecord(query)
     record_instance.record_new(record)
-    assert record_instance.buffer == [expected]
+    assert record_instance.input_buffer == [expected]
 
 
 @pytest.mark.parametrize(
@@ -116,15 +116,15 @@ def test_record_new_component(records_from_jsonl, record_components, expected) -
     record_instance.components = record_components.get("record_components")
     # register new record first
     record_instance.record_new(records_from_jsonl[0])
-    assert len(record_instance.buffer) > 0
+    assert len(record_instance.input_buffer) > 0
     # check the components placeholder was created for new record registered
-    assert "record_components" in record_instance.buffer[-1].keys()
+    assert "record_components" in record_instance.input_buffer[-1].keys()
     # register record component
     record_instance.record_new_component(records_from_jsonl[1])
     # check the component was proccessed
-    assert len(record_instance.buffer[-1]["record_components"]["RecordComponent"]) > 0
+    assert len(record_instance.input_buffer[-1]["record_components"]["RecordComponent"]) > 0
     # general check
-    assert record_instance.buffer == expected
+    assert record_instance.input_buffer == expected
 
 
 @pytest.mark.parametrize(
@@ -164,9 +164,9 @@ def test_record_new_component(records_from_jsonl, record_components, expected) -
 def test_buffer_flush(buffered_record, expected) -> None:
     query = ShopifyBulkQuery(shop_id=0)
     record_instance = ShopifyBulkRecord(query)
-    # populate the buffer with record
-    record_instance.buffer.append(buffered_record)
-    assert list(record_instance.buffer_flush()) == expected
+    # populate the input_buffer with record
+    record_instance.input_buffer.append(buffered_record)
+    assert list(record_instance.flush_input_buffer()) == expected
 
 
 @pytest.mark.parametrize(
@@ -206,4 +206,4 @@ def test_record_compose(records_from_jsonl, record_composition, expected) -> Non
     for record in records_from_jsonl:
         list(record_instance.record_compose(record))
 
-    assert record_instance.buffer == expected
+    assert record_instance.input_buffer == expected

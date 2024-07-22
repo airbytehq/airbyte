@@ -18,11 +18,13 @@ from .tools import END_OF_FILE, BulkTools
 @dataclass
 class ShopifyBulkRecord:
     query: ShopifyBulkQuery
-    checkpoint_interval: int
-    cursor_field: Optional[Union[int, str]]
+    checkpoint_interval: Optional[int] = 250
+    cursor_field: Optional[Union[int, str]] = None
 
-    # default buffer
-    buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
+    # default instance records collector
+    input_buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
+    # default instance output buffer
+    output_buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
 
     # default logger
     logger: Final[logging.Logger] = logging.getLogger("airbyte")
@@ -54,13 +56,13 @@ class ShopifyBulkRecord:
     def record_new(self, record: MutableMapping[str, Any]) -> None:
         record = self.component_prepare(record)
         record.pop("__typename")
-        self.buffer.append(record)
+        self.input_buffer.append(record)
 
     def record_new_component(self, record: MutableMapping[str, Any]) -> None:
         component = record.get("__typename")
         record.pop("__typename")
         # add component to its placeholder in the components list
-        self.buffer[-1]["record_components"][component].append(record)
+        self.input_buffer[-1]["record_components"][component].append(record)
 
     def component_prepare(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         if self.components:
@@ -69,30 +71,33 @@ class ShopifyBulkRecord:
                 record["record_components"][component] = []
         return record
 
-    def buffer_flush(self) -> Iterable[Mapping[str, Any]]:
-        if len(self.buffer) > 0:
-            for record in self.buffer:
+    def flush_input_buffer(self) -> Iterable[Mapping[str, Any]]:
+        if len(self.input_buffer) > 0:
+            for record in self.input_buffer:
                 # resolve id from `str` to `int`
                 record = self.record_resolve_id(record)
                 # process record components
                 yield from self.record_process_components(record)
-            # clean the buffer
-            self.buffer.clear()
+            # clean the input_buffer
+            self.input_buffer.clear()
 
-    def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+    def output_sort_asc(self) -> Iterable[Mapping[str, Any]]:
         """
         Apply sorting for collected records, to guarantee the `asc` output.
         This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
         """
         if self.cursor_field:
             yield from sorted(
-                non_sorted_records,
+                self.output_buffer,
                 key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_cursor_comparison_value,
             )
             # clear sorted output
-            non_sorted_records.clear()
+            self.output_buffer.clear()
         else:
-            yield from non_sorted_records
+            # emit without sorting
+            yield from self.output_buffer
+            # clear non-sorted output
+            self.output_buffer.clear()
 
     def record_compose(self, record: Mapping[str, Any]) -> Optional[Iterable[MutableMapping[str, Any]]]:
         """
@@ -102,7 +107,7 @@ class ShopifyBulkRecord:
         """
         if self.check_type(record, self.composition.get("new_record")):
             # emit from previous iteration, if present
-            yield from self.buffer_flush()
+            yield from self.flush_input_buffer()
             # register the record
             self.record_new(record)
         # components check
@@ -118,8 +123,8 @@ class ShopifyBulkRecord:
             elif line != "":
                 yield from self.record_compose(loads(line))
 
-        # emit what's left in the buffer, typically last record
-        yield from self.buffer_flush()
+        # emit what's left in the input_buffer, typically last record
+        yield from self.flush_input_buffer()
 
     def record_resolve_id(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
@@ -152,16 +157,16 @@ class ShopifyBulkRecord:
         The output is sorted by ASC, if `cursor_field` has been provided to the `ShopifyBulkRecord` instance.
         Otherwise, the records are emitted `as is`.
         """
-        output_buffer: List[Mapping[str, Any]] = []
 
         with open(filename, "r") as jsonl_file:
             for record in self.process_line(jsonl_file):
-                output_buffer.append(self.tools.fields_names_to_snake_case(record))
-                if len(output_buffer) == self.checkpoint_interval:
-                    yield from self.sort_output_asc(output_buffer)
+                self.output_buffer.append(self.tools.fields_names_to_snake_case(record))
+                if len(self.output_buffer) == self.checkpoint_interval:
+                    # emit records from output_buffer, sorted ASC 
+                    yield from self.output_sort_asc()
 
-            # emit what's left in the output buffer, typically last record
-            yield from self.sort_output_asc(output_buffer)
+            # emit what's left in the output output_buffer, typically last record
+            yield from self.output_sort_asc()
 
     def read_file(self, filename: str, remove_file: Optional[bool] = True) -> Iterable[Mapping[str, Any]]:
         try:
