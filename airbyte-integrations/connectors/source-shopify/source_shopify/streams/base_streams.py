@@ -742,7 +742,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.logger.info(
             f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}. {checkpointing_message}."
         )
-        
+
     def emit_checkpoint_message(self) -> None:
         if self.job_manager._job_adjust_slice_from_checkpoint:
             self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._checkpoint_cursor}`.")

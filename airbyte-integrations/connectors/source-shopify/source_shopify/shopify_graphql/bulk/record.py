@@ -78,7 +78,7 @@ class ShopifyBulkRecord:
                 yield from self.record_process_components(record)
             # clean the buffer
             self.buffer.clear()
-       
+
     def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
         """
         Apply sorting for collected records, to guarantee the `asc` output.
@@ -86,7 +86,7 @@ class ShopifyBulkRecord:
         """
         if self.cursor_field:
             yield from sorted(
-                non_sorted_records, 
+                non_sorted_records,
                 key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_cursor_comparison_value,
             )
             # clear sorted output
@@ -148,12 +148,12 @@ class ShopifyBulkRecord:
         The filename example: `bulk-4039263649981.jsonl`,
             where `4039263649981` is the `id` of the COMPLETED BULK Jobw with `result_url`.
             Note: typically the `filename` is taken from the `result_url` string provided in the response.
-        
+
         The output is sorted by ASC, if `cursor_field` has been provided to the `ShopifyBulkRecord` instance.
         Otherwise, the records are emitted `as is`.
         """
         output_buffer: List[Mapping[str, Any]] = []
-                
+
         with open(filename, "r") as jsonl_file:
             for record in self.process_line(jsonl_file):
                 output_buffer.append(self.tools.fields_names_to_snake_case(record))

@@ -493,7 +493,7 @@ class ShopifyBulkManager:
 
         # reseting the checkpoint flag, if bulk job has completed normally
         self._job_adjust_slice_from_checkpoint = False
-        
+
         return slice_end
 
     def _emit_final_job_message(self, job_current_elapsed_time: int) -> None:
@@ -502,7 +502,7 @@ class ShopifyBulkManager:
         if self._job_any_lines_collected:
             lines_collected_message = f" Rows collected: `{self._job_last_rec_count}`."
             final_message = final_message + lines_collected_message
-            
+
         # emit final Bulk job status message
         self.logger.info(f"{final_message}")
 
