@@ -13,6 +13,9 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.*
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
 import org.apache.commons.io.FileUtils
 
 private val log = KotlinLogging.logger {}
@@ -26,6 +29,7 @@ private val log = KotlinLogging.logger {}
  * writing, we avoid doing so to simplify the migration to async flushing.
  */
 object SerialFlush {
+    val RANDOM_CONNECTION_ID: UUID = UUID.randomUUID()
     /**
      * Logic handling how destinations with staging areas (aka bucket storages) will flush their
      * buffer
@@ -88,7 +92,7 @@ object SerialFlush {
             val stageName = stagingOperations.getStageName(schemaName, writeConfig.outputTableName)
             val stagingPath =
                 stagingOperations.getStagingPath(
-                    SerialStagingConsumerFactory.Companion.RANDOM_CONNECTION_ID,
+                    RANDOM_CONNECTION_ID,
                     schemaName,
                     writeConfig.streamName,
                     writeConfig.outputTableName,
