@@ -186,7 +186,7 @@ open class ConnectorExceptionHandler {
      *  stored as part of the error profile in the error dictionary.
      * */
     private fun isRecognizableError(e: Throwable?): Boolean {
-        if (e == null) return false
+        if (e?.message == null) return false
         if (e is TransientErrorException || e is ConfigErrorException) {
             return true
         }
