@@ -22,8 +22,7 @@ dependencies {
     // Re-export dependencies for gcs-destinations.
     api 'com.amazonaws:aws-java-sdk-s3:1.12.647'
     api 'com.amazonaws:aws-java-sdk-sts:1.12.647'
-    // TODO: Update to 1.1.1 after the json-avro-converter PR is merged
-    api ('com.github.airbytehq:json-avro-converter:1.1.0.dev.8556.4') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    api ('com.github.airbytehq:json-avro-converter:1.1.1') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
     api 'com.github.alexmojaki:s3-stream-upload:2.2.4'
     api 'org.apache.avro:avro:1.11.3'
     api 'org.apache.commons:commons-csv:1.10.0'
