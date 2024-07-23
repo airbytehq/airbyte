@@ -173,6 +173,7 @@ class Stream(ABC):
 
         next_slice = checkpoint_reader.next()
         record_counter = 0
+        stream_state_tracker = copy.deepcopy(stream_state)
         while next_slice is not None:
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(next_slice)
@@ -182,7 +183,6 @@ class Stream(ABC):
                 stream_state=stream_state,
                 cursor_field=cursor_field or None,
             )
-            stream_state_tracker = copy.deepcopy(stream_state)
             for record_data_or_message in records:
                 yield record_data_or_message
                 if isinstance(record_data_or_message, Mapping) or (
