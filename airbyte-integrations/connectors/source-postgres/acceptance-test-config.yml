@@ -7,26 +7,26 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "secrets/config.json"
+        config_path: "integration_tests/config_active.json"
         backward_compatibility_tests_config:
           disable_for_version: "1.0.52"
       - spec_path: "src/test-integration/resources/expected_strict_encrypt_spec.json"
-        config_path: "secrets/config.json"
+        config_path: "integration_tests/config_active.json"
         deployment_mode: cloud
         backward_compatibility_tests_config:
           disable_for_version: "1.0.52"
   connection:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config_active.json"
         status: "succeed"
   discovery:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config_active.json"
         backward_compatibility_tests_config:
           disable_for_version: "2.1.1"
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config_active.json"
         configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
@@ -42,7 +42,7 @@ acceptance_tests:
             - "teardown"
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config_active.json"
         configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
@@ -56,7 +56,7 @@ acceptance_tests:
             - "teardown"
   incremental:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config_active.json"
         configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"

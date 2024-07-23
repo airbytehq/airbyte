@@ -19,6 +19,7 @@ abnormal_state_write_file = "/connector/integration_tests/temp/abnormal_state_co
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
 secret_config_file = '/connector/secrets/config.json'
+secret_active_config_file = '/connector/integration_tests/config_active.json'
 
 def connect_to_db():
     f = open(secret_config_file)
@@ -92,7 +93,7 @@ def write_supporting_file(schema_name):
     with open(secret_config_file) as base_config:
       secret = json.load(base_config)
       secret["schemas"] = [schema_name]
-      with open(secret_config_file, 'w') as f:
+      with open(secret_active_config_file, 'w') as f:
         json.dump(secret, f)
 
 def create_table(connection, schema_name, table_name):
