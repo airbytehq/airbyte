@@ -204,9 +204,6 @@ Here's a list of common customizations.
 - [State and Logging Storage](./integrations/storage)
 - [Secret Management](./integrations/secrets)
 
-
-
-
 ## Migrating from Docker Compose (Optional)
 
 If you have data that you would like to migrate from an existing docker compose instance follow the steps below:
