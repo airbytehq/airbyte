@@ -311,6 +311,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.6   | 2024-07-23 | [42421](https://github.com/airbytehq/airbyte/pull/42421) | Remove final transient error emitter iterators.                                                                                                |
 | 3.6.5   | 2024-07-22 | [42024](https://github.com/airbytehq/airbyte/pull/42024) | Fix a bug on resuming from a failed attempt.                                                                                                |
 | 3.6.4   | 2024-07-17 | [42087](https://github.com/airbytehq/airbyte/pull/42087) | Translate more errors for Postgres source.                                                                                                                       |
 | 3.6.3   | 2024-07-19 | [42122](https://github.com/airbytehq/airbyte/pull/42122) | Improve wass error message + logging.                                                                                                          |
