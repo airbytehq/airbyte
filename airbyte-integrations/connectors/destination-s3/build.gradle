@@ -13,7 +13,11 @@ airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.s3.S3DestinationRunner'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+run {
+    standardInput = System.in
 }
 
 dependencies {
@@ -36,7 +40,7 @@ dependencies {
         exclude group: 'org.apache.zookeeper'
     }
     implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0.dev.8556.4') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
     implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
