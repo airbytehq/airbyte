@@ -7,7 +7,7 @@ import itertools
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import lru_cache, cached_property
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -125,8 +125,7 @@ class Stream(ABC):
 
     has_multiple_slices = False
 
-    @property
-    @lru_cache(maxsize=None)
+    @cached_property
     def name(self) -> str:
         """
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.

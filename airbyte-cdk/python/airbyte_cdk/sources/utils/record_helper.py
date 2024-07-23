@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from collections.abc import Mapping as ABCMapping
 import time
 from typing import Any, Mapping
 
@@ -21,7 +21,7 @@ def stream_data_to_airbyte_message(
         schema = {}
 
     match data_or_message:
-        case Mapping():
+        case ABCMapping():
             data = dict(data_or_message)
             now_millis = time.time_ns() // 1_000_000
             # Transform object fields according to config. Most likely you will
