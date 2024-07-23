@@ -313,8 +313,7 @@
                 "default": 8,
                 "min": 4,
                 "max": 24,
-                "order": 10,
-                "always_show": true
+                "order": 10
               }
             }
           },

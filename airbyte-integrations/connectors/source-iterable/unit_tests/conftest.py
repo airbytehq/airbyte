@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import os
+
 import pytest
 import responses
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
@@ -43,3 +46,17 @@ def lists_stream():
 @pytest.fixture(autouse=True)
 def mock_sleep(mocker):
     mocker.patch("time.sleep")
+
+
+@pytest.fixture(name="large_events_response")
+def large_event_response_fixture():
+    data = {"email": "email1@example.com"}
+    json_string = json.dumps(data)
+    lines_in_response = 5_000_000
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    file_path = f"{dir_path}/test_response.txt"
+    with open(file_path, "w") as file:
+        for _ in range(lines_in_response):
+            file.write(json_string + "\n")
+    yield (lines_in_response, file_path)
+    os.remove(file_path)
