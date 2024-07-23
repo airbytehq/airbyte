@@ -29,6 +29,7 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
+  - language:manifest-only
   - language:python
   - cdk:python
   connectorTestSuitesOptions:
