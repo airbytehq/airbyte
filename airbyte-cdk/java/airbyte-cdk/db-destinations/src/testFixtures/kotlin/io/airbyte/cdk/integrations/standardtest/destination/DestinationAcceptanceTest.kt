@@ -551,8 +551,7 @@ abstract class DestinationAcceptanceTest(
         runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false)
 
         // Run second sync
-        val descriptor = io.airbyte.protocol.models.v0.StreamDescriptor()
-        descriptor.name = catalog.streams[0].name
+        val descriptor = StreamDescriptor().withName(catalog.streams[0].name)
         val secondSyncMessages: List<AirbyteMessage> =
             Lists.newArrayList(
                 AirbyteMessage()
@@ -1663,7 +1662,9 @@ abstract class DestinationAcceptanceTest(
             }
         } else {
             /* Null the states and collect only the final messages */
-            val finalActual = actual.last()
+            val finalActual = actual.lastOrNull()
+                ?: throw IllegalArgumentException(
+                    "All message sets used for testing should include a state record")
             val clone = finalActual.state
             clone.destinationStats = null
             finalActual.state = clone
