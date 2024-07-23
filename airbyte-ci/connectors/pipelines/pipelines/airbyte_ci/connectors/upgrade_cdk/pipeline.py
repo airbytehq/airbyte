@@ -52,12 +52,16 @@ class SetCDKVersion(Step):
             else:
                 return StepResult(
                     step=self,
-                    status=StepStatus.FAILURE,
-                    stderr=f"No CDK for connector {self.context.connector.technical_name} of written in {self.context.connector.language}",
+                    status=StepStatus.SKIPPED,
+                    stdout=f"The upgrade-cdk command does not support {self.context.connector.language} connectors.",
                 )
 
             if updated_connector_dir is None:
-                return self.skip(self.skip_reason)
+                return StepResult(
+                    step=self,
+                    status=StepStatus.FAILURE,
+                    stderr=f"No changes were made to the CDK version for connector {self.context.connector.technical_name}",
+                )
             diff = og_connector_dir.diff(updated_connector_dir)
             exported_successfully = await diff.export(os.path.join(git.get_git_repo_path(), context.connector.code_directory))
             if not exported_successfully:
@@ -123,7 +127,7 @@ class SetCDKVersion(Step):
         else:
             new_version = self.new_version
         self.logger.info(f"Setting CDK version to {new_version}")
-        dependencies["airbyte_cdk"] = new_version
+        dependencies["airbyte-cdk"] = new_version
 
         updated_pyproject_toml_content = toml.dumps(pyproject_data)
         updated_connector_dir = og_connector_dir.with_new_file(PYPROJECT_FILENAME, updated_pyproject_toml_content)
@@ -140,7 +144,7 @@ class SetCDKVersion(Step):
         if poetry_lock_file != updated_poetry_lock_file:
             updated_connector_dir = updated_connector_dir.with_new_file(POETRY_LOCK_FILENAME, updated_poetry_lock_file)
         else:
-            raise ValueError("Poetry lock file did not change after running poetry lock")
+            raise ValueError("Lockfile did not change after running poetry lock")
 
         return updated_connector_dir
 
