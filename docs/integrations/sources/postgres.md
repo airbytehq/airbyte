@@ -309,8 +309,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
-|---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.7 | |2024-07-22 | [42411](https://github.com/airbytehq/airbyte/pull/42411) | Hide the "initial load timeout in hours" field by default in UI |
 | 3.6.6   | 2024-07-22 | [41622](https://github.com/airbytehq/airbyte/pull/41622) | Fix bug in CDC syncing                                                                                                                                                     |
 | 3.6.5   | 2024-07-22 | [42024](https://github.com/airbytehq/airbyte/pull/42024) | Fix a bug on resuming from a failed attempt.                                                                                                |
 | 3.6.4   | 2024-07-17 | [42087](https://github.com/airbytehq/airbyte/pull/42087) | Translate more errors for Postgres source.                                                                                                                       |
