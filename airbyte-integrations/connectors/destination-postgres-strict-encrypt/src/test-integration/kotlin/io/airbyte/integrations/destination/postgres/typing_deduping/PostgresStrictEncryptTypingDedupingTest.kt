@@ -11,7 +11,6 @@ import io.airbyte.integrations.destination.postgres.PostgresTestDatabase
 import javax.sql.DataSource
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 
 // TODO: This test is added to ensure coverage missed by disabling DATs. Redundant when DATs
 // enabled.
@@ -57,11 +56,6 @@ class PostgresStrictEncryptTypingDedupingTest : AbstractPostgresTypingDedupingTe
 
     override val imageName: String
         get() = "airbyte/destination-postgres-strict-encrypt:dev"
-
-    @Test
-    override fun testMixedCaseRawTableV1V2Migration() {
-        super.testMixedCaseRawTableV1V2Migration()
-    }
 
     companion object {
         protected var testContainer: PostgresTestDatabase? = null
