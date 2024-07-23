@@ -126,6 +126,7 @@ class Stream(ABC):
     has_multiple_slices = False
 
     @property
+    @lru_cache(maxsize=None)
     def name(self) -> str:
         """
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
