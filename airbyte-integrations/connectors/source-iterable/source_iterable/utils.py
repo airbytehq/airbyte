@@ -4,8 +4,6 @@
 
 import dateutil.parser
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 
 
 def dateutil_parse(text):

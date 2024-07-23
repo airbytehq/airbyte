@@ -120,7 +120,8 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s JSONB,
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           %s TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-          %s JSONB
+          %s JSONB,
+          %s BIGINT
         );
         
         """.trimIndent(),
@@ -130,14 +131,20 @@ abstract class JdbcSqlOperations : SqlOperations {
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
         )
     }
 
     // TODO: This method seems to be used by Postgres and others while staging to local temp files.
     // Should there be a Local staging operations equivalent
     @Throws(Exception::class)
-    protected fun writeBatchToFile(tmpFile: File?, records: List<PartialAirbyteMessage>) {
+    protected fun writeBatchToFile(
+        tmpFile: File?,
+        records: List<PartialAirbyteMessage>,
+        syncId: Long,
+        generationId: Long
+    ) {
         PrintWriter(tmpFile, StandardCharsets.UTF_8).use { writer ->
             CSVPrinter(writer, CSVFormat.DEFAULT).use { csvPrinter ->
                 for (record in records) {
@@ -146,14 +153,28 @@ abstract class JdbcSqlOperations : SqlOperations {
                     val jsonData = record.serialized
                     val airbyteMeta =
                         if (record.record!!.meta == null) {
-                            "{\"changes\":[]}"
+                            """{"changes":[],${JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY}":$syncId}"""
                         } else {
-                            Jsons.serialize(record.record!!.meta)
+                            Jsons.serialize(
+                                record.record!!
+                                    .meta!!
+                                    .withAdditionalProperty(
+                                        JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY,
+                                        syncId,
+                                    )
+                            )
                         }
                     val extractedAt =
                         Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
                     if (isDestinationV2) {
-                        csvPrinter.printRecord(uuid, jsonData, extractedAt, null, airbyteMeta)
+                        csvPrinter.printRecord(
+                            uuid,
+                            jsonData,
+                            extractedAt,
+                            null,
+                            airbyteMeta,
+                            generationId
+                        )
                     } else {
                         csvPrinter.printRecord(uuid, jsonData, extractedAt)
                     }
@@ -163,9 +184,9 @@ abstract class JdbcSqlOperations : SqlOperations {
     }
 
     override fun truncateTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        tableName: String?
+        database: JdbcDatabase,
+        schemaName: String,
+        tableName: String,
     ): String {
         return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName)
     }
@@ -225,29 +246,21 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long
     ) {
-        if (isDestinationV2) {
-            insertRecordsInternalV2(database, records, schemaName, tableName)
-        } else {
-            insertRecordsInternal(database, records, schemaName, tableName)
-        }
+        insertRecordsInternalV2(database, records, schemaName, tableName, syncId, generationId)
     }
-
-    @Throws(Exception::class)
-    protected abstract fun insertRecordsInternal(
-        database: JdbcDatabase,
-        records: List<PartialAirbyteMessage>,
-        schemaName: String?,
-        tableName: String?
-    )
 
     @Throws(Exception::class)
     protected abstract fun insertRecordsInternalV2(
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     companion object {
