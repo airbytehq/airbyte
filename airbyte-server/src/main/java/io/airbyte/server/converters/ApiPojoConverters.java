@@ -6,6 +6,7 @@ package io.airbyte.server.converters;
 
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.model.generated.ActorDefinitionResourceRequirements;
+import io.airbyte.api.model.generated.ConnectionAdvanceSetting;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionScheduleData;
@@ -73,6 +74,15 @@ public class ApiPojoConverters {
         .withMemoryLimit(resourceReqs.getMemoryLimit());
   }
 
+  public static io.airbyte.config.AdvanceSetting advanceSettingToInternal(final ConnectionAdvanceSetting advanceSetting) {
+    if (advanceSetting == null) {
+      return null;
+    }
+    return new io.airbyte.config.AdvanceSetting()
+        .withStartDate(advanceSetting.getStartDate())
+        .withEndDate(advanceSetting.getEndDate());
+  }
+
   public static ResourceRequirements resourceRequirementsToApi(final io.airbyte.config.ResourceRequirements resourceReqs) {
     if (resourceReqs == null) {
       return null;
@@ -116,6 +126,7 @@ public class ApiPojoConverters {
     } else {
       newConnection.withManual(true).withSchedule(null);
     }
+    newConnection.setAdvanceSetting(ApiPojoConverters.advanceSettingToInternal(update.getAdvanceSetting()));
 
     return newConnection;
   }

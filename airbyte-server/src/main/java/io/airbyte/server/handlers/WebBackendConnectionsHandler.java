@@ -582,7 +582,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.status(webBackendConnectionCreate.getStatus());
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
     connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
-
+    connectionCreate.advanceSetting(webBackendConnectionCreate.getAdvanceSetting());
     return connectionCreate;
   }
 
@@ -603,7 +603,7 @@ public class WebBackendConnectionsHandler {
     connectionUpdate.status(webBackendConnectionUpdate.getStatus());
     connectionUpdate.resourceRequirements(webBackendConnectionUpdate.getResourceRequirements());
     connectionUpdate.sourceCatalogId(webBackendConnectionUpdate.getSourceCatalogId());
-
+    connectionUpdate.setAdvanceSetting(webBackendConnectionUpdate.getAdvanceSetting());
     return connectionUpdate;
   }
 

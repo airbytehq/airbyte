@@ -103,18 +103,18 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
                                     final String clientId,
                                     final String redirectUrl,
                                     final JsonNode inputOAuthConfiguration)
-          throws IOException {
+      throws IOException {
 
     // getting application_id value from user's config
     final String application_id = getConfigValueUnsafe(inputOAuthConfiguration, "app_id");
 
     try {
       return new URIBuilder(AUTHORIZE_URL)
-              .addParameter("application_id", application_id)
-              .addParameter("redirect_uri", redirectUrl)
-              .addParameter("state", getState())
-              .addParameter("version", "beta")
-              .build().toString();
+          .addParameter("application_id", application_id)
+          .addParameter("redirect_uri", redirectUrl)
+          .addParameter("state", getState())
+          .addParameter("version", "beta")
+          .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
@@ -135,13 +135,13 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
                                                               final String authCode,
                                                               final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
-            // required
-            .put("client_id", clientId)
-            .put("redirect_uri", redirectUrl)
-            .put("client_secret", clientSecret)
-            .put("code", authCode)
-            .put("grant_type", "authorization_code")
-            .build();
+        // required
+        .put("client_id", clientId)
+        .put("redirect_uri", redirectUrl)
+        .put("client_secret", clientSecret)
+        .put("code", authCode)
+        .put("grant_type", "authorization_code")
+        .build();
   }
 
   /**
@@ -172,7 +172,7 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
                                         final String redirectUrl,
                                         final JsonNode inputOAuthConfiguration,
                                         JsonNode oAuthParamConfig)
-          throws IOException {
+      throws IOException {
     // getting application_id value from user's config
     final String application_id = getConfigValueUnsafe(oAuthParamConfig, "app_id");
     final String regionCountry = getConfigValueUnsafe(inputOAuthConfiguration, "region");
@@ -182,11 +182,11 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
     String newAuthUrl = String.format("https://%s/apps/authorize/consent", authUrl);
     try {
       return new URIBuilder(newAuthUrl)
-              .addParameter("application_id", application_id)
-              .addParameter("redirect_uri", redirectUrl)
-              .addParameter("state", getState())
-              .addParameter("version", "beta")
-              .build().toString();
+          .addParameter("application_id", application_id)
+          .addParameter("redirect_uri", redirectUrl)
+          .addParameter("state", getState())
+          .addParameter("version", "beta")
+          .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
@@ -198,23 +198,23 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
                                     final String redirectUrl,
                                     final JsonNode inputOAuthConfiguration,
                                     final OAuthConfigSpecification oAuthConfigSpecification)
-          throws IOException, ConfigNotFoundException, JsonValidationException {
+      throws IOException, ConfigNotFoundException, JsonValidationException {
     validateInputOAuthConfiguration(oAuthConfigSpecification, inputOAuthConfiguration);
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
 
     log.info("oAuthParamConfig: {}", oAuthParamConfig);
     if (multiParameterAuth) {
       return formatConsentUrl_new(sourceDefinitionId,
-              getClientIdUnsafe(oAuthParamConfig),
-              getConfigValueUnsafe(oAuthParamConfig, "redirect_url"),
-              inputOAuthConfiguration,
-              oAuthParamConfig);
+          getClientIdUnsafe(oAuthParamConfig),
+          getConfigValueUnsafe(oAuthParamConfig, "redirect_url"),
+          inputOAuthConfiguration,
+          oAuthParamConfig);
     }
     return formatConsentUrl_new(sourceDefinitionId,
-            getClientIdUnsafe(oAuthParamConfig),
-            redirectUrl,
-            inputOAuthConfiguration,
-            oAuthParamConfig);
+        getClientIdUnsafe(oAuthParamConfig),
+        redirectUrl,
+        inputOAuthConfiguration,
+        oAuthParamConfig);
   }
 
 }

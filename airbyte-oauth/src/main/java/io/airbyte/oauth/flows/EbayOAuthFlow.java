@@ -8,9 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.http.client.utils.URIBuilder;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
@@ -18,6 +15,8 @@ import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.client.utils.URIBuilder;
 
 public class EbayOAuthFlow extends BaseOAuth2Flow {
 
@@ -91,4 +90,5 @@ public class EbayOAuthFlow extends BaseOAuth2Flow {
     String auth = Base64.encodeBase64String((clientId + ":" + clientSecret).getBytes("UTF-8"));
     return "Basic " + auth;
   }
+
 }

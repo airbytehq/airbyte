@@ -188,8 +188,9 @@ public class SourceHandler {
     }
     List<SourceConnection> sourceConnections =
         configRepository.pageWorkspaceSourceConnection(sourcesPageRequestBodys.getWorkspaceId(), sourcesPageRequestBodys.getSourceDefinitionId(),
-            sourcesPageRequestBodys.getPageSize(), sourcesPageRequestBodys.getPageCurrent(), sourcesPageRequestBodys.getSortDetails().getSortFieldName(),
-                sourcesPageRequestBodys.getSortDetails().getSortDirection());
+            sourcesPageRequestBodys.getPageSize(), sourcesPageRequestBodys.getPageCurrent(),
+            sourcesPageRequestBodys.getSortDetails().getSortFieldName(),
+            sourcesPageRequestBodys.getSortDetails().getSortDirection());
     final List<SourceRead> sourceReads = Lists.newArrayList();
     for (final SourceConnection sourceConnection : sourceConnections) {
       try {

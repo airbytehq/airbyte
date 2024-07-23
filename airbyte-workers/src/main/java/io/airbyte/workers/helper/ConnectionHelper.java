@@ -107,7 +107,7 @@ public class ConnectionHelper {
       newConnection.withManual(true).withSchedule(null);
       newConnection.withScheduleType(ScheduleType.MANUAL).withScheduleData(null);
     }
-
+    newConnection.setAdvanceSetting(update.getAdvanceSetting());
     return newConnection;
   }
 

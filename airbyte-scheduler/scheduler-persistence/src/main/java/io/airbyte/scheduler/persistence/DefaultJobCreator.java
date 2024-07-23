@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.persistence;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
@@ -71,6 +72,19 @@ public class DefaultJobCreator implements JobCreator {
         destinationResourceReqs,
         workerResourceRequirements,
         JobType.SYNC);
+
+    /*
+     * add event date only for amazon and amazon ads source
+     */
+    if (source.getConfiguration() != null
+        && (sourceDockerImageName.contains("source-amazon-seller-partner") || sourceDockerImageName.contains("source-amazon-ads"))) {
+      if (standardSync.getAdvanceSetting() != null && standardSync.getAdvanceSetting().getStartDate() != null) {
+        ((ObjectNode) source.getConfiguration()).put("replication_start_date", standardSync.getAdvanceSetting().getStartDate());
+      }
+      if (standardSync.getAdvanceSetting() != null && standardSync.getAdvanceSetting().getEndDate() != null) {
+        ((ObjectNode) source.getConfiguration()).put("replication_end_date", standardSync.getAdvanceSetting().getEndDate());
+      }
+    }
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())

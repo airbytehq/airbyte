@@ -32,7 +32,7 @@ public class MoreOAuthParameters {
                                                                        final UUID sourceDefinitionId) {
     return stream
         .filter(p -> sourceDefinitionId.equals(p.getSourceDefinitionId()))
-        //.filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
+        // .filter(p -> p.getWorkspaceId() == null || workspaceId.equals(p.getWorkspaceId()))
         // we prefer params specific to a workspace before global ones (ie workspace is null)
         .min(Comparator.comparing(SourceOAuthParameter::getWorkspaceId, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(SourceOAuthParameter::getOauthParameterId));

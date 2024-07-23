@@ -177,7 +177,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
         final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
         jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats);
-        
+
         // 插入Daspire RPC调用
         String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
         final UUID connectionId = UUID.fromString(job.getScope());
@@ -189,7 +189,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
             "bytesCommitted", syncStats.getBytesEmitted(),
             "connectionName", connectionName);
         HttpUtil.daspireConnectionCount(param);
-        
+
       } else {
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
@@ -224,7 +224,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       String failureOrigin = job.getLastFailedAttempt().get().getFailureSummary().get().getFailures().get(0).getFailureOrigin().value();
       String connectionName = jobPersistence.getConnectionName(connectionId);
       String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
-      HttpUtil.jobFail(workspaceId,connectionName,connectionId.toString(), externalMessage, failureOrigin);
+      HttpUtil.jobFail(workspaceId, connectionName, connectionId.toString(), externalMessage, failureOrigin);
 
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);

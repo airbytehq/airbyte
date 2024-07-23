@@ -22,7 +22,6 @@ import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -304,7 +303,7 @@ public class SourceDefinitionsHandler {
 
   public static String loadIcon(final String name) {
     try {
-      //return name == null ? null : MoreResources.readResource("icons/" + name);
+      // return name == null ? null : MoreResources.readResource("icons/" + name);
       return name;
     } catch (final Exception e) {
       return null;
