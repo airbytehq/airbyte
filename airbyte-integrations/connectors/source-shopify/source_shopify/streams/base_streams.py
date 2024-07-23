@@ -21,7 +21,6 @@ from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
 from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery
-from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
 from source_shopify.transform import DataTypeEnforcer
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyNonRetryableErrors
@@ -630,12 +629,13 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     data_field = "graphql"
 
     parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
+
     filter_by_state_checkpoint = True
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
         # init BULK Query instance, pass `shop_id` from config
-        self.query = self.bulk_query(shop_id=config.get("shop_id"))
+        self.query: ShopifyBulkQuery = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
             http_client=self.bulk_http_client,
@@ -648,13 +648,6 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             job_checkpoint_interval=config.get("job_checkpoint_interval", 200000),
         )
 
-        # define Record Producer instance
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(
-            self.query,
-            self.state_checkpoint_interval,
-            self.cursor_field,
-        )
-
     @property
     def bulk_http_client(self) -> HttpClient:
         """
@@ -663,7 +656,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         return HttpClient(self.name, self.logger, ShopifyErrorHandler(), session=self._http_client._session)
 
     @cached_property
-    def parent_stream(self) -> object:
+    def parent_stream(self) -> Union[ShopifyStream, IncrementalShopifyStream]:
         """
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
         """
@@ -764,6 +757,23 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # for the streams that don't support filtering
             yield {}
 
+    def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        """
+        Apply sorting for collected records, to guarantee the `ASC` output.
+        This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
+        """
+        if non_sorted_records:
+            if not self.cursor_field:
+                yield from non_sorted_records
+            else:
+                yield from sorted(
+                    non_sorted_records,
+                    key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_state_comparison_value,
+                )
+        else:
+            # always return an empty iterable, if no records
+            return []
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -773,15 +783,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     ) -> Iterable[StreamData]:
         self.job_manager.create_job(stream_slice, self.filter_field)
         stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.default_state_comparison_value})
-
-        filename = self.job_manager.job_check_for_completion()
-        # the `filename` could be `None`, meaning there are no data available for the slice period.
-        if filename:
-            # add `shop_url` field to each record produced
-            records = self.add_shop_url_field(
-                # produce records from saved bulk job result
-                self.record_producer.read_file(filename)
-            )
-            yield from self.filter_records_newer_than_state(stream_state, records)
-            # add log message about the checkpoint value
-            self.emit_checkpoint_message()
+        # add `shop_url` field to each record produced
+        records = self.add_shop_url_field(
+            # produce records from saved bulk job result
+            self.job_manager.job_get_results()
+        )
+        # emit records in ASC order
+        yield from self.filter_records_newer_than_state(stream_state, self.sort_output_asc(records))
+        # add log message about the checkpoint value
+        self.emit_checkpoint_message()

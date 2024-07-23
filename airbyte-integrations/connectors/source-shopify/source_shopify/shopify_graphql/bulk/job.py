@@ -17,6 +17,7 @@ from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from .exceptions import AirbyteTracedException, ShopifyBulkExceptions
 from .query import ShopifyBulkQuery, ShopifyBulkTemplates
+from .record import ShopifyBulkRecord
 from .retry import bulk_retry_on_exception
 from .status import ShopifyBulkJobStatus
 from .tools import END_OF_FILE, BulkTools
@@ -81,7 +82,7 @@ class ShopifyBulkManager:
     # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
     _job_last_elapsed_time: float = field(init=False, default=2.0)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._job_size = self.job_size
         # The upper boundary for slice size is limited by the value from the config, default value is `P30D`
         self._job_size_max = self.job_size
@@ -92,6 +93,8 @@ class ShopifyBulkManager:
         self._job_max_elapsed_time = self.job_termination_threshold
         # how many records should be collected before we use the checkpoining
         self._job_checkpoint_interval = self.job_checkpoint_interval
+        # define Record Producer instance
+        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
 
     @property
     def _tools(self) -> BulkTools:
@@ -506,8 +509,15 @@ class ShopifyBulkManager:
         # emit final Bulk job status message
         self.logger.info(f"{final_message}")
 
+    def _process_bulk_results(self) -> Iterable[Mapping[str, Any]]:
+        if self._job_result_filename:
+            # produce records from saved bulk job result
+            yield from self.record_producer.read_file(self._job_result_filename)
+        else:
+            yield from []
+
     @limiter.balance_rate_limit(api_type=ApiTypeEnum.graphql.value)
-    def job_check_for_completion(self) -> Optional[str]:
+    def job_get_results(self) -> Optional[Iterable[Mapping[str, Any]]]:
         """
         This method checks the status for the `CREATED` Shopify BULK Job, using it's `ID`.
         The time spent for the Job execution is tracked to understand the effort.
@@ -517,7 +527,7 @@ class ShopifyBulkManager:
         try:
             # track created job until it's COMPLETED
             self._job_check_state()
-            return self._job_result_filename
+            yield from self._process_bulk_results()
         except (
             ShopifyBulkExceptions.BulkJobFailed,
             ShopifyBulkExceptions.BulkJobTimout,

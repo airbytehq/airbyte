@@ -189,14 +189,15 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
     job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
     if error_type:
         with pytest.raises(error_type) as error:
-            stream.job_manager.job_check_for_completion()
+            list(stream.job_manager.job_get_results())
         assert expected in repr(error.value)
     else:
         if job_result_url:
             # mocking the nested request call to retrieve the data from result URL
             requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
-        result = stream.job_manager.job_check_for_completion()
-        assert expected == result
+        mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.read_file", return_value=[])
+        stream.job_manager._job_check_state()
+        assert expected == stream.job_manager._job_result_filename    
 
     
 @pytest.mark.parametrize(
@@ -304,7 +305,7 @@ def test_job_check_with_running_scenario(request, requests_mock, job_response, a
         "self-canceled with no url",
     ],
 )
-def test_job_running_with_canceled_scenario(request, requests_mock, running_job_response, canceled_job_response, auth_config, expected) -> None:
+def test_job_running_with_canceled_scenario(mocker, request, requests_mock, running_job_response, canceled_job_response, auth_config, expected) -> None:
     stream = MetafieldOrders(auth_config)
     # modify the sleep time for the test
     stream.job_manager._job_check_interval = 0
@@ -328,7 +329,9 @@ def test_job_running_with_canceled_scenario(request, requests_mock, running_job_
     stream.job_manager._job_self_canceled = True
     # mocking the nested request call to retrieve the data from result URL
     requests_mock.get(job_result_url, json=request.getfixturevalue(canceled_job_response))
-    assert stream.job_manager.job_check_for_completion() == expected
+    mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.read_file", return_value=[])
+    stream.job_manager._job_check_state()
+    assert stream.job_manager._job_result_filename == expected
     # clean up
     if expected:
         remove(expected)
@@ -340,7 +343,7 @@ def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
     # patching the method to get the filename
     mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.produce_records", side_effect=Exception)
     with pytest.raises(ShopifyBulkExceptions.BulkRecordProduceError) as error:
-        list(stream.record_producer.read_file("test.jsonl"))
+        list(stream.job_manager.record_producer.read_file("test.jsonl"))
 
     assert expected in repr(error.value)
 
