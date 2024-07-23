@@ -608,7 +608,7 @@ definitions:
                 parent_key: id
                 partition_field: id
                 stream:
-                  $ref: '#/definitions/streams/users'
+                  $ref: "#/definitions/streams/users"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -628,9 +628,7 @@ streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/versions"
   - $ref: "#/definitions/streams/workspaces"
-  # -----------------------------------------------------------
   # # existing empty streams
-  # -----------------------------------------------------------
   - $ref: "#/definitions/streams/scheduled_plans"
   - $ref: "#/definitions/streams/user_attribute_group_values"
   - $ref: "#/definitions/streams/user_login_lockouts"
@@ -647,9 +645,7 @@ streams:
   - $ref: "#/definitions/streams/project_files"
   - $ref: "#/definitions/streams/role_groups"
   - $ref: "#/definitions/streams/run_looks"
-  # -----------------------------------------------------------
   # # records are read but test says empty streams
-  # -----------------------------------------------------------
   - $ref: "#/definitions/streams/board_items"
   - $ref: "#/definitions/streams/board_sections"
   - $ref: "#/definitions/streams/boards"
@@ -801,19 +797,21 @@ schemas:
   query_history:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    properties: 
+    properties:
       {
-        "query.id": {"type": ["null", "integer"]},
-        "history.created_date": {"type": ["null", "string"], "format": "date"},
-        "history.created_time": {"type": "string", "format": "date-time"},
-        "query.model": {"type": ["null", "string"]},
-        "query.view": {"type": ["null", "string"]},
-        "space.id": {"type": ["null", "integer"]},
-        "look.id": {"type": ["null", "integer"]},
-        "dashboard.id": {"type": ["null", "integer"]},
-        "user.id": {"type": ["null", "integer"]},
-        "history.query_run_count": {"type": ["null", "integer"]},
-        "history.total_runtime": {"multipleOf": 1e-20, "type": ["null", "number"] }
+        "query.id": { "type": ["null", "integer"] },
+        "history.created_date":
+          { "type": ["null", "string"], "format": "date" },
+        "history.created_time": { "type": "string", "format": "date-time" },
+        "query.model": { "type": ["null", "string"] },
+        "query.view": { "type": ["null", "string"] },
+        "space.id": { "type": ["null", "integer"] },
+        "look.id": { "type": ["null", "integer"] },
+        "dashboard.id": { "type": ["null", "integer"] },
+        "user.id": { "type": ["null", "integer"] },
+        "history.query_run_count": { "type": ["null", "integer"] },
+        "history.total_runtime":
+          { "multipleOf": 1e-20, "type": ["null", "number"] },
       }
     additionalProperties: true
   dashboards:
