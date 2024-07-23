@@ -286,6 +286,29 @@ Then you can run `kubectl edit ingress -n airbyte-abctl --kubeconfig ~/.airbyte/
 key under the spec.rules section of the Ingress definition. The host should match the FQDN name that you are trying to
 host Airbyte at, for example: `airbyte.company.example`.
 
+## Uninstalling
+
+
+If you want to remove Airbyte from your system, consider which of the following two options you would like to use. 
+
+1: Run the following command to stop all running containers that `abctl` has created **while preserving any data you've created**: 
+
+```shell
+abctl local uninstall
+```
+
+2: If you want to clear the persistent data in addition to stopping containers, run:
+
+```shell
+abctl local uninstall --persisted
+```
+
+As a last step, to clear out any additional information that `abctl` may have created, you can run:
+
+```shell
+rm -rf ~/.airbyte/abctl
+```
+
 ## Troubleshooting
 
 There are several channels for community support of local setup and deployment. 
