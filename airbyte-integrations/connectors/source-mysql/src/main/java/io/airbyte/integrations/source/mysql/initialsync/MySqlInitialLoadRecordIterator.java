@@ -99,8 +99,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     if (isCdcSync && cdcInitialLoadTimeout.isPresent()
         && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
       final String cdcInitialLoadTimeoutMessage = String.format(
-          "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
-          getAirbyteStream().get(), cdcInitialLoadTimeout.get());
+          "Initial load for table %s has taken longer than %s hours, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get().toHours());
       LOGGER.info(cdcInitialLoadTimeoutMessage);
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
       throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
@@ -211,6 +211,11 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     if (currentIterator != null) {
       currentIterator.close();
     }
+  }
+
+  @Override
+  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
+    return Optional.of(pair);
   }
 
   private boolean isCdcSync(MySqlInitialLoadStateManager initialLoadStateManager) {

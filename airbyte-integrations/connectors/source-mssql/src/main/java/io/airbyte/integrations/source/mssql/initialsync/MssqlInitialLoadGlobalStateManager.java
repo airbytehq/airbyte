@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadGlobalStateManager.class);
-  private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
   private StateManager stateManager;
   private final CdcState initialCdcState;
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
@@ -143,11 +142,6 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(generateGlobalState(streamStates));
-  }
-
-  @Override
-  public OrderedColumnInfo getOrderedColumnInfo(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColInfo.get(pair);
   }
 
   private DbStreamState getFinalState(final AirbyteStreamNameNamespacePair pair) {
