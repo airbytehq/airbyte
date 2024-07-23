@@ -1,0 +1,17 @@
+{
+    "properties":{
+        "filter":{
+            "properties":{
+                "any":{
+                    "items":{
+                        "properties":{
+                            "value":{
+                                "type": ["null", "string", "integer"]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
