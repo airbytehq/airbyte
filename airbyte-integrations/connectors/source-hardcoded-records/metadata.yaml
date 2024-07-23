@@ -26,12 +26,6 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-hardcoded-records
-  resourceRequirements:
-    jobSpecific:
-      - jobType: sync
-        resourceRequirements:
-          cpu_limit: "4.0"
-          cpu_request: "1.0"
   suggestedStreams:
     streams:
       - countries
