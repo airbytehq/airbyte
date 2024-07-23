@@ -59,5 +59,5 @@ Upon any operation, Airbyte reads the obfuscated JSON spec, extracts the secret 
 E.g. `airbyte_workspace_024eaa40-75ae-4014-941d-b9e938c3a363_secret_5675437d-ea6b-4f9a-9a0c-d76066004841_v1` -> `airbyte_workspace_024eaa40-75ae-4014-941d-b9e938c3a363_secret_5675437d-ea6b-4f9a-9a0c-d76066004841_v2`.
 2. This means secret coordinates contain two useful pieces of metadata to help operators. The workspace id allows operators to understand what workspace
 a secret belongs to. The stable prefix allows operators to understand how often a secret has been modified and group secrets by connections.
-3. Not all secrets can be associated to a workspace e.g. Secrets created as part of a [Discover](./understanding-airbyte/airbyte-protocol/#discover) or [Check](./understanding-airbyte/airbyte-protocol/#check) operation. These secrets have a workspace id of
+3. Not all secrets can be associated to a workspace e.g. Secrets created as part of a [Discover](./airbyte-protocol/#discover) or [Check](./airbyte-protocol/#check) operation. These secrets have a workspace id of
 `00000000-0000-0000-0000-000000000000`. Whenever possible, Airbyte attempts to expire these secrets after 2 hours for security and cost reasons. 
