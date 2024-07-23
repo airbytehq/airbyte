@@ -182,7 +182,7 @@ public class MssqlInitialReadUtil {
     final CdcState initialStateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
 
     return new MssqlInitialLoadGlobalStateManager(initialLoadStreams,
-        initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+        initPairToOrderedColumnInfoMap(database, catalog, tableNameToTable, quoteString),
         stateManager, catalog, initialStateToBeUsed);
   }
 
@@ -389,13 +389,13 @@ public class MssqlInitialReadUtil {
 
   public static Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(
                                                                                                       final JdbcDatabase database,
-                                                                                                      final InitialLoadStreams initialLoadStreams,
+                                                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                                                       final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                                                       final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
     // For every stream that is in initial ordered column sync, we want to maintain information about
     // the current ordered column info associated with the stream
-    initialLoadStreams.streamsForInitialLoad.forEach(stream -> {
+    catalog.getStreams().forEach(stream -> {
       final AirbyteStreamNameNamespacePair pair =
           new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final Optional<OrderedColumnInfo> ocInfo = getOrderedColumnInfo(database, stream, tableNameToTable, quoteString);
