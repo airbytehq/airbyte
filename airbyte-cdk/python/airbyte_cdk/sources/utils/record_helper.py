@@ -33,7 +33,7 @@ def stream_data_to_airbyte_message(
             return AirbyteMessage(type=MessageType.RECORD, record=message)
         case AirbyteTraceMessage():
             return AirbyteMessage(type=MessageType.TRACE, trace=data_or_message)
-        case  AirbyteLogMessage():
+        case AirbyteLogMessage():
             return AirbyteMessage(type=MessageType.LOG, log=data_or_message)
         case _:
             raise ValueError(f"Unexpected type for data_or_message: {type(data_or_message)}: {data_or_message}")
