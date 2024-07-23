@@ -44,8 +44,7 @@ class CsvSerializedBufferTest {
                 ),
             )
         private const val STREAM = "stream1"
-        private const val DEFAULT_NAMESPACE = ""
-        private val streamPair = AirbyteStreamNameNamespacePair(STREAM, DEFAULT_NAMESPACE)
+        private val streamPair = AirbyteStreamNameNamespacePair(STREAM, null)
         private val message: AirbyteRecordMessage =
             AirbyteRecordMessage()
                 .withStream(STREAM)
