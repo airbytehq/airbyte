@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils
@@ -34,12 +35,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class PostgresDestination :
-    AbstractJdbcDestination<PostgresState>(
-        DRIVER_CLASS,
-        PostgresSQLNameTransformer(),
-        PostgresSqlOperations()
-    ),
+    AbstractJdbcDestination<PostgresState>(DRIVER_CLASS, PostgresSQLNameTransformer()),
     Destination {
+
     override fun modifyDataSourceBuilder(
         builder: DataSourceFactory.DataSourceBuilder
     ): DataSourceFactory.DataSourceBuilder {
@@ -148,9 +146,16 @@ class PostgresDestination :
     }
 
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
+        return PostgresSqlGenerator(PostgresSQLNameTransformer(), hasDropCascadeMode(config))
+    }
+
+    override fun getSqlOperations(config: JsonNode): SqlOperations {
+        return PostgresSqlOperations(hasDropCascadeMode(config))
+    }
+
+    private fun hasDropCascadeMode(config: JsonNode): Boolean {
         val dropCascadeNode = config[DROP_CASCADE_OPTION]
-        val dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean()
-        return PostgresSqlGenerator(PostgresSQLNameTransformer(), dropCascade)
+        return dropCascadeNode != null && dropCascadeNode.asBoolean()
     }
 
     override fun getDestinationHandler(

@@ -595,7 +595,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Test
     @Throws(Exception::class)
-    fun testIncrementalSyncDropOneColumn() {
+    open fun testIncrementalSyncDropOneColumn() {
         val stream =
             AirbyteStream()
                 .withNamespace(streamNamespace)

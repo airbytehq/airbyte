@@ -52,20 +52,19 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     driverClass: String,
     private val optimalBatchSizeBytes: Long,
     protected open val namingResolver: NamingConventionTransformer,
-    protected val sqlOperations: SqlOperations,
 ) : JdbcConnector(driverClass), Destination {
 
     constructor(
         driverClass: String,
-        namingResolver: NamingConventionTransformer,
-        sqlOperations: SqlOperations,
+        namingResolver: NamingConventionTransformer
     ) : this(
         driverClass,
         JdbcBufferedConsumerFactory.DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
-        namingResolver,
-        sqlOperations
+        namingResolver
     )
     protected open val configSchemaKey: String = "schema"
+
+    abstract fun getSqlOperations(config: JsonNode): SqlOperations
 
     /**
      * If the destination should always disable type dedupe, override this method to return true. We
@@ -79,6 +78,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val dataSource = getDataSource(config)
+        val sqlOperations = getSqlOperations(config)
 
         try {
             val database = getDatabase(dataSource)
@@ -270,6 +270,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         defaultNamespace: String
     ): SerializedAirbyteMessageConsumer {
+        val sqlOperations = getSqlOperations(config)
         val sqlGenerator = getSqlGenerator(config)
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =
