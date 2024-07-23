@@ -26,6 +26,7 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   supportsDbt: true
+  supportsRefreshes: false
   tags:
     - language:java
   connectorTestSuitesOptions:
