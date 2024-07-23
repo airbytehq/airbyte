@@ -75,7 +75,8 @@ class ParquetSerializedBuffer(
                     ?: throw RuntimeException("No such stream ${stream.namespace}.${stream.name}"),
                 stream.name,
                 stream.namespace,
-                useV2FieldNames = useV2FieldNames
+                useV2FieldNames = useV2FieldNames,
+                addStringToLogicalTypes = false
             )
         bufferFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet")
         Files.deleteIfExists(bufferFile)
