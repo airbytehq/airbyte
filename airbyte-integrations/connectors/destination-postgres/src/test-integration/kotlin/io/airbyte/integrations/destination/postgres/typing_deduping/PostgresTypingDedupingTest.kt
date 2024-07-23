@@ -44,8 +44,8 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     }
 
     @Test
-    override fun testMixedCaseRawTableV1V2Migration() {
-        super.testMixedCaseRawTableV1V2Migration()
+    override fun testIncrementalSyncDropOneColumn() {
+        super.testIncrementalSyncDropOneColumn()
     }
 
     override val imageName: String

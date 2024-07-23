@@ -24,7 +24,11 @@ import org.postgresql.core.BaseConnection
 
 val LOGGER = KotlinLogging.logger {}
 
-class PostgresSqlOperations : JdbcSqlOperations() {
+class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
+    private val dropTableQualifier: String
+    init {
+        dropTableQualifier = if (useDropCascade) "CASCADE" else ""
+    }
     override fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
         return if (isDestinationV2) {
             java.util.List.of( // the raw_id index _could_ be unique (since raw_id is a UUID)
@@ -140,7 +144,7 @@ class PostgresSqlOperations : JdbcSqlOperations() {
         val tmpName = rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX
         database.executeWithinTransaction(
             listOf(
-                "DROP TABLE $rawNamespace.$rawName",
+                "DROP TABLE $rawNamespace.$rawName $dropTableQualifier",
                 "ALTER TABLE $rawNamespace.$tmpName RENAME TO $rawName"
             )
         )
