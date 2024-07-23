@@ -3,11 +3,12 @@
 #
 
 import inspect
+import itertools
 import logging
-import typing
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
@@ -19,18 +20,16 @@ from airbyte_cdk.sources.streams.checkpoint import (
     CursorBasedCheckpointReader,
     FullRefreshCheckpointReader,
     IncrementalCheckpointReader,
+    LegacyCursorBasedCheckpointReader,
     ResumableFullRefreshCheckpointReader,
 )
+from airbyte_cdk.sources.types import StreamSlice
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated import deprecated
-
-if typing.TYPE_CHECKING:
-    from airbyte_cdk.sources import Source
-    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
@@ -100,12 +99,19 @@ class IncrementalMixin(CheckpointMixin, ABC):
     """
 
 
+@dataclass
+class StreamClassification:
+    is_legacy_format: bool
+    has_multiple_slices: bool
+
+
 class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """
 
     _configured_json_schema: Optional[Dict[str, Any]] = None
+    _exit_on_rate_limit: bool = False
 
     # Use self.logger in subclasses to log any messages
     @property
@@ -114,6 +120,10 @@ class Stream(ABC):
 
     # TypeTransformer object to perform output data transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
+
+    cursor: Optional[Cursor] = None
+
+    has_multiple_slices = False
 
     @property
     def name(self) -> str:
@@ -302,7 +312,7 @@ class Stream(ABC):
         """
         if self.supports_incremental:
             return True
-        if hasattr(type(self), "parent"):
+        if self.has_multiple_slices:
             # We temporarily gate substream to not support RFR because puts a pretty high burden on connector developers
             # to structure stream state in a very specific way. We also can't check for issubclass(HttpSubStream) because
             # not all substreams implement the interface and it would be a circular dependency so we use parent as a surrogate
@@ -341,27 +351,15 @@ class Stream(ABC):
         """
         return True
 
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Checks whether this stream is available.
-
-        :param logger: source logger
-        :param source: (optional) source
-        :return: A tuple of (boolean, str). If boolean is true, then this stream
-          is available, and no str is required. Otherwise, this stream is unavailable
-          for some reason and the str should describe what went wrong and how to
-          resolve the unavailability, if possible.
-        """
-        if self.availability_strategy:
-            return self.availability_strategy.check_availability(self, logger, source)
-        return True, None
-
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        """
-        :return: The AvailabilityStrategy used to check whether this stream is available.
-        """
-        return None
+    def exit_on_rate_limit(self) -> bool:
+        """Exit on rate limit getter, should return bool value. False if the stream will retry endlessly when rate limited."""
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        """Exit on rate limit setter, accept bool value."""
+        self._exit_on_rate_limit = value
 
     @property
     @abstractmethod
@@ -382,7 +380,7 @@ class Stream(ABC):
         :param stream_state:
         :return:
         """
-        return [{}]
+        yield StreamSlice(partition={}, cursor_slice={})
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -419,9 +417,9 @@ class Stream(ABC):
         """
         A Cursor is an interface that a stream can implement to manage how its internal state is read and updated while
         reading records. Historically, Python connectors had no concept of a cursor to manage state. Python streams need
-        need to define a cursor implementation and override this method to manage state through a Cursor.
+        to define a cursor implementation and override this method to manage state through a Cursor.
         """
-        return None
+        return self.cursor
 
     def _get_checkpoint_reader(
         self,
@@ -430,37 +428,49 @@ class Stream(ABC):
         sync_mode: SyncMode,
         stream_state: MutableMapping[str, Any],
     ) -> CheckpointReader:
-        checkpoint_mode = self._checkpoint_mode
+        mappings_or_slices = self.stream_slices(
+            cursor_field=cursor_field,
+            sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+            stream_state=stream_state,
+        )
+
+        # Because of poor foresight, we wrote the default Stream.stream_slices() method to return [None] which is confusing and
+        # has now normalized this behavior for connector developers. Now some connectors return [None]. This is objectively
+        # misleading and a more ideal interface is [{}] to indicate we still want to iterate over one slice, but with no
+        # specific slice values. None is bad, and now I feel bad that I have to write this hack.
+        if mappings_or_slices == [None]:
+            mappings_or_slices = [{}]
+
+        slices_iterable_copy, iterable_for_detecting_format = itertools.tee(mappings_or_slices, 2)
+        stream_classification = self._classify_stream(mappings_or_slices=iterable_for_detecting_format)
+
+        # Streams that override has_multiple_slices are explicitly indicating that they will iterate over
+        # multiple partitions. Inspecting slices to automatically apply the correct cursor is only needed as
+        # a backup. So if this value was already assigned to True by the stream, we don't need to reassign it
+        self.has_multiple_slices = self.has_multiple_slices or stream_classification.has_multiple_slices
+
         cursor = self.get_cursor()
         if cursor:
-            slices = self.stream_slices(
-                cursor_field=cursor_field,
-                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
-                stream_state=stream_state,
-            )
+            cursor.set_initial_state(stream_state=stream_state)
+
+        checkpoint_mode = self._checkpoint_mode
+
+        if cursor and stream_classification.is_legacy_format:
+            return LegacyCursorBasedCheckpointReader(stream_slices=slices_iterable_copy, cursor=cursor, read_state_from_cursor=True)
+        elif cursor:
             return CursorBasedCheckpointReader(
-                stream_slices=slices, cursor=cursor, read_state_from_cursor=checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH
+                stream_slices=slices_iterable_copy,
+                cursor=cursor,
+                read_state_from_cursor=checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH,
             )
-        if checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
+        elif checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
             # Resumable full refresh readers rely on the stream state dynamically being updated during pagination and does
             # not iterate over a static set of slices.
             return ResumableFullRefreshCheckpointReader(stream_state=stream_state)
+        elif checkpoint_mode == CheckpointMode.INCREMENTAL:
+            return IncrementalCheckpointReader(stream_slices=slices_iterable_copy, stream_state=stream_state)
         else:
-            slices = self.stream_slices(
-                cursor_field=cursor_field,
-                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
-                stream_state=stream_state,
-            )
-            # Because of poor foresight, we wrote the default Stream.stream_slices() method to return [None] which is confusing and
-            # now normalized this behavior for connector developers. Now some connectors also return [None]. This is objectively
-            # misleading and a more ideal interface is [{}] to indicate we still want to iterate over one slice, but with no
-            # specific slice values. None is bad, and now I feel bad that I have to write this hack.
-            if slices == [None]:
-                slices = [{}]
-            if checkpoint_mode == CheckpointMode.INCREMENTAL:
-                return IncrementalCheckpointReader(stream_slices=slices, stream_state=stream_state)
-            else:
-                return FullRefreshCheckpointReader(stream_slices=slices)
+            return FullRefreshCheckpointReader(stream_slices=slices_iterable_copy)
 
     @property
     def _checkpoint_mode(self) -> CheckpointMode:
@@ -470,6 +480,54 @@ class Stream(ABC):
             return CheckpointMode.RESUMABLE_FULL_REFRESH
         else:
             return CheckpointMode.FULL_REFRESH
+
+    @staticmethod
+    def _classify_stream(mappings_or_slices: Iterator[Optional[Union[Mapping[str, Any], StreamSlice]]]) -> StreamClassification:
+        """
+        This is a bit of a crazy solution, but also the only way we can detect certain attributes about the stream since Python
+        streams do not follow consistent implementation patterns. We care about the following two attributes:
+        - is_substream: Helps to incrementally release changes since substreams w/ parents are much more complicated. Also
+          helps de-risk the release of changes that might impact all connectors
+        - uses_legacy_slice_format: Since the checkpoint reader must manage a complex state object, we opted to have it always
+          use the structured StreamSlice object. However, this requires backwards compatibility with Python sources that only
+          support the legacy mapping object
+
+        Both attributes can eventually be deprecated once stream's define this method deleted once substreams have been implemented and
+        legacy connectors all adhere to the StreamSlice object.
+        """
+        if not mappings_or_slices:
+            raise ValueError("A stream should always have at least one slice")
+        try:
+            next_slice = next(mappings_or_slices)
+            if isinstance(next_slice, StreamSlice) and next_slice == StreamSlice(partition={}, cursor_slice={}):
+                is_legacy_format = False
+                slice_has_value = False
+            elif next_slice == {}:
+                is_legacy_format = True
+                slice_has_value = False
+            elif isinstance(next_slice, StreamSlice):
+                is_legacy_format = False
+                slice_has_value = True
+            else:
+                is_legacy_format = True
+                slice_has_value = True
+        except StopIteration:
+            # If the stream has no slices, the format ultimately does not matter since no data will get synced. This is technically
+            # a valid case because it is up to the stream to define its slicing behavior
+            return StreamClassification(is_legacy_format=False, has_multiple_slices=False)
+
+        if slice_has_value:
+            # If the first slice contained a partition value from the result of stream_slices(), this is a substream that might
+            # have multiple parent records to iterate over
+            return StreamClassification(is_legacy_format=is_legacy_format, has_multiple_slices=slice_has_value)
+
+        try:
+            # If stream_slices() returns multiple slices, this is also a substream that can potentially generate empty slices
+            next(mappings_or_slices)
+            return StreamClassification(is_legacy_format=is_legacy_format, has_multiple_slices=True)
+        except StopIteration:
+            # If the result of stream_slices() only returns a single empty stream slice, then we know this is a regular stream
+            return StreamClassification(is_legacy_format=is_legacy_format, has_multiple_slices=False)
 
     def log_stream_sync_configuration(self) -> None:
         """
@@ -513,15 +571,21 @@ class Stream(ABC):
         method is used as a fallback method.
         """
 
-        try:
-            new_state = self.state  # type: ignore # we know the field might not exist...
-            checkpoint_reader.observe(new_state)
-        except AttributeError:
-            # Only when a stream uses legacy state should the checkpoint reader observe the parameter stream_state that
-            # is derived from the get_updated_state() method. The checkpoint reader should preserve existing state when
-            # there is no stream_state
-            if stream_state:
-                checkpoint_reader.observe(stream_state)
+        # This is an inversion of the original logic that used to try state getter/setters first. As part of the work to
+        # automatically apply resumable full refresh to all streams, all HttpStream classes implement default state
+        # getter/setter methods, we should default to only using the incoming stream_state parameter value is {} which
+        # indicates the stream does not override the default get_updated_state() implementation. When the default method
+        # is not overridden, then the stream defers to self.state getter
+        if stream_state:
+            checkpoint_reader.observe(stream_state)
+        elif type(self).get_updated_state == Stream.get_updated_state:
+            # We only default to the state getter/setter if the stream does not use the legacy get_updated_state() method
+            try:
+                new_state = self.state  # type: ignore # This will always exist on HttpStreams, but may not for Stream
+                if new_state:
+                    checkpoint_reader.observe(new_state)
+            except AttributeError:
+                pass
 
     def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,

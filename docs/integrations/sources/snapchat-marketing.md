@@ -38,23 +38,23 @@ This page guides you through the process of setting up the [Snapchat Marketing](
      - If you do not have the API endpoint, simply use a valid URL.Refer to the discussion here for more information: [Snapchat Redirect URL - Clarity in documentation please](https://github.com/Snap-Kit/bitmoji-sample/issues/3)
    - Save the **Client ID** and **Client Secret**
 4. Obtain a refresh token using OAuth2 authentication workflow.
-   - Open the authorize link in a browser. It will look similar to this: 
+   - Open the authorize link in a browser. It will look similar to this:
    ```
-   https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUwerf-m 
+   https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUwerf-m
    ```
    - Login & Authorize via UI
    - Locate the `code` query parameter in the redirect
-   - Exchange the `code` for an access token and refresh token. 
+   - Exchange the `code` for an access token and refresh token.
 
-   Your request will appear similar to the following: 
+   Your request will appear similar to the following:
 
    ```text
-      curl -X POST \      
-      -d "code={one_time_use_code}" \  
-      -d "client_id={client_id}" \  
-      -d "client_secret={client_secret}"  \  
-      -d "grant_type=authorization_code"  \  
-      -d "redirect_uri=redirect_uri"  
+      curl -X POST \
+      -d "code={one_time_use_code}" \
+      -d "client_id={client_id}" \
+      -d "client_secret={client_secret}"  \
+      -d "grant_type=authorization_code"  \
+      -d "redirect_uri=redirect_uri"
       https://accounts.snapchat.com/login/oauth2/access_token`
    ```
 
@@ -73,16 +73,16 @@ For more information on authenticating into the Snapchat API, read their documen
 3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account`.
 5. In the authentication window, log in and authorize access to your Snapchat account
-6. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced. 
+6. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced.
 
 :::tip
-The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below). 
+The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below).
 :::
-7. (Optional) Choose an End Date. All data created on or before this date will be synced. If left blank, all records will be synced. 
+7. (Optional) Choose an End Date. All data created on or before this date will be synced. If left blank, all records will be synced.
 8. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is set to `conversion`, and can be modified to `impression`.
 9. (Optional) Choose the 'Swip Up Attribution Window', which specifies the length of the attribution window for swipe up actions. The default is 28 days and can be adjusted.
 10. (Optional) Choose the `View Attribution Window`, which specifies the length of the attribution window for views. The default is 28 days and can be adjusted.
-11. Click 'Set up source' 
+11. Click 'Set up source'
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -93,16 +93,16 @@ The `Start Date` is required for the all streams that use `start_time` as a key 
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Add the **Client ID**, **Client Secret**, and **Refresh Token** obtained from the setup.
-5. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced. 
+5. (Optional) Choose a Start Date. All data created on or after this date will be synced. If left blank, all records will be synced.
 
 :::tip
-The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below). 
+The `Start Date` is required for the all streams that use `start_time` as a key (see Supported Streams section below).
 :::
 6. (Optional) Choose an End Date. All data created on or before this date will be synced.
 7. (Optional) Choose the `Action Report Time`, which specifies how conversions are reported. The default is set to `conversion`, and can be modified to `impression`.
 8. (Optional) Choose the 'Swip Up Attribution Window', which specifies the length of the attribution window for swipe up actions. The default is 28 days and can be adjusted.
 9. (Optional) Choose the `View Attribution Window`, which specifies the length of the attribution window for views. The default is 28 days and can be adjusted.
-10. Click 'Set up source' 
+10. Click 'Set up source'
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
@@ -143,6 +143,8 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.1.1 | 2024-07-20 | [42366](https://github.com/airbytehq/airbyte/pull/42366) | Update dependencies |
+| 1.1.0 | 2024-07-16 | [42009](https://github.com/airbytehq/airbyte/pull/42009) | Migrate to CDK v2.4.0 |
 | 1.0.3 | 2024-07-13 | [41855](https://github.com/airbytehq/airbyte/pull/41855) | Update dependencies |
 | 1.0.2 | 2024-07-10 | [41547](https://github.com/airbytehq/airbyte/pull/41547) | Update dependencies |
 | 1.0.1 | 2024-07-09 | [40132](https://github.com/airbytehq/airbyte/pull/40132) | Update dependencies |

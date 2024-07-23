@@ -63,7 +63,7 @@ async def get_client_container(dagger_client: dagger.Client, connector_path: Pat
 
 async def do_setup(container: dagger.Container, command: List[str], connector_config: SecretDict, connector_path: Path):
     container = await _run_with_config(container, command, connector_config)
-    await container.directory(str(IN_CONTAINER_CONNECTOR_PATH)).export(str(connector_path))
+    await container.directory(str(IN_CONTAINER_CONNECTOR_PATH / "integration_tests")).export(str(connector_path / "integration_tests"))
     return container
 
 

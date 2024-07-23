@@ -49,6 +49,7 @@ Generate a API access key ID and token using the [Babelforce documentation](http
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.2.10 | 2024-07-20 | [42239](https://github.com/airbytehq/airbyte/pull/42239) | Update dependencies |
 | 0.2.9 | 2024-07-13 | [41728](https://github.com/airbytehq/airbyte/pull/41728) | Update dependencies |
 | 0.2.8 | 2024-07-10 | [41508](https://github.com/airbytehq/airbyte/pull/41508) | Update dependencies |
 | 0.2.7 | 2024-07-09 | [41260](https://github.com/airbytehq/airbyte/pull/41260) | Update dependencies |

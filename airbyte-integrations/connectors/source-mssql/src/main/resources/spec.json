@@ -157,6 +157,15 @@
                 "order": 5,
                 "min": 1000,
                 "max": 10000
+              },
+              "initial_load_timeout_hours": {
+                "type": "integer",
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+                "default": 8,
+                "min": 4,
+                "max": 24,
+                "order": 6
               }
             }
           },
