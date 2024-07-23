@@ -312,16 +312,20 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       catalog.setStreams(streams);
     } else if (isXmin(config)) {
-      // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
-      // from being able to pick their own cursor.
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresCatalogHelper::overrideSyncModes)
-          .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
-          .collect(toList());
-
-      catalog.setStreams(streams);
+      try {
+        JdbcDatabase database = createDatabase(config);
+        Map<String, List<String>> viewsBySchema = PostgresCatalogHelper.getViewsForAllSchemas(database, schemas);
+        // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
+        // from being able to pick their own cursor.
+        final List<AirbyteStream> streams = catalog.getStreams().stream()
+            .map(stream -> PostgresCatalogHelper.overrideSyncModes(stream, viewsBySchema))
+            .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
+            .collect(toList());
+        catalog.setStreams(streams);
+      } catch (SQLException e) {
+        LOGGER.error("Error checking if stream is a view", e);
+      }
     }
-
     return catalog;
   }
 
@@ -556,7 +560,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                                                                          * decorateWithStartedStatus=
                                                                                                                          */ true, /*
                                                                                                                                    * decorateWithCompletedStatus=
-                                                                                                                                   */ true));
+                                                                                                                                   */ true,
+          Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>(xminHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(xminStreams.streamsForXminSync()), tableNameToTable, emittedAt));
 
@@ -600,7 +605,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
               tableNameToTable,
-              emittedAt, /* decorateWithStartedStatus= */ true, /* decorateWithCompletedStatus= */ true));
+              emittedAt, /* decorateWithStartedStatus= */ true, /* decorateWithCompletedStatus= */ true, Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterators = new ArrayList<>(super.getIncrementalIterators(database,
           new ConfiguredAirbyteCatalog().withStreams(
               cursorBasedStreamsCategorised.remainingStreams()
@@ -688,8 +693,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   public static void main(final String[] args) throws Exception {
     final Source source = PostgresSource.sshWrappedSource(new PostgresSource());
+    final PostgresSourceExceptionHandler exceptionHandler = new PostgresSourceExceptionHandler();
     LOGGER.info("starting source: {}", PostgresSource.class);
-    new IntegrationRunner(source).run(args);
+    new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
 
