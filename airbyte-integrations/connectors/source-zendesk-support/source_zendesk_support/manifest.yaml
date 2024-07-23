@@ -413,7 +413,6 @@ definitions:
               error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
             - http_codes: [403, 404]
               action: FAIL
-              failure_type: config_error
               error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
       paginator:
         type: DefaultPaginator
