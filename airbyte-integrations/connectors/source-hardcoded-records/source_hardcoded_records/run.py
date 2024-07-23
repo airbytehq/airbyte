@@ -6,11 +6,11 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_faker_hardcode import SourceFakerHardcode
+from source_hardcoded_records import SourceHardcodedRecords
 
 
 def run():
-    source = SourceFakerHardcode()
+    source = SourceHardcodedRecords()
     launch(source, sys.argv[1:])
 
 

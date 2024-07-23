@@ -8,12 +8,12 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .streams import Countries, Orders
+from .streams import Customers, Products
 
 DEFAULT_COUNT = 1_000
 
 
-class SourceFakerHardcode(AbstractSource):
+class SourceHardcodedRecords(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         if type(config["count"]) == int or type(config["count"]) == float:
             return True, None
@@ -23,4 +23,4 @@ class SourceFakerHardcode(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
 
-        return [Countries(count), Orders(count)]
+        return [Products(count), Customers(count)]

@@ -10,12 +10,12 @@ data:
   connectorType: source
   definitionId: 084124ab-22db-4019-b36d-630418541bf7
   dockerImageTag: 0.0.1
-  dockerRepository: airbyte/source-faker-hardcode
-  documentationUrl: https://docs.airbyte.com/integrations/sources/faker-hardcode
-  githubIssueLabel: source-faker
+  dockerRepository: airbyte/source-hardcoded-records
+  documentationUrl: https://docs.airbyte.com/integrations/sources/hardcoded-records
+  githubIssueLabel: source-hardcoded-records
   icon: faker.svg
   license: MIT
-  name: Sample Data (Faker HC)
+  name: Hardcoded Records
   registries:
     cloud:
       enabled: true
@@ -25,7 +25,7 @@ data:
   remoteRegistries:
     pypi:
       enabled: true
-      packageName: airbyte-source-faker-hardcode
+      packageName: airbyte-source-hardcoded-records
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -44,7 +44,7 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-FAKER-HARDCODE_CREDS
+        - name: SECRET_SOURCE-HARDCODED-RECORDS_CREDS
           fileName: config.json
           secretStore:
             type: GSM

@@ -4,23 +4,23 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 version = "0.0.1"
-name = "source-faker-hardcode"
-description = "Source implementation for fake but realistic looking data."
+name = "source-hardcoded-records"
+description = "Source implementation for hardcoded recprds."
 authors = [ "Airbyte <evan@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
-documentation = "https://docs.airbyte.com/integrations/sources/faker-hardcode"
+documentation = "https://docs.airbyte.com/integrations/sources/hardcoded-records"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
-include = "source_faker_hardcode"
+include = "source_hardcoded_records"
 
 [tool.poetry.dependencies]
 python = "^3.9,<4.0"
 airbyte-cdk = "^3.0"
 
 [tool.poetry.scripts]
-source-faker = "source_faker_hardcode.run:run"
+source-hardcoded-records = "source_hardcoded_records.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"
