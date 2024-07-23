@@ -39,17 +39,18 @@ class JsonToAvroSchemaConverter {
         jsonSchema: JsonNode,
         streamName: String,
         namespace: String?,
-        useV2FieldNames: Boolean = false
+        useV2FieldNames: Boolean = false,
+        addStringToLogicalTypes: Boolean = true,
     ): Schema {
         return getAvroSchema(
             jsonSchema,
             streamName,
             namespace,
             appendAirbyteFields = true,
-            appendExtraProps = !useV2FieldNames,
-            addStringToLogicalTypes = true,
+            appendExtraProps = true,
+            addStringToLogicalTypes = addStringToLogicalTypes,
             isRootNode = true,
-            useV2FieldNames = useV2FieldNames
+            useV2FieldNames = useV2FieldNames,
         )
     }
 
@@ -69,7 +70,7 @@ class JsonToAvroSchemaConverter {
         appendExtraProps: Boolean,
         addStringToLogicalTypes: Boolean,
         isRootNode: Boolean,
-        useV2FieldNames: Boolean = false
+        useV2FieldNames: Boolean = false,
     ): Schema {
         val stdName: String = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName)
         val stdNamespace: String? =
@@ -205,7 +206,7 @@ class JsonToAvroSchemaConverter {
         fieldType: JsonSchemaType,
         fieldDefinition: JsonNode,
         appendExtraProps: Boolean,
-        addStringToLogicalTypes: Boolean
+        addStringToLogicalTypes: Boolean,
     ): Schema {
         Preconditions.checkState(
             fieldType != JsonSchemaType.NULL,
@@ -224,26 +225,33 @@ class JsonToAvroSchemaConverter {
             JsonSchemaType.NUMBER_V1,
             JsonSchemaType.BOOLEAN_V1,
             JsonSchemaType.STRING_V1,
-            JsonSchemaType.TIME_WITH_TIMEZONE_V1,
             JsonSchemaType.BINARY_DATA_V1 -> fieldSchema = Schema.create(fieldType.avroType)
-            JsonSchemaType.DATE_V1 ->
-                fieldSchema =
-                    LogicalTypes.date()
-                        .addToSchema(
-                            Schema.create(
-                                Schema.Type.INT,
-                            ),
-                        )
+            JsonSchemaType.DATE_V1 -> {
+                if (addStringToLogicalTypes) {
+                    fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT))
+                } else {
+                    fieldSchema = Schema.create(Schema.Type.INT)
+                    LogicalTypes.date().addToSchema(fieldSchema)
+                }
+            }
             JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1,
-            JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1 ->
-                fieldSchema =
-                    LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG))
-            JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1 ->
-                fieldSchema =
-                    LogicalTypes.timeMicros()
-                        .addToSchema(
-                            Schema.create(Schema.Type.LONG),
-                        )
+            JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
+                if (addStringToLogicalTypes) {
+                    fieldSchema = LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG))
+                } else {
+                    fieldSchema = Schema.create(Schema.Type.LONG)
+                    LogicalTypes.timestampMillis().addToSchema(fieldSchema)
+                }
+            }
+            JsonSchemaType.TIME_WITH_TIMEZONE_V1,
+            JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1 -> {
+                if (addStringToLogicalTypes) {
+                    fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG))
+                } else {
+                    fieldSchema = Schema.create(Schema.Type.LONG)
+                    LogicalTypes.timeMillis().addToSchema(fieldSchema)
+                }
+            }
             JsonSchemaType.INTEGER_V0,
             JsonSchemaType.NUMBER_V0,
             JsonSchemaType.NUMBER_INT_V0,
@@ -567,7 +575,7 @@ class JsonToAvroSchemaConverter {
         fieldNamespace: String?,
         fieldDefinition: JsonNode,
         appendExtraProps: Boolean,
-        addStringToLogicalTypes: Boolean
+        addStringToLogicalTypes: Boolean,
     ): Schema {
         // Filter out null types, which will be added back in the end.
         val nonNullFieldTypes: MutableList<Schema> =
