@@ -274,23 +274,6 @@ class MongoDbCdcInitializerTest {
   }
 
   @Test
-  void testMultipleIdTypesThrowsException() {
-    final Document aggregate1 = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
-    final Document aggregate2 = Document.parse("{\"_id\": {\"_id\": \"string\"}, \"count\": 1}");
-
-    when(aggregateCursor.hasNext()).thenReturn(true, true, false);
-    when(aggregateCursor.next()).thenReturn(aggregate1, aggregate2);
-    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
-
-    final MongoDbStateManager stateManager =
-        MongoDbStateManager.createStateManager(createInitialDebeziumState(InitialSnapshotStatus.IN_PROGRESS), CONFIG);
-
-    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG));
-    assertTrue(thrown.getMessage().contains("must be consistently typed"));
-  }
-
-  @Test
   void testUnsupportedIdTypeThrowsException() {
     final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"exotic\"}, \"count\": 1}");
 

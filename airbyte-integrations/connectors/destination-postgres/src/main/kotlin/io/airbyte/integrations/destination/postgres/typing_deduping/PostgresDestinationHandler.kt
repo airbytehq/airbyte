@@ -45,7 +45,9 @@ class PostgresDestinationHandler(
         return PostgresState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("isAirbyteMetaPresentInRaw") &&
-                json["isAirbyteMetaPresentInRaw"].asBoolean()
+                json["isAirbyteMetaPresentInRaw"].asBoolean(),
+            json.hasNonNull("isAirbyteGenerationIdPresent") &&
+                json["isAirbyteGenerationIdPresent"].asBoolean()
         )
     }
 
