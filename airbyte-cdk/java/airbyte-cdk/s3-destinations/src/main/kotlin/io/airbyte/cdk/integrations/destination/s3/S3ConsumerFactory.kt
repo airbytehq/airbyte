@@ -166,12 +166,23 @@ class S3ConsumerFactory {
         val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
         // Buffer creation function: yields a file buffer that converts
         // incoming data to the correct format for the destination.
+
+        val generationIds =
+            catalog.streams.associate { stream ->
+                val descriptor =
+                    StreamDescriptor()
+                        .withNamespace(stream.stream.namespace)
+                        .withName(stream.stream.name)
+                descriptor to stream.generationId
+            }
+
         val createFunction =
             getCreateFunction(
                 s3Config,
                 Function<String, BufferStorage> { fileExtension: String ->
                     FileBuffer(fileExtension)
-                }
+                },
+                useV2FieldNames = true
             )
         return AsyncStreamConsumer(
             outputRecordCollector,
@@ -180,15 +191,18 @@ class S3ConsumerFactory {
             S3DestinationFlushFunction(
                 // Ensure the file buffer is always larger than the memory buffer,
                 // as the file buffer will be flushed at the end of the memory flush.
-                optimalBatchSizeBytes = (FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES * 0.9).toLong()
-            ) {
-                // Yield a new BufferingStrategy every time we flush (for thread-safety).
-                SerializedBufferingStrategy(
-                    createFunction,
-                    catalog,
-                    flushBufferFunction(storageOps, writeConfigs, catalog)
-                )
-            },
+                optimalBatchSizeBytes =
+                    (FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES * 0.9).toLong(),
+                {
+                    // Yield a new BufferingStrategy every time we flush (for thread-safety).
+                    SerializedBufferingStrategy(
+                        createFunction,
+                        catalog,
+                        flushBufferFunction(storageOps, writeConfigs, catalog)
+                    )
+                },
+                generationIds
+            ),
             catalog,
             // S3 has no concept of default namespace
             // In the "namespace from destination case", the namespace

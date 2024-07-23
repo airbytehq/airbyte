@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.s3.jsonl
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
@@ -28,7 +29,8 @@ import java.util.concurrent.Callable
 class JsonLSerializedBuffer(
     bufferStorage: BufferStorage,
     gzipCompression: Boolean,
-    private val flattenData: Boolean = false
+    private val flattenData: Boolean = false,
+    private val useV2FieldNames: Boolean = false,
 ) : BaseSerializedBuffer(bufferStorage) {
 
     private lateinit var printWriter: PrintWriter
@@ -41,11 +43,28 @@ class JsonLSerializedBuffer(
         printWriter = PrintWriter(outputStream, true, StandardCharsets.UTF_8)
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun writeRecord(record: AirbyteRecordMessage) {
-        val json = MAPPER.createObjectNode()
+    private fun addV2Fields(json: ObjectNode, record: AirbyteRecordMessage, generationId: Long) {
+        json.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString())
+        json.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, record.emittedAt)
+        json.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, System.currentTimeMillis())
+        json.put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, generationId)
+        json.replace(JavaBaseConstants.COLUMN_NAME_AB_META, MAPPER.valueToTree(record.meta))
+    }
+
+    private fun addV1Fields(json: ObjectNode, record: AirbyteRecordMessage) {
         json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString())
         json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, record.emittedAt)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long) {
+        val json = MAPPER.createObjectNode()
+        if (useV2FieldNames) {
+            addV2Fields(json, record, generationId)
+        } else {
+            addV1Fields(json, record)
+        }
+
         if (flattenData) {
             val data: Map<String, JsonNode> =
                 MAPPER.convertValue(
@@ -56,6 +75,7 @@ class JsonLSerializedBuffer(
         } else {
             json.set<JsonNode>(JavaBaseConstants.COLUMN_NAME_DATA, record.data)
         }
+
         printWriter.println(Jsons.serialize(json))
     }
 
@@ -90,7 +110,8 @@ class JsonLSerializedBuffer(
         @JvmStatic
         fun createBufferFunction(
             config: UploadJsonlFormatConfig?,
-            createStorageFunction: Callable<BufferStorage>
+            createStorageFunction: Callable<BufferStorage>,
+            useV2FieldNames: Boolean = false,
         ): BufferCreateFunction {
             return BufferCreateFunction {
                 _: AirbyteStreamNameNamespacePair?,
@@ -103,6 +124,7 @@ class JsonLSerializedBuffer(
                     createStorageFunction.call(),
                     compressionType != CompressionType.NO_COMPRESSION,
                     flattening != Flattening.NO,
+                    useV2FieldNames,
                 )
             }
         }
