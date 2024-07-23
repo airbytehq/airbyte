@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 from requests.models import Response
-from source_klaviyo.components.inclouded_fields_extractor import KlaviyoIncludedFieldExtractor
+from source_klaviyo.components.included_fields_extractor import KlaviyoIncludedFieldExtractor
 
 
 @pytest.fixture
