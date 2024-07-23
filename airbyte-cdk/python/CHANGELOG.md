@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9.1
+ fix OOM on predicate for streamable responses
+
 ## 3.9.0
 low code: add new Decoders: JsonlDecoder, IterableDecoder
 
