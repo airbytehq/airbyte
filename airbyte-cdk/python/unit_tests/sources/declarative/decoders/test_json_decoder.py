@@ -15,11 +15,7 @@ from airbyte_protocol.models import SyncMode
 
 @pytest.mark.parametrize(
     "response_body, expected_json",
-    [
-        ("", [{}]),
-        ('{"healthcheck": {"status": "ok"}}', [{"healthcheck": {"status": "ok"}}])
-    ],
-
+    [("", [{}]), ('{"healthcheck": {"status": "ok"}}', [{"healthcheck": {"status": "ok"}}])],
 )
 def test_json_decoder(requests_mock, response_body, expected_json):
     requests_mock.register_uri("GET", "https://airbyte.io/", text=response_body)
@@ -32,9 +28,9 @@ def test_json_decoder(requests_mock, response_body, expected_json):
     [
         ("", []),
         ('{"id": 1, "name": "test1"}', [{"id": 1, "name": "test1"}]),
-        ('{"id": 1, "name": "test1"}\n{"id": 2, "name": "test2"}', [{"id": 1, "name": "test1"}, {"id": 2, "name": "test2"}])
+        ('{"id": 1, "name": "test1"}\n{"id": 2, "name": "test2"}', [{"id": 1, "name": "test1"}, {"id": 2, "name": "test2"}]),
     ],
-    ids=["empty_response", "one_line_json", "multi_line_json"]
+    ids=["empty_response", "one_line_json", "multi_line_json"],
 )
 def test_jsonl_decoder(requests_mock, response_body, expected_json):
     requests_mock.register_uri("GET", "https://airbyte.io/", text=response_body)
@@ -48,10 +44,10 @@ def large_event_response_fixture():
     json_string = json.dumps(data)
     lines_in_response = 5_000_000
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_path = f'{dir_path}/test_response.txt'
-    with open(file_path, 'w') as file:
+    file_path = f"{dir_path}/test_response.txt"
+    with open(file_path, "w") as file:
         for _ in range(lines_in_response):
-            file.write(json_string + '\n')
+            file.write(json_string + "\n")
     yield (lines_in_response, file_path)
     os.remove(file_path)
 
@@ -98,13 +94,13 @@ def test_jsonl_decoder_memory_usage(requests_mock, large_events_response):
     stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config={})
 
     def get_body():
-        return open(file_path, 'rb', buffering=30)
+        return open(file_path, "rb", buffering=30)
 
     counter = 0
-    requests_mock.get('https://for-all-mankind.nasa.com/api/v1/users/users1', body=get_body())
-    requests_mock.get('https://for-all-mankind.nasa.com/api/v1/users/users2', body=get_body())
-    requests_mock.get('https://for-all-mankind.nasa.com/api/v1/users/users3', body=get_body())
-    requests_mock.get('https://for-all-mankind.nasa.com/api/v1/users/users4', body=get_body())
+    requests_mock.get("https://for-all-mankind.nasa.com/api/v1/users/users1", body=get_body())
+    requests_mock.get("https://for-all-mankind.nasa.com/api/v1/users/users2", body=get_body())
+    requests_mock.get("https://for-all-mankind.nasa.com/api/v1/users/users3", body=get_body())
+    requests_mock.get("https://for-all-mankind.nasa.com/api/v1/users/users4", body=get_body())
 
     stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
     for stream_slice in stream_slices:
