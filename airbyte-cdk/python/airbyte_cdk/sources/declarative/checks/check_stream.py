@@ -37,9 +37,9 @@ class CheckStream(ConnectionChecker):
                 raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}.")
 
             stream = stream_name_to_stream[stream_name]
-            availability_strategy = stream.availability_strategy or HttpAvailabilityStrategy()
+            availability_strategy = HttpAvailabilityStrategy()
             try:
-                stream_is_available, reason = availability_strategy.check_availability(stream, logger, source)
+                stream_is_available, reason = availability_strategy.check_availability(stream, logger)
                 if not stream_is_available:
                     return False, reason
             except Exception as error:
