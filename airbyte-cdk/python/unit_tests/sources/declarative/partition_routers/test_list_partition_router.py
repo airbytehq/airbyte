@@ -5,7 +5,7 @@
 import pytest as pytest
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.types import StreamSlice
 
 partition_values = ["customer", "store", "subscription"]
 cursor_field = "owner_resource"

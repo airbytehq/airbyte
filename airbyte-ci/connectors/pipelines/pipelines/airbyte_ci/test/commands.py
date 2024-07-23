@@ -35,6 +35,7 @@ async def find_modified_internal_packages(pipeline_context: ClickPipelineContext
             pipeline_context.params["diffed_branch"],
             pipeline_context.params["is_local"],
             pipeline_context.params["ci_context"],
+            git_repo_url=pipeline_context.params["git_repo_url"],
         )
     )
     modified_packages = set()

@@ -11,6 +11,7 @@ import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.net.InetSocketAddress
 import java.net.MalformedURLException
@@ -30,9 +31,8 @@ import org.apache.sshd.common.util.security.SecurityUtils
 import org.apache.sshd.core.CoreModuleProperties
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 // todo (cgardens) - this needs unit tests. it is currently tested transitively via source postgres
 // integration tests.
 /**
@@ -296,7 +296,7 @@ constructor(
         globalHeartbeatInterval: Duration,
         idleTimeout: Duration
     ): SshClient {
-        LOGGER.info("Creating SSH client with Heartbeat and Keepalive enabled")
+        LOGGER.info { "Creating SSH client with Heartbeat and Keepalive enabled" }
         val client = createClient()
         // Session level heartbeat using SSH_MSG_IGNORE every second.
         client.setSessionHeartbeat(
@@ -351,14 +351,9 @@ constructor(
             // try to connect
             tunnelLocalPort = address.port
 
-            LOGGER.info(
-                String.format(
-                    "Established tunneling session to %s:%d. Port forwarding started on %s ",
-                    remoteServiceHost,
-                    remoteServicePort,
-                    address.toInetSocketAddress()
-                )
-            )
+            LOGGER.info {
+                "Established tunneling session to $remoteServiceHost:$remoteServicePort. Port forwarding started on ${address.toInetSocketAddress()} "
+            }
             return session
         } catch (e: IOException) {
             if (
@@ -403,7 +398,7 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(SshTunnel::class.java)
+
         const val SSH_TIMEOUT_DISPLAY_MESSAGE: String =
             "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again."
 
@@ -425,7 +420,7 @@ constructor(
                         TunnelMethod.valueOf(method.asText().trim { it <= ' ' })
                     }
                     .orElse(TunnelMethod.NO_TUNNEL)
-            LOGGER.info("Starting connection with method: {}", tunnelMethod)
+            LOGGER.info { "Starting connection with method: $tunnelMethod" }
 
             return SshTunnel(
                 config,
@@ -489,7 +484,7 @@ constructor(
                         TunnelMethod.valueOf(method.asText().trim { it <= ' ' })
                     }
                     .orElse(TunnelMethod.NO_TUNNEL)
-            LOGGER.info("Starting connection with method: {}", tunnelMethod)
+            LOGGER.info { "Starting connection with method: $tunnelMethod" }
 
             return SshTunnel(
                 config,
@@ -519,7 +514,7 @@ constructor(
             portKey: List<String>,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
-            sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode? ->
+            sshWrap<Any?>(config, hostKey, portKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
                 null
             }
@@ -532,7 +527,7 @@ constructor(
             endPointKey: String,
             wrapped: CheckedConsumer<JsonNode?, Exception?>
         ) {
-            sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode? ->
+            sshWrap<Any?>(config, endPointKey) { configInTunnel: JsonNode ->
                 wrapped.accept(configInTunnel)
                 null
             }

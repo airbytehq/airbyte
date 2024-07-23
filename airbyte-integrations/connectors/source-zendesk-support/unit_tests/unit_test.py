@@ -5,6 +5,7 @@
 
 import calendar
 import copy
+import logging
 import re
 from datetime import datetime
 from unittest.mock import Mock, patch
@@ -15,7 +16,7 @@ import pendulum
 import pytest
 import pytz
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
@@ -175,7 +176,7 @@ def test_check(response, start_date, check_passed):
     config = copy.deepcopy(TEST_CONFIG)
     config["start_date"] = start_date
     with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        ok, _ = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=config)
+        ok, _ = SourceZendeskSupport().check_connection(logger=logging.Logger, config=config)
         assert check_passed == ok
         if ok:
             mock_method.assert_called()
@@ -190,7 +191,7 @@ def test_check(response, start_date, check_passed):
             403,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 403 and error message Not sufficient permissions. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
             ],
             None,
         ),
@@ -199,7 +200,7 @@ def test_check(response, start_date, check_passed):
             404,
             32,
             [
-                "An exception occurred while trying to access TicketForms stream: Request to https://sandbox.zendesk.com/api/v2/ticket_forms failed with status code 404 and error message None. Skipping this stream."
+                "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
             ],
             "Not Found",
         ),
@@ -1047,8 +1048,19 @@ class TestTicketSubstream:
     @pytest.mark.parametrize(
         "stream_state, response, expected_slices",
         [
-            ({}, {"tickets": [{"id": "13"}, {"id": "80"}]}, [{"ticket_id": "13"}, {"ticket_id": "80"}]),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"tickets": [{"id": "80"}]}, [{"ticket_id": "80"}]),
+            (
+                {},
+                {"tickets": [{"id": "13"}, {"id": "80"}]},
+                [
+                    {"ticket_id": "13", "updated_at": STREAM_ARGS["start_date"]},
+                    {"ticket_id": "80", "updated_at": STREAM_ARGS["start_date"]},
+                ],
+            ),
+            (
+                {"updated_at": "2024-04-17T19:34:06Z"},
+                {"tickets": [{"id": "80"}]},
+                [{"ticket_id": "80", "updated_at": "2024-04-17T19:34:06Z"}],
+            ),
             ({"updated_at": "2224-04-17T19:34:06Z"}, {"tickets": []}, []),
         ],
         ids=[
@@ -1063,30 +1075,32 @@ class TestTicketSubstream:
         assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
 
     @pytest.mark.parametrize(
-        "stream_state, response, expected_records",
+        "stream_slice, response, expected_records",
         [
-            ({}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]),
-            ({}, {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}, []),
+            ({"updated_at": "2024-05-17T19:34:06Z"}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, []),
             (
-                {"updated_at": "2024-04-17T19:34:06Z"},
-                {"updated_at": "2024-04-18T19:34:06Z", "id": "test id"},
-                [{"updated_at": "2024-04-18T19:34:06Z", "id": "test id"}],
+                {"updated_at": "2024-03-17T19:34:06Z"},
+                {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}],
             ),
-            ({"updated_at": "2024-04-17T19:34:06Z"}, {"updated_at": "1979-04-18T19:34:06Z", "id": "test id"}, []),
+            (
+                {},
+                {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}],
+            ),
         ],
         ids=[
-            "read_without_state",
-            "read_without_state_cursor_older_then_start_date",
-            "read_with_state",
-            "read_with_state_cursor_older_then_state_value",
+            "read_with_slice_cursor_greater_than_record_cursor",
+            "read_with_slice_cursor_less_than_record_cursor",
+            "read_without_slice_cursor",
         ],
     )
-    def test_ticket_metrics_parse_response(self, stream_state, response, expected_records):
+    def test_ticket_metrics_parse_response(self, stream_slice, response, expected_records):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
         mocked_response = Mock()
-        mocked_response.json.return_value = {"ticket_metric": {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}}
-        records = list(stream.parse_response(mocked_response, stream_state=stream_state))
-        assert records == [{"id": "test id", "updated_at": "2024-04-17T19:34:06Z"}]
+        mocked_response.json.return_value = {"ticket_metric": response}
+        records = list(stream.parse_response(mocked_response, stream_state={}, stream_slice=stream_slice))
+        assert records == expected_records
 
     def test_read_ticket_metrics_with_error(self, requests_mock):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
@@ -1100,19 +1114,20 @@ class TestTicketSubstream:
         assert records == []
 
     @pytest.mark.parametrize(
-        "status_code, should_retry",
+        "status_code, response_action",
         (
-                (200, False),
-                (404, False),
-                (403, False),
-                (500, True),
-                (429, True),
+                (200, ResponseAction.SUCCESS),
+                (404, ResponseAction.IGNORE),
+                (403, ResponseAction.IGNORE),
+                (500, ResponseAction.RETRY),
+                (429, ResponseAction.RATE_LIMITED),
         )
     )
-    def test_ticket_metrics_should_retry(self, status_code, should_retry):
+    def test_ticket_metrics_should_retry(self, status_code: int, response_action: bool):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
-        mocked_response = Mock(status_code=status_code)
-        assert stream.should_retry(mocked_response) == should_retry
+        mocked_response = requests.Response()
+        mocked_response.status_code = status_code
+        assert stream.get_error_handler().interpret_response(mocked_response).response_action == response_action
 
 
 def test_read_ticket_audits_504_error(requests_mock, caplog):

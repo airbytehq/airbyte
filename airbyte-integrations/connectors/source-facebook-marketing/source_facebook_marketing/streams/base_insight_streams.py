@@ -3,6 +3,7 @@
 #
 
 import logging
+from functools import cache
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -42,6 +43,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_destination",
     ]
 
+    object_breakdowns = {
+        "body_asset": "body_asset_id",
+        "call_to_action_asset": "call_to_action_asset_id",
+        "description_asset": "description_asset_id",
+        "image_asset": "image_asset_id",
+        "link_url_asset": "link_url_asset_id",
+        "title_asset": "title_asset_id",
+        "video_asset": "video_asset_id",
+    }
+
     # Facebook store metrics maximum of 37 months old. Any time range that
     # older than 37 months from current date would result in 400 Bad request HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
@@ -49,6 +60,8 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
+
+    status_field = "effective_status"
 
     def __init__(
         self,
@@ -82,6 +95,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._insights_lookback_window = insights_lookback_window
         self._insights_job_timeout = insights_job_timeout
         self.level = level
+        self.entity_prefix = level
 
         # state
         self._cursor_values: Optional[Mapping[str, pendulum.Date]] = None  # latest period that was read for each account
@@ -97,7 +111,16 @@ class AdsInsights(FBMarketingIncrementalStream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """Build complex PK based on slices and breakdowns"""
-        return ["date_start", "account_id", "ad_id"] + self.breakdowns
+
+        breakdowns_pks = []
+
+        for breakdown in self.breakdowns:
+            if breakdown in self.object_breakdowns.keys():
+                breakdowns_pks.append(self.object_breakdowns[breakdown])
+            else:
+                breakdowns_pks.append(breakdown)
+
+        return ["date_start", "account_id", "ad_id"] + breakdowns_pks
 
     @property
     def insights_lookback_period(self):
@@ -112,6 +135,12 @@ class AdsInsights(FBMarketingIncrementalStream):
     @property
     def insights_job_timeout(self):
         return pendulum.duration(minutes=self._insights_job_timeout)
+
+    def _transform_breakdown(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        for breakdown in self.breakdowns:
+            if breakdown in self.object_breakdowns.keys():
+                record[self.object_breakdowns[breakdown]] = record[breakdown]["id"]
+        return record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
@@ -136,7 +165,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 data = obj.export_all_data()
                 if self._response_data_is_valid(data):
                     self._add_account_id(data, account_id)
-                    yield data
+                    yield self._transform_breakdown(data)
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
@@ -340,6 +369,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             "time_increment": self.time_increment,
             "action_attribution_windows": self.action_attribution_windows,
         }
+        req_params.update(self._filter_all_statuses())
         return req_params
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -359,16 +389,38 @@ class AdsInsights(FBMarketingIncrementalStream):
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})
+            # adding object breakdown id to schema
+            for prop in self.breakdowns:
+                object_breakdown_id = self.object_breakdowns.get(prop)
+                if object_breakdown_id:
+                    schema["properties"].update({object_breakdown_id: breakdowns_properties[object_breakdown_id]})
         return schema
 
+    @cache
     def fields(self, **kwargs) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema"""
+        """
+        List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
+        """
         if self._custom_fields:
             return self._custom_fields
 
         if self._fields:
             return self._fields
-
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        schema = (
+            self.configured_json_schema
+            if self.configured_json_schema and self.configured_json_schema.get("properties")
+            else ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        )
         self._fields = list(schema.get("properties", {}).keys())
+
+        # Check that no breakdowns are injected from configured catalog schema (review "get_json_schema" doc).
+        removable_keys = list(self.breakdowns if self.breakdowns else [])
+        # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
+        removable_keys.append("wish_bid")
+        for removable_key in removable_keys:
+            try:
+                self._fields.remove(removable_key)
+            except ValueError:
+                pass
+
         return self._fields

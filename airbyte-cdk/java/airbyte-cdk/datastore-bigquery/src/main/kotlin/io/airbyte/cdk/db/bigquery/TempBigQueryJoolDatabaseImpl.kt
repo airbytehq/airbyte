@@ -14,21 +14,20 @@ import org.jooq.exception.DataAccessException
 import org.jooq.impl.DefaultDSLContext
 
 /** This class is a temporary and will be removed as part of the issue @TODO #4547 */
-class TempBigQueryJoolDatabaseImpl(projectId: String?, jsonCreds: String?) : Database(null) {
-    val realDatabase: BigQueryDatabase
-
-    init {
-        realDatabase = createBigQueryDatabase(projectId, jsonCreds)
-    }
+class TempBigQueryJoolDatabaseImpl(
+    projectId: String?,
+    jsonCreds: String?,
+    realDatabase: BigQueryDatabase = createBigQueryDatabase(projectId, jsonCreds)
+) : Database(FakeDefaultDSLContext(realDatabase)) {
 
     @Throws(SQLException::class)
     override fun <T> query(transform: ContextQueryFunction<T>): T? {
-        return transform.query(FakeDefaultDSLContext(realDatabase))
+        return transform.query(dslContext)
     }
 
     @Throws(SQLException::class)
     override fun <T> transaction(transform: ContextQueryFunction<T>): T? {
-        return transform.query(FakeDefaultDSLContext(realDatabase))
+        return transform.query(dslContext)
     }
 
     private class FakeDefaultDSLContext(private val database: BigQueryDatabase) :

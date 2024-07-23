@@ -1,13 +1,17 @@
 data:
+  allowedHosts:
+    hosts:
+      - "*.workable.com"
   connectorSubtype: api
   connectorType: source
   definitionId: ef3c99c6-9e90-43c8-9517-926cfd978517
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.10
   dockerRepository: airbyte/source-workable
   githubIssueLabel: source-workable
   icon: workable.svg
   license: MIT
   name: Workable
+  releaseDate: 2022-10-15
   remoteRegistries:
     pypi:
       enabled: true
@@ -26,4 +30,15 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  # Disabling as there are No credentials in GSM
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE_WORKABLE__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

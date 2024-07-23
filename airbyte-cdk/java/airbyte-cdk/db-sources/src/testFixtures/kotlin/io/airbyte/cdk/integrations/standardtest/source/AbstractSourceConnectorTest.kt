@@ -38,8 +38,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * This abstract class contains helpful functionality and boilerplate for testing a source
@@ -54,15 +52,7 @@ abstract class AbstractSourceConnectorTest {
     /** Name of the docker image that the tests will run against. */
     protected abstract val imageName: String
 
-    @get:Throws(Exception::class)
-    protected abstract val config: JsonNode?
-        /**
-         * Configuration specific to the integration. Will be passed to integration where
-         * appropriate in each test. Should be valid.
-         *
-         * @return integration-specific configuration
-         */
-        get
+    @get:Throws(Exception::class) protected abstract val config: JsonNode?
 
     /**
      * Function that performs any setup of external resources required for the test. e.g.
@@ -356,8 +346,6 @@ abstract class AbstractSourceConnectorTest {
     }
 
     companion object {
-        protected val LOGGER: Logger =
-            LoggerFactory.getLogger(AbstractSourceConnectorTest::class.java)
         private const val JOB_ID = 0L.toString()
         private const val JOB_ATTEMPT = 0
 

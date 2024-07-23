@@ -1,13 +1,22 @@
 data:
+  allowedHosts:
+    hosts:
+      - wikimedia.org
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 87c58f70-6f7a-4f70-aba5-bab1a458f5ba
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-wikipedia-pageviews
   githubIssueLabel: source-wikipedia-pageviews
-  icon: wikipediapageviews.svg
+  icon: wikipedia-pageviews.svg
   license: MIT
   name: Wikipedia Pageviews
+  releaseDate: 2022-10-31
   remoteRegistries:
     pypi:
       enabled: true
@@ -26,4 +35,12 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-WIKIPEDIA-PAGEVIEWS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

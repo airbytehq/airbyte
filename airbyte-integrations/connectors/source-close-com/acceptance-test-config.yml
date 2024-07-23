@@ -4,7 +4,7 @@ connector_image: airbyte/source-close-com:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_close_com/spec.json"
+      - spec_path: "source_close_com/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

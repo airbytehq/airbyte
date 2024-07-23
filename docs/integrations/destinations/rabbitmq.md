@@ -41,11 +41,25 @@ To use the RabbitMQ destination, you'll need:
 - RabbitMQ port is optional (it defaults to 5672).
 - RabbitMQ virtual host is also optional.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date             | Pull Request                                              | Subject                                         |
 | :------ | :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.12 | 2024-07-20 | [42222](https://github.com/airbytehq/airbyte/pull/42222) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41689](https://github.com/airbytehq/airbyte/pull/41689) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41279](https://github.com/airbytehq/airbyte/pull/41279) | Update dependencies |
+| 0.1.9 | 2024-07-06 | [40991](https://github.com/airbytehq/airbyte/pull/40991) | Update dependencies |
+| 0.1.8 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.1.7 | 2024-06-25 | [40348](https://github.com/airbytehq/airbyte/pull/40348) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [40101](https://github.com/airbytehq/airbyte/pull/40101) | Update dependencies |
+| 0.1.5 | 2024-06-06 | [39300](https://github.com/airbytehq/airbyte/pull/39300) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.4 | 2024-05-21 | [38532](https://github.com/airbytehq/airbyte/pull/38532) | [autopull] base image + poetry + up_to_date |
 | 0.1.3   | 2024-04-02       | [#36749](https://github.com/airbytehq/airbyte/pull/36749) | Un-archive connector (again)                    |
 | 0.1.2   | 2024-03-05       | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                            |
 | 0.1.1   | 2022-09-09       | [16528](https://github.com/airbytehq/airbyte/pull/16528)  | Marked password field in spec as airbyte_secret |
 | 0.1.0   | October 29, 2021 | [\#7560](https://github.com/airbytehq/airbyte/pull/7560)  | Initial release                                 |
+
+</details>

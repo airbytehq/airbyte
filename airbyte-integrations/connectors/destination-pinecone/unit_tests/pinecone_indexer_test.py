@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import pytest
@@ -55,6 +56,36 @@ def mock_determine_spec_type():
         mock.return_value = "pod"
         yield mock
 
+
+def test_get_source_tag_default():
+    # case when no test env variables are set
+    os.environ.pop("PYTEST_CURRENT_TEST", None)
+    os.environ.pop("RUN_IN_AIRBYTE_CI", None)
+    indexer = create_pinecone_indexer()
+    assert indexer.get_source_tag() == "airbyte"
+
+
+def test_get_source_tag_with_pytest():
+    # pytest is running by default here
+    indexer = create_pinecone_indexer()
+    assert indexer.get_source_tag() == "airbyte_test"
+
+    # pytest plus ci is running
+    with patch.dict("os.environ", {"RUN_IN_AIRBYTE_CI": "value does not matter"}):
+        assert indexer.get_source_tag() == "airbyte_test"
+
+
+@patch.dict("os.environ", {"RUN_IN_AIRBYTE_CI": "Value does not matter"})
+def test_get_source_tag_with_ci():
+    # CI and pytest is running 
+    indexer = create_pinecone_indexer()
+    assert indexer.get_source_tag() == "airbyte_test"
+
+    # CI is running but pytest is not
+    with patch.dict("os.environ", {"PYTEST_CURRENT_TEST": "Value does not matter"}):
+        assert indexer.get_source_tag() == "airbyte_test"
+
+
 def test_pinecone_index_upsert_and_delete(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer._pod_type = "p1"
@@ -74,7 +105,8 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
             (ANY, [4, 5, 6], {"_ab_stream": "abc", "text": "test2"}),
         ),
         async_req=True,
-        show_progress=False
+        show_progress=False,
+        namespace="ns1",
     )
 
 
@@ -108,6 +140,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index, mock_dete
         ),
         async_req=True,
         show_progress=False,
+        namespace="ns1",
     )
 
 def test_pinecone_index_upsert_and_delete_pod(mock_describe_index, mock_determine_spec_type):
@@ -137,6 +170,7 @@ def test_pinecone_index_upsert_and_delete_pod(mock_describe_index, mock_determin
         ),
         async_req=True,
         show_progress=False,
+        namespace="ns1",
     )
 
 def test_pinecone_index_upsert_and_delete_serverless(mock_describe_index, mock_determine_spec_type):
@@ -166,6 +200,7 @@ def test_pinecone_index_upsert_and_delete_serverless(mock_describe_index, mock_d
         ),
         async_req=True,
         show_progress=False,
+        namespace="ns1",
     )
 
 
@@ -325,4 +360,5 @@ def test_metadata_normalization():
         vectors=((ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test", "small": "a", "id": 1}),),
         async_req=True,
         show_progress=False,
+        namespace=None,
     )

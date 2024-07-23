@@ -18,10 +18,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +58,42 @@ public final class PostgresCatalogHelper {
     return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
+  public static List<String> getViewsInSchema(final JdbcDatabase database, final String schema) throws SQLException {
+    final String query = "SELECT viewname FROM pg_catalog.pg_views WHERE schemaname = ?";
+    final List<JsonNode> result = database.queryJsons(query, schema);
+    return result.stream()
+        .map(jsonNode -> jsonNode.get("viewname").asText())
+        .collect(Collectors.toList());
+  }
+
+  public static Map<String, List<String>> getViewsForAllSchemas(final JdbcDatabase database, final List<String> schemas) throws SQLException {
+    Map<String, List<String>> viewsBySchema = new HashMap<>();
+    for (String schema : schemas) {
+      List<String> views = getViewsInSchema(database, schema);
+      viewsBySchema.put(schema, views);
+    }
+    return viewsBySchema;
+  }
+
+  public static boolean isStreamAView(Map<String, List<String>> viewsBySchema, final AirbyteStream stream) {
+    return viewsBySchema.getOrDefault(stream.getNamespace(), Collections.emptyList()).contains(stream.getName());
+  }
+
+  /**
+   * This method is used for CDC sync in order to overwrite sync modes for cursor fields cause cdc use
+   * another cursor logic. Used in discovery when xmin is configured.
+   *
+   * @param stream - airbyte stream
+   * @param viewsBySchema - view names by schema
+   * @return will return list of sync modes where view streams will have only FULL_REFRESH sync mode
+   */
+  public static AirbyteStream overrideSyncModes(final AirbyteStream stream, Map<String, List<String>> viewsBySchema) {
+    if (isStreamAView(viewsBySchema, stream)) {
+      return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
+    }
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+  }
+
   /*
    * Set all streams that do have incremental to sourceDefined, so that the user cannot set or
    * override a cursor field.
@@ -92,14 +125,15 @@ public final class PostgresCatalogHelper {
   /**
    * Modifies streams that are NOT present in the publication to be full-refresh only streams. Users
    * should be able to replicate these streams, just not in incremental mode as they have no
-   * associated publication.
+   * associated publication. Previously, we also setSourceDefinedCursor(false) and
+   * setSourceDefinedPrimaryKey(List.of()) for streams that are in the catalog but not in the CDC
+   * publication, but now that full refresh streams can be resumable, we should include this
+   * information.
    */
   public static AirbyteStream setFullRefreshForNonPublicationStreams(final AirbyteStream stream,
                                                                      final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
     if (!publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()))) {
       stream.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
-      stream.setSourceDefinedCursor(false);
-      stream.setSourceDefinedPrimaryKey(List.of());
     }
     return stream;
   }

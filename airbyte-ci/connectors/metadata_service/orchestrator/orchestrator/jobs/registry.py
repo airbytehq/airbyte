@@ -24,17 +24,49 @@ generate_registry_entry = define_asset_job(
 )
 
 
-@op(required_resource_keys={"slack", "all_metadata_file_blobs"})
-def add_new_metadata_partitions_op(context):
+@op(required_resource_keys={"all_metadata_file_blobs"})
+def remove_stale_metadata_partitions_op(context):
     """
     This op is responsible for polling for new metadata files and adding their etag to the dynamic partition.
     """
     all_metadata_file_blobs = context.resources.all_metadata_file_blobs
     partition_name = registry_entry.metadata_partitions_def.name
 
-    new_files_found = {
-        blob.etag: blob.name for blob in all_metadata_file_blobs if not context.instance.has_dynamic_partition(partition_name, blob.etag)
-    }
+    all_fresh_etags = [blob.etag for blob in all_metadata_file_blobs]
+    context.log.info(f"Found {len(all_fresh_etags)} fresh metadata files found in GCS bucket")
+
+    all_etag_partitions = context.instance.get_dynamic_partitions(partition_name)
+    context.log.info(f"Found {len(all_etag_partitions)} existing metadata partitions")
+
+    for stale_etag in [etag for etag in all_etag_partitions if etag not in all_fresh_etags]:
+        context.log.info(f"Removing stale etag: {stale_etag}")
+        context.instance.delete_dynamic_partition(partition_name, stale_etag)
+        context.log.info(f"Removed stale etag: {stale_etag}")
+
+
+@job(tags={"dagster/priority": HIGH_QUEUE_PRIORITY})
+def remove_stale_metadata_partitions():
+    """
+    This job is responsible for removing stale metadata partitions (metadata files or versions of files that no longer exist).
+    """
+    remove_stale_metadata_partitions_op()
+
+
+@op(required_resource_keys={"slack", "all_metadata_file_blobs"})
+def add_new_metadata_partitions_op(context):
+    """
+    This op is responsible for polling for new metadata files and adding their etag to the dynamic partition.
+    """
+    context.log.info("Starting add_new_metadata_partitions_op")
+
+    all_metadata_file_blobs = context.resources.all_metadata_file_blobs
+    context.log.info(f"Found {len(all_metadata_file_blobs)} metadata files found in GCS bucket")
+
+    partition_name = registry_entry.metadata_partitions_def.name
+    existing_partitions = context.instance.get_dynamic_partitions(partition_name)
+    context.log.info(f"Found {len(existing_partitions)} existing metadata partitions")
+
+    new_files_found = {blob.etag: blob.name for blob in all_metadata_file_blobs if not blob.etag in existing_partitions}
 
     new_etags_found = list(new_files_found.keys())
     context.log.info(f"New etags found: {new_etags_found}")

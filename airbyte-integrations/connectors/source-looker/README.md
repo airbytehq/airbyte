@@ -1,4 +1,5 @@
-# Looker Source
+# Looker source connector
+
 
 This is the repository for the Looker configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/looker).
@@ -29,8 +30,11 @@ See `sample_files/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
-
 ```
+poetry run source-looker spec
+poetry run source-looker check --config secrets/config.json
+poetry run source-looker discover --config secrets/config.json
+poetry run source-looker read --config secrets/config.json --catalog sample_files/configured_catalog.json
 poetry run source-looker spec
 poetry run source-looker check --config secrets/config.json
 poetry run source-looker discover --config secrets/config.json
@@ -53,6 +57,7 @@ poetry run pytest tests
 airbyte-ci connectors --name=source-looker build
 ```
 
+An image will be available on your host with the tag `airbyte/source-looker:dev`.
 An image will be available on your host with the tag `airbyte/source-looker:dev`.
 
 

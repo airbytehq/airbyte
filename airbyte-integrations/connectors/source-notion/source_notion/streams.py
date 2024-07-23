@@ -2,16 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging as Logger
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
 import pendulum
 import pydantic
 import requests
-from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
@@ -149,7 +149,7 @@ class StateValueWrapper(pydantic.BaseModel):
 
     stream: T
     state_value: str
-    max_cursor_time = ""
+    max_cursor_time: Any = ""
 
     def __repr__(self):
         """Overrides print view"""
@@ -165,7 +165,7 @@ class StateValueWrapper(pydantic.BaseModel):
         return {pydantic.utils.ROOT_KEY: self.value}
 
 
-class IncrementalNotionStream(NotionStream, ABC):
+class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
 
     cursor_field = "last_edited_time"
 
@@ -179,6 +179,14 @@ class IncrementalNotionStream(NotionStream, ABC):
 
         # object type for search filtering, either "page" or "database" if not None
         self.obj_type = obj_type
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -202,8 +210,13 @@ class IncrementalNotionStream(NotionStream, ABC):
     def read_records(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         if sync_mode == SyncMode.full_refresh:
             stream_state = None
+
+        self.state = stream_state or {}
+
         try:
-            yield from super().read_records(sync_mode, stream_state=stream_state, **kwargs)
+            for record in super().read_records(sync_mode, stream_state=stream_state, **kwargs):
+                self.state = self._get_updated_state(self.state, record)
+                yield record
         except UserDefinedBackoffException as e:
             message = self.check_invalid_start_cursor(e.response)
             if message:
@@ -221,7 +234,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
                 yield record
 
-    def get_updated_state(
+    def _get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],

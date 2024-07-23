@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import os
+from pathlib import Path
 
 import pendulum
 import pytest
@@ -37,3 +39,20 @@ def config_raw(config):
 @pytest.fixture(autouse=True)
 def patch_time(mocker):
     mocker.patch("time.sleep")
+
+
+ENV_REQUEST_CACHE_PATH = "REQUEST_CACHE_PATH"
+os.environ["REQUEST_CACHE_PATH"] = ENV_REQUEST_CACHE_PATH
+
+def delete_cache_files(cache_directory):
+    directory_path = Path(cache_directory)
+    if directory_path.exists() and directory_path.is_dir():
+        for file_path in directory_path.glob("*.sqlite"):
+            file_path.unlink()
+
+@pytest.fixture(autouse=True)
+def clear_cache_before_each_test():
+    # The problem: Once the first request is cached, we will keep getting the cached result no matter what setup we prepared for a particular test.
+    # Solution: We must delete the cache before each test because for the same URL, we want to define multiple responses and status codes.
+    delete_cache_files(os.getenv(ENV_REQUEST_CACHE_PATH))
+    yield

@@ -6,12 +6,14 @@ package io.airbyte.integrations.source.postgres.ctid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -27,13 +29,15 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   public static final String STATE_TYPE_KEY = "state_type";
 
   protected final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
-  private Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  protected Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
 
-  private String lastCtid;
-  private FileNodeHandler fileNodeHandler;
+  protected Map<AirbyteStreamNameNamespacePair, String> pairToLastCtid;
+  protected FileNodeHandler fileNodeHandler;
 
   protected CtidStateManager(final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus) {
     this.pairToCtidStatus = pairToCtidStatus;
+    this.streamStateForIncrementalRunSupplier = namespacePair -> Jsons.emptyObject();
+    this.pairToLastCtid = new HashMap<>();
   }
 
   public CtidStatus getCtidStatus(final AirbyteStreamNameNamespacePair pair) {
@@ -55,26 +59,40 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
 
   public abstract AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun);
 
-  public void setStreamStateIteratorFields(Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
-                                           FileNodeHandler fileNodeHandler) {
+  public void setStreamStateIteratorFields(Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+  }
+
+  public void setFileNodeHandler(final FileNodeHandler fileNodeHandler) {
     this.fileNodeHandler = fileNodeHandler;
+  }
+
+  public FileNodeHandler getFileNodeHandler() {
+    return fileNodeHandler;
   }
 
   @Override
   public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream stream) {
     final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
         stream.getStream().getNamespace());
-    final Long fileNode = fileNodeHandler.getFileNode(pair);
-    assert fileNode != null;
-    final CtidStatus ctidStatus = new CtidStatus()
-        .withVersion(CTID_STATUS_VERSION)
-        .withStateType(StateType.CTID)
-        .withCtid(lastCtid)
-        .withIncrementalState(getStreamState(pair))
-        .withRelationFilenode(fileNode);
+    final CtidStatus ctidStatus = generateCtidStatusForState(pair);
     LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
     return createCtidStateMessage(pair, ctidStatus);
+  }
+
+  protected CtidStatus generateCtidStatusForState(final AirbyteStreamNameNamespacePair pair) {
+    final Long fileNode = fileNodeHandler.getFileNode(pair);
+    assert fileNode != null;
+    final String lastCtid = pairToLastCtid.get(pair);
+    // If the table is empty, lastCtid will be set to zero for the final state message.
+    final String lastCtidInState = (Objects.nonNull(lastCtid)
+        && StringUtils.isNotBlank(lastCtid)) ? lastCtid : Ctid.ZERO.toString();
+    return new CtidStatus()
+        .withVersion(CTID_STATUS_VERSION)
+        .withStateType(StateType.CTID)
+        .withCtid(lastCtidInState)
+        .withIncrementalState(getStreamState(pair))
+        .withRelationFilenode(fileNode);
   }
 
   /**
@@ -83,7 +101,9 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
   @Override
   public AirbyteMessage processRecordMessage(final ConfiguredAirbyteStream stream, AirbyteMessageWithCtid message) {
     if (Objects.nonNull(message.ctid())) {
-      this.lastCtid = message.ctid();
+      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
+          stream.getStream().getNamespace());
+      pairToLastCtid.put(pair, message.ctid());
     }
     return message.recordMessage();
   }
@@ -106,12 +126,16 @@ public abstract class CtidStateManager implements SourceStateMessageProducer<Air
    */
   @Override
   public boolean shouldEmitStateMessage(final ConfiguredAirbyteStream stream) {
+    final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(),
+        stream.getStream().getNamespace());
+    final String lastCtid = pairToLastCtid.get(pair);
     return Objects.nonNull(lastCtid)
         && StringUtils.isNotBlank(lastCtid);
   }
 
   private JsonNode getStreamState(final AirbyteStreamNameNamespacePair pair) {
     final CtidStatus currentCtidStatus = getCtidStatus(pair);
+
     return (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
         : currentCtidStatus.getIncrementalState();
   }

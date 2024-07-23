@@ -55,35 +55,32 @@ public class XminCtidUtils {
       rawStateMessages.forEach(stateMessage -> {
         final JsonNode streamState = stateMessage.getStream().getStreamState();
         final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
-        if (streamState == null || streamDescriptor == null) {
+        if (streamState == null || streamDescriptor == null || !streamState.has(STATE_TYPE_KEY)) {
           return;
         }
 
-        if (streamState.has(STATE_TYPE_KEY)) {
-          if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("ctid")) {
-            statesFromCtidSync.add(stateMessage);
-            streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
-          } else if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("xmin")) {
-            if (shouldPerformFullSync(currentXminStatus, streamState)) {
-              final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
-                  streamDescriptor.getNamespace());
-              LOGGER.info("Detected multiple wraparounds. Will perform a full sync for {}", pair);
-              streamsStillInCtidSync.add(pair);
-            } else {
-              statesFromXminSync.add(stateMessage);
-            }
+        if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("ctid")) {
+          statesFromCtidSync.add(stateMessage);
+          streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+        } else if (streamState.get(STATE_TYPE_KEY).asText().equalsIgnoreCase("xmin")) {
+          if (shouldPerformFullSync(currentXminStatus, streamState)) {
+            final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
+                streamDescriptor.getNamespace());
+            LOGGER.info("Detected multiple wraparounds. Will perform a full sync for {}", pair);
+            streamsStillInCtidSync.add(pair);
           } else {
-            throw new ConfigErrorException("You've changed replication modes - please reset the streams in this connector");
+            statesFromXminSync.add(stateMessage);
           }
         } else {
-          throw new RuntimeException("State type not present");
+          throw new ConfigErrorException("You've changed replication modes - please reset the streams in this connector");
         }
+
         alreadySeenStreams.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
     }
 
     final List<ConfiguredAirbyteStream> newlyAddedIncrementalStreams =
-        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams, SyncMode.INCREMENTAL);
+        identifyNewlyAddedStreams(fullCatalog, alreadySeenStreams);
     final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
     fullCatalog.getStreams().stream()
         .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))

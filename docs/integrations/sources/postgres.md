@@ -9,6 +9,8 @@ Airbyte's certified Postgres connector offers the following features:
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
 
+**Please note the required minimum platform version is v0.58.0 for this connector.**
+
 ![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
 
 ## Quick Start
@@ -149,7 +151,7 @@ ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
 ```
 
 In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
-ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
+ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.  Ensure that TOAST-able tables use non-TOAST-able primary keys (integers, varchars, etc), and there will only be a [modest increase in resource utilization, in addition to increased WAL storage size](https://xata.io/blog/replica-identity-full-performance).
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
@@ -189,7 +191,7 @@ This is a good solution if:
 
 - There is not a well-defined cursor candidate to use for Standard incremental mode.
 - You want to replace a previously configured full-refresh sync.
-- You are replicating Postgres tables less than 500GB.
+- Your database doesn't incur heavy writes that would lead to transaction ID wraparound.
 - You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication.
 
 ## Connecting with SSL or SSH Tunneling
@@ -247,7 +249,7 @@ The command produces the private key in PEM format and the public key remains in
 
 ## Limitations & Troubleshooting
 
-To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
+To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).
 
 ## Data type mapping
 
@@ -304,15 +306,57 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
+|---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.9   | 2024-07-23 | [42421](https://github.com/airbytehq/airbyte/pull/42421) | Remove final transient error emitter iterators.                                                                                                |
+| 3.6.8   | 2024-07-22 | [41622](https://github.com/airbytehq/airbyte/pull/41622) | Bump CDK version to latest.                                                                                                                                                |
+| 3.6.7   | 2024-07-22 | [42411](https://github.com/airbytehq/airbyte/pull/42411) | Hide the "initial load timeout in hours" field by default in UI                                                                                                            |
+| 3.6.6   | 2024-07-22 | [41622](https://github.com/airbytehq/airbyte/pull/41622) | Fix bug in CDC syncing                                                                                                                                                     |
+| 3.6.5   | 2024-07-22 | [42024](https://github.com/airbytehq/airbyte/pull/42024) | Fix a bug on resuming from a failed attempt.                                                                                                                               |
+| 3.6.4   | 2024-07-17 | [42087](https://github.com/airbytehq/airbyte/pull/42087) | Translate more errors for Postgres source.                                                                                                                                 |
+| 3.6.3   | 2024-07-19 | [42122](https://github.com/airbytehq/airbyte/pull/42122) | Improve wass error message + logging.                                                                                                                                      |
+| 3.6.2   | 2024-07-18 | [42108](https://github.com/airbytehq/airbyte/pull/42108) | Disable incremental sync for view streams in xmin replication mode                                                                                                         |
+| 3.6.1   | 2024-07-05 | [40716](https://github.com/airbytehq/airbyte/pull/40716) | Fix typo in connector specification                                                                                                                                        |
+| 3.6.0   | 2024-07-17 | [40208](https://github.com/airbytehq/airbyte/pull/40208) | Start using the new error Postgres source error handler that comes with a new error translation layer.                                                                     | 
+| 3.5.2   | 2024-07-17 | [42068](https://github.com/airbytehq/airbyte/pull/42068) | Add analytics for WASS case occurrence.                                                                                                                                    |
+| 3.5.1   | 2024-07-17 | [42055](https://github.com/airbytehq/airbyte/pull/42055) | Add debezium heartbeat timeout back to shutdown debezium.                                                                                                                  |
+| 3.5.0   | 2024-07-17 | [41651](https://github.com/airbytehq/airbyte/pull/41651) | Implement WASS algo - large initial snapshots shouldn't block CDC.                                                                                                         |
+| 3.4.26  | 2024-07-15 | [41654](https://github.com/airbytehq/airbyte/pull/41654) | Allow null value for array typed columns in CDC.                                                                                                                           |
+| 3.4.25  | 2024-07-12 | [41651](https://github.com/airbytehq/airbyte/pull/41651) | Throw transient error if tables of interest and undergoing full vacuum.                                                                                                    |
+| 3.4.24  | 2024-07-05 | [41067](https://github.com/airbytehq/airbyte/pull/41067) | Fix Postgres sending duplicated streams                                                                                                                                    |
+| 3.4.23  | 2024-07-01 | [40757](https://github.com/airbytehq/airbyte/pull/40757) | Rollback 3.4.22.                                                                                                                                                           |
+| 3.4.21  | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat.                                                                                                                                                       |
+| 3.4.20  | 2024-06-23 | [40559](https://github.com/airbytehq/airbyte/pull/40559) | Remove strict check for stream states of unknown types                                                                                                                     |
+| 3.4.19  | 2024-06-23 | [40223](https://github.com/airbytehq/airbyte/pull/40223) | Revert the changes introduced in version 3.4.15.                                                                                                                           |
+| 3.4.18  | 2024-06-14 | [39349](https://github.com/airbytehq/airbyte/pull/39349) | Full refresh stream sending internal count metadata.                                                                                                                       |
+| 3.4.17  | 2024-06-13 | [39460](https://github.com/airbytehq/airbyte/pull/39460) | Bump postgres JDBC driver version                                                                                                                                          |
+| 3.4.16  | 2024-05-29 | [39474](https://github.com/airbytehq/airbyte/pull/39474) | Adopt latest CDK.                                                                                                                                                          |
+| 3.4.15  | 2024-05-29 | [38773](https://github.com/airbytehq/airbyte/pull/38773) | Connect with adaptiveFetch=true.                                                                                                                                           |
+| 3.4.14  | 2024-06-08 | [39353](https://github.com/airbytehq/airbyte/pull/39353) | Upgrade Debezium to 2.6.2                                                                                                                                                  |
+| 3.4.13  | 2024-06-04 | [38875](https://github.com/airbytehq/airbyte/pull/38875) | read() throws config exception upon detecting transaction ID wraparound.                                                                                                   |
+| 3.4.12  | 2024-06-04 | [38836](https://github.com/airbytehq/airbyte/pull/38836) | check() throws config error upon detecting transaction ID wraparound.                                                                                                      |
+| 3.4.11  | 2024-06-04 | [38848](https://github.com/airbytehq/airbyte/pull/38848) | Improve UI message and doc on xmin                                                                                                                                         |
+| 3.4.10  | 2024-05-29 | [38584](https://github.com/airbytehq/airbyte/pull/38584) | Set is_resumable flag in discover.                                                                                                                                         |
+| 3.4.9   | 2024-05-29 | [38775](https://github.com/airbytehq/airbyte/pull/38775) | Publish CDK                                                                                                                                                                |
+| 3.4.9   | 2024-05-28 | [38716](https://github.com/airbytehq/airbyte/pull/38716) | Publish CDK                                                                                                                                                                |
+| 3.4.8   | 2024-05-28 | [38716](https://github.com/airbytehq/airbyte/pull/38716) | Stream status for postgres                                                                                                                                                 |
+| 3.4.7   | 2024-05-20 | [38365](https://github.com/airbytehq/airbyte/pull/38365) | Rollback a previously version (3.4.6)                                                                                                                                      |
+| 3.4.5   | 2024-05-16 | [38303](https://github.com/airbytehq/airbyte/pull/38303) | Streams not in the CDC publication still have a cursor and PK.                                                                                                             |
+| 3.4.4   | 2024-05-15 | [38208](https://github.com/airbytehq/airbyte/pull/38208) | disable counts in full refresh stream in state message.                                                                                                                    |
+| 3.4.3   | 2024-05-13 | [38104](https://github.com/airbytehq/airbyte/pull/38104) | Handle transient error messages.                                                                                                                                           |
+| 3.4.2   | 2024-05-10 | [38171](https://github.com/airbytehq/airbyte/pull/38171) | Bug fix on final state setup.                                                                                                                                              |
+| 3.4.1   | 2024-05-10 | [38130](https://github.com/airbytehq/airbyte/pull/38130) | Bug fix on old PG where ctid column not found when stream is a view.                                                                                                       |
+| 3.4.0   | 2024-04-29 | [37112](https://github.com/airbytehq/airbyte/pull/37112) | resumeable full refresh.                                                                                                                                                   |
 | 3.3.33  | 2024-05-07 | [38030](https://github.com/airbytehq/airbyte/pull/38030) | Mark PG hot standby error as transient.                                                                                                                                    |
 | 3.3.32  | 2024-04-30 | [37758](https://github.com/airbytehq/airbyte/pull/37758) | Correct previous release to disable debezium retries                                                                                                                       |
 | 3.3.31  | 2024-04-30 | [37754](https://github.com/airbytehq/airbyte/pull/37754) | Add CDC logs                                                                                                                                                               |
 | 3.3.30  | 2024-04-30 | [37726](https://github.com/airbytehq/airbyte/pull/37726) | Remove debezium retries                                                                                                                                                    |
 | 3.3.29  | 2024-04-23 | [37509](https://github.com/airbytehq/airbyte/pull/37509) | remove excessive logs                                                                                                                                                      |
 | 3.3.28  | 2024-04-23 | [37509](https://github.com/airbytehq/airbyte/pull/37509) | Better error messages on switching between sync modes.                                                                                                                     |
-| 3.3.27  | 2024-04-22 | [37441](https://github.com/airbytehq/airbyte/pull/37441) | Remove legacy bad values handling code.                                                                                                                                    |
+| 3.3.27  | 2024-04-22 | [37445](https://github.com/airbytehq/airbyte/pull/37445) | Remove legacy bad values handling code.                                                                                                                                    |
 | 3.3.26  | 2024-04-10 | [36982](https://github.com/airbytehq/airbyte/pull/36982) | Populate airyte_meta.changes for xmin path                                                                                                                                 |
 | 3.3.25  | 2024-04-10 | [36981](https://github.com/airbytehq/airbyte/pull/36981) | Track latest CDK                                                                                                                                                           |
 | 3.3.24  | 2024-04-10 | [36865](https://github.com/airbytehq/airbyte/pull/36865) | Track latest CDK                                                                                                                                                           |
@@ -468,13 +512,13 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                                                                                          |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                                                                              |
 | 0.4.41  | 2022-08-03 | [15077](https://github.com/airbytehq/airbyte/pull/15077) | Sync data from beginning if the LSN is no longer valid in CDC                                                                                                              |
-|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                        |
+|         | 2022-08-03 | [14903](https://github.com/airbytehq/airbyte/pull/14903) | Emit state messages more frequently (⛔ this version has a bug; use `1.0.1` instead                                                                                         |
 | 0.4.40  | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps                                                                                                                                       |
 |         | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers                                                                                                                   |
 | 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiple log bindings                                                                                                                                                  |
 | 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields.                                                                                                                       |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected                                                                                                                |
-| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                             |     
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable (⛔ this version has a bug and will not work; use `0.4.42` instead)                                                              |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors                                                                                                             |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                                                                               |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                                                                                        |
@@ -541,3 +585,5 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172)   | Support incremental sync                                                                                                                                                   |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038)   | Change JDBC sources to discover more than standard schemas                                                                                                                 |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                                                                                                                    |
+
+</details>

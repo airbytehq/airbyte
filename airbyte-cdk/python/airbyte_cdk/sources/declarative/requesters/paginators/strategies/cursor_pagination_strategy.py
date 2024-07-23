@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
-from typing import Any, Dict, List, Mapping, Optional, Union
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Dict, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.types import Config, Record
 
 
 @dataclass
@@ -32,56 +32,51 @@ class CursorPaginationStrategy(PaginationStrategy):
     parameters: InitVar[Mapping[str, Any]]
     page_size: Optional[int] = None
     stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._initial_cursor = None
         if isinstance(self.cursor_value, str):
             self._cursor_value = InterpolatedString.create(self.cursor_value, parameters=parameters)
         else:
             self._cursor_value = self.cursor_value
         if isinstance(self.stop_condition, str):
-            self._stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
+            self._stop_condition: Optional[InterpolatedBoolean] = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
         else:
-            self._stop_condition = self.stop_condition  # type: ignore # the type has been checked
+            self._stop_condition = self.stop_condition
 
     @property
     def initial_token(self) -> Optional[Any]:
-        return None
+        return self._initial_cursor
 
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
-        decoded_response = self.decoder.decode(response)
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
+        decoded_response = next(self.decoder.decode(response))
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
         headers: Dict[str, Any] = dict(response.headers)
         headers["link"] = response.links
-
-        last_record = last_records[-1] if last_records else None
-
         if self._stop_condition:
             should_stop = self._stop_condition.eval(
                 self.config,
                 response=decoded_response,
                 headers=headers,
-                last_records=last_records,
                 last_record=last_record,
-                last_page_size=len(last_records),
+                last_page_size=last_page_size,
             )
             if should_stop:
                 return None
         token = self._cursor_value.eval(
             config=self.config,
-            last_records=last_records,
             response=decoded_response,
             headers=headers,
             last_record=last_record,
-            last_page_size=len(last_records),
+            last_page_size=last_page_size,
         )
         return token if token else None
 
-    def reset(self) -> None:
-        # No state to reset
-        pass
+    def reset(self, reset_value: Optional[Any] = None) -> None:
+        self._initial_cursor = reset_value
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size

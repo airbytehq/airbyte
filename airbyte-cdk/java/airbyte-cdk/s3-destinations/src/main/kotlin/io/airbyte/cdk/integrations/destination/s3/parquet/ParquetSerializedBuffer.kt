@@ -63,20 +63,16 @@ class ParquetSerializedBuffer(
         val schema: Schema =
             schemaConverter.getAvroSchema(
                 catalog.streams
-                    .stream()
-                    .filter { s: ConfiguredAirbyteStream ->
+                    .firstOrNull { s: ConfiguredAirbyteStream ->
                         (s.stream.name == stream.name) &&
                             StringUtils.equals(
                                 s.stream.namespace,
                                 stream.namespace,
                             )
                     }
-                    .findFirst()
-                    .orElseThrow {
-                        RuntimeException("No such stream ${stream.namespace}.${stream.name}")
-                    }
-                    .stream
-                    .jsonSchema,
+                    ?.stream
+                    ?.jsonSchema
+                    ?: throw RuntimeException("No such stream ${stream.namespace}.${stream.name}"),
                 stream.name,
                 stream.namespace,
             )
@@ -122,7 +118,12 @@ class ParquetSerializedBuffer(
     }
 
     @Throws(Exception::class)
-    override fun accept(recordString: String, airbyteMetaString: String, emittedAt: Long): Long {
+    override fun accept(
+        recordString: String,
+        airbyteMetaString: String,
+        generationId: Long,
+        emittedAt: Long
+    ): Long {
         throw UnsupportedOperationException(
             "This method is not supported for ParquetSerializedBuffer"
         )

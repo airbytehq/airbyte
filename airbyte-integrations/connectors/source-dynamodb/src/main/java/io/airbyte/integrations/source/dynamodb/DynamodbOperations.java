@@ -19,9 +19,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ListTablesRequest;
 import software.amazon.awssdk.services.dynamodb.model.ListTablesResponse;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
@@ -80,8 +81,9 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
   public List<String> primaryKey(String tableName) {
     DescribeTableRequest describeTableRequest = DescribeTableRequest.builder().tableName(tableName).build();
-    return dynamoDbClient.describeTable(describeTableRequest).table().attributeDefinitions().stream()
-        .map(AttributeDefinition::attributeName)
+    return dynamoDbClient.describeTable(describeTableRequest).table().keySchema().stream()
+        .filter(element -> element.keyType().equals(KeyType.HASH))
+        .map(KeySchemaElement::attributeName)
         .toList();
   }
 

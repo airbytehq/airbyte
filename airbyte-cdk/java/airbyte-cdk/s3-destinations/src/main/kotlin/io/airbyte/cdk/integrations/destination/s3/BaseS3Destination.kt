@@ -15,20 +15,23 @@ import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 abstract class BaseS3Destination
 protected constructor(
-    protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory()
+    protected val configFactory: S3DestinationConfigFactory = S3DestinationConfigFactory(),
+    protected val environment: Map<String, String> = System.getenv()
 ) : BaseConnector(), Destination {
     private val nameTransformer: NamingConventionTransformer = S3NameTransformer()
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         try {
-            val destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider())
+            val destinationConfig =
+                configFactory.getS3DestinationConfig(config, storageProvider(), environment)
             val s3Client = destinationConfig.getS3Client()
 
             S3BaseChecks.testIAMUserHasListObjectPermission(s3Client, destinationConfig.bucketName)
@@ -45,7 +48,7 @@ protected constructor(
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: Exception) {
-            LOGGER.error("Exception attempting to access the S3 bucket: ", e)
+            LOGGER.error(e) { "Exception attempting to access the S3 bucket: " }
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
@@ -60,7 +63,7 @@ protected constructor(
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer? {
-        val s3Config = configFactory.getS3DestinationConfig(config, storageProvider())
+        val s3Config = configFactory.getS3DestinationConfig(config, storageProvider(), environment)
         return S3ConsumerFactory()
             .create(
                 outputRecordCollector,
@@ -78,7 +81,5 @@ protected constructor(
 
     abstract fun storageProvider(): StorageProvider
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BaseS3Destination::class.java)
-    }
+    companion object {}
 }

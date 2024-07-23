@@ -59,7 +59,10 @@ You need a Teradata user which has read permissions on the database
 
    These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Teradata database.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
@@ -67,3 +70,5 @@ You need a Teradata user which has read permissions on the database
 | 0.2.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version            |
 | 0.2.0   | 2023-12-18 | https://github.com/airbytehq/airbyte/pull/33485          | Remove LEGACY state         |
 | 0.1.0   | 2022-03-27 | https://github.com/airbytehq/airbyte/pull/24221          | New Source Teradata Vantage |
+
+</details>

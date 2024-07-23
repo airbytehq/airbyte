@@ -20,11 +20,11 @@ acceptance_tests:
         timeout_seconds: 7200
         configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
-          exact_order: yes
+          path: "integration_tests/expected_records.jsonl"
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
+        timeout_seconds: 7200
         configured_catalog_path: "integration_tests/configured_catalog.json"

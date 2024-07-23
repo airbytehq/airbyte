@@ -9,17 +9,17 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from isodate import Duration, parse_duration
 
 
 @dataclass
-class DatetimeBasedCursor(Cursor):
+class DatetimeBasedCursor(DeclarativeCursor):
     """
     Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 
@@ -67,6 +67,7 @@ class DatetimeBasedCursor(Cursor):
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
     message_repository: Optional[MessageRepository] = None
+    is_compare_strictly: Optional[bool] = False
     cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -87,7 +88,7 @@ class DatetimeBasedCursor(Cursor):
             else datetime.timedelta.max
         )
         self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
-        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
+        self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
         self._lookback_window = InterpolatedString.create(self.lookback_window, parameters=parameters) if self.lookback_window else None
         self._partition_field_start = InterpolatedString.create(self.partition_field_start or "start_time", parameters=parameters)
         self._partition_field_end = InterpolatedString.create(self.partition_field_end or "end_time", parameters=parameters)
@@ -103,7 +104,7 @@ class DatetimeBasedCursor(Cursor):
             self.cursor_datetime_formats = [self.datetime_format]
 
     def get_stream_state(self) -> StreamState:
-        return {self._cursor_field.eval(self.config): self._cursor} if self._cursor else {}
+        return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -112,7 +113,7 @@ class DatetimeBasedCursor(Cursor):
 
         :param stream_state: The state of the stream as returned by get_stream_state
         """
-        self._cursor = stream_state.get(self._cursor_field.eval(self.config)) if stream_state else None
+        self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         """
@@ -122,7 +123,7 @@ class DatetimeBasedCursor(Cursor):
         :param record: the most recently-read record, which the cursor can use to update the stream state. Outwardly-visible changes to the
           stream state may need to be deferred depending on whether the source reliably orders records by the cursor field.
         """
-        record_cursor_value = record.get(self._cursor_field.eval(self.config))
+        record_cursor_value = record.get(self.cursor_field.eval(self.config))  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
         # if the current record has no cursor value, we cannot meaningfully update the state based on it, so there is nothing more to do
         if not record_cursor_value:
             return
@@ -164,25 +165,38 @@ class DatetimeBasedCursor(Cursor):
 
         :return:
         """
-        end_datetime = self._select_best_end_datetime()
-        start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime())
+        end_datetime = self.select_best_end_datetime()
+        start_datetime = self._calculate_earliest_possible_value(self.select_best_end_datetime())
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        # Datetime based cursors operate over slices made up of datetime ranges. Stream state is based on the progress
+        # through each slice and does not belong to a specific slice. We just return stream state as it is.
+        return self.get_stream_state()
+
     def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
-        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self.lookback_window else "P0D")
+        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self.config) if self._lookback_window else "P0D")
         earliest_possible_start_datetime = min(self._start_datetime.get_datetime(self.config), end_datetime)
         cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
         return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
 
-    def _select_best_end_datetime(self) -> datetime.datetime:
+    def select_best_end_datetime(self) -> datetime.datetime:
+        """
+        Returns the optimal end datetime.
+        This method compares the current datetime with a pre-configured end datetime
+        and returns the earlier of the two. If no pre-configured end datetime is set,
+        the current datetime is returned.
+
+        :return datetime.datetime: The best end datetime, which is either the current datetime or the pre-configured end datetime, whichever is earlier.
+        """
         now = datetime.datetime.now(tz=self._timezone)
         if not self._end_datetime:
             return now
         return min(self._end_datetime.get_datetime(self.config), now)
 
     def _calculate_cursor_datetime_from_state(self, stream_state: Mapping[str, Any]) -> datetime.datetime:
-        if self._cursor_field.eval(self.config, stream_state=stream_state) in stream_state:
-            return self.parse_date(stream_state[self._cursor_field.eval(self.config)])
+        if self.cursor_field.eval(self.config, stream_state=stream_state) in stream_state:  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
+            return self.parse_date(stream_state[self.cursor_field.eval(self.config)])  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
         return datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
 
     def _format_datetime(self, dt: datetime.datetime) -> str:
@@ -194,7 +208,8 @@ class DatetimeBasedCursor(Cursor):
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
-        while start <= end:
+
+        while self._is_within_date_range(start, end):
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
             dates.append(
@@ -204,6 +219,11 @@ class DatetimeBasedCursor(Cursor):
             )
             start = next_start
         return dates
+
+    def _is_within_date_range(self, start: datetime.datetime, end: datetime.datetime) -> bool:
+        if self.is_compare_strictly:
+            return start < end
+        return start <= end
 
     def _evaluate_next_start_date_safely(self, start: datetime.datetime, step: datetime.timedelta) -> datetime.datetime:
         """
@@ -295,7 +315,7 @@ class DatetimeBasedCursor(Cursor):
         return options
 
     def should_be_synced(self, record: Record) -> bool:
-        cursor_field = self._cursor_field.eval(self.config)
+        cursor_field = self.cursor_field.eval(self.config)  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
         record_cursor_value = record.get(cursor_field)
         if not record_cursor_value:
             self._send_log(
@@ -303,14 +323,14 @@ class DatetimeBasedCursor(Cursor):
                 f"Could not find cursor field `{cursor_field}` in record. The incremental sync will assume it needs to be synced",
             )
             return True
-        latest_possible_cursor_value = self._select_best_end_datetime()
+        latest_possible_cursor_value = self.select_best_end_datetime()
         earliest_possible_cursor_value = self._calculate_earliest_possible_value(latest_possible_cursor_value)
         return self._is_within_daterange_boundaries(record, earliest_possible_cursor_value, latest_possible_cursor_value)
 
     def _is_within_daterange_boundaries(
         self, record: Record, start_datetime_boundary: Union[datetime.datetime, str], end_datetime_boundary: Union[datetime.datetime, str]
     ) -> bool:
-        cursor_field = self._cursor_field.eval(self.config)
+        cursor_field = self.cursor_field.eval(self.config)  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
         record_cursor_value = record.get(cursor_field)
         if not record_cursor_value:
             self._send_log(
@@ -334,7 +354,7 @@ class DatetimeBasedCursor(Cursor):
             )
 
     def is_greater_than_or_equal(self, first: Record, second: Record) -> bool:
-        cursor_field = self._cursor_field.eval(self.config)
+        cursor_field = self.cursor_field.eval(self.config)  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
         first_cursor_value = first.get(cursor_field)
         second_cursor_value = second.get(cursor_field)
         if first_cursor_value and second_cursor_value:

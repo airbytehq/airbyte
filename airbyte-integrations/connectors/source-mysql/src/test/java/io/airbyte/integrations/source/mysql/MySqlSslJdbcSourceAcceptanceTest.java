@@ -9,6 +9,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import org.junit.jupiter.api.Order;
 
 @Order(3)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
 
   @Override

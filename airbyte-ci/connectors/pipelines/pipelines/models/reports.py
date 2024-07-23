@@ -61,6 +61,10 @@ class Report:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.FAILURE]
 
     @property
+    def considered_failed_steps(self) -> List[StepResult]:
+        return [step_result for step_result in self.failed_steps if step_result.consider_in_overall_status]
+
+    @property
     def successful_steps(self) -> List[StepResult]:
         return [step_result for step_result in self.steps_results if step_result.status is StepStatus.SUCCESS]
 
@@ -70,7 +74,7 @@ class Report:
 
     @property
     def success(self) -> bool:
-        return len(self.failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
+        return len(self.considered_failed_steps) == 0 and (len(self.skipped_steps) > 0 or len(self.successful_steps) > 0)
 
     @property
     def run_duration(self) -> timedelta:
@@ -104,7 +108,7 @@ class Report:
                 dagger_client=self.pipeline_context.dagger_client,
                 bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
                 key=self.json_report_remote_storage_key,
-                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,  # type: ignore
+                gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
             )
             self.pipeline_context.logger.info(f"JSON Report uploaded to {gcs_url}")
         else:
@@ -125,7 +129,7 @@ class Report:
                         dagger_client=self.pipeline_context.dagger_client,
                         bucket=self.pipeline_context.ci_report_bucket,  # type: ignore
                         key=f"{self.report_output_prefix}/artifacts/{slugify(step_result.step.title)}/{upload_time}_{artifact.name}",
-                        gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,  # type: ignore
+                        gcs_credentials=self.pipeline_context.ci_gcp_credentials,  # type: ignore
                     )
                     self.pipeline_context.logger.info(f"Artifact {artifact.name} for {step_result.step.title} uploaded to {gcs_url}")
                 else:

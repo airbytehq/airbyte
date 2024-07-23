@@ -1,4 +1,5 @@
-version: 0.50.2
+version: 0.78.5
+
 type: DeclarativeSource
 
 check:
@@ -7,947 +8,203 @@ check:
     - space
 
 definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path:
-        - results
-
-  offset_increment_paginator:
-    type: DefaultPaginator
-    page_token_option:
-      type: RequestOption
-      inject_into: request_parameter
-      field_name: start
-    page_size_option:
-      inject_into: request_parameter
-      field_name: limit
-      type: RequestOption
-    pagination_strategy:
-      type: OffsetIncrement
-      page_size: 25
-
-  base_retriever:
-    type: SimpleRetriever
-    paginator:
-      $ref: "#/definitions/offset_increment_paginator"
-    record_selector:
-      $ref: "#/definitions/selector"
-
-  requester:
+  streams:
+    audit:
+      type: DeclarativeStream
+      name: audit
+      primary_key:
+        - creationDate
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "audit"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/audit"
+    blog_posts:
+      type: DeclarativeStream
+      name: blog_posts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: content?type=blogpost
+          http_method: GET
+          request_parameters:
+            expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/blog_posts"
+    group:
+      type: DeclarativeStream
+      name: group
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: group
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/group"
+    pages:
+      type: DeclarativeStream
+      name: pages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: content?type=page
+          http_method: GET
+          request_parameters:
+            expand: "history,history.lastUpdated,history.previousVersion,history.contributors,restrictions.read.restrictions.user,version,descendants.comment,body,body.storage,body.view"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pages"
+    space:
+      type: DeclarativeStream
+      name: space
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: space
+          http_method: GET
+          request_parameters:
+            expand: "permissions,icon,description.plain,description.view"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 25
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/space"
+  base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain_name'] }}/wiki/rest/api/
-    path: "{{ parameters.path }}"
-    http_method: GET
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['email'] }}"
       password: "{{ config['api_token'] }}"
-    request_body_json: {}
-    request_headers: {}
 
-  base_stream:
-    type: DeclarativeStream
-  audit_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters: {}
-    primary_key: "creationDate"
-    $parameters:
-      name: "audit"
-      path: "audit"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          author:
-            description: The user who triggered the audit event.
-            type:
-              - "null"
-              - object
-          remoteAddress:
-            description: The IP address from which the audit event originated.
-            type:
-              - "null"
-              - string
-          creationDate:
-            description: The date and time when the audit event was created.
-            type:
-              - "null"
-              - integer
-          summary:
-            description: A brief summary or title describing the audit event.
-            type:
-              - "null"
-              - string
-          description:
-            description: A detailed description of the audit event.
-            type:
-              - "null"
-              - string
-          category:
-            description: The category under which the audit event falls.
-            type:
-              - "null"
-              - string
-          sysAdmin:
-            description:
-              Indicates if the user triggering the audit event is a system
-              admin.
-            type:
-              - "null"
-              - boolean
-          superAdmin:
-            description:
-              Indicates if the user triggering the audit event is a super
-              admin.
-            type:
-              - "null"
-              - boolean
-          affectedObject:
-            description: The object that was affected by the audit event.
-            type:
-              - "null"
-              - object
-          changedValues:
-            description:
-              Details of the values that were changed during the audit
-              event.
-            type:
-              - "null"
-              - array
-          associatedObjects:
-            description: Any associated objects related to the audit event.
-            type:
-              - "null"
-              - array
-  blogposts_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          expand: >-
-            ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
-    primary_key: "id"
-    $parameters:
-      name: "blog_posts"
-      path: content?type=blogpost
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            description: Unique identifier for the blog post.
-            type: string
-          title:
-            description: Title of the blog post.
-            type: string
-          type:
-            description: Type/category of the blog post.
-            type: string
-          status:
-            description: Current status of the blog post (e.g., draft, published).
-            type: string
-          history:
-            description: Historical information related to the blog post
-            type: object
-            properties:
-              latest:
-                type: boolean
-              createdBy:
-                type: object
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  accountId:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-                  publicName:
-                    type:
-                      - string
-                      - "null"
-              createdDate:
-                description: Date and time when the blog post was created
-                type: string
-                format: date-time
-              contributors:
-                description: Contributors who published the blog post
-                type: object
-                properties:
-                  publishers:
-                    type: object
-                    properties:
-                      users:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            type:
-                              type:
-                                - string
-                                - "null"
-                            accountId:
-                              type:
-                                - string
-                                - "null"
-                            email:
-                              type:
-                                - string
-                                - "null"
-                            publicName:
-                              type:
-                                - string
-                                - "null"
-                      userKeys:
-                        type: array
-                        items:
-                          type: string
-              previousVersion:
-                type: object
-                properties:
-                  by:
-                    type: object
-                    properties:
-                      type:
-                        type:
-                          - string
-                          - "null"
-                      accountId:
-                        type:
-                          - string
-                          - "null"
-                      email:
-                        type:
-                          - string
-                          - "null"
-                      publicName:
-                        type:
-                          - string
-                          - "null"
-                  when:
-                    type:
-                      - string
-                      - "null"
-                    format: date-time
-                  friendlyWhen:
-                    type:
-                      - string
-                      - "null"
-                  message:
-                    type:
-                      - string
-                      - "null"
-                  number:
-                    type:
-                      - integer
-                      - "null"
-                  minorEdit:
-                    type:
-                      - boolean
-                      - "null"
-                  collaborators:
-                    type: object
-                    properties:
-                      users:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            type:
-                              type:
-                                - string
-                                - "null"
-                            accountId:
-                              type:
-                                - string
-                                - "null"
-                            email:
-                              type:
-                                - string
-                                - "null"
-                            publicName:
-                              type:
-                                - string
-                                - "null"
-                      userKeys:
-                        type: array
-                        items:
-                          type: string
-          version:
-            description: Version number of the blog post.
-            type: object
-            properties:
-              by:
-                type: object
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  accountId:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-                  publicName:
-                    type:
-                      - string
-                      - "null"
-              when:
-                type:
-                  - string
-                  - "null"
-                format: date-time
-              friendlyWhen:
-                type:
-                  - string
-                  - "null"
-              message:
-                type:
-                  - string
-                  - "null"
-              number:
-                type:
-                  - integer
-                  - "null"
-              minorEdit:
-                type:
-                  - boolean
-                  - "null"
-              collaborators:
-                type: object
-                properties:
-                  users:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type:
-                            - string
-                            - "null"
-                        accountId:
-                          type:
-                            - string
-                            - "null"
-                        email:
-                          type:
-                            - string
-                            - "null"
-                        publicName:
-                          type:
-                            - string
-                            - "null"
-                  userKeys:
-                    type: array
-                    items:
-                      type: string
-          descendants:
-            description: Details of the descendants of the blog post, such as comments
-            type: object
-            properties:
-              comment:
-                description: Comments associated with the blog post
-                type: object
-                properties:
-                  results:
-                    description: List of comment items
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        title:
-                          type: string
-                        type:
-                          type: string
-                        status:
-                          type: string
-          restrictions:
-            description: Restrictions on reading the blog post
-            type: object
-            properties:
-              read:
-                type: object
-                properties:
-                  operations:
-                    type:
-                      - string
-                      - "null"
-                  restrictions:
-                    user:
-                      type: object
-                      properties:
-                        results:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              type:
-                                type:
-                                  - string
-                                  - "null"
-                              accountId:
-                                type:
-                                  - string
-                                  - "null"
-                              email:
-                                type:
-                                  - string
-                                  - "null"
-                              publicName:
-                                type:
-                                  - string
-                                  - "null"
-          _expandable:
-            description:
-              Expandable details related to the blog post container and
-              space
-            type: object
-            properties:
-              container:
-                type: string
-              space:
-                type: string
-          _links:
-            description:
-              Links for navigating to various user interfaces to interact
-              with the blog post
-            type: object
-            properties:
-              self:
-                type: string
-              tinyui:
-                type: string
-              editui:
-                type: string
-              webui:
-                type: string
-  group_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters: {}
-    primary_key: "id"
-    $parameters:
-      name: "group"
-      path: "group"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            description: The unique identifier of the group.
-            type:
-              - "null"
-              - string
-          name:
-            description: The name of the group.
-            type:
-              - "null"
-              - string
-          type:
-            description: The type of group, indicating its category or classification.
-            type:
-              - "null"
-              - string
-          _links:
-            description: A collection of links related to the group entity.
-            type:
-              - "null"
-              - object
-  pages_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          expand: >-
-            ["history","history.lastUpdated","history.previousVersion","history.contributors","restrictions.read.restrictions.user","version","descendants.comment","body","body.storage","body.view",]
-    primary_key: "id"
-    $parameters:
-      name: "pages"
-      path: "content?type=page"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            description: Unique identifier for the page
-            type: string
-          title:
-            description: Title of the page
-            type: string
-          type:
-            description: Type of the page
-            type: string
-          status:
-            description: Status of the page
-            type: string
-          history:
-            description: History details of the page
-            type: object
-            properties:
-              latest:
-                description: Latest version details
-                type: boolean
-              createdBy:
-                description: Created by user
-                type: object
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  accountId:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-                  publicName:
-                    type:
-                      - string
-                      - "null"
-              createdDate:
-                description: Date and time of creation
-                type: string
-                format: date-time
-              contributors:
-                description: Contributors to the page
-                type: object
-                properties:
-                  publishers:
-                    description: Publishers of the page
-                    type: object
-                    properties:
-                      users:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            type:
-                              type:
-                                - string
-                                - "null"
-                            accountId:
-                              type:
-                                - string
-                                - "null"
-                            email:
-                              type:
-                                - string
-                                - "null"
-                            publicName:
-                              type:
-                                - string
-                                - "null"
-                      userKeys:
-                        type: array
-                        items:
-                          type: string
-              previousVersion:
-                description: Previous version details
-                type: object
-                properties:
-                  by:
-                    type: object
-                    properties:
-                      type:
-                        type:
-                          - string
-                          - "null"
-                      accountId:
-                        type:
-                          - string
-                          - "null"
-                      email:
-                        type:
-                          - string
-                          - "null"
-                      publicName:
-                        type:
-                          - string
-                          - "null"
-                  when:
-                    type:
-                      - string
-                      - "null"
-                    format: date-time
-                  friendlyWhen:
-                    type:
-                      - string
-                      - "null"
-                  message:
-                    type:
-                      - string
-                      - "null"
-                  number:
-                    type:
-                      - integer
-                      - "null"
-                  minorEdit:
-                    type:
-                      - boolean
-                      - "null"
-                  collaborators:
-                    type: object
-                    properties:
-                      users:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            type:
-                              type:
-                                - string
-                                - "null"
-                            accountId:
-                              type:
-                                - string
-                                - "null"
-                            email:
-                              type:
-                                - string
-                                - "null"
-                            publicName:
-                              type:
-                                - string
-                                - "null"
-                      userKeys:
-                        type: array
-                        items:
-                          type: string
-          version:
-            description: Version of the page
-            type: object
-            properties:
-              by:
-                type: object
-                properties:
-                  type:
-                    type:
-                      - string
-                      - "null"
-                  accountId:
-                    type:
-                      - string
-                      - "null"
-                  email:
-                    type:
-                      - string
-                      - "null"
-                  publicName:
-                    type:
-                      - string
-                      - "null"
-              when:
-                type:
-                  - string
-                  - "null"
-                format: date-time
-              friendlyWhen:
-                type:
-                  - string
-                  - "null"
-              message:
-                type:
-                  - string
-                  - "null"
-              number:
-                type:
-                  - integer
-                  - "null"
-              minorEdit:
-                type:
-                  - boolean
-                  - "null"
-              collaborators:
-                type: object
-                properties:
-                  users:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        type:
-                          type:
-                            - string
-                            - "null"
-                        accountId:
-                          type:
-                            - string
-                            - "null"
-                        email:
-                          type:
-                            - string
-                            - "null"
-                        publicName:
-                          type:
-                            - string
-                            - "null"
-                  userKeys:
-                    type: array
-                    items:
-                      type: string
-          descendants:
-            description: Descendant comments of this page
-            type: object
-            properties:
-              comment:
-                description: Comments on the page
-                type: object
-                properties:
-                  results:
-                    description: Comments results
-                    type: array
-                    items:
-                      description: Individual comment item
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        title:
-                          type: string
-                        type:
-                          type: string
-                        status:
-                          type: string
-          body:
-            description: Page body content
-            type: object
-            properties:
-              storage:
-                description: Storage details of the content
-                type: object
-                properties:
-                  value:
-                    description: Content value
-                    type: string
-                  representation:
-                    description: Content representation type
-                    type: string
-                  embeddedContent:
-                    description: Embedded content
-                    type: array
-                  _expandable:
-                    description: Expandable URLs related to the content
-                    type: object
-                    properties:
-                      content:
-                        description: Expandable content URL
-                        type: string
-              view:
-                description: View details of the content
-                type: object
-                properties:
-                  value:
-                    description: View value
-                    type: string
-                  representation:
-                    description: View representation type
-                    type: string
-                  _expandable:
-                    description: Expandable URLs related to the view
-                    type: object
-                    properties:
-                      webresource:
-                        description: Expandable web resource URL
-                        type: string
-                  embeddedContent:
-                    description: Embedded view content
-                    type: string
-                  mediaToken:
-                    description: Media token for view
-                    type: string
-                  content:
-                    description: View content
-                    type: string
-          restrictions:
-            description: Restrictions applied to the page
-            type: object
-            properties:
-              read:
-                description: Read restrictions
-                type: object
-                properties:
-                  operations:
-                    type:
-                      - string
-                      - "null"
-                  restrictions:
-                    user:
-                      type: object
-                      properties:
-                        results:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              type:
-                                type:
-                                  - string
-                                  - "null"
-                              accountId:
-                                type:
-                                  - string
-                                  - "null"
-                              email:
-                                type:
-                                  - string
-                                  - "null"
-                              publicName:
-                                type:
-                                  - string
-                                  - "null"
-          _expandable:
-            description: Expandable URLs related to this page
-            type: object
-            properties:
-              container:
-                description: Expandable container URL
-                type: string
-              space:
-                description: Expandable space URL
-                type: string
-          _links:
-            description: Links related to this page
-            type: object
-            properties:
-              self:
-                description: Self link
-                type: string
-              tinyui:
-                description: Tiny UI link
-                type: string
-              editui:
-                description: Edit UI link
-                type: string
-              webui:
-                description: Web UI link
-                type: string
-  space_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          expand: '["permissions","icon","description.plain","description.view"]'
-    primary_key: "id"
-    $parameters:
-      name: "space"
-      path: "space"
-
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        type: object
-        additionalProperties: true
-        properties:
-          id:
-            description: Unique identifier for the space.
-            type:
-              - "null"
-              - integer
-          key:
-            description: Key identifier for the space.
-            type:
-              - "null"
-              - string
-          name:
-            description: Name of the space.
-            type:
-              - "null"
-              - string
-          type:
-            description: Type/category of the space.
-            type:
-              - "null"
-              - string
-          status:
-            description: Status information of the space.
-            type:
-              - "null"
-              - string
-          permissions:
-            description: Permissions related to the space.
-            type:
-              - "null"
-              - array
-          icon:
-            description: Icon representing the space.
-            type:
-              - "null"
-              - object
-          description:
-            description: Description of the space.
-            type:
-              - "null"
-              - object
-          _expandable:
-            description: Expandable information related to the space.
-            type:
-              - "null"
-              - object
-          _links:
-            description: Links associated with the space.
-            type:
-              - "null"
-              - object
 streams:
-  - "#/definitions/audit_stream"
-  - "#/definitions/blogposts_stream"
-  - "#/definitions/group_stream"
-  - "#/definitions/pages_stream"
-  - "#/definitions/space_stream"
+  - $ref: "#/definitions/streams/audit"
+  - $ref: "#/definitions/streams/blog_posts"
+  - $ref: "#/definitions/streams/group"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/space"
 
 spec:
-  documentation_url: https://docs.airbyte.com/integrations/sources/confluence
   type: Spec
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
     type: object
-    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
     required:
       - email
       - api_token
@@ -956,20 +213,834 @@ spec:
       email:
         type: string
         title: Email
-        description: "Your Confluence login email"
-        examples: ["abc@example.com"]
+        description: Your Confluence login email
+        examples:
+          - abc@example.com
         order: 0
       api_token:
         type: string
-        title: "API Token"
-        description:
-          'Please follow the Jira confluence for generating an API token:
-          <a href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/">generating
-          an API token</a>.'
+        title: API Token
+        description: >-
+          Please follow the Jira confluence for generating an API token: <a
+          href="https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/">generating
+          an API token</a>.
         airbyte_secret: true
         order: 1
       domain_name:
-        title: "Domain name"
-        description: "Your Confluence domain name"
         type: string
+        title: Domain name
+        description: Your Confluence domain name
         order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    audit: false
+    blog_posts: false
+    group: false
+    pages: false
+    space: false
+
+schemas:
+  audit:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      affectedObject:
+        type:
+          - "null"
+          - object
+        description: The object that was affected by the audit event.
+      associatedObjects:
+        type:
+          - "null"
+          - array
+        description: Any associated objects related to the audit event.
+      author:
+        type:
+          - "null"
+          - object
+        description: The user who triggered the audit event.
+      category:
+        type:
+          - "null"
+          - string
+        description: The category under which the audit event falls.
+      changedValues:
+        type:
+          - "null"
+          - array
+        description: Details of the values that were changed during the audit event.
+      creationDate:
+        type:
+          - "null"
+          - integer
+        description: The date and time when the audit event was created.
+      description:
+        type:
+          - "null"
+          - string
+        description: A detailed description of the audit event.
+      remoteAddress:
+        type:
+          - "null"
+          - string
+        description: The IP address from which the audit event originated.
+      summary:
+        type:
+          - "null"
+          - string
+        description: A brief summary or title describing the audit event.
+      superAdmin:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user triggering the audit event is a super admin.
+      sysAdmin:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the user triggering the audit event is a system admin.
+  blog_posts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type: object
+        description: Version number of the blog post.
+        properties:
+          by:
+            type: object
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              accountId:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              publicName:
+                type:
+                  - string
+                  - "null"
+          collaborators:
+            type: object
+            properties:
+              userKeys:
+                type: array
+                items:
+                  type: string
+              users:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    accountId:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    publicName:
+                      type:
+                        - string
+                        - "null"
+          friendlyWhen:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+          minorEdit:
+            type:
+              - boolean
+              - "null"
+          number:
+            type:
+              - integer
+              - "null"
+          when:
+            type:
+              - string
+              - "null"
+            format: date-time
+      type:
+        type: string
+        description: Type/category of the blog post.
+      _expandable:
+        type: object
+        description: Expandable details related to the blog post container and space
+        properties:
+          container:
+            type: string
+          space:
+            type: string
+      _links:
+        type: object
+        description: >-
+          Links for navigating to various user interfaces to interact with the
+          blog post
+        properties:
+          editui:
+            type: string
+          self:
+            type: string
+          tinyui:
+            type: string
+          webui:
+            type: string
+      descendants:
+        type: object
+        description: Details of the descendants of the blog post, such as comments
+        properties:
+          comment:
+            type: object
+            description: Comments associated with the blog post
+            properties:
+              results:
+                type: array
+                description: List of comment items
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+                    status:
+                      type: string
+                    title:
+                      type: string
+      history:
+        type: object
+        description: Historical information related to the blog post
+        properties:
+          contributors:
+            type: object
+            description: Contributors who published the blog post
+            properties:
+              publishers:
+                type: object
+                properties:
+                  userKeys:
+                    type: array
+                    items:
+                      type: string
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        accountId:
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          type:
+                            - string
+                            - "null"
+                        publicName:
+                          type:
+                            - string
+                            - "null"
+          createdBy:
+            type: object
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              accountId:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              publicName:
+                type:
+                  - string
+                  - "null"
+          createdDate:
+            type: string
+            description: Date and time when the blog post was created
+            format: date-time
+          latest:
+            type: boolean
+          previousVersion:
+            type: object
+            properties:
+              by:
+                type: object
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  accountId:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  publicName:
+                    type:
+                      - string
+                      - "null"
+              collaborators:
+                type: object
+                properties:
+                  userKeys:
+                    type: array
+                    items:
+                      type: string
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        accountId:
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          type:
+                            - string
+                            - "null"
+                        publicName:
+                          type:
+                            - string
+                            - "null"
+              friendlyWhen:
+                type:
+                  - string
+                  - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+              minorEdit:
+                type:
+                  - boolean
+                  - "null"
+              number:
+                type:
+                  - integer
+                  - "null"
+              when:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+      id:
+        type: string
+        description: Unique identifier for the blog post.
+      restrictions:
+        type: object
+        description: Restrictions on reading the blog post
+        properties:
+          read:
+            type: object
+            properties:
+              operations:
+                type:
+                  - string
+                  - "null"
+              restrictions:
+                user:
+                  type: object
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          accountId:
+                            type:
+                              - string
+                              - "null"
+                          email:
+                            type:
+                              - string
+                              - "null"
+                          publicName:
+                            type:
+                              - string
+                              - "null"
+      status:
+        type: string
+        description: Current status of the blog post (e.g., draft, published).
+      title:
+        type: string
+        description: Title of the blog post.
+  group:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+        description: The type of group, indicating its category or classification.
+      _links:
+        type:
+          - "null"
+          - object
+        description: A collection of links related to the group entity.
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the group.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the group.
+  pages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type: object
+        description: Version of the page
+        properties:
+          by:
+            type: object
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              accountId:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              publicName:
+                type:
+                  - string
+                  - "null"
+          collaborators:
+            type: object
+            properties:
+              userKeys:
+                type: array
+                items:
+                  type: string
+              users:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    accountId:
+                      type:
+                        - string
+                        - "null"
+                    email:
+                      type:
+                        - string
+                        - "null"
+                    publicName:
+                      type:
+                        - string
+                        - "null"
+          friendlyWhen:
+            type:
+              - string
+              - "null"
+          message:
+            type:
+              - string
+              - "null"
+          minorEdit:
+            type:
+              - boolean
+              - "null"
+          number:
+            type:
+              - integer
+              - "null"
+          when:
+            type:
+              - string
+              - "null"
+            format: date-time
+      type:
+        type: string
+        description: Type of the page
+      _expandable:
+        type: object
+        description: Expandable URLs related to this page
+        properties:
+          container:
+            type: string
+            description: Expandable container URL
+          space:
+            type: string
+            description: Expandable space URL
+      _links:
+        type: object
+        description: Links related to this page
+        properties:
+          editui:
+            type: string
+            description: Edit UI link
+          self:
+            type: string
+            description: Self link
+          tinyui:
+            type: string
+            description: Tiny UI link
+          webui:
+            type: string
+            description: Web UI link
+      body:
+        type: object
+        description: Page body content
+        properties:
+          storage:
+            type: object
+            description: Storage details of the content
+            properties:
+              _expandable:
+                type: object
+                description: Expandable URLs related to the content
+                properties:
+                  content:
+                    type: string
+                    description: Expandable content URL
+              embeddedContent:
+                type: array
+                description: Embedded content
+              representation:
+                type: string
+                description: Content representation type
+              value:
+                type: string
+                description: Content value
+          view:
+            type: object
+            description: View details of the content
+            properties:
+              _expandable:
+                type: object
+                description: Expandable URLs related to the view
+                properties:
+                  webresource:
+                    type: string
+                    description: Expandable web resource URL
+              content:
+                type: string
+                description: View content
+              embeddedContent:
+                type: string
+                description: Embedded view content
+              mediaToken:
+                type: string
+                description: Media token for view
+              representation:
+                type: string
+                description: View representation type
+              value:
+                type: string
+                description: View value
+      descendants:
+        type: object
+        description: Descendant comments of this page
+        properties:
+          comment:
+            type: object
+            description: Comments on the page
+            properties:
+              results:
+                type: array
+                description: Comments results
+                items:
+                  type: object
+                  description: Individual comment item
+                  properties:
+                    type:
+                      type: string
+                    id:
+                      type: string
+                    status:
+                      type: string
+                    title:
+                      type: string
+      history:
+        type: object
+        description: History details of the page
+        properties:
+          contributors:
+            type: object
+            description: Contributors to the page
+            properties:
+              publishers:
+                type: object
+                description: Publishers of the page
+                properties:
+                  userKeys:
+                    type: array
+                    items:
+                      type: string
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        accountId:
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          type:
+                            - string
+                            - "null"
+                        publicName:
+                          type:
+                            - string
+                            - "null"
+          createdBy:
+            type: object
+            description: Created by user
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              accountId:
+                type:
+                  - string
+                  - "null"
+              email:
+                type:
+                  - string
+                  - "null"
+              publicName:
+                type:
+                  - string
+                  - "null"
+          createdDate:
+            type: string
+            description: Date and time of creation
+            format: date-time
+          latest:
+            type: boolean
+            description: Latest version details
+          previousVersion:
+            type: object
+            description: Previous version details
+            properties:
+              by:
+                type: object
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  accountId:
+                    type:
+                      - string
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  publicName:
+                    type:
+                      - string
+                      - "null"
+              collaborators:
+                type: object
+                properties:
+                  userKeys:
+                    type: array
+                    items:
+                      type: string
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type:
+                            - string
+                            - "null"
+                        accountId:
+                          type:
+                            - string
+                            - "null"
+                        email:
+                          type:
+                            - string
+                            - "null"
+                        publicName:
+                          type:
+                            - string
+                            - "null"
+              friendlyWhen:
+                type:
+                  - string
+                  - "null"
+              message:
+                type:
+                  - string
+                  - "null"
+              minorEdit:
+                type:
+                  - boolean
+                  - "null"
+              number:
+                type:
+                  - integer
+                  - "null"
+              when:
+                type:
+                  - string
+                  - "null"
+                format: date-time
+      id:
+        type: string
+        description: Unique identifier for the page
+      restrictions:
+        type: object
+        description: Restrictions applied to the page
+        properties:
+          read:
+            type: object
+            description: Read restrictions
+            properties:
+              operations:
+                type:
+                  - string
+                  - "null"
+              restrictions:
+                user:
+                  type: object
+                  properties:
+                    results:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          accountId:
+                            type:
+                              - string
+                              - "null"
+                          email:
+                            type:
+                              - string
+                              - "null"
+                          publicName:
+                            type:
+                              - string
+                              - "null"
+      status:
+        type: string
+        description: Status of the page
+      title:
+        type: string
+        description: Title of the page
+  space:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+        description: Type/category of the space.
+      _expandable:
+        type:
+          - "null"
+          - object
+        description: Expandable information related to the space.
+      _links:
+        type:
+          - "null"
+          - object
+        description: Links associated with the space.
+      description:
+        type:
+          - "null"
+          - object
+        description: Description of the space.
+      icon:
+        type:
+          - "null"
+          - object
+        description: Icon representing the space.
+      id:
+        type:
+          - "null"
+          - integer
+        description: Unique identifier for the space.
+      key:
+        type:
+          - "null"
+          - string
+        description: Key identifier for the space.
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the space.
+      permissions:
+        type:
+          - "null"
+          - array
+        description: Permissions related to the space.
+      status:
+        type:
+          - "null"
+          - string
+        description: Status information of the space.

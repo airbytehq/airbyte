@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_lever_hiring import SourceLeverHiring
+
+from .source import SourceLeverHiring
 
 
 def run():

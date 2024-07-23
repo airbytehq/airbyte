@@ -26,7 +26,7 @@ Youtube also generates historical data reports covering the 30-day period prior 
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the YouTube Analytics connector and select **YouTube Analytics** from the Source type dropdown.
 4. Select `Authenticate your account`.
-5. Log in and Authorize to the Instagram account and click `Set up source`.
+5. Log in and Authorize to the Youtube account and click `Set up source`.
 
 ### For Airbyte OSS:
 
@@ -81,10 +81,17 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                        |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
+| 0.1.6   | 2024-06-17 | [39529](https://github.com/airbytehq/airbyte/pull/39529) | Pin CDK version to 0.38.0 |
+| 0.1.5   | 2024-05-21 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date |
 | 0.1.4   | 2023-05-22 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth                        |
 | 0.1.3   | 2022-09-30 | [17454](https://github.com/airbytehq/airbyte/pull/17454) | Added custom backoff logic                     |
 | 0.1.2   | 2022-09-29 | [17399](https://github.com/airbytehq/airbyte/pull/17399) | Fixed `403` error while `check connection`     |
 | 0.1.1   | 2022-08-18 | [15744](https://github.com/airbytehq/airbyte/pull/15744) | Fix `channel_basic_a2` schema fields data type |
 | 0.1.0   | 2021-11-01 | [7407](https://github.com/airbytehq/airbyte/pull/7407)   | Initial Release                                |
+
+</details>

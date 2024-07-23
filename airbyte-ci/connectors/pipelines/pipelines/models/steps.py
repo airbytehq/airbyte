@@ -20,6 +20,7 @@ from pipelines import main_logger
 from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 from pipelines.models.artifacts import Artifact
+from pipelines.models.secrets import Secret
 
 if TYPE_CHECKING:
     from typing import Any, ClassVar, Optional, Union
@@ -87,6 +88,7 @@ class StepResult(Result):
     """A dataclass to capture the result of a step."""
 
     step: Step
+    consider_in_overall_status: bool = True
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
@@ -200,8 +202,9 @@ class Step(ABC):
     retry_delay = timedelta(seconds=10)
     accept_extra_params: bool = False
 
-    def __init__(self, context: PipelineContext) -> None:  # noqa D107
+    def __init__(self, context: PipelineContext, secrets: List[Secret] | None = None) -> None:  # noqa D107
         self.context = context
+        self.secrets = secrets if secrets else []
         self.retry_count = 0
         self.started_at: Optional[datetime] = None
         self.stopped_at: Optional[datetime] = None

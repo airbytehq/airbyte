@@ -35,10 +35,25 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.4   | 2024-03-25 | [36460](https://github.com/airbytehq/airbyte/pull/36460) | Added path config option      |
-| 0.1.3   | 2024-01-17 | [34336](https://github.com/airbytehq/airbyte/pull/34336) | Fix check() arguments error   |
-| 0.1.2   | 2023-08-25 | [29817](https://github.com/airbytehq/airbyte/pull/29817) | Fix writing multiple streams  |
-| 0.1.1   | 2023-08-24 | [29555](https://github.com/airbytehq/airbyte/pull/29555) | Increasing connection timeout |
-| 0.1.0   | 2022-10-28 | [18349](https://github.com/airbytehq/airbyte/pull/18349) | New Typesense destination     |
+| 0.1.14 | 2024-07-20 | [42146](https://github.com/airbytehq/airbyte/pull/42146) | Update dependencies |
+| 0.1.13 | 2024-07-13 | [41881](https://github.com/airbytehq/airbyte/pull/41881) | Update dependencies |
+| 0.1.12 | 2024-07-10 | [41361](https://github.com/airbytehq/airbyte/pull/41361) | Update dependencies |
+| 0.1.11 | 2024-07-09 | [41220](https://github.com/airbytehq/airbyte/pull/41220) | Update dependencies |
+| 0.1.10 | 2024-07-06 | [40918](https://github.com/airbytehq/airbyte/pull/40918) | Update dependencies |
+| 0.1.9 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.1.8 | 2024-06-25 | [40487](https://github.com/airbytehq/airbyte/pull/40487) | Update dependencies |
+| 0.1.7 | 2024-06-22 | [40154](https://github.com/airbytehq/airbyte/pull/40154) | Update dependencies |
+| 0.1.6 | 2024-06-04 | [39050](https://github.com/airbytehq/airbyte/pull/39050) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.5 | 2024-05-20 | [38428](https://github.com/airbytehq/airbyte/pull/38428) | [autopull] base image + poetry + up_to_date |
+| 0.1.4 | 2024-03-25 | [36460](https://github.com/airbytehq/airbyte/pull/36460) | Added path config option |
+| 0.1.3 | 2024-01-17 | [34336](https://github.com/airbytehq/airbyte/pull/34336) | Fix check() arguments error |
+| 0.1.2 | 2023-08-25 | [29817](https://github.com/airbytehq/airbyte/pull/29817) | Fix writing multiple streams |
+| 0.1.1 | 2023-08-24 | [29555](https://github.com/airbytehq/airbyte/pull/29555) | Increasing connection timeout |
+| 0.1.0 | 2022-10-28 | [18349](https://github.com/airbytehq/airbyte/pull/18349) | New Typesense destination |
+
+</details>

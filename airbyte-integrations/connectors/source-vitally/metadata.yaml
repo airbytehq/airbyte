@@ -1,13 +1,17 @@
 data:
+  allowedHosts:
+    hosts:
+      - rest.vitally.io
   connectorSubtype: api
   connectorType: source
   definitionId: 6c6d8b0c-db35-4cd1-a7de-0ca8b080f5ac
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/source-vitally
   githubIssueLabel: source-vitally
   icon: vitally.svg
   license: MIT
   name: Vitally
+  releaseDate: 2022-10-27
   remoteRegistries:
     pypi:
       enabled: true
@@ -26,4 +30,6 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

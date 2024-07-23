@@ -35,6 +35,7 @@ jobs:
             - airbyte-ci/connectors/pipelines/**
             - airbyte-ci/connectors/base_images/**
             - airbyte-ci/connectors/common_utils/**
+            - airbyte-ci/connectors/connectors_insights/**
             - airbyte-ci/connectors/connector_ops/**
             - airbyte-ci/connectors/connectors_qa/**
             - airbyte-ci/connectors/ci_credentials/**
@@ -46,25 +47,13 @@ jobs:
   run-tests:
     needs: changes
     # We only run the Internal Poetry packages CI job if there are changes to the packages on a non-forked PR
-    if: needs.changes.outputs.internal_poetry_packages == 'true'
+    if: needs.changes.outputs.internal_poetry_packages == 'true' && github.event.pull_request.head.repo.fork != true
     name: Internal Poetry packages CI
     runs-on: tooling-test-large
     permissions:
       pull-requests: read
       statuses: write
     steps:
-      # The run-tests job will be triggered if a fork made changes to the internal poetry packages.
-      # We don't want forks to make changes to the internal poetry packages.
-      # So we fail the job if the PR is from a fork, it will make the required CI check fail.
-      - name: Check if PR is from a fork
-        id: check-if-pr-is-from-fork
-        if: github.event_name == 'pull_request'
-        shell: bash
-        run: |
-          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
-            echo "PR is from a fork. Exiting workflow..."
-            exit 78
-          fi
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:

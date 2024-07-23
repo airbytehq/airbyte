@@ -104,10 +104,6 @@
       "description": "Total number of clicks",
       "type": ["null", "integer"]
     },
-    "conversion_lead_rate": {
-      "description": "Rate of leads generated from conversions",
-      "type": ["null", "number"]
-    },
     "conversion_rate_ranking": {
       "description": "Ranking based on conversion rates",
       "type": ["null", "string"]
@@ -147,10 +143,6 @@
     "cost_per_conversion": {
       "description": "Cost per conversion",
       "$ref": "ads_action_stats.json"
-    },
-    "cost_per_conversion_lead": {
-      "description": "Cost per conversion lead",
-      "type": ["null", "number"]
     },
     "cost_per_estimated_ad_recallers": {
       "description": "Cost per estimated ad recallers",

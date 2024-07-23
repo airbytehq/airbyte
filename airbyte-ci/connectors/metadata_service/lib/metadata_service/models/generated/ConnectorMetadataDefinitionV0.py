@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
@@ -16,6 +16,14 @@ class ConnectorBuildOptions(BaseModel):
         extra = Extra.forbid
 
     baseImage: Optional[str] = None
+
+
+class SecretStore(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    alias: Optional[str] = Field(None, description="The alias of the secret store which can map to its actual secret address")
+    type: Optional[Literal["GSM"]] = Field(None, description="The type of the secret store")
 
 
 class ReleaseStage(BaseModel):
@@ -122,6 +130,30 @@ class SourceFileInfo(BaseModel):
     registry_entry_generated_at: Optional[str] = None
 
 
+class ConnectorMetrics(BaseModel):
+    all: Optional[Any] = None
+    cloud: Optional[Any] = None
+    oss: Optional[Any] = None
+
+
+class ConnectorMetric(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    usage: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    sync_success_rate: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    connector_version: Optional[str] = None
+
+
+class Secret(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    name: str = Field(..., description="The secret name in the secret store")
+    fileName: Optional[str] = Field(None, description="The name of the file to which the secret value would be persisted")
+    secretStore: SecretStore
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -144,6 +176,15 @@ class RemoteRegistries(BaseModel):
 class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
+    metrics: Optional[ConnectorMetrics] = None
+
+
+class ConnectorTestSuiteOptions(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    suite: Literal["unitTests", "integrationTests", "acceptanceTests"] = Field(..., description="Name of the configured test suite")
+    testSecrets: Optional[List[Secret]] = Field(None, description="List of secrets required to run the test suite")
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -228,6 +269,7 @@ class Data(BaseModel):
     icon: Optional[str] = None
     definitionId: UUID
     connectorBuildOptions: Optional[ConnectorBuildOptions] = None
+    connectorTestSuitesOptions: Optional[List[ConnectorTestSuiteOptions]] = None
     connectorType: Literal["destination", "source"]
     dockerRepository: str
     dockerImageTag: str
