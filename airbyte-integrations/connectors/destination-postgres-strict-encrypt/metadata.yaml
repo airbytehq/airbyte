@@ -11,11 +11,11 @@ data:
   name: Postgres
   registries:
     cloud:
-      dockerImageTag: 2.0.15
       enabled: false
+      dockerImageTag: 2.0.15
     oss:
-      dockerImageTag: 2.0.15
       enabled: false
+      dockerImageTag: 2.0.15
   releases:
     breakingChanges:
       2.0.0:
