@@ -23,31 +23,32 @@ class S3DestinationFlushFunction(
     override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         val nameAndNamespace =
             AirbyteStreamNameNamespacePair(streamDescriptor.name, streamDescriptor.namespace)
-        val strategy = strategyProvider()
-        for (partialMessage in stream) {
-            val partialRecord = partialMessage.record!!
-            val data =
-            /**
-             * This should always be null, but if something changes upstream to trigger a clone of
-             * the record, then `null` becomes `JsonNull` and `data == null` goes from `true` to
-             * `false`
-             */
-            if (partialRecord.data == null || partialRecord.data!!.isNull) {
-                    Jsons.deserialize(partialMessage.serialized)
-                } else {
-                    partialRecord.data
-                }
-            val completeRecord =
-                AirbyteRecordMessage()
-                    .withEmittedAt(partialRecord.emittedAt)
-                    .withMeta(partialRecord.meta ?: AirbyteRecordMessageMeta())
-                    .withNamespace(partialRecord.namespace)
-                    .withStream(partialRecord.stream!!)
-                    .withData(data)
-            val completeMessage =
-                AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(completeRecord)
-            strategy.addRecord(nameAndNamespace, completeMessage)
+        strategyProvider().use { strategy ->
+            for (partialMessage in stream) {
+                val partialRecord = partialMessage.record!!
+                val data =
+                /**
+                 * This should always be null, but if something changes upstream to trigger a clone
+                 * of the record, then `null` becomes `JsonNull` and `data == null` goes from `true`
+                 * to `false`
+                 */
+                if (partialRecord.data == null || partialRecord.data!!.isNull) {
+                        Jsons.deserialize(partialMessage.serialized)
+                    } else {
+                        partialRecord.data
+                    }
+                val completeRecord =
+                    AirbyteRecordMessage()
+                        .withEmittedAt(partialRecord.emittedAt)
+                        .withMeta(partialRecord.meta ?: AirbyteRecordMessageMeta())
+                        .withNamespace(partialRecord.namespace)
+                        .withStream(partialRecord.stream!!)
+                        .withData(data)
+                val completeMessage =
+                    AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(completeRecord)
+                strategy.addRecord(nameAndNamespace, completeMessage)
+            }
+            strategy.flushSingleStream(nameAndNamespace)
         }
-        strategy.flushSingleStream(nameAndNamespace)
     }
 }

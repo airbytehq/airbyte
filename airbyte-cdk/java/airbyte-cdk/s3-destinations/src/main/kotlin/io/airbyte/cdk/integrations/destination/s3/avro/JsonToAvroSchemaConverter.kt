@@ -66,8 +66,7 @@ class JsonToAvroSchemaConverter {
     ): Schema {
         val stdName: String = AvroConstants.NAME_TRANSFORMER.getIdentifier(fieldName)
         val stdNamespace: String? =
-            if (fieldNamespace != null && fieldNamespace != "")
-                AvroConstants.NAME_TRANSFORMER.getNamespace(fieldNamespace)
+            if (fieldNamespace != null) AvroConstants.NAME_TRANSFORMER.getNamespace(fieldNamespace)
             else null
         val builder: SchemaBuilder.RecordBuilder<Schema> = SchemaBuilder.record(stdName)
         if (stdName != fieldName) {

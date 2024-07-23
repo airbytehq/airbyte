@@ -121,11 +121,10 @@ class AvroSerializedBufferTest() {
                 ),
             )
         private const val STREAM: String = "stream1"
-        private const val DEFAULT_NAMESPACE: String = ""
         private val streamPair: AirbyteStreamNameNamespacePair =
             AirbyteStreamNameNamespacePair(
                 STREAM,
-                DEFAULT_NAMESPACE,
+                null,
             )
         private val message: AirbyteRecordMessage =
             AirbyteRecordMessage()
