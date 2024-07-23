@@ -14,9 +14,11 @@ data:
   name: Postgres
   registries:
     cloud:
+      dockerImageTag: 2.0.15
       dockerRepository: airbyte/destination-postgres-strict-encrypt
       enabled: true
     oss:
+    dockerImageTag: 2.0.15
       enabled: true
   releases:
     breakingChanges:
