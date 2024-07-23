@@ -143,7 +143,7 @@ class CursorBasedCheckpointReader(CheckpointReader):
                 # current_slice is None represents the first time we are iterating over a stream's slices. The first slice to
                 # sync not been assigned yet and must first be read from the iterator
                 next_slice = self.read_and_convert_slice()
-                state_for_slice = self._cursor.select_state(self.current_slice)
+                state_for_slice = self._cursor.select_state(next_slice)
                 if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
                     # Skip every slice that already has the terminal complete value indicating that a previous attempt
                     # successfully synced the slice
