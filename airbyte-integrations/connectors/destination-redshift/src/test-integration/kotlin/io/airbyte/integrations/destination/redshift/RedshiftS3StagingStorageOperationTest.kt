@@ -66,7 +66,8 @@ class RedshiftS3StagingStorageOperationTest {
             keepStagingFiles = false,
             s3StorageOperations,
             RedshiftSqlGenerator(RedshiftSQLNameTransformer(), config),
-            RedshiftDestinationHandler(databaseName, jdbcDatabase, streamId.rawNamespace)
+            RedshiftDestinationHandler(databaseName, jdbcDatabase, streamId.rawNamespace),
+            dropCascade = false,
         )
 
     @BeforeEach
