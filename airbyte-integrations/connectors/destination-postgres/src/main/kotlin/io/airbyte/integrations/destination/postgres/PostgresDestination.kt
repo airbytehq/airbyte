@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils
@@ -24,11 +25,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandl
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDataTransformer
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresDestinationHandler
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresRawTableAirbyteMetaMigration
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresSqlGenerator
-import io.airbyte.integrations.destination.postgres.typing_deduping.PostgresState
+import io.airbyte.integrations.destination.postgres.typing_deduping.*
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -38,12 +35,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class PostgresDestination :
-    AbstractJdbcDestination<PostgresState>(
-        DRIVER_CLASS,
-        PostgresSQLNameTransformer(),
-        PostgresSqlOperations()
-    ),
+    AbstractJdbcDestination<PostgresState>(DRIVER_CLASS, PostgresSQLNameTransformer()),
     Destination {
+
     override fun modifyDataSourceBuilder(
         builder: DataSourceFactory.DataSourceBuilder
     ): DataSourceFactory.DataSourceBuilder {
@@ -81,19 +75,19 @@ class PostgresDestination :
         val additionalParameters: MutableMap<String, String> = HashMap()
         if (
             !config.has(PostgresSslConnectionUtils.PARAM_SSL) ||
-                config
-                    .get(
-                        PostgresSslConnectionUtils.PARAM_SSL,
-                    )
-                    .asBoolean()
+            config
+                .get(
+                    PostgresSslConnectionUtils.PARAM_SSL,
+                )
+                .asBoolean()
         ) {
             if (config.has(PostgresSslConnectionUtils.PARAM_SSL_MODE)) {
                 if (
                     PostgresSslConnectionUtils.DISABLE ==
-                        config
-                            .get(PostgresSslConnectionUtils.PARAM_SSL_MODE)
-                            .get(PostgresSslConnectionUtils.PARAM_MODE)
-                            .asText()
+                    config
+                        .get(PostgresSslConnectionUtils.PARAM_SSL_MODE)
+                        .get(PostgresSslConnectionUtils.PARAM_MODE)
+                        .asText()
                 ) {
                     additionalParameters["sslmode"] = PostgresSslConnectionUtils.DISABLE
                 } else {
@@ -152,9 +146,16 @@ class PostgresDestination :
     }
 
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
+        return PostgresSqlGenerator(PostgresSQLNameTransformer(), hasDropCascadeMode(config))
+    }
+
+    override fun getSqlOperations(config: JsonNode): SqlOperations {
+        return PostgresSqlOperations(hasDropCascadeMode(config))
+    }
+
+    private fun hasDropCascadeMode(config: JsonNode): Boolean {
         val dropCascadeNode = config[DROP_CASCADE_OPTION]
-        val dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean()
-        return PostgresSqlGenerator(PostgresSQLNameTransformer(), dropCascade)
+        return dropCascadeNode != null && dropCascadeNode.asBoolean()
     }
 
     override fun getDestinationHandler(
@@ -172,7 +173,8 @@ class PostgresDestination :
         destinationHandler: DestinationHandler<PostgresState>
     ): List<Migration<PostgresState>> {
         return java.util.List.of<Migration<PostgresState>>(
-            PostgresRawTableAirbyteMetaMigration(database, databaseName)
+            PostgresRawTableAirbyteMetaMigration(database, databaseName),
+            PostgresGenerationIdMigration(database, databaseName),
         )
     }
 
@@ -207,9 +209,9 @@ class PostgresDestination :
         fun main(args: Array<String>) {
             addThrowableForDeinterpolation(PSQLException::class.java)
             val destination = sshWrappedDestination()
-            LOGGER.info("starting destination-postgres: {}", PostgresDestination::class.java)
+            LOGGER.info("starting destination: {}", PostgresDestination::class.java)
             IntegrationRunner(destination).run(args)
-            LOGGER.info("completed destination-postgres: {}", PostgresDestination::class.java)
+            LOGGER.info("completed destination: {}", PostgresDestination::class.java)
         }
     }
 }
