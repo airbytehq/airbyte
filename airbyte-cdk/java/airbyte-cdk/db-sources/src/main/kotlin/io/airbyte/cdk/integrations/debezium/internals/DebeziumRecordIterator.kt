@@ -174,7 +174,7 @@ class DebeziumRecordIterator<T>(
 
             // #41647: discard event type with op code 'm'
             if (!isEventTypeHandled(changeEventWithMetadata)) {
-                LOGGER.info { "Event type not handled: $next" }
+                LOGGER.info { "WAL event type not handled: $next" }
                 continue
             }
 
