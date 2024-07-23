@@ -26,7 +26,8 @@ import org.apache.commons.lang3.StringUtils
 class AvroSerializedBuffer(
     bufferStorage: BufferStorage,
     codecFactory: CodecFactory,
-    schema: Schema
+    schema: Schema,
+    private val useV2FieldNames: Boolean = false,
 ) : BaseSerializedBuffer(bufferStorage) {
     private val codecFactory: CodecFactory
     private val schema: Schema
@@ -38,7 +39,10 @@ class AvroSerializedBuffer(
         withCompression(false)
         this.codecFactory = codecFactory
         this.schema = schema
-        avroRecordFactory = AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER)
+        val converter =
+            if (useV2FieldNames) AvroRecordFactory.createV2JsonToAvroConverter()
+            else AvroRecordFactory.createV1JsonToAvroConverter()
+        avroRecordFactory = AvroRecordFactory(schema, converter)
         dataFileWriter = null
     }
 
@@ -52,8 +56,14 @@ class AvroSerializedBuffer(
 
     @Deprecated("Deprecated in Java")
     @Throws(IOException::class)
-    override fun writeRecord(record: AirbyteRecordMessage) {
-        dataFileWriter!!.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))
+    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long) {
+        if (this.useV2FieldNames) {
+            dataFileWriter!!.append(
+                avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, record)
+            )
+        } else {
+            dataFileWriter!!.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))
+        }
     }
 
     @Throws(IOException::class)
@@ -71,6 +81,7 @@ class AvroSerializedBuffer(
                     AirbyteRecordMessage::class.java,
                 )
                 .withEmittedAt(emittedAt),
+            generationId
         )
     }
 
@@ -89,7 +100,8 @@ class AvroSerializedBuffer(
 
         fun createFunction(
             config: UploadAvroFormatConfig,
-            createStorageFunction: Callable<BufferStorage>
+            createStorageFunction: Callable<BufferStorage>,
+            useV2FieldNames: Boolean = false
         ): BufferCreateFunction {
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
@@ -114,8 +126,15 @@ class AvroSerializedBuffer(
                             ),
                         stream.name,
                         stream.namespace,
+                        useV2FieldNames = useV2FieldNames
                     )
-                AvroSerializedBuffer(createStorageFunction.call(), codecFactory, schema)
+                println("schema: $schema")
+                AvroSerializedBuffer(
+                    createStorageFunction.call(),
+                    codecFactory,
+                    schema,
+                    useV2FieldNames
+                )
             }
         }
     }
