@@ -87,30 +87,35 @@ class DebeziumRecordIteratorTest {
         "'', false",
     )
     fun handledEventTypesTest(op: String, handled: Boolean) {
-       Assertions.assertEquals(handled, DebeziumRecordIterator.isEventTypeHandled(ChangeEventWithMetadata(
-           object: ChangeEvent<String?, String?> {
+        Assertions.assertEquals(
+            handled,
+            DebeziumRecordIterator.isEventTypeHandled(
+                ChangeEventWithMetadata(
+                    object : ChangeEvent<String?, String?> {
 
-               private val sourceRecord =
-                   SourceRecord(
-                       null,
-                       Collections.singletonMap("lsn", 358824993496L),
-                       null,
-                       null,
-                       null,
-                   )
+                        private val sourceRecord =
+                            SourceRecord(
+                                null,
+                                Collections.singletonMap("lsn", 358824993496L),
+                                null,
+                                null,
+                                null,
+                            )
 
-               override fun key(): String? {
-                   return ""
-               }
+                        override fun key(): String? {
+                            return ""
+                        }
 
-               override fun value(): String {
-                   return "{\"op\":\"$op\", \"source\": {\"snapshot\": \"false\"}}"
-               }
+                        override fun value(): String {
+                            return "{\"op\":\"$op\", \"source\": {\"snapshot\": \"false\"}}"
+                        }
 
-               override fun destination(): String? {
-                   return null
-               }
-           }
-       )) )
+                        override fun destination(): String? {
+                            return null
+                        }
+                    }
+                )
+            )
+        )
     }
 }

@@ -334,17 +334,16 @@ class DebeziumRecordIterator<T>(
         const val POLL_LOG_MAX_CALLS_INTERVAL = 1_000
 
         /**
-         * We are not interested in message events.
-         * According to debezium [documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-create-events), possible operation code are:
-         * c: create, u: update, d: delete, r: read (applies to only snapshots)
-         * t: truncate, m: message
-         *
+         * We are not interested in message events. According to debezium
+         * [documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-create-events)
+         * , possible operation code are: c: create, u: update, d: delete, r: read (applies to only
+         * snapshots) t: truncate, m: message
          */
         fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
             event.eventValueAsJson()["op"]?.asText()?.let {
                 return it in listOf("c", "u", "d", "r", "t")
-            } ?: return false
+            }
+                ?: return false
         }
-
     }
 }
