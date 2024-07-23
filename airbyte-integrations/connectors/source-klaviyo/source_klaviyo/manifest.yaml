@@ -17,7 +17,7 @@ definitions:
     url_base: "https://a.klaviyo.com/api/"
     authenticator: "#/definitions/authenticator"
     http_method: GET
-    error_handler:
+    error_handlers:
       type: DefaultErrorHandler
       backoff_strategies:
         - type: WaitTimeFromHeader
