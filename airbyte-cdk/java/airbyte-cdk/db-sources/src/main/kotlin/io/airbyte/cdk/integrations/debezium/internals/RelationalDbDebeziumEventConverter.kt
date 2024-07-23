@@ -27,8 +27,8 @@ class RelationalDbDebeziumEventConverter(
                 "ChangeEvent contains no before or after records $debeziumEvent"
             )
         }
-        // Value of before and after may be a null or a NullNode object, representing a "null" in
-        // json
+        // Value of before and after may be a null or a NullNode object,
+        // representing a "null" in json
         val baseNode =
             when (after?.isNull == true) {
                 true -> before
