@@ -701,7 +701,7 @@ class TestDiscovery(BaseTest):
         """Counts number of times a stream appears in the catalog"""
         name_counts = dict()
         for stream in streams:
-            count = name_counts.get(stream.name, 0)
+            count = name_counts.get((stream.namepsace, stream.name), 0)
             name_counts[stream.name] = count + 1
         return [k for k, v in name_counts.items() if v > 1]
 
