@@ -2,11 +2,11 @@
 
 import datetime
 import json
-from pathlib import Path
 import random
 import string
 import sys
 from datetime import timedelta
+from pathlib import Path
 
 import psycopg2
 from psycopg2 import sql
