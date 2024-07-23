@@ -16,6 +16,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.AdvanceSetting;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -66,6 +67,7 @@ public class DbConverter {
             record.get(CONNECTION.SCHEDULE_DATA) == null ? null : Jsons.deserialize(record.get(CONNECTION.SCHEDULE_DATA).data(), ScheduleData.class))
         .withOperationIds(connectionOperationId)
         .withResourceRequirements(Jsons.deserialize(record.get(CONNECTION.RESOURCE_REQUIREMENTS).data(), ResourceRequirements.class))
+        .withAdvanceSetting(Jsons.deserialize(record.get(CONNECTION.ADVANCE_SETTING).data(), AdvanceSetting.class))
         .withSourceCatalogId(record.get(CONNECTION.SOURCE_CATALOG_ID));
   }
 

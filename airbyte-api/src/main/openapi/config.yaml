@@ -3617,6 +3617,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        advanceSetting:
+          $ref: "#/components/schemas/ConnectionAdvanceSetting"
     WebBackendConnectionCreate:
       type: object
       required:
@@ -3657,6 +3659,8 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
+        advanceSetting:
+          $ref: "#/components/schemas/ConnectionAdvanceSetting"
         operations:
           type: array
           items:
@@ -3715,6 +3719,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        advanceSetting:
+          $ref: "#/components/schemas/ConnectionAdvanceSetting"
     WebBackendConnectionUpdate:
       type: object
       required:
@@ -3762,6 +3768,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        advanceSetting:
+          $ref: "#/components/schemas/ConnectionAdvanceSetting"
     ConnectionRead:
       type: object
       required:
@@ -3809,6 +3817,8 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+        advanceSetting:
+          $ref: "#/components/schemas/ConnectionAdvanceSetting"
     ConnectionSearch:
       type: object
       properties:
@@ -3966,6 +3976,14 @@ components:
               type: string
             cronTimeZone:
               type: string
+    ConnectionAdvanceSetting:
+      description: advance setting for when the the connection should run
+      type: object
+      properties:
+        startDate:
+          type: string
+        endDate:
+          type: string
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
@@ -5104,6 +5122,8 @@ components:
           format: uuid
         catalogDiff:
           $ref: "#/components/schemas/CatalogDiff"
+        advanceSetting:
+          $ref: "#/components/schemas/ConnectionAdvanceSetting"
     WebBackendConnectionPageRead:
       type: object
       required:

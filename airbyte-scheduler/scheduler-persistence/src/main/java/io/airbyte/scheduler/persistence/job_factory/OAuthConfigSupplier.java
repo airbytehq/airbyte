@@ -24,7 +24,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -63,7 +62,7 @@ public class OAuthConfigSupplier {
           Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
         }
       } else {
-        log.error("Daspire config not found for workspace -> {}, sourceDefinitionId -> {}", workspaceId, sourceDefinitionId);
+        log.info("Daspire config not found for workspace -> {}, sourceDefinitionId -> {}", workspaceId, sourceDefinitionId);
       }
       return sourceConnectorConfig;
     } catch (final JsonValidationException | ConfigNotFoundException e) {
@@ -86,7 +85,7 @@ public class OAuthConfigSupplier {
           Exceptions.swallow(() -> trackingClient.track(workspaceId, "OAuth Injection - Backend", metadata));
         }
       } else {
-        log.error("Daspire config not found for workspace -> {}, destinationDefinitionId -> {}", workspaceId, destinationDefinitionId);
+        log.info("Daspire config not found for workspace -> {}, destinationDefinitionId -> {}", workspaceId, destinationDefinitionId);
       }
       return destinationConnectorConfig;
     } catch (final JsonValidationException | ConfigNotFoundException e) {

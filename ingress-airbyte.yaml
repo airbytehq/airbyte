@@ -15,21 +15,21 @@ metadata:
       rewrite /airbyte01/(.*)  /$1 break;
 spec:
   rules:
-  - host: airbyte01.daspire.com
-    http:
-      paths:
-      - path: /airbyte01
-        pathType: Prefix
-        backend:
-          service:
-            name: airbyte-server-svc
-            port:
-              number: 8001
+    - host: airbyte01.daspire.com
+      http:
+        paths:
+          - path: /airbyte01
+            pathType: Prefix
+            backend:
+              service:
+                name: airbyte-server-svc
+                port:
+                  number: 8001
 
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: airbyte-webapp-svc
-            port: 
-              number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: airbyte-webapp-svc
+                port:
+                  number: 80

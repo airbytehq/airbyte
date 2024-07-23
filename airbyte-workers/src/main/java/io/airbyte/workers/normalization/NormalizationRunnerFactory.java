@@ -19,11 +19,13 @@ public class NormalizationRunnerFactory {
   static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
       ImmutableMap.<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>>builder()
           // map destination connectors (alphabetically) to their expected normalization settings
-          .put("yuanrui2014/destination-bigquery", ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DefaultNormalizationRunner.DestinationType.BIGQUERY))
+          .put("yuanrui2014/destination-bigquery",
+              ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DefaultNormalizationRunner.DestinationType.BIGQUERY))
           .put("yuanrui2014/destination-bigquery-denormalized",
               ImmutablePair.of(BASE_NORMALIZATION_IMAGE_NAME, DefaultNormalizationRunner.DestinationType.BIGQUERY))
           .put("yuanrui2014/destination-clickhouse", ImmutablePair.of("yuanrui2014/normalization-clickhouse", DestinationType.CLICKHOUSE))
-          .put("yuanrui2014/destination-clickhouse-strict-encrypt", ImmutablePair.of("yuanrui2014/normalization-clickhouse", DestinationType.CLICKHOUSE))
+          .put("yuanrui2014/destination-clickhouse-strict-encrypt",
+              ImmutablePair.of("yuanrui2014/normalization-clickhouse", DestinationType.CLICKHOUSE))
           .put("yuanrui2014/destination-mssql", ImmutablePair.of("yuanrui2014/normalization-mssql", DestinationType.MSSQL))
           .put("yuanrui2014/destination-mssql-strict-encrypt", ImmutablePair.of("yuanrui2014/normalization-mssql", DestinationType.MSSQL))
           .put("yuanrui2014/destination-mysql", ImmutablePair.of("yuanrui2014/normalization-mysql", DestinationType.MYSQL))

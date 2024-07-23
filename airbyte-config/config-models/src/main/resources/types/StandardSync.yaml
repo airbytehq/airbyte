@@ -112,5 +112,12 @@ properties:
   source_catalog_id:
     type: string
     format: uuid
+  advanceSetting:
+    type: object
+    properties:
+      startDate:
+        type: string
+      endDate:
+        type: string
   resourceRequirements:
     "$ref": ResourceRequirements.yaml
