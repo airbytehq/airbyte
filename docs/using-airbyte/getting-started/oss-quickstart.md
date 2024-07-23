@@ -189,10 +189,7 @@ In the Building Connections section, you'll learn how to start moving data. Gene
 
 ## Customizing your Installation with a Values file
 
-The `abctl` binary uses Helm to install Airbyte. The `abctl local install` command accepts a values.yaml as an optional 
-parameter. The values.yaml is used to customize your installation of Airbyte. To use a values.yaml file, you must create
-the values.yaml somewhere on your local storage. You can apply the values.yaml by running the following command, 
-adjusting the path to the values.yaml file as needed:
+Optionally, you can use a `values.yaml` file to customize your installation of Airbyte. Create the `values.yaml` on your local storage. Then, apply the values you've defined by running the following command and adjusting the path to the `values.yaml` file as needed:
 
 ```shell
 abctl local install --values ./values.yaml
