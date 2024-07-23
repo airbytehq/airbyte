@@ -63,7 +63,7 @@ class RedshiftS3StagingStorageOperationTest {
             0,
             SYNC_ID,
         )
-    private val storageOperation = getRedshiftObjects(dropCascade = false).first
+    private val storageOperation = getStorageOperation(dropCascade = false)
 
     @BeforeEach
     fun setup() {
@@ -143,18 +143,14 @@ class RedshiftS3StagingStorageOperationTest {
     @Test
     fun testOverwriteStageDropCascade() {
         // create a new storage op with dropCascade = true
-        val (storageOperationWithCascade, destinationHandler) = getRedshiftObjects(dropCascade = true)
+        val storageOperationWithCascade = getStorageOperation(dropCascade = true)
 
         // Create the real+temp tables, and write a record to the temp table
         storageOperation.prepareStage(streamId, "")
         storageOperation.prepareStage(streamId, TMP_TABLE_SUFFIX)
         writeRecords(suffix = TMP_TABLE_SUFFIX, record(5))
         // Create a view on top of the real table
-        destinationHandler.execute(
-            Sql.of(
-                """CREATE VIEW ${streamId.rawNamespace}.test_view AS SELECT * FROM ${streamId.rawNamespace}.${streamId.rawName}"""
-            )
-        )
+        jdbcDatabase.execute("""CREATE VIEW ${streamId.rawNamespace}.test_view AS SELECT * FROM ${streamId.rawNamespace}.${streamId.rawName}""")
 
         // Check that we're set up correctly: Trying to drop the real table without cascade should fail
         val configError = assertThrows<ConfigErrorException> {
@@ -234,19 +230,14 @@ class RedshiftS3StagingStorageOperationTest {
         }
     }
 
-    private fun getRedshiftObjects(dropCascade: Boolean): Pair<RedshiftStagingStorageOperation, RedshiftDestinationHandler> {
-        val destinationHandler =
-            RedshiftDestinationHandler(databaseName, jdbcDatabase, streamId.rawNamespace)
-        return Pair(
-            RedshiftStagingStorageOperation(
-                s3Config,
-                keepStagingFiles = false,
-                s3StorageOperations,
-                RedshiftSqlGenerator(RedshiftSQLNameTransformer(), config),
-                destinationHandler,
-                dropCascade,
-            ),
-            destinationHandler,
+    private fun getStorageOperation(dropCascade: Boolean): RedshiftStagingStorageOperation {
+        return RedshiftStagingStorageOperation(
+            s3Config,
+            keepStagingFiles = false,
+            s3StorageOperations,
+            RedshiftSqlGenerator(RedshiftSQLNameTransformer(), config),
+            RedshiftDestinationHandler(databaseName, jdbcDatabase, streamId.rawNamespace),
+            dropCascade,
         )
     }
 
