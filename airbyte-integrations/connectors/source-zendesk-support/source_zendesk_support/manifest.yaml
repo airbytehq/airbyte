@@ -32,7 +32,7 @@ definitions:
         authenticators:
           oauth2.0: "#/definitions/bearer_authenticator"
           api_token: "#/definitions/basic_authenticator"
-      error_handler:
+      error_handlers:
         type: DefaultErrorHandler
         response_filters:
           - http_codes: [403, 404]
@@ -479,18 +479,15 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - http_codes: [403, 404]
-                  action: FAIL # fail as this stream used to define enterprise plan
-                  error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-            - type: DefaultErrorHandler
-              backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
+        error_handlers:
+            type: DefaultErrorHandler
+            response_filters:
+              - http_codes: [403, 404]
+                action: FAIL # fail as this stream used to define enterprise plan
+                error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+            backoff_strategies:
+              - type: WaitTimeFromHeader
+                header: Retry-After
       paginator:
         type: DefaultPaginator
         pagination_strategy:
