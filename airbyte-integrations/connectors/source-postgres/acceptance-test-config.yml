@@ -7,21 +7,21 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "integration_tests/config_active.json"
+        config_path: "secrets/config.json"
         backward_compatibility_tests_config:
           disable_for_version: "1.0.52"
       - spec_path: "src/test-integration/resources/expected_strict_encrypt_spec.json"
-        config_path: "integration_tests/config_active.json"
+        config_path: "secrets/config.json"
         deployment_mode: cloud
         backward_compatibility_tests_config:
           disable_for_version: "1.0.52"
   connection:
     tests:
-      - config_path: "integration_tests/config_active.json"
+      - config_path: "secrets/config.json"
         status: "succeed"
   discovery:
     tests:
-      - config_path: "integration_tests/config_active.json"
+      - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
           disable_for_version: "2.1.1"
   basic_read:
@@ -32,6 +32,7 @@ acceptance_tests:
           path: "integration_tests/expected_records.txt"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
           setup_command:
             - "python"
             - "./hook.py"
@@ -46,6 +47,7 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
           setup_command:
             - "python"
             - "./hook.py"
@@ -60,6 +62,7 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
           setup_command:
             - "python"
             - "./hook.py"
