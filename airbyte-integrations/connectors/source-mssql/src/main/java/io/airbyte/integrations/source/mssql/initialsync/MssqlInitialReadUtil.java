@@ -5,9 +5,11 @@
 package io.airbyte.integrations.source.mssql.initialsync;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcResyncMessage;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.wassOccurrenceMessage;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.mssql.MsSqlSpecConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.mssql.MssqlCdcHelper.getDebeziumProperties;
 import static io.airbyte.integrations.source.mssql.MssqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mssql.cdc.MssqlCdcStateConstants.MSSQL_CDC_OFFSET;
@@ -34,9 +36,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.TransientErrorTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -161,8 +161,10 @@ public class MssqlInitialReadUtil {
           INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
         throw new ConfigErrorException(
             "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency.");
+      } else if (sourceConfig.get("replication_method").get(INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(RESYNC_DATA_OPTION)) {
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcResyncMessage());
+        LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
       }
-      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
     }
     return savedOffsetStillPresentOnServer;
   }
@@ -178,7 +180,7 @@ public class MssqlInitialReadUtil {
     final CdcState initialStateToBeUsed = getCdcState(database, catalog, stateManager, savedOffsetStillPresentOnServer);
 
     return new MssqlInitialLoadGlobalStateManager(initialLoadStreams,
-        initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+        initPairToOrderedColumnInfoMap(database, catalog, tableNameToTable, quoteString),
         stateManager, catalog, initialStateToBeUsed);
   }
 
@@ -308,9 +310,7 @@ public class MssqlInitialReadUtil {
        * in the following order: 1. Run the debezium iterators with only the incremental streams which
        * have been fully or partially completed configured. 2. Resume initial load for partially completed
        * and not started streams. This step will timeout and throw a transient error if run for too long
-       * (> 8hrs by default). 3. Emit a transient error. This is to signal to the platform to restart the
-       * sync to clear the binlog. We cannot simply add the same cdc iterators as their target end
-       * position is fixed to the tip of the binlog at the start of the sync.
+       * (> 8hrs by default).
        */
       AirbyteTraceMessageUtility.emitAnalyticsTrace(wassOccurrenceMessage());
       final var propertiesManager =
@@ -324,9 +324,7 @@ public class MssqlInitialReadUtil {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialLoadIterator,
-                      cdcStreamsEndStatusEmitters,
-                      List.of(new TransientErrorTraceEmitterIterator(
-                          new TransientErrorException("Forcing a new sync after the initial load to read the binlog"))))
+                      cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
@@ -385,13 +383,13 @@ public class MssqlInitialReadUtil {
 
   public static Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> initPairToOrderedColumnInfoMap(
                                                                                                       final JdbcDatabase database,
-                                                                                                      final InitialLoadStreams initialLoadStreams,
+                                                                                                      final ConfiguredAirbyteCatalog catalog,
                                                                                                       final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                                                       final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOcInfoMap = new HashMap<>();
     // For every stream that is in initial ordered column sync, we want to maintain information about
     // the current ordered column info associated with the stream
-    initialLoadStreams.streamsForInitialLoad.forEach(stream -> {
+    catalog.getStreams().forEach(stream -> {
       final AirbyteStreamNameNamespacePair pair =
           new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final Optional<OrderedColumnInfo> ocInfo = getOrderedColumnInfo(database, stream, tableNameToTable, quoteString);

@@ -12,7 +12,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.prepareSchemas
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
@@ -154,7 +154,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info { "Final Table exists for stream ${stream.id.finalName}" }
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
-                        if (stream.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
+                        if (stream.generationId == stream.minimumGenerationId) {
                             if (!initialState.isFinalTableEmpty || initialState.isSchemaMismatch) {
                                 // We want to overwrite an existing table. Write into a tmp table.
                                 // We'll overwrite the table at the
@@ -295,7 +295,10 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 // records,
                 // then the raw table has some unprocessed records right now.
                 // Run T+D if either of those conditions are true.
-                val shouldRunTypingDeduping = nonzeroRecords || unprocessedRecordsPreexist
+                val shouldRunTypingDeduping =
+                    (nonzeroRecords || unprocessedRecordsPreexist) &&
+                        streamSyncSummary.terminalStatus ==
+                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
                 if (!shouldRunTypingDeduping) {
                     LOGGER.info {
                         "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} because it had no records during this sync and no unprocessed records from a previous sync."
@@ -335,7 +338,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 }
                 continue
             }
-            if (DestinationSyncMode.OVERWRITE == streamConfig.destinationSyncMode) {
+            if (streamConfig.generationId == streamConfig.minimumGenerationId) {
                 tableCommitTasks.add(commitFinalTableTask(streamConfig))
             }
         }

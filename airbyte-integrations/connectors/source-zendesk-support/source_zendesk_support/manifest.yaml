@@ -33,17 +33,15 @@ definitions:
           oauth2.0: "#/definitions/bearer_authenticator"
           api_token: "#/definitions/basic_authenticator"
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-              - http_codes: [403, 404]
-                action: IGNORE
-                error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-          - type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+        type: DefaultErrorHandler
+        response_filters:
+          - http_codes: [403, 404]
+            action: FAIL
+            failure_type: config_error
+            error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: Retry-After
     record_selector:
       type: RecordSelector
       extractor:
@@ -406,18 +404,18 @@ definitions:
           sort_by: "created_at"
           sort_order: "desc"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
-            - response_filters:
-                - http_codes: [504]
-                  action: FAIL
-                  error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
-                - http_codes: [403, 404]
-                  action: IGNORE
-                  error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - http_codes: [504]
+              action: FAIL
+              error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
+            - http_codes: [403, 404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
       paginator:
         type: DefaultPaginator
         page_size_option:

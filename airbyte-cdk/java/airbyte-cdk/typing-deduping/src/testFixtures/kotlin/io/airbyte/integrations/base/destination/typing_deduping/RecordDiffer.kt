@@ -15,7 +15,6 @@ import java.util.*
 import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.stream.IntStream
-import java.util.stream.Stream
 import kotlin.Array
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.function.Executable
@@ -366,11 +365,9 @@ constructor(
             } else if (expectedValue is ObjectNode && actualValue is ObjectNode) {
                 // If both values are objects compare their fields and values
                 expectedValue.size() == actualValue.size() &&
-                    Stream.generate { expectedValue.fieldNames().next() }
-                        .limit(expectedValue.size().toLong())
-                        .allMatch { field: String ->
-                            areJsonNodesEquivalent(expectedValue[field], actualValue[field])
-                        }
+                    expectedValue.fieldNames().asSequence().all { field: String ->
+                        areJsonNodesEquivalent(expectedValue[field], actualValue[field])
+                    }
             } else {
                 // Otherwise, we need to compare the actual values.
                 // This is kind of sketchy, but seems to work fine for the data we have in our test
