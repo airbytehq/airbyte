@@ -1,14 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import io
+
+import json
 import os
 
 import pytest
 import responses
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
-
-import json
 
 
 @pytest.fixture
@@ -55,9 +54,9 @@ def large_event_response_fixture():
     json_string = json.dumps(data)
     lines_in_response = 5_000_000
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_path = f'{dir_path}/test_response.txt'
-    with open(file_path, 'w') as file:
+    file_path = f"{dir_path}/test_response.txt"
+    with open(file_path, "w") as file:
         for _ in range(lines_in_response):
-            file.write(json_string + '\n')
+            file.write(json_string + "\n")
     yield (lines_in_response, file_path)
     os.remove(file_path)
