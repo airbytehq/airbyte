@@ -36,9 +36,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.TransientErrorTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -312,9 +310,7 @@ public class MssqlInitialReadUtil {
        * in the following order: 1. Run the debezium iterators with only the incremental streams which
        * have been fully or partially completed configured. 2. Resume initial load for partially completed
        * and not started streams. This step will timeout and throw a transient error if run for too long
-       * (> 8hrs by default). 3. Emit a transient error. This is to signal to the platform to restart the
-       * sync to clear the binlog. We cannot simply add the same cdc iterators as their target end
-       * position is fixed to the tip of the binlog at the start of the sync.
+       * (> 8hrs by default).
        */
       AirbyteTraceMessageUtility.emitAnalyticsTrace(wassOccurrenceMessage());
       final var propertiesManager =
@@ -328,9 +324,7 @@ public class MssqlInitialReadUtil {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialLoadIterator,
-                      cdcStreamsEndStatusEmitters,
-                      List.of(new TransientErrorTraceEmitterIterator(
-                          new TransientErrorException("Forcing a new sync after the initial load to read the binlog"))))
+                      cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
