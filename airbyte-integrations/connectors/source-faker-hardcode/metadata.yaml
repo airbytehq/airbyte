@@ -1,0 +1,52 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts: []
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 084124ab-22db-4019-b36d-630418541bf7
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-faker-hardcode
+  documentationUrl: https://docs.airbyte.com/integrations/sources/faker-hardcode
+  githubIssueLabel: source-faker
+  icon: faker.svg
+  license: MIT
+  name: Sample Data (Faker HC)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-faker-hardcode
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          cpu_limit: "4.0"
+          cpu_request: "1.0"
+  suggestedStreams:
+    streams:
+      - countries
+      - orders
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FAKER-HARDCODE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
