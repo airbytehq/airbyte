@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
-
 import pytest
 import requests
 import responses
@@ -106,6 +104,37 @@ def test_events_read_full_refresh(config):
         records.extend(slice_records)
 
     assert [r["email"] for r in records] == ["user1", "user2", "user3", "user4"]
+
+
+@responses.activate
+@pytest.mark.limit_memory("20 MB")
+def test_events_memory_limit(config, large_events_response):
+    lines_in_response, file_path = large_events_response
+    stream = next(filter(lambda x: x.name == "events", SourceIterable().streams(config=config)))
+
+    responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body="user1\nuser2\nuser3\nuser4")
+
+    def get_body():
+        return open(file_path, 'rb', buffering=30)
+
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user1&includeCustomEvents=true", body=get_body())
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user2&includeCustomEvents=true", body=get_body())
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user3&includeCustomEvents=true", body=get_body())
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user4&includeCustomEvents=true", body=get_body())
+
+    stream_slices = [
+        StreamSlice(partition={'email': 'user1', 'parent_slice': {'list_id': 111111, 'parent_slice': {}}}, cursor_slice={}),
+        StreamSlice(partition={'email': 'user2', 'parent_slice': {'list_id': 111111, 'parent_slice': {}}}, cursor_slice={}),
+        StreamSlice(partition={'email': 'user3', 'parent_slice': {'list_id': 111111, 'parent_slice': {}}}, cursor_slice={}),
+        StreamSlice(partition={'email': 'user4', 'parent_slice': {'list_id': 111111, 'parent_slice': {}}}, cursor_slice={}),
+    ]
+
+    counter = 0
+    for stream_slice in stream_slices:
+        for _ in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+            counter += 1
+    assert counter == lines_in_response * len(stream_slices)
 
 
 @responses.activate

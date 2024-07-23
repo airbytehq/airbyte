@@ -25,7 +25,8 @@ python-dateutil = "==2.8.2"
 source-iterable = "source_iterable.run:run"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^6.2"
+pytest = "^8"
+pytest-memray = "^1.6.0"
 pytest-mock = "^3.6.1"
 freezegun = "==1.5.1"
 requests-mock = "^1.9.3"
