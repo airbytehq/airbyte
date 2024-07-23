@@ -426,6 +426,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                             listOf(dummyRecord),
                             outputSchema,
                             outputTableName,
+                            -1,
+                            -1,
                         )
                     }
                 } finally {
@@ -456,7 +458,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     .withRecord(
                         PartialAirbyteRecordMessage()
                             .withStream("stream1")
-                            .withEmittedAt(1602637589000L),
+                            .withEmittedAt(1602637589000L)
                     )
                     .withSerialized(dummyDataToInsert.toString())
             }

@@ -32,9 +32,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
-import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.TransientErrorTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -180,7 +178,7 @@ public class MySqlInitialReadUtil {
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     return new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
-        initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+        initPairToPrimaryKeyInfoMap(database, catalog, tableNameToTable, quoteString),
         stateManager, catalog, savedOffsetStillPresentOnServer, getDefaultCdcState(database, catalog));
   }
 
@@ -326,9 +324,7 @@ public class MySqlInitialReadUtil {
        * in the following order: 1. Run the debezium iterators with only the incremental streams which
        * have been fully or partially completed configured. 2. Resume initial load for partially completed
        * and not started streams. This step will timeout and throw a transient error if run for too long
-       * (> 8hrs by default). 3. Emit a transient error. This is to signal to the platform to restart the
-       * sync to clear the binlog. We cannot simply add the same cdc iterators as their target end
-       * position is fixed to the tip of the binlog at the start of the sync.
+       * (> 8hrs by default).
        */
       AirbyteTraceMessageUtility.emitAnalyticsTrace(wassOccurrenceMessage());
       final var propertiesManager = new RelationalDbDebeziumPropertiesManager(
@@ -342,9 +338,7 @@ public class MySqlInitialReadUtil {
                       cdcStreamsStartStatusEmitters,
                       Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                       initialLoadIterator,
-                      cdcStreamsEndStatusEmitters,
-                      List.of(new TransientErrorTraceEmitterIterator(
-                          new TransientErrorException("Forcing a new sync after the initial load to read the binlog"))))
+                      cdcStreamsEndStatusEmitters)
                   .flatMap(Collection::stream)
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
@@ -508,14 +502,14 @@ public class MySqlInitialReadUtil {
   // currently undergoing initial primary key syncs.
   public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> initPairToPrimaryKeyInfoMap(
                                                                                                                            final JdbcDatabase database,
-                                                                                                                           final InitialLoadStreams initialLoadStreams,
+                                                                                                                           final ConfiguredAirbyteCatalog catalog,
                                                                                                                            final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                                                                            final String quoteString) {
     final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPkInfoMap = new HashMap<>();
     // For every stream that was in primary initial key sync, we want to maintain information about the
     // current primary key info associated with the
     // stream
-    initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
+    catalog.getStreams().forEach(stream -> {
       final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
           new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final Optional<PrimaryKeyInfo> pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);
