@@ -164,18 +164,18 @@ To set your own username and password, use command line flags or variables. For 
 abctl local install --username foo --password bar
 ```
 
-Or, if setting these values in the .env file, you'd add the following: 
+Or, if setting these values from environment variables, you'd export the following: 
 
 ```
-ABCTL_LOCAL_INSTALL_PASSWORD=foo
-ABCTL_LOCAL_INSTALL_USERNAME=bar
+export ABCTL_LOCAL_INSTALL_PASSWORD=foo
+export ABCTL_LOCAL_INSTALL_USERNAME=bar
 ```
 
 After supplying a username and password, you'll see the Airbyte workspace. Using this interface, you can set up and manage all your connections and move data with ease! 
 
 As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost8000](http://localhost8000). 
 
-If you quit Docker Decktop and want to return to your local Airbyte workspace, just start Docker Desktop again. Once Docker finishes restarting, you'll be able to access Airbyte's local installation as normal. 
+If you quit Docker Desktop and want to return to your local Airbyte workspace, just start Docker Desktop again. Once Docker finishes restarting, you'll be able to access Airbyte's local installation as normal. 
 
 ## 3: Move Data
 
@@ -186,6 +186,20 @@ In the Building Connections section, you'll learn how to start moving data. Gene
 2: [Set up a Destination](./add-a-destination.md)
 
 3: [Set up a Connection](./set-up-a-connection.md)
+
+## Customizing your Installation with a Values file
+
+Optionally, you can use a `values.yaml` file to customize your installation of Airbyte. Create the `values.yaml` on your local storage. Then, apply the values you've defined by running the following command and adjusting the path to the `values.yaml` file as needed:
+
+```shell
+abctl local install --values ./values.yaml
+```
+
+Here's a list of common customizations.
+
+- [External Database](../../deploying-airbyte/integrations/database)
+- [State and Logging Storage](../../deploying-airbyte/integrations/storage)
+- [Secret Management](../../deploying-airbyte/integrations/secrets)
 
 ## Migrating from Docker Compose (Optional)
 
