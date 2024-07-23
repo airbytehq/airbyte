@@ -63,10 +63,6 @@ class DebeziumRecordIteratorTest {
                     override fun destination(): String? {
                         return null
                     }
-
-                    fun sourceRecord(): SourceRecord {
-                        return sourceRecord
-                    }
                 },
             )
 
@@ -113,10 +109,6 @@ class DebeziumRecordIteratorTest {
 
                override fun destination(): String? {
                    return null
-               }
-
-               fun sourceRecord(): SourceRecord {
-                   return sourceRecord
                }
            }
        )) )
