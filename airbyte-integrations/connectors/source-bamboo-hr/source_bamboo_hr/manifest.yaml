@@ -117,8 +117,9 @@ definitions:
         step: P1D
         cursor_granularity: P1D
       schema_loader:
-        type: CustomSchemaLoader
-        class_name: source_bamboo_hr.components.BambooHRSchemaLoader
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_off_requests"
   base_requester:
     type: HttpRequester
     url_base: https://api.bamboohr.com/api/gateway.php/{{ config['subdomain'] }}/v1/
