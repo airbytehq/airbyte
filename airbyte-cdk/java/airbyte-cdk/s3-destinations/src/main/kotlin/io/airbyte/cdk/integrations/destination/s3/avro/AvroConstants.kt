@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.integrations.destination.s3.avro
 
-import tech.allegro.schema.json2avro.converter.JsonAvroConverter
-
 class AvroConstants {
 
     companion object {
@@ -19,17 +17,5 @@ class AvroConstants {
             setOf("_ab_additional_properties", AVRO_EXTRA_PROPS_FIELD)
 
         @JvmField val NAME_TRANSFORMER: AvroNameTransformer = AvroNameTransformer()
-
-        @JvmField
-        val JSON_CONVERTER: JsonAvroConverter =
-            JsonAvroConverter.builder()
-                .setNameTransformer { name: String ->
-                    NAME_TRANSFORMER.getIdentifier(
-                        name,
-                    )
-                }
-                .setJsonAdditionalPropsFieldNames(JSON_EXTRA_PROPS_FIELDS)
-                .setAvroAdditionalPropsFieldName(AVRO_EXTRA_PROPS_FIELD)
-                .build()
     }
 }

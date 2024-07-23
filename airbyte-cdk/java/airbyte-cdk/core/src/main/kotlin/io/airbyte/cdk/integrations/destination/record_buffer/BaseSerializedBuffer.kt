@@ -42,7 +42,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
      */
     @Deprecated("")
     @Throws(IOException::class)
-    protected abstract fun writeRecord(record: AirbyteRecordMessage)
+    protected abstract fun writeRecord(record: AirbyteRecordMessage, generationId: Long = 0)
 
     /**
      * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
@@ -80,7 +80,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
 
     @Deprecated("")
     @Throws(Exception::class)
-    override fun accept(record: AirbyteRecordMessage): Long {
+    override fun accept(record: AirbyteRecordMessage, generationId: Long): Long {
         if (!isStarted) {
             if (useCompression) {
                 compressedBuffer = GzipCompressorOutputStream(byteCounter)
@@ -92,7 +92,7 @@ protected constructor(private val bufferStorage: BufferStorage) : SerializableBu
         }
         if (inputStream == null && !isClosed) {
             val startCount = byteCounter.count
-            @Suppress("deprecation") writeRecord(record)
+            @Suppress("deprecation") writeRecord(record, generationId)
             return byteCounter.count - startCount
         } else {
             throw IllegalCallerException("Buffer is already closed, it cannot accept more messages")
