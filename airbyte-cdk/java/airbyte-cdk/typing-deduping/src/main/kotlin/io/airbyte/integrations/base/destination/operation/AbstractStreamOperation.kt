@@ -54,9 +54,9 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
             }
 
         if (isTruncateSync) {
-            prepareStageForTruncate(destinationInitialStatus, stream)
-            rawTableSuffix = TMP_TABLE_SUFFIX
-            initialRawTableStatus = destinationInitialStatus.initialTempRawTableStatus
+            val (rawTableStatus, suffix) = prepareStageForTruncate(destinationInitialStatus, stream)
+            initialRawTableStatus = rawTableStatus
+            rawTableSuffix = suffix
         } else {
             rawTableSuffix = NO_SUFFIX
             initialRawTableStatus = prepareStageForNormalSync(stream, destinationInitialStatus)
@@ -132,7 +132,17 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     private fun prepareStageForTruncate(
         destinationInitialStatus: DestinationInitialStatus<DestinationState>,
         stream: StreamConfig
-    ) {
+    ): Pair<InitialRawTableStatus, String> {
+        /*
+        tl;dr:
+        * if a temp raw table exists, check whether it belongs to the correct generation.
+          * if wrong generation, truncate it.
+          * regardless, write into the temp raw table.
+        * else, if a real raw table exists, check its generation.
+          * if wrong generation, write into a new temp raw table.
+          * else, write into the preexisting real raw table.
+        * else, create a new temp raw table and write into it.
+         */
         if (destinationInitialStatus.initialTempRawTableStatus.rawTableExists) {
             val tempStageGeneration =
                 storageOperation.getStageGeneration(stream.id, TMP_TABLE_SUFFIX)
@@ -159,15 +169,42 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
             }
             // (if the existing temp stage is from the correct generation, then we're resuming
             // a truncate refresh, and should keep the previous temp stage).
+            return Pair(destinationInitialStatus.initialTempRawTableStatus, TMP_TABLE_SUFFIX)
+        } else if (destinationInitialStatus.initialRawTableStatus.rawTableExists) {
+            // It's possible to "resume" a truncate sync that was previously already finalized.
+            // In this case, there is no existing temp raw table, and there is a real raw table
+            // which already belongs to the correct generation.
+            // Check for that case now.
+            val realStageGeneration = storageOperation.getStageGeneration(stream.id, NO_SUFFIX)
+            if (realStageGeneration == null || realStageGeneration == stream.generationId) {
+                log.info {
+                    "${stream.id.originalNamespace}.${stream.id.originalName}: truncate sync, no existing temp raw table, and existing real raw table belongs to generation $realStageGeneration (== current generation ${stream.generationId}). Retaining it."
+                }
+                // The real raw table is from the correct generation. Set up any other resources
+                // (staging file, etc.), but leave the table untouched.
+                storageOperation.prepareStage(stream.id, NO_SUFFIX)
+                return Pair(destinationInitialStatus.initialRawTableStatus, NO_SUFFIX)
+            } else {
+                log.info {
+                    "${stream.id.originalNamespace}.${stream.id.originalName}: truncate sync, existing real raw table belongs to generation $realStageGeneration (!= current generation ${stream.generationId}), and no preexisting temp raw table. Creating a temp raw table."
+                }
+                // We're initiating a new truncate refresh. Create a new temp stage.
+                storageOperation.prepareStage(
+                    stream.id,
+                    TMP_TABLE_SUFFIX,
+                )
+                return Pair(destinationInitialStatus.initialTempRawTableStatus, TMP_TABLE_SUFFIX)
+            }
         } else {
             log.info {
-                "${stream.id.originalNamespace}.${stream.id.originalName}: truncate sync, and no preexisting temp raw table. Creating it."
+                "${stream.id.originalNamespace}.${stream.id.originalName}: truncate sync, and no preexisting temp or  raw table. Creating a temp raw table."
             }
             // We're initiating a new truncate refresh. Create a new temp stage.
             storageOperation.prepareStage(
                 stream.id,
                 TMP_TABLE_SUFFIX,
             )
+            return Pair(destinationInitialStatus.initialTempRawTableStatus, TMP_TABLE_SUFFIX)
         }
     }
 
@@ -257,14 +294,14 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         // which is possible (`typeAndDedupe(streamConfig.id.copy(rawName = streamConfig.id.rawName
         // + suffix))`
         // but annoying and confusing.
-        if (isTruncateSync && streamSuccessful) {
+        if (isTruncateSync && streamSuccessful && rawTableSuffix.isNotEmpty()) {
             log.info {
-                "Overwriting raw table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} because this is a truncate sync and we received a stream success message."
+                "Overwriting raw table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} because this is a truncate sync, we received a stream success message, and are using a temporary raw table."
             }
             storageOperation.overwriteStage(streamConfig.id, rawTableSuffix)
         } else {
             log.info {
-                "Not overwriting raw table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful"
+                "Not overwriting raw table for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName}. Truncate sync: $isTruncateSync; stream success: $streamSuccessful; raw table suffix: \"$rawTableSuffix\""
             }
         }
 

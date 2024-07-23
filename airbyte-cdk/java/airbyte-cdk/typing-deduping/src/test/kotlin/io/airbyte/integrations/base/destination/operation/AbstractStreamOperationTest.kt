@@ -78,7 +78,7 @@ class AbstractStreamOperationTest {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
                     every { streamConfig } returns this@Truncate.streamConfig
-                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
+                    every { initialRawTableStatus.rawTableExists } returns false
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { isFinalTablePresent } returns false
                     every {
@@ -122,7 +122,7 @@ class AbstractStreamOperationTest {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
                     every { streamConfig } returns this@Truncate.streamConfig
-                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
+                    every { initialRawTableStatus.rawTableExists } returns true
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { isFinalTablePresent } returns true
                     every { isFinalTableEmpty } returns true
@@ -134,10 +134,12 @@ class AbstractStreamOperationTest {
                         destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
                     } returns destinationState
                 }
+            every { storageOperation.getStageGeneration(streamId, "") } returns -1
 
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
+                storageOperation.getStageGeneration(streamId, "")
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
                 storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, replace = true)
             }
@@ -172,7 +174,7 @@ class AbstractStreamOperationTest {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
                     every { streamConfig } returns this@Truncate.streamConfig
-                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
+                    every { initialRawTableStatus.rawTableExists } returns true
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { isFinalTablePresent } returns true
                     every { isFinalTableEmpty } returns true
@@ -181,10 +183,12 @@ class AbstractStreamOperationTest {
                         destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
                     } returns destinationState
                 }
+            every { storageOperation.getStageGeneration(streamId, "") } returns -1
 
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
+                storageOperation.getStageGeneration(streamId, "")
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
                 // No table creation - we can just reuse the existing table.
             }
@@ -218,7 +222,7 @@ class AbstractStreamOperationTest {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
                     every { streamConfig } returns this@Truncate.streamConfig
-                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
+                    every { initialRawTableStatus.rawTableExists } returns true
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { isFinalTablePresent } returns true
                     every { isFinalTableEmpty } returns false
@@ -226,10 +230,12 @@ class AbstractStreamOperationTest {
                         destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
                     } returns destinationState
                 }
+            every { storageOperation.getStageGeneration(streamId, "") } returns -1
 
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
+                storageOperation.getStageGeneration(streamId, "")
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
                 storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, replace = true)
             }
@@ -264,7 +270,7 @@ class AbstractStreamOperationTest {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
                     every { streamConfig } returns this@Truncate.streamConfig
-                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
+                    every { initialRawTableStatus.rawTableExists } returns true
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { isFinalTablePresent } returns true
                     every { isFinalTableEmpty } returns false
@@ -272,6 +278,7 @@ class AbstractStreamOperationTest {
                         destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
                     } returns destinationState
                 }
+            every { storageOperation.getStageGeneration(streamId, "") } returns -1
 
             val streamOperations = TestStreamOperation(storageOperation, initialState)
             // No point in verifying setup, completely identical to existingNonEmptyTable
@@ -298,7 +305,7 @@ class AbstractStreamOperationTest {
             val initialState =
                 mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
                     every { streamConfig } returns this@Truncate.streamConfig
-                    every { initialRawTableStatus } returns mockk<InitialRawTableStatus>()
+                    every { initialRawTableStatus.rawTableExists } returns true
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { isFinalTablePresent } returns true
                     every { isFinalTableEmpty } returns false
@@ -306,10 +313,12 @@ class AbstractStreamOperationTest {
                         destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
                     } returns destinationState
                 }
+            every { storageOperation.getStageGeneration(streamId, "") } returns -1
 
             val streamOperations = TestStreamOperation(storageOperation, initialState)
 
             verifySequence {
+                storageOperation.getStageGeneration(streamId, "")
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX)
                 storageOperation.createFinalTable(streamConfig, EXPECTED_SUFFIX, replace = true)
             }
@@ -460,6 +469,93 @@ class AbstractStreamOperationTest {
                 storageOperation.getStageGeneration(streamId, EXPECTED_SUFFIX)
                 storageOperation.prepareStage(streamId, EXPECTED_SUFFIX, replace = true)
                 storageOperation.createFinalTable(streamConfig, "", false)
+            }
+            confirmVerified(storageOperation)
+
+            clearMocks(storageOperation)
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
+
+            verifySequence {
+                storageOperation.cleanupStage(streamId)
+                storageOperation.overwriteStage(streamId, EXPECTED_SUFFIX)
+                storageOperation.typeAndDedupe(
+                    streamConfig,
+                    Optional.empty(),
+                    "",
+                )
+            }
+            confirmVerified(storageOperation)
+            checkUnnecessaryStub(initialState, initialState.destinationState)
+        }
+
+        @ParameterizedTest
+        @MethodSource(
+            "io.airbyte.integrations.base.destination.operation.AbstractStreamOperationTest#generationIds"
+        )
+        fun existingRealRawTableMatchingGeneration(existingRealTableGeneration: Long?) {
+            val initialState =
+                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
+                    every { streamConfig } returns this@Truncate.streamConfig
+                    every { initialRawTableStatus.rawTableExists } returns true
+                    every { initialTempRawTableStatus.rawTableExists } returns false
+                    every { isFinalTablePresent } returns false
+                    every {
+                        destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
+                    } returns destinationState
+                }
+            every { storageOperation.getStageGeneration(streamId, "") } returns
+                existingRealTableGeneration
+
+            val streamOperations = TestStreamOperation(storageOperation, initialState)
+
+            verifySequence {
+                storageOperation.getStageGeneration(streamId, "")
+                storageOperation.prepareStage(streamId, "")
+                storageOperation.createFinalTable(streamConfig, "", false)
+            }
+            confirmVerified(storageOperation)
+
+            clearMocks(storageOperation)
+            streamOperations.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
+
+            verifySequence {
+                storageOperation.cleanupStage(streamId)
+                storageOperation.typeAndDedupe(
+                    streamConfig,
+                    Optional.empty(),
+                    "",
+                )
+            }
+            confirmVerified(storageOperation)
+            checkUnnecessaryStub(initialState, initialState.destinationState)
+        }
+
+        @Test
+        fun existingRealRawTableWrongGeneration() {
+            val initialState =
+                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
+                    every { streamConfig } returns this@Truncate.streamConfig
+                    every { initialRawTableStatus.rawTableExists } returns true
+                    every { initialTempRawTableStatus.rawTableExists } returns false
+                    every { isFinalTablePresent } returns false
+                    every {
+                        destinationState.withSoftReset<MinimumDestinationState.Impl>(any())
+                    } returns destinationState
+                }
+            every { storageOperation.getStageGeneration(streamId, "") } returns -1
+
+            val streamOperations = TestStreamOperation(storageOperation, initialState)
+
+            verifySequence {
+                storageOperation.getStageGeneration(streamId, "")
+                storageOperation.prepareStage(streamId, EXPECTED_SUFFIX, replace = false)
+                storageOperation.createFinalTable(streamConfig, "", replace = false)
             }
             confirmVerified(storageOperation)
 
