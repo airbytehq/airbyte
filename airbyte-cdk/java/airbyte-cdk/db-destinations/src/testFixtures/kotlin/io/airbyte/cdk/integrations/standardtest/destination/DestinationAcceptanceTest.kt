@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import com.google.common.collect.Sets
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.standardtest.destination.*
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider
@@ -32,6 +33,8 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -81,7 +84,9 @@ private val LOGGER = KotlinLogging.logger {}
 
 abstract class DestinationAcceptanceTest(
     // If false, ignore counts and only verify the final state message.
-    private val verifyIndividualStateAndCounts: Boolean = false
+    private val verifyIndividualStateAndCounts: Boolean = false,
+    private val useV2Fields: Boolean = false,
+    private val supportsChangeCapture: Boolean = false
 ) {
     protected var testSchemas: HashSet<String> = HashSet()
 
@@ -186,6 +191,50 @@ abstract class DestinationAcceptanceTest(
         namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode>
+
+    private fun pruneAndMaybeFlatten(node: JsonNode): JsonNode {
+        val metaKeys =
+            mutableSetOf(
+                // V1
+                JavaBaseConstants.COLUMN_NAME_AB_ID,
+                JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+                // V2
+                JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+                JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+                JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+                JavaBaseConstants.COLUMN_NAME_AB_META,
+                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+            )
+
+        val jsons = MoreMappers.initMapper().createObjectNode()
+        // Iterate over every key value pair in the json node
+        for (entry in node.fields()) {
+            if (entry.key in metaKeys) {
+                continue
+            }
+
+            // If the message is normalized, flatten it
+            if (entry.key == JavaBaseConstants.COLUMN_NAME_DATA) {
+                for (dataEntry in entry.value.fields()) {
+                    jsons.replace(dataEntry.key, dataEntry.value)
+                }
+            }
+
+            jsons.replace(entry.key, entry.value)
+        }
+
+        return jsons
+    }
+
+    private fun retrieveRecordsDataOnly(
+        testEnv: TestDestinationEnv?,
+        streamName: String,
+        namespace: String,
+        streamSchema: JsonNode
+    ): List<JsonNode> {
+        return retrieveRecords(testEnv, streamName, namespace, streamSchema)
+            .map(this::pruneAndMaybeFlatten)
+    }
 
     /**
      * Returns a destination's default schema. The default implementation assumes this corresponds
@@ -1513,6 +1562,117 @@ abstract class DestinationAcceptanceTest(
         Assertions.assertEquals(secondSyncMessagesWithNewFields.size, destinationOutput.size)
     }
 
+    private fun getData(record: JsonNode): JsonNode {
+        if (record.has(JavaBaseConstants.COLUMN_NAME_DATA))
+            return record.get(JavaBaseConstants.COLUMN_NAME_DATA)
+        return record
+    }
+
+    private fun getChanges(record: JsonNode): MutableList<AirbyteRecordMessageMetaChange> {
+        val meta = record.get(JavaBaseConstants.COLUMN_NAME_AB_META)
+
+        val asString = if (meta.isTextual) meta.asText() else Jsons.serialize(meta)
+        val asMeta = Jsons.deserialize(asString, AirbyteRecordMessageMeta::class.java)
+
+        return asMeta.changes
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun testAirbyteFields() {
+        val configuredCatalog =
+            Jsons.deserialize(
+                MoreResources.readResource("v0/users_with_generation_id_configured_catalog.json"),
+                ConfiguredAirbyteCatalog::class.java
+            )
+        val config = getConfig()
+        val messages =
+            MoreResources.readResource("v0/users_with_generation_id_messages.txt")
+                .trim()
+                .lines()
+                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+        val preRunTime = Instant.now()
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        val generationId = configuredCatalog.streams[0].generationId
+        val stream = configuredCatalog.streams[0].stream
+        val destinationOutput =
+            retrieveRecords(testEnv, "users", getDefaultSchema(config)!!, stream.jsonSchema)
+
+        // Resolve common field keys.
+        val abIdKey: String =
+            if (useV2Fields) JavaBaseConstants.COLUMN_NAME_AB_RAW_ID
+            else JavaBaseConstants.COLUMN_NAME_AB_ID
+        val abTsKey =
+            if (useV2Fields) JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
+            else JavaBaseConstants.COLUMN_NAME_EMITTED_AT
+
+        // Validate airbyte fields as much as possible
+        val uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+        val zippedMessages = messages.take(destinationOutput.size).zip(destinationOutput)
+        zippedMessages.forEach { (message, record) ->
+            // Ensure the id is UUID4 format (best we can do without mocks)
+            Assertions.assertTrue(record.get(abIdKey).asText().matches(Regex(uuidRegex)))
+            Assertions.assertEquals(message.record.emittedAt, record.get(abTsKey).asLong())
+
+            if (useV2Fields) {
+                // Validate that the loadTs at at least >= the time the test started
+                Assertions.assertTrue(
+                    record.get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT).asLong() >=
+                        preRunTime.toEpochMilli()
+                )
+                // Generation id should match the one from the catalog
+                Assertions.assertEquals(
+                    generationId,
+                    record.get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID).asLong()
+                )
+            }
+        }
+
+        // Regardless of whether change failures are capatured, all v2
+        // destinations should pass upstream changes through.
+        if (useV2Fields) {
+            val changes = getChanges(destinationOutput[2])
+            Assertions.assertEquals(changes.size, 1)
+            Assertions.assertEquals(changes[0].field, "name")
+            Assertions.assertEquals(
+                changes[0].change,
+                AirbyteRecordMessageMetaChange.Change.TRUNCATED
+            )
+            Assertions.assertEquals(
+                changes[0].reason,
+                AirbyteRecordMessageMetaChange.Reason.SOURCE_FIELD_SIZE_LIMITATION
+            )
+        }
+
+        // Specifically verify that bad fields were captures for supporting formats
+        // (ie, Avro and Parquet)
+        if (supportsChangeCapture) {
+            // Expect the second message id field to have been nulled due to type conversion error.
+            val badRow = destinationOutput[1]
+            val data = getData(badRow)
+
+            Assertions.assertTrue(data["id"] == null || data["id"].isNull)
+            val changes = getChanges(badRow)
+
+            Assertions.assertEquals(1, changes.size)
+            Assertions.assertEquals("id", changes[0].field)
+            Assertions.assertEquals(AirbyteRecordMessageMetaChange.Change.NULLED, changes[0].change)
+            Assertions.assertEquals(
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+                changes[0].reason
+            )
+
+            // Expect the third message to have added a new change to an old one
+            val badRowWithPreviousChange = destinationOutput[3]
+            val dataWithPreviousChange = getData(badRowWithPreviousChange)
+            Assertions.assertTrue(
+                dataWithPreviousChange["id"] == null || dataWithPreviousChange["id"].isNull
+            )
+            val twoChanges = getChanges(badRowWithPreviousChange)
+            Assertions.assertEquals(2, twoChanges.size)
+        }
+    }
+
     /** Whether the destination should be tested against different namespaces. */
     open protected fun supportNamespaceTest(): Boolean {
         return false
@@ -1663,12 +1823,10 @@ abstract class DestinationAcceptanceTest(
                 message.state = clone
             }
         } else {
-            /* Null the states and collect only the final messages */
-            val finalActual =
-                actual.lastOrNull()
-                    ?: throw IllegalArgumentException(
-                        "All message sets used for testing should include a state record"
-                    )
+            /* Null the stats and collect only the final messages */
+            val finalActual = actual.lastOrNull()
+                ?: throw IllegalArgumentException(
+                    "All message sets used for testing should include a state record")
             val clone = finalActual.state
             clone.destinationStats = null
             finalActual.state = clone
@@ -1767,8 +1925,8 @@ abstract class DestinationAcceptanceTest(
             val streamName = stream.name
             val schema = if (stream.namespace != null) stream.namespace else defaultSchema!!
             val msgList =
-                retrieveRecords(testEnv, streamName, schema, stream.jsonSchema).map { data: JsonNode
-                    ->
+                retrieveRecordsDataOnly(testEnv, streamName, schema, stream.jsonSchema).map {
+                    data: JsonNode ->
                     AirbyteRecordMessage()
                         .withStream(streamName)
                         .withNamespace(schema)

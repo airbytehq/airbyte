@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
 import io.airbyte.cdk.integrations.destination.gcs.parquet.GcsParquetWriter
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
-import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetWriter.Companion.getHadoopConfig
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.getFieldNameUpdater
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.pruneAirbyteJson
@@ -60,7 +60,8 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
                         GcsDestinationAcceptanceTest.Companion.MAPPER.reader()
                     var record: GenericData.Record?
                     while ((parquetReader.read().also { record = it }) != null) {
-                        val jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record)
+                        val jsonBytes =
+                            AvroRecordFactory.createV1JsonToAvroConverter().convertToJson(record)
                         var jsonRecord = jsonReader.readTree(jsonBytes)
                         jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord!!)
                         jsonRecords.add(pruneAirbyteJson(jsonRecord))

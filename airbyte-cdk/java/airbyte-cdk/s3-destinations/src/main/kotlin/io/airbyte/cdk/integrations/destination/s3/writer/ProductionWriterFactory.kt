@@ -6,7 +6,7 @@ package io.airbyte.cdk.integrations.destination.s3.writer
 import com.amazonaws.services.s3.AmazonS3
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
-import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter
 import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroWriter
 import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvWriter
@@ -45,7 +45,7 @@ class ProductionWriterFactory : S3WriterFactory {
                     configuredStream,
                     uploadTimestamp,
                     avroSchema,
-                    AvroConstants.JSON_CONVERTER
+                    AvroRecordFactory.createV1JsonToAvroConverter()
                 )
             } else {
                 S3ParquetWriter(
@@ -54,7 +54,7 @@ class ProductionWriterFactory : S3WriterFactory {
                     configuredStream,
                     uploadTimestamp,
                     avroSchema,
-                    AvroConstants.JSON_CONVERTER
+                    AvroRecordFactory.createV1JsonToAvroConverter()
                 )
             }
         }

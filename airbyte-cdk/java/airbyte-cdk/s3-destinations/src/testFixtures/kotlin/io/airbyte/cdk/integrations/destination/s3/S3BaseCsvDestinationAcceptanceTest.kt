@@ -20,7 +20,7 @@ import org.apache.commons.csv.CSVRecord
 import org.apache.commons.csv.QuoteMode
 
 abstract class S3BaseCsvDestinationAcceptanceTest :
-    S3DestinationAcceptanceTest(FileUploadFormat.CSV) {
+    S3DestinationAcceptanceTest(FileUploadFormat.CSV, supportsChangeCapture = false) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(
@@ -93,30 +93,60 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
         ): JsonNode {
             val json: ObjectNode = MAPPER.createObjectNode()
 
-            if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
-                return Jsons.deserialize(input[JavaBaseConstants.COLUMN_NAME_DATA])
-            }
+            //            if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
+            //                val data =
+            // Jsons.deserialize(input[JavaBaseConstants.COLUMN_NAME_DATA])
+            //                for ((key, value) in data.fields()) {
+            //                    json.set<JsonNode>(key, value)
+            //                }
+            //            }
 
             for ((key, value) in input) {
                 if (
                     key == JavaBaseConstants.COLUMN_NAME_AB_ID ||
-                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                        (key == JavaBaseConstants.COLUMN_NAME_EMITTED_AT) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_RAW_ID) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_META) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID) ||
+                        (key == JavaBaseConstants.COLUMN_NAME_DATA)
                 ) {
-                    continue
+                    json.put(key, value)
                 }
-                if (value == "") {
-                    continue
-                }
+
                 val type = fieldTypes[key]
-                when (type) {
-                    "WellKnownTypes.json#/definitions/Boolean" -> json.put(key, value.toBoolean())
-                    "WellKnownTypes.json#/definitions/Integer" -> json.put(key, value.toInt())
-                    "WellKnownTypes.json#/definitions/Number" -> json.put(key, value.toDouble())
-                    "boolean" -> json.put(key, value.toBoolean())
-                    "integer" -> json.put(key, value.toInt())
-                    "number" -> json.put(key, value.toDouble())
-                    "" -> addNoTypeValue(json, key, value)
-                    else -> json.put(key, value)
+                if (value == "") {
+                    when (type) {
+                        "WellKnownTypes.json#/definitions/Boolean" ->
+                            json.put(key, null as Boolean?)
+                        "WellKnownTypes.json#/definitions/Integer" -> json.put(key, null as Int?)
+                        "WellKnownTypes.json#/definitions/Number" -> json.put(key, null as Double?)
+                        "boolean" -> json.put(key, null as Boolean?)
+                        "integer" -> json.put(key, null as Int?)
+                        "number" -> json.put(key, null as Double?)
+                        "" -> addNoTypeValue(json, key, value)
+                        else -> json.put(key, value)
+                    }
+                } else {
+                    try {
+                        when (type) {
+                            "WellKnownTypes.json#/definitions/Boolean" ->
+                                json.put(key, value.toBoolean())
+                            "WellKnownTypes.json#/definitions/Integer" ->
+                                json.put(key, value.toInt())
+                            "WellKnownTypes.json#/definitions/Number" ->
+                                json.put(key, value.toDouble())
+                            "boolean" -> json.put(key, value.toBoolean())
+                            "integer" -> json.put(key, value.toInt())
+                            "number" -> json.put(key, value.toDouble())
+                            "" -> addNoTypeValue(json, key, value)
+                            else -> json.put(key, value)
+                        }
+                    } catch (e: Exception) {
+                        // We expect this to fail in the bad field case.
+                        json.put(key, value)
+                    }
                 }
             }
             return json

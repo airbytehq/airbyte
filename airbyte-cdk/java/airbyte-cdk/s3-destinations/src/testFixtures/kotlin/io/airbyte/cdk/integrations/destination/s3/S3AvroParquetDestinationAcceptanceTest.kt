@@ -22,7 +22,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 
 abstract class S3AvroParquetDestinationAcceptanceTest
 protected constructor(fileUploadFormat: FileUploadFormat) :
-    S3DestinationAcceptanceTest(fileUploadFormat) {
+    S3DestinationAcceptanceTest(fileUploadFormat, supportsChangeCapture = true) {
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)
     @Throws(Exception::class)

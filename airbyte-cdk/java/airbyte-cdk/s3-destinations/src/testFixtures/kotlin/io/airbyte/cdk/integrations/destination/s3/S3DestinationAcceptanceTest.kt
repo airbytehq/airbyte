@@ -56,8 +56,15 @@ private val LOGGER = KotlinLogging.logger {}
  * * Get the format config from [.getFormatConfig]
  */
 abstract class S3DestinationAcceptanceTest
-protected constructor(protected val outputFormat: FileUploadFormat) :
-    DestinationAcceptanceTest(verifyIndividualStateAndCounts = true) {
+protected constructor(
+    protected val outputFormat: FileUploadFormat,
+    supportsChangeCapture: Boolean = false
+) :
+    DestinationAcceptanceTest(
+        verifyIndividualStateAndCounts = true,
+        useV2Fields = true,
+        supportsChangeCapture
+    ) {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
     protected var s3DestinationConfig: S3DestinationConfig = mock()
@@ -103,6 +110,7 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
                 DateTime.now(DateTimeZone.UTC),
                 s3DestinationConfig.pathFormat!!,
             )
+        println("outputPrefix: $outputPrefix")
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
         val objectSummaries =
