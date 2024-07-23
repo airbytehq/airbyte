@@ -55,3 +55,7 @@ class UserDefinedBackoffException(BaseBackoffException):
 
 class DefaultBackoffException(BaseBackoffException):
     pass
+
+
+class RateLimitBackoffException(BaseBackoffException):
+    pass

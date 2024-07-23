@@ -7,19 +7,11 @@ import json
 import pytest
 import requests
 import responses
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_iterable.source import SourceIterable
-from source_iterable.streams import (
-    Campaigns,
-    CampaignsMetrics,
-    IterableExportEventsStreamAdjustableRange,
-    IterableExportStreamAdjustableRange,
-    IterableExportStreamRanged,
-    IterableStream,
-    Templates,
-)
+from source_iterable.streams import Campaigns, CampaignsMetrics, Templates
 from source_iterable.utils import dateutil_parse
 
 
@@ -42,7 +34,7 @@ def test_stream_stops_on_401(config):
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={}, status=401)
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=2", json={}, status=401)
     slices = 0
-    with pytest.raises(ReadException):
+    with pytest.raises(AirbyteTracedException):
         for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             slices += 1
             _ = list(users_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))

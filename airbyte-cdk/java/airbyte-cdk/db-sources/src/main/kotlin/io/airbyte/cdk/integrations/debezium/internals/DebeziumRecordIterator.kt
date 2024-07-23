@@ -15,6 +15,7 @@ import io.debezium.engine.ChangeEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.reflect.Field
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.*
@@ -51,34 +52,60 @@ class DebeziumRecordIterator<T>(
     private var lastHeartbeatPosition: T? = null
     private var maxInstanceOfNoRecordsFound = 0
     private var signalledDebeziumEngineShutdown = false
+    private var numUnloggedPolls: Int = -1
+    private var lastLoggedPoll: Instant = Instant.MIN
 
-    // The following logic incorporates heartbeat (CDC postgres only for now):
+    // The following logic incorporates heartbeat:
     // 1. Wait on queue either the configured time first or 1 min after a record received
     // 2. If nothing came out of queue finish sync
     // 3. If received heartbeat: check if hearbeat_lsn reached target or hasn't changed in a while
     // finish sync
     // 4. If change event lsn reached target finish sync
-    // 5. Otherwise check message queuen again
+    // 5. Otherwise check message queue again
     override fun computeNext(): ChangeEventWithMetadata? {
         // keep trying until the publisher is closed or until the queue is empty. the latter case is
         // possible when the publisher has shutdown but the consumer has not yet processed all
-        // messages it
-        // emitted.
+        // messages it emitted.
         while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
             val next: ChangeEvent<String?, String?>?
-
             val waitTime =
                 if (receivedFirstRecord) this.subsequentRecordWaitTime else this.firstRecordWaitTime
+            val instantBeforePoll: Instant = Instant.now()
             try {
                 next = queue.poll(waitTime.seconds, TimeUnit.SECONDS)
             } catch (e: InterruptedException) {
                 throw RuntimeException(e)
             }
+            val instantAfterPoll: Instant = Instant.now()
+            val isEventLogged: Boolean =
+                numUnloggedPolls >= POLL_LOG_MAX_CALLS_INTERVAL - 1 ||
+                    Duration.between(lastLoggedPoll, instantAfterPoll) > pollLogMaxTimeInterval ||
+                    next == null ||
+                    isHeartbeatEvent(next)
+            if (isEventLogged) {
+                val pollDuration: Duration = Duration.between(instantBeforePoll, Instant.now())
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        when (numUnloggedPolls) {
+                            -1 -> "blocked for $pollDuration in its first call."
+                            0 ->
+                                "blocked for $pollDuration after " +
+                                    "its previous call which was also logged."
+                            else ->
+                                "blocked for $pollDuration after " +
+                                    "$numUnloggedPolls previous call(s) which were not logged."
+                        }
+                }
+                numUnloggedPolls = 0
+                lastLoggedPoll = instantAfterPoll
+            } else {
+                numUnloggedPolls++
+            }
 
             // if within the timeout, the consumer could not get a record, it is time to tell the
-            // producer to
-            // shutdown.
+            // producer to shutdown.
             if (next == null) {
+                LOGGER.info { "CDC events queue poll(): returned nothing." }
                 if (
                     !receivedFirstRecord || hasSnapshotFinished || maxInstanceOfNoRecordsFound >= 10
                 ) {
@@ -90,17 +117,35 @@ class DebeziumRecordIterator<T>(
                         DebeziumCloseReason.TIMEOUT
                     )
                 }
-                LOGGER.info { "no record found. polling again." }
+
                 maxInstanceOfNoRecordsFound++
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        "returned nothing, polling again, attempt $maxInstanceOfNoRecordsFound."
+                }
                 continue
             }
 
             if (isHeartbeatEvent(next)) {
                 if (!hasSnapshotFinished) {
+                    LOGGER.info {
+                        "CDC events queue poll(): " +
+                            "returned a heartbeat event while snapshot is not finished yet."
+                    }
                     continue
                 }
 
                 val heartbeatPos = getHeartbeatPosition(next)
+                val isProgressing = heartbeatPos != lastHeartbeatPosition
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        "returned a heartbeat event: " +
+                        if (isProgressing) {
+                            "progressing to $heartbeatPos."
+                        } else {
+                            "no progress since last heartbeat."
+                        }
+                }
                 // wrap up sync if heartbeat position crossed the target OR heartbeat position
                 // hasn't changed for
                 // too long
@@ -118,7 +163,7 @@ class DebeziumRecordIterator<T>(
                     )
                 }
 
-                if (heartbeatPos != lastHeartbeatPosition) {
+                if (isProgressing) {
                     this.tsLastHeartbeat = LocalDateTime.now()
                     this.lastHeartbeatPosition = heartbeatPos
                 }
@@ -126,7 +171,22 @@ class DebeziumRecordIterator<T>(
             }
 
             val changeEventWithMetadata = ChangeEventWithMetadata(next)
+
+            // #41647: discard event type with op code 'm'
+            if (!isEventTypeHandled(changeEventWithMetadata)) {
+                LOGGER.info { "WAL event type not handled: $next" }
+                continue
+            }
+
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
+
+            if (isEventLogged) {
+                val source: JsonNode? = changeEventWithMetadata.eventValueAsJson()["source"]
+                LOGGER.info {
+                    "CDC events queue poll(): " +
+                        "returned a change event with \"source\": $source."
+                }
+            }
 
             // if the last record matches the target file position, it is time to tell the producer
             // to shutdown.
@@ -137,6 +197,9 @@ class DebeziumRecordIterator<T>(
                 )
             }
             this.tsLastHeartbeat = null
+            if (!receivedFirstRecord) {
+                LOGGER.info { "Received first record from debezium." }
+            }
             this.receivedFirstRecord = true
             this.maxInstanceOfNoRecordsFound = 0
             return changeEventWithMetadata
@@ -197,15 +260,13 @@ class DebeziumRecordIterator<T>(
     }
 
     private fun heartbeatPosNotChanging(): Boolean {
-        // Closing debezium due to heartbeat position not changing only exists as an escape hatch
-        // for
-        // testing setups. In production, we rely on the platform heartbeats to kill the sync
-        if (!isTest() || this.tsLastHeartbeat == null) {
+        if (this.tsLastHeartbeat == null) {
             return false
         }
+
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
-        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime.dividedBy(2)) > 0
+        return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime) > 0
     }
 
     private fun requestClose(closeLogMessage: String, closeReason: DebeziumCloseReason) {
@@ -224,10 +285,6 @@ class DebeziumRecordIterator<T>(
         if (!hasSnapshotFinished) {
             throw RuntimeException("Closing down debezium engine but snapshot has not finished")
         }
-    }
-
-    private fun isTest(): Boolean {
-        return config.has("is_test") && config["is_test"].asBoolean()
     }
 
     /**
@@ -272,5 +329,21 @@ class DebeziumRecordIterator<T>(
         HEARTBEAT_NOT_PROGRESSING
     }
 
-    companion object {}
+    companion object {
+        val pollLogMaxTimeInterval: Duration = Duration.ofSeconds(5)
+        const val POLL_LOG_MAX_CALLS_INTERVAL = 1_000
+
+        /**
+         * We are not interested in message events. According to debezium
+         * [documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-create-events)
+         * , possible operation code are: c: create, u: update, d: delete, r: read (applies to only
+         * snapshots) t: truncate, m: message
+         */
+        fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
+            event.eventValueAsJson()["op"]?.asText()?.let {
+                return it in listOf("c", "u", "d", "r", "t")
+            }
+                ?: return false
+        }
+    }
 }

@@ -134,8 +134,17 @@ def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
 @pytest.fixture(name="client_container_config")
 def client_container_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[ClientContainerConfig]:
     """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
-    if hasattr(inputs, "setup_teardown_config") and inputs.setup_teardown_config:
-        return inputs.setup_teardown_config
+    if hasattr(inputs, "client_container_config") and inputs.client_container_config:
+        return inputs.client_container_config
+
+
+@pytest.fixture(name="client_container_config_secrets")
+def client_container_config_secrets_fixture(client_container_config) -> Optional[SecretDict]:
+    if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
+        with open(str(client_container_config.secrets_path), "r") as file:
+            contents = file.read()
+        return SecretDict(json.loads(contents))
+    return None
 
 
 @pytest.fixture(name="invalid_connector_config")
@@ -203,7 +212,6 @@ def docker_runner_fixture(
 @pytest.fixture(autouse=True)
 async def client_container(
     base_path: Path,
-    connector_config: SecretDict,
     dagger_client: dagger.Client,
     client_container_config: Optional[ClientContainerConfig],
 ) -> Optional[dagger.Container]:
@@ -211,22 +219,24 @@ async def client_container(
         return await client_container_runner.get_client_container(
             dagger_client,
             base_path,
-            base_path / client_container_config.client_dockerfile_path,
+            base_path / client_container_config.client_container_dockerfile_path,
         )
 
 
 @pytest.fixture(autouse=True)
 async def setup_and_teardown(
     client_container: dagger.Container,
-    connector_config: SecretDict,
     client_container_config: Optional[ClientContainerConfig],
+    client_container_config_secrets: SecretDict,
+    base_path: Path,
 ):
     if client_container:
         logging.info("Running setup")
         setup_teardown_container = await client_container_runner.do_setup(
             client_container,
             client_container_config.setup_command,
-            connector_config,
+            client_container_config_secrets,
+            base_path,
         )
         logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None

@@ -178,12 +178,17 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.6   | 2024-07-01 | [40590](https://github.com/airbytehq/airbyte/pull/40590)  | Add log message when data only accessible to seller accounts, add report id in log message for fatal report status, add check for start date.                                       |
-| 4.3.5   | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215)  | Replaced deprecated AirbyteLogger with logging.Logger                                                                                                                               |
-| 4.3.4   | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384)  | Update dependencies                                                                                                                                                                 |
-| 4.3.3   | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008)  | Update dependencies                                                                                                                                                                 |
-| 4.3.2   | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441)  | Update state handling for incremental streams                                                                                                                                       |
-| 4.3.1   | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969)  | [autopull] Upgrade base image to v1.2.1                                                                                                                                             |
+| 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
+| 4.3.10 | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345) | Update dependencies |
+| 4.3.9 | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158) | Update dependencies |
+| 4.3.8 | 2024-07-08 | [40751](https://github.com/airbytehq/airbyte/pull/40751) | Improve error messaging and turning on alerting |
+| 4.3.7 | 2024-07-06 | [40990](https://github.com/airbytehq/airbyte/pull/40990) | Update dependencies |
+| 4.3.6 | 2024-07-01 | [40590](https://github.com/airbytehq/airbyte/pull/40590) | Add log message when data only accessible to seller accounts, add report id in log message for fatal report status, add check for start date. |
+| 4.3.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 4.3.4 | 2024-06-25 | [40384](https://github.com/airbytehq/airbyte/pull/40384) | Update dependencies |
+| 4.3.3 | 2024-06-22 | [40008](https://github.com/airbytehq/airbyte/pull/40008) | Update dependencies |
+| 4.3.2 | 2024-06-13 | [39441](https://github.com/airbytehq/airbyte/pull/39441) | Update state handling for incremental streams |
+| 4.3.1 | 2024-06-04 | [38969](https://github.com/airbytehq/airbyte/pull/38969) | [autopull] Upgrade base image to v1.2.1 |
 | 4.3.0   | 2024-05-24 | [#00000](https://github.com/airbytehq/airbyte/pull/00000) | Extend the report_options spec config with a `stream_name` attribute                                                                                                                |
 | 4.2.4   | 2024-05-15 | [#38210](https://github.com/airbytehq/airbyte/pull/38210) | Fix `GET_VENDOR_TRAFFIC_REPORT` stream with report option `reportPeriod=DAY`                                                                                                        |
 | 4.2.3   | 2024-05-09 | [#38078](https://github.com/airbytehq/airbyte/pull/38078) | Hide OSS-only streams in report options config for cloud users                                                                                                                      |
