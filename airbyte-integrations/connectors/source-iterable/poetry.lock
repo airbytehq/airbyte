@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "3.9.0"
+version = "3.9.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-3.9.0-py3-none-any.whl", hash = "sha256:5f8b800f75b3bba1ae1950eee001e12633826e338e6427fa99c89d11c861d283"},
-    {file = "airbyte_cdk-3.9.0.tar.gz", hash = "sha256:cc54a63ef76896a18133b4bcb2191013c92d1ce1b405fe5261e8479b79076d63"},
+    {file = "airbyte_cdk-3.9.1-py3-none-any.whl", hash = "sha256:79dca800944a1c12580b6c209a5313314606a108bc111fdc078c1343967f2c02"},
+    {file = "airbyte_cdk-3.9.1.tar.gz", hash = "sha256:444e5a64e76a58d58489ae85d91042a8f0d9109643ccc34a271b60082d47b427"},
 ]
 
 [package.dependencies]
@@ -1154,13 +1154,13 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.3.1"
+version = "7.4.4"
 description = "pytest: simple powerful testing with Python"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
-    {file = "pytest-8.3.1-py3-none-any.whl", hash = "sha256:e9600ccf4f563976e2c99fa02c7624ab938296551f280835ee6516df8bc4ae8c"},
-    {file = "pytest-8.3.1.tar.gz", hash = "sha256:7e8e5c5abd6e93cb1cc151f23e57adc31fcf8cfd2a3ff2da63e23f732de35db6"},
+    {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
+    {file = "pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280"},
 ]
 
 [package.dependencies]
@@ -1168,11 +1168,11 @@ colorama = {version = "*", markers = "sys_platform == \"win32\""}
 exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
 iniconfig = "*"
 packaging = "*"
-pluggy = ">=1.5,<2"
-tomli = {version = ">=1", markers = "python_version < \"3.11\""}
+pluggy = ">=0.12,<2.0"
+tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 
 [package.extras]
-dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "pytest-memray"
@@ -1648,4 +1648,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9,<3.12"
-content-hash = "045f6f76e66726cadc9b3a53f41ace489900135ac73c915f90c58331b4ca2bf6"
+content-hash = "9a7afdc7dd383565bfdc0dcc44f3c7da1ced04b7aee8b53e0bee9b20e6a40869"
