@@ -1,9 +1,4 @@
 data:
-  connectorBuildOptions:
-    # Please update to the latest version of the connector base image.
-    # https://hub.docker.com/r/airbyte/python-connector-base
-    # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
   connectorSubtype: api
   connectorType: source
   definitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
@@ -27,7 +22,7 @@ data:
     breakingChanges:
       1.0.0:
         message: Version 1.0.0 introduces changes to the connection configuration which has been upgraded to the API v4.0 from v3.1. Due to this upgrade, certain streams were affected and schemas changed generally.
-        upgradeDeadline: "2024-05-30"
+        upgradeDeadline: "2024-08-06"
   documentationUrl: https://docs.airbyte.com/integrations/sources/looker
   tags:
     - language:python
