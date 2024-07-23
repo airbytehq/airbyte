@@ -10,7 +10,6 @@ import { SpecSchema } from "@site/src/components/SpecSchema";
 import MDXComponents from "@theme-original/MDXComponents";
 import { Details } from "../../components/Details";
 
-console.log("MDXComponents", MDXComponents);
 export default {
   // Re-use the default mapping
   ...MDXComponents,
