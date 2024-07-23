@@ -81,6 +81,7 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   public List<String> primaryKey(String tableName) {
     DescribeTableRequest describeTableRequest = DescribeTableRequest.builder().tableName(tableName).build();
     return dynamoDbClient.describeTable(describeTableRequest).table().keySchema().stream()
+        .filter(element -> element.keyType().equals(KeyType.HASH))
         .map(KeySchemaElement::attributeName)
         .toList();
   }
