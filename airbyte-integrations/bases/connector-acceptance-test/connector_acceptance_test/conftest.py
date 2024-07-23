@@ -138,6 +138,15 @@ def client_container_config_fixture(inputs, base_path, acceptance_test_config) -
         return inputs.client_container_config
 
 
+@pytest.fixture(name="client_container_config_secrets")
+def client_container_config_secrets_fixture(client_container_config) -> Optional[SecretDict]:
+    if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
+        with open(str(client_container_config.secrets_path), "r") as file:
+            contents = file.read()
+        return SecretDict(json.loads(contents))
+    return None
+
+
 @pytest.fixture(name="invalid_connector_config")
 def invalid_connector_config_fixture(base_path, invalid_connector_config_path) -> MutableMapping[str, Any]:
     """TODO: implement default value - generate from valid config"""
@@ -203,7 +212,6 @@ def docker_runner_fixture(
 @pytest.fixture(autouse=True)
 async def client_container(
     base_path: Path,
-    connector_config: SecretDict,
     dagger_client: dagger.Client,
     client_container_config: Optional[ClientContainerConfig],
 ) -> Optional[dagger.Container]:
@@ -218,8 +226,8 @@ async def client_container(
 @pytest.fixture(autouse=True)
 async def setup_and_teardown(
     client_container: dagger.Container,
-    connector_config: SecretDict,
     client_container_config: Optional[ClientContainerConfig],
+    client_container_config_secrets: SecretDict,
     base_path: Path,
 ):
     if client_container:
@@ -227,7 +235,7 @@ async def setup_and_teardown(
         setup_teardown_container = await client_container_runner.do_setup(
             client_container,
             client_container_config.setup_command,
-            connector_config,
+            client_container_config_secrets,
             base_path,
         )
         logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")

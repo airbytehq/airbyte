@@ -5,10 +5,12 @@
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcCursorInvalidMessage;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcResyncMessage;
 import static io.airbyte.cdk.db.DbAnalyticsUtils.wassOccurrenceMessage;
 import static io.airbyte.integrations.source.mysql.MySqlQueryUtils.getTableSizeInfoForStreams;
 import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.FAIL_SYNC_OPTION;
 import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
+import static io.airbyte.integrations.source.mysql.MySqlSpecConstants.RESYNC_DATA_OPTION;
 import static io.airbyte.integrations.source.mysql.cdc.MysqlCdcStateConstants.MYSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadGlobalStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.PRIMARY_KEY_STATE_TYPE;
@@ -160,8 +162,10 @@ public class MySqlInitialReadUtil {
           INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(FAIL_SYNC_OPTION)) {
         throw new ConfigErrorException(
             "Saved offset no longer present on the server. Please reset the connection, and then increase binlog retention and/or increase sync frequency. See https://docs.airbyte.com/integrations/sources/mysql/mysql-troubleshooting#under-cdc-incremental-mode-there-are-still-full-refresh-syncs for more details.");
+      } else if (sourceConfig.get("replication_method").get(INVALID_CDC_CURSOR_POSITION_PROPERTY).asText().equals(RESYNC_DATA_OPTION)) {
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcResyncMessage());
+        LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
       }
-      LOGGER.warn("Saved offset no longer present on the server, Airbyte is going to trigger a sync from scratch");
     }
     return savedOffsetStillPresentOnServer;
   }
@@ -176,7 +180,7 @@ public class MySqlInitialReadUtil {
         cdcStreamsForInitialPrimaryKeyLoad(stateManager.getCdcStateManager(), catalog, savedOffsetStillPresentOnServer);
 
     return new MySqlInitialLoadGlobalStateManager(initialLoadStreams,
-        initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, quoteString),
+        initPairToPrimaryKeyInfoMap(database, catalog, tableNameToTable, quoteString),
         stateManager, catalog, savedOffsetStillPresentOnServer, getDefaultCdcState(database, catalog));
   }
 
@@ -504,14 +508,14 @@ public class MySqlInitialReadUtil {
   // currently undergoing initial primary key syncs.
   public static Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> initPairToPrimaryKeyInfoMap(
                                                                                                                            final JdbcDatabase database,
-                                                                                                                           final InitialLoadStreams initialLoadStreams,
+                                                                                                                           final ConfiguredAirbyteCatalog catalog,
                                                                                                                            final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                                                                            final String quoteString) {
     final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, PrimaryKeyInfo> pairToPkInfoMap = new HashMap<>();
     // For every stream that was in primary initial key sync, we want to maintain information about the
     // current primary key info associated with the
     // stream
-    initialLoadStreams.streamsForInitialLoad().forEach(stream -> {
+    catalog.getStreams().forEach(stream -> {
       final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair =
           new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final Optional<PrimaryKeyInfo> pkInfo = getPrimaryKeyInfo(database, stream, tableNameToTable, quoteString);

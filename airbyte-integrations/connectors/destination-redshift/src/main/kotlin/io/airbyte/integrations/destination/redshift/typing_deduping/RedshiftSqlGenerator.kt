@@ -343,7 +343,7 @@ open class RedshiftSqlGenerator(
 
         private const val AIRBYTE_META_COLUMN_CHANGES_KEY = "changes"
 
-        private fun isDropCascade(config: JsonNode): Boolean {
+        fun isDropCascade(config: JsonNode): Boolean {
             val dropCascadeNode = config[RedshiftDestinationConstants.DROP_CASCADE_OPTION]
             return dropCascadeNode != null && dropCascadeNode.asBoolean()
         }

@@ -6,19 +6,12 @@ package io.airbyte.integrations.destination.postgres.typing_deduping
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
-import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
-import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.concat
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
-import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
 import java.util.function.Function
 import java.util.stream.Collectors
@@ -93,7 +86,7 @@ class PostgresSqlGenerator(namingTransformer: NamingConventionTransformer, casca
 
         statements.add(super.createTable(stream, suffix, force))
 
-        if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+        if (stream.postImportAction == ImportType.DEDUPE) {
             // An index for our ROW_NUMBER() PARTITION BY pk ORDER BY cursor, extracted_at function
             val pkNames =
                 stream.primaryKey.stream().map { pk: ColumnId -> DSL.quotedName(pk.name) }.toList()
@@ -257,9 +250,16 @@ class PostgresSqlGenerator(namingTransformer: NamingConventionTransformer, casca
                     DSL.array(dataFieldErrors).cast(JSONB_TYPE.arrayDataType),
                     DSL.`val`(null as String?)
                 )
+        val syncId: Field<*> =
+            DSL.field(
+                "{0}#>'{${JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY}}'",
+                DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_META))
+            )
         return jsonBuildObject(
                 DSL.`val`(AB_META_COLUMN_CHANGES_KEY),
-                DSL.field("ARRAY_CAT({0}, {1})", finalTableChangesArray, rawTableChangesArray)
+                DSL.field("ARRAY_CAT({0}, {1})", finalTableChangesArray, rawTableChangesArray),
+                DSL.`val`(JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY),
+                syncId
             )
             .`as`(JavaBaseConstants.COLUMN_NAME_AB_META)
     }
