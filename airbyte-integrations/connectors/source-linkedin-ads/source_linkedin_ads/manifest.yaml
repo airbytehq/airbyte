@@ -503,7 +503,7 @@ definitions:
               datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
-          class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
+          class_name: "source_linkedin_ads.components.ChunkedHttpRequester"
           url_base: https://api.linkedin.com/rest/
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
