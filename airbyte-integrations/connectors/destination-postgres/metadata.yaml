@@ -16,8 +16,10 @@ data:
     cloud:
       dockerRepository: airbyte/destination-postgres-strict-encrypt
       enabled: true
+      dockerImageTag: 2.0.15
     oss:
       enabled: true
+      dockerImageTag: 2.0.15
   releases:
     breakingChanges:
       2.0.0:
