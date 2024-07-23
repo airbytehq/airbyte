@@ -200,9 +200,9 @@ abctl local install --values ./values.yaml
 
 Here's a list of common customizations.
 
-- [External Database](./integrations/database)
-- [State and Logging Storage](./integrations/storage)
-- [Secret Management](./integrations/secrets)
+- [External Database](../../deploying-airbyte/integrations/database)
+- [State and Logging Storage](../../deploying-airbyte/integrations/storage)
+- [Secret Management](../../deploying-airbyte/integrations/secrets)
 
 ## Migrating from Docker Compose (Optional)
 
