@@ -14,6 +14,7 @@ import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.destination.staging.StagingSerializedBufferFactory
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation.Companion.TMP_TABLE_SUFFIX
@@ -33,6 +34,7 @@ import kotlin.test.assertEquals
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -60,14 +62,7 @@ class RedshiftS3StagingStorageOperationTest {
             0,
             SYNC_ID,
         )
-    private val storageOperation =
-        RedshiftStagingStorageOperation(
-            s3Config,
-            keepStagingFiles = false,
-            s3StorageOperations,
-            RedshiftSqlGenerator(RedshiftSQLNameTransformer(), config),
-            RedshiftDestinationHandler(databaseName, jdbcDatabase, streamId.rawNamespace)
-        )
+    private val storageOperation = getStorageOperation(dropCascade = false)
 
     @BeforeEach
     fun setup() {
@@ -144,6 +139,49 @@ class RedshiftS3StagingStorageOperationTest {
         )
     }
 
+    @Test
+    fun testOverwriteStageDropCascade() {
+        // create a new storage op with dropCascade = true
+        val storageOperationWithCascade = getStorageOperation(dropCascade = true)
+
+        // Create the real+temp tables, and write a record to the temp table
+        storageOperation.prepareStage(streamId, "")
+        storageOperation.prepareStage(streamId, TMP_TABLE_SUFFIX)
+        writeRecords(suffix = TMP_TABLE_SUFFIX, record(5))
+        // Create a view on top of the real table
+        jdbcDatabase.execute(
+            """CREATE VIEW ${streamId.rawNamespace}.test_view AS SELECT * FROM ${streamId.rawNamespace}.${streamId.rawName}"""
+        )
+
+        // Check that we're set up correctly: Trying to drop the real table without cascade should
+        // fail
+        val configError =
+            assertThrows<ConfigErrorException> {
+                storageOperation.overwriteStage(
+                    streamId,
+                    TMP_TABLE_SUFFIX,
+                )
+            }
+        assertEquals(
+            "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
+            configError.message,
+        )
+        // Then check that dropping with CASCADE succeeds
+        assertDoesNotThrow {
+            storageOperationWithCascade.overwriteStage(streamId, TMP_TABLE_SUFFIX)
+        }
+        // And verify that we still correctly moved the record to the real table
+        assertEquals(
+            listOf("""{"record_number":5}"""),
+            dumpRawRecords("").map { it["_airbyte_data"].asText() },
+        )
+        // And verify that the temp table is gone
+        assertEquals(
+            """ERROR: relation "${streamId.rawNamespace}.${streamId.rawName}$TMP_TABLE_SUFFIX" does not exist""",
+            assertThrows<RedshiftException> { dumpRawRecords(TMP_TABLE_SUFFIX) }.message,
+        )
+    }
+
     private fun dumpRawRecords(suffix: String): List<JsonNode> {
         return jdbcDatabase.queryJsons(
             "SELECT * FROM ${streamId.rawNamespace}.${streamId.rawName}$suffix"
@@ -195,6 +233,17 @@ class RedshiftS3StagingStorageOperationTest {
             it.flush()
             storageOperation.writeToStage(streamConfig, suffix, writeBuffer)
         }
+    }
+
+    private fun getStorageOperation(dropCascade: Boolean): RedshiftStagingStorageOperation {
+        return RedshiftStagingStorageOperation(
+            s3Config,
+            keepStagingFiles = false,
+            s3StorageOperations,
+            RedshiftSqlGenerator(RedshiftSQLNameTransformer(), config),
+            RedshiftDestinationHandler(databaseName, jdbcDatabase, streamId.rawNamespace),
+            dropCascade,
+        )
     }
 
     companion object {
