@@ -22,8 +22,8 @@ secret_config_file = '/connector/secrets/config.json'
 secret_active_config_file = '/connector/integration_tests/config_active.json'
 
 def connect_to_db():
-    f = open(secret_config_file)
-    secret = json.load(f)
+    with open(secret_config_file) as f:
+        secret = json.load(f)
 
     try:
         # Define connection parameters
