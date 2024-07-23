@@ -3,16 +3,19 @@ import classNames from "classnames";
 import React from "react";
 import styles from "./Details.module.css";
 
-export const Details = ({ className, ...rest }) => {
+export const Details = ({ className, children, ...rest }) => {
   const location = useLocation();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
 
-  const [summary, ...content] = rest.children;
+  const items = React.Children.toArray(children);
+  const summary = items.find((item) => React.isValidElement(item) && item.type === "summary");
+  const content = items.filter((item) => React.isValidElement(item) && item.type !== "summary");
+
 
   React.useEffect(() => {
-    const detailsHeaderId = ref.current.previousElementSibling.id
-    const contentIds = [...rest.children]
+    const detailsHeaderId = ref.current?.previousElementSibling?.id
+    const contentIds = content
       .map((element) => {
         if (element.props.id) {
           return `#${element.props.id}`;
@@ -25,7 +28,7 @@ export const Details = ({ className, ...rest }) => {
     } else {
       setOpen(false);
     }
-  }, [location.hash, rest.children, ref.current]);
+  }, [location.hash, content, summary, ref.current]);
 
   return (
     <details
