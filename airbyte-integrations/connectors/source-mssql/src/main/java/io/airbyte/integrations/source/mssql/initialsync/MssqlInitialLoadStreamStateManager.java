@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadStateManager.class);
-  private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
 
   public MssqlInitialLoadStreamStateManager(final ConfiguredAirbyteCatalog catalog,
                                             final InitialLoadStreams initialLoadStreams,
@@ -49,11 +48,6 @@ public class MssqlInitialLoadStreamStateManager extends MssqlInitialLoadStateMan
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(getAirbyteStreamState(pair, finalState));
-  }
-
-  @Override
-  public OrderedColumnInfo getOrderedColumnInfo(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColInfo.get(pair);
   }
 
   @Override
