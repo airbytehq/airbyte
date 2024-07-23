@@ -274,20 +274,22 @@ host Airbyte at, for example: `airbyte.company.example`.
 
 ## Uninstalling
 
-If you would like to remove Airbyte from you system, you can run:
+
+If you want to remove Airbyte from your system, consider which of the following two options you would like to use. 
+
+1: Run the following command to stop all running containers that `abctl` has created **while preserving any data you've created**: 
 
 ```shell
 abctl local uninstall
 ```
 
-This will stop all running containers that `abctl` create, but will not remove any data that you have created. If you 
-want to clear the persistent data as well, run:
+2: If you want to clear the persistent data in addition to stopping containers, run:
 
 ```shell
 abctl local uninstall --persisted
 ```
 
-To clear out any additional information that `abctl` may have create, you can run:
+As a last step, to clear out any additional information that `abctl` may have created, you can run:
 
 ```shell
 rm -rf ~/.airbyte/abctl
