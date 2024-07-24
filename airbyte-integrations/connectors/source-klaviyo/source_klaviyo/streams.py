@@ -233,8 +233,6 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
 
 
 class CampaignsDetailed(Campaigns):
-    raise_on_http_errors = False
-
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         for record in super().parse_response(response, **kwargs):
             yield self._transform_record(record)
