@@ -96,6 +96,12 @@ def do_regression_test_status_check(ctx: click.Context, status_check_name: str, 
             ]
         )
     ):
+        logger.info(f'is_automerge_pull_request={is_automerge_pull_request(ctx.obj.get("pull_request"))}')
+        logger.info(f'git_repo_url={ctx.obj["git_repo_url"]}')
+        for connector in ctx.obj["selected_connectors_with_modified_files"]:
+            logger.info(f"connector = {connector.name}")
+            logger.info(f"connector.language={connector.language}")
+            logger.info(f"connector.support_level = {connector.support_level}")
         update_commit_status_check(
             commit,
             "failure",
