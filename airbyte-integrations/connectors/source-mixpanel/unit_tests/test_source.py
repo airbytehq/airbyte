@@ -94,37 +94,37 @@ def test_streams_string_date(requests_mock, config_raw):
     "config, success, expected_error_message",
     (
         (
-            {"credentials": {"api_secret": "secret"}, "project_timezone": "Miami", "page_size": 1000},
+            {"credentials": {"api_secret": "secret"}, "project_timezone": "Miami"},
             False,
             "Could not parse time zone: Miami, please enter a valid timezone.",
         ),
         (
-            {"credentials": {"api_secret": "secret"}, "start_date": "20 Jan 2021", "page_size": 1000},
+            {"credentials": {"api_secret": "secret"}, "start_date": "20 Jan 2021"},
             False,
             "Could not parse start date: 20 Jan 2021. Please enter a valid start date.",
         ),
         (
-            {"credentials": {"api_secret": "secret"}, "end_date": "20 Jan 2021", "page_size": 1000},
+            {"credentials": {"api_secret": "secret"}, "end_date": "20 Jan 2021"},
             False,
             "Could not parse end date: 20 Jan 2021. Please enter a valid end date.",
         ),
         (
-            {"credentials": {"api_secret": "secret"}, "attribution_window": "20 days", "page_size": 1000},
+            {"credentials": {"api_secret": "secret"}, "attribution_window": "20 days"},
             False,
             "Please provide a valid integer for the `Attribution window` parameter.",
         ),
         (
-            {"credentials": {"api_secret": "secret"}, "select_properties_by_default": "Yes", "page_size": 1000},
+            {"credentials": {"api_secret": "secret"}, "select_properties_by_default": "Yes"},
             False,
             "Please provide a valid True/False value for the `Select properties by default` parameter.",
         ),
-        ({"credentials": {"api_secret": "secret"}, "region": "UK", "page_size": 1000}, False, "Region must be either EU or US."),
+        ({"credentials": {"api_secret": "secret"}, "region": "UK"}, False, "Region must be either EU or US."),
         (
-            {"credentials": {"username": "user", "secret": "secret"}, "page_size": 1000},
+            {"credentials": {"username": "user", "secret": "secret"}},
             False,
             "Required parameter 'project_id' missing or malformed. Please provide a valid project ID.",
         ),
-        ({"credentials": {"api_secret": "secret"}, "region": "EU", "start_date": "2021-02-01T00:00:00Z", "page_size": 1000}, True, None),
+        ({"credentials": {"api_secret": "secret"}, "region": "EU", "start_date": "2021-02-01T00:00:00Z"}, True, None),
         (
             {
                 "credentials": {"username": "user", "secret": "secret", "project_id": 2397709},
