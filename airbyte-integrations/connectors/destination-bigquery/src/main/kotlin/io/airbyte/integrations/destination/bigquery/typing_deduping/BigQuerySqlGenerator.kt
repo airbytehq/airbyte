@@ -8,7 +8,6 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.time.Instant
 import java.util.*
 import java.util.function.Function
@@ -296,7 +295,7 @@ class BigQuerySqlGenerator
         useExpensiveSaferCasting: Boolean
     ): Sql {
         val handleNewRecords =
-            if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+            if (stream.postImportAction == ImportType.DEDUPE) {
                 upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp)
             } else {
                 insertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp)
@@ -587,7 +586,7 @@ class BigQuerySqlGenerator
                 .collect(Collectors.joining("\n"))
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
 
-        if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+        if (stream.postImportAction == ImportType.DEDUPE) {
             // When deduping, we need to dedup the raw records. Note the row_number() invocation in
             // the SQL
             // statement. Do the same extract+cast CTE + airbyte_meta construction as in non-dedup
@@ -929,7 +928,7 @@ class BigQuerySqlGenerator
 
         fun clusteringColumns(stream: StreamConfig): List<String> {
             val clusterColumns: MutableList<String> = ArrayList()
-            if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+            if (stream.postImportAction == ImportType.DEDUPE) {
                 // We're doing de-duping, therefore we have a primary key.
                 // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering
                 // columns,
