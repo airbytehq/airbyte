@@ -1,36 +1,34 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
-from datetime import timedelta
 import json
-import os
 import random
 import string
 import sys
+from datetime import timedelta
+from pathlib import Path
+from typing import List, Tuple
 
 import psycopg2
-from psycopg2 import sql
+from psycopg2 import extensions, sql
 
-catalog_write_file = "/connector/secrets/configured_catalog_copy.json"
+catalog_write_file = "/connector/integration_tests/temp/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
-catalog_incremental_write_file = "/connector/secrets/incremental_configured_catalog_copy.json"
+catalog_incremental_write_file = "/connector/integration_tests/temp/incremental_configured_catalog_copy.json"
 catalog_incremental_source_file = "/connector/integration_tests/incremental_configured_catalog_template.json"
-abnormal_state_write_file = "/connector/secrets/abnormal_state_copy.json"
+abnormal_state_write_file = "/connector/integration_tests/temp/abnormal_state_copy.json"
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
-abnormal_state_cdc_write_file = "/connector/secrets/abnormal_state_cdc_copy.json"
-abnormal_state_cdc_file = "/connector/integration_tests/abnormal_state_cdc_template.json"
-
 secret_config_file = '/connector/secrets/config.json'
+secret_active_config_file = '/connector/integration_tests/config_active.json'
 secret_config_cdc_file = '/connector/secrets/config_cdc.json'
 
-def connect_to_db():
-    f = open(secret_config_file)
-    secret = json.load(f)
+def connect_to_db() -> extensions.connection:
+    with open(secret_config_file) as f:
+        secret = json.load(f)
 
     try:
-        # Define connection parameters
-        connection = psycopg2.connect(
+        conn: extensions.connection = psycopg2.connect(
             dbname=secret["database"],
             user=secret["username"],
             password=secret["password"],
@@ -38,14 +36,14 @@ def connect_to_db():
             port=secret["port"]
         )
         print("Connected to the database successfully")
-        return connection
+        return conn
     except Exception as error:
         print(f"Error connecting to the database: {error}")
-        return None
+        sys.exit(1)
 
-def insert_records(connection, schema_name, table_name, records):
+def insert_records(conn: extensions.connection, schema_name: str, table_name: str, records: List[Tuple[str, str]]) -> None:
     try:
-        cursor = connection.cursor()
+        cursor = conn.cursor()
         insert_query = sql.SQL("""
             INSERT INTO {}.{} (id, name)
             VALUES (%s, %s) ON CONFLICT DO NOTHING
@@ -54,33 +52,31 @@ def insert_records(connection, schema_name, table_name, records):
         for record in records:
             cursor.execute(insert_query, record)
 
-        connection.commit()
+        conn.commit()
         print("Records inserted successfully")
     except Exception as error:
         print(f"Error inserting records: {error}")
-        connection.rollback()
+        conn.rollback()
     finally:
         cursor.close()
 
-def create_schema(connection, schema_name):
+def create_schema(conn: extensions.connection, schema_name: str) -> None:
     try:
-        cursor = connection.cursor()
-        # Create schema
+        cursor = conn.cursor()
         create_schema_query = sql.SQL("CREATE SCHEMA IF NOT EXISTS {}").format(sql.Identifier(schema_name))
         cursor.execute(create_schema_query)
-        connection.commit()
+        conn.commit()
         print(f"Schema '{schema_name}' created successfully")
-
     except Exception as error:
         print(f"Error creating schema: {error}")
-        connection.rollback()
+        conn.rollback()
     finally:
         cursor.close()
 
-# We need to dynamically generate catalog and config files, by feeding them schema_name;
-# These files will be used in acceptance-test-config.yml as inputs of various test cases.
-def write_supporting_file(schema_name):
-    print(f"writting schema name to files: {schema_name}")
+def write_supporting_file(schema_name: str) -> None:
+    print(f"writing schema name to files: {schema_name}")
+    Path("/connector/integration_tests/temp").mkdir(parents=False, exist_ok=True)
+
     with open(catalog_write_file, "w") as file:
         with open(catalog_source_file, 'r') as source_file:
             file.write(source_file.read() % schema_name)
@@ -90,54 +86,16 @@ def write_supporting_file(schema_name):
     with open(abnormal_state_write_file, "w") as file:
         with open(abnormal_state_file, 'r') as source_file:
             file.write(source_file.read() % (schema_name, schema_name))
-    with open(abnormal_state_cdc_write_file, "w") as file:
-        with open(abnormal_state_cdc_file, 'r') as source_file:
-            file.write(source_file.read() % (schema_name, schema_name))
-    # update configs:
+
     with open(secret_config_file) as base_config:
-      secret = json.load(base_config)
-      secret["schemas"] = [schema_name]
-      with open(secret_config_file, 'w') as f:
-        json.dump(secret, f)
-    with open(secret_config_cdc_file) as base_config:
         secret = json.load(base_config)
         secret["schemas"] = [schema_name]
-        secret["replication_method"]["replication_slot"] = schema_name
-        secret["replication_method"]["publication"] = schema_name
-        secret["ssl_mode"] = {}
-        secret["ssl_mode"]["mode"] = "require"
-        with open(secret_config_cdc_file, 'w') as f:
+        with open(secret_active_config_file, 'w') as f:
             json.dump(secret, f)
 
-def replication_slot_existed(connection, replication_slot_name):
-    cursor = connection.cursor()
-    cursor.execute("SELECT slot_name FROM pg_replication_slots;")
-    # Fetch all results
-    slots = cursor.fetchall()
-    for slot in slots:
-        if slot[0] == replication_slot_name:
-            return True
-
-    return False
-
-# will reuse schema name as replication slot name.
-def setup_cdc(connection, replication_slot_and_publication_name):
-    cursor = connection.cursor()
-    if replication_slot_existed(connection, replication_slot_and_publication_name):
-        return
-    create_logical_replication_query = sql.SQL("SELECT pg_create_logical_replication_slot({}, 'pgoutput')").format(sql.Literal(replication_slot_and_publication_name))
-    cursor.execute(create_logical_replication_query)
-    alter_table_replica_query = sql.SQL("ALTER TABLE {}.id_and_name_hook REPLICA IDENTITY DEFAULT").format(sql.Identifier(replication_slot_and_publication_name))
-    cursor.execute(alter_table_replica_query)
-    create_publication_query = sql.SQL("CREATE PUBLICATION {} FOR TABLE {}.id_and_name_hook").format(sql.Identifier(replication_slot_and_publication_name), sql.Identifier(replication_slot_and_publication_name))
-    cursor.execute(create_publication_query)
-    connection.commit()
-
-
-def create_table(connection, schema_name, table_name):
+def create_table(conn: extensions.connection, schema_name: str, table_name: str) -> None:
     try:
-        cursor = connection.cursor()
-        # Create table
+        cursor = conn.cursor()
         create_table_query = sql.SQL("""
             CREATE TABLE IF NOT EXISTS {}.{} (
                 id VARCHAR(100) PRIMARY KEY,
@@ -146,24 +104,28 @@ def create_table(connection, schema_name, table_name):
         """).format(sql.Identifier(schema_name), sql.Identifier(table_name))
 
         cursor.execute(create_table_query)
-        connection.commit()
+        conn.commit()
         print(f"Table '{schema_name}.{table_name}' created successfully")
-
     except Exception as error:
         print(f"Error creating table: {error}")
-        connection.rollback()
+        conn.rollback()
     finally:
         cursor.close()
 
-def generate_schema_date_with_suffix():
+def generate_schema_date_with_suffix() -> str:
     current_date = datetime.datetime.now().strftime("%Y%m%d")
     suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    return f"{current_date}_{suffix}"
+    return f"{current_date}-{suffix}"
 
-def prepare():
+def prepare() -> None:
     schema_name = generate_schema_date_with_suffix()
     with open("./generated_schema.txt", "w") as f:
         f.write(schema_name)
+
+def setup() -> None:
+    schema_name = load_schema_name_from_catalog()
+    write_supporting_file(schema_name)
+    table_name = "id_and_name_cat"
 
 def cdc_insert():
     schema_name = load_schema_name_from_catalog()
@@ -255,17 +217,17 @@ def delete_schemas_with_prefix(conn, date_prefix):
         conn.commit()
     except Exception as e:
         print(f"An error occurred: {e}")
+        sys.exit(1)
     finally:
-        if cursor:
-            cursor.close()
+        cursor.close()
 
-def teardown():
-    connection = connect_to_db()
+def teardown() -> None:
+    conn = connect_to_db()
     today = datetime.datetime.now()
     yesterday = today - timedelta(days=1)
     formatted_yesterday = yesterday.strftime('%Y%m%d')
-    delete_schemas_with_prefix(connection, formatted_yesterday)
-    delete_cdc_with_prefix(connection, formatted_yesterday)
+    delete_schemas_with_prefix(conn, formatted_yesterday)
+    delete_cdc_with_prefix(conn, formatted_yesterday)
 
 if __name__ == "__main__":
     command = sys.argv[1]
@@ -279,3 +241,5 @@ if __name__ == "__main__":
         prepare()
     elif command == "insert":
         cdc_insert()
+    else:
+        exit(1)

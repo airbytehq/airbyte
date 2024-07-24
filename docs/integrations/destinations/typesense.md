@@ -40,6 +40,7 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.14 | 2024-07-20 | [42146](https://github.com/airbytehq/airbyte/pull/42146) | Update dependencies |
 | 0.1.13 | 2024-07-13 | [41881](https://github.com/airbytehq/airbyte/pull/41881) | Update dependencies |
 | 0.1.12 | 2024-07-10 | [41361](https://github.com/airbytehq/airbyte/pull/41361) | Update dependencies |
 | 0.1.11 | 2024-07-09 | [41220](https://github.com/airbytehq/airbyte/pull/41220) | Update dependencies |

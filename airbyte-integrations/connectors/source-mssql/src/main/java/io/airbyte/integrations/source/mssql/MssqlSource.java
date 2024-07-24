@@ -605,7 +605,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final MssqlCursorBasedStateManager cursorBasedStateManager = new MssqlCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
       final InitialLoadStreams initialLoadStreams = streamsForInitialOrderedColumnLoad(cursorBasedStateManager, catalog);
       initialLoadStateManager = new MssqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
-          initPairToOrderedColumnInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
+          initPairToOrderedColumnInfoMap(database, catalog, tableNameToTable, getQuoteString()));
     }
   }
 

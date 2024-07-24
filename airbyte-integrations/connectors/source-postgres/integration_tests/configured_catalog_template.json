@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "id_and_name_hook",
+        "name": "id_and_name_cat",
         "json_schema": {
           "type": "object",
           "properties": {
