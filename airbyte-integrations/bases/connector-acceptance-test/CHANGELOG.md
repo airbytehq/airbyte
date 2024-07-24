@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.5
+
+Update CAT tests for discover to deduplicate on namespace and stream name pair.
+
 ## 3.8.4
 
 Only export /integration-tests directory back to host (for use by DB sources).
