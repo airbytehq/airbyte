@@ -36,12 +36,15 @@ git clone git@github.com:{YOUR_USERNAME}/airbyte.git
 cd airbyte
 ```
 
-- Then, build the connector image:
-    - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector.
-    - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+3. Make sure that `abctl` is running correctly with the following command `abctl local status`. Verify the status check
+was successful
+
+4. Then, build the connector image:
+    - Verify the `airbyte-ci` tool is installed by running `airbyte-ci --help`, install the command with the instructions in the Prerequisites if the command is not found.
+    - Run `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
     - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
 
-You can then load the newly built image into the `abctl` instance using:
+5. You can then load the newly built image into the `abctl` instance using:
 
 ```shell
 kind load docker-image airbyte/source-<source-name>:dev -n airbyte-abctl
@@ -84,28 +87,10 @@ connector, you will need to clear this cache so the new changes are registered. 
 ```bash
 git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
 cd airbyte-platform
-docker compose up
 ```
 
-
-To start contributing:
-
-
-If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
-
-```bash
-git clone git@github.com:{YOUR_USERNAME}/airbyte.git
-cd airbyte
-./run-ab-platform.sh
-```
-
-If developing platform:
-
-```bash
-git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
-cd airbyte-platform
-docker compose up
-```
+3. Make sure that `abctl` is running correctly with the following command `abctl local status`. Verify the status check
+was successful
 
 ### Build with `gradle`
 
@@ -119,13 +104,7 @@ This will build all the code and run all the unit tests.
 
 `./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
-:::info
 
-Optionally, you may pass a `VERSION` environment variable to the gradle build command. If present, gradle will use this value as a tag for all created artifacts (both Jars and Docker images).
-
-If unset, gradle will default to using the current VERSION in `.env` for Jars, and `dev` as the Docker image tag.
-
-:::
 :::info
 
 If running tasks on a subproject, you must prepend `:oss` to the project in gradlew. For example, to build the `airbyte-cron` project the command would look like: `./gradlew :oss:airbyte-cron:build`.
@@ -153,6 +132,28 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 :::
 
+### Using the images in Kind
+
+Once you have successfully built the Platform images, you can load them into the Kind cluster, for example:
+
+```shell
+kind load docker-image airbyte/server:dev --name airbyte-abctl
+```
+
+Adjust the image for the Airbyte component that you would like to test. Then you can adjust your vaulues.yaml file to 
+use the `dev` tag for the component, e.g. 
+
+```shell
+server:
+  image:
+    tag: dev
+```
+
+Then redeploy `abctl` by running:
+
+```shell
+abctl local install --values values.yaml
+```
 
 ### Develop on `airbyte-webapp`
 
