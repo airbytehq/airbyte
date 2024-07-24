@@ -23,11 +23,21 @@ JAVA_OPTS=$JAVA_OPTS" --add-opens=java.base/java.lang=ALL-UNNAMED"
 JAVA_OPTS=$JAVA_OPTS" -Dorg.jooq.no-logo=true -Dorg.jooq.no-tips=true"
 export JAVA_OPTS
 
+echo "SGX javabase APPLICATION=$APPLICATION"
+echo "SGX javabase AIRBYTE_CONNECTOR_NAME=$AIRBYTE_CONNECTOR_NAME"
+echo "SGX javabase AIRBYTE_CONNECTOR_VERSION=$AIRBYTE_CONNECTOR_VERSION"
+echo "SGX javabase AIRBYTE_GIT_HASH=$AIRBYTE_GIT_HASH"
+echo "SGX javabase AIRBYTE_IMAGE_TAG=$AIRBYTE_IMAGE_TAG"
+
+echo "SGX A=$A"
+echo "SGX \$1=$1"
 # Wrap run script in a script so that we can lazy evaluate the value of APPLICATION. APPLICATION is
 # set by the dockerfile that inherits base-java, so it cannot be evaluated when base-java is built.
 # We also need to make sure that stdin of the script is piped to the stdin of the java application.
 if [[ $A = --write ]]; then
+  echo "SGX in A=write"
   cat <&0 | /airbyte/bin/"$APPLICATION" "$@"
 else
+  echo "SGX in A!=write"
   /airbyte/bin/"$APPLICATION" "$@"
 fi

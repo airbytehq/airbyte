@@ -131,6 +131,12 @@ internal constructor(
         LOGGER.info { "Command: ${parsed.command}" }
         LOGGER.info { "Integration config: $parsed" }
 
+        LOGGER.info { "SGX running application ${System.getenv("APPLICATION")}"}
+        LOGGER.info { "SGX running connector ${System.getenv("AIRBYTE_CONNECTOR_NAME")}"}
+        LOGGER.info { "SGX running connector version ${System.getenv("AIRBYTE_CONNECTOR_VERSION")}"}
+        LOGGER.info { "SGX running git hash ${System.getenv("AIRBYTE_GIT_HASH")}"}
+        LOGGER.info { "SGX running docker image with tag ${System.getenv("AIRBYTE_DOCKER_TAG")}"}
+
         try {
             when (parsed.command) {
                 Command.SPEC ->

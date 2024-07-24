@@ -172,6 +172,10 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
+        .with_env_variable("AIRBYTE_CONNECTOR_NAME", context.connector.technical_name)
+        .with_env_variable("AIRBYTE_CONNECTOR_VERSION", context.connector.version)
+        .with_env_variable("AIRBYTE_GIT_HASH", context.git_revision)
+        .with_env_variable("AIRBYTE_DOCKER_TAG", context.real_docker_image_tag)
         .with_mounted_directory("built_artifacts", build_stage.directory("/airbyte"))
         .with_exec(sh_dash_c(["mv built_artifacts/* ."]))
         .with_entrypoint(entrypoint)

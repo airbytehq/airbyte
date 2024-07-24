@@ -36,8 +36,7 @@ dependencies {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
     }
-    api 'org.apache.parquet:parquet-avro:1.13.1'
-    runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
+    api 'org.apache.parquet:parquet-avro:1.14.1'
 
     testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))

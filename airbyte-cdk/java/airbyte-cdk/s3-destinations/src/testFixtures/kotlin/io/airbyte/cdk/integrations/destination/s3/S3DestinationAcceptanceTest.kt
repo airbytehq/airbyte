@@ -162,7 +162,7 @@ protected constructor(protected val outputFormat: FileUploadFormat) : Destinatio
                 s3Client!!.deleteObjects(
                     DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete),
                 )
-            LOGGER.info("Deleted {} file(s).", result.deletedObjects.size)
+            LOGGER.info("Deleted {} file(s): {}", result.deletedObjects.size, result.deletedObjects.joinToString(", ") { it.key})
         }
     }
 

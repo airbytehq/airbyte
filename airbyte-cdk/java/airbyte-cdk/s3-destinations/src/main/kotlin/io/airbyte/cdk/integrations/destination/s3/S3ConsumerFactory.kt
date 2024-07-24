@@ -17,6 +17,7 @@ import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBuffering
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.commons.io.FileUtils
 import java.util.function.Consumer
 import java.util.function.Function
 import org.joda.time.DateTime
@@ -92,7 +93,7 @@ class S3ConsumerFactory {
             pair: AirbyteStreamNameNamespacePair,
             writer: SerializableBuffer ->
             LOGGER.info {
-                "Flushing buffer for stream ${pair.name} ({FileUtils.byteCountToDisplaySize(writer.byteCount)}) to storage"
+                "Flushing buffer for stream ${pair.name} (${FileUtils.byteCountToDisplaySize(writer.byteCount)}) to storage"
             }
             require(pairToWriteConfig.containsKey(pair)) {
                 String.format(

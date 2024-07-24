@@ -3,6 +3,7 @@
 #
 
 import importlib.util
+import logging
 from importlib import metadata
 from importlib.abc import Loader
 
@@ -27,6 +28,8 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
 
     # We don't want finalize scripts to override the entrypoint so we keep it in memory to reset it after finalization
     original_entrypoint = await connector_container.entrypoint()
+    labels = await connector_container.labels()
+    logging.info(F"SGX labels={labels}")
     if not original_entrypoint:
         original_entrypoint = []
 
