@@ -143,6 +143,7 @@ class AbstractJdbcDestinationTest {
         AbstractJdbcDestination<MinimumDestinationState.Impl>(
             "",
             StandardNameTransformer(),
+            TestJdbcSqlOperations()
         ) {
         override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
             return defaultProperties
@@ -169,10 +170,6 @@ class AbstractJdbcDestinationTest {
             destinationHandler: DestinationHandler<MinimumDestinationState.Impl>
         ): List<Migration<MinimumDestinationState.Impl>> {
             return emptyList()
-        }
-
-        override fun getSqlOperations(config: JsonNode): SqlOperations {
-            return TestJdbcSqlOperations()
         }
 
         public override fun getConnectionProperties(config: JsonNode): Map<String, String> =
