@@ -24,11 +24,12 @@ definitions:
           header: "Retry-After"
       response_filters:
         - type: HttpResponseFilter
-          action: RETRY
+          action: RATE_LIMITED
           http_codes: [429]
         - type: HttpResponseFilter
           action: FAIL
           http_codes: [401, 403]
+          failure_type: config_error
           error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
     request_headers:
       Accept: "application/json"
