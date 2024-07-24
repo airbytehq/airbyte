@@ -118,6 +118,9 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
     def get_backoff_strategy(self) -> BackoffStrategy:
         return KlaviyoBackoffStrategy(max_time=self.max_time, name=self.name)
 
+    def get_error_handler(self) -> ErrorHandler:
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=DEFAULT_ERROR_MAPPING, max_retries=self.max_retries)
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -264,7 +267,7 @@ class CampaignsDetailed(Campaigns):
     def get_error_handler(self) -> ErrorHandler:
 
         error_mapping = DEFAULT_ERROR_MAPPING | {
-            404: ErrorResolution(ResponseAction.IGNORE, FailureType.config_error, "Resource not found")
+            404: ErrorResolution(ResponseAction.IGNORE, FailureType.config_error, "Resource not found. Ignoring.")
         }
 
         return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
