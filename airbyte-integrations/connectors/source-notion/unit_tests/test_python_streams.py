@@ -275,7 +275,7 @@ def test_invalid_start_cursor(parent, requests_mock):
     with pytest.raises(Exception) as e:
         list(stream.read_records(**inputs))
     assert search_endpoint.call_count == 1
-    assert error_message in e.value.args
+    assert error_message in e.value.args[0]
 
 @pytest.mark.parametrize(
     ("http_status", "expected_response_action"),
