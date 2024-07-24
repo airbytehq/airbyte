@@ -1,54 +1,53 @@
 Airbyte Enterprise License Agreement (AELA)
 
-This Enterprise License Agreement ("Agreement") sets forth the terms and conditions under which the licensed software ("Software") provided by Airbyte, Inc. ("Licensor") may be used by a legal entity ("Enterprise") for internal business purposes. The source code is made available to foster transparency while ensuring it is used in a manner that supports Airbyte, Inc.'s commercial interests.
+This Enterprise License Agreement ("Agreement") sets forth the terms and conditions under which the licensed software ("Software") provided by Airbyte, Inc. ("Licensor") may be used by a legal entity ("Enterprise") for internal business purposes. By entering into a Transaction (as defined below), Enterprise agrees to the terms of this Agreement.
+
+Licensor provides software under multiple licenses, including Elastic 2.0, this license, and other licenses. The Airbyte public software repositories describe how to determine the specific license that applies to Airbyte software elements.
+
 1. Definitions
 1.1 "Software" means the code and related documentation provided under this license.
-1.2 "Enterprise" means a legal entity that uses the Software for internal business purposes, including commercial operations.
-1.3 “Licensor” means Airbyte, Inc., the entity providing the Software under this Agreement.
-1.4 “Transaction” means the offer and acceptance by Customer of Software and/or Services through: (a) the execution of an Order Form or SOW directly with Airbyte; (b) a purchase from a Partner; or (c) a Marketplace that includes the applicable pricing and licensing specifics for the Software.
-2. Grant of License
-2.1 Subject to the terms of this Agreement, the Licensor grants the Enterprise a non-exclusive, non-transferable, revocable license to use, modify, and distribute the Software for which the Enterprise has purchased a Commercial Subscription, solely in connection with the Enterprise’s internal operations up to the number of Airbyte Nodes and Airbyte Users specified in a written Transaction.
-2.2 The Enterprise may not use the Software to provide a hosted or managed service to third parties, unless explicitly authorized in writing by Airbyte.
+1.2 "Enterprise" means a legal entity that uses the Software under the terms of this license.
+1.3 “Licensor” means Airbyte, Inc., the entity licensing the Software to Enterprise under this Agreement.
+1.4 “Term” means the duration for the applicable license or services Transaction.
+1.5 “Transaction” means the offer and acceptance by Enterprise of Software and/or Services through: (a) the execution of an Order Form or SOW directly with Licensor; (b) a purchase from a Partner; or (c) a purchase via a Marketplace that includes the applicable pricing and licensing specifics for the Software.
+1.6 “Marketplace” means an online platform through which a license to the Software can be purchased, including but not limited to AWS Marketplace, Google Cloud Marketplace, and Azure Marketplace.
+1.7 “Partner” means a third-party entity authorized by the Licensor to resell licenses to the Software.
 
-3. Restrictions
+2. Grant of License
+2.1 Subject to the terms of this Agreement, the Licensor grants the Enterprise, during the Term, a non-exclusive, non-transferable, revocable license to use, modify, and distribute the Software for which the Enterprise has purchased a Commercial Subscription, solely in connection with the Enterprise’s internal business purposes, up to the number of Airbyte nodes and Airbyte users, or other limitations specified in a written Transaction.
+2.2 Without limiting the restrictions in Section 3, the Enterprise may not use the Software to provide a hosted or managed service to third parties, unless explicitly authorized in writing in advance by Licensor.
+
+3. Restrictions. The license granted in Section 2.1 is limited to use for the internal business purposes of Enterprise. Without limiting the foregoing,
 3.1 The Enterprise shall not:
-   a. Use the Software to provide any service that competes with the Licensor's offerings.
+   a. Use the Software to provide any service that competes with the Licensor's offerings made available during the Term.
    b. Remove or obscure any copyright, trademark, or other proprietary notices from the Software.
    c. Circumvent any technological measures that control access to the Software.
    d. Distribute the Software outside of the Enterprise without prior written consent from the Licensor.
-   e. Allow non-enterprise customers, such as individual users or small businesses, to use the Software.
+   e. Allow or enable persons outside of the Enterprise, such as individual users or small businesses, to use the Software.
 
 4. Modifications & Derivative Works
-4.1 The Enterprise may create modifications and derivative works of the Software for internal use.
-4.2 Any modifications or derivative works created by the Enterprise shall be owned by the Enterprise but may not be used to provide a competing service as outlined in Section 3.1.
+4.1 The Enterprise may create modifications and derivative works of the Software subject to the restrictions in Section 3.
+4.2 Any modifications or derivative works created by the Enterprise shall be owned by the Enterprise but may not be used to provide a competing service as described in Section 3.1.
 
 5. Compliance and Audit
 5.1 The Enterprise agrees to maintain accurate records of the Software usage and provide these records to the Licensor upon request.
 5.2 The Licensor may audit the Enterprise's use of the Software to ensure compliance with this Agreement, upon reasonable notice and during regular business hours.
 
 6. Termination
-6.1 This Agreement is effective until terminated.
+6.1 This Agreement is effective during the Term, unless and until terminated as described below.
 6.2 The Licensor may terminate this Agreement if the Enterprise breaches any term of this Agreement and fails to cure the breach within thirty (30) days after being notified in writing.
 6.3 Upon termination, the Enterprise must cease all use of the Software and destroy all copies in its possession.
 
 7. Disclaimer of Warranties
-7.1 The Software is provided "as is" without warranty of any kind. The Licensor disclaims all warranties, express or implied, including, but not limited to, the implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
+7.1 THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. THE LICENSOR DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
 
 8. Limitation of Liability
-8.1 In no event shall the Licensor be liable for any indirect, incidental, special, or consequential damages, or damages for loss of profits, revenue, data, or use, incurred by the Enterprise, whether in an action in contract or tort, arising from the use of the Software.
+8.1 IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA, OR USE, INCURRED BY THE ENTERPRISE, WHETHER IN AN ACTION IN CONTRACT OR TORT, ARISING FROM THE USE OF THE SOFTWARE. IN THE EVENT THE FOREGOING LIMITATION IS UNENFORCEABLE, THE LICENSE GRANTED HEREIN WILL BE VOID.
 
 9. General
-9.1 This Agreement constitutes the entire agreement between the parties concerning the subject matter hereof and supersedes all prior agreements and understandings, whether written or oral, relating to such subject matter.
+9.1 This Agreement, along with the Transaction, constitutes the entire agreement between the parties concerning the subject matter hereof and supersedes all prior agreements and understandings, whether written or oral, relating to such subject matter.
 9.2 This Agreement may only be modified by a written document signed by both parties.
-9.3 If any provision of this Agreement is found to be invalid or unenforceable, the remaining provisions will remain in full force and effect.
+9.3 If any provision of this Agreement is found to be invalid or unenforceable, the remaining provisions will remain in full force and effect, and the terms of this license will be reformed to effectuate the intent of the parties.
 
 10. Governing Law
-10.1 The laws governing this Agreement, regardless of conflict of laws principles are determined by the Customer’s domicile. The following does not limit or restrict either Party from seeking injunctive or other equitable relief from a court of competent jurisdiction.
-
-11. Multiple Licenses
-11.1 There are multiple Airbyte repositories in the ‘airbytehq’ organization on GitHub (airbytehq/airbyte, airbytehq/airbyte-enterprise, and airbytehq/airbyte-platform, among others).  Each of these can use multiple licenses. The license for a particular work is defined with following prioritized rules:
-  a. License directly present in the file
-  b. LICENSE file in the same directory as the work
-  c. A `license` property defined in the `metadata.yaml` configuration file found when exploring parent directories (most connectors)
-  d. First LICENSE found when exploring parent directories up to the project top level directory
-  e. Defaults to Elastic License 2.0
+10.1 This Agreement is governed by the laws of the State of California, USA, without regard to its conflict of laws principles. If Enterprise is located in the USA, all disputes arising out of or related to this Agreement will be subject to the exclusive jurisdiction of the state and federal courts located in San Francisco, California. If Enterprise is located outside the USA, all disputes arising out of or related to this Agreement will be subject to binding arbitration before a single arbitrator, to be held in San Francisco, California, under the rules of JAMS. The arbitration will be conducted in the English language only.  Judgment on the award rendered by the arbitrators may be entered in any court having jurisdiction thereof. The following does not limit or restrict either party from seeking injunctive or other equitable relief from a court of competent jurisdiction.
