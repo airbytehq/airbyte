@@ -173,63 +173,14 @@ class LinkedInAdsRecordExtractor(RecordExtractor):
         """
         Transform 'date-time' items to RFC3339 format
         """
-        for item in record:
-            if item in ["lastModified", "created"] and record[item]:
+        for item in ["lastModified", "created"]:
+            if record.get(item) is not None:
                 record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
     def extract_records(self, response: requests.Response) -> List[Mapping[str, Any]]:
         for record in transform_data(response.json().get("elements")):
             yield self._date_time_to_rfc3339(record)
-
-
-@dataclass
-class LinkedInSemiIncrementalFilter(RecordFilter):
-    """
-    Custom filter to implement semi-incremental syncing for the Comments endpoints, which does not support sorting or filtering.
-    This filter emulates incremental behavior by filtering out records based on the comparison of the cursor value with current value in state,
-    ensuring only records updated after the cutoff timestamp are synced.
-    """
-
-    cursor_field: str = "lastModified"
-    format: str = ""
-
-    def filter_records(
-        self, records: List[Mapping[str, Any]], stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, **kwargs
-    ) -> List[Mapping[str, Any]]:
-        """
-        Filters a list of records, returning only those with a cursor_value greater than the current value in state.
-        """
-        current_state = [
-            state_value
-            for state_value in stream_state.get("states", [])
-            if state_value.get("partition", {}).get("id") == stream_slice.get("id")
-        ]
-
-        start_date = (
-            datetime.datetime.strptime(self.config.get("start_date"), "%Y-%m-%d").timestamp() * 1000
-            if self.cursor_field == "lastModifiedAt" or self.format == "timestamp"
-            else self.config.get("start_date")
-        )
-
-        cursor_value = self._get_filter_date(start_date, current_state)
-
-        if cursor_value:
-            return [record for record in records if record[self.cursor_field] >= cursor_value]
-        return records
-
-    def _get_filter_date(self, start_date: str, state_value: list) -> str:
-        """
-        Calculates the filter date to pass in the request parameters by comparing the start_date with the value of state obtained from the stream_slice.
-        If only the start_date exists, use it by default.
-        """
-
-        start_date_timestamp = start_date or None
-        state_value_timestamp = state_value[0]["cursor"][self.cursor_field] if state_value else None
-
-        if state_value_timestamp:
-            return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
-        return start_date_timestamp
 
 
 @dataclass

@@ -69,7 +69,7 @@ class SourceLinkedinAds(YamlDeclarativeSource):
         report_names = [x["name"] for x in config.get("ad_analytics_reports", [])]
         if len(report_names) != len(set(report_names)):
             duplicate_streams = {name for name in report_names if report_names.count(name) > 1}
-            message = "Stream names for Custom Ad Analytics reports should be unique, " f"duplicated streams: {duplicate_streams}"
+            message = f"Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {duplicate_streams}"
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
 
     def _create_custom_ad_analytics_streams(self, config: Mapping[str, Any]) -> List[Stream]:

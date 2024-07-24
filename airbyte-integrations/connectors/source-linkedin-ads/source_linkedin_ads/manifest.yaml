@@ -73,9 +73,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: CustomRecordFilter
-            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -96,6 +93,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
+        is_client_side_incremental: true
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
@@ -134,9 +132,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: CustomRecordFilter
-            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -155,6 +150,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
+        is_client_side_incremental: true
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
@@ -193,9 +189,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: CustomRecordFilter
-            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -214,6 +207,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
+        is_client_side_incremental: true
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
@@ -270,10 +264,6 @@ definitions:
           extractor:
             type: CustomRecordExtractor
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
-          record_filter:
-            type: CustomRecordFilter
-            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
-            cursor_field: lastModifiedAt
         paginator:
           type: DefaultPaginator
           pagination_strategy:
@@ -292,6 +282,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModifiedAt
+        is_client_side_incremental: true
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
@@ -328,10 +319,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - elements
-          record_filter:
-            type: CustomRecordFilter
-            class_name: source_linkedin_ads.components.LinkedInSemiIncrementalFilter
-            format: timestamp
           schema_normalization: Default
         paginator:
           type: DefaultPaginator
@@ -353,6 +340,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: lastModified
+        is_client_side_incremental: true
         cursor_datetime_formats:
           - "%ms"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
