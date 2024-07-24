@@ -773,8 +773,9 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
-| 4.25.2  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Update upgrade-cdk to work for Python connectors using Poetry                                                                |
-| 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410)  | Live/regression tests: add support for selecting from a subset of connections                                                |
+| 4.25.3  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Ugrade-cdk: Update to work with Python connectors using poetry                                                               |
+| 4.25.2  | [#42077](https://github.com/airbytehq/airbyte/pull/42077)  | Live/regression tests: add status check for regression test runs                                                             |
+| 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410)  | Live/regression tests: disable approval requirement on forks                                                                 |
 | 4.25.0  | [#42044](https://github.com/airbytehq/airbyte/pull/42044)  | Live/regression tests: add support for selecting from a subset of connections                                                |
 | 4.24.3  | [#42040](https://github.com/airbytehq/airbyte/pull/42040)  | Always send regression test approval status check; skip on auto-merge PRs.                                                   |
 | 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676)  | Send regression test approval status check when skipped.                                                                     |
