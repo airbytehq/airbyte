@@ -159,6 +159,7 @@ class FileTypesConfig(BaseConfig):
 
 
 class ClientContainerConfig(BaseConfig):
+    secrets_path: str = Field(None, description="Path in the setup/teardown container at which to copy connector secrets.")
     client_container_dockerfile_path: str = Field(
         None, description="Path to Dockerfile to run before each test for which a config is provided."
     )
