@@ -27,7 +27,7 @@ logger = logging.getLogger("airbyte")
             403,
             False,
             (
-                "Forbidden. You don't have permission to access this resource."
+                "Please provide a valid API key and make sure it has permissions to read specified streams."
             ),
         ),
     ),
