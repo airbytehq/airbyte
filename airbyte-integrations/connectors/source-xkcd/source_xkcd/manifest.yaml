@@ -17,7 +17,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: '{{ config["comic_number"] or 1 }}/info.0.json'
           http_method: GET
           error_handler:
@@ -49,7 +49,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/xkcd'
+          $ref: "#/schemas/xkcd"
   base_requester:
     type: HttpRequester
     url_base: https://xkcd.com
@@ -57,7 +57,7 @@ definitions:
       type: NoAuth
 
 streams:
-  - $ref: '#/definitions/streams/xkcd'
+  - $ref: "#/definitions/streams/xkcd"
 
 spec:
   type: Spec
@@ -73,7 +73,7 @@ spec:
         description: >-
           Specifies the comic number in which details are to be extracted,
           pagination will begin with that number to end of available comics
-        default: '2960'
+        default: "2960"
         order: 0
     additionalProperties: true
 
@@ -92,45 +92,45 @@ schemas:
     properties:
       alt:
         type:
-          - 'null'
+          - "null"
           - string
       day:
         type:
-          - 'null'
+          - "null"
           - string
       img:
         type:
-          - 'null'
+          - "null"
           - string
       link:
         type:
-          - 'null'
+          - "null"
           - string
       month:
         type:
-          - 'null'
+          - "null"
           - string
       news:
         type:
-          - 'null'
+          - "null"
           - string
       num:
         type:
-          - 'null'
+          - "null"
           - integer
       safe_title:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       transcript:
         type:
-          - 'null'
+          - "null"
           - string
       year:
         type:
-          - 'null'
+          - "null"
           - string
