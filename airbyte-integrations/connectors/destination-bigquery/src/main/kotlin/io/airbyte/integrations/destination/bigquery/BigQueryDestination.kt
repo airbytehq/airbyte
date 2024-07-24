@@ -106,12 +106,12 @@ class BigQueryDestination : BaseConnector(), Destination {
 
             if (UploadingMethod.GCS == uploadingMethod) {
 
-                val status = checkGcsAccessPermission(config)
-                if (status!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
-                    return status
+                val GcsStatus = checkGcsAccessPermission(config)
+                if (GcsStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
+                    return GcsStatus
                 }
 
-                //Copy a file to confirm copy permissions are working
+                //Copy a temporary dataset to confirm copy permissions are working
                 val bigQueryStatus = checkBigQueryCopyPermission(config);
 
                 if (bigQueryStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
@@ -180,7 +180,6 @@ class BigQueryDestination : BaseConnector(), Destination {
             //Copy a dataset into a BigQuery table to confirm the copy operation is working correctly
             //with the existing permissions
 
-
             val streamConfig =
                 StreamConfig(
                     id = streamId,
@@ -192,7 +191,6 @@ class BigQueryDestination : BaseConnector(), Destination {
                     minimumGenerationId = 0,
                     syncId = 0
                 )
-
 
             // None of the fields in destination initial status matter
             // for a dummy sync with type-dedupe disabled. We only look at these
@@ -259,6 +257,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                                 AirbyteRecordMessageMeta(),
                             ),
                     )
+
             streamOperation.writeRecords(streamConfig, listOf(message).stream())
             streamOperation.finalizeTable(
                 streamConfig,
@@ -288,8 +287,8 @@ class BigQueryDestination : BaseConnector(), Destination {
         } finally {
 
             try {
-                // clean up the raw table, this is intentionally not part of actual sync code
-                // because we avoid dropping original tables directly.
+                // In the finally block, check again to clean up the raw table
+                // If there was an exception in the flow above, then the table may still exist
                 destinationHandler.execute(
                     Sql.of(
                         //"DROP TABLE `$projectId.$datasetId.$finalTableName`",
