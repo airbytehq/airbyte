@@ -71,6 +71,7 @@ class ConnectorContext(PipelineContext):
         run_step_options: RunStepOptions = RunStepOptions(),
         targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
         secret_stores: Dict[str, SecretStore] | None = None,
+        real_docker_image_tag: str = "dev",
     ) -> None:
         """Initialize a connector context.
 
@@ -118,6 +119,7 @@ class ConnectorContext(PipelineContext):
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
         self.concurrent_cat = concurrent_cat
         self.targeted_platforms = targeted_platforms
+        self.real_docker_image_tag = real_docker_image_tag
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
@@ -140,6 +142,7 @@ class ConnectorContext(PipelineContext):
             run_step_options=run_step_options,
             enable_report_auto_open=enable_report_auto_open,
             secret_stores=secret_stores,
+            real_docker_image_tag=real_docker_image_tag
         )
 
     @property
@@ -266,3 +269,4 @@ class ConnectorContext(PipelineContext):
 
     def create_slack_message(self) -> str:
         raise NotImplementedError
+

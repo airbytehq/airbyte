@@ -32,7 +32,10 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.parquet.avro.AvroParquetWriter
 import org.apache.parquet.avro.AvroWriteSupport
 import org.apache.parquet.hadoop.ParquetWriter
+import org.apache.parquet.hadoop.metadata.CompressionCodecName
 import org.apache.parquet.hadoop.util.HadoopOutputFile
+import kotlin.io.path.readBytes
+import kotlin.io.path.readText
 
 private val logger = KotlinLogging.logger {}
 
@@ -83,6 +86,8 @@ class ParquetSerializedBuffer(
             uploadFormatConfig as UploadParquetFormatConfig
         val avroConfig = Configuration()
         avroConfig.setBoolean(AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE, false)
+        avroConfig.setBoolean("mapred.output.compress", true)
+        avroConfig.set("mapred.output.compress.codec", " io.airlift.compress.lzo.LzoCodec")
         parquetWriter =
             AvroParquetWriter.builder<GenericData.Record>(
                     HadoopOutputFile.fromPath(
@@ -94,12 +99,12 @@ class ParquetSerializedBuffer(
                     avroConfig
                 ) // yes, this should be here despite the fact we pass this config above in path
                 .withSchema(schema)
-                .withCompressionCodec(uploadParquetFormatConfig.compressionCodec)
                 .withRowGroupSize(uploadParquetFormatConfig.blockSize.toLong())
                 .withMaxPaddingSize(uploadParquetFormatConfig.maxPaddingSize)
                 .withPageSize(uploadParquetFormatConfig.pageSize)
                 .withDictionaryPageSize(uploadParquetFormatConfig.dictionaryPageSize)
                 .withDictionaryEncoding(uploadParquetFormatConfig.isDictionaryEncoding)
+                .withCompressionCodec(CompressionCodecName.UNCOMPRESSED)
                 .build()
         isClosed = false
         lastByteCount = 0L
@@ -138,6 +143,7 @@ class ParquetSerializedBuffer(
             logger.info {
                 "Finished writing data to ${filename} (${FileUtils.byteCountToDisplaySize(byteCount)})"
             }
+            logger.info{"SGX filecontent=${bufferFile.readText()}"}
         }
     }
 

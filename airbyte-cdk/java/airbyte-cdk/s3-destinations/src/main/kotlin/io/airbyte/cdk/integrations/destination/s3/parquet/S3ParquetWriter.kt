@@ -74,7 +74,8 @@ class S3ParquetWriter(
                     hadoopConfig
                 ) // yes, this should be here despite the fact we pass this config above in path
                 .withSchema(schema)
-                .withCompressionCodec(formatConfig.compressionCodec)
+                .config("mapred.output.compress", "true")
+                .config("mapred.output.compress.codec", " io.airlift.compress.lzo.LzoCodec")
                 .withRowGroupSize(formatConfig.blockSize.toLong())
                 .withMaxPaddingSize(formatConfig.maxPaddingSize)
                 .withPageSize(formatConfig.pageSize)

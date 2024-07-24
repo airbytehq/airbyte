@@ -3,6 +3,7 @@
 #
 from __future__ import annotations
 
+import logging
 from abc import ABC
 from typing import TYPE_CHECKING
 
@@ -43,6 +44,12 @@ class BuildConnectorImagesBase(Step, ABC):
         for platform in self.build_platforms:
             try:
                 connector_container = await self._build_connector(platform, *args)
+                original_entrypoint = await connector_container.entrypoint()
+                labels = await connector_container.labels()
+                label_string = ""
+                for label in labels:
+                    label_string = label_string + "[name=" + await label.name() + ", value=" + await label.value() + "],"
+                logging.info(f"SGX docker_image_tag={self.context.docker_image_tag}, real_docker_image_tag={self.context.real_docker_image_tag}, connector_container original_entrypoint={original_entrypoint}, labels={label_string}")
                 connector_container = apply_airbyte_docker_labels(connector_container, self.context.connector)
                 try:
                     await connector_container.with_exec(["spec"])

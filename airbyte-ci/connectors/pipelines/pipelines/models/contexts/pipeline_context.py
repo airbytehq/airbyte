@@ -87,6 +87,7 @@ class PipelineContext:
         run_step_options: RunStepOptions = RunStepOptions(),
         enable_report_auto_open: bool = True,
         secret_stores: Dict[str, SecretStore] | None = None,
+        real_docker_image_tag: str = "dev",
     ) -> None:
         """Initialize a pipeline context.
 
@@ -138,6 +139,7 @@ class PipelineContext:
         self.run_step_options = run_step_options
         self.enable_report_auto_open = enable_report_auto_open
         self.secret_stores = secret_stores if secret_stores else {}
+        self.real_docker_image_tag = real_docker_image_tag
         update_commit_status_check(**self.github_commit_status)
 
     @property

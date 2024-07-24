@@ -16,6 +16,9 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 
 class S3ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceTest() {
     override fun getProtocolVersion(): ProtocolVersion {
