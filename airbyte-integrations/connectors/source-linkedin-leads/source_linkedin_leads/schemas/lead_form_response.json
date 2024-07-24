@@ -7,54 +7,54 @@
       "type": "string"
     },
     "owner": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
       "properties": {
         "sponsoredAccount": {
-          "type": ["string", "null"]
+          "type": ["null", "string"]
         }
       }
     },
     "leadType": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "testLead": {
-      "type": ["boolean", "null"]
+      "type": ["null", "boolean"]
     },
     "submitter": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     },
     "submittedAt": {
-      "type": "number"
+      "type": ["null", "integer"]
     },
     "formResponse": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
       "properties": {
         "answers": {
-          "type": ["array", "null"],
+          "type": ["null", "array"],
           "items": {
-            "type": ["object", "null"],
+            "type": ["null", "object"],
             "properties": {
               "questionId": {
-                "type": ["number", "null"]
+                "type": ["null", "integer"]
               },
               "answerDetails": {
-                "type": ["object", "null"],
+                "type": ["null", "object"],
                 "properties": {
                   "textQuestionAnswer": {
-                    "type": ["object", "null"],
+                    "type": ["null", "object"],
                     "properties": {
                       "answer": {
-                        "type": ["string", "null"]
+                        "type": ["null", "string"]
                       }
                     }
                   },
                   "multipleChoiceAnswer": {
-                    "type": ["object", "null"],
+                    "type": ["null", "object"],
                     "properties": {
                       "options": {
-                        "type": ["array", "null"],
+                        "type": ["null", "array"],
                         "items": {
-                          "type": ["number", "null"]
+                          "type": ["null", "integer"]
                         }
                       }
                     }
@@ -65,33 +65,33 @@
           }
         },
         "consentResponses": {
-          "type": ["array", "null"]
+          "type": ["null", "array"]
         }
       }
     },
     "leadMetadata": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
       "properties": {
         "sponsoredLeadMetadata": {
-          "type": ["object", "null"],
+          "type": ["null", "object"],
           "properties": {
             "campaign": {
-              "type": ["string", "null"]
+              "type": ["null", "string"]
             }
           }
         }
       }
     },
     "associatedEntity": {
-      "type": ["object", "null"],
+      "type": ["null", "object"],
       "properties": {
         "associatedCreative": {
-          "type": ["string", "null"]
+          "type": ["null", "string"]
         }
       }
     },
     "versionedLeadGenFormUrn": {
-      "type": ["string", "null"]
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true

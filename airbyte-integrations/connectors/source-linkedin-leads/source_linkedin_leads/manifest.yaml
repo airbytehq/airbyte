@@ -9,6 +9,10 @@ check:
     - lead_form_response
 
 definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_linkedin_leads/schemas/{{ parameters['name'] }}.json"
+
   streams:
     lead_form:
       type: DeclarativeStream
@@ -50,6 +54,7 @@ definitions:
           cursor_field: account_id
       primary_key:
         - id
+
     lead_form_response:
       type: DeclarativeStream
       name: lead_form_response
@@ -90,6 +95,7 @@ definitions:
           cursor_field: account_id
       primary_key:
         - id
+
   base_requester:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest
