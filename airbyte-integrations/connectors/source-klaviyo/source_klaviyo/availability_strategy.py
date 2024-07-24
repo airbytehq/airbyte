@@ -7,8 +7,8 @@ from typing import Dict, Optional
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from requests import HTTPError, codes
 
 
