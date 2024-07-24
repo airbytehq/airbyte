@@ -65,15 +65,17 @@ Now when you run a sync with that connector, it will use your local docker image
 
 ### Connector Specification Caching
 
-The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options:
+The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a 
+connector, you will need to clear this cache so the new changes are registered. To do this:
 
-1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache.
-2. From your local `airbyte-platform` repository, restart the server by running the following commands:
-
-```bash
-VERSION=dev docker compose down -v
-VERSION=dev docker compose up
-```
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
+- Log in
+- Go to `Settings` (gear icon in lower left corner)
+- Go to `Sources` or `Destinations` (depending on which connector you are testing)
+- Update the version number to most recent release docker image tag, e.g. `1.6.4`
+- Click `Change` to save the changes
+- Set the version back to `dev`
+- Click `Change` to save the changes
 
 ## Platform Contributions
 1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
