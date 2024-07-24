@@ -22,7 +22,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 DEFAULT_START_DATE = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
-MINIMUM_START_DATE = (datetime.today() - timedelta(days=60)).strftime('%Y-%m-%d')
+MINIMUM_START_DATE = "2021-01-01"
 DEFAULT_END_DATE = str(datetime.now().date())
 NOT_AUDIENCE_METRICS = [
     "reach",
@@ -593,7 +593,7 @@ class SmartPerformanceCampaigns(FullRefreshTikTokSubStream):
 
     def __init__(self, start_date: str, end_date: str, **kwargs):
         super().__init__(start_date, end_date, **kwargs)
-        self.parent = Campaigns(DEFAULT_START_DATE, end_date, **kwargs)
+        self.parent = Campaigns(MINIMUM_START_DATE, end_date, **kwargs)
 
     def is_valid_parent_slice(self, parent_slice):
         return parent_slice["is_smart_performance_campaign"]
@@ -609,10 +609,10 @@ class Acos(FullRefreshTikTokSubStream):
 
     def __init__(self, start_date: str, end_date: str, **kwargs):
         super().__init__(start_date, end_date, **kwargs)
-        self.parent = AdGroups(DEFAULT_START_DATE, end_date, **kwargs)
+        self.parent = AdGroups(MINIMUM_START_DATE, end_date, **kwargs)
 
     def is_valid_parent_slice(self, parent_slice):
-        return parent_slice["creative_material_mode"] == 'SMART_CREATIVE'
+        return not parent_slice["is_smart_performance_campaign"] and parent_slice["creative_material_mode"] != 'CUSTOM'
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "ad/aco/get/"
