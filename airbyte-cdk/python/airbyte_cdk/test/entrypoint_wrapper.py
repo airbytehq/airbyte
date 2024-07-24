@@ -191,7 +191,9 @@ def read(
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.model_dump_json() for stream_state in state])}]"),
+                    make_file(
+                        tmp_directory_path / "state.json", f"[{','.join([stream_state.model_dump_json() for stream_state in state])}]"
+                    ),
                 ]
             )
 
