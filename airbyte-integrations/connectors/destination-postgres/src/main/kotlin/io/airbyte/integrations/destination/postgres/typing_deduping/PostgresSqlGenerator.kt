@@ -84,6 +84,7 @@ class PostgresSqlGenerator(namingTransformer: NamingConventionTransformer, casca
         val statements: MutableList<Sql> = ArrayList()
         val finalTableName = DSL.name(stream.id.finalNamespace, stream.id.finalName + suffix)
 
+
         statements.add(super.createTable(stream, suffix, force))
 
         if (stream.postImportAction == ImportType.DEDUPE) {

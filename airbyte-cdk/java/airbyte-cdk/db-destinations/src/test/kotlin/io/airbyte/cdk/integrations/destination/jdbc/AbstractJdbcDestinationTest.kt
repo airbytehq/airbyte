@@ -155,6 +155,7 @@ class AbstractJdbcDestinationTest {
         override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator = mock()
 
         override fun getDestinationHandler(
+            config: JsonNode,
             databaseName: String,
             database: JdbcDatabase,
             rawTableSchema: String

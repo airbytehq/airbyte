@@ -5,6 +5,7 @@ package io.airbyte.integrations.base.destination.typing_deduping
 
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
 import io.airbyte.commons.concurrency.CompletableFutures
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.executeRawTableMigrations
@@ -43,7 +44,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
     private val parsedCatalog: ParsedCatalog,
     private val v1V2Migrator: DestinationV1V2Migrator,
     private val v2TableMigrator: V2TableMigrator,
-    private val migrations: List<Migration<DestinationState>>
+    private val migrations: List<Migration<DestinationState>>,
 ) : TyperDeduper {
 
     private lateinit var overwriteStreamsWithTmpTable: MutableSet<StreamId>
@@ -154,20 +155,30 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info { "Final Table exists for stream ${stream.id.finalName}" }
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
-                        if (stream.minimumGenerationId != 0L) {
-                            if (!initialState.isFinalTableEmpty || initialState.isSchemaMismatch) {
+                        if (stream.minimumGenerationId == stream.generationId) {
+                            if (initialState.isSchemaMismatch ||
+                                (!initialState.isFinalTableEmpty && initialState.finalTableGenerationId != stream.generationId )
+                                ) {
+                                LOGGER.info { "isSchemaMismatch=${initialState.isSchemaMismatch}, " +
+                                        "isFinalTableEmpty=${initialState.isFinalTableEmpty}, " +
+                                        "finalTableGenerationId=${initialState.finalTableGenerationId}, " +
+                                        "generationId=${stream.generationId}. Using temp final table" }
                                 // We want to overwrite an existing table. Write into a tmp table.
                                 // We'll overwrite the table at the
                                 // end of the sync.
                                 overwriteStreamsWithTmpTable.add(stream.id)
-                                // overwrite an existing tmp table if needed.
-                                destinationHandler.execute(
-                                    sqlGenerator.createTable(
-                                        stream,
-                                        TMP_OVERWRITE_TABLE_SUFFIX,
-                                        true
-                                    )
-                                )
+                                    if (initialState.finalTempTableGenerationId != stream.generationId) {
+                                        LOGGER.info { "finalTempTableGenerationId=${initialState.finalTempTableGenerationId}, "+
+                                                "generationId=${stream.generationId}. Recreating temp final table" }
+                                        // overwrite an existing tmp table if needed.
+                                        destinationHandler.execute(
+                                            sqlGenerator.createTable(
+                                                stream,
+                                                TMP_OVERWRITE_TABLE_SUFFIX,
+                                                true
+                                            )
+                                        )
+                                    }
                                 LOGGER.info {
                                     "Using temp final table for stream ${stream.id.finalName}, will overwrite existing table at end of sync"
                                 }

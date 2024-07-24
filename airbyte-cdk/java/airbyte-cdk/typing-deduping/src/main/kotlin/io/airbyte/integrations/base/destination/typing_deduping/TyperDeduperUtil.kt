@@ -42,6 +42,7 @@ object TyperDeduperUtil {
         // So we can bundle the gatherInitialState calls together.
         var currentStates = initialStates
         for (migration in migrations) {
+            LOGGER.info("SGX enqueuing migration $migration")
             // Execute the migration on all streams in parallel
             val futures:
                 Map<StreamId, CompletionStage<Migration.MigrationResult<DestinationState>>> =

@@ -44,8 +44,8 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     }
 
     @Test
-    override fun testInterruptedOverwrite() {
-        super.testInterruptedOverwrite()
+    override fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {
+        super.testAirbyteMetaAndGenerationIdMigrationForOverwrite()
     }
 
     override val imageName: String

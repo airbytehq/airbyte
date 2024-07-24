@@ -11,18 +11,21 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.configoss.WorkerDestinationConfig
-import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.*
 import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.AirbyteTraceMessage
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.StreamDescriptor
-import io.airbyte.protocol.models.v0.*
+import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.internal.AirbyteDestination
 import io.airbyte.workers.internal.DefaultAirbyteDestination
 import io.airbyte.workers.process.AirbyteIntegrationLauncher
 import io.airbyte.workers.process.DockerProcessFactory
 import io.airbyte.workers.process.ProcessFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.function.Executable
+import org.junit.jupiter.api.parallel.Execution
+import org.junit.jupiter.api.parallel.ExecutionMode
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -34,12 +37,6 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.test.assertFails
-import org.apache.commons.lang3.RandomStringUtils
-import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assumptions.assumeTrue
-import org.junit.jupiter.api.function.Executable
-import org.junit.jupiter.api.parallel.Execution
-import org.junit.jupiter.api.parallel.ExecutionMode
 
 private val LOGGER = KotlinLogging.logger {}
 /**
@@ -233,8 +230,7 @@ abstract class BaseTypingDedupingTest {
     @Test
     open fun truncateRefresh() {
         val catalog1 =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -264,8 +260,7 @@ abstract class BaseTypingDedupingTest {
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
         val catalog2 =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -303,8 +298,7 @@ abstract class BaseTypingDedupingTest {
     @Test
     open fun mergeRefresh() {
         val catalog1 =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -334,8 +328,7 @@ abstract class BaseTypingDedupingTest {
         // Second sync
         val messages2 = readMessages("dat/sync2_messages.jsonl")
         val catalog2 =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -372,8 +365,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     fun incrementalAppend() {
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -414,6 +406,110 @@ abstract class BaseTypingDedupingTest {
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
+
+    open fun interruptedOverwriteWithPriorData() {
+        val catalog0 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(41)
+                            .withMinimumGenerationId(41)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withCursorField(listOf("updated_at"))
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
+        runSync(catalog0, readMessages("dat/sync1_messages.jsonl") + readMessages("dat/sync2_messages.jsonl"))
+
+        val expectedRawRecords0 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
+        val expectedFinalRecords0 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
+        verifySyncResult(expectedRawRecords0, expectedFinalRecords0, disableFinalTableComparison())
+
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            //notice we changed the generationId and the minimumGenerationId
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(43)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withCursorField(listOf("updated_at"))
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
+
+        // First sync. We make it fail.
+        try {
+            runSync(catalog, readMessages("dat/sync1_messages.jsonl"), streamStatus = null)
+            fail("sync should have errored out!")
+        } catch (e: TestHarnessException) {
+
+        }
+        // raw and final table should have been left alone as is
+        verifySyncResult(expectedRawRecords0, expectedFinalRecords0, disableFinalTableComparison())
+
+        //notice we re-write the same records we wrote earlier
+        runSync(catalog, readMessages("dat/sync1_messages.jsonl"))
+
+        val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
+        val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
+        verifySyncResult(expectedRawRecords1 + expectedRawRecords1, expectedFinalRecords1 + expectedFinalRecords1, disableFinalTableComparison())
+    }
+    @Test
+    @Throws(Exception::class)
+    open fun interruptedOverwriteWithoutPriorData() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(43)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withCursorField(listOf("updated_at"))
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
+
+        // First sync
+        runSync(catalog, readMessages("dat/sync1_messages.jsonl"))
+
+        val expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl")
+        val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl")
+        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+
+        runSync(catalog, readMessages("dat/sync2_messages.jsonl"))
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
     /**
      * Starting with an empty destination, execute an incremental dedup sync. Verify that the
      * records are written to the destination table. Then run a second sync, and verify that the
@@ -423,8 +519,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     fun incrementalDedup() {
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -475,8 +570,7 @@ abstract class BaseTypingDedupingTest {
     @Timeout(value = 15, unit = TimeUnit.MINUTES)
     fun largeDedupSync() {
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -514,8 +608,7 @@ abstract class BaseTypingDedupingTest {
     @Throws(Exception::class)
     fun incrementalDedupDefaultNamespace() {
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -602,8 +695,7 @@ abstract class BaseTypingDedupingTest {
                 .withName(streamName)
                 .withJsonSchema(SCHEMA)
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -653,8 +745,7 @@ abstract class BaseTypingDedupingTest {
         // TODO duplicate this test for each sync mode. Run 1st+2nd syncs using a stream with null
         // namespace:
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -689,8 +780,7 @@ abstract class BaseTypingDedupingTest {
         val namespace1 = streamNamespace + "_1"
         val namespace2 = streamNamespace + "_2"
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -785,8 +875,7 @@ abstract class BaseTypingDedupingTest {
     open fun identicalNameSimultaneousSync() {
         val namespace1 = streamNamespace + "_1"
         val catalog1 =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -808,8 +897,7 @@ abstract class BaseTypingDedupingTest {
 
         val namespace2 = streamNamespace + "_2"
         val catalog2 =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     java.util.List.of(
                         ConfiguredAirbyteStream()
@@ -939,8 +1027,7 @@ abstract class BaseTypingDedupingTest {
                         .withJsonSchema(mangledSchema)
                 )
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(java.util.List.of(configuredStream))
 
         // First sync
@@ -1001,8 +1088,7 @@ abstract class BaseTypingDedupingTest {
         assumeTrue(disableFinalTableComparison(), "Skipping test because T+D is enabled.")
 
         val catalog =
-            io.airbyte.protocol.models.v0
-                .ConfiguredAirbyteCatalog()
+            ConfiguredAirbyteCatalog()
                 .withStreams(
                     listOf(
                         ConfiguredAirbyteStream()
@@ -1025,6 +1111,42 @@ abstract class BaseTypingDedupingTest {
         assertFails(
             "Expected final table to not exist, but we were able to read records from it."
         ) { dumpFinalTableRecords(streamNamespace, streamName) }
+    }
+
+    @Test
+    @Throws(java.lang.Exception::class)
+    open fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(43L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(schema)
+                            )
+                    )
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(catalog, messages1, "airbyte/destination-postgres:2.0.14", Function.identity(), null)
+
+        // Second sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
     private fun <T> repeatList(n: Int, list: List<T>): List<T> {
@@ -1081,7 +1203,7 @@ abstract class BaseTypingDedupingTest {
     @JvmOverloads
     @Throws(Exception::class)
     protected fun runSync(
-        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        catalog: ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>,
         imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity(),
@@ -1096,30 +1218,36 @@ abstract class BaseTypingDedupingTest {
         endSync(destination, outputFuture)
     }
 
+    protected fun createStatusMessage(
+        streamNamespace: String?,
+        streamName: String,
+        streamStatus: AirbyteStreamStatus
+    ): AirbyteMessage {
+        return AirbyteMessage()
+            .withType(AirbyteMessage.Type.TRACE)
+            .withTrace(
+                AirbyteTraceMessage()
+                    .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                    .withStreamStatus(
+                        AirbyteStreamStatusTraceMessage()
+                            .withStreamDescriptor(
+                                StreamDescriptor()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName),
+                            )
+                            .withStatus(streamStatus),
+                    ),
+            )
+    }
+
     private fun pushStatusMessages(
-        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        catalog: ConfiguredAirbyteCatalog,
         destination: AirbyteDestination,
         streamStatus: AirbyteStreamStatus
     ) {
         catalog.streams.forEach {
-            destination.accept(
-                io.airbyte.protocol.models
-                    .AirbyteMessage()
-                    .withType(io.airbyte.protocol.models.AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    .withStreamDescriptor(
-                                        StreamDescriptor()
-                                            .withNamespace(it.stream.namespace)
-                                            .withName(it.stream.name),
-                                    )
-                                    .withStatus(streamStatus),
-                            ),
-                    ),
-            )
+            destination.accept(createStatusMessage(it.stream.namespace,
+                                            it.stream.name,streamStatus))
         }
     }
 
@@ -1161,7 +1289,7 @@ abstract class BaseTypingDedupingTest {
      */
     @Throws(Exception::class)
     protected fun startSync(
-        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        catalog: ConfiguredAirbyteCatalog,
         imageName: String = this.imageName,
         configTransformer: Function<JsonNode?, JsonNode?> = Function.identity()
     ): AirbyteDestination {

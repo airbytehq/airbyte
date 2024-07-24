@@ -190,6 +190,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     protected abstract fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator
 
     protected abstract fun getDestinationHandler(
+        config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
         rawTableSchema: String
@@ -311,6 +312,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val migrator = getV1V2Migrator(database, databaseName)
         val destinationHandler: DestinationHandler<DestinationState> =
             getDestinationHandler(
+                config,
                 databaseName,
                 database,
                 getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
