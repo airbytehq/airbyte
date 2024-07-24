@@ -9,11 +9,13 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
 import io.airbyte.commons.concurrency.CompletableFutures
 import io.airbyte.commons.exceptions.SQLRuntimeException
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
@@ -53,6 +55,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
     protected val rawTableNamespace: String,
     private val dialect: SQLDialect,
     private val columns: DestinationColumns = DestinationColumns.V2_WITH_GENERATION,
+    private val sqlOperations: SqlOperations,
 ) : DestinationHandler<DestinationState> {
     protected val dslContext: DSLContext
         get() = DSL.using(dialect)
@@ -333,7 +336,9 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     InitialRawTableStatus(false, false, Optional.empty()),
                     isSchemaMismatch,
                     isFinalTableEmpty,
-                    destinationState
+                    destinationState,
+                    finalTableGenerationId = sqlOperations.getGenerationIdInTable(jdbcDatabase, streamConfig.id.rawNamespace, streamConfig.id.rawName),
+                    finalTempTableGenerationId = sqlOperations.getGenerationIdInTable(jdbcDatabase, streamConfig.id.rawNamespace, streamConfig.id.rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX),
                 )
             } catch (e: Exception) {
                 throw RuntimeException(e)

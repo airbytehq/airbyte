@@ -106,12 +106,11 @@ object JdbcBufferedConsumerFactory {
             val rawSuffix: String =
                 if (
                     it.minimumGenerationId == it.generationId &&
-                        sqlOperations.isOtherGenerationIdInTable(
+                        sqlOperations.getGenerationIdInTable(
                             database,
-                            it.generationId,
                             it.id.rawNamespace,
                             it.id.rawName
-                        )
+                        ) != it.generationId
                 ) {
                     AbstractStreamOperation.TMP_TABLE_SUFFIX
                 } else {
@@ -194,12 +193,11 @@ object JdbcBufferedConsumerFactory {
                 when (writeConfig.minimumGenerationId) {
                     writeConfig.generationId ->
                         if (
-                            sqlOperations.isOtherGenerationIdInTable(
+                            sqlOperations.getGenerationIdInTable(
                                 database,
-                                writeConfig.generationId,
                                 schemaName,
                                 dstTableName + writeConfig.rawTableSuffix
-                            )
+                            ) != writeConfig.generationId
                         ) {
                             queryList.add(
                                 sqlOperations.truncateTableQuery(
@@ -280,12 +278,11 @@ object JdbcBufferedConsumerFactory {
                 catalog.streams.forEach {
                     if (
                         it.minimumGenerationId == it.generationId &&
-                            sqlOperations.isOtherGenerationIdInTable(
+                            sqlOperations.getGenerationIdInTable(
                                 database,
-                                it.generationId,
                                 it.id.rawNamespace,
                                 it.id.rawName
-                            ) &&
+                            ) != it.generationId &&
                             streamSyncSummaries
                                 .getValue(it.id.asStreamDescriptor())
                                 .terminalStatus ==

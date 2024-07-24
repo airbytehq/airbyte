@@ -147,12 +147,11 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
         )
     }
 
-    override fun isOtherGenerationIdInTable(
+    override fun getGenerationIdInTable(
         database: JdbcDatabase,
-        generationId: Long,
         namespace: String,
         name: String
-    ): Boolean {
+    ): Long? {
         val selectTableResultSet =
             database
                 .unsafeQuery(
@@ -160,31 +159,35 @@ class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
             |               FROM pg_catalog.pg_namespace n
             |               JOIN pg_catalog.pg_class c
             |               ON c.relnamespace=n.oid
+            |               JOIN pg_catalog.pg_attribute a
+            |               ON a.attrelid = c.oid
             |               WHERE n.nspname=?
             |               AND c.relkind='r'
             |               AND c.relname=?
+            |               AND a.attname=?
             |               LIMIT 1
         """.trimMargin(),
                     namespace,
-                    name
+                    name,
+                    "_airbyte_generation_id"
                 )
                 .use { it.toList() }
         if (selectTableResultSet.isEmpty()) {
-            return false
+            return null
         } else {
             val selectGenIdResultSet =
                 database
                     .unsafeQuery("SELECT _airbyte_generation_id FROM $namespace.$name LIMIT 1;")
                     .use { it.toList() }
             if (selectGenIdResultSet.isEmpty()) {
-                return false
+                return null
             } else {
                 val genIdInTable =
                     selectGenIdResultSet.first().get("_airbyte_generation_id")?.asLong()
                 LOGGER.info {
-                    "found generationId in table $namespace.$name: $genIdInTable (generationId = $generationId)"
+                    "found generationId in table $namespace.$name: $genIdInTable"
                 }
-                return genIdInTable != generationId
+                return genIdInTable ?: -1L
             }
         }
     }

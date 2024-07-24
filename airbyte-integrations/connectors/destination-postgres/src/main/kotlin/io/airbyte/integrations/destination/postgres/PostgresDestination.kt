@@ -159,11 +159,12 @@ class PostgresDestination :
     }
 
     override fun getDestinationHandler(
+        config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
         rawTableSchema: String
     ): JdbcDestinationHandler<PostgresState> {
-        return PostgresDestinationHandler(databaseName, database, rawTableSchema)
+        return PostgresDestinationHandler(databaseName, database, rawTableSchema, getSqlOperations(config))
     }
 
     protected override fun getMigrations(

@@ -5,6 +5,7 @@ package io.airbyte.integrations.destination.postgres.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
@@ -19,13 +20,15 @@ import org.jooq.SQLDialect
 class PostgresDestinationHandler(
     databaseName: String?,
     jdbcDatabase: JdbcDatabase,
-    rawTableSchema: String
+    rawTableSchema: String,
+    sqlOperations: SqlOperations,
 ) :
     JdbcDestinationHandler<PostgresState>(
         databaseName,
         jdbcDatabase,
         rawTableSchema,
-        SQLDialect.POSTGRES
+        SQLDialect.POSTGRES,
+        sqlOperations = sqlOperations
     ) {
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
         // This is mostly identical to the postgres implementation, but swaps jsonb to super

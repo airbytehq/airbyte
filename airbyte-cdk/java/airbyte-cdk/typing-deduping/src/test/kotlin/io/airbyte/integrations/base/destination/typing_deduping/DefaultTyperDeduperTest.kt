@@ -628,7 +628,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         true,
                         false,
-                        MockState(false, false, true)
+                        MockState(false, false, true),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
@@ -641,7 +643,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         true,
                         false,
-                        MockState(false, false, true)
+                        MockState(false, false, true),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
@@ -654,7 +658,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         true,
                         false,
-                        MockState(false, false, true)
+                        MockState(false, false, true),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 )
             )
@@ -755,7 +761,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
-                        MockState(false, false, false)
+                        MockState(false, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
@@ -768,7 +776,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
-                        MockState(false, false, false)
+                        MockState(false, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
@@ -781,7 +791,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
-                        MockState(false, false, false)
+                        MockState(false, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 )
             )
@@ -873,7 +885,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
-                        MockState(true, false, false)
+                        MockState(true, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
@@ -886,7 +900,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
-                        MockState(true, false, false)
+                        MockState(true, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
@@ -899,7 +915,9 @@ class DefaultTyperDeduperTest {
                         initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                         false,
                         false,
-                        MockState(true, false, false)
+                        MockState(true, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 )
             )

@@ -138,12 +138,11 @@ interface SqlOperations {
      *
      * @returns true if the table exists and contains such a row, false otherwise
      */
-    fun isOtherGenerationIdInTable(
+    fun getGenerationIdInTable(
         database: JdbcDatabase,
-        generationId: Long,
-        rawNamespace: String,
-        rawName: String
-    ): Boolean
+        namespace: String,
+        name: String
+    ): Long?
 
     /** overwrite the raw table with the temporary raw table */
     fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String)

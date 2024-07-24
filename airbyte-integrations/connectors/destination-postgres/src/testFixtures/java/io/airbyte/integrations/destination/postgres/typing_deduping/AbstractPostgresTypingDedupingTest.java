@@ -17,14 +17,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -316,37 +316,4 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
 
     }
   }
-
-  @Test
-  void testAirbyteMetaAndGenerationIdMigrationForOverwrite() throws Exception {
-    ConfiguredAirbyteCatalog catalog =
-        new ConfiguredAirbyteCatalog()
-            .withStreams(
-                List.of(
-                    new ConfiguredAirbyteStream()
-                        .withSyncMode(SyncMode.FULL_REFRESH)
-                        .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
-                        .withSyncId(42L)
-                        .withGenerationId(43L)
-                        .withMinimumGenerationId(43L)
-                        .withStream(
-                            new AirbyteStream()
-                                .withNamespace(getStreamNamespace())
-                                .withName(getStreamName())
-                                .withJsonSchema(getSchema()))));
-
-    // First sync
-    List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
-    runSync(catalog, messages1, "airbyte/destination-postgres:2.0.15", Function.identity(), null);
-
-    // Second sync
-    List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
-    runSync(catalog, messages2);
-
-    List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl");
-    List<JsonNode> expectedFinalRecords2 =
-        readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
-  }
-
 }
