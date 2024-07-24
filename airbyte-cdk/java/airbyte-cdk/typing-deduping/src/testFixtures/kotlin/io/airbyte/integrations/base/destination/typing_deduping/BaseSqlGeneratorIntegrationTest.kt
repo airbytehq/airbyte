@@ -219,7 +219,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalDedupStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 COLUMNS,
@@ -230,7 +230,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalAppendStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 primaryKey,
                 Optional.of(cursor),
                 COLUMNS,
@@ -242,7 +242,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         cdcIncrementalDedupStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 cdcColumns,
@@ -253,7 +253,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         cdcIncrementalAppendStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 primaryKey,
                 Optional.of(cursor),
                 cdcColumns,
@@ -358,7 +358,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 incrementalDedupStream.primaryKey,
                 incrementalDedupStream.cursor,
                 incrementalDedupStream.columns,
@@ -980,7 +980,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.empty(),
                 COLUMNS,
@@ -1392,7 +1392,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 linkedMapOf(
@@ -1467,7 +1467,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             val stream =
                 StreamConfig(
                     modifiedStreamId,
-                    DestinationSyncMode.APPEND_DEDUP,
+                    ImportType.DEDUPE,
                     java.util.List.of(columnId),
                     Optional.of(columnId),
                     linkedMapOf(columnId to AirbyteProtocolType.STRING),
@@ -1502,7 +1502,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 linkedMapOf(
@@ -1552,7 +1552,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList<ColumnId>(),
                 Optional.empty(),
                 LinkedHashMap(),
@@ -1814,6 +1814,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                                                 )
                                             )
                                     )
+                                    .withSyncId(42)
+                                    .withGenerationId(43)
+                                    .withMinimumGenerationId(0)
                                     .withSyncMode(SyncMode.INCREMENTAL)
                                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             )

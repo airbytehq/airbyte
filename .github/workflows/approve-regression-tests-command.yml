@@ -1,6 +1,7 @@
 name: Approve Regression Tests
 permissions:
   pull-requests: write
+  statuses: write
 on:
   workflow_dispatch:
     inputs:
@@ -28,9 +29,6 @@ jobs:
   approve-regression-tests:
     name: "Approve Regression Tests"
     runs-on: ubuntu-latest
-    permissions:
-      statuses: write
-      issues: write
     steps:
       - name: Get job variables
         id: job-vars
@@ -72,7 +70,7 @@ jobs:
             --header 'content-type: application/json' \
             --data '{
               "state": "success",
-              "context": "Regression tests manual approval",
+              "context": "Regression Test Results Reviewed and Approved",
               "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
             }')
           if [ $response -ne 201 ]; then

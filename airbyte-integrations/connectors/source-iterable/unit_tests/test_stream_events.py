@@ -4,7 +4,6 @@
 
 import json
 
-import pendulum
 import pytest
 import requests
 import responses
@@ -194,18 +193,14 @@ def test_events_parse_response(response_objects, expected_objects, jsonl_body, c
     else:
         response_body = json.dumps(response_objects)
 
-    responses.add(
-        responses.GET,
-        "https://api.iterable.com/api/export/userEvents?includeCustomEvents=true&email=user1",
-        body=response_body
-    )
+    responses.add(responses.GET, "https://api.iterable.com/api/export/userEvents?includeCustomEvents=true&email=user1", body=response_body)
 
     response = requests.get("https://api.iterable.com/api/export/userEvents?includeCustomEvents=true&email=user1")
 
     stream = next(filter(lambda x: x.name == "events", SourceIterable().streams(config=config)))
 
     if jsonl_body:
-        stream_slice = StreamSlice(partition={'email': 'user1', 'parent_slice': {'list_id': 111111, 'parent_slice': {}}}, cursor_slice={})
+        stream_slice = StreamSlice(partition={"email": "user1", "parent_slice": {"list_id": 111111, "parent_slice": {}}}, cursor_slice={})
         records = list(map(lambda record: record.data, stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)))
         assert records == expected_objects
     else:
