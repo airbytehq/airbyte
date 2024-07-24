@@ -61,4 +61,4 @@ E.g. `airbyte_workspace_024eaa40-75ae-4014-941d-b9e938c3a363_secret_5675437d-ea6
 a secret belongs to. The stable prefix allows operators to understand how often a secret has been modified and group secrets by connections.
 3. Not all secrets can be associated to a workspace e.g. Secrets created as part of a [Discover](./airbyte-protocol/#discover) or [Check](./airbyte-protocol/#check) operation. These secrets have a workspace id of
 `00000000-0000-0000-0000-000000000000`. Whenever possible, Airbyte attempts to expire these secrets after 2 hours for security and cost reasons. 
-4. Airbyte deletes old secrets when configuration is updated or deleted as of 0.63.10.
+4. Airbyte deletes old secrets when connector configuration is updated or deleted as of 0.63.10.
