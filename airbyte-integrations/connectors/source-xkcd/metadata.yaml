@@ -1,13 +1,17 @@
 data:
+  allowedHosts:
+    hosts:
+      - xkcd.com
   connectorSubtype: api
   connectorType: source
   definitionId: 80fddd16-17bd-4c0c-bf4a-80df7863fc9d
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-xkcd
   githubIssueLabel: source-xkcd
   icon: xkcd.svg
   license: MIT
-  name: xkcd
+  name: Xkcd
+  releaseDate: TODO
   remoteRegistries:
     pypi:
       enabled: true
@@ -21,7 +25,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/xkcd
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
