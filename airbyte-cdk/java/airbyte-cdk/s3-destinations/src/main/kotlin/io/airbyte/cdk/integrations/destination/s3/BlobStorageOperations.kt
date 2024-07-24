@@ -30,7 +30,8 @@ abstract class BlobStorageOperations protected constructor() {
     abstract fun uploadRecordsToBucket(
         recordsData: SerializableBuffer,
         namespace: String?,
-        objectPath: String
+        objectPath: String,
+        generationId: Long? = null
     ): String?
 
     /** Remove files that were just stored in the bucket */
@@ -60,5 +61,18 @@ abstract class BlobStorageOperations protected constructor() {
 
     fun addBlobDecorator(blobDecorator: BlobDecorator) {
         blobDecorators.add(blobDecorator)
+    }
+
+    /**
+     * Provides the generationId from the last written object's metadata. If there are no objects in
+     * the given path format, returns nullå
+     */
+    open fun getStageGeneration(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String
+    ): Long? {
+        return null
     }
 }
