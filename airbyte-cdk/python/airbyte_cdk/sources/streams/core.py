@@ -396,7 +396,7 @@ class Stream(ABC):
         """
         return None
 
-    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
+    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.", action="ignore")
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
     ) -> MutableMapping[str, Any]:

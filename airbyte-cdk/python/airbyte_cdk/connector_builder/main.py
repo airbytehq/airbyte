@@ -76,4 +76,4 @@ if __name__ == "__main__":
     except Exception as exc:
         error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {str(exc)}")
         m = error.as_airbyte_message()
-        print(error.as_airbyte_message().json(exclude_unset=True))
+        print(error.as_airbyte_message().model_dump_json(exclude_unset=True))

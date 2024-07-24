@@ -73,7 +73,7 @@ def emit_configuration_as_airbyte_control_message(config: MutableMapping):
     See the airbyte_cdk.sources.message package
     """
     airbyte_message = create_connector_config_control_message(config)
-    print(airbyte_message.json(exclude_unset=True))
+    print(airbyte_message.model_dump_json(exclude_unset=True))
 
 
 def create_connector_config_control_message(config):
