@@ -439,12 +439,13 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: start_date
       cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S"
         - "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
         field_name: after

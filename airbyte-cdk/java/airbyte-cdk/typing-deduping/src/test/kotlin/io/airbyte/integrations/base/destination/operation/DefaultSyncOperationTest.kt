@@ -6,17 +6,10 @@ package io.airbyte.integrations.base.destination.operation
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
-import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.Sql
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.mockk.clearMocks
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -309,7 +302,7 @@ class DefaultSyncOperationTest {
                     "append_ns",
                     "append_stream"
                 ),
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 listOf(),
                 Optional.empty(),
                 linkedMapOf(),

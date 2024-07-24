@@ -10,7 +10,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.se
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.mockk.mockk
 import java.time.Instant
@@ -981,12 +980,12 @@ class DefaultTyperDeduperTest {
                     "overwrite_ns",
                     "overwrite_stream"
                 ),
-                DestinationSyncMode.OVERWRITE,
+                ImportType.APPEND,
                 mock(),
                 mock(),
                 mock(),
-                0,
-                0,
+                42,
+                42,
                 0,
             )
         private val APPEND_STREAM_CONFIG =
@@ -999,11 +998,11 @@ class DefaultTyperDeduperTest {
                     "append_ns",
                     "append_stream"
                 ),
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 mock(),
                 mock(),
                 mock(),
-                0,
+                42,
                 0,
                 0,
             )
@@ -1017,11 +1016,11 @@ class DefaultTyperDeduperTest {
                     "dedup_ns",
                     "dedup_stream"
                 ),
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 mock(),
                 mock(),
                 mock(),
-                0,
+                42,
                 0,
                 0,
             )

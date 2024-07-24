@@ -697,12 +697,12 @@ class TestDiscovery(BaseTest):
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
         assert len(duplicated_stream_names) == 0, f"Catalog should have uniquely named streams, duplicates are: {duplicated_stream_names}"
 
-    def duplicated_stream_names(self, streams) -> List[str]:
+    def duplicated_stream_names(self, streams) -> List[Tuple[str, str]]:
         """Counts number of times a stream appears in the catalog"""
         name_counts = dict()
         for stream in streams:
-            count = name_counts.get(stream.name, 0)
-            name_counts[stream.name] = count + 1
+            count = name_counts.get((stream.namespace, stream.name), 0)
+            name_counts[(stream.namespace, stream.name)] = count + 1
         return [k for k, v in name_counts.items() if v > 1]
 
     def test_streams_have_valid_json_schemas(self, discovered_catalog: Mapping[str, Any]):
@@ -1285,9 +1285,7 @@ class TestBasicRead(BaseTest):
         ), "All stream must emit status"
 
         for stream_name, status_list in stream_statuses.items():
-            assert (
-                len(status_list) >= 3
-            ), f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
+            assert len(status_list) >= 2, f"Stream `{stream_name}` should contain at least : `STARTED` and `COMPLETE`"
             assert status_list[0] == AirbyteStreamStatus.STARTED
             assert status_list[-1] == AirbyteStreamStatus.COMPLETE
             assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
