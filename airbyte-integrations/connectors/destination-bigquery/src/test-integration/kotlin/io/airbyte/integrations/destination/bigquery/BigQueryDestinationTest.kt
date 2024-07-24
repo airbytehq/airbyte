@@ -61,7 +61,6 @@ internal class BigQueryDestinationTest {
             successTestConfigProviderBase(),
             Stream.of(Arguments.of("gcsStagingConfig"))
         )
-
     }
 
     private fun failCheckTestConfigProvider(): Stream<Arguments> {
@@ -159,7 +158,6 @@ internal class BigQueryDestinationTest {
                 BigQueryDestination().check(testConfig!!)
             }
         Assertions.assertThat(ex.message).contains(error)
-
     }
 
     @Disabled
@@ -500,7 +498,6 @@ internal class BigQueryDestinationTest {
         protected val CREDENTIALS_WITH_GCS_BAD_COPY_PERMISSION_PATH: Path =
             Path.of("secrets/credentials-1s1t-gcs-bad-copy-permission.json")
 
-
         protected val ALL_PATHS: Array<Path> =
             arrayOf(
                 CREDENTIALS_STANDARD_INSERT_PATH,
@@ -604,8 +601,7 @@ internal class BigQueryDestinationTest {
         protected var nonBillableConfig: JsonNode? = null
         protected var gcsStagingConfig: JsonNode? =
             null // default BigQuery config. Also used for setup/teardown
-        protected var gcsStagingConfigWithBadCopyPermission: JsonNode? =
-            null
+        protected var gcsStagingConfigWithBadCopyPermission: JsonNode? = null
 
         protected var configs: Map<String, JsonNode>? = null
         protected var catalog: ConfiguredAirbyteCatalog? = null
@@ -688,11 +684,12 @@ internal class BigQueryDestinationTest {
                     stagingPath
                 )
 
-            gcsStagingConfigWithBadCopyPermission = BigQueryDestinationTestUtils.createConfig(
-                CREDENTIALS_WITH_GCS_BAD_COPY_PERMISSION_PATH,
-                datasetId,
-                stagingPath
-            )
+            gcsStagingConfigWithBadCopyPermission =
+                BigQueryDestinationTestUtils.createConfig(
+                    CREDENTIALS_WITH_GCS_BAD_COPY_PERMISSION_PATH,
+                    datasetId,
+                    stagingPath
+                )
 
             MESSAGE_USERS1.record.namespace = datasetId
             MESSAGE_USERS2.record.namespace = datasetId
@@ -727,8 +724,8 @@ internal class BigQueryDestinationTest {
                     "noEditPublicSchemaRoleConfig" to noEditPublicSchemaRoleConfig!!,
                     "nonBillableConfig" to nonBillableConfig!!,
                     "gcsStagingConfig" to gcsStagingConfig!!,
-                    "gcsStagingConfigWithBadCopyPermission" to gcsStagingConfigWithBadCopyPermission!!,
-
+                    "gcsStagingConfigWithBadCopyPermission" to
+                        gcsStagingConfigWithBadCopyPermission!!,
                 )
         }
     }

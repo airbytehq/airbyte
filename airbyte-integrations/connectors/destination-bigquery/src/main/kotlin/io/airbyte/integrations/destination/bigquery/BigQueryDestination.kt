@@ -22,6 +22,9 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns.*
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.getRawNamespaceOverride
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
 import io.airbyte.cdk.integrations.destination.gcs.BaseGcsDestination
 import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer
 import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations
@@ -35,17 +38,11 @@ import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.operation.StandardStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.destination.bigquery.BigQueryConsts as bqConstants
-import com.google.cloud.bigquery.TableId
-import io.airbyte.cdk.integrations.destination.StreamSyncSummary
-import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
-import io.airbyte.commons.string.Strings.addRandomSuffix
 import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.destination.bigquery.BigQueryConsts
+import io.airbyte.integrations.destination.bigquery.BigQueryConsts as bqConstants
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createDirectUploadConsumer
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createStagingConsumer
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
@@ -111,33 +108,30 @@ class BigQueryDestination : BaseConnector(), Destination {
                     return GcsStatus
                 }
 
-                //Copy a temporary dataset to confirm copy permissions are working
-                val bigQueryStatus = checkBigQueryCopyPermission(config);
+                // Copy a temporary dataset to confirm copy permissions are working
+                val bigQueryStatus = checkBigQueryCopyPermission(config)
 
                 if (bigQueryStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
                     return bigQueryStatus
                 }
-
             }
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
-
         } catch (e: Exception) {
             log.error(e) { "Check failed." }
             throw ConfigErrorException((if (e.message != null) e.message else e.toString())!!)
         }
-
     }
 
     /**
-     * This method performs a copy operation to copy data into a temporary table on BigQuery
-     * to check if the existing permissions are sufficient to copy data.
-     * If the permissions are not sufficient, then an exception is thrown with a message
-     * showing the missing permission
+     * This method performs a copy operation to copy data into a temporary table on BigQuery to
+     * check if the existing permissions are sufficient to copy data. If the permissions are not
+     * sufficient, then an exception is thrown with a message showing the missing permission
      */
     private fun checkBigQueryCopyPermission(config: JsonNode): AirbyteConnectionStatus? {
 
-        //TODO: Need to add a step in this method to first check permissions using testIamPermissions before trying the actual copying of data
+        // TODO: Need to add a step in this method to first check permissions
+        //  using testIamPermissions before trying the actual copying of data
 
         val datasetLocation = BigQueryUtils.getDatasetLocation(config)
         val bigquery = getBigQuery(config)
@@ -156,7 +150,6 @@ class BigQueryDestination : BaseConnector(), Destination {
 
         val defaultDataset = BigQueryUtils.getDatasetId(config)
 
-
         val finalTableName =
             "_airbyte_bigquery_connection_test_" +
                 UUID.randomUUID().toString().replace("-".toRegex(), "")
@@ -169,16 +162,13 @@ class BigQueryDestination : BaseConnector(), Destination {
             }
 
         val streamId =
-            sqlGenerator.buildStreamId(
-                defaultDataset,
-                finalTableName,
-                rawDatasetOverride
-            )
+            sqlGenerator.buildStreamId(defaultDataset, finalTableName, rawDatasetOverride)
 
         try {
 
-            //Copy a dataset into a BigQuery table to confirm the copy operation is working correctly
-            //with the existing permissions
+            // Copy a dataset into a BigQuery table to confirm the copy operation is working
+            // correctly
+            // with the existing permissions
 
             val streamConfig =
                 StreamConfig(
@@ -202,21 +192,20 @@ class BigQueryDestination : BaseConnector(), Destination {
                     streamConfig = streamConfig,
                     isFinalTablePresent = false,
                     initialRawTableStatus =
-                    InitialRawTableStatus(
-                        rawTableExists = false,
-                        hasUnprocessedRecords = true,
-                        maxProcessedTimestamp = Optional.empty()
-                    ),
+                        InitialRawTableStatus(
+                            rawTableExists = false,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.empty()
+                        ),
                     initialTempRawTableStatus =
-                    InitialRawTableStatus(
-                        rawTableExists = false,
-                        hasUnprocessedRecords = true,
-                        maxProcessedTimestamp = Optional.empty()
-                    ),
+                        InitialRawTableStatus(
+                            rawTableExists = false,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.empty()
+                        ),
                     isSchemaMismatch = true,
                     isFinalTableEmpty = true,
-                    destinationState =
-                    BigQueryDestinationState(needsSoftReset = false)
+                    destinationState = BigQueryDestinationState(needsSoftReset = false)
                 )
 
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
@@ -243,7 +232,8 @@ class BigQueryDestination : BaseConnector(), Destination {
                 )
 
             // Dummy message
-            val data = """
+            val data =
+                """
                 {"testKey": "testValue"}
                  """.trimIndent()
 
@@ -261,10 +251,7 @@ class BigQueryDestination : BaseConnector(), Destination {
             streamOperation.writeRecords(streamConfig, listOf(message).stream())
             streamOperation.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(
-                    1,
-                    AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                ),
+                StreamSyncSummary(1, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE),
             )
 
             // clean up the raw table, this is intentionally not part of actual sync code
@@ -276,13 +263,11 @@ class BigQueryDestination : BaseConnector(), Destination {
             )
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
-
         } catch (e: Exception) {
 
             log.error(e) { "checkGcsCopyPermission failed." }
 
             throw ConfigErrorException((if (e.message != null) e.message else e.toString())!!)
-
         } finally {
 
             try {
@@ -293,14 +278,13 @@ class BigQueryDestination : BaseConnector(), Destination {
                         "DROP TABLE IF EXISTS $projectId.${streamId.rawNamespace}.${streamId.rawName};",
                     ),
                 )
-
             } catch (e: Exception) {
-                log.error(e) { "Error while cleaning up the temporary table... not throwing a new exception" };
+                log.error(e) {
+                    "Error while cleaning up the temporary table... not throwing a new exception"
+                }
             }
         }
-
     }
-
 
     /**
      * This method does two checks: 1) permissions related to the bucket, and 2) the ability to
@@ -339,7 +323,6 @@ class BigQueryDestination : BaseConnector(), Destination {
             val gcsDestination: BaseGcsDestination = object : BaseGcsDestination() {}
             val gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config)
             return gcsDestination.check(gcsJsonNodeConfig)
-
         } catch (e: Exception) {
             val message = StringBuilder("Cannot access the GCS bucket.")
             if (!missingPermissions.isEmpty()) {
