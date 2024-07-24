@@ -561,6 +561,7 @@ class BigQueryDestination : BaseConnector(), Destination {
 }
 
 fun main(args: Array<String>) {
+    log.info { "dumb change to force CI to actually run" }
     addThrowableForDeinterpolation(BigQueryException::class.java)
     val destination: Destination = BigQueryDestination()
     log.info { "Starting Destination : ${destination.javaClass}" }
