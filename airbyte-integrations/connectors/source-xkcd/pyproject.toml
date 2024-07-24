@@ -16,7 +16,7 @@ packages = [ { include = "source_xkcd" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+airbyte-cdk = "^2"
 
 [tool.poetry.scripts]
 source-xkcd = "source_xkcd.run:run"
