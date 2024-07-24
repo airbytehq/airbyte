@@ -112,10 +112,10 @@ class BigQueryDestination : BaseConnector(), Destination {
                 }
 
                 //Copy a file to confirm copy permissions are working
-                val copyStatus = checkGcsCopyOperation(config);
+                val bigQueryStatus = checkBigQueryCopyPermission(config);
 
-                if (copyStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
-                    return copyStatus
+                if (bigQueryStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
+                    return bigQueryStatus
                 }
 
             }
@@ -135,49 +135,51 @@ class BigQueryDestination : BaseConnector(), Destination {
      * If the permissions are not sufficient, then an exception is thrown with a message
      * showing the missing permission
      */
-    private fun checkGcsCopyOperation(config: JsonNode): AirbyteConnectionStatus? {
+    private fun checkBigQueryCopyPermission(config: JsonNode): AirbyteConnectionStatus? {
+
+        //TODO: Need to add a step in this method to first check permissions using testIamPermissions before trying the actual copying of data
+
+        val datasetLocation = BigQueryUtils.getDatasetLocation(config)
+        val bigquery = getBigQuery(config)
+
+        val gcsNameTransformer = GcsNameTransformer()
+        val gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config)
+        val keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config)
+        val gcsOperations =
+            GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig)
+
+        val projectId = config[bqConstants.CONFIG_PROJECT_ID].asText()
+
+        val destinationHandler = BigQueryDestinationHandler(bigquery, datasetLocation)
+
+        val sqlGenerator = BigQuerySqlGenerator(projectId, datasetLocation)
+
+        val defaultDataset = BigQueryUtils.getDatasetId(config)
+
+
+        val finalTableName =
+            "_airbyte_bigquery_connection_test_" +
+                UUID.randomUUID().toString().replace("-".toRegex(), "")
+
+        val rawDatasetOverride: String =
+            if (getRawNamespaceOverride(bqConstants.RAW_DATA_DATASET).isPresent) {
+                getRawNamespaceOverride(bqConstants.RAW_DATA_DATASET).get()
+            } else {
+                JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+            }
+
+        val streamId =
+            sqlGenerator.buildStreamId(
+                defaultDataset,
+                finalTableName,
+                rawDatasetOverride
+            )
 
         try {
-
-            val datasetLocation = BigQueryUtils.getDatasetLocation(config)
-            val bigquery = getBigQuery(config)
-
-            val gcsNameTransformer = GcsNameTransformer()
-            val gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config)
-            val keepStagingFiles = BigQueryUtils.isKeepFilesInGcs(config)
-            val gcsOperations =
-                GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig)
-
-            val projectId = config[bqConstants.CONFIG_PROJECT_ID].asText()
-
-            val destinationHandler = BigQueryDestinationHandler(bigquery, datasetLocation)
-
-            val sqlGenerator = BigQuerySqlGenerator(projectId, datasetLocation)
-
-            val defaultDataset = BigQueryUtils.getDatasetId(config)
 
             //Copy a dataset into a BigQuery table to confirm the copy operation is working correctly
             //with the existing permissions
 
-            //TODO: Need to add a step to first check permissions using testIamPermissions before doing the actual copy
-
-            val finalTableName =
-                "_airbyte_bigquery_connection_test_" +
-                    UUID.randomUUID().toString().replace("-".toRegex(), "")
-
-            val rawDatasetOverride: String =
-                if (getRawNamespaceOverride(bqConstants.RAW_DATA_DATASET).isPresent) {
-                    getRawNamespaceOverride(bqConstants.RAW_DATA_DATASET).get()
-                } else {
-                    JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
-                }
-
-            val streamId =
-                sqlGenerator.buildStreamId(
-                    defaultDataset,
-                    finalTableName,
-                    rawDatasetOverride
-                )
 
             val streamConfig =
                 StreamConfig(
@@ -278,8 +280,29 @@ class BigQueryDestination : BaseConnector(), Destination {
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
 
         } catch (e: Exception) {
+
             log.error(e) { "checkGcsCopyPermission failed." }
+
             throw ConfigErrorException((if (e.message != null) e.message else e.toString())!!)
+
+        } finally {
+
+            println("Inside finally block: Checking to clean up temporary table if it exists");
+
+            try {
+                // clean up the raw table, this is intentionally not part of actual sync code
+                // because we avoid dropping original tables directly.
+                destinationHandler.execute(
+                    Sql.of(
+                        //"DROP TABLE `$projectId.$datasetId.$finalTableName`",
+                        "DROP TABLE IF EXISTS $projectId.${streamId.rawNamespace}.${streamId.rawName};",
+                    ),
+                )
+
+            } catch (e: Exception) {
+
+                log.error(e) { "Error while cleaning up the temporary table... not throwing a new exception" };
+            }
         }
 
     }
