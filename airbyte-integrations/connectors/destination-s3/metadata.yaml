@@ -27,6 +27,7 @@ data:
     sl: 300
     ql: 300
   supportLevel: certified
+  supportsRefreshes: true
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
