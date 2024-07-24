@@ -287,8 +287,6 @@ class BigQueryDestination : BaseConnector(), Destination {
 
         } finally {
 
-            println("Inside finally block: Checking to clean up temporary table if it exists");
-
             try {
                 // clean up the raw table, this is intentionally not part of actual sync code
                 // because we avoid dropping original tables directly.
