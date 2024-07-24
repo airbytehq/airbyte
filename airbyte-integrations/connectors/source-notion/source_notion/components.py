@@ -3,8 +3,10 @@
 from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 import requests
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import FailureType, ResponseAction
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -98,3 +100,17 @@ class NotionBackoffStrategy(BackoffStrategy):
                         if message.startswith("The start_cursor provided is invalid: "):
                                 return 10.0
         return None
+
+class NotionErrorHandler(HttpStatusErrorHandler):
+
+     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        if isinstance(response_or_exception, requests.Response):
+            error_message = response_or_exception.json().get("message")
+            if response_or_exception.status_code == 400 and response_or_exception.json().get("code") == "validation_error" and error_message:
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.config_error,
+                    error_message=error_message
+                )
+
+        return super().interpret_response(response_or_exception)

@@ -7,7 +7,7 @@ from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
 from datetime import timedelta
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 import pendulum
 import pydantic.v1 as pydantic
@@ -20,7 +20,7 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from requests import HTTPError
-from source_notion.components import NotionBackoffStrategy
+from source_notion.components import NotionBackoffStrategy, NotionErrorHandler
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
@@ -92,7 +92,7 @@ class NotionStream(HttpStream, ABC):
         return NotionBackoffStrategy()
 
     def get_error_handler(self) -> ErrorHandler:
-        return HttpStatusErrorHandler(
+        return NotionErrorHandler(
             logger=self.logger,
             error_mapping=DEFAULT_ERROR_MAPPING,
             max_retries=self.max_retries,

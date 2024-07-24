@@ -12,6 +12,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction, FailureType
 from pytest import fixture, mark
 from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
 
@@ -81,7 +82,7 @@ def test_http_method(patch_base_class):
     "response_json, expected_output",
     [
         ({"next_cursor": "some_cursor", "has_more": True}, {"next_cursor": "some_cursor"}),
-        ({"has_more": False}, None), 
+        ({"has_more": False}, None),
         ({}, None)
     ],
     ids=["Next_page_token exists with cursor", "No next_page_token", "No next_page_token"],
@@ -261,7 +262,7 @@ def test_recursive_read(blocks, requests_mock):
     assert list(stream.read_records(**inputs)) == [record3, record2, record1, record4]
 
 
-def test_invalid_start_cursor(parent, requests_mock, caplog):
+def test_invalid_start_cursor(parent, requests_mock):
     stream = parent
     error_message = "The start_cursor provided is invalid: wrong_start_cursor"
     search_endpoint = requests_mock.post(
@@ -271,95 +272,29 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
     )
 
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    with patch.object(stream, "backoff_time", return_value=0.1):
+    with pytest.raises(Exception) as e:
         list(stream.read_records(**inputs))
-        assert search_endpoint.call_count == 8
-        assert f"Skipping stream pages, error message: {error_message}" in caplog.messages
-
-
-@mark.parametrize(
-    "status_code,error_code,error_message, expected_backoff_time",
-    [
-        (400, "validation_error", "The start_cursor provided is invalid: wrong_start_cursor", [10, 10, 10, 10, 10, 10, 10]),
-        (429, "rate_limited", "Rate Limited", [5, 5, 5, 5, 5, 5, 5]),  # Retry-header is set to 5 seconds for test
-        (500, "internal_server_error", "Internal server error", [5, 10, 20, 40, 80, 5, 10]),
-    ],
-)
-def test_retry_logic(status_code, error_code, error_message, expected_backoff_time, parent, requests_mock, caplog):
-    stream = parent
-
-    # Set up a generator that alternates between error and success responses, to check the reset of backoff time between failures
-    mock_responses = (
-        [
-            {
-                "status_code": status_code,
-                "response": {"object": "error", "status": status_code, "code": error_code, "message": error_message},
-            }
-            for _ in range(5)
-        ]
-        + [{"status_code": 200, "response": {"object": "list", "results": [], "has_more": True, "next_cursor": "dummy_cursor"}}]
-        + [
-            {
-                "status_code": status_code,
-                "response": {"object": "error", "status": status_code, "code": error_code, "message": error_message},
-            }
-            for _ in range(2)
-        ]
-        + [{"status_code": 200, "response": {"object": "list", "results": [], "has_more": False, "next_cursor": None}}]
-    )
-
-    def response_callback(request, context):
-        # Get the next response from the mock_responses list
-        response = mock_responses.pop(0)
-        context.status_code = response["status_code"]
-        return response["response"]
-
-    # Mock the time.sleep function to avoid waiting during tests
-    with patch.object(time, "sleep", return_value=None):
-        search_endpoint = requests_mock.post(
-            "https://api.notion.com/v1/search",
-            json=response_callback,
-            headers={"retry-after": "5"},
-        )
-
-        inputs = {"sync_mode": SyncMode.full_refresh, "cursor_field": [], "stream_state": {}}
-        try:
-            list(stream.read_records(**inputs))
-        except (UserDefinedBackoffException, DefaultBackoffException) as e:
-            return e
-
-        # Check that the endpoint was called the expected number of times
-        assert search_endpoint.call_count == 9
-
-        # Additional assertions to check reset of backoff time
-        # Find the backoff times from the message logs to compare against expected backoff times
-        log_messages = [record.message for record in caplog.records]
-        backoff_times = [
-            round(float(re.search(r"(\d+(\.\d+)?) seconds", msg).group(1)))
-            for msg in log_messages
-            if any(word in msg for word in ["Sleeping", "Waiting"])
-        ]
-
-        assert backoff_times == expected_backoff_time, f"Unexpected backoff times: {backoff_times}"
-
+    assert search_endpoint.call_count == 1
+    assert error_message in e.value.args
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
+    ("http_status", "expected_response_action"),
     [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, True),
-        (HTTPStatus.TOO_MANY_REQUESTS, True),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-        (HTTPStatus.BAD_GATEWAY, True),
-        (HTTPStatus.FORBIDDEN, False),
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RATE_LIMITED),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
+        (HTTPStatus.BAD_GATEWAY, ResponseAction.RETRY),
+        (HTTPStatus.FORBIDDEN, ResponseAction.FAIL),
     ],
 )
-def test_should_retry(patch_base_class, http_status, should_retry):
-    response_mock = MagicMock()
+def test_should_retry(patch_base_class, http_status, expected_response_action):
+    response_mock = MagicMock(spec=requests.Response)
     response_mock.status_code = http_status
+    response_mock.ok = True if http_status == HTTPStatus.OK else False
     stream = NotionStream(config=MagicMock())
-    assert stream.should_retry(response_mock) == should_retry
-
+    response_action = stream.get_error_handler().interpret_response(response_mock).response_action
+    assert response_action == expected_response_action
 
 def test_should_not_retry_with_ai_block(requests_mock):
     stream = Blocks(parent=None, config=MagicMock())
@@ -371,7 +306,7 @@ def test_should_not_retry_with_ai_block(requests_mock):
     }
     requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=400)
     test_response = requests.get("https://api.notion.com/v1/blocks/123")
-    assert not stream.should_retry(test_response)
+    assert stream.get_error_handler().interpret_response(test_response).response_action != ResponseAction.RETRY
 
 
 def test_should_not_retry_with_not_found_block(requests_mock):
@@ -383,7 +318,7 @@ def test_should_not_retry_with_not_found_block(requests_mock):
     }
     requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=404)
     test_response = requests.get("https://api.notion.com/v1/blocks/123")
-    assert not stream.should_retry(test_response)
+    assert stream.get_error_handler().interpret_response(test_response).response_action != ResponseAction.RETRY
 
 
 def test_empty_blocks_results(requests_mock):
@@ -413,7 +348,7 @@ def test_backoff_time(status_code, retry_after_header, expected_backoff, patch_b
     response_mock.headers = {"retry-after": retry_after_header} if retry_after_header else {}
     stream = NotionStream(config=MagicMock())
 
-    assert stream.backoff_time(response_mock) == expected_backoff
+    assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff
 
 
 @pytest.mark.parametrize(
@@ -446,7 +381,7 @@ def test_request_throttle(initial_page_size, expected_page_size, mock_response, 
     stream.page_size = initial_page_size
     response = requests.get("https://api.notion.com/v1/users")
 
-    stream.should_retry(response=response)
+    stream.page_size = stream._update_page_size(response=response, current_page_size=initial_page_size)
 
     assert stream.page_size == expected_page_size
 

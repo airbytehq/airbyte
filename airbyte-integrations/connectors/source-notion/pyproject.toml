@@ -17,7 +17,7 @@ include = "source_notion"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^3"
+airbyte-cdk = { path = "../../../airbyte-cdk/python", develop = true }
 
 [tool.poetry.scripts]
 source-notion = "source_notion.run:run"
