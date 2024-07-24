@@ -38,6 +38,7 @@ import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.operation.StandardStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
@@ -58,7 +59,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -174,12 +174,12 @@ class BigQueryDestination : BaseConnector(), Destination {
             val streamConfig =
                 StreamConfig(
                     id = streamId,
-                    destinationSyncMode = DestinationSyncMode.OVERWRITE,
+                    postImportAction = ImportType.APPEND,
                     primaryKey = listOf(),
                     cursor = Optional.empty(),
                     columns = linkedMapOf(),
-                    generationId = 0,
-                    minimumGenerationId = 0,
+                    generationId = 1,
+                    minimumGenerationId = 1,
                     syncId = 0
                 )
 
@@ -206,7 +206,9 @@ class BigQueryDestination : BaseConnector(), Destination {
                         ),
                     isSchemaMismatch = true,
                     isFinalTableEmpty = true,
-                    destinationState = BigQueryDestinationState(needsSoftReset = false)
+                    destinationState = BigQueryDestinationState(needsSoftReset = false),
+                    finalTempTableGenerationId = null,
+                    finalTableGenerationId = null,
                 )
 
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D

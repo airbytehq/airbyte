@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase
@@ -115,6 +116,37 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
             // The raw table already has some records. T+D can skip all records with timestamp <=
             // this value.
             InitialRawTableStatus(true, false, Optional.of(loadedRecordTimestamp.timestampInstant))
+        }
+    }
+
+    private fun getFinalTableGeneration(id: StreamId, suffix: String): Long? {
+        val finalTable = bq.getTable(TableId.of(id.finalNamespace, id.finalName + suffix))
+        if (finalTable == null || !finalTable.exists()) {
+            return null
+        }
+
+        val result =
+            bq.query(
+                QueryJobConfiguration.of(
+                    """
+                SELECT ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}
+                FROM ${id.finalTableId(BigQuerySqlGenerator.QUOTE, suffix)}
+                """.trimIndent()
+                )
+            )
+        if (result.totalRows == 0L) {
+            return null
+        }
+        val value =
+            result
+                .iterateAll()
+                .iterator()
+                .next()
+                .get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+        return if (value == null || value.isNull) {
+            null
+        } else {
+            value.longValue
         }
     }
 
@@ -234,7 +266,9 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                         isFinalTableEmpty(
                             id
                         ), // Return a default state blob since we don't actually track state.
-                    BigQueryDestinationState(false)
+                    BigQueryDestinationState(false),
+                    finalTableGenerationId = getFinalTableGeneration(id, ""),
+                    finalTempTableGenerationId = getFinalTableGeneration(id, TMP_TABLE_SUFFIX)
                 )
             )
         }
