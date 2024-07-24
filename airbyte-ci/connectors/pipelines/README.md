@@ -773,12 +773,13 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
-| 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410) | Live/regression tests: add support for selecting from a subset of connections                                                |
-| 4.25.0  | [#42044](https://github.com/airbytehq/airbyte/pull/42044) | Live/regression tests: add support for selecting from a subset of connections                                                |
-| 4.24.3  | [#42040](https://github.com/airbytehq/airbyte/pull/42040) | Always send regression test approval status check; skip on auto-merge PRs.                                                   |
-| 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676) | Send regression test approval status check when skipped.                                                                     |
-| 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642) | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                           |
-| 4.24.0  | [#41627](https://github.com/airbytehq/airbyte/pull/41627) | Require manual regression test approval for certified connectors                                                             |
+| 4.25.2  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Update upgrade-cdk to work for Python connectors using Poetry                                                                |
+| 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410)  | Live/regression tests: add support for selecting from a subset of connections                                                |
+| 4.25.0  | [#42044](https://github.com/airbytehq/airbyte/pull/42044)  | Live/regression tests: add support for selecting from a subset of connections                                                |
+| 4.24.3  | [#42040](https://github.com/airbytehq/airbyte/pull/42040)  | Always send regression test approval status check; skip on auto-merge PRs.                                                   |
+| 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676)  | Send regression test approval status check when skipped.                                                                     |
+| 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642)  | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                           |
+| 4.24.0  | [#41627](https://github.com/airbytehq/airbyte/pull/41627)  | Require manual regression test approval for certified connectors                                                             |
 | 4.23.1  | [#41541](https://github.com/airbytehq/airbyte/pull/41541)  | Add support for submodule use-case.                                                                                          |
 | 4.23.0  | [#39906](https://github.com/airbytehq/airbyte/pull/39906)  | Add manifest only build pipeline                                                                                             |
 | 4.22.0  | [#41623](https://github.com/airbytehq/airbyte/pull/41623)  | Make `airbyte-ci` run on private forks.                                                                                      |
