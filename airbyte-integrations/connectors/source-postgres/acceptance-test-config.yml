@@ -26,12 +26,13 @@ acceptance_tests:
           disable_for_version: "2.1.1"
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "secrets/configured_catalog_copy.json"
+      - config_path: "integration_tests/config_active.json"
+        configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
           setup_command:
             - "python"
             - "./hook.py"
@@ -42,10 +43,11 @@ acceptance_tests:
             - "teardown"
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "secrets/configured_catalog_copy.json"
+      - config_path: "integration_tests/config_active.json"
+        configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
           setup_command:
             - "python"
             - "./hook.py"
@@ -56,10 +58,11 @@ acceptance_tests:
             - "teardown"
   incremental:
     tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "secrets/incremental_configured_catalog_copy.json"
+      - config_path: "integration_tests/config_active.json"
+        configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
           setup_command:
             - "python"
             - "./hook.py"
@@ -73,11 +76,12 @@ acceptance_tests:
             - "./hook.py"
             - "insert"
         future_state:
-          future_state_path: "secrets/abnormal_state_copy.json"
-      - config_path: "secrets/config_cdc.json"
-        configured_catalog_path: "secrets/incremental_configured_catalog_copy.json"
+          future_state_path: "integration_tests/temp/abnormal_state_copy.json"
+      - config_path: "integration_tests/config_cdc_active.json"
+        configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config_cdc.json"
           setup_command:
             - "python"
             - "./hook.py"
@@ -90,19 +94,5 @@ acceptance_tests:
             - "python"
             - "./hook.py"
             - "insert"
-        future_state:
-          future_state_path: "secrets/abnormal_state_cdc_copy.json"
-      - config_path: "secrets/config_cdc.json"
-        configured_catalog_path: "secrets/incremental_configured_catalog_copy.json"
-        client_container_config:
-          client_container_dockerfile_path: "integration_tests/Dockerfile"
-          setup_command:
-            - "python"
-            - "./hook.py"
-            - "setup_cdc"
-          teardown_command:
-            - "python"
-            - "./hook.py"
-            - "teardown"
         future_state:
           bypass_reason: "CDC does not have a future state as LSN will be absent from DB, triggering a full refresh"

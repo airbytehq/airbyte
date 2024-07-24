@@ -22,6 +22,7 @@ abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json
 secret_config_file = '/connector/secrets/config.json'
 secret_active_config_file = '/connector/integration_tests/config_active.json'
 secret_config_cdc_file = '/connector/secrets/config_cdc.json'
+secret_active_config_cdc_file = '/connector/integration_tests/config_cdc_active.json'
 
 def connect_to_db() -> extensions.connection:
     with open(secret_config_file) as f:
@@ -93,6 +94,16 @@ def write_supporting_file(schema_name: str) -> None:
         with open(secret_active_config_file, 'w') as f:
             json.dump(secret, f)
 
+    with open(secret_config_cdc_file) as base_config:
+        secret = json.load(base_config)
+        secret["schemas"] = [schema_name]
+        secret["replication_method"]["replication_slot"] = schema_name
+        secret["replication_method"]["publication"] = schema_name
+        secret["ssl_mode"] = {}
+        secret["ssl_mode"]["mode"] = "require"
+        with open(secret_active_config_cdc_file, 'w') as f:
+            json.dump(secret, f)
+
 def create_table(conn: extensions.connection, schema_name: str, table_name: str) -> None:
     try:
         cursor = conn.cursor()
@@ -115,7 +126,7 @@ def create_table(conn: extensions.connection, schema_name: str, table_name: str)
 def generate_schema_date_with_suffix() -> str:
     current_date = datetime.datetime.now().strftime("%Y%m%d")
     suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    return f"{current_date}-{suffix}"
+    return f"{current_date}_{suffix}"
 
 def prepare() -> None:
     schema_name = generate_schema_date_with_suffix()
@@ -125,7 +136,6 @@ def prepare() -> None:
 def setup() -> None:
     schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
-    table_name = "id_and_name_cat"
 
 def cdc_insert():
     schema_name = load_schema_name_from_catalog()
@@ -134,7 +144,7 @@ def cdc_insert():
         ('5', 'five')
     ]
     connection = connect_to_db()
-    table_name = 'id_and_name_hook'
+    table_name = 'id_and_name_cat'
     if connection:
         insert_records(connection, schema_name, table_name, new_records)
         connection.close()
@@ -142,7 +152,7 @@ def cdc_insert():
 def setup(with_cdc=False):
     schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
-    table_name = "id_and_name_hook"
+    table_name = "id_and_name_cat"
 
     # Define the records to be inserted
     records = [
@@ -155,17 +165,38 @@ def setup(with_cdc=False):
     connection = connect_to_db()
 
     if connection:
-        if (with_cdc):
-            setup_cdc(connection, replication_slot_and_publication_name=schema_name)
         # Create the schema
         create_schema(connection, schema_name)
         create_table(connection, schema_name, table_name)
-
+        if (with_cdc):
+            setup_cdc(connection, replication_slot_and_publication_name=schema_name)
         # Insert the records
         insert_records(connection, schema_name, table_name, records)
 
         # Close the connection
         connection.close()
+
+def replication_slot_existed(connection, replication_slot_name):
+    cursor = connection.cursor()
+    cursor.execute("SELECT slot_name FROM pg_replication_slots;")
+    # Fetch all results
+    slots = cursor.fetchall()
+    for slot in slots:
+        if slot[0] == replication_slot_name:
+            return True
+    return False
+
+def setup_cdc(connection, replication_slot_and_publication_name):
+    cursor = connection.cursor()
+    if replication_slot_existed(connection, replication_slot_and_publication_name):
+        return
+    create_logical_replication_query = sql.SQL("SELECT pg_create_logical_replication_slot({}, 'pgoutput')").format(sql.Literal(replication_slot_and_publication_name))
+    cursor.execute(create_logical_replication_query)
+    alter_table_replica_query = sql.SQL("ALTER TABLE {}.id_and_name_cat REPLICA IDENTITY DEFAULT").format(sql.Identifier(replication_slot_and_publication_name))
+    cursor.execute(alter_table_replica_query)
+    create_publication_query = sql.SQL("CREATE PUBLICATION {} FOR TABLE {}.id_and_name_cat").format(sql.Identifier(replication_slot_and_publication_name), sql.Identifier(replication_slot_and_publication_name))
+    cursor.execute(create_publication_query)
+    connection.commit()
 
 def load_schema_name_from_catalog():
     with open("./generated_schema.txt", "r") as f:
@@ -233,7 +264,7 @@ if __name__ == "__main__":
     command = sys.argv[1]
     if command == "setup":
         setup(with_cdc=False)
-    if command == "setup_cdc":
+    elif command == "setup_cdc":
         setup(with_cdc=True)
     elif command == "teardown":
         teardown()
