@@ -558,20 +558,26 @@ Bump source-openweather:
 | ----------- | ----------------------------------------------------------------------------------------- |
 | --pr-number | Explicitly set the PR number in the changelog entry, a placeholder will be set otherwise. |
 
-### <a id="connectors-upgrade_cdk"></a>`connectors upgrade_cdk` command
+### <a id="connectors-upgrade-cdk"></a>`connectors upgrade-cdk` command
 
-Upgrade the CDK version of the selected connectors by updating the dependency in the setup.py file.
+Updates the CDK version of the selected connectors.
+For Python connectors, sets the `airbyte-cdk` dependency to the specified version in `pyproject.toml` and refreshes the lockfile, updating only essential dependencies.
 
 ### Examples
 
-Upgrade for source-openweather:
-`airbyte-ci connectors --name=source-openweather upgrade_cdk <new-cdk-version>`
+`airbyte-ci connectors --language=python upgrade-cdk` -> Updates all python connectors to the caret range of the latest version.
+`airbyte-ci connectors --name=source-openweather upgrade-cdk "3.0.0"` -> Pins source-openweather to version 3.0.0
+`airbyte-ci connectors --modified upgrade-cdk "<4"` -> Updates all modified connectors to the highest available version of major version 3
 
 #### Arguments
 
 | Argument      | Description                                             |
 | ------------- | ------------------------------------------------------- |
 | `CDK_VERSION` | CDK version to set (default to the most recent version) |
+
+#### Notes
+
+When using < (less than) or > (greater than) for the `CDK_VERSION` argument, it must be wrapped in quotation marks ("<3"). Otherwise the shell (zsh or bash) will interprete these characters as redirection operators.
 
 ### <a id="connectors-migrate-to-base-image"></a>`connectors migrate-to-base-image` command
 
