@@ -6,8 +6,11 @@ import logging as Logger
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
+from datetime import timedelta
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 import pendulum
-import pydantic
+import pydantic.v1 as pydantic
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
@@ -16,6 +19,7 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from requests import HTTPError
+from source_notion.components import NotionBackoffStrategy
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
@@ -42,8 +46,6 @@ class NotionStream(HttpStream, ABC):
     primary_key = "id"
 
     page_size = 100  # set by Notion API spec
-
-    raise_on_http_errors = True
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
@@ -85,33 +87,31 @@ class NotionStream(HttpStream, ABC):
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
-        For a 429 response, we can use the retry-header to determine how long to wait before retrying.
-        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
-        Docs: https://developers.notion.com/reference/errors#rate-limiting
-        """
-        retry_after = response.headers.get("retry-after", "5")
-        if response.status_code == 429:
-            return float(retry_after)
-        if self.check_invalid_start_cursor(response):
-            return 10
-        return super().backoff_time(response)
+    def get_backoff_strategy(self) -> BackoffStrategy:
+        return NotionBackoffStrategy()
 
-    def should_retry(self, response: requests.Response) -> bool:
+    def get_error_handler(self) -> ErrorHandler:
+        return HttpStatusErrorHandler(
+            logger=self.logger,
+            error_mapping=DEFAULT_ERROR_MAPPING,
+            max_retries=self.max_retries,
+            max_time=timedelta(seconds=self.max_time),
+        )
+
+    def _update_page_size(self, response: requests.Response, current_page_size: int) -> int:
         # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
         if response.status_code == 504:
-            self.page_size = self.throttle_request_page_size(self.page_size)
+            page_size = self.throttle_request_page_size(current_page_size)
             self.logger.info(f"Encountered a server timeout. Reducing request page size to {self.page_size} and retrying.")
+            return page_size
 
         # If page_size has been reduced after encountering a 504 Gateway Timeout error,
         # we increase it back to the default of 100 once a success response is achieved, for the following API calls.
         if response.status_code == 200 and self.page_size != 100:
-            self.page_size = 100
+            page_size = 100
             self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to {self.page_size}.")
 
-        return response.status_code == 400 or super().should_retry(response)
+        return page_size
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         params = super().request_headers(**kwargs)
@@ -138,6 +138,7 @@ class NotionStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # sometimes notion api returns response without results object
+        self.page_size = self._update_page_size(response, self.page_size)
         data = response.json().get("results", [])
         yield from data
 
@@ -336,26 +337,3 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             yield record
 
         self.block_id_stack.pop()
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 404:
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.error(
-                f"Stream {self.name}: {response.json().get('message')}. 404 HTTP response returns if the block specified by id doesn't"
-                " exist, or if the integration doesn't have access to the block."
-                "See more in docs: https://developers.notion.com/reference/get-block-children"
-            )
-            return False
-
-        if response.status_code == 400:
-            error_code = response.json().get("code")
-            error_msg = response.json().get("message")
-            if "validation_error" in error_code and "ai_block is not supported" in error_msg:
-                setattr(self, "raise_on_http_errors", False)
-                self.logger.error(
-                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type."
-                )
-                return False
-            else:
-                return super().should_retry(response)
-        return super().should_retry(response)

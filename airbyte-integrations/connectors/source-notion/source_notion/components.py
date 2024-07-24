@@ -1,8 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
+import requests
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -83,3 +85,16 @@ class NotionDataFeedFilter(RecordFilter):
         if state_value_timestamp:
             return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
         return start_date_timestamp
+
+class NotionBackoffStrategy(BackoffStrategy):
+
+    def backoff_time(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response):
+            retry_after = response_or_exception.headers.get("retry-after", "5")
+            if response_or_exception.status_code == 429:
+                return float(retry_after)
+            if response_or_exception.status_code == 400:
+                        message = response_or_exception.json().get("message", "")
+                        if message.startswith("The start_cursor provided is invalid: "):
+                                return 10.0
+        return None
