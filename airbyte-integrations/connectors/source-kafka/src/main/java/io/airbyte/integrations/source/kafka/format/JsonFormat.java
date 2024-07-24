@@ -60,6 +60,12 @@ public class JsonFormat extends AbstractFormat {
         topicsToSubscribe = consumer.listTopics().keySet().stream()
             .filter(topic -> topic.matches(topicPattern))
             .collect(Collectors.toSet());
+
+        // Probably want to error after 100 tries?
+        while (consumer.assignment().isEmpty()) {
+            // Short poll to trigger partition assignment
+            consumer.poll(Duration.ofMillis(100)); 
+        }
         LOGGER.info("Topic list: {}", topicsToSubscribe);
       }
       case "assign" -> {
