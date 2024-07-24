@@ -645,7 +645,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
             job_size=config.get("bulk_window_in_days", 30.0),
             # provide the job checkpoint interval value, default value is 200k lines collected
-            job_checkpoint_interval=config.get("job_checkpoint_interval", 200000),
+            job_checkpoint_interval=config.get("job_checkpoint_interval", 200_000),
         )
 
     @property

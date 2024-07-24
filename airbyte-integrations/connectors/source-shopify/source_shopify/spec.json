@@ -102,16 +102,16 @@
         "type": "integer",
         "title": "BULK Job termination threshold",
         "description": "The max time in seconds, after which the single BULK Job should be `CANCELED` and retried. The bigger the value the longer the BULK Job is allowed to run.",
-        "default": 3600,
+        "default": 7200,
         "minimum": 3600,
         "maximum": 21600
       },
       "job_checkpoint_interval": {
         "type": "integer",
         "title": "BULK Job checkpoint (lines collected)",
-        "description": "The threshold, after which the single BULK Job should be `CANCELED` and checkpointed.",
+        "description": "The threshold, after which the single BULK Job should be checkpointed.",
         "default": 200000,
-        "minimum": 15000,
+        "minimum": 20000,
         "maximum": 1000000
       }
     }
