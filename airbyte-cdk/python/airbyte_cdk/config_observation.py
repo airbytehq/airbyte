@@ -7,14 +7,16 @@ from __future__ import (  # Used to evaluate type hints at runtime, a NameError:
 )
 
 import time
+from copy import copy
 from typing import Any, List, MutableMapping
 
 from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type
-from copy import copy
 
 
 class ObservedDict(dict):  # type: ignore # disallow_any_generics is set to True, and dict is equivalent to dict[Any]
-    def __init__(self, non_observed_mapping: MutableMapping[Any, Any], observer: ConfigObserver, update_on_unchanged_value: bool = True) -> None:
+    def __init__(
+        self, non_observed_mapping: MutableMapping[Any, Any], observer: ConfigObserver, update_on_unchanged_value: bool = True
+    ) -> None:
         non_observed_mapping = copy(non_observed_mapping)
         self.observer = observer
         self.update_on_unchanged_value = update_on_unchanged_value
