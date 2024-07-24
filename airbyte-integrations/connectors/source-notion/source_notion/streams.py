@@ -11,6 +11,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, Err
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 import pendulum
 import pydantic.v1 as pydantic
+from pydantic.v1.utils import ROOT_KEY
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
@@ -99,6 +100,8 @@ class NotionStream(HttpStream, ABC):
         )
 
     def _update_page_size(self, response: requests.Response, current_page_size: int) -> int:
+
+        page_size = current_page_size
         # In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
         if response.status_code == 504:
             page_size = self.throttle_request_page_size(current_page_size)
@@ -163,7 +166,7 @@ class StateValueWrapper(pydantic.BaseModel):
 
     def dict(self, **kwargs):
         """Overrides default logic to return current value only."""
-        return {pydantic.utils.ROOT_KEY: self.value}
+        return {ROOT_KEY: self.value}
 
 
 class IncrementalNotionStream(NotionStream, CheckpointMixin, ABC):
