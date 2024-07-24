@@ -78,6 +78,8 @@ the underlying role executing the container workload in AWS.
 
 | Version | Date       | Pull Request                                              | Subject                                                              |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
+| 0.3.5 | 2024-07-23 | [42433](https://github.com/airbytehq/airbyte/pull/42433) | add PR number |
+| 0.3.4 | 2024-07-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | fix primary key fetching |
 | 0.3.3 | 2024-07-22 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | fix primary key fetching |
 | 0.3.2 | 2024-05-01 | [27045](https://github.com/airbytehq/airbyte/pull/27045) | Fix missing scan permissions |
 | 0.3.1 | 2024-05-01 | [31935](https://github.com/airbytehq/airbyte/pull/31935) | Fix list more than 100 tables |
