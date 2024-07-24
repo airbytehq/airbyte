@@ -580,7 +580,9 @@ class LiveTests(Step):
         connector_subtype = self.context.connector.metadata.get("connectorSubtype")
         assert connector_type == "source", f"Live tests can only run against source connectors, got `connectorType={connector_type}`."
         if connector_subtype == "database":
-            assert self.connection_subset == "sandboxes", f"Live tests for database sources may only be run against sandbox connections, got `connection_subset={self.connection_subset}`."
+            assert (
+                self.connection_subset == "sandboxes"
+            ), f"Live tests for database sources may only be run against sandbox connections, got `connection_subset={self.connection_subset}`."
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the regression test suite.
