@@ -63,11 +63,11 @@ class S3ConsumerFactory {
                 "Preparing bucket in destination started for ${writeConfigs.size} streams"
             }
             for (writeConfig in writeConfigs) {
-                if (writeConfig.syncMode == DestinationSyncMode.OVERWRITE) {
-                    val namespace = writeConfig.namespace
-                    val stream = writeConfig.streamName
-                    val outputBucketPath = writeConfig.outputBucketPath
-                    val pathFormat = writeConfig.pathFormat
+                val namespace = writeConfig.namespace
+                val stream = writeConfig.streamName
+                val outputBucketPath = writeConfig.outputBucketPath
+                val pathFormat = writeConfig.pathFormat
+                if (mustCleanUpExistingObjects(writeConfig, storageOperations)) {
                     LOGGER.info {
                         "Clearing storage area in destination started for namespace $namespace " +
                             "stream $stream bucketObject $outputBucketPath pathFormat $pathFormat"
@@ -81,6 +81,11 @@ class S3ConsumerFactory {
                     LOGGER.info {
                         "Clearing storage area in destination completed for namespace $namespace stream $stream bucketObject $outputBucketPath"
                     }
+                } else {
+                    LOGGER.info {
+                        "Skipping clearing of storage area in destination for namespace $namespace " +
+                            "stream $stream bucketObject $outputBucketPath pathFormat $pathFormat"
+                    }
                 }
             }
             LOGGER.info { "Preparing storage area in destination completed." }
@@ -90,7 +95,7 @@ class S3ConsumerFactory {
     private fun flushBufferFunction(
         storageOperations: BlobStorageOperations,
         writeConfigs: List<WriteConfig>,
-        catalog: ConfiguredAirbyteCatalog?
+        catalog: ConfiguredAirbyteCatalog
     ): FlushBufferFunction {
         val pairToWriteConfig = writeConfigs.associateBy { toNameNamespacePair(it) }
 
@@ -117,7 +122,8 @@ class S3ConsumerFactory {
                         storageOperations.uploadRecordsToBucket(
                             writer,
                             writeConfig.namespace,
-                            writeConfig.fullOutputPath
+                            writeConfig.fullOutputPath,
+                            writeConfig.generationId
                         )!!
                     )
                 }
@@ -152,7 +158,7 @@ class S3ConsumerFactory {
         storageOps: S3StorageOperations,
         s3Config: S3DestinationConfig,
         catalog: ConfiguredAirbyteCatalog
-    ): SerializedAirbyteMessageConsumer? {
+    ): SerializedAirbyteMessageConsumer {
         val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
         // Buffer creation function: yields a file buffer that converts
         // incoming data to the correct format for the destination.
@@ -185,6 +191,68 @@ class S3ConsumerFactory {
             // is simply omitted from the path.
             BufferManager(defaultNamespace = null)
         )
+    }
+
+    private fun mustCleanUpExistingObjects(
+        writeConfig: WriteConfig,
+        storageOperations: BlobStorageOperations
+    ): Boolean {
+        // Fallback to backward-compatible logic in absence of minGenerationId or generationId
+        // missing from platform
+        if ((writeConfig.minimumGenerationId == null || writeConfig.generationId == null)) {
+            LOGGER.info {
+                "Missing information about generation id, minGenerationId: " +
+                    "${writeConfig.minimumGenerationId}, generationId: ${writeConfig.generationId}, " +
+                    "falling back to ${writeConfig.syncMode} backward compatible behavior"
+            }
+            return writeConfig.syncMode == DestinationSyncMode.OVERWRITE
+        }
+        return when (writeConfig.minimumGenerationId) {
+            // This is an additional safety check, that this really is OVERWRITE
+            // mode, this avoids bad things happening like deleting all objects
+            // in APPEND mode.
+            0L -> writeConfig.syncMode == DestinationSyncMode.OVERWRITE
+            writeConfig.generationId -> {
+                // This is truncate sync and try to determine if the current generation
+                // data is already present
+                val namespace = writeConfig.namespace
+                val stream = writeConfig.streamName
+                val outputBucketPath = writeConfig.outputBucketPath
+                val pathFormat = writeConfig.pathFormat
+                // generationId is missing, assume the last sync was ran in non-resumeable refresh
+                // mode,
+                // cleanup files
+                val currentGenerationId =
+                    storageOperations.getStageGeneration(
+                        namespace,
+                        stream,
+                        outputBucketPath,
+                        pathFormat
+                    )
+                if (currentGenerationId == null) {
+                    LOGGER.info {
+                        "Missing generationId from the lastModified object, proceeding with cleanup"
+                    }
+                    return true
+                }
+                // if minGen = gen = retrievedGen and skip clean up
+                val hasDataFromCurrentGeneration = currentGenerationId == writeConfig.generationId
+                if (hasDataFromCurrentGeneration) {
+                    LOGGER.info {
+                        "Preserving data from previous sync since it matches the current generation ${writeConfig.generationId}"
+                    }
+                } else {
+                    LOGGER.info {
+                        "No data exists from previous sync for current generation ${writeConfig.generationId}, " +
+                            "proceeding to clean up existing data"
+                    }
+                }
+                return !hasDataFromCurrentGeneration
+            }
+            else -> {
+                throw IllegalArgumentException("Hybrid refreshes are not yet supported.")
+            }
+        }
     }
 
     companion object {
@@ -228,7 +296,9 @@ class S3ConsumerFactory {
                         bucketPath!!,
                         customOutputFormat,
                         fullOutputPath!!,
-                        syncMode
+                        syncMode,
+                        stream.generationId,
+                        stream.minimumGenerationId
                     )
                 LOGGER.info { "Write config: $writeConfig" }
                 writeConfig
