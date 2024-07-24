@@ -16,7 +16,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination.Companion.getBigQuery
 import io.airbyte.integrations.destination.bigquery.migrators.BigQueryDestinationState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -509,7 +508,7 @@ class BigQuerySqlGeneratorIntegrationTest :
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 columns,
