@@ -1,7 +1,7 @@
 data:
   ab_internal:
-    ql: 300
-    sl: 100
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - ${domain}
@@ -14,6 +14,7 @@ data:
   githubIssueLabel: source-woocommerce
   icon: woocommerce.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: WooCommerce
   remoteRegistries:
     pypi:
@@ -24,8 +25,8 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   tags:
     - language:python
     - cdk:low-code
