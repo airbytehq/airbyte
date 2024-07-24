@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import os
 import re
-import toml
 from typing import TYPE_CHECKING
 
+import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -107,7 +107,7 @@ class SetCDKVersion(Step):
     async def upgrade_cdk_version_for_python_connector(self, og_connector_dir: Directory) -> Optional[Directory]:
         context = self.context
         og_connector_dir = await context.get_connector_dir()
-        
+
         # Check for existing pyproject file and load contents
         pyproject_toml = og_connector_dir.file(PYPROJECT_FILENAME)
         if not pyproject_toml:
@@ -120,7 +120,7 @@ class SetCDKVersion(Step):
         airbyte_cdk_dependency = dependencies.get("airbyte-cdk")
         if not airbyte_cdk_dependency:
             raise ValueError("Could not find a valid airbyte-cdk dependency in 'pyproject.toml'")
-        
+
         # Set the new version. If not explicitly provided, set it to the latest version and allow non-breaking changes
         if self.new_version == "latest":
             new_version = f"^{cdk_helpers.get_latest_python_cdk_version()}"
