@@ -400,7 +400,7 @@ const deployAirbyte = {
       label: "Infrastructure",
       items: [
         "deploying-airbyte/infrastructure/aws",
-        // "deploying-airbyte/infrastructure/gcp",
+        "deploying-airbyte/infrastructure/gcp",
         // "deploying-airbyte/infrastructure/azure",
       ],
     },
