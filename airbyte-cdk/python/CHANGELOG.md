@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9.2
+low-code: fix record selector factory when using custom components
+
 ## 3.9.1
  fix OOM on predicate for streamable responses
 
