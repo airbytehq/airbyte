@@ -1030,7 +1030,7 @@ class ModelToComponentFactory:
         self,
         model: RecordSelectorModel,
         config: Config,
-        decoder: Optional[Decoder],
+        decoder: Optional[Decoder] = None,
         *,
         transformations: List[RecordTransformation],
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
