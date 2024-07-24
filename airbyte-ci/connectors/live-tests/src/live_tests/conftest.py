@@ -23,6 +23,7 @@ from live_tests.commons.models import (
     ActorType,
     Command,
     ConnectionObjects,
+    ConnectionSubset,
     ConnectorUnderTest,
     ExecutionInputs,
     ExecutionResult,
@@ -90,6 +91,12 @@ def pytest_addoption(parser: Parser) -> None:
         default=TestEvaluationMode.STRICT.value,
         help='If "diagnostic" mode is selected, all tests will pass as long as there is no exception; warnings will be logged. In "strict" mode, tests may fail.',
     )
+    parser.addoption(
+        "--connection-subset",
+        choices=[c.value for c in ConnectionSubset],
+        default=ConnectionSubset.SANDBOXES.value,
+        help="Whether to select from sandbox accounts only.",
+    )
 
 
 def pytest_configure(config: Config) -> None:
@@ -128,6 +135,7 @@ def pytest_configure(config: Config) -> None:
     config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(config, "--connector-image")
     config.stash[stash_keys.TARGET_VERSION] = get_option_or_fail(config, "--target-version")
     config.stash[stash_keys.CONTROL_VERSION] = get_control_version(config)
+    config.stash[stash_keys.CONNECTION_SUBSET] = ConnectionSubset(get_option_or_fail(config, "--connection-subset"))
     custom_source_config_path = config.getoption("--config-path")
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
@@ -165,6 +173,7 @@ def pytest_configure(config: Config) -> None:
             connector_version=config.stash[stash_keys.CONTROL_VERSION],
             auto_select_connection=config.stash[stash_keys.AUTO_SELECT_CONNECTION],
             selected_streams=config.stash[stash_keys.SELECTED_STREAMS],
+            connection_subset=config.stash[stash_keys.CONNECTION_SUBSET],
         )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
     except (ConnectionNotFoundError, NotPermittedError) as exc:

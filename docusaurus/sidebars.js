@@ -416,6 +416,12 @@ const deployAirbyte = {
         "deploying-airbyte/integrations/ingress",
       ],
     },
+
+    {
+      type: "doc",
+      label: "Creating a Secret",
+      id: "deploying-airbyte/creating-secrets",
+    },
   ],
 };
 
@@ -462,6 +468,7 @@ const understandingAirbyte = {
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/operations",
+    "understanding-airbyte/secrets",
     "understanding-airbyte/cdc",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",

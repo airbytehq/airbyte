@@ -148,6 +148,11 @@ class ActorType(Enum):
     DESTINATION = "destination"
 
 
+class ConnectionSubset(Enum):
+    SANDBOXES = "sandboxes"
+    ALL = "all"
+
+
 @dataclass
 class ConnectorUnderTest:
     image_name: str

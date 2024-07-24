@@ -27,6 +27,9 @@ updated_configurations
 # Connector debug configs
 airbyte-integrations/connectors/**/src/test/resources/debug_resources
 
+# Connector CAT test related files
+airbyte-integrations/connectors/**/integration_tests/temp
+
 # Python
 *.egg-info
 __pycache__

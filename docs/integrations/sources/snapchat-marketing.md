@@ -144,6 +144,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
 | 1.2.0 | 2024-07-16 | [42010](https://github.com/airbytehq/airbyte/pull/42010) | Migrate to CDK v3.5.3 |
+| 1.1.1 | 2024-07-20 | [42366](https://github.com/airbytehq/airbyte/pull/42366) | Update dependencies |
 | 1.1.0 | 2024-07-16 | [42009](https://github.com/airbytehq/airbyte/pull/42009) | Migrate to CDK v2.4.0 |
 | 1.0.3 | 2024-07-13 | [41855](https://github.com/airbytehq/airbyte/pull/41855) | Update dependencies |
 | 1.0.2 | 2024-07-10 | [41547](https://github.com/airbytehq/airbyte/pull/41547) | Update dependencies |
