@@ -271,7 +271,6 @@ class BigQueryDestination : BaseConnector(), Destination {
             // because we avoid dropping original tables directly.
             destinationHandler.execute(
                 Sql.of(
-                    //"DROP TABLE `$projectId.$datasetId.$finalTableName`",
                     "DROP TABLE IF EXISTS $projectId.${streamId.rawNamespace}.${streamId.rawName};",
                 ),
             )
@@ -291,13 +290,11 @@ class BigQueryDestination : BaseConnector(), Destination {
                 // If there was an exception in the flow above, then the table may still exist
                 destinationHandler.execute(
                     Sql.of(
-                        //"DROP TABLE `$projectId.$datasetId.$finalTableName`",
                         "DROP TABLE IF EXISTS $projectId.${streamId.rawNamespace}.${streamId.rawName};",
                     ),
                 )
 
             } catch (e: Exception) {
-
                 log.error(e) { "Error while cleaning up the temporary table... not throwing a new exception" };
             }
         }
