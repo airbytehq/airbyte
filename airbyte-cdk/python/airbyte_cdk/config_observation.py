@@ -29,7 +29,7 @@ class ObservedDict(dict):
                         value[i] = ObservedDict(sub_value, observer)
         super().__init__(non_observed_mapping)
 
-    def __setitem__(self, item: Any, value: Any):
+    def __setitem__(self, item: Any, value: Any) -> None:
         """Override dict.__setitem__ by:
         1. Observing the new value if it is a dict
         2. Call observer update if the new value is different from the previous one
@@ -58,7 +58,7 @@ class ConfigObserver:
         emit_configuration_as_airbyte_control_message(self.config)
 
 
-def observe_connector_config(non_observed_connector_config: MutableMapping[str, Any]):
+def observe_connector_config(non_observed_connector_config: MutableMapping[str, Any]) -> ObservedDict:
     if isinstance(non_observed_connector_config, ObservedDict):
         raise ValueError("This connector configuration is already observed")
     connector_config_observer = ConfigObserver()
@@ -67,7 +67,7 @@ def observe_connector_config(non_observed_connector_config: MutableMapping[str, 
     return observed_connector_config
 
 
-def emit_configuration_as_airbyte_control_message(config: MutableMapping):
+def emit_configuration_as_airbyte_control_message(config: MutableMapping[str, Any]) -> None:
     """
     WARNING: deprecated - emit_configuration_as_airbyte_control_message is being deprecated in favor of the MessageRepository mechanism.
     See the airbyte_cdk.sources.message package
@@ -76,7 +76,7 @@ def emit_configuration_as_airbyte_control_message(config: MutableMapping):
     print(airbyte_message.model_dump_json(exclude_unset=True))
 
 
-def create_connector_config_control_message(config):
+def create_connector_config_control_message(config: MutableMapping[str, Any]) -> AirbyteMessage:
     control_message = AirbyteControlMessage(
         type=OrchestratorType.CONNECTOR_CONFIG,
         emitted_at=time.time() * 1000,
