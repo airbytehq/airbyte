@@ -7,7 +7,7 @@ import itertools
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import lru_cache, cached_property
+from functools import cached_property, lru_cache
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing

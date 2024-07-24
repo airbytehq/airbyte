@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from collections.abc import Mapping as ABCMapping
 import time
+from collections.abc import Mapping as ABCMapping
 from typing import Any, Mapping
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, AirbyteTraceMessage
