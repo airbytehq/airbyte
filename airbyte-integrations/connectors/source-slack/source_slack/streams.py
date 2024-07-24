@@ -144,7 +144,7 @@ class Channels(ChanneledStream):
 
 
 # Incremental Streams
-class IncrementalMessageStream(CheckpointMixin, ChanneledStream, ABC):
+class IncrementalMessageStream(ChanneledStream, CheckpointMixin, ABC):
     data_field = "messages"
     cursor_field = "float_ts"
     primary_key = ["channel_id", "ts"]
