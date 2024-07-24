@@ -1,5 +1,17 @@
 # Developing Locally
 
+Airbyte development is broken into two activities, connector development and platform development. Connector development
+is largely done in Python, though sometimes Java is used for performance reasons. Platform development is done in Java 
+and Kotlin. 
+
+## Prerequisites
+
+:::info
+
+Manually switching between different language versions can be difficult. We recommend using a version manager such as [`pyenv`](https://github.com/pyenv/pyenv) or [`jenv`](https://github.com/jenv/jenv).
+
+:::
+
 The following technologies are required to build Airbyte locally.
 
 1. [`Java 21`](https://jdk.java.net/archive/)
@@ -8,16 +20,74 @@ The following technologies are required to build Airbyte locally.
 4. `Docker`
 5. `Jq`
 
+You should also follow the [Quickstart](../../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. In 
+addition to `abctl` you should also install [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries) 
+as well as [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
+
+If you are looking to build connectors, you should also follow the installation instructions for [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+
+## Connector Contributions
+
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte`](https://github.com/airbytehq/airbyte) repository.
+2. Clone the fork on your workstation:
+
+```bash
+git clone git@github.com:{YOUR_USERNAME}/airbyte.git
+cd airbyte
+```
+
+- Then, build the connector image:
+    - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector.
+    - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+    - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+You can then load the newly built image into the `abctl` instance using:
+
+```shell
+kind load docker-image airbyte/source-<source-name>:dev -n airbyte-abctl
+```
+
 :::info
 
-Manually switching between different language versions can get hairy. We recommend using a version manager such as [`pyenv`](https://github.com/pyenv/pyenv) or [`jenv`](https://github.com/jenv/jenv).
+The above connector image is tagged with `dev`. You can change this to use another tag if you'd like.
 
 :::
 
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
+- Log in
+- Go to `Settings` (gear icon in lower left corner)
+- Go to `Sources` or `Destinations` (depending on which connector you are testing)
+- Update the version number to use your docker image tag (default is `dev`)
+- Click `Change` to save the changes
+
+Now when you run a sync with that connector, it will use your local docker image
+
+
+### Connector Specification Caching
+
+The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options:
+
+1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache.
+2. From your local `airbyte-platform` repository, restart the server by running the following commands:
+
+```bash
+VERSION=dev docker compose down -v
+VERSION=dev docker compose up
+```
+
+## Platform Contributions
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
+2. Clone the fork on your workstation:
+
+```bash
+git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
+cd airbyte-platform
+docker compose up
+```
+
+
 To start contributing:
 
-1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte`](https://github.com/airbytehq/airbyte) repository to develop connectors or the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository to develop the Airbyte platform.
-2. Clone the fork on your workstation:
 
 If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
 
@@ -35,7 +105,7 @@ cd airbyte-platform
 docker compose up
 ```
 
-## Build with `gradle`
+### Build with `gradle`
 
 To compile and build the platform, run the following command in your local `airbyte-platform` repository:
 
@@ -81,85 +151,6 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 :::
 
-## Run in `dev` mode with `docker-compose`
-
-These instructions explain how to run a version of Airbyte Platform that you are developing on (e.g. has not been released yet).
-
-In your local `airbyte-platform` repository, run the following commands:
-
-```bash
-./gradlew build
-VERSION=dev docker compose up
-```
-
-The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
-
-If you are running just connectors, you don't need the first step:
-
-```bash
-VERSION=dev docker compose up
-```
-
-In `dev` mode, all data will be persisted in `/tmp/dev_root`.
-
-## Add a connector under development to Airbyte
-
-These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
-
-In your local `airbyte` repository, run the following command:
-
-```bash
-./run-ab-platform
-```
-
-- Then, build the connector image:
-  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector.
-  - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
-  - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
-
-:::info
-
-The above connector image is tagged with `dev`. You can change this to use another tag if you'd like.
-
-:::
-
-- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
-- Log in with the default user `airbyte` and default password `password`
-- Go to `Settings` (gear icon in lower left corner)
-- Go to `Sources` or `Destinations` (depending on which connector you are testing)
-- Update the version number to use your docker image tag (default is `dev`)
-- Click `Change` to save the changes
-
-Now when you run a sync with that connector, it will use your local docker image
-
-## Run platform acceptance tests
-
-In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
-
-```bash
-./gradlew clean build
-./gradlew :oss:airbyte-tests:acceptanceTests
-```
-
-Test containers start Airbyte locally, run the tests, and shutdown Airbyte after running the tests. If you want to run acceptance tests against local Airbyte that is not managed by the test containers, you need to set `USE_EXTERNAL_DEPLOYMENT` environment variable to true:
-
-```bash
-USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
-```
-
-## Run formatting automation/tests
-
-Airbyte runs a code formatter as part of the build to enforce code styles. You should run the formatter yourself before submitting a PR (otherwise the build will fail).
-
-The command to run formatting varies slightly depending on which part of the codebase you are working in.
-
-### Platform
-
-If you are working in the platform run `./gradlew format` from the root of the `airbyte-platform` repository.
-
-### Connector
-
-To format your local `airbyte` repository, run `airbyte-ci format fix all`.
 
 ### Develop on `airbyte-webapp`
 
@@ -192,29 +183,36 @@ pnpm install
 pnpm start
 ```
 
-- Happy Hacking!
+### Run platform acceptance tests
 
-#### Using a custom version of the CDK declarative manifest schema for the connector builder UI
-
-When working on the connector builder UI and doing changes to the CDK and the webapp at the same time, you can start the dev server with `CDK_MANIFEST_PATH` or `CDK_VERSION` environment variables set to have the correct Typescript types built. If `CDK_VERSION` is set, it's loading the specified version of the CDK from pypi instead of the default one, if `CDK_MANIFEST_PATH` is set, it's copying the schema file locally.
-
-For example:
-
-```
-CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml pnpm start
-```
-
-### Connector Specification Caching
-
-The Configuration API caches connector specifications. This is done to avoid needing to run Docker everytime one is needed in the UI. Without this caching, the UI crawls. If you update the specification of a connector and need to clear this cache so the API / UI picks up the change, you have two options:
-
-1. Go to the Admin page in the UI and update the version of the connector. Updating to any version, including the one you're already on, will trigger clearing the cache.
-2. From your local `airbyte-platform` repository, restart the server by running the following commands:
+In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
 
 ```bash
-VERSION=dev docker compose down -v
-VERSION=dev docker compose up
+./gradlew clean build
+./gradlew :oss:airbyte-tests:acceptanceTests
 ```
+
+Test containers start Airbyte locally, run the tests, and shutdown Airbyte after running the tests. If you want to run acceptance tests against local Airbyte that is not managed by the test containers, you need to set `USE_EXTERNAL_DEPLOYMENT` environment variable to true:
+
+```bash
+USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
+```
+
+## Formatting code
+
+Airbyte runs a code formatter as part of the build to enforce code styles. You should run the formatter yourself before submitting a PR (otherwise the build will fail).
+
+The command to run formatting varies slightly depending on which part of the codebase you are working in.
+
+### Platform
+
+If you are working in the platform run `./gradlew format` from the root of the `airbyte-platform` repository.
+
+### Connector
+
+To format your local `airbyte` repository, run `airbyte-ci format fix all`.
+
+## Troubleshooting
 
 ### Resetting the Airbyte developer environment
 
@@ -224,23 +222,22 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 
 - Delete the datastore volumes in docker
 
-  ```bash
-    VERSION=dev docker compose down -v
-  ```
+```bash
+abctl local uninstall --persisted
+```
 
 - Remove the data on disk
 
-  ```bash
-    rm -rf /tmp/dev_root
-    rm -rf /tmp/airbyte_local
-  ```
+```bash
+rm -rf ~/.airbyte/
+```
 
 - Rebuild the project
 
-  ```bash
-   ./gradlew clean build
-   VERSION=dev docker compose up -V
-  ```
+```bash
+./gradlew clean build
+VERSION=dev docker compose up -V
+```
 
 While not as common as the above steps, you may also get into a position where want to erase all of the data on your local docker server. This is useful if you've been modifying image tags while developing.
 
@@ -265,9 +262,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## Troubleshooting
-
-### `gradlew Could not target platform: 'Java SE 14' using tool chain: 'JDK 8 (1.8)'.`
+### Could not target platform: 'Java SE 14' using tool chain: 'JDK 8 (1.8)'.
 
 Somehow gradle didn't pick up the right java version for some reason. Find the install version and set the `JAVA_HOME` environment to point to the JDK folder.
 
