@@ -77,21 +77,8 @@ jobs:
       - name: Call Instatus Webhook
         uses: joelwmale/webhook-action@master
         with:
-          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
+          url: ${{ secrets.INSTATUS_CONNECTOR_PUBLISH_PIPELINE_WEBHOOK_URL }}
           body: '{ "trigger": "down", "status": "HASISSUES" }'
-
-  set-instatus-incident-on-success:
-    name: Create Instatus Incident on Success
-    runs-on: ubuntu-latest
-    needs:
-      - publish_connectors
-    if: ${{ success() && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Call Instatus Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-          body: '{ "trigger": "up" }'
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
