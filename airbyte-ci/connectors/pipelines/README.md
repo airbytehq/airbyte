@@ -561,13 +561,13 @@ Bump source-openweather:
 ### <a id="connectors-upgrade-cdk"></a>`connectors upgrade-cdk` command
 
 Updates the CDK version of the selected connectors.
-For Python connectors, sets the `airbyte-cdk` dependency to the specified version in `pyproject.toml` and refreshes the lockfile, updating only essential dependencies.
+For Python connectors, sets the `airbyte-cdk` dependency in `pyproject.toml` and refreshes the lockfile, updating only essential dependencies.
 
 ### Examples
 
 `airbyte-ci connectors --language=python upgrade-cdk` -> Updates all python connectors to the caret range of the latest version.
 `airbyte-ci connectors --name=source-openweather upgrade-cdk "3.0.0"` -> Pins source-openweather to version 3.0.0
-`airbyte-ci connectors --modified upgrade-cdk "<4"` -> Updates all modified connectors to the highest available version of major version 3
+`airbyte-ci connectors --modified upgrade-cdk "<4"` -> Updates all modified connectors to the highest available version of major version 3.x.x
 
 #### Arguments
 
