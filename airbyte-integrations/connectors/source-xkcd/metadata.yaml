@@ -11,7 +11,7 @@ data:
   icon: xkcd.svg
   license: MIT
   name: Xkcd
-  releaseDate: TODO
+  releaseDate: 2022-10-17
   remoteRegistries:
     pypi:
       enabled: true
