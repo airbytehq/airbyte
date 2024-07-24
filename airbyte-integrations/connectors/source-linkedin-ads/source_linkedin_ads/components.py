@@ -29,11 +29,43 @@ from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from isodate import Duration, parse_duration
 
 from .utils import ANALYTICS_FIELDS_V2, FIELDS_CHUNK_SIZE, transform_data
+
+
+class SafeHttpClient(HttpClient):
+    def _create_prepared_request(
+        self,
+        http_method: str,
+        url: str,
+        dedupe_query_params: bool = False,
+        headers: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, str]] = None,
+        json: Optional[Mapping[str, Any]] = None,
+        data: Optional[Union[str, Mapping[str, Any]]] = None,
+    ) -> requests.PreparedRequest:
+        if dedupe_query_params:
+            query_params = self._dedupe_query_params(url, params)
+        else:
+            query_params = params or {}
+        query_params = urlencode(query_params, safe="():,%")
+        args = {"method": http_method, "url": url, "headers": headers, "params": query_params}
+        if http_method.upper() in BODY_REQUEST_METHODS:
+            if json and data:
+                raise RequestBodyException(
+                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
+                )
+            elif json:
+                args["json"] = json
+            elif data:
+                args["data"] = data
+        prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
+
+        return prepared_request
 
 
 @dataclass
@@ -64,30 +96,21 @@ class SafeEncodeHttpRequester(HttpRequester):
         )
         super().__post_init__(parameters)
 
-    def _create_prepared_request(
-        self,
-        path: str,
-        headers: Optional[Mapping[str, str]] = None,
-        params: Optional[Mapping[str, Any]] = None,
-        json: Any = None,
-        data: Any = None,
-    ) -> requests.PreparedRequest:
-        url = urljoin(self.get_url_base(), path)
-        http_method = str(self._http_method.value)
-        query_params = self.deduplicate_query_params(url, params)
-        query_params = urlencode(query_params, safe="():,%")
-        args = {"method": http_method, "url": url, "headers": headers, "params": query_params}
-        if http_method.upper() in BODY_REQUEST_METHODS:
-            if json and data:
-                raise RequestBodyException(
-                    "At the same time only one of the 'request_body_data' and 'request_body_json' functions can return data"
-                )
-            elif json:
-                args["json"] = json
-            elif data:
-                args["data"] = data
+        if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
+            backoff_strategies = self.error_handler.backoff_strategies
+        else:
+            backoff_strategies = None
 
-        return self._session.prepare_request(requests.Request(**args))
+        self._http_client = SafeHttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=self.error_handler,
+            authenticator=self._authenticator,
+            use_cache=self.use_cache,
+            backoff_strategy=backoff_strategies,
+            disable_retries=self.disable_retries,
+            message_repository=self.message_repository,
+        )
 
 
 @dataclass
@@ -273,6 +296,7 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
         if transformations:
             self.record_selector.transformations = transformations
 
+
 @dataclass
 class LinkedInAdsCustomRetriever(SimpleRetriever):
     partition_router: Optional[Union[List[StreamSlicer], StreamSlicer]] = field(
@@ -316,31 +340,6 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
 
         yield from merged_records.values()
 
-
-    # This logic is similar to _read_pages in the HttpStream class. When making changes here, consider making changes there as well.
-    def _read_pages(
-        self,
-        records_generator_fn: Callable[[Optional[requests.Response]], Iterable[StreamData]],
-        stream_state: Mapping[str, Any],
-        stream_slice: StreamSlice,
-    ) -> Iterable[StreamData]:
-        pagination_complete = False
-        next_page_token = None
-        while not pagination_complete:
-            response = self._fetch_next_page(stream_state, stream_slice, next_page_token)
-            breakpoint()
-            yield from records_generator_fn(response)
-
-            if not response:
-                pagination_complete = True
-            else:
-                next_page_token = self._next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
-
-        # Always return an empty generator just in case no records were ever yielded
-        yield from []
-
     def _apply_transformations(self):
         transformations = [
             AddFields(
@@ -361,39 +360,3 @@ class LinkedInAdsCustomRetriever(SimpleRetriever):
 
         if transformations:
             self.record_selector.transformations = transformations
-
-
-
-@dataclass
-class ChunkedHttpRequester(SafeEncodeHttpRequester):
-    def send_request(
-        self,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-        path: Optional[str] = None,
-        request_headers: Optional[Mapping[str, Any]] = None,
-        request_params: Optional[Mapping[str, Any]] = None,
-        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
-        request_body_json: Optional[Mapping[str, Any]] = None,
-        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
-    ) -> Optional[requests.Response]:
-        breakpoint()
-        request, response = self._http_client.send_request(
-            http_method=self.get_method().value,
-            url=self._join_url(
-                self.get_url_base(),
-                path or self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            ),
-            request_kwargs={},
-            headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
-            params=self._request_params(stream_state, stream_slice, next_page_token, request_params),
-            json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
-            data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
-            dedupe_query_params=True,
-            log_formatter=log_formatter,
-            exit_on_rate_limit=self._exit_on_rate_limit,
-        )
-
-        return response
-

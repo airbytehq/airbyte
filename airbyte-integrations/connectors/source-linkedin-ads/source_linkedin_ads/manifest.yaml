@@ -24,29 +24,6 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202404"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -91,29 +68,6 @@ definitions:
             accounts: urn:li:sponsoredAccount:{{stream_slice.get('account_id')}}
           request_headers:
             Linkedin-Version: "202404"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -175,29 +129,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -257,29 +188,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -414,29 +322,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           extractor:
@@ -487,23 +372,9 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
-          class_name: "source_linkedin_ads.components.ChunkedHttpRequester"
+          class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
           url_base: https://api.linkedin.com/rest/
           authenticator: "#/definitions/authenticator"
           path: adAnalytics
@@ -520,29 +391,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -598,20 +446,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -631,29 +465,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -709,20 +520,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -742,29 +539,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -820,20 +594,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -853,29 +613,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -931,20 +668,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -964,29 +687,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1042,20 +742,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1075,29 +761,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1153,20 +816,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1186,29 +835,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1264,20 +890,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1297,29 +909,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1375,20 +964,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1408,29 +983,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1486,20 +1038,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1519,29 +1057,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
@@ -1597,20 +1112,6 @@ definitions:
         - end_date
       retriever:
         class_name: "source_linkedin_ads.components.LinkedInAdsCustomRetriever"
-        $parameters:
-          cursor:
-            type: CustomIncrementalSync
-            class_name: source_linkedin_ads.components.AnalyticsDatetimeBasedCursor
-            cursor_field: end_date
-            cursor_datetime_formats:
-              - "%Y-%m-%d"
-            datetime_format: "%Y-%m-%d"
-            cursor_granularity: P1D
-            step: P200D
-            start_datetime:
-              type: MinMaxDatetime
-              datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%d"
         requester:
           type: CustomRequester
           class_name: "source_linkedin_ads.components.SafeEncodeHttpRequester"
@@ -1630,29 +1131,6 @@ definitions:
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 429
-                    error_message: >-
-                      Stream {{self.name}}: LinkedIn API requests are rate
-                      limited. Rate limits specify the maximum number of API
-                      calls that can be made in a 24 hour period. These limits
-                      reset at midnight UTC every day. You can find more
-                      information here
-                      https://docs.airbyte.com/integrations/sources/linkedin-ads.
-                      Also quotas and usage are here:
-                      https://www.linkedin.com/developers/apps.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 503
         record_selector:
           type: RecordSelector
           $parameters:
