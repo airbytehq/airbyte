@@ -13,7 +13,7 @@ from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteCont
 
 
 class ObservedDict(dict):
-    def __init__(self, non_observed_mapping: MutableMapping, observer: ConfigObserver, update_on_unchanged_value=True) -> None:
+    def __init__(self, non_observed_mapping: MutableMapping, observer: ConfigObserver, update_on_unchanged_value: bool = True) -> None:
         non_observed_mapping = non_observed_mapping.copy()
         self.observer = observer
         self.update_on_unchanged_value = update_on_unchanged_value
