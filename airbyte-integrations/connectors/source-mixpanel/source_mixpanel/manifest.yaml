@@ -44,7 +44,8 @@ definitions:
       - error_message_contains: "Query rate limit exceeded"
         action: RETRY
         error_message: Query rate limit exceeded.
-      - error_message_contains: "unknown error"
+      - http_codes: [500]
+        error_message_contains: "unknown error"
         action: RETRY
         error_message: An unknown error occurred
       - error_message_contains: "to_date cannot be later than today"
