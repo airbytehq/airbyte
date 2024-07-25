@@ -15,7 +15,7 @@ from pipelines.airbyte_ci.connectors.test.steps.common import LiveTests
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import LOCAL_BUILD_PLATFORM, MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS, ContextState
-from pipelines.hacks import do_regression_test_status_check_maybe
+from pipelines.hacks import do_regression_test_status_check
 from pipelines.helpers.execution import argument_parsing
 from pipelines.helpers.execution.run_steps import RunStepOptions
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
@@ -124,9 +124,9 @@ async def test(
     if ctx.obj["is_ci"]:
         fail_if_missing_docker_hub_creds(ctx)
 
+    do_regression_test_status_check(ctx, REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT, main_logger)
     if ctx.obj["selected_connectors_with_modified_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
-        do_regression_test_status_check_maybe(ctx, REGRESSION_TEST_MANUAL_APPROVAL_CONTEXT, main_logger)
     else:
         main_logger.warn("No connector were selected for testing.")
         update_global_commit_status_check_for_tests(ctx.obj, "success")

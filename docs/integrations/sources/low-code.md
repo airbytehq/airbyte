@@ -9,6 +9,17 @@ The changelog below is automatically updated by the `bump_version` command as pa
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 3.10.4 | 2024-07-24 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.9.3 |
+| 3.10.3 | 2024-07-24 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.9.2 |
+| 3.10.2 | 2024-07-23 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.9.1 |
+| 3.10.1 | 2024-07-20 | [42327](https://github.com/airbytehq/airbyte/pull/42327) | Update dependencies |
+| 3.10.0 | 2024-07-19 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.9.0 |
+| 3.9.2 | 2024-07-18 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.8.2 |
+| 3.9.1 | 2024-07-18 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.8.1 |
+| 3.9.0 | 2024-07-18 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.8.0 |
+| 3.8.1 | 2024-07-17 | [40052](https://github.com/airbytehq/airbyte/pull/40052) | Update dependencies |
+| 3.8.0 | 2024-07-17 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.7.0 |
+| 3.7.0 | 2024-07-16 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.6.0 |
 | 3.6.2 | 2024-07-16 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.5.3 |
 | 3.6.1 | 2024-07-15 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.5.1 |
 | 3.6.0 | 2024-07-15 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 3.5.0 |
