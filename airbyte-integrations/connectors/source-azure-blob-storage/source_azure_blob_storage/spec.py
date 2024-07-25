@@ -30,10 +30,8 @@ class Oauth2(BaseModel):
         airbyte_secret=True,
     )
 
-    model_config = {
-        "title": "Authenticate via Oauth2",
-        "discriminator": "auth_type"
-    }
+    model_config = {"title": "Authenticate via Oauth2", "discriminator": "auth_type"}
+
 
 class StorageAccountKey(BaseModel):
 
@@ -46,10 +44,7 @@ class StorageAccountKey(BaseModel):
         order=3,
     )
 
-    model_config = {
-        "title": "Authenticate via Storage Account Key",
-        "discriminator": "auth_type"
-    }
+    model_config = {"title": "Authenticate via Storage Account Key", "discriminator": "auth_type"}
 
 
 class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
