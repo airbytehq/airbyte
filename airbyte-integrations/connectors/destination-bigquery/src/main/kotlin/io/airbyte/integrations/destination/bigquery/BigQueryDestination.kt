@@ -43,6 +43,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts as bqConstants
+import com.google.cloud.bigquery.TableId
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createDirectUploadConsumer
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createStagingConsumer
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
@@ -103,9 +104,9 @@ class BigQueryDestination : BaseConnector(), Destination {
 
             if (UploadingMethod.GCS == uploadingMethod) {
 
-                val GcsStatus = checkGcsAccessPermission(config)
-                if (GcsStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
-                    return GcsStatus
+                val gcsStatus = checkGcsAccessPermission(config)
+                if (gcsStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
+                    return gcsStatus
                 }
 
                 // Copy a temporary dataset to confirm copy permissions are working
@@ -132,6 +133,8 @@ class BigQueryDestination : BaseConnector(), Destination {
 
         // TODO: Need to add a step in this method to first check permissions
         //  using testIamPermissions before trying the actual copying of data
+
+        val datasetId = BigQueryUtils.getDatasetId(config)
 
         val datasetLocation = BigQueryUtils.getDatasetLocation(config)
         val bigquery = getBigQuery(config)
@@ -164,11 +167,12 @@ class BigQueryDestination : BaseConnector(), Destination {
         val streamId =
             sqlGenerator.buildStreamId(defaultDataset, finalTableName, rawDatasetOverride)
 
+
+
         try {
 
             // Copy a dataset into a BigQuery table to confirm the copy operation is working
-            // correctly
-            // with the existing permissions
+            // correctly with the existing permissions
 
             val streamConfig =
                 StreamConfig(
@@ -254,13 +258,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                 StreamSyncSummary(1, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE),
             )
 
-            // clean up the raw table, this is intentionally not part of actual sync code
-            // because we avoid dropping original tables directly.
-            destinationHandler.execute(
-                Sql.of(
-                    "DROP TABLE IF EXISTS $projectId.${streamId.rawNamespace}.${streamId.rawName};",
-                ),
-            )
+            //Note: Deletion of the temporary table is being done in the finally block below
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: Exception) {
@@ -271,7 +269,7 @@ class BigQueryDestination : BaseConnector(), Destination {
         } finally {
 
             try {
-                // In the finally block, check again to clean up the raw table
+                // In the finally block, clean up the raw table
                 // If there was an exception in the flow above, then the table may still exist
                 destinationHandler.execute(
                     Sql.of(
@@ -307,7 +305,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                     .build()
                     .service
             val permissionsCheckStatusList: List<Boolean> =
-                storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS)
+                storage.testIamPermissions(bucketName, REQUIRED_GCS_PERMISSIONS)
 
             // testIamPermissions returns a list of booleans
             // in the same order of the presented permissions list
@@ -316,7 +314,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                     .asSequence()
                     .withIndex()
                     .filter { !it.value }
-                    .map { REQUIRED_PERMISSIONS[it.index] }
+                    .map { REQUIRED_GCS_PERMISSIONS[it.index] }
                     .toList(),
             )
 
@@ -509,7 +507,7 @@ class BigQueryDestination : BaseConnector(), Destination {
 
     companion object {
 
-        private val REQUIRED_PERMISSIONS =
+        private val REQUIRED_GCS_PERMISSIONS =
             listOf(
                 "storage.multipartUploads.abort",
                 "storage.multipartUploads.create",
