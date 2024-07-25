@@ -491,7 +491,7 @@ class AbstractStreamOperationTest {
         )
         fun emptyDestination(streamConfigParam: StreamConfig) {
             val initialState =
-                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
+                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>>(relaxed = true) {
                     every { streamConfig } returns streamConfigParam
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { initialRawTableStatus.maxProcessedTimestamp } returns Optional.empty()
