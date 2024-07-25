@@ -38,7 +38,7 @@ definitions:
           - http_codes: [403, 404]
             action: FAIL
             failure_type: config_error
-            error_message: "Unable to read data for stream {{ parameters.get('name') }} due to permission issue. Please ensure that your account has right access to the data and/or try re-auth on the Set Up Connector page. Or disable this stream on the Schema Tab. Error message: {{ response.get('error') }}"
+            error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issues with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
@@ -415,7 +415,7 @@ definitions:
             - http_codes: [403, 404]
               action: FAIL
               failure_type: config_error
-              error_message: "Unable to read data for stream {{ parameters.get('name') }} due to permission issue. Please ensure that your account has right access to the data and/or try re-auth on the Set Up Connector page. Or disable this stream on the Schema Tab. Error message: {{ response.get('error') }}"
+              error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issues with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -488,7 +488,7 @@ definitions:
               response_filters:
                 - http_codes: [403, 404]
                   action: FAIL # fail as this stream used to define enterprise plan
-                  error_message: "Unable to read data for stream {{ parameters.get('name') }} due to permission issue. Please ensure that your account has right access to the data and/or try re-auth on the Set Up Connector page. Or disable this stream on the Schema Tab. Error message: {{ response.get('error') }}"
+                  error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issues with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
             - type: DefaultErrorHandler
               backoff_strategies:
                 - type: WaitTimeFromHeader
