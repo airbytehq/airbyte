@@ -71,6 +71,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| 1.1.2 | 2024-07-20 | [42151](https://github.com/airbytehq/airbyte/pull/42151) | Update dependencies |
 | 1.1.1 | 2024-07-13 | [41823](https://github.com/airbytehq/airbyte/pull/41823) | Update dependencies |
 | 1.1.0   | 2024-06-20 | [39763](https://github.com/airbytehq/airbyte/pull/39763) | Add `properties` and `uuid` 
 attributes to persons stream |

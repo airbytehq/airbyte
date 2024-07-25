@@ -42,7 +42,10 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
             yield target_record
 
     def extract_records_by_path(self, response: requests.Response, field_paths: list = None) -> Iterable[Mapping[str, Any]]:
-        response_body = self.decoder.decode(response)
+        try:
+            response_body = response.json()
+        except Exception as e:
+            raise Exception(f"Failed to parse response body as JSON: {e}")
 
         # Extract data from the response body based on the provided field paths
         if not field_paths:
