@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.8.2
+low-code: fix overwrite for default backoff strategy
+
+## 3.8.1
+CDK: fix handling for rate limit errors when checking connection
+
+## 3.8.0
+resumable full refresh: Automatically apply RFR to streams (not including substreams) that are not incremental and implement next_page_token
+
+## 3.7.0
+Deprecate AvailabilityStrategy
+
+## 3.6.0
+CDK: add not exiting when rate limited
+
+## 3.5.3
+Add failure_type to HttpResponseFilter(retry after pypi read error)
+
 ## 3.5.2
 Add failure_type to HttpResponseFilter
 
@@ -14,6 +32,7 @@ resumable full refresh: Fix bug where checkpoint reader stops syncing too early 
 
 ## 3.4.0
 file-based cdk: add config option to limit number of files for schema discover
+resumable full refresh: Fix bug for substreams depending on RFR parent stream would not paginate over parent
 
 ## 3.3.0
 CDK: add incomplete status to availability check during read

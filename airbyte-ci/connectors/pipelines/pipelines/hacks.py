@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Callable, List
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines import consts
-from pipelines.helpers.github import update_commit_status_check
+from pipelines.helpers.github import is_automerge_pull_request, update_commit_status_check
 
 if TYPE_CHECKING:
     from dagger import Container
@@ -76,25 +76,40 @@ def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
     return never_fail_exec_inner
 
 
-def do_regression_test_status_check_maybe(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
+def do_regression_test_status_check(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
     """
     Emit a failing status check that requires a manual override, via a /-command.
 
     Only required for certified connectors.
     """
-    if any(
+    commit = ctx.obj["git_revision"]
+    run_url = ctx.obj["gha_workflow_run_url"]
+    should_send = ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST
+
+    if not is_automerge_pull_request(ctx.obj.get("pull_request")) and any(
         [
             (connector.language == ConnectorLanguage.PYTHON and connector.support_level == "certified")
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
     ):
         update_commit_status_check(
-            ctx.obj["git_revision"],
+            commit,
             "failure",
-            ctx.obj["gha_workflow_run_url"],
+            run_url,
             description="Check if regression tests have been manually approved",
             context=status_check_name,
             is_optional=False,
-            should_send=ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST,
+            should_send=should_send,
+            logger=logger,
+        )
+    else:
+        update_commit_status_check(
+            commit,
+            "success",
+            run_url,
+            description="[Skipped]",
+            context=status_check_name,
+            is_optional=True,
+            should_send=should_send,
             logger=logger,
         )

@@ -147,9 +147,6 @@ from pydantic.v1 import BaseModel
 ComponentDefinition = Mapping[str, Any]
 
 
-DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
-
-
 class ModelToComponentFactory:
     def __init__(
         self,
@@ -713,8 +710,6 @@ class ModelToComponentFactory:
         if model.backoff_strategies:
             for backoff_strategy_model in model.backoff_strategies:
                 backoff_strategies.append(self._create_component_from_model(model=backoff_strategy_model, config=config))
-        else:
-            backoff_strategies.append(DEFAULT_BACKOFF_STRATEGY(config=config, parameters=model.parameters or {}))
 
         response_filters = []
         if model.response_filters:

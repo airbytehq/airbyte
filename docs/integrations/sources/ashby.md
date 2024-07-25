@@ -48,6 +48,7 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 0.1.10 | 2024-07-17 | [42028](https://github.com/airbytehq/airbyte/pull/42028) | Fix typo in application stream |
 | 0.1.9 | 2024-07-13 | [41818](https://github.com/airbytehq/airbyte/pull/41818) | Update dependencies |
 | 0.1.8 | 2024-07-10 | [41379](https://github.com/airbytehq/airbyte/pull/41379) | Update dependencies |
 | 0.1.7 | 2024-07-09 | [41271](https://github.com/airbytehq/airbyte/pull/41271) | Update dependencies |
