@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-  - holidays
+    - holidays
 
 definitions:
   streams:
@@ -13,11 +13,11 @@ definitions:
       type: DeclarativeStream
       name: holidays
       primary_key:
-      - uuid
+        - uuid
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: holidays
           http_method: GET
           request_parameters:
@@ -28,11 +28,11 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-            - holidays
+              - holidays
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/holidays'
+          $ref: "#/schemas/holidays"
   base_requester:
     type: HttpRequester
     url_base: https://holidayapi.com/v1/
@@ -45,7 +45,7 @@ definitions:
         inject_into: request_parameter
 
 streams:
-- $ref: '#/definitions/streams/holidays'
+  - $ref: "#/definitions/streams/holidays"
 
 spec:
   type: Spec
@@ -53,10 +53,10 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-    - api_key
-    - country
-    - number_of_years
-    - year
+      - api_key
+      - country
+      - number_of_years
+      - year
     properties:
       api_key:
         type: string
@@ -76,7 +76,7 @@ spec:
         type: string
         order: 2
         title: Number of Years
-        default: '3'
+        default: "3"
       year:
         type: string
         order: 3
@@ -95,56 +95,56 @@ schemas:
     properties:
       country:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       date:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       name:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       observed:
         type:
-        - string
-        - 'null'
+          - string
+          - "null"
       public:
         type:
-        - boolean
-        - 'null'
+          - boolean
+          - "null"
       uuid:
         type: string
       weekday:
         type:
-        - object
-        - 'null'
+          - object
+          - "null"
         properties:
           date:
             type:
-            - object
-            - 'null'
+              - object
+              - "null"
             properties:
               name:
                 type:
-                - string
-                - 'null'
+                  - string
+                  - "null"
               numeric:
                 type:
-                - string
-                - 'null'
+                  - string
+                  - "null"
           observed:
             type:
-            - object
-            - 'null'
+              - object
+              - "null"
             properties:
               name:
                 type:
-                - string
-                - 'null'
+                  - string
+                  - "null"
               numeric:
                 type:
-                - string
-                - 'null'
+                  - string
+                  - "null"
     required:
-    - uuid
+      - uuid
