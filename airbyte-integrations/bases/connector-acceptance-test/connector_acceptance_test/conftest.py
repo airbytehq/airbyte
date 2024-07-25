@@ -250,7 +250,7 @@ async def setup_and_teardown(
     client_container_config_secrets: Optional[SecretDict],
     base_path: Path,
 ):
-    if client_container:
+    if client_container and hasattr(client_container_config, "setup_command") and client_container_config.setup_command:
         logging.info("Running setup")
         setup_teardown_container = await client_container_runner.do_setup(
             client_container,
@@ -260,7 +260,7 @@ async def setup_and_teardown(
         )
         logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None
-    if client_container:
+    if client_container and hasattr(client_container_config, "teardown_command") and client_container_config.teardown_command:
         logging.info("Running teardown")
         setup_teardown_container = await client_container_runner.do_teardown(
             client_container,

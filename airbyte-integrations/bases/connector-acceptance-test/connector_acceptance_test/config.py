@@ -163,8 +163,8 @@ class ClientContainerConfig(BaseConfig):
     client_container_dockerfile_path: str = Field(
         None, description="Path to Dockerfile to run before each test for which a config is provided."
     )
-    setup_command: List[str] = Field(None, description="Command for running the setup/teardown container for setup.")
-    teardown_command: List[str] = Field(None, description="Command for running the setup/teardown container for teardown.")
+    setup_command: Optional[List[str]] = Field(None, description="Command for running the setup/teardown container for setup.")
+    teardown_command: Optional[List[str]] = Field(None, description="Command for running the setup/teardown container for teardown.")
     between_syncs_command: Optional[List[str]] = Field(None, description="Command to run between syncs that occur in a test.")
     final_teardown_command: Optional[List[str]] = Field(None, description="Command for running teardown after all tests have run.")
 
