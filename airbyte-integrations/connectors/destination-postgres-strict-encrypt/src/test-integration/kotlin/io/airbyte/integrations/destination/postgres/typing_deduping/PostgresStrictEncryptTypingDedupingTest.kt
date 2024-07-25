@@ -23,6 +23,7 @@ class PostgresStrictEncryptTypingDedupingTest : AbstractPostgresTypingDedupingTe
             .withDatabase()
             .withResolvedHostAndPort()
             .withCredentials()
+            .with(PostgresDestination.DROP_CASCADE_OPTION, true)
             .withSsl(
                 ImmutableMap.builder<Any?, Any?>()
                     .put(
@@ -59,8 +60,13 @@ class PostgresStrictEncryptTypingDedupingTest : AbstractPostgresTypingDedupingTe
         get() = "airbyte/destination-postgres-strict-encrypt:dev"
 
     @Test
-    override fun testMixedCaseRawTableV1V2Migration() {
-        super.testMixedCaseRawTableV1V2Migration()
+    override fun testDropCascade() {
+        super.testDropCascade()
+    }
+
+    @Test
+    override fun interruptedTruncateWithPriorData() {
+        super.interruptedTruncateWithPriorData()
     }
 
     companion object {

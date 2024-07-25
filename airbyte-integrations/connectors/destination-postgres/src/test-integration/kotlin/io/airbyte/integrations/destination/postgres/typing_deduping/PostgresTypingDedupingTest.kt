@@ -10,14 +10,13 @@ import io.airbyte.integrations.destination.postgres.PostgresTestDatabase
 import javax.sql.DataSource
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 
 open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     override fun getBaseConfig(): ObjectNode {
         return testContainer!!
             .configBuilder()
             .with("schema", "public")
-            .with("drop_cascade", true)
+            .with(PostgresDestination.DROP_CASCADE_OPTION, true)
             .withDatabase()
             .withResolvedHostAndPort()
             .withCredentials()
@@ -42,11 +41,6 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
                     .withoutSsl()
                     .build()
             )
-    }
-
-    @Test
-    override fun testDropCascade() {
-        super.testDropCascade()
     }
 
     override val imageName: String

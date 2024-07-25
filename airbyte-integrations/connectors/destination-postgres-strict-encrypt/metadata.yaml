@@ -25,6 +25,7 @@ data:
         upgradeDeadline: "2024-05-31"
   releaseStage: generally_available
   supportLevel: certified
+  supportsRefreshes: true
   supportsDbt: true
   tags:
     - language:java

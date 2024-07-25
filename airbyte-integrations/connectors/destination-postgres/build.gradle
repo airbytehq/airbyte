@@ -3,9 +3,9 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.43.0'
+    cdkVersionRequired = '0.43.6'
     features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
-    useLocalCdk = true
+    useLocalCdk = false
 }
 
 compileKotlin {
