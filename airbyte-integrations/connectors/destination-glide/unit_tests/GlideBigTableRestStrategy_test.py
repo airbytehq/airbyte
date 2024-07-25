@@ -24,8 +24,7 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         self.table_name = f"test-table-name-{str(uuid.uuid4())}"
         self.stash_id = f"stash-id-{str(uuid.uuid4())}"
         self.gbt = GlideBigTableRestStrategy()
-        self.gbt.init(self.api_host, self.api_key,
-                      self.api_path_root, self.table_name)
+        self.gbt.init(self.api_key, self.table_name, self.api_host, self.api_path_root)
 
     def mock_post_for_set_schema(self, mock_post):
         mock_post.return_value.status_code = 200
@@ -71,7 +70,7 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
 
         mock_post.assert_called_once()
         self.assertEqual(
-            mock_post.call_args.kwargs["json"]["data"], test_rows)
+            mock_post.call_args.kwargs["json"], test_rows)
 
     @patch.object(requests, "post")
     def test_add_rows_batching(self, mock_post):
@@ -90,7 +89,7 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
 
         self.assertEqual(5, mock_post.call_count)
         # validate that the last row is what we expect:
-        self.assertEqual(mock_post.call_args.kwargs["json"]["data"],
+        self.assertEqual(mock_post.call_args.kwargs["json"],
                          [
             {"test-str": f"one {TEST_ROW_COUNT-1}", "test-num": TEST_ROW_COUNT-1}
         ])

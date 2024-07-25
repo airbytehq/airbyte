@@ -18,7 +18,6 @@ ALLOWED_COLUMN_TYPES = [
     "json",
 ]
 
-
 class Column(dict):
     """
     Represents a Column in the glide API.
@@ -54,7 +53,7 @@ class GlideBigTableBase(ABC):
         }
 
     def url(self, path: str) -> str:
-        return f"{self.api_host}/{self.api_path_root}/{path}"
+        return f"{self.api_host}/{self.api_path_root + '/' if self.api_path_root != '' else ''}{path}"
 
     """
     An API client for interacting with a Glide Big Table. The intention is to
@@ -64,7 +63,7 @@ class GlideBigTableBase(ABC):
     The protocol is to call `init`, `set_schema`, `add_rows` one or more times, and `commit` in that order.
     """
 
-    def init(self, api_host, api_key, api_path_root, table_name):
+    def init(self, api_key, table_name, api_host="https://api.glideapps.com", api_path_root=""):
         """
         Sets the connection information for the table.
         """
@@ -102,17 +101,11 @@ class GlideBigTableFactory:
     Factory for creating a GlideBigTableBase API client.
     """
     @classmethod
-    def create(cls, strategy: str) -> GlideBigTableBase:
+    def create(cls) -> GlideBigTableBase:
         """
         Creates a new instance of the default implementation for the GlideBigTable API client.
         """
-        implementation_map = {
-            "tables": lambda: GlideBigTableRestStrategy()
-        }
-        if strategy not in implementation_map:
-            raise ValueError(f"Strategy '{strategy}' not found. Expected one of '{implmap.keys()}'.")  # nopep8
-        return implementation_map[strategy]()
-
+        return GlideBigTableRestStrategy()
 
 class GlideBigTableRestStrategy(GlideBigTableBase):
     def reset(self):

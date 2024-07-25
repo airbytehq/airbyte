@@ -22,8 +22,8 @@ import requests
 from typing import Any, Iterable, Mapping
 import uuid
 
-CONFIG_GLIDE_API_VERSION_DEFAULT = "tables"
-CONFIG_GLIDE_API_HOST_DEFAULT = "https://api.glideapp.io"
+CONFIG_GLIDE_API_HOST_DEFAULT = "https://api.glideapps.com"
+CONFIG_GLIDE_API_PATH_ROOT_DEFAULT = ""
 
 logger = logging.getLogger(__name__)
 logger.setLevel(LOG_LEVEL_DEFAULT)
@@ -73,19 +73,16 @@ class DestinationGlide(Destination):
         """
         # load user-specified config:
         api_host = config.get('api_host', CONFIG_GLIDE_API_HOST_DEFAULT)
-        api_path_root = config['api_path_root']
-        api_key = config['api_key']
-        glide_api_version = config.get(
-            'glide_api_version', CONFIG_GLIDE_API_VERSION_DEFAULT)
+        api_path_root = config.get('api_path_root', CONFIG_GLIDE_API_PATH_ROOT_DEFAULT)
+        api_key = config.get('api_key')
 
         # configure the table based on the stream catalog:
         # choose a strategy based on config:
 
         def create_table_client_for_stream(stream_name):
             # TODO: sanitize stream_name chars and length for GBT name
-            glide = GlideBigTableFactory.create(glide_api_version)
-            logger.debug(f"Using glide api strategy '{glide.__class__.__name__}' for glide_api_version '{glide_api_version}'.")  # nopep8
-            glide.init(api_host, api_key, api_path_root, stream_name)
+            glide = GlideBigTableFactory.create()
+            glide.init(api_key, stream_name, api_host, api_path_root)
             return glide
 
         table_clients = {}

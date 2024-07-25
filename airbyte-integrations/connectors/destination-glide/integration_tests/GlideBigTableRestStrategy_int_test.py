@@ -16,9 +16,20 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
     Tests against a working Glide /tables API endpoint rather than being mocked like the one in unit tests.
     '''
 
-    api_host = "https://functions.prod.internal.glideapps.com"
     api_key = None
-    api_path_root = "api"
+    
+    env = "prod"
+    if (env == "poc"):
+        api_host = "https://functions.prod.internal.glideapps.com"
+        api_path_root = "api"
+    elif env=="staging":
+        api_host = "https://api.staging.glideapps.com"
+        api_path_root = ""
+    elif env=="prod":
+        api_host = "https://api.glideapps.com"
+        api_path_root = ""
+    else:
+        raise Exception(f"Unknown env: {env}")
 
     
     def setUp(self):
@@ -31,10 +42,10 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
     def test_new_table(self):
         
         # init
-        gbt = GlideBigTableFactory().create("tables")
+        gbt = GlideBigTableFactory().create()
 
         table_name = f"test-table-{str(uuid.uuid4())}"
-        gbt.init(self.api_host, self.api_key, self.api_path_root, table_name)
+        gbt.init(self.api_key, table_name, self.api_host, self.api_path_root)
         
         # set_schema
         test_columns = [
@@ -71,8 +82,8 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         # init
         
         table_name = f"test-table-{str(uuid.uuid4())}"
-        gbt = GlideBigTableFactory().create("tables")
-        gbt.init(self.api_host, self.api_key, self.api_path_root, table_name)
+        gbt = GlideBigTableFactory().create()
+        gbt.init(self.api_key, table_name, self.api_host, self.api_path_root)
         
         # set_schema
         test_columns = [
@@ -96,8 +107,8 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         ##### NOW update the existing table we just created:
 
         # now do the update the second table now:
-        gbt = GlideBigTableFactory().create("tables")
-        gbt.init(self.api_host, self.api_key, self.api_path_root, table_name)
+        gbt = GlideBigTableFactory().create()
+        gbt.init(self.api_key, table_name, self.api_host, self.api_path_root)
         gbt.set_schema(test_columns)
 
         now = datetime.now()
