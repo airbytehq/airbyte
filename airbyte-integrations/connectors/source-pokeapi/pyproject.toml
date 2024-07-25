@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.9"
+version = "0.2.10"
 name = "source-pokeapi"
 description = "Source implementation for pokeapi."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -12,11 +12,15 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/pokeapi"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_pokeapi" }, {include = "main.py" } ]
+[[tool.poetry.packages]]
+include = "source_pokeapi"
+
+[[tool.poetry.packages]]
+include = "main.py"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "^3.9.3"
 
 [tool.poetry.scripts]
 source-pokeapi = "source_pokeapi.run:run"
