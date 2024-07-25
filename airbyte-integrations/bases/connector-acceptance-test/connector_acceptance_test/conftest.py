@@ -140,7 +140,10 @@ def client_container_config_fixture(inputs, base_path, acceptance_test_config) -
 
 @pytest.fixture(name="client_container_config_global", scope="session")
 async def client_container_config_global_fixture(acceptance_test_config: Config) -> ClientContainerConfig:
-    if hasattr(acceptance_test_config.acceptance_tests, "client_container_config") and acceptance_test_config.acceptance_tests.client_container_config:
+    if (
+        hasattr(acceptance_test_config.acceptance_tests, "client_container_config")
+        and acceptance_test_config.acceptance_tests.client_container_config
+    ):
         return acceptance_test_config.acceptance_tests.client_container_config
 
 
