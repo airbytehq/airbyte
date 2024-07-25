@@ -6,16 +6,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Glide",
     "type": "object",
-    "required": ["api_host", "api_path_root", "api_key"],
+    "required": ["api_key"],
     "additionalProperties": false,
     "properties": {
       "api_host": {
         "type": "string",
-        "description": "The protocol and host name (e.g. 'https://api.glideapp.io'). of the Glide API destination"
+        "description": "The protocol and host name of the Glide API destination. Defaults to 'https://api.glideapps.com'."
       },
       "api_path_root": {
         "type": "string",
-        "description": "The path root of the Glide API destination"
+        "description": "The path root of the Glide API destination. Defaults to empty."
       },
       "api_key": {
         "type": "string",

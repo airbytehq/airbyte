@@ -47,6 +47,12 @@ There are a set of simple integration tests that Airbyte provides that can be tr
 
 These simply call commands that Airbyte provides in their connector template. The dev-write one appears to be the most comprehensive, but I've struggled to get that one to consistently run (see TODO).
 
+There are additional tests you can run against the live API in `integration_tests/` that you can run with:
+
+```sh
+./scripts/test-integration.sh
+```
+
 ### Build & Deployment
 
 The Airbyte destination is packed as Docker image. This script uses Airbyte-provided tooling named `airbyte-ci` that leverages the same tooling they use in their CI pipeline to build the container.
@@ -57,7 +63,22 @@ To install the tooling see [`airbyte-ci` README in this repo](https://github.com
 ./scripts/build-docker-image.sh
 ```
 
-We are currently deploying this to a public repository for ease of access from an Airbyte OSS instance. To deploy it to a docker container registry use the script at:
+We are deploying this to Glide's docker repository in Google Artifact Registry (GAR) for ease of access from an Airbyte OSS instance. To deploy it to a docker container registry you need to authenticate docker to GAR and push it. The steps are:
+
+#### Glide Google Artifact Registry Docker Repo:
+
+Our repo is at https://console.cloud.google.com/artifacts/docker/glide-connectors/us-central1/airbyte-glide-destination?project=glide-connectors
+
+#### Pushing a Docker Image to Google Artifact Registry
+
+Read access is available for all, but to push you have to authenticate. Authenticate docker by running the following command which adds credential helper to `~/.docker/config.json`:
+
+```
+gcloud auth configure-docker \
+    us-central1-docker.pkg.dev
+```
+
+Then you can use gcloud and docker commands as normal. To push a new image version run:
 
 ```sh
 ./scripts/push-docker-image.sh
@@ -69,12 +90,47 @@ To install Airbyte follow the guide at https://docs.airbyte.com/deploying-airbyt
 
 Once install it should be available at http://localhost:8000/. You should have been prompted for username/pw during install.
 
-### Installing Glide Destination in Airbyte OSS
+### Installing Glide Destination in Airbyte OSS (on Kubernetes)
+
+Install kind (macOS):
+
+NOTE: abctl installs kind, but it doesn't install the kind CLI, so to work with the airbyte kubernetes cluster follow these steps:
+
+```sh
+brew install kind
+```
+
+Then you can list the clusters and you should see one named `airbyte-abctl`:
+
+```sh
+$ kind get clusters
+airbyte-abctl
+```
+
+To use it with kubectl (or k9s) use:
+
+```sh
+# this updates ~/.kube/config to add the cluster
+kind export kubeconfig --name airbyte-abctl
+
+# set the context to the cluster context that kind added:
+kubectl config set-context kind-airbyte-abctl
+
+# now kubectl works!
+kubectl get namespaces
+kubectl get -n airbyte-abctl pods
+```
+
+Now we follow the course guidance at https://docs.airbyte.com/operator-guides/using-custom-connectors/#for-kubernetes-airbyte-deployments ...
+
+We made our docker registry public so you don't have to authenticate airbyte's kubernetes deployment.
 
 To install the destination into Airbyte OSS follow these steps:
 
 1. Click on **Settings** on the far left then select **Destinations** in the sub-panel. You should see a list of **Available destination connectors**.
 2. At the top click the **+ New Connector** button fill in the fields. The **Docker repository name** and **Docker image tag** are the important bits.
+
+For repository name use `us-central1-docker.pkg.dev/glide-connectors/airbyte-glide-destination/destination-glide` and for tag, run `gcloud artifacts docker tags list us-central1-docker.pkg.dev/glide-connectors/airbyte-glide-destination/destination-glide` to get the available tags and choose the latest.
 
 Once installed, you can upgrade it to a new version by visiting the same settings page and changing the tag in the **Change to** box and clicking the **Change** button.
 
