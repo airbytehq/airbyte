@@ -575,7 +575,7 @@ class LiveTests(Step):
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
         self._validate_job_can_run()
 
-    async def _validate_job_can_run(self) -> None:
+    def _validate_job_can_run(self) -> None:
         connector_type = self.context.connector.metadata.get("connectorType")
         connector_subtype = self.context.connector.metadata.get("connectorSubtype")
         assert connector_type == "source", f"Live tests can only run against source connectors, got `connectorType={connector_type}`."
