@@ -6,7 +6,7 @@ acceptance_tests:
       - spec_path: "source_shopify/spec.json"
         backward_compatibility_tests_config:
           # This is the intentional change.
-          # Added new field `job_checkpoint_interval`,
+          # Added new fields: `job_checkpoint_interval`, `job_product_variants_include_pres_prices`
           # to provide the ability to override this value by the User.
           disable_for_version: 2.4.14
   connection:
