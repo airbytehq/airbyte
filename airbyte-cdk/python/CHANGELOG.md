@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9.3
+add name property to http_client for convenience
+
 ## 3.9.2
 low-code: fix record selector factory when using custom components
 
