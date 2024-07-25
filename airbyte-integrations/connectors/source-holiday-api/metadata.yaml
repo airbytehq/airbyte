@@ -6,10 +6,10 @@ data:
     hosts:
     - holidayapi.com
   connectorBuildOptions:
-    baseImage: airbyte/source-declarative-manifest
+    baseImage: docker.io/airbyte/source-declarative-manifest:3.10.2@sha256:ea85f0270dfda900a16f3dffb247002a2585a4283816edad66b89e6963d376a4
   connectorSubtype: api
   connectorType: source
-  definitionId:
+  definitionId: 87cd13ea-7b3a-477c-bf9d-bd52961c8306
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-holiday-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api
@@ -36,4 +36,9 @@ data:
   - suite: unitTests
   - suite: acceptanceTests
     testSecrets:
+      - name: SECRET_SOURCE-HOLIDAY-API__CREDS
+        fileName: config.json
+        secretStore:
+          type: GSM
+          alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: '1.0'
