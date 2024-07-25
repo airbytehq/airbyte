@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "3.9.0"
+version = "3.9.3"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-3.9.0-py3-none-any.whl", hash = "sha256:5f8b800f75b3bba1ae1950eee001e12633826e338e6427fa99c89d11c861d283"},
-    {file = "airbyte_cdk-3.9.0.tar.gz", hash = "sha256:cc54a63ef76896a18133b4bcb2191013c92d1ce1b405fe5261e8479b79076d63"},
+    {file = "airbyte_cdk-3.9.3-py3-none-any.whl", hash = "sha256:a899c32726bcea32426b83b79d0d33b417cc949f1e25c0e29441e5e0bd2dbe8d"},
+    {file = "airbyte_cdk-3.9.3.tar.gz", hash = "sha256:21ff845a7e79cd374efa1c092083af3245520b00b9ba2179a2168df66d611118"},
 ]
 
 [package.dependencies]
@@ -1037,13 +1037,13 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.3.1"
+version = "8.3.2"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest-8.3.1-py3-none-any.whl", hash = "sha256:e9600ccf4f563976e2c99fa02c7624ab938296551f280835ee6516df8bc4ae8c"},
-    {file = "pytest-8.3.1.tar.gz", hash = "sha256:7e8e5c5abd6e93cb1cc151f23e57adc31fcf8cfd2a3ff2da63e23f732de35db6"},
+    {file = "pytest-8.3.2-py3-none-any.whl", hash = "sha256:4ba08f9ae7dcf84ded419494d229b48d0903ea6407b030eaec46df5e6a73bba5"},
+    {file = "pytest-8.3.2.tar.gz", hash = "sha256:c132345d12ce551242c87269de812483f5bcc87cdbb4722e48487ba194f9fdce"},
 ]
 
 [package.dependencies]

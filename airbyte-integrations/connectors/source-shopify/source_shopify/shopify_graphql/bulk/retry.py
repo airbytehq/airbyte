@@ -35,7 +35,7 @@ def bulk_retry_on_exception(logger: logging.Logger, more_exceptions: Optional[Tu
                         raise
                     else:
                         logger.warning(
-                            f"Stream `{self.http_client._name}`: {ex}. Retrying {current_retries}/{self._job_max_retries} after {self._job_backoff_time} seconds."
+                            f"Stream `{self.http_client.name}`: {ex}. Retrying {current_retries}/{self._job_max_retries} after {self._job_backoff_time} seconds."
                         )
                         sleep(self._job_backoff_time)
                 except ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError:
@@ -46,14 +46,13 @@ def bulk_retry_on_exception(logger: logging.Logger, more_exceptions: Optional[Tu
 
                     self._concurrent_attempt += 1
                     logger.warning(
-                        f"Stream: `{self.http_client._name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, attempt: {self._concurrent_attempt}.",
+                        f"Stream: `{self.http_client.name}`, the BULK concurrency limit has reached. Waiting {self._concurrent_interval} sec before retry, attempt: {self._concurrent_attempt}.",
                     )
                     sleep(self._concurrent_interval)
                 except ShopifyBulkExceptions.BulkJobRedirectToOtherShopError:
                     logger.warning(
-                        f"Stream: `{self.http_client._name}`, the `shop name` differs from the provided by the User: `{self.base_url}`. Switching to the `{self._new_base_url}`.",
+                        f"Stream: `{self.http_client.name}`, the `shop name` differs from the provided in `input configuration`. Switching to the `{self._tools.shop_name_from_url(self.base_url)}`.",
                     )
-                    self._switch_base_url()
 
         return wrapper
 

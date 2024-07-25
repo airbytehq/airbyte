@@ -246,7 +246,7 @@ class ShopifyBulkManager:
             self._log_job_msg_count = 0
 
     def _log_state(self, message: Optional[str] = None) -> None:
-        pattern = f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` is {self._job_state}"
+        pattern = f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` is {self._job_state}"
         if message:
             self.logger.info(f"{pattern}. {message}.")
         else:
@@ -305,12 +305,12 @@ class ShopifyBulkManager:
 
     def _cancel_on_long_running_job(self) -> None:
         self.logger.info(
-            f"Stream: `{self.http_client._name}` the BULK Job: {self._job_id} runs longer than expected ({self._job_max_elapsed_time} sec). Retry with the reduced `Slice Size` after self-cancelation."
+            f"Stream: `{self.http_client.name}` the BULK Job: {self._job_id} runs longer than expected ({self._job_max_elapsed_time} sec). Retry with the reduced `Slice Size` after self-cancelation."
         )
         self._job_cancel()
 
     def _cancel_on_checkpointing(self) -> None:
-        self.logger.info(f"Stream: `{self.http_client._name}`, checkpointing after >= `{self._job_checkpoint_interval}` rows collected.")
+        self.logger.info(f"Stream: `{self.http_client.name}`, checkpointing after >= `{self._job_checkpoint_interval}` rows collected.")
         # set the flag to adjust the next slice from the checkpointed cursor value
         self._job_cancel()
 
@@ -349,7 +349,7 @@ class ShopifyBulkManager:
         raise ShopifyBulkExceptions.BulkJobError(f"Could not validate the status of the BULK Job `{self._job_id}`. Errors: {errors}.")
 
     def _on_non_handable_job_error(self, errors: List[Mapping[str, Any]]) -> AirbyteTracedException:
-        raise ShopifyBulkExceptions.BulkJobNonHandableError(f"The Stream: `{self.http_client._name}`, Non-handable error occured: {errors}")
+        raise ShopifyBulkExceptions.BulkJobNonHandableError(f"The Stream: `{self.http_client.name}`, Non-handable error occured: {errors}")
 
     def _get_server_errors(self, response: requests.Response) -> List[Optional[Mapping[str, Any]]]:
         server_errors = response.json().get("errors", [])
@@ -409,12 +409,6 @@ class ShopifyBulkManager:
     def _has_reached_max_concurrency(self) -> bool:
         return self._concurrent_attempt == self._concurrent_max_retry
 
-    def _switch_base_url(self) -> None:
-        if self._new_base_url:
-            self.base_url = self._new_base_url
-        else:
-            self.logger.warning(f"Failed switching the `base url`, no `new base url` has been retrieved.")
-
     def _should_switch_shop_name(self, response: requests.Response) -> bool:
         """
         Sometimes the API returns the redirected response that points to the same Store but with different Name:
@@ -426,12 +420,12 @@ class ShopifyBulkManager:
 
         This redirection is related to:
         1) `aliased` or `hidden` store names from being exposed
-        2) migrated to data to the new store, but referenced within the old one stil.
+        2) `migrated` store data to the `new store`, but referenced within the old one stil
 
         reference issue: https://github.com/airbytehq/oncall/issues/5866
         """
         if self.base_url != response.url:
-            self._new_base_url = response.url
+            self.base_url = response.url
             return True
         return False
 
@@ -461,7 +455,7 @@ class ShopifyBulkManager:
         if self._has_running_concurrent_job(errors):
             # when the concurrent job takes place, another job could not be created
             # we typically need to wait and retry, but no longer than 10 min. (see retry in `bulk_retry_on_exception`)
-            raise ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError(f"Failed to create job for stream {self.http_client._name}")
+            raise ShopifyBulkExceptions.BulkJobCreationFailedConcurrentError(f"Failed to create job for stream {self.http_client.name}")
         elif self._should_switch_shop_name(response):
             # assign new shop name, since the one that specified in `config` was redirected to the different one.
             raise ShopifyBulkExceptions.BulkJobRedirectToOtherShopError(f"Switching the `store` name, redirected to: {response.url}")
@@ -483,7 +477,7 @@ class ShopifyBulkManager:
             self._job_id = bulk_response.get("id")
             self._job_created_at = bulk_response.get("createdAt")
             self._job_state = ShopifyBulkJobStatus.CREATED.value
-            self.logger.info(f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` is {ShopifyBulkJobStatus.CREATED.value}")
+            self.logger.info(f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` is {ShopifyBulkJobStatus.CREATED.value}")
 
     def job_size_normalize(self, start: datetime, end: datetime) -> datetime:
         # adjust slice size when it's bigger than the loop point when it should end,
@@ -514,7 +508,7 @@ class ShopifyBulkManager:
         return slice_end
 
     def _emit_final_job_message(self, job_current_elapsed_time: int) -> None:
-        final_message = f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` time elapsed: {job_current_elapsed_time} sec."
+        final_message = f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` time elapsed: {job_current_elapsed_time} sec."
 
         if self._job_any_lines_collected:
             lines_collected_message = f" Rows collected: {self._job_last_rec_count} --> records: `{self.record_producer.record_composed}`."
