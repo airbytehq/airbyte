@@ -14,7 +14,6 @@ from azure.core.credentials import AccessToken
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from smart_open import open
-
 from source_azure_blob_storage.spec import SourceAzureBlobStorageSpec
 
 
