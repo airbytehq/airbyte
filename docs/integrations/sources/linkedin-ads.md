@@ -183,7 +183,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 2.1.11 | 2024-07-18 | [35655](https://github.com/airbytehq/airbyte/pull/35655) | Fix re-add adDirectSponsoredContents stream named as Posts |
+| 2.1.12 | 2024-07-18 | [35655](https://github.com/airbytehq/airbyte/pull/35655) | Fix re-add adDirectSponsoredContents stream named as Posts |
+| 2.1.11 | 2024-07-20 | [42291](https://github.com/airbytehq/airbyte/pull/42291) | Update dependencies |
 | 2.1.10 | 2024-07-13 | [41710](https://github.com/airbytehq/airbyte/pull/41710) | Update dependencies |
 | 2.1.9 | 2024-07-10 | [41517](https://github.com/airbytehq/airbyte/pull/41517) | Update dependencies |
 | 2.1.8 | 2024-07-09 | [41315](https://github.com/airbytehq/airbyte/pull/41315) | Update dependencies |

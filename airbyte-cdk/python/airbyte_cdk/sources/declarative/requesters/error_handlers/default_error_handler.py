@@ -6,9 +6,6 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
-    ExponentialBackoffStrategy,
-)
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
@@ -87,8 +84,6 @@ class DefaultErrorHandler(ErrorHandler):
         to wait before retrying
     """
 
-    DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
-
     parameters: InitVar[Mapping[str, Any]]
     config: Config
     response_filters: Optional[List[HttpResponseFilter]] = None
@@ -102,9 +97,6 @@ class DefaultErrorHandler(ErrorHandler):
 
         if not self.response_filters:
             self.response_filters = [HttpResponseFilter(config=self.config, parameters={})]
-
-        if not self.backoff_strategies:
-            self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(parameters=parameters, config=self.config)]
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 

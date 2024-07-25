@@ -3756,7 +3756,14 @@ streams:
         extractor:
           class_name: "source_braintree.source.CustomerExtractor"
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
@@ -9747,7 +9754,14 @@ streams:
         extractor:
           class_name: "source_braintree.source.TransactionExtractor"
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
@@ -15697,7 +15711,14 @@ streams:
         extractor:
           class_name: "source_braintree.source.SubscriptionExtractor"
       paginator:
-        type: NoPagination
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
