@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.dataTypesSerializationErrorMessage;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.PostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataInjector;
@@ -45,6 +48,7 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     final List<AirbyteRecordMessageMetaChange> metaChanges = new ArrayList<>();
     for (int i = 1; i <= columnCount; i++) {
       final String columnName = metadata.getColumnName(i);
+      final String columnTypeName = metadata.getColumnTypeName(i);
       try {
         if (columnName.equalsIgnoreCase(CTID)) {
           ctid = queryContext.getString(i);
@@ -54,7 +58,8 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
         // convert to java types that will convert into reasonable json.
         copyToJsonField(queryContext, i, jsonNode);
       } catch (Exception e) {
-        LOGGER.info("Failed to serialize column: {}, with error {}", columnName, e.getMessage());
+        LOGGER.info("Failed to serialize column: {}, of type {}, with error {}", columnName, columnTypeName, e.getMessage());
+        AirbyteTraceMessageUtility.emitAnalyticsTrace(dataTypesSerializationErrorMessage());
         metaChanges.add(
             new AirbyteRecordMessageMetaChange()
                 .withField(columnName)

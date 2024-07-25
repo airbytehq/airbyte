@@ -20,9 +20,8 @@ public class MssqlDebeziumStateUtilTest {
 
   @Test
   void generateCorrectFormat() {
-    MssqlDebeziumStateUtil util = new MssqlDebeziumStateUtil();
     MssqlDebeziumStateAttributes attributes = new MssqlDebeziumStateAttributes(LSN);
-    JsonNode formatResult = util.format(attributes, DB_NAME);
+    JsonNode formatResult = MssqlDebeziumStateUtil.format(attributes, DB_NAME);
     assertEquals("{\"commit_lsn\":\"0000062d:00017ff0:016d\",\"snapshot\":true,\"snapshot_completed\":true}",
         formatResult.get("[\"db_name\",{\"server\":\"db_name\",\"database\":\"db_name\"}]").asText());
   }

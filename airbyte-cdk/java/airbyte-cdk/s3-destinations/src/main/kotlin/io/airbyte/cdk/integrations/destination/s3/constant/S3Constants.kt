@@ -16,6 +16,7 @@ class S3Constants {
         const val SECRET_ACCESS_KEY: String = "secret_access_key"
         const val S_3_BUCKET_NAME: String = "s3_bucket_name"
         const val S_3_BUCKET_REGION: String = "s3_bucket_region"
+        const val ROLE_ARN: String = "role_arn"
 
         // r2 requires account_id
         const val ACCOUNT_ID: String = "account_id"

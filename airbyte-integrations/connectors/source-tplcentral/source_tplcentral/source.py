@@ -3,10 +3,10 @@
 #
 
 
+import logging
 from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
@@ -78,7 +78,7 @@ class SourceTplcentral(AbstractSource):
             user_login=config.get("user_login"),
         )
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             self._auth(config).get_auth_header()
         except Exception as e:

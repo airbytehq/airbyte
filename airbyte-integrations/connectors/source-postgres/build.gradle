@@ -12,7 +12,7 @@ java {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.29.0'
+    cdkVersionRequired = '0.43.3'
     features = ['db-sources', 'datastore-postgres']
     useLocalCdk = false
 }
@@ -24,8 +24,8 @@ application {
 
 dependencies {
     implementation 'commons-codec:commons-codec:1.16.0'
-    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
-    implementation 'io.debezium:debezium-connector-postgres:2.4.0.Final'
+    implementation 'io.debezium:debezium-embedded:2.6.2.Final'
+    implementation 'io.debezium:debezium-connector-postgres:2.6.2.Final'
 
     testFixturesApi 'org.testcontainers:postgresql:1.19.0'
 
@@ -44,4 +44,10 @@ jsonSchema2Pojo {
     generateBuilders = true
     includeConstructors = false
     includeSetters = true
+}
+
+compileKotlin {
+    dependsOn {
+        generateJsonSchema2Pojo
+    }
 }

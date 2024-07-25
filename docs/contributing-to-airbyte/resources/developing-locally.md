@@ -16,35 +16,36 @@ Manually switching between different language versions can get hairy. We recomme
 
 To start contributing:
 
-1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte`](https://github.com/airbytehq/airbyte) repository to develop connectors or the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository to develop the Airbyte platform. 
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte`](https://github.com/airbytehq/airbyte) repository to develop connectors or the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository to develop the Airbyte platform.
 2. Clone the fork on your workstation:
 
 If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
 
-   ```bash
-   git clone git@github.com:{YOUR_USERNAME}/airbyte.git
-   cd airbyte
-   ./run-ab-platform.sh
-   ```
+```bash
+git clone git@github.com:{YOUR_USERNAME}/airbyte.git
+cd airbyte
+./run-ab-platform.sh
+```
+
 If developing platform:
 
-   ```bash
-   git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
-   cd airbyte-platform
-   docker compose up
-   ```
+```bash
+git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
+cd airbyte-platform
+docker compose up
+```
 
 ## Build with `gradle`
 
 To compile and build the platform, run the following command in your local `airbyte-platform` repository:
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
+./gradlew build
 ```
 
 This will build all the code and run all the unit tests.
 
-`SUB_BUILD=PLATFORM ./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
+`./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
 :::info
 
@@ -53,12 +54,17 @@ Optionally, you may pass a `VERSION` environment variable to the gradle build co
 If unset, gradle will default to using the current VERSION in `.env` for Jars, and `dev` as the Docker image tag.
 
 :::
+:::info
+
+If running tasks on a subproject, you must prepend `:oss` to the project in gradlew. For example, to build the `airbyte-cron` project the command would look like: `./gradlew :oss:airbyte-cron:build`.
+
+:::
 
 :::info
 
 Gradle will use all CPU cores by default. If Gradle uses too much/too little CPU, tuning the number of CPU cores it uses to better suit a dev's need can help.
 
-Adjust this by either, 1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`. 2. Setting a cli option: `SUB_BUILD=PLATFORM ./gradlew build --max-workers 3` 3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
+Adjust this by either, 1. Setting an env var: `export GRADLE_OPTS="-Dorg.gradle.workers.max=3"`. 2. Setting a cli option: `./gradlew build --max-workers 3` 3. Setting the `org.gradle.workers.max` property in the `gradle.properties` file.
 
 A good rule of thumb is to set this to \(\# of cores - 1\).
 
@@ -82,7 +88,7 @@ These instructions explain how to run a version of Airbyte Platform that you are
 In your local `airbyte-platform` repository, run the following commands:
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
+./gradlew build
 VERSION=dev docker compose up
 ```
 
@@ -107,11 +113,9 @@ In your local `airbyte` repository, run the following command:
 ```
 
 - Then, build the connector image:
-  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector.
   - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
   - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
-
-
 
 :::info
 
@@ -121,7 +125,7 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 - In your browser, visit [http://localhost:8000/](http://localhost:8000/)
 - Log in with the default user `airbyte` and default password `password`
-- Go to `Settings` (gear icon in lower left corner) 
+- Go to `Settings` (gear icon in lower left corner)
 - Go to `Sources` or `Destinations` (depending on which connector you are testing)
 - Update the version number to use your docker image tag (default is `dev`)
 - Click `Change` to save the changes
@@ -132,16 +136,15 @@ Now when you run a sync with that connector, it will use your local docker image
 
 In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
 
-
 ```bash
-SUB_BUILD=PLATFORM ./gradlew clean build
-SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
+./gradlew clean build
+./gradlew :oss:airbyte-tests:acceptanceTests
 ```
 
 Test containers start Airbyte locally, run the tests, and shutdown Airbyte after running the tests. If you want to run acceptance tests against local Airbyte that is not managed by the test containers, you need to set `USE_EXTERNAL_DEPLOYMENT` environment variable to true:
 
 ```bash
-USE_EXTERNAL_DEPLOYMENT=true SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
+USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
 ```
 
 ## Run formatting automation/tests
@@ -152,7 +155,7 @@ The command to run formatting varies slightly depending on which part of the cod
 
 ### Platform
 
-If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` from the root of the `airbyte-platform` repository.
+If you are working in the platform run `./gradlew format` from the root of the `airbyte-platform` repository.
 
 ### Connector
 
@@ -196,6 +199,7 @@ pnpm start
 When working on the connector builder UI and doing changes to the CDK and the webapp at the same time, you can start the dev server with `CDK_MANIFEST_PATH` or `CDK_VERSION` environment variables set to have the correct Typescript types built. If `CDK_VERSION` is set, it's loading the specified version of the CDK from pypi instead of the default one, if `CDK_MANIFEST_PATH` is set, it's copying the schema file locally.
 
 For example:
+
 ```
 CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml pnpm start
 ```
@@ -234,7 +238,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 - Rebuild the project
 
   ```bash
-   SUB_BUILD=PLATFORM ./gradlew clean build
+   ./gradlew clean build
    VERSION=dev docker compose up -V
   ```
 

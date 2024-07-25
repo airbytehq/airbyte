@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import functools
 import json
 import logging
 import re
@@ -39,7 +38,6 @@ from airbyte_protocol.models import (
 )
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
-    AllowedHostsConfiguration,
     BasicReadTestConfig,
     Config,
     ConnectionTestConfig,
@@ -699,12 +697,12 @@ class TestDiscovery(BaseTest):
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
         assert len(duplicated_stream_names) == 0, f"Catalog should have uniquely named streams, duplicates are: {duplicated_stream_names}"
 
-    def duplicated_stream_names(self, streams) -> List[str]:
+    def duplicated_stream_names(self, streams) -> List[Tuple[str, str]]:
         """Counts number of times a stream appears in the catalog"""
         name_counts = dict()
         for stream in streams:
-            count = name_counts.get(stream.name, 0)
-            name_counts[stream.name] = count + 1
+            count = name_counts.get((stream.namespace, stream.name), 0)
+            name_counts[(stream.namespace, stream.name)] = count + 1
         return [k for k, v in name_counts.items() if v > 1]
 
     def test_streams_have_valid_json_schemas(self, discovered_catalog: Mapping[str, Any]):
@@ -834,6 +832,32 @@ class TestDiscovery(BaseTest):
                             f"Found unsupported type/format combination {type_format_combination} in {stream_name} stream on property {parent_path}"
                         )
 
+    def test_primary_keys_data_type(self, inputs: DiscoveryTestConfig, discovered_catalog: Mapping[str, Any]):
+        if not inputs.validate_primary_keys_data_type:
+            pytest.skip("Primary keys data type validation is disabled in config.")
+
+        forbidden_primary_key_data_types: Set[str] = {"object", "array"}
+        errors: List[str] = []
+
+        for stream_name, stream in discovered_catalog.items():
+            if not stream.source_defined_primary_key:
+                continue
+
+            for primary_key_part in stream.source_defined_primary_key:
+                primary_key_path = "/properties/".join(primary_key_part)
+                try:
+                    primary_key_definition = dpath.util.get(stream.json_schema["properties"], primary_key_path)
+                except KeyError:
+                    errors.append(f"Stream {stream_name} does not have defined primary key in schema")
+                    continue
+
+                data_type = set(primary_key_definition.get("type", []))
+
+                if data_type.intersection(forbidden_primary_key_data_types):
+                    errors.append(f"Stream {stream_name} contains primary key with forbidden type of {data_type}")
+
+        assert not errors, "\n".join(errors)
+
 
 def primary_keys_for_records(streams, records):
     streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]
@@ -868,7 +892,7 @@ class TestBasicRead(BaseTest):
         therefore any arbitrary object would pass schema validation.
         This method is here to catch those cases by extracting all the paths
         from the object and compare it to paths expected from jsonschema. If
-        there no common pathes then raise an alert.
+        there no common paths then raise an alert.
 
         :param records: List of airbyte record messages gathered from connector instances.
         :param configured_catalog: Testcase parameters parsed from yaml file
@@ -878,15 +902,15 @@ class TestBasicRead(BaseTest):
             schemas[stream.stream.name] = set(get_expected_schema_structure(stream.stream.json_schema))
 
         for record in records:
-            schema_pathes = schemas.get(record.stream)
-            if not schema_pathes:
+            schema_paths = schemas.get(record.stream)
+            if not schema_paths:
                 continue
             record_fields = set(get_object_structure(record.data))
-            common_fields = set.intersection(record_fields, schema_pathes)
+            common_fields = set.intersection(record_fields, schema_paths)
 
             assert (
                 common_fields
-            ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
+            ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_paths}"
 
     @staticmethod
     def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
@@ -1003,6 +1027,10 @@ class TestBasicRead(BaseTest):
     def should_validate_state_messages_fixture(self, inputs: BasicReadTestConfig):
         return inputs.validate_state_messages
 
+    @pytest.fixture(name="should_validate_primary_keys_data_type")
+    def should_validate_primary_keys_data_type_fixture(self, inputs: BasicReadTestConfig):
+        return inputs.validate_primary_keys_data_type
+
     @pytest.fixture(name="should_fail_on_extra_columns")
     def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
         # TODO (Ella): enforce this param once all connectors are passing
@@ -1056,6 +1084,7 @@ class TestBasicRead(BaseTest):
         should_validate_data_points: Boolean,
         should_validate_stream_statuses: Boolean,
         should_validate_state_messages: Boolean,
+        should_validate_primary_keys_data_type: Boolean,
         should_fail_on_extra_columns: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
         ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
@@ -1078,11 +1107,9 @@ class TestBasicRead(BaseTest):
             self._validate_schema(records=records, configured_catalog=configured_catalog)
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
-        for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
-            for pk_path, pk_value in pks.items():
-                assert (
-                    pk_value is not None
-                ), f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
+
+        if should_validate_primary_keys_data_type:
+            self._validate_primary_keys_data_type(streams=configured_catalog.streams, records=records)
 
         # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
         if should_validate_data_points:
@@ -1258,9 +1285,7 @@ class TestBasicRead(BaseTest):
         ), "All stream must emit status"
 
         for stream_name, status_list in stream_statuses.items():
-            assert (
-                len(status_list) >= 3
-            ), f"Stream `{stream_name}` statuses should be emitted in the next order: `STARTED`, `RUNNING`,... `COMPLETE`"
+            assert len(status_list) >= 2, f"Stream `{stream_name}` should contain at least : `STARTED` and `COMPLETE`"
             assert status_list[0] == AirbyteStreamStatus.STARTED
             assert status_list[-1] == AirbyteStreamStatus.COMPLETE
             assert all(x == AirbyteStreamStatus.RUNNING for x in status_list[1:-1])
@@ -1286,10 +1311,27 @@ class TestBasicRead(BaseTest):
             # Check if stats are of the correct type and present in state message
             assert isinstance(state.sourceStats, AirbyteStateStats), "Source stats should be in state message."
 
+    @staticmethod
+    def _validate_primary_keys_data_type(streams: List[ConfiguredAirbyteStream], records: List[AirbyteRecordMessage]):
+        data_types_mapping = {"dict": "object", "list": "array"}
+        for primary_keys, record in primary_keys_for_records(streams=streams, records=records):
+            stream_name = record.stream
+            non_nullable_key_part_found = False
+            for primary_key_path, primary_key_value in primary_keys.items():
+                if primary_key_value is not None:
+                    non_nullable_key_part_found = True
+
+                assert not isinstance(primary_key_value, (list, dict)), (
+                    f"Stream {stream_name} contains primary key with forbidden type "
+                    f"of '{data_types_mapping.get(primary_key_value.__class__.__name__)}'"
+                )
+
+            assert non_nullable_key_part_found, f"Stream {stream_name} contains primary key with null values in all its parts"
+
 
 @pytest.mark.default_timeout(TEN_MINUTES)
 class TestConnectorAttributes(BaseTest):
-    # Overide from BaseTest!
+    # Override from BaseTest!
     # Used so that this is not part of the mandatory high strictness test suite yet
     MANDATORY_FOR_TEST_STRICTNESS_LEVELS = []
 

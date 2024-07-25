@@ -35,7 +35,7 @@ class ExecutableTestSource : SourceAcceptanceTest() {
     override val imageName: String
         get() = TEST_CONFIG!!.imageName
 
-    override val config: JsonNode?
+    override val config: JsonNode
         get() = Jsons.deserialize(IOs.readFile(TEST_CONFIG!!.configPath))
 
     override val configuredCatalog: ConfiguredAirbyteCatalog
@@ -45,7 +45,7 @@ class ExecutableTestSource : SourceAcceptanceTest() {
                 ConfiguredAirbyteCatalog::class.java
             )
 
-    override val state: JsonNode?
+    override val state: JsonNode
         get() =
             if (TEST_CONFIG!!.statePath != null) {
                 Jsons.deserialize(IOs.readFile(TEST_CONFIG!!.statePath))

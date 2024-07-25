@@ -4,10 +4,10 @@
 package io.airbyte.cdk.integrations.base
 
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * Minimal abstract class intended to handle the case where the destination can commit records every
  * time a state message appears. This class does that commit and then immediately emits the state
@@ -26,9 +26,4 @@ abstract class CommitOnStateAirbyteMessageConsumer(
     }
 
     @Throws(Exception::class) abstract fun commit()
-
-    companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(CommitOnStateAirbyteMessageConsumer::class.java)
-    }
 }

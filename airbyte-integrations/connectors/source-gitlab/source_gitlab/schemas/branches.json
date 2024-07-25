@@ -3,36 +3,47 @@
   "type": "object",
   "properties": {
     "project_id": {
+      "description": "ID of the project to which this branch belongs.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the branch.",
       "type": ["null", "string"]
     },
     "merged": {
+      "description": "Indicates if the changes in this branch have been merged into another branch.",
       "type": ["null", "boolean"]
     },
     "protected": {
+      "description": "Indicates if the branch is protected to prevent direct pushes.",
       "type": ["null", "boolean"]
     },
     "developers_can_push": {
+      "description": "Indicates if developers can push changes to this branch.",
       "type": ["null", "boolean"]
     },
     "developers_can_merge": {
+      "description": "Indicates if developers can merge changes to this branch.",
       "type": ["null", "boolean"]
     },
     "can_push": {
+      "description": "Indicates if the user has permission to push changes to this branch.",
       "type": ["null", "boolean"]
     },
     "default": {
+      "description": "Indicates if this is the default branch of the project.",
       "type": ["null", "boolean"]
     },
     "web_url": {
+      "description": "URL to view the branch in a web browser.",
       "type": ["null", "string"]
     },
     "commit_id": {
+      "description": "ID of the commit associated with this branch.",
       "type": ["null", "string"]
     },
     "commit": {
+      "description": "Details about the commit associated with this branch.",
       "type": ["null", "object"],
       "additionalProperties": true
     }

@@ -89,7 +89,7 @@ We recommend iterating on this YAML file is via the [connector builder UI](https
 
 ## Configuring the YAML file
 
-The low-code framework involves editing a boilerplate YAML file. The general structure of the YAML file is as follows:
+The low-code framework involves editing the Connector Manifest, which is a boilerplate YAML file. The general structure of the YAML file is as follows:
 
 ```
 version: "0.1.0"
@@ -156,4 +156,5 @@ For examples of production-ready config-based connectors, refer to:
 - [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
 
 ## Reference
+
 The full schema definition for the YAML file can be found [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml).

@@ -5,8 +5,7 @@
 
 import sys
 
-from airbyte_cdk import AirbyteEntrypoint
-from airbyte_cdk.entrypoint import launch
+from airbyte_cdk import AirbyteEntrypoint, launch
 from source_google_drive import SourceGoogleDrive
 
 

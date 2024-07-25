@@ -4,60 +4,142 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "LastUpdatedDate": { "type": ["null", "string"], "format": "date-time" },
-    "SalesChannel": { "type": ["null", "string"] },
-    "OrderStatus": { "type": ["null", "string"] },
-    "AmazonOrderID": { "type": ["null", "string"] },
-    "PurchaseDate": { "type": ["null", "string"], "format": "date-time" },
+    "LastUpdatedDate": {
+      "description": "The date and time when the order was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "SalesChannel": {
+      "description": "The sales channel through which the order was made.",
+      "type": ["null", "string"]
+    },
+    "OrderStatus": {
+      "description": "The status of the order.",
+      "type": ["null", "string"]
+    },
+    "AmazonOrderID": {
+      "description": "The unique identifier for the order on Amazon.",
+      "type": ["null", "string"]
+    },
+    "PurchaseDate": {
+      "description": "The date and time when the order was purchased.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "OrderItem": {
+      "description": "Details about the individual items in the order.",
       "type": ["array"],
-      "items": { "type": ["null", "object"] },
+      "items": {
+        "type": ["null", "object"]
+      },
       "properties": {
-        "ItemStatus": { "type": ["null", "string"] },
-        "ProductName": { "type": ["null", "string"] },
+        "ItemStatus": {
+          "description": "The status of the order item.",
+          "type": ["null", "string"]
+        },
+        "ProductName": {
+          "description": "The name of the product.",
+          "type": ["null", "string"]
+        },
         "ItemPrice": {
+          "description": "Contains the price information for the item.",
           "type": ["null", "object"],
           "properties": {
             "Component": {
+              "description": "Breakdown of item components if applicable.",
               "type": ["array"],
-              "items": { "type": ["null", "object"] },
+              "items": {
+                "type": ["null", "object"]
+              },
               "properties": {
-                "Type": { "type": ["null", "string"] },
+                "Type": {
+                  "description": "The type of item price component.",
+                  "type": ["null", "string"]
+                },
                 "Amount": {
+                  "description": "The total amount for the item.",
                   "type": ["null", "object"],
                   "properties": {
-                    "currency": { "type": ["null", "string"] },
-                    "value": { "type": ["null", "string"] }
+                    "currency": {
+                      "description": "The currency in which the item price is specified.",
+                      "type": ["null", "string"]
+                    },
+                    "value": {
+                      "description": "The value of the item price.",
+                      "type": ["null", "string"]
+                    }
                   }
                 }
               }
             }
           }
         },
-        "ASIN": { "type": ["null", "string"] },
-        "Quantity": { "type": ["null", "string"] },
-        "AmazonOrderItemCode": { "type": ["null", "string"] },
-        "SKU": { "type": ["null", "string"] }
+        "ASIN": {
+          "description": "The Amazon Standard Identification Number for the product.",
+          "type": ["null", "string"]
+        },
+        "Quantity": {
+          "description": "The quantity of the product ordered.",
+          "type": ["null", "string"]
+        },
+        "AmazonOrderItemCode": {
+          "description": "The unique identifier for the order item on Amazon.",
+          "type": ["null", "string"]
+        },
+        "SKU": {
+          "description": "The Stock Keeping Unit for the product.",
+          "type": ["null", "string"]
+        }
       }
     },
     "FulfillmentData": {
+      "description": "Contains data related to order fulfillment.",
       "type": ["null", "object"],
       "properties": {
         "Address": {
+          "description": "Contains the address information for order shipping.",
           "type": ["null", "object"],
           "properties": {
-            "State": { "type": ["null", "string"] },
-            "PostalCode": { "type": ["null", "string"] },
-            "Country": { "type": ["null", "string"] },
-            "City": { "type": ["null", "string"] }
+            "State": {
+              "description": "The state for the order's shipping address.",
+              "type": ["null", "string"]
+            },
+            "PostalCode": {
+              "description": "The postal code for the order's shipping address.",
+              "type": ["null", "string"]
+            },
+            "Country": {
+              "description": "The country for the order's shipping address.",
+              "type": ["null", "string"]
+            },
+            "City": {
+              "description": "The city for the order's shipping address.",
+              "type": ["null", "string"]
+            }
           }
         },
-        "ShipServiceLevel": { "type": ["null", "string"] },
-        "FulfillmentChannel": { "type": ["null", "string"] }
+        "ShipServiceLevel": {
+          "description": "The service level chosen for shipping the order.",
+          "type": ["null", "string"]
+        },
+        "FulfillmentChannel": {
+          "description": "The channel used for fulfilling the order.",
+          "type": ["null", "string"]
+        }
       }
     },
-    "IsBusinessOrder": { "type": ["null", "string"] },
-    "MerchantOrderID": { "type": ["null", "string"] },
-    "dataEndTime": { "type": ["null", "string"], "format": "date" }
+    "IsBusinessOrder": {
+      "description": "Indicates if the order is a business order.",
+      "type": ["null", "string"]
+    },
+    "MerchantOrderID": {
+      "description": "The unique identifier for the order set by the merchant.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time for the data in the response.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

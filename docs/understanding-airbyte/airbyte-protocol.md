@@ -27,7 +27,7 @@ Each of these concepts is described in greater depth in their respective section
 The Airbyte Protocol is versioned independently of the Airbyte Platform, and the version number is used to determine the compatibility between connectors and the Airbyte Platform.
 
 | Version  | Date of Change | Pull Request(s)                                                                                                           | Subject                                                                           |
-|:---------|:---------------|:--------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------|
+| :------- | :------------- | :------------------------------------------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------- |
 | `v0.5.2` | 2023-12-26     | [58](https://github.com/airbytehq/airbyte-protocol/pull/58)                                                               | Remove unused V1.                                                                 |
 | `v0.5.1` | 2023-04-12     | [53](https://github.com/airbytehq/airbyte-protocol/pull/53)                                                               | Modify various helper libraries.                                                  |
 | `v0.5.0` | 2023-11-13     | [49](https://github.com/airbytehq/airbyte-protocol/pull/49)                                                               | `AirbyteStateStatsMessage` added.                                                 |
@@ -109,9 +109,10 @@ check(Config) -> AirbyteConnectionStatus
 ```
 
 The `check` command validates that, given a configuration, that the Actor is able to connect and access all resources that it needs in order to operate. e.g. Given some Postgres credentials, it determines whether it can connect to the Postgres database. The output will be as follows:
-- If it can, the `check` command will return a success response. 
+
+- If it can, the `check` command will return a success response.
 - If `check` fails because of a configuration issue (perhaps the password is incorrect), it will return a failed response and (when possible) a helpful error message. A failed response will be considered as a config error, i.e. user error. Outputting a trace message detailing the config error is optional, but allows for more detailed debugging of the error.
-- If it fails because of a connector issue, the `check` command should output a trace message detailing the failure. It is not expected to receive an `AirbyteConnectionStatus` in this failure case. 
+- If it fails because of a connector issue, the `check` command should output a trace message detailing the failure. It is not expected to receive an `AirbyteConnectionStatus` in this failure case.
 
 If an actor's `check` command succeeds, it is expected that all subsequent methods in the sync will also succeed.
 
@@ -494,6 +495,7 @@ The normal success case (T3, not depicted) would be that all the records would m
 -- [link](https://whimsical.com/state-TYX5bSCVtVF4BU1JbUwfpZ) to source image
 
 ### State Types
+
 In addition to allowing a Source to checkpoint data replication, the state object allows for the ability to configure and reset streams in isolation from each other. For example, if adding or removing a stream, it is possible to do so without affecting the state of any other stream in the Source.
 
 There are 3 types of state: Stream, Global, and Legacy.
@@ -515,6 +517,7 @@ This table breaks down attributes of these state types.
 - **Single state message describes full state for Source** means that any state message contains the full state information for a Source. Stream does not meet this condition because each state message is scoped by stream. This means that in order to build a full picture of the state for the Source, the state messages for each configured stream must be gathered.
 
 ### State Principles
+
 The following are principles Airbyte recommends Sources/Destinations adhere to with State. Airbyte enforces these principles via our CDK.
 
 These principles are intended to produce simple overall system behavior, and move Airbyte towards a world of shorter-lived jobs. The goal is reliable data movement with minimal data loss windows on errors.
@@ -527,6 +530,7 @@ These principles are intended to produce simple overall system behavior, and mov
 
    This simplifies how the Platform treats jobs and means all Syncs are resumable. This also enables checkpointing on full refreshes in the future. This rule does not appear to Sources that do not support cursors.
    However:
+
    1. If the source stream has no records, an empty state should still be emitted. This supports state-based counts/checksums. It is recommended for the emitted state to have unique and non-null content.
    2. If the stream is unsorted, and therefore non-resumable, it is recommended to still send a state message, even with bogus resumability, to indicate progress in the sync.
 
@@ -544,10 +548,9 @@ These principles are intended to produce simple overall system behavior, and mov
 
 6. **Destinations return state in the order it was received.**
 
-   Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors, as do skipped state messages. Every state message the destination recieved must be returned back to the platform, in order. 
+   Order is used by the Platform to determine if a State message was dropped. Out-of-order State messages throw errors, as do skipped state messages. Every state message the destination recieved must be returned back to the platform, in order.
 
    Order-ness is determined by the type of State message. Per-stream state messages require order per-stream. Global state messages require global ordering.
-
 
 ## Messages
 

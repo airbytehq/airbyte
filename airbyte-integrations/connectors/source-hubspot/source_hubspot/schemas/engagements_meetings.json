@@ -3,367 +3,480 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the meeting engagement.",
       "type": ["null", "string"]
     },
     "properties": {
+      "description": "Additional properties related to the meeting engagement.",
       "type": "object",
       "properties": {
         "hs_activity_type": {
+          "description": "Type of activity associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_all_assigned_business_unit_ids": {
+          "description": "IDs of all business units assigned to the meeting.",
           "type": ["null", "string"]
         },
         "hs_at_mentioned_owner_ids": {
+          "description": "IDs of owners mentioned in the meeting.",
           "type": ["null", "string"]
         },
         "hs_attachment_ids": {
+          "description": "IDs of attachments associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_attendee_owner_ids": {
+          "description": "IDs of owners who are attendees in the meeting.",
           "type": ["null", "string"]
         },
         "hs_body_preview": {
+          "description": "Preview of the meeting body.",
           "type": ["null", "string"]
         },
         "hs_body_preview_html": {
+          "description": "HTML version of the meeting body preview.",
           "type": ["null", "string"]
         },
         "hs_body_preview_is_truncated": {
+          "description": "Flag indicating if the body preview is truncated.",
           "type": ["null", "boolean"]
         },
         "hs_created_by": {
+          "description": "User who created the meeting.",
           "type": ["null", "number"]
         },
         "hs_created_by_user_id": {
+          "description": "User ID of the creator of the meeting.",
           "type": ["null", "number"]
         },
         "hs_createdate": {
+          "description": "Date and time when the meeting was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_engagement_source": {
+          "description": "Source of the meeting engagement.",
           "type": ["null", "string"]
         },
         "hs_engagement_source_id": {
+          "description": "ID of the source of the meeting engagement.",
           "type": ["null", "string"]
         },
         "hs_follow_up_action": {
+          "description": "Follow-up action related to the meeting.",
           "type": ["null", "string"]
         },
         "hs_gdpr_deleted": {
+          "description": "Flag indicating if the meeting is deleted due to GDPR.",
           "type": ["null", "boolean"]
         },
         "hs_i_cal_uid": {
+          "description": "Unique identifier for the meeting in iCalendar format.",
           "type": ["null", "string"]
         },
         "hs_internal_meeting_notes": {
+          "description": "Internal notes related to the meeting.",
           "type": ["null", "string"]
         },
         "hs_lastmodifieddate": {
+          "description": "Date and time when the meeting was last modified.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_meeting_body": {
+          "description": "Full body of the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_calendar_event_hash": {
+          "description": "Unique hash for the meeting in the calendar event.",
           "type": ["null", "string"]
         },
         "hs_meeting_change_id": {
+          "description": "Change ID associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_created_from_link_id": {
+          "description": "ID of the link from which the meeting was created.",
           "type": ["null", "string"]
         },
         "hs_meeting_end_time": {
+          "description": "End time of the meeting.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_meeting_external_url": {
+          "description": "External URL associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_location": {
+          "description": "Location where the meeting took place.",
           "type": ["null", "string"]
         },
         "hs_meeting_location_type": {
+          "description": "Type of location where the meeting took place.",
           "type": ["null", "string"]
         },
         "hs_meeting_outcome": {
+          "description": "Outcome of the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_pre_meeting_prospect_reminders": {
+          "description": "Prospect reminders before the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_source": {
+          "description": "Source of the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_source_id": {
+          "description": "ID of the source of the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_start_time": {
+          "description": "Start time of the meeting.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_meeting_title": {
+          "description": "Title of the meeting.",
           "type": ["null", "string"]
         },
         "hs_meeting_web_conference_meeting_id": {
+          "description": "Meeting ID for web conference.",
           "type": ["null", "string"]
         },
         "hs_merged_object_ids": {
+          "description": "IDs of merged objects related to the meeting.",
           "type": ["null", "string"]
         },
         "hs_modified_by": {
+          "description": "User who last modified the meeting.",
           "type": ["null", "number"]
         },
         "hs_object_id": {
+          "description": "Object ID associated with the meeting.",
           "type": ["null", "number"]
         },
         "hs_product_name": {
+          "description": "Name of the product associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_queue_membership_ids": {
+          "description": "IDs of queues the meeting is associated with.",
           "type": ["null", "string"]
         },
         "hs_scheduled_tasks": {
+          "description": "Scheduled tasks related to the meeting.",
           "type": ["null", "string"]
         },
         "hs_timestamp": {
+          "description": "Timestamp for the meeting engagement.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hs_unique_creation_key": {
+          "description": "Unique key associated with the creation of the meeting.",
           "type": ["null", "string"]
         },
         "hs_unique_id": {
+          "description": "Unique ID associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_updated_by_user_id": {
+          "description": "User ID of the user who last updated the meeting.",
           "type": ["null", "number"]
         },
         "hs_user_ids_of_all_notification_followers": {
+          "description": "IDs of users following notifications for the meeting.",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_notification_unfollowers": {
+          "description": "IDs of users who have unfollowed notifications for the meeting.",
           "type": ["null", "string"]
         },
         "hs_user_ids_of_all_owners": {
+          "description": "IDs of all owners associated with the meeting.",
           "type": ["null", "string"]
         },
         "hubspot_owner_assigneddate": {
+          "description": "Date and time when the owner was assigned to the meeting.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "hubspot_owner_id": {
+          "description": "ID of the owner associated with the meeting.",
           "type": ["null", "string"]
         },
         "hubspot_team_id": {
+          "description": "ID of the team associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_all_owner_ids": {
+          "description": "IDs of all owners associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_all_team_ids": {
+          "description": "IDs of all teams associated with the meeting.",
           "type": ["null", "string"]
         },
         "hs_all_accessible_team_ids": {
+          "description": "IDs of all teams that have access to the meeting.",
           "type": ["null", "string"]
         }
       }
     },
     "properties_hs_activity_type": {
+      "description": "Type of activity associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_all_assigned_business_unit_ids": {
+      "description": "IDs of all business units assigned to the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_at_mentioned_owner_ids": {
+      "description": "IDs of owners mentioned in the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_attachment_ids": {
+      "description": "IDs of attachments associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_attendee_owner_ids": {
+      "description": "IDs of owners who are attendees in the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview": {
+      "description": "Preview of the meeting body.",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview_html": {
+      "description": "HTML version of the meeting body preview.",
       "type": ["null", "string"]
     },
     "properties_hs_body_preview_is_truncated": {
+      "description": "Flag indicating if the body preview is truncated.",
       "type": ["null", "boolean"]
     },
     "properties_hs_created_by": {
+      "description": "User who created the meeting.",
       "type": ["null", "number"]
     },
     "properties_hs_created_by_user_id": {
+      "description": "User ID of the creator of the meeting.",
       "type": ["null", "number"]
     },
     "properties_hs_createdate": {
+      "description": "Date and time when the meeting was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_engagement_source": {
+      "description": "Source of the meeting engagement.",
       "type": ["null", "string"]
     },
     "properties_hs_engagement_source_id": {
+      "description": "ID of the source of the meeting engagement.",
       "type": ["null", "string"]
     },
     "properties_hs_follow_up_action": {
+      "description": "Follow-up action related to the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_gdpr_deleted": {
+      "description": "Flag indicating if the meeting is deleted due to GDPR.",
       "type": ["null", "boolean"]
     },
     "properties_hs_i_cal_uid": {
+      "description": "Unique identifier for the meeting in iCalendar format.",
       "type": ["null", "string"]
     },
     "properties_hs_internal_meeting_notes": {
+      "description": "Internal notes related to the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_lastmodifieddate": {
+      "description": "Date and time when the meeting was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_meeting_body": {
+      "description": "Full body of the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_calendar_event_hash": {
+      "description": "Unique hash for the meeting in the calendar event.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_change_id": {
+      "description": "Change ID associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_created_from_link_id": {
+      "description": "ID of the link from which the meeting was created.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_end_time": {
+      "description": "End time of the meeting.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_meeting_external_url": {
+      "description": "External URL associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_location": {
+      "description": "Location where the meeting took place.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_location_type": {
+      "description": "Type of location where the meeting took place.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_outcome": {
+      "description": "Outcome of the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_pre_meeting_prospect_reminders": {
+      "description": "Prospect reminders before the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_source": {
+      "description": "Source of the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_source_id": {
+      "description": "ID of the source of the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_start_time": {
+      "description": "Start time of the meeting.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_meeting_title": {
+      "description": "Title of the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_meeting_web_conference_meeting_id": {
+      "description": "Meeting ID for web conference.",
       "type": ["null", "string"]
     },
     "properties_hs_merged_object_ids": {
+      "description": "IDs of merged objects related to the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_modified_by": {
+      "description": "User who last modified the meeting.",
       "type": ["null", "number"]
     },
     "properties_hs_object_id": {
+      "description": "Object ID associated with the meeting.",
       "type": ["null", "number"]
     },
     "properties_hs_product_name": {
+      "description": "Name of the product associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_queue_membership_ids": {
+      "description": "IDs of queues the meeting is associated with.",
       "type": ["null", "string"]
     },
     "properties_hs_scheduled_tasks": {
+      "description": "Scheduled tasks related to the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_timestamp": {
+      "description": "Timestamp for the meeting engagement.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hs_unique_creation_key": {
+      "description": "Unique key associated with the creation of the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_unique_id": {
+      "description": "Unique ID associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_updated_by_user_id": {
+      "description": "User ID of the user who last updated the meeting.",
       "type": ["null", "number"]
     },
     "properties_hs_user_ids_of_all_notification_followers": {
+      "description": "IDs of users following notifications for the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_notification_unfollowers": {
+      "description": "IDs of users who have unfollowed notifications for the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_user_ids_of_all_owners": {
+      "description": "IDs of all owners associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hubspot_owner_assigneddate": {
+      "description": "Date and time when the owner was assigned to the meeting.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "properties_hubspot_owner_id": {
+      "description": "ID of the owner associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hubspot_team_id": {
+      "description": "ID of the team associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_all_owner_ids": {
+      "description": "IDs of all owners associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_all_team_ids": {
+      "description": "IDs of all teams associated with the meeting.",
       "type": ["null", "string"]
     },
     "properties_hs_all_accessible_team_ids": {
+      "description": "IDs of all teams with access to the meeting.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Timestamp indicating when the meeting engagement was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Timestamp indicating when the meeting engagement was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates whether the meeting engagement is archived or not.",
       "type": ["null", "boolean"]
     },
     "contacts": {
+      "description": "Information about the contacts associated with the meeting engagement.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "deals": {
+      "description": "Information about the deals associated with the meeting engagement.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "companies": {
+      "description": "Information about the companies associated with the meeting engagement.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "tickets": {
+      "description": "Information about the tickets associated with the meeting engagement.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

@@ -109,7 +109,7 @@ class AirbyteIntegrationLauncher(
         stateFilename: String?,
         stateContents: String?
     ): Process? {
-        val arguments: MutableList<String?> =
+        val arguments: MutableList<String> =
             Lists.newArrayList("read", CONFIG, configFilename, "--catalog", catalogFilename)
 
         val files: MutableMap<String?, String?> = HashMap()
@@ -145,7 +145,7 @@ class AirbyteIntegrationLauncher(
             workerMetadata,
             emptyMap(),
             emptyMap(),
-            *arguments.toTypedArray<String?>()
+            *arguments.toTypedArray<String>()
         )
     }
 

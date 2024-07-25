@@ -295,7 +295,7 @@ internal class S3CsvWriterTest {
         private val OBJECT_MAPPER = ObjectMapper()
 
         private val CSV_FORMAT_CONFIG =
-            S3CsvFormatConfig(Flattening.NO, CompressionType.NO_COMPRESSION)
+            UploadCsvFormatConfig(Flattening.NO, CompressionType.NO_COMPRESSION)
 
         private val CONFIG =
             create("fake-bucket", "fake-bucketPath", "fake-region")

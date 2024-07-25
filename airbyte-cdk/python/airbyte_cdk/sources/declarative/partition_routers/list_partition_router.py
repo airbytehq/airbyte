@@ -6,13 +6,13 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
-class ListPartitionRouter(StreamSlicer):
+class ListPartitionRouter(PartitionRouter):
     """
     Partition router that iterates over the values of a list
     If values is a string, then evaluate it as literal and assert the resulting literal is a list
@@ -87,3 +87,15 @@ class ListPartitionRouter(StreamSlicer):
                 return {}
         else:
             return {}
+
+    def set_initial_state(self, stream_state: StreamState) -> None:
+        """
+        ListPartitionRouter doesn't have parent streams
+        """
+        pass
+
+    def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
+        """
+        ListPartitionRouter doesn't have parent streams
+        """
+        pass

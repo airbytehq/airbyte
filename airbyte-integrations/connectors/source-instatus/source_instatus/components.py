@@ -76,15 +76,18 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
     parent_stream_configs: List[ParentStreamConfig]
     parameters: InitVar[Mapping[str, Any]]
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         if not self.parent_stream_configs:
             yield from []
         else:
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
-                parent_field = parent_stream_config.parent_key
+                parent_field = parent_stream_config.parent_key.eval(self.config)
+                partition_field = parent_stream_config.partition_field.eval(self.config)
 
-                for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
+                for parent_stream_slice in parent_stream.stream_slices(
+                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
+                ):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
 
@@ -102,11 +105,10 @@ class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
                         updates_object_id = parent_record.get("id")
 
                         for stream_state_value in stream_state_values:
-                            yield {
-                                parent_stream_config.partition_field: stream_state_value,
-                                "updates_object_id": updates_object_id,
-                                "parent_slice": parent_slice,
-                            }
+                            yield StreamSlice(
+                                partition={partition_field: stream_state_value, "parent_slice": parent_slice},
+                                cursor_slice={"updates_object_id": updates_object_id},
+                            )
 
                     # If the parent slice contains no records,
                     if empty_parent_slice:

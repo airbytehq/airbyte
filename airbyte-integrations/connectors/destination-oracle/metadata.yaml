@@ -2,16 +2,12 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 3986776d-2319-4de9-8af8-db14c0996e72
-  dockerImageTag: 0.2.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/destination-oracle
   githubIssueLabel: destination-oracle
   icon: oracle.svg
   license: ELv2
   name: Oracle
-  normalizationConfig:
-    normalizationIntegrationType: oracle
-    normalizationRepository: airbyte/normalization-oracle
-    normalizationTag: 0.4.3
   registries:
     cloud:
       dockerRepository: airbyte/destination-oracle-strict-encrypt
@@ -21,10 +17,29 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/oracle
   supportsDbt: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-05-01"
+        message: >
+          This version removes the option to use "normalization" with Oracle. It also changes
+          the schema and database of Airbyte's "raw" tables to be compatible with the new
+          [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
+          format. These changes will likely require updates to downstream dbt / SQL models.
+          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync.
   tags:
     - language:java
   ab_internal:
     sl: 100
     ql: 200
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-ORACLE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

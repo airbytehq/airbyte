@@ -18,7 +18,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_protocol.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from source_chargebee import SourceChargebee
 
 from .config import ConfigBuilder
@@ -186,16 +186,21 @@ class IncrementalTest(TestCase):
             _a_response().with_record(_a_record().with_cursor(cursor_value)).build()
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), _NO_STATE)
-        assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated_at=cursor_value)
 
     @HttpMocker()
     def test_given_initial_state_use_state_for_query_params(self, http_mocker: HttpMocker) -> None:
         # Tests updating query param with state
         state_cursor_value = int((self._now - timedelta(days=5)).timestamp())
+        record_cursor_value = self._now_in_seconds - 1
         state =  StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: state_cursor_value}).build()
         http_mocker.get(
             _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([state_cursor_value, self._now_in_seconds]).build(),
-            _a_response().with_record(_a_record().with_cursor(self._now_in_seconds - 1)).build(),
+            _a_response().with_record(_a_record().with_cursor(record_cursor_value)).build(),
         )
         output = self._read(_config().with_start_date(self._start_date - timedelta(hours=8)), state)
-        assert output.most_recent_state == { _STREAM_NAME: {_CURSOR_FIELD: str(self._now_in_seconds) }}
+        most_recent_state = output.most_recent_state
+        assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
+        assert most_recent_state.stream_state == AirbyteStateBlob(updated_at=record_cursor_value)

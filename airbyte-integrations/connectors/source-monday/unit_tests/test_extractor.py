@@ -38,7 +38,7 @@ def test_empty_activity_logs_extract_records():
 def test_extract_records_incremental():
     # Mock the response
     response = MagicMock()
-    response_body = {"data": {"boards": [{"id": 1}]}}
+    response_body = {"data": {"boards": [{"id": 1, "column_values": [{"id": 11, "text": None, "display_value": "Hola amigo!"}]}]}}
 
     response.json.return_value = response_body
     extractor = MondayIncrementalItemsExtractor(
@@ -51,4 +51,4 @@ def test_extract_records_incremental():
     records = extractor.extract_records(response)
 
     # Assertions
-    assert records == [{"id": 1}]
+    assert records == [{"id": 1, "column_values": [{"id": 11, "text": "Hola amigo!", "display_value": "Hola amigo!"}]}]

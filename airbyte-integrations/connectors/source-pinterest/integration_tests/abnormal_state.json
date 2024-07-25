@@ -14,7 +14,12 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "DATE": "3021-06-09"
+        "states": [
+          {
+            "partition": { "id": "549761668032", "parent_slice": {} },
+            "cursor": { "DATE": "3021-06-09" }
+          }
+        ]
       },
       "stream_descriptor": {
         "name": "ad_account_analytics"
@@ -25,7 +30,12 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": 9628867244
+        "states": [
+          {
+            "partition": { "id": "549761668032", "parent_slice": {} },
+            "cursor": { "updated_time": 9628867244 }
+          }
+        ]
       },
       "stream_descriptor": {
         "name": "campaigns"
@@ -36,7 +46,12 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": 9628867244
+        "states": [
+          {
+            "partition": { "id": "549761668032", "parent_slice": {} },
+            "cursor": { "updated_time": 9628867244.0 }
+          }
+        ]
       },
       "stream_descriptor": {
         "name": "ad_groups"
@@ -47,7 +62,12 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_time": 9628867244
+        "states": [
+          {
+            "partition": { "id": "549761668032", "parent_slice": {} },
+            "cursor": { "updated_time": 9628867244 }
+          }
+        ]
       },
       "stream_descriptor": {
         "name": "ads"
@@ -58,7 +78,36 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "DATE": "3021-06-09"
+        "states": [
+          {
+            "partition": {
+              "id": "626744128956",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "626744128962",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "626744128966",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "626744128982",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          }
+        ]
       },
       "stream_descriptor": {
         "name": "campaign_analytics"
@@ -69,7 +118,36 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "DATE": "3021-06-09"
+        "states": [
+          {
+            "partition": {
+              "id": "2680068678965",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "2680068678971",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "2680068678975",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "2680068678993",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          }
+        ]
       },
       "stream_descriptor": {
         "name": "ad_group_analytics"
@@ -80,7 +158,36 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "DATE": "3021-06-09"
+        "states": [
+          {
+            "partition": {
+              "id": "687218400118",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "687218400125",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "687218400132",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          },
+          {
+            "partition": {
+              "id": "687218400210",
+              "parent_slice": { "id": "549761668032" }
+            },
+            "cursor": { "DATE": "3021-06-09" }
+          }
+        ]
       },
       "stream_descriptor": {
         "name": "ad_analytics"

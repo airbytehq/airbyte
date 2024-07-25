@@ -3,12 +3,12 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": ["null", "string"],
-      "description": "The name of the group."
+      "description": "The name of the group.",
+      "type": ["null", "string"]
     },
     "groupId": {
-      "type": ["null", "string"],
-      "description": "The ID of the group, if available, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*."
+      "description": "The ID of the group, if available, which uniquely identifies the group across all Atlassian products. For example, *952d12c3-5b5b-4d04-bb32-44d383afc4b2*.",
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,

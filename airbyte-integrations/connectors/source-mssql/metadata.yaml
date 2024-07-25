@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 4.0.8
+  dockerImageTag: 4.1.4
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
@@ -19,12 +19,8 @@ data:
   name: Microsoft SQL Server (MSSQL)
   registries:
     cloud:
-      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
-      dockerImageTag: 4.0.6
       enabled: true
     oss:
-      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
-      dockerImageTag: 4.0.6
       enabled: true
   releaseStage: generally_available
   supportLevel: certified
@@ -41,4 +37,30 @@ data:
       2.0.0:
         message: "Add default cursor for cdc"
         upgradeDeadline: "2023-08-23"
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-MSSQL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MSSQL_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MSSQL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MSSQL_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

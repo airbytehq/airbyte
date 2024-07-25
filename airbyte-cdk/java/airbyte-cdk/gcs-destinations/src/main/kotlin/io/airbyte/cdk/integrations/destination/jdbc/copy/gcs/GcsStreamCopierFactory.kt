@@ -18,29 +18,29 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
 
-abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
+abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig> {
     /** Used by the copy consumer. */
-    fun create(
+    override fun create(
         configuredSchema: String?,
-        gcsConfig: GcsConfig,
+        config: GcsConfig,
         stagingFolder: String?,
         configuredStream: ConfiguredAirbyteStream?,
         nameTransformer: StandardNameTransformer?,
         db: JdbcDatabase?,
         sqlOperations: SqlOperations?
-    ): StreamCopier? {
+    ): StreamCopier {
         try {
             val stream = configuredStream!!.stream
             val syncMode = configuredStream.destinationSyncMode
             val schema = getSchema(stream.namespace, configuredSchema!!, nameTransformer!!)
 
             val credentialsInputStream: InputStream =
-                ByteArrayInputStream(gcsConfig.credentialsJson.toByteArray(StandardCharsets.UTF_8))
+                ByteArrayInputStream(config.credentialsJson.toByteArray(StandardCharsets.UTF_8))
             val credentials = GoogleCredentials.fromStream(credentialsInputStream)
             val storageClient =
                 StorageOptions.newBuilder()
                     .setCredentials(credentials)
-                    .setProjectId(gcsConfig.projectId)
+                    .setProjectId(config.projectId)
                     .build()
                     .service
 
@@ -51,7 +51,7 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
                 stream.name,
                 storageClient,
                 db,
-                gcsConfig,
+                config,
                 nameTransformer,
                 sqlOperations
             )
@@ -72,5 +72,5 @@ abstract class GcsStreamCopierFactory : StreamCopierFactory<GcsConfig?> {
         gcsConfig: GcsConfig?,
         nameTransformer: StandardNameTransformer?,
         sqlOperations: SqlOperations?
-    ): StreamCopier?
+    ): StreamCopier
 }

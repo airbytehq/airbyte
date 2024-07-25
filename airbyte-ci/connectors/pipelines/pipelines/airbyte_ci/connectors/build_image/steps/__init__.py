@@ -6,13 +6,12 @@
 from __future__ import annotations
 
 import anyio
-from connector_ops.utils import ConnectorLanguage # type: ignore
-from pipelines.airbyte_ci.connectors.build_image.steps import java_connectors, python_connectors
+from connector_ops.utils import ConnectorLanguage  # type: ignore
+from pipelines.airbyte_ci.connectors.build_image.steps import java_connectors, python_connectors, manifest_only_connectors
 from pipelines.airbyte_ci.connectors.build_image.steps.common import LoadContainerToLocalDockerHost, StepStatus
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
 from pipelines.models.steps import StepResult
-
 
 
 class NoBuildStepForLanguageError(Exception):
@@ -22,6 +21,7 @@ class NoBuildStepForLanguageError(Exception):
 LANGUAGE_BUILD_CONNECTOR_MAPPING = {
     ConnectorLanguage.PYTHON: python_connectors.run_connector_build,
     ConnectorLanguage.LOW_CODE: python_connectors.run_connector_build,
+    ConnectorLanguage.MANIFEST_ONLY: manifest_only_connectors.run_connector_build,
     ConnectorLanguage.JAVA: java_connectors.run_connector_build,
 }
 

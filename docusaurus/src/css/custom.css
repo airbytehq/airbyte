@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -27,8 +27,11 @@
   --color-active-nav-item-text: var(--ifm-color-primary-darker);
 
   --color-grey-40: hsl(240, 25%, 98%);
+  --color-grey-100: hsl(240, 12%, 92%);
   --color-grey-400: hsl(240, 10%, 59%);
+  --color-grey-900: hsl(240, 19%, 18%);
   --color-green-50: hsl(184, 67%, 92%);
+  --color-blue-30: hsl(240, 100%, 98%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -47,6 +50,7 @@ html[data-theme="dark"] {
   --color-grey-40: hsl(240, 14%, 14%);
   --color-grey-400: hsl(240, 13%, 72%);
   --color-green-50: hsl(184, 100%, 12%);
+  --color-blue-30: hsl(252, 25%, 18%);
 }
 
 .docusaurus-highlight-code-line {
@@ -105,6 +109,7 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
 
 .navbar .navbar__link {
   color: var(--ifm-menu-color);
+  font-weight: var(--ifm-font-weight-normal);
 }
 
 .navbar .navbar__link:hover {
@@ -192,6 +197,10 @@ img {
 .iconExternalLink_I5OW {
   margin-left: 0.3rem;
   display: none;
+}
+
+.menu__link {
+  font-weight: var(--ifm-font-weight-normal);
 }
 
 .menu__link--sublist-caret:after {

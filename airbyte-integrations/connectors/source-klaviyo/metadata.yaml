@@ -7,8 +7,8 @@ data:
   connectorType: source
   definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
-  dockerImageTag: 2.3.0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  dockerImageTag: 2.8.0
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
@@ -34,18 +34,27 @@ data:
       - flows
   releases:
     breakingChanges:
-      1.0.0:
-        message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
-        upgradeDeadline: "2023-11-30"
       2.0.0:
         message: In this release, streams 'campaigns', 'email_templates', 'events', 'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data using latest API which has a different schema. Users will need to refresh the source schemas and reset these streams after upgrading.
+        upgradeDeadline: "2023-11-30"
+      1.0.0:
+        message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
         upgradeDeadline: "2023-11-30"
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
-    sl: 200
+    sl: 300
     ql: 400
   supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-KLAVIYO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -3,81 +3,103 @@
   "additionalProperties": true,
   "properties": {
     "channel_id": {
+      "description": "ID of the channel where the thread is posted",
       "type": ["null", "string"]
     },
     "bot_id": {
+      "description": "ID of the bot user that posted the thread",
       "type": ["null", "string"]
     },
     "client_msg_id": {
+      "description": "Unique identifier for the thread",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the thread",
       "type": ["null", "string"]
     },
     "text": {
+      "description": "Text content of the thread",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "ID of the user who posted the thread",
       "type": ["null", "string"]
     },
     "ts": {
+      "description": "Timestamp of the thread creation",
       "type": ["null", "string"]
     },
     "float_ts": {
+      "description": "Timestamp in floating format",
       "type": ["null", "number"]
     },
     "subtype": {
+      "description": "Type of the thread subtype",
       "type": ["null", "string"]
     },
     "is_locked": {
+      "description": "Flag indicating if the thread is locked",
       "type": ["null", "boolean"]
     },
     "last_read": {
+      "description": "Timestamp of the last read",
       "type": ["null", "string"]
     },
     "parent_user_id": {
+      "description": "User ID of the parent thread's creator",
       "type": ["null", "string"]
     },
     "team": {
+      "description": "ID of the team where the thread is posted",
       "type": ["null", "string"]
     },
     "blocks": {
+      "description": "An array of blocks in the thread",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "type": {
+            "description": "Type of the block",
             "type": ["null", "string"]
           },
           "block_id": {
+            "description": "Unique identifier for the block",
             "type": ["null", "string"]
           },
           "elements": {
+            "description": "An array of elements in the block",
             "type": ["null", "array"],
             "items": {
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "elements": {
+                  "description": "An array of text elements",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "object"],
                     "additionalProperties": true,
                     "properties": {
                       "text": {
+                        "description": "The text content",
                         "type": ["null", "string"]
                       },
                       "type": {
+                        "description": "Type of element",
                         "type": ["null", "string"]
                       },
                       "user_id": {
+                        "description": "User ID associated with the element",
                         "type": ["null", "string"]
                       }
                     }
                   }
                 },
                 "type": {
+                  "description": "Type of elements in the block",
                   "type": ["null", "string"]
                 }
               }
@@ -87,24 +109,30 @@
       }
     },
     "thread_ts": {
+      "description": "Timestamp of the thread",
       "type": ["null", "string"]
     },
     "reply_count": {
+      "description": "Number of replies in the thread",
       "type": ["null", "integer"]
     },
     "reply_users_count": {
+      "description": "Number of users who replied in the thread",
       "type": ["null", "number"]
     },
     "latest_reply": {
+      "description": "Timestamp of the latest reply",
       "type": ["null", "string"]
     },
     "reply_users": {
+      "description": "An array of user IDs who replied in the thread",
       "type": ["null", "array"],
       "items": {
         "type": "string"
       }
     },
     "subscribed": {
+      "description": "Flag indicating if the user is subscribed to the thread",
       "type": ["null", "boolean"]
     }
   }

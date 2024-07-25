@@ -3,81 +3,107 @@
   "type": "object",
   "properties": {
     "deleted_at": {
+      "description": "The timestamp indicating when the ad group criterion was deleted, if applicable.",
       "type": ["null", "string"]
     },
     "change_status.last_change_date_time": {
+      "description": "The date and time of the last change made to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.resource_name": {
+      "description": "The resource name of the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group.id": {
+      "description": "The ID of the ad group associated with the criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.criterion_id": {
+      "description": "The ID of the criterion defining the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.listing_group.case_value.activity_country.value": {
+      "description": "The country where the activity related to the ad group criterion takes place.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.activity_id.value": {
+      "description": "The ID of the activity related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.activity_rating.value": {
+      "description": "The rating of the activity related to the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.listing_group.case_value.hotel_city.city_criterion": {
+      "description": "The city where the hotel related to the ad group criterion is located.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.hotel_class.value": {
+      "description": "The class of the hotel related to the ad group criterion.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.listing_group.case_value.hotel_country_region.country_region_criterion": {
+      "description": "The country region where the hotel related to the ad group criterion is located.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.hotel_id.value": {
+      "description": "The ID of the hotel related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.hotel_state.state_criterion": {
+      "description": "The state where the hotel related to the ad group criterion is located.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_category.category_id": {
+      "description": "The ID of the category to which the product related to the ad group criterion belongs.",
       "type": ["null", "integer"]
     },
     "ad_group_criterion.listing_group.case_value.product_category.level": {
+      "description": "The category level of the product related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_brand.value": {
+      "description": "The brand of the product related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_channel.channel": {
+      "description": "The channel where the product related to the ad group criterion is sold.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity": {
+      "description": "The exclusivity level of the product on its distribution channel related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_condition.condition": {
+      "description": "The condition of the product related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_custom_attribute.index": {
+      "description": "The custom attribute index of the product related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_custom_attribute.value": {
+      "description": "The custom attribute value of the product related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_item_id.value": {
+      "description": "The ID of the product item related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_type.level": {
+      "description": "The level of product type related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_type.value": {
+      "description": "The value of the product type related to the ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.parent_ad_group_criterion": {
+      "description": "The parent ad group criterion of the current ad group criterion.",
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.type": {
+      "description": "The type of the listing group associated with the ad group criterion.",
       "type": ["null", "string"]
     }
   }

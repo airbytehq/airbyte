@@ -27,7 +27,7 @@ interface FeatureFlags {
      *
      * @return a comma-separated list of workspace ids where field selection should be enabled.
      */
-    fun fieldSelectionWorkspaces(): String?
+    fun fieldSelectionWorkspaces(): String
 
     /**
      * Get the workspaces allow-listed for strict incremental comparison in normalization. This

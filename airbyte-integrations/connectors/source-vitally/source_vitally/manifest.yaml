@@ -1,105 +1,895 @@
-version: "0.29.0"
+version: 0.79.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
 
 definitions:
-  selector:
-    extractor:
-      field_path: ["results"]
-  requester:
-    url_base: "https://rest.vitally.io/resources/"
-    http_method: "GET"
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+          request_parameters:
+            status: "{{ config['status'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    admins:
+      type: DeclarativeStream
+      name: admins
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admins
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/admins"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    notes:
+      type: DeclarativeStream
+      name: notes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /notes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notes"
+    nps_responses:
+      type: DeclarativeStream
+      name: nps_responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /npsResponses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/nps_responses"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: from
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.next }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+  base_requester:
+    type: HttpRequester
+    url_base: https://rest.vitally.io/resources/
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ response.next }}"
-        page_size: 100
-      page_size_option:
-        field_name: "limit"
-        inject_into: "request_parameter"
-      page_token_option:
-        type: RequestOption
-        field_name: "from"
-        inject_into: "request_parameter"
-    requester:
-      $ref: "#/definitions/requester"
-
-  # base stream
-  base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-
-  # stream definitions
-  accounts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "accounts"
-      primary_key: "id"
-      path: "/accounts"
-    retriever:
-      $ref: "#/definitions/base_stream/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          status: "{{ config['status'] }}"
-  admins_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "admins"
-      primary_key: "id"
-      path: "/admins"
-  conversations_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "conversations"
-      primary_key: "id"
-      path: "/conversations"
-  notes_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "notes"
-      primary_key: "id"
-      path: "/notes"
-  nps_responses_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "nps_responses"
-      primary_key: "id"
-      path: "/npsResponses"
-  organizations_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "organizations"
-      primary_key: "id"
-      path: "/organizations"
-  tasks_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "tasks"
-      primary_key: "id"
-      path: "/tasks"
-  users_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "users"
-      primary_key: "id"
-      path: "/users"
+      password: "{{ config['nothing'] }}"
 
 streams:
-  - "#/definitions/accounts_stream"
-  - "#/definitions/admins_stream"
-  - "#/definitions/conversations_stream"
-  - "#/definitions/notes_stream"
-  - "#/definitions/nps_responses_stream"
-  - "#/definitions/organizations_stream"
-  - "#/definitions/tasks_stream"
-  - "#/definitions/users_stream"
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/admins"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/notes"
+  - $ref: "#/definitions/streams/nps_responses"
+  - $ref: "#/definitions/streams/organizations"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/users"
 
-check:
-  stream_names:
-    - "accounts"
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - status
+    properties:
+      api_key:
+        type: string
+        title: API Token
+        description: The API Token for a Vitally account.
+        airbyte_secret: true
+        order: 0
+      status:
+        type: string
+        title: Status
+        description: >-
+          Status of the Vitally accounts. One of the following values; active,
+          churned, activeOrChurned.
+        enum:
+          - active
+          - churned
+          - activeOrChurned
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    accounts: false
+    admins: false
+    conversations: false
+    notes: false
+    nps_responses: false
+    organizations: false
+    tasks: false
+    users: false
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      accountExecutiveId:
+        type:
+          - "null"
+          - string
+      accountOwnerId:
+        type:
+          - "null"
+          - string
+      churnedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      csmId:
+        type:
+          - "null"
+          - string
+      externalId:
+        type:
+          - "null"
+          - string
+      firstSeenTimestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      healthScore:
+        type:
+          - "null"
+          - number
+      id:
+        type:
+          - "null"
+          - string
+      lastInboundMessageTimestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastOutboundMessageTimestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastSeenTimestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      mrr:
+        type:
+          - "null"
+          - number
+      name:
+        type:
+          - "null"
+          - string
+      nextRenewalDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      npsDetractorCount:
+        type:
+          - "null"
+          - integer
+      npsPassiveCount:
+        type:
+          - "null"
+          - integer
+      npsPromoterCount:
+        type:
+          - "null"
+          - integer
+      npsScore:
+        type:
+          - "null"
+          - number
+      organizationId:
+        type:
+          - "null"
+          - string
+      segments:
+        type:
+          - "null"
+          - array
+      traits:
+        type:
+          - "null"
+          - object
+      trialEndDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      usersCount:
+        type:
+          - "null"
+          - integer
+  admins:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      licenseStatus:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+  conversations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      externalId:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  notes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - "null"
+          - object
+      accountId:
+        type:
+          - "null"
+          - string
+      author:
+        type:
+          - "null"
+          - string
+      authorId:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      categoryId:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      externalId:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      noteDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      organization:
+        type:
+          - "null"
+          - string
+      organizationId:
+        type:
+          - "null"
+          - string
+      tag:
+        type:
+          - "null"
+          - array
+      traits:
+        type:
+          - "null"
+          - object
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  nps_responses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      dismissedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      externalId:
+        type:
+          - "null"
+          - string
+      feedback:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      respondedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      score:
+        type:
+          - "null"
+          - number
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      user:
+        type:
+          - "null"
+          - object
+      userId:
+        type:
+          - "null"
+          - string
+  organizations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      accountExecutiveId:
+        type:
+          - "null"
+          - string
+      accountOwnerId:
+        type:
+          - "null"
+          - string
+      churnedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      csmId:
+        type:
+          - "null"
+          - string
+      externalId:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      keyRoles:
+        type:
+          - "null"
+          - array
+      mrr:
+        type:
+          - "null"
+          - number
+      name:
+        type:
+          - "null"
+          - string
+      nextRenewalDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      traits:
+        type:
+          - "null"
+          - object
+      trialEndDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      usersCount:
+        type:
+          - "null"
+          - integer
+  tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - "null"
+          - object
+      accountId:
+        type:
+          - "null"
+          - string
+      assignedTo:
+        type:
+          - "null"
+          - object
+      assignedToId:
+        type:
+          - "null"
+          - string
+      category:
+        type:
+          - "null"
+          - string
+      categoryId:
+        type:
+          - "null"
+          - string
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      completedBy:
+        type:
+          - "null"
+          - string
+      completedById:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      description:
+        type:
+          - "null"
+          - string
+      dueDate:
+        type:
+          - "null"
+          - string
+        format: date
+      externalId:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      organization:
+        type:
+          - "null"
+          - string
+      organizationId:
+        type:
+          - "null"
+          - string
+      projects:
+        type:
+          - "null"
+          - array
+      tag:
+        type:
+          - "null"
+          - array
+      traits:
+        type:
+          - "null"
+          - object
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      accounts:
+        type:
+          - "null"
+          - array
+      avatar:
+        type:
+          - "null"
+          - string
+      createdAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      deactivatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      email:
+        type:
+          - "null"
+          - string
+      externalId:
+        type:
+          - "null"
+          - string
+      firstKnown:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - string
+      joinDate:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastInboundMessageTimestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastOutboundMessageTimestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      lastSeenTimestamp:
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+      npsLastFeedback:
+        type:
+          - "null"
+          - string
+      npsLastRespondedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      npsLastScore:
+        type:
+          - "null"
+          - number
+      organizations:
+        type:
+          - "null"
+          - array
+      segments:
+        type:
+          - "null"
+          - array
+      traits:
+        type:
+          - "null"
+          - object
+      unsubscribedFromConversations:
+        type:
+          - "null"
+          - boolean
+      updatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time

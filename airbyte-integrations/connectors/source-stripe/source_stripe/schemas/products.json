@@ -2,104 +2,135 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the product.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Indicates the type of object, in this case, a product.",
       "type": ["null", "string"]
     },
     "active": {
+      "description": "Indicates if the product is active or not.",
       "type": ["null", "boolean"]
     },
     "attributes": {
+      "description": "Details about the attributes of the product.",
       "type": ["null", "array"],
       "items": {
+        "description": "List of custom attributes associated with the product.",
         "type": ["null", "string"]
       }
     },
     "caption": {
+      "description": "A short description or title for the product.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp indicating the creation date of the product.",
       "type": ["null", "integer"]
     },
     "deactivate_on": {
+      "description": "The date on which the product will be deactivated.",
       "type": ["null", "array"],
       "items": {
+        "description": "List of reasons or events that might lead to product deactivation.",
         "type": ["null", "string"]
       }
     },
     "description": {
+      "description": "A detailed description of the product.",
       "type": ["null", "string"]
     },
     "images": {
+      "description": "Images related to the product.",
       "type": ["null", "array"],
       "items": {
+        "description": "List of images associated with the product.",
         "type": ["null", "string"]
       }
     },
     "livemode": {
+      "description": "Indicates if the product is in live mode or test mode.",
       "type": ["null", "boolean"]
     },
     "metadata": {
+      "description": "Additional information or custom data related to the product.",
       "type": ["null", "object"],
       "properties": {}
     },
     "name": {
+      "description": "Name of the product.",
       "type": ["null", "string"]
     },
     "package_dimensions": {
+      "description": "Dimensions of the package in which the product is shipped.",
       "type": ["null", "object"],
       "properties": {
         "width": {
+          "description": "Width dimension of the product package.",
           "type": ["null", "number"]
         },
         "length": {
+          "description": "Length dimension of the product package.",
           "type": ["null", "number"]
         },
         "weight": {
+          "description": "Weight of the product package.",
           "type": ["null", "number"]
         },
         "height": {
+          "description": "Height dimension of the product package.",
           "type": ["null", "number"]
         }
       }
     },
     "shippable": {
+      "description": "Indicates if the product is shippable or not.",
       "type": ["null", "boolean"]
     },
     "statement_descriptor": {
+      "description": "Descriptor displayed in the customer's statement for this product.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type or category of the product.",
       "type": ["null", "string"]
     },
     "unit_label": {
+      "description": "Label representing the unit of the product.",
       "type": ["null", "string"]
     },
     "updated": {
+      "description": "Timestamp indicating the last update date of the product.",
       "type": ["null", "integer"]
     },
     "url": {
+      "description": "URL pointing to more details or information about the product.",
       "type": ["null", "string"]
     },
     "default_price": {
+      "description": "The default price set for the product.",
       "type": ["null", "string"]
     },
     "tax_code": {
+      "description": "Tax code associated with the product.",
       "type": ["null", "string"]
     },
     "features": {
+      "description": "List of features offered by the product.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "name": {
+            "description": "Name of a specific feature associated with the product.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "is_deleted": {
+      "description": "Indicates if the product has been deleted.",
       "type": ["null", "boolean"]
     }
   }

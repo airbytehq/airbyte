@@ -5,81 +5,105 @@
   "type": ["null", "object"],
   "properties": {
     "sid": {
+      "description": "The unique identifier for the trunk.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier of the account associated with the trunk.",
       "type": ["null", "string"]
     },
     "domain_name": {
+      "description": "The domain name associated with the trunk.",
       "type": ["null", "string"]
     },
     "disaster_recovery_method": {
+      "description": "The method used for disaster recovery for this trunk.",
       "type": ["null", "string"]
     },
     "disaster_recovery_url": {
+      "description": "The URL set up for disaster recovery in case of trunk failure.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name for the trunk.",
       "type": ["null", "string"]
     },
     "secure": {
+      "description": "Indicates whether the trunk connection is secure.",
       "type": ["null", "boolean"]
     },
     "cnam_lookup_enabled": {
+      "description": "Indicates whether Caller ID Name (CNAM) lookup is enabled for this trunk.",
       "type": ["null", "boolean"]
     },
     "recording": {
+      "description": "Settings related to call recording on the trunk.",
       "type": ["null", "object"],
       "properties": {
         "mode": {
+          "description": "The mode used for recording calls on this trunk.",
           "type": ["null", "string"]
         },
         "trim": {
+          "description": "Indicates whether recorded calls should be trimmed.",
           "type": ["null", "string"]
         }
       }
     },
     "transfer_mode": {
+      "description": "The mode used for call transfer on this trunk.",
       "type": ["null", "string"]
     },
     "transfer_caller_id": {
+      "description": "The Caller ID used when transferring calls through this trunk.",
       "type": ["null", "string"]
     },
     "auth_type": {
+      "description": "The authentication type used for this trunk.",
       "type": ["null", "string"]
     },
     "auth_type_set": {
+      "description": "A set of authentication types associated with the trunk.",
       "type": ["null", "array"],
       "items": {
         "auth_type": {
+          "description": "The authentication type used for each item in the set.",
           "type": ["null", "string"]
         }
       }
     },
     "date_created": {
+      "description": "The date and time the trunk was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "date_updated": {
+      "description": "The date and time the trunk was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "url": {
+      "description": "The URL of the trunk.",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Links to related resources associated with the trunk.",
       "type": ["null", "object"],
       "properties": {
         "origination_urls": {
+          "description": "Endpoint for managing origination URLs associated with the trunk.",
           "type": ["null", "string"]
         },
         "credential_lists": {
+          "description": "Endpoint for managing credential lists associated with the trunk.",
           "type": ["null", "string"]
         },
         "ip_access_control_lists": {
+          "description": "Endpoint for managing IP Access Control Lists (ACLs) associated with the trunk.",
           "type": ["null", "string"]
         },
         "phone_numbers": {
+          "description": "Endpoint for managing phone numbers associated with the trunk.",
           "type": ["null", "string"]
         }
       }

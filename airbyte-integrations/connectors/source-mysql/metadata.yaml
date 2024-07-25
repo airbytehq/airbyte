@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 3.3.16
+  dockerImageTag: 3.6.5
   dockerRepository: airbyte/source-mysql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql
@@ -19,12 +19,8 @@ data:
   name: MySQL
   registries:
     cloud:
-      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
-      dockerImageTag: 3.3.13
       enabled: true
     oss:
-      # A regression in https://github.com/airbytehq/airbyte-internal-issues/issues/7055
-      dockerImageTag: 3.3.13
       enabled: true
   releaseStage: generally_available
   releases:
@@ -35,4 +31,60 @@ data:
   supportLevel: certified
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-MYSQL_SSH-KEY-REPL__CREDS
+          fileName: ssh-key-repl-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MYSQL_SSH-KEY__CREDS
+          fileName: ssh-key-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MYSQL_SSH-PWD-REPL__CREDS
+          fileName: ssh-pwd-repl-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MYSQL_SSH-PWD__CREDS
+          fileName: ssh-pwd-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MYSQL_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MYSQL_SSH-KEY-REPL__CREDS
+          fileName: ssh-key-repl-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MYSQL_SSH-KEY__CREDS
+          fileName: ssh-key-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MYSQL_SSH-PWD-REPL__CREDS
+          fileName: ssh-pwd-repl-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MYSQL_SSH-PWD__CREDS
+          fileName: ssh-pwd-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MYSQL_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

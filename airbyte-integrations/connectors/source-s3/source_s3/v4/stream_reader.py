@@ -12,7 +12,7 @@ import boto3.session
 import pendulum
 import pytz
 import smart_open
-from airbyte_cdk.models import FailureType
+from airbyte_cdk import FailureType
 from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
@@ -22,17 +22,17 @@ import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.configoss.StandardCheckConnectionOutput
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
-import java.util.stream.Collectors
 import org.apache.commons.lang3.RandomStringUtils
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * When adding a new GCS destination acceptance test, extend this class and do the following:
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory
  * * Get the GCS bucket path from the constructor
  * * Get the format config from [.getFormatConfig]
  */
-abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format) :
+abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUploadFormat) :
     DestinationAcceptanceTest() {
     protected var configJson: JsonNode? = null
     // Not a big fan of those mocks(). Here to make spotbugs happy
@@ -116,16 +116,13 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
             s3Client
                 .listObjects(config.bucketName, parentFolder)
                 .objectSummaries
-                .stream()
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
-                .sorted(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
-                .collect(Collectors.toList())
+                .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
         LOGGER.info(
             "All objects: {}",
-            objectSummaries
-                .stream()
-                .map { o: S3ObjectSummary -> String.format("%s/%s", o.bucketName, o.key) }
-                .collect(Collectors.toList())
+            objectSummaries.map { o: S3ObjectSummary ->
+                String.format("%s/%s", o.bucketName, o.key)
+            }
         )
         return objectSummaries
     }
@@ -269,8 +266,6 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: S3Format
     }
 
     companion object {
-        protected val LOGGER: Logger =
-            LoggerFactory.getLogger(GcsDestinationAcceptanceTest::class.java)
         @JvmStatic protected val MAPPER: ObjectMapper = MoreMappers.initMapper()
 
         protected const val SECRET_FILE_PATH: String = "secrets/config.json"

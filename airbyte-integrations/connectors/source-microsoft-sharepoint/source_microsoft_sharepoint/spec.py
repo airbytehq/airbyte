@@ -7,7 +7,7 @@ from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class OAuthCredentials(BaseModel):
@@ -32,7 +32,7 @@ class OAuthCredentials(BaseModel):
         description="Client Secret of your Microsoft developer application",
         airbyte_secret=True,
     )
-    refresh_token: str = Field(
+    refresh_token: Optional[str] = Field(
         title="Refresh Token",
         description="Refresh Token of your Microsoft developer application",
         airbyte_secret=True,

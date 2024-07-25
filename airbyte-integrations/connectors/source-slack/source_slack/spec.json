@@ -1,5 +1,4 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/slack",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Slack Spec",
@@ -29,6 +28,12 @@
         "default": true,
         "title": "Join all channels",
         "description": "Whether to join all channels or to sync data only from channels the bot is already in.  If false, you'll need to manually add the bot to all the channels from which you'd like to sync messages. "
+      },
+      "include_private_channels": {
+        "type": "boolean",
+        "default": false,
+        "title": "Include private channels",
+        "description": "Whether to read information from private channels that the bot is already in.  If false, only public channels will be read.  If true, the bot must be manually added to private channels. "
       },
       "channel_filter": {
         "type": "array",
@@ -107,6 +112,7 @@
     "predicate_key": ["credentials", "option_title"],
     "predicate_value": "Default OAuth2.0 authorization",
     "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": null,
       "complete_oauth_output_specification": {
         "type": "object",
         "additionalProperties": false,

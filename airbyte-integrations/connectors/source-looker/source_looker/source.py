@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -52,11 +52,11 @@ class SourceLooker(AbstractSource):
     def get_authenticator(self, config: Mapping[str, Any]) -> CustomTokenAuthenticator:
         return CustomTokenAuthenticator(domain=config["domain"], client_id=config["client_id"], client_secret=config["client_secret"])
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         authenticator = self.get_authenticator(config)
         err = authenticator.update_access_token()
         if err:
-            AirbyteLogger().error("auth error: {err}")
+            logging.getLogger("airbyte").error("auth error: {err}")
             return False, err
         return True, None
 

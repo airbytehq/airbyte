@@ -4,6 +4,7 @@
 package io.airbyte.commons.json
 
 import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.core.StreamReadConstraints
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.core.util.Separators
@@ -18,28 +19,36 @@ import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.stream.MoreStreams
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.IOException
 import java.util.*
 import java.util.function.BiConsumer
-import java.util.stream.Collectors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object Jsons {
-    private val LOGGER: Logger = LoggerFactory.getLogger(Jsons::class.java)
+
+    // allow jackson to deserialize anything under 50 MiB
+    // (the default, at time of writing 2024-05-29, with jackson 2.15.2, is 20 MiB)
+    private const val JSON_MAX_LENGTH = 50 * 1024 * 1024
+    private val STREAM_READ_CONSTRAINTS =
+        StreamReadConstraints.builder().maxStringLength(JSON_MAX_LENGTH).build()
 
     // Object Mapper is thread-safe
-    private val OBJECT_MAPPER: ObjectMapper = MoreMappers.initMapper()
+    private val OBJECT_MAPPER: ObjectMapper =
+        MoreMappers.initMapper().also {
+            it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+        }
 
     // sort of a hotfix; I don't know how bad the performance hit is so not turning this on by
     // default
     // at time of writing (2023-08-18) this is only used in tests, so we don't care.
-    private val OBJECT_MAPPER_EXACT: ObjectMapper = MoreMappers.initMapper()
-
-    init {
-        OBJECT_MAPPER_EXACT.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-    }
+    private val OBJECT_MAPPER_EXACT: ObjectMapper =
+        MoreMappers.initMapper().also {
+            it.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+            it.factory.setStreamReadConstraints(STREAM_READ_CONSTRAINTS)
+        }
 
     private val YAML_OBJECT_MAPPER: ObjectMapper = MoreMappers.initYamlMapper(YAMLFactory())
     private val OBJECT_WRITER: ObjectWriter = OBJECT_MAPPER.writer(JsonPrettyPrinter())
@@ -130,6 +139,14 @@ object Jsons {
         }
     }
 
+    // WARNING: This message throws bare exceptions on parse failure which might
+    // leak sensitive data. Use obfuscateDeserializationException() to strip
+    // the sensitive data before logging.
+    @JvmStatic
+    fun <T : Any> deserializeExactUnchecked(jsonString: String?, klass: Class<T>?): T {
+        return OBJECT_MAPPER_EXACT.readValue(jsonString, klass)
+    }
+
     @JvmStatic
     fun <T : Any> tryDeserialize(jsonString: String, klass: Class<T>): Optional<T> {
         return try {
@@ -194,12 +211,12 @@ object Jsons {
     }
 
     @JvmStatic
-    fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T {
+    fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T? {
         return OBJECT_MAPPER.convertValue(jsonNode, klass)
     }
 
     @JvmStatic
-    fun <T> `object`(jsonNode: JsonNode?, typeReference: TypeReference<T>): T {
+    fun <T> `object`(jsonNode: JsonNode?, typeReference: TypeReference<T>): T? {
         return OBJECT_MAPPER.convertValue(jsonNode, typeReference)
     }
 
@@ -221,7 +238,7 @@ object Jsons {
 
     @JvmStatic
     fun <T : Any> clone(o: T): T {
-        return deserialize(serialize(o), o::class.java) as T
+        return deserialize(serialize(o), o::class.java)
     }
 
     fun toBytes(jsonNode: JsonNode): ByteArray {
@@ -243,14 +260,14 @@ object Jsons {
 
     fun keys(jsonNode: JsonNode): Set<String> {
         return if (jsonNode.isObject) {
-            `object`(jsonNode, object : TypeReference<Map<String, Any>>() {}).keys
+            `object`(jsonNode, object : TypeReference<Map<String, Any>>() {})!!.keys
         } else {
             HashSet()
         }
     }
 
     fun children(jsonNode: JsonNode): List<JsonNode> {
-        return MoreStreams.toStream(jsonNode.elements()).collect(Collectors.toList())
+        return MoreStreams.toStream(jsonNode.elements()).toList()
     }
 
     fun toPrettyString(jsonNode: JsonNode?): String {
@@ -261,36 +278,36 @@ object Jsons {
         }
     }
 
-    fun navigateTo(node: JsonNode, keys: List<String?>): JsonNode {
-        var node = node
+    fun navigateTo(node: JsonNode, keys: List<String>): JsonNode {
+        var targetNode = node
         for (key in keys) {
-            node = node[key]
+            targetNode = targetNode[key]
         }
-        return node
+        return targetNode
     }
 
-    fun replaceNestedValue(json: JsonNode, keys: List<String?>, replacement: JsonNode?) {
-        replaceNested(json, keys) { node: ObjectNode, finalKey: String? ->
+    fun replaceNestedValue(json: JsonNode, keys: List<String>, replacement: JsonNode?) {
+        replaceNested(json, keys) { node: ObjectNode, finalKey: String ->
+            node.replace(finalKey, replacement)
+        }
+    }
+
+    fun replaceNestedString(json: JsonNode, keys: List<String>, replacement: String?) {
+        replaceNested(json, keys) { node: ObjectNode, finalKey: String ->
             node.put(finalKey, replacement)
         }
     }
 
-    fun replaceNestedString(json: JsonNode, keys: List<String?>, replacement: String?) {
-        replaceNested(json, keys) { node: ObjectNode, finalKey: String? ->
-            node.put(finalKey, replacement)
-        }
-    }
-
-    fun replaceNestedInt(json: JsonNode, keys: List<String?>, replacement: Int) {
-        replaceNested(json, keys) { node: ObjectNode, finalKey: String? ->
+    fun replaceNestedInt(json: JsonNode, keys: List<String>, replacement: Int) {
+        replaceNested(json, keys) { node: ObjectNode, finalKey: String ->
             node.put(finalKey, replacement)
         }
     }
 
     private fun replaceNested(
         json: JsonNode,
-        keys: List<String?>,
-        typedReplacement: BiConsumer<ObjectNode, String?>
+        keys: List<String>,
+        typedReplacement: BiConsumer<ObjectNode, String>
     ) {
         Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key")
         val nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size - 1))
@@ -302,16 +319,16 @@ object Jsons {
     }
 
     fun getOptional(json: JsonNode?, keys: List<String>): Optional<JsonNode> {
-        var json = json
+        var retVal = json
         for (key in keys) {
-            if (json == null) {
+            if (retVal == null) {
                 return Optional.empty()
             }
 
-            json = json[key]
+            retVal = retVal[key]
         }
 
-        return Optional.ofNullable(json)
+        return Optional.ofNullable(retVal)
     }
 
     fun getStringOrNull(json: JsonNode?, vararg keys: String): String? {
@@ -347,7 +364,7 @@ object Jsons {
     @JvmStatic
     fun flatten(node: JsonNode, applyFlattenToArray: Boolean = false): Map<String?, Any> {
         if (node.isObject) {
-            val output: MutableMap<String?, Any> = HashMap()
+            val output: MutableMap<String, Any> = HashMap()
             val it = node.fields()
             while (it.hasNext()) {
                 val entry = it.next()
@@ -355,16 +372,16 @@ object Jsons {
                 val value = entry.value
                 mergeMaps(output, field, flatten(value, applyFlattenToArray))
             }
-            return output
+            return output.toMap()
         } else if (node.isArray && applyFlattenToArray) {
-            val output: MutableMap<String?, Any> = HashMap()
+            val output: MutableMap<String, Any> = HashMap()
             val arrayLen = node.size()
             for (i in 0 until arrayLen) {
                 val field = String.format("[%d]", i)
                 val value = node[i]
                 mergeMaps(output, field, flatten(value, applyFlattenToArray))
             }
-            return output
+            return output.toMap()
         } else {
             val value: Any =
                 if (node.isBoolean) {
@@ -391,11 +408,7 @@ object Jsons {
      * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
      * treated as {prefix: value} when merging into originalMap.
      */
-    fun mergeMaps(
-        originalMap: MutableMap<String?, Any>,
-        prefix: String,
-        subMap: Map<String?, Any>
-    ) {
+    fun mergeMaps(originalMap: MutableMap<String, Any>, prefix: String, subMap: Map<String?, Any>) {
         originalMap.putAll(
             subMap.mapKeys toMap@{
                 val key = it.key
@@ -404,7 +417,7 @@ object Jsons {
                 } else {
                     return@toMap prefix
                 }
-            }
+            },
         )
     }
 
@@ -419,28 +432,35 @@ object Jsons {
      * the class name can at least help narrow down the problem, without leaking
      * potentially-sensitive information. </snip...>
      */
-    private fun <T : Any> handleDeserThrowable(t: Throwable): Optional<T> {
-        // Manually build the stacktrace, excluding the top-level exception object
-        // so that we don't accidentally include the exception message.
-        // Otherwise we could just do ExceptionUtils.getStackTrace(t).
-        var t: Throwable? = t
+    private fun <T : Any> handleDeserThrowable(throwable: Throwable): Optional<T> {
+        val obfuscated = obfuscateDeserializationException(throwable)
+        LOGGER.warn { "Failed to deserialize json due to $obfuscated" }
+        return Optional.empty()
+    }
+
+    /**
+     * Build a stacktrace from the given throwable, enabling us to log or rethrow without leaking
+     * sensitive information in the exception message (which would be exposed with eg,
+     * ExceptionUtils.getStackTrace(t).)
+     */
+    fun obfuscateDeserializationException(throwable: Throwable): String {
+        var t: Throwable = throwable
         val sb = StringBuilder()
-        sb.append(t!!.javaClass)
+        sb.append(t.javaClass)
         for (traceElement in t.stackTrace) {
             sb.append("\n\tat ")
             sb.append(traceElement.toString())
         }
-        while (t!!.cause != null) {
-            t = t.cause
+        while (t.cause != null) {
+            t = t.cause!!
             sb.append("\nCaused by ")
-            sb.append(t!!.javaClass)
+            sb.append(t.javaClass)
             for (traceElement in t.stackTrace) {
                 sb.append("\n\tat ")
                 sb.append(traceElement.toString())
             }
         }
-        LOGGER.warn("Failed to deserialize json due to {}", sb)
-        return Optional.empty()
+        return sb.toString()
     }
 
     /**

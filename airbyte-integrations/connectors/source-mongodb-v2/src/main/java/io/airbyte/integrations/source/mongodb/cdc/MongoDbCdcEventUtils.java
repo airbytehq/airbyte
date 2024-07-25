@@ -248,6 +248,7 @@ public class MongoDbCdcEventUtils {
       case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
       case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName);
       case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
+      case NULL -> readNull(o, reader, fieldName);
       default -> reader.skipValue();
     }
 
@@ -287,6 +288,11 @@ public class MongoDbCdcEventUtils {
 
   private static byte[] toByteArray(final BsonBinary value) {
     return value == null ? null : value.getData();
+  }
+
+  private static void readNull(final ObjectNode o, final BsonReader reader, final String fieldName) {
+    o.putNull(fieldName);
+    reader.readNull();
   }
 
   private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName) {

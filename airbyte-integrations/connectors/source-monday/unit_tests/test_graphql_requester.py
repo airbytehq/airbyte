@@ -145,12 +145,22 @@ def test_build_items_incremental_query(monday_requester):
     field_schema = {
         "id": {"type": "integer"},
         "name": {"type": "string"},
+        "column_values": {
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "text": {"type": ["null", "string"]},
+                "type": {"type": ["null", "string"]},
+                "value": {"type": ["null", "string"]},
+                "display_value": {"type": ["null", "string"]}
+            }
+        }
     }
     stream_slice = {"ids": [1, 2, 3]}
 
     built_query = monday_requester._build_items_incremental_query(object_name, field_schema, stream_slice)
 
-    assert built_query == "items(limit:100,ids:[1, 2, 3]){id,name}"
+    assert built_query == "items(limit:100,ids:[1, 2, 3]){id,name,column_values{id,text,type,value,... on MirrorValue{display_value}," \
+                          "... on BoardRelationValue{display_value},... on DependencyValue{display_value}}}"
 
 
 def test_get_request_headers(monday_requester):

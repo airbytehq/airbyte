@@ -5,8 +5,9 @@
 import logging
 import sys
 from types import TracebackType
-from typing import Any, Optional
+from typing import Any, List, Mapping, Optional
 
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -36,3 +37,10 @@ def init_uncaught_exception_handler(logger: logging.Logger) -> None:
         traced_exc.emit_message()
 
     sys.excepthook = hook_fn
+
+
+def generate_failed_streams_error_message(stream_failures: Mapping[str, List[Exception]]) -> str:
+    failures = "\n".join(
+        [f"{stream}: {filter_secrets(exception.__repr__())}" for stream, exceptions in stream_failures.items() for exception in exceptions]
+    )
+    return f"During the sync, the following streams did not sync successfully: {failures}"

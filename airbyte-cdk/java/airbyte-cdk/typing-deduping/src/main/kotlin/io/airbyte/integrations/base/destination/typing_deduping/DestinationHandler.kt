@@ -19,4 +19,14 @@ interface DestinationHandler<DestinationState> {
 
     @Throws(Exception::class)
     fun commitDestinationStates(destinationStates: Map<StreamId, DestinationState>)
+
+    /**
+     * Create all required namespaces required for the Sync. Implementations may optimize for
+     * checking if schema exists already.
+     *
+     * This exists here instead of StorageOperations to avoid issuing create namespace call for
+     * every stream and instead called from Sync operation with distinct set of namespaces required
+     * within the sync.
+     */
+    fun createNamespaces(schemas: Set<String>)
 }

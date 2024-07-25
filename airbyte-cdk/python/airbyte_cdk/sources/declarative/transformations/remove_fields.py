@@ -5,11 +5,11 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional
 
+import dpath
 import dpath.exceptions
-import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamState
 
 
 @dataclass
@@ -60,7 +60,7 @@ class RemoveFields(RecordTransformation):
         for pointer in self.field_pointers:
             # the dpath library by default doesn't delete fields from arrays
             try:
-                dpath.util.delete(
+                dpath.delete(
                     record,
                     pointer,
                     afilter=(lambda x: self._filter_interpolator.eval(config or {}, property=x)) if self.condition else None,

@@ -7,6 +7,7 @@ import os
 from typing import TYPE_CHECKING
 
 import asyncer
+import click
 import dagger
 import toml
 from pipelines.airbyte_ci.test.models import deserialize_airbyte_ci_config
@@ -39,6 +40,13 @@ DIRECTORIES_TO_ALWAYS_MOUNT = [
 ]
 
 DEFAULT_EXCLUDE = ["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/.gradle"]
+
+DEFAULT_CONTAINER_IMAGE = "python:{version}"
+
+VERSION_CONTAINER_IMAGES = {
+    "3.10": DEFAULT_CONTAINER_IMAGE.format(version="3.10.12"),
+    "3.11": DEFAULT_CONTAINER_IMAGE.format(version="3.11.5"),
+}
 
 
 async def get_filtered_airbyte_repo_dir(dagger_client: dagger.Client, poetry_package_path: Path) -> dagger.Directory:
@@ -96,7 +104,7 @@ async def get_airbyte_ci_package_config(poetry_package_dir: dagger.Directory) ->
     return deserialize_airbyte_ci_config(pyproject_toml)
 
 
-def get_poetry_base_container(dagger_client: dagger.Client) -> dagger.Container:
+def get_poetry_base_container(dagger_client: dagger.Client, python_version: str) -> dagger.Container:
     """Get a base container with system dependencies to run poe tasks of poetry package:
     - git: required for packages using GitPython
     - poetry
@@ -111,9 +119,10 @@ def get_poetry_base_container(dagger_client: dagger.Client) -> dagger.Container:
     """
     poetry_cache_volume: dagger.CacheVolume = dagger_client.cache_volume(POETRY_CACHE_VOLUME_NAME)
     poetry_cache_path = "/root/.cache/poetry"
+    container_image = VERSION_CONTAINER_IMAGES.get(python_version, DEFAULT_CONTAINER_IMAGE.format(version=python_version))
     return (
         dagger_client.container()
-        .from_("python:3.10.12")
+        .from_(container_image)
         .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
         .with_env_variable("POETRY_CACHE_DIR", poetry_cache_path)
         .with_mounted_cache(poetry_cache_path, poetry_cache_volume)
@@ -139,7 +148,8 @@ def prepare_container_for_poe_tasks(
     airbyte_repo_dir: dagger.Directory,
     airbyte_ci_package_config: AirbyteCiPackageConfiguration,
     poetry_package_path: Path,
-    is_ci: bool,
+    pipeline_context_params: Dict,
+    python_version: str,
 ) -> dagger.Container:
     """Prepare a container to run poe tasks for a poetry package.
 
@@ -148,7 +158,7 @@ def prepare_container_for_poe_tasks(
         airbyte_repo_dir (dagger.Directory): The airbyte repo directory.
         airbyte_ci_package_config (AirbyteCiPackageConfiguration): The airbyte ci package configuration.
         poetry_package_path (Path): The path to the poetry package in the airbyte repo.
-        is_ci (bool): Whether the container is running in a CI environment.
+        pipeline_context_params (Dict): The pipeline context parameters.
 
     Returns:
         dagger.Container: The container to run poe tasks for the poetry package.
@@ -159,9 +169,10 @@ def prepare_container_for_poe_tasks(
     # ANY CHANGE IN THE INPUTS OF AN OPERATION WILL INVALIDATE THE DOWNSTREAM OPERATIONS CACHE
 
     # Start from the base container
-    container = get_poetry_base_container(dagger_client)
+    container = get_poetry_base_container(dagger_client, python_version)
 
     # Set the CI environment variable
+    is_ci = pipeline_context_params["is_ci"]
     if is_ci:
         container = container.with_env_variable("CI", "true")
 
@@ -189,6 +200,44 @@ def prepare_container_for_poe_tasks(
 
     # Set working directory to the poetry package directory
     container = container.with_workdir(f"/airbyte/{poetry_package_path}")
+
+    # If a package from `airbyte-platform-internal` is required, modify the entry in pyproject.toml to use https instead of ssh,
+    # when run in Github Actions
+    # This is currently required for getting the connection-retriever package, for regression tests.
+    if is_ci:
+        container = (
+            container.with_exec(
+                [
+                    "sed",
+                    "-i",
+                    "-E",
+                    r"s,git@github\.com:airbytehq/airbyte-platform-internal,https://github.com/airbytehq/airbyte-platform-internal.git,",
+                    "pyproject.toml",
+                ]
+            )
+            .with_exec(
+                [
+                    "poetry",
+                    "source",
+                    "add",
+                    "--priority=supplemental",
+                    "airbyte-platform-internal-source",
+                    "https://github.com/airbytehq/airbyte-platform-internal.git",
+                ]
+            )
+            .with_secret_variable(
+                "CI_GITHUB_ACCESS_TOKEN",
+                dagger_client.set_secret("CI_GITHUB_ACCESS_TOKEN", pipeline_context_params["ci_github_access_token"].value),
+            )
+            .with_exec(
+                [
+                    "/bin/sh",
+                    "-c",
+                    "poetry config http-basic.airbyte-platform-internal-source octavia-squidington-iii $CI_GITHUB_ACCESS_TOKEN",
+                ]
+            )
+            .with_exec(["poetry", "lock", "--no-update"])
+        )
 
     # Install the poetry package
     container = container.with_exec(
@@ -273,21 +322,31 @@ async def run_poe_tasks_for_package(
     airbyte_repo_dir = await get_filtered_airbyte_repo_dir(dagger_client, poetry_package_path)
     package_dir = await get_poetry_package_dir(airbyte_repo_dir, poetry_package_path)
     package_config = await get_airbyte_ci_package_config(package_dir)
-    container = prepare_container_for_poe_tasks(
-        dagger_client, airbyte_repo_dir, package_config, poetry_package_path, pipeline_context_params["is_ci"]
-    )
+
     logger = logging.getLogger(str(poetry_package_path))
 
     if not package_config.poe_tasks:
         logger.warning("No poe tasks to run.")
         return []
 
-    poe_task_results = []
-    async with asyncer.create_task_group() as poe_tasks_task_group:
-        for task in package_config.poe_tasks:
-            poe_task_results.append(
-                poe_tasks_task_group.soonify(run_and_log_poe_task_results)(
-                    pipeline_context_params, str(poetry_package_path), container, task, logger
+    logger.info(f"Python versions: {package_config.python_versions}")
+
+    poe_task_results: List[asyncer.SoonValue] = []
+    return_results = []
+
+    for python_version in package_config.python_versions:
+        container = prepare_container_for_poe_tasks(
+            dagger_client, airbyte_repo_dir, package_config, poetry_package_path, pipeline_context_params, python_version
+        )
+
+        async with asyncer.create_task_group() as poe_tasks_task_group:
+            for task in package_config.poe_tasks:
+                poe_task_results.append(
+                    poe_tasks_task_group.soonify(run_and_log_poe_task_results)(
+                        pipeline_context_params, str(poetry_package_path), container, task, logger.getChild(f"@{python_version}")
+                    )
                 )
-            )
-    return [result.value for result in poe_task_results]
+
+        return_results.extend([result.value for result in poe_task_results])
+
+    return return_results

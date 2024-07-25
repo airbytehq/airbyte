@@ -628,6 +628,7 @@
       "type": ["null", "boolean"]
     },
     "archivedAt": {
+      "description": "The date and time when the deal was archived",
       "type": ["null", "string"],
       "format": "date-time"
     },

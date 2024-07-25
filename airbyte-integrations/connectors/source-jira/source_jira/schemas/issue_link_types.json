@@ -3,24 +3,24 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
-      "description": "The ID of the issue link type and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is the type of issue link. Required on create when `name` isn't provided. Otherwise, read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is read only."
+      "description": "The ID of the issue link type. Used as the type of issue link in `issueLink` resource. Required on create when `name` isn't provided. Otherwise, read only.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the issue link type and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is the type of issue link. Required on create when `id` isn't provided. Otherwise, read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
+      "description": "The name of the issue link type. Used as the type of issue link in `issueLink` resource. Required on create when `id` isn't provided. Otherwise, read only.",
+      "type": "string"
     },
     "inward": {
-      "type": "string",
-      "description": "The description of the issue link type inward link and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
+      "description": "The description of the issue link type inward link. Read only in `issueLink` resource. Required on create and optional on update in `issueLinkType` resource. Otherwise, read only.",
+      "type": "string"
     },
     "outward": {
-      "type": "string",
-      "description": "The description of the issue link type outward link and is used as follows:\n\n *  In the [ issueLink](#api-rest-api-3-issueLink-post) resource it is read only.\n *  In the [ issueLinkType](#api-rest-api-3-issueLinkType-post) resource it is required on create and optional on update. Otherwise, read only."
+      "description": "The description of the issue link type outward link. Read only in `issueLink` resource. Required on create and optional on update in `issueLinkType` resource. Otherwise, read only.",
+      "type": "string"
     },
     "self": {
-      "type": "string",
       "description": "The URL of the issue link type. Read only.",
+      "type": "string",
       "readOnly": true
     }
   },

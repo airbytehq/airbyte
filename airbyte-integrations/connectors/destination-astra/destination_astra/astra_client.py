@@ -26,6 +26,7 @@ class AstraClient:
         self.request_header = {
             "x-cassandra-token": self.astra_application_token,
             "Content-Type": "application/json",
+            "User-Agent": "airbyte",
         }
 
     def _run_query(self, request_url: str, query: Dict):
@@ -96,6 +97,8 @@ class AstraClient:
 
         if include_vector is not None and include_vector == False:
             find_query["projection"] = {"$vector": 0}
+        else:
+            find_query["projection"] = {"*": 1}
 
         if limit is not None:
             find_query["options"] = {"limit": limit}

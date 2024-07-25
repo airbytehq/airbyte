@@ -3,43 +3,55 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The unique identifier of the owner.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address of the owner.",
       "type": ["null", "string"]
     },
     "firstName": {
+      "description": "The first name of the owner.",
       "type": ["null", "string"]
     },
     "lastName": {
+      "description": "The last name of the owner.",
       "type": ["null", "string"]
     },
     "userId": {
+      "description": "The unique identifier of the user associated with the owner.",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "The date and time when the owner was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the owner was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the owner is archived or not.",
       "type": ["null", "boolean"]
     },
     "teams": {
+      "description": "An array of teams the owner belongs to.",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
+            "description": "The unique identifier of the team.",
             "type": ["null", "string"]
           },
           "name": {
+            "description": "The name of the team.",
             "type": ["null", "string"]
           },
           "membership": {
+            "description": "The membership status of the owner in the team.",
             "type": ["null", "string"]
           }
         }

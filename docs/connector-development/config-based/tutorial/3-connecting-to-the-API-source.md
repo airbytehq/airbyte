@@ -21,7 +21,7 @@ Let's populate the specification (`spec`) and the configuration (`secrets/config
 1. We'll add these properties to the `spec` block in the `source-exchange-rates-tutorial/source_exchange_rates_tutorial/manifest.yaml`
 
 ```yaml
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
@@ -75,12 +75,12 @@ definitions:
 2. Then, let's rename the stream from `customers` to `rates`, update the primary key to `date`, and set the path to "/exchangerates_data/latest" as per the API's documentation. This path is specific to the stream, so we'll set it within the `rates_stream` definition
 
 ```yaml
-  rates_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "rates"
-      primary_key: "date"
-      path: "/exchangerates_data/latest"
+rates_stream:
+  $ref: "#/definitions/base_stream"
+  $parameters:
+    name: "rates"
+    primary_key: "date"
+    path: "/exchangerates_data/latest"
 ```
 
 We'll also update the reference in the `streams` block
@@ -136,7 +136,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: [ ]
+      field_path: []
   requester:
     url_base: "https://api.apilayer.com"
     http_method: "GET"
@@ -169,7 +169,7 @@ streams:
 check:
   stream_names:
     - "rates"
-spec: 
+spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#

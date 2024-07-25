@@ -15,6 +15,7 @@ from source_amazon_seller_partner.streams import (
 
 def reports_stream(marketplace_id):
     stream = SellerFeedbackReports(
+        stream_name="SELLER_FEEDBACK_REPORTS",
         url_base="https://test.url",
         replication_start_date="2010-01-25T00:00:00Z",
         replication_end_date="2017-02-25T00:00:00Z",

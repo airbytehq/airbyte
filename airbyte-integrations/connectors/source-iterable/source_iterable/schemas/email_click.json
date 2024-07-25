@@ -1,62 +1,80 @@
 {
   "properties": {
     "country": {
+      "description": "The country from where the email click was recorded.",
       "type": ["null", "string"]
     },
     "city": {
+      "description": "The city from where the email click was recorded.",
       "type": ["null", "string"]
     },
     "campaignId": {
+      "description": "The unique identifier of the campaign associated with the email click data.",
       "type": ["null", "integer"]
     },
     "itblInternal": {
+      "description": "Internal data related to the iterable service.",
       "type": ["null", "object"],
       "properties": {
         "documentCreatedAt": {
+          "description": "The date and time when the internal document was created.",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "documentUpdatedAt": {
+          "description": "The date and time when the internal document was last updated.",
           "type": ["null", "string"],
           "format": "date-time"
         }
       }
     },
     "ip": {
+      "description": "The IP address from where the email click was recorded.",
       "type": ["null", "string"]
     },
     "contentId": {
+      "description": "The identifier of the content clicked within the email.",
       "type": ["null", "integer"]
     },
     "userAgentDevice": {
+      "description": "The device information of the user agent used for the email click.",
       "type": ["null", "string"]
     },
     "messageId": {
+      "description": "The unique identifier of the message that contained the email.",
       "type": ["null", "string"]
     },
     "hrefIndex": {
+      "description": "The index of the href link within the email content.",
       "type": ["null", "integer"]
     },
     "userAgent": {
+      "description": "The user agent of the browser or application used for the email click.",
       "type": ["null", "string"]
     },
     "templateId": {
+      "description": "The identifier of the email template used in the campaign.",
       "type": ["null", "integer"]
     },
     "url": {
+      "description": "The URL that was clicked within the email.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "The date and time when the email click event occurred.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "region": {
+      "description": "The region from where the email click was recorded.",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "The email address of the user who clicked the email link.",
       "type": ["null", "string"]
     },
     "userId": {
+      "description": "The unique identifier of the user who clicked the email link.",
       "type": ["null", "string"]
     }
   },

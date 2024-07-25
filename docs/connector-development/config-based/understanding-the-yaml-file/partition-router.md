@@ -9,18 +9,18 @@ The most common use case for the `PartitionRouter` component is the retrieval of
 Schema:
 
 ```yaml
-  partition_router:
-    default: []
-    anyOf:
-      - "$ref": "#/definitions/CustomPartitionRouter"
-      - "$ref": "#/definitions/ListPartitionRouter"
-      - "$ref": "#/definitions/SubstreamPartitionRouter"
-      - type: array
-        items:
-          anyOf:
-            - "$ref": "#/definitions/CustomPartitionRouter"
-            - "$ref": "#/definitions/ListPartitionRouter"
-            - "$ref": "#/definitions/SubstreamPartitionRouter"
+partition_router:
+  default: []
+  anyOf:
+    - "$ref": "#/definitions/CustomPartitionRouter"
+    - "$ref": "#/definitions/ListPartitionRouter"
+    - "$ref": "#/definitions/SubstreamPartitionRouter"
+    - type: array
+      items:
+        anyOf:
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
 ```
 
 Notice that you can specify one or more `PartitionRouter`s on a Retriever. When multiple are defined, the result will be Cartesian product of all partitions and a request cycle will be performed for each permutation.
@@ -36,30 +36,30 @@ Notice that you can specify one or more `PartitionRouter`s on a Retriever. When 
 Schema:
 
 ```yaml
-  ListPartitionRouter:
-    description: Partition router that is used to retrieve records that have been partitioned according to a list of values
-    type: object
-    required:
-      - type
-      - cursor_field
-      - slice_values
-    properties:
-      type:
-        type: string
-        enum: [ListPartitionRouter]
-      cursor_field:
-        type: string
-      partition_values:
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              type: string
-      request_option:
-        "$ref": "#/definitions/RequestOption"
-      $parameters:
-        type: object
-        additionalProperties: true
+ListPartitionRouter:
+  description: Partition router that is used to retrieve records that have been partitioned according to a list of values
+  type: object
+  required:
+    - type
+    - cursor_field
+    - slice_values
+  properties:
+    type:
+      type: string
+      enum: [ListPartitionRouter]
+    cursor_field:
+      type: string
+    partition_values:
+      anyOf:
+        - type: string
+        - type: array
+          items:
+            type: string
+    request_option:
+      "$ref": "#/definitions/RequestOption"
+    $parameters:
+      type: object
+      additionalProperties: true
 ```
 
 As an example, this partition router will iterate over the 2 repositories ("airbyte" and "airbyte-secret") and will set a request_parameter on outgoing HTTP requests.
@@ -95,23 +95,23 @@ Substreams are implemented by defining their partition router as a `SubstreamPar
 Schema:
 
 ```yaml
-  SubstreamPartitionRouter:
-    description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
-    type: object
-    required:
-      - type
-      - parent_stream_configs
-    properties:
-      type:
-        type: string
-        enum: [SubstreamPartitionRouter]
-      parent_stream_configs:
-        type: array
-        items:
-          "$ref": "#/definitions/ParentStreamConfig"
-      $parameters:
-        type: object
-        additionalProperties: true
+SubstreamPartitionRouter:
+  description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
+  type: object
+  required:
+    - type
+    - parent_stream_configs
+  properties:
+    type:
+      type: string
+      enum: [SubstreamPartitionRouter]
+    parent_stream_configs:
+      type: array
+      items:
+        "$ref": "#/definitions/ParentStreamConfig"
+    $parameters:
+      type: object
+      additionalProperties: true
 ```
 
 Example:

@@ -15,4 +15,3 @@ It's no longer possible to configure `id` fields in the destination. Instead, th
 ### Vector fields
 
 It's not possible anymore to configure separate vector fields per stream. To load embedding vectors from the records itself, the embedding method `From Field` can be used and configured with a single field name that has to be available in records from all streams. If your records contain multiple vector fields, you need to configure separate destinations and connections to configure separate vector field names.
-

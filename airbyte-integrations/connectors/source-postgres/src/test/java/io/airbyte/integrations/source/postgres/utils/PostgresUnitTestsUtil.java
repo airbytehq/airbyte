@@ -16,6 +16,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PostgresUnitTestsUtil {
@@ -78,6 +79,11 @@ public class PostgresUnitTestsUtil {
   public static List<AirbyteMessage> filterRecords(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == Type.RECORD)
         .collect(Collectors.toList());
+  }
+
+  public static Set<AirbyteMessage> filterRecords(final Set<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.RECORD)
+        .collect(Collectors.toSet());
   }
 
   public static List<String> extractSpecificFieldFromCombinedMessages(final List<AirbyteMessage> messages,

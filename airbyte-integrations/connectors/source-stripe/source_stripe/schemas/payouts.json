@@ -1,142 +1,187 @@
 {
   "properties": {
     "metadata": {
+      "description": "Additional data about the payout.",
       "type": ["null", "object"],
       "properties": {}
     },
     "failure_code": {
+      "description": "The failure code for a failed payout.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The ID of the payout.",
       "type": ["null", "string"]
     },
     "statement_description": {
+      "description": "The description that will appear on the bank statement.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount of the payout in the smallest currency unit.",
       "type": ["null", "integer"]
     },
     "balance_transaction": {
+      "description": "The ID of the balance transaction that describes the impact on your account balance.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The date the payout was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The date the payout was last updated.",
       "type": ["null", "integer"]
     },
     "amount_reversed": {
+      "description": "The amount that was reversed (negative) from this payout.",
       "type": ["null", "integer"]
     },
     "source_type": {
+      "description": "The type of the source transaction (charge, payment, refund).",
       "type": ["null", "string"]
     },
     "bank_account": {
+      "description": "Details of the bank account associated with the payout",
       "properties": {
         "metadata": {
+          "description": "Additional data about the bank account.",
           "type": ["null", "object"],
           "properties": {}
         },
         "routing_number": {
+          "description": "The routing number of the bank account.",
           "type": ["null", "string"]
         },
         "account_holder_type": {
+          "description": "The type of account holder (individual or company).",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the bank account.",
           "type": ["null", "string"]
         },
         "id": {
+          "description": "The ID of the bank account.",
           "type": ["null", "string"]
         },
         "bank_name": {
+          "description": "The name of the bank.",
           "type": ["null", "string"]
         },
         "last4": {
+          "description": "The last 4 digits of the bank account number.",
           "type": ["null", "string"]
         },
         "fingerprint": {
+          "description": "A unique identifier for the bank account.",
           "type": ["null", "string"]
         },
         "account_holder_name": {
+          "description": "The name of the account holder.",
           "type": ["null", "string"]
         },
         "object": {
+          "description": "Type of object that represents the bank account.",
           "type": ["null", "string"]
         },
         "status": {
+          "description": "The status of the bank account (verified, unverified).",
           "type": ["null", "string"]
         },
         "currency": {
+          "description": "The currency of the bank account.",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "The country code of the bank account.",
           "type": ["null", "string"]
         }
       },
       "type": ["null", "object"]
     },
     "date": {
+      "description": "The date when the payout was initiated.",
       "type": ["null", "integer"]
     },
     "method": {
+      "description": "The method used for the payout (standard, instant).",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates if the payout was created in live mode.",
       "type": ["null", "boolean"]
     },
     "statement_descriptor": {
+      "description": "The statement descriptor that appears on the recipient's bank statement.",
       "type": ["null", "string"]
     },
     "failure_message": {
+      "description": "The failure message for a failed payout.",
       "type": ["null", "string"]
     },
     "failure_balance_transaction": {
+      "description": "The ID of the balance transaction when the payout failed.",
       "type": ["null", "string"]
     },
     "recipient": {
+      "description": "The recipient of the funds for the payout.",
       "type": ["null", "string"]
     },
     "destination": {
+      "description": "The destination of the payout (e.g., bank account).",
       "type": ["null", "string"]
     },
     "automatic": {
+      "description": "Indicates if the payout was done automatically by Stripe.",
       "type": ["null", "boolean"]
     },
     "object": {
+      "description": "Type of object that represents the payout.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the payout (paid, pending, failed).",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency of the payout.",
       "type": ["null", "string"]
     },
     "transfer_group": {
+      "description": "A unique identifier for the transfer group.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of the payout (bank_account, card).",
       "type": ["null", "string"]
     },
     "arrival_date": {
+      "description": "The date the payout is expected to arrive in the bank account.",
       "type": ["null", "integer"]
     },
     "description": {
+      "description": "A description of the payout.",
       "type": ["null", "string"]
     },
     "source_transaction": {
+      "description": "The ID of the transaction that generated the payout.",
       "type": ["null", "string"]
     },
     "original_payout": {
+      "description": "The original payout that was reversed.",
       "type": ["null", "string"]
     },
     "reconciliation_status": {
+      "description": "The reconciliation status of the payout.",
       "type": ["null", "string"]
     },
     "source_balance": {
+      "description": "The balance amount from which the payout was sourced.",
       "type": ["null", "string"]
     },
     "reversed_by": {
+      "description": "The ID of the payout that initiated the reversal.",
       "type": ["null", "string"]
     }
   },

@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Extra, Field
+from pydantic.v1 import BaseModel, Extra, Field
 from typing_extensions import Literal
 
 
@@ -257,6 +257,121 @@ class LegacyToPerPartitionStateMigration(BaseModel):
     type: Optional[Literal['LegacyToPerPartitionStateMigration']] = None
 
 
+class Algorithm(Enum):
+    HS256 = 'HS256'
+    HS384 = 'HS384'
+    HS512 = 'HS512'
+    ES256 = 'ES256'
+    ES256K = 'ES256K'
+    ES384 = 'ES384'
+    ES512 = 'ES512'
+    RS256 = 'RS256'
+    RS384 = 'RS384'
+    RS512 = 'RS512'
+    PS256 = 'PS256'
+    PS384 = 'PS384'
+    PS512 = 'PS512'
+    EdDSA = 'EdDSA'
+
+
+class JwtHeaders(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    kid: Optional[str] = Field(
+        None,
+        description='Private key ID for user account.',
+        examples=["{{ config['kid'] }}"],
+        title='Key Identifier',
+    )
+    typ: Optional[str] = Field(
+        'JWT',
+        description='The media type of the complete JWT.',
+        examples=['JWT'],
+        title='Type',
+    )
+    cty: Optional[str] = Field(
+        None,
+        description='Content type of JWT header.',
+        examples=['JWT'],
+        title='Content Type',
+    )
+
+
+class JwtPayload(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    iss: Optional[str] = Field(
+        None,
+        description='The user/principal that issued the JWT. Commonly a value unique to the user.',
+        examples=["{{ config['iss'] }}"],
+        title='Issuer',
+    )
+    sub: Optional[str] = Field(
+        None,
+        description='The subject of the JWT. Commonly defined by the API.',
+        title='Subject',
+    )
+    aud: Optional[str] = Field(
+        None,
+        description='The recipient that the JWT is intended for. Commonly defined by the API.',
+        examples=['appstoreconnect-v1'],
+        title='Audience',
+    )
+
+
+class JwtAuthenticator(BaseModel):
+    type: Literal['JwtAuthenticator']
+    secret_key: str = Field(
+        ...,
+        description='Secret used to sign the JSON web token.',
+        examples=["{{ config['secret_key'] }}"],
+    )
+    base64_encode_secret_key: Optional[bool] = Field(
+        False,
+        description='When set to true, the secret key will be base64 encoded prior to being encoded as part of the JWT. Only set to "true" when required by the API.',
+    )
+    algorithm: Algorithm = Field(
+        ...,
+        description='Algorithm used to sign the JSON web token.',
+        examples=['ES256', 'HS256', 'RS256', "{{ config['algorithm'] }}"],
+    )
+    token_duration: Optional[int] = Field(
+        1200,
+        description='The amount of time in seconds a JWT token can be valid after being issued.',
+        examples=[1200, 3600],
+        title='Token Duration',
+    )
+    header_prefix: Optional[str] = Field(
+        None,
+        description='The prefix to be used within the Authentication header.',
+        examples=['Bearer', 'Basic'],
+        title='Header Prefix',
+    )
+    jwt_headers: Optional[JwtHeaders] = Field(
+        None,
+        description='JWT headers used when signing JSON web token.',
+        title='JWT Headers',
+    )
+    additional_jwt_headers: Optional[Dict[str, Any]] = Field(
+        None,
+        description='Additional headers to be included with the JWT headers object.',
+        title='Additional JWT Headers',
+    )
+    jwt_payload: Optional[JwtPayload] = Field(
+        None,
+        description='JWT Payload used when signing JSON web token.',
+        title='JWT Payload',
+    )
+    additional_jwt_payload: Optional[Dict[str, Any]] = Field(
+        None,
+        description='Additional properties to be added to the JWT payload.',
+        title='Additional JWT Payload Properties',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class RefreshTokenUpdater(BaseModel):
     refresh_token_name: Optional[str] = Field(
         'refresh_token',
@@ -417,15 +532,28 @@ class Action(Enum):
     FAIL = 'FAIL'
     RETRY = 'RETRY'
     IGNORE = 'IGNORE'
+    RATE_LIMITED = 'RATE_LIMITED'
+
+
+class FailureType(Enum):
+    system_error = 'system_error'
+    config_error = 'config_error'
+    transient_error = 'transient_error'
 
 
 class HttpResponseFilter(BaseModel):
     type: Literal['HttpResponseFilter']
-    action: Action = Field(
-        ...,
+    action: Optional[Action] = Field(
+        None,
         description='Action to execute if a response matches the filter.',
-        examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE'],
+        examples=['SUCCESS', 'FAIL', 'RETRY', 'IGNORE', 'RATE_LIMITED'],
         title='Action',
+    )
+    failure_type: Optional[FailureType] = Field(
+        None,
+        description='Failure type of traced exception if a response matches the filter.',
+        examples=['system_error', 'config_error', 'transient_error'],
+        title='Failure Type',
     )
     error_message: Optional[str] = Field(
         None,
@@ -481,6 +609,14 @@ class JsonDecoder(BaseModel):
     type: Literal['JsonDecoder']
 
 
+class JsonlDecoder(BaseModel):
+    type: Literal['JsonlDecoder']
+
+
+class IterableDecoder(BaseModel):
+    type: Literal['IterableDecoder']
+
+
 class MinMaxDatetime(BaseModel):
     type: Literal['MinMaxDatetime']
     datetime: str = Field(
@@ -491,7 +627,7 @@ class MinMaxDatetime(BaseModel):
     )
     datetime_format: Optional[str] = Field(
         '',
-        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%ms**: Epoch unix timestamp - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`\n  * **%W**: Week number of the year (Monday as first day) - `00`, `01`, ..., `53`\n  * **%c**: Date and time representation - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date representation - `08/16/1988`\n  * **%X**: Time representation - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
+        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`\n  * **%ms**: Epoch unix timestamp - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`\n  * **%W**: Week number of the year (Monday as first day) - `00`, `01`, ..., `53`\n  * **%c**: Date and time representation - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date representation - `08/16/1988`\n  * **%X**: Time representation - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
         examples=['%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%d', '%s'],
         title='Datetime Format',
     )
@@ -523,21 +659,21 @@ class OAuthConfigSpecification(BaseModel):
     class Config:
         extra = Extra.allow
 
-    oauth_user_input_from_connector_config_specification: Optional[
-        Dict[str, Any]
-    ] = Field(
-        None,
-        description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation 'path_in_connector_config'.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\nExamples:\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['app_id']\n    }\n  }\nif connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['info', 'app_id']\n    }\n  }",
-        examples=[
-            {'app_id': {'type': 'string', 'path_in_connector_config': ['app_id']}},
-            {
-                'app_id': {
-                    'type': 'string',
-                    'path_in_connector_config': ['info', 'app_id'],
-                }
-            },
-        ],
-        title='OAuth user input',
+    oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = (
+        Field(
+            None,
+            description="OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation 'path_in_connector_config'.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\nExamples:\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['app_id']\n    }\n  }\nif connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: ['info', 'app_id']\n    }\n  }",
+            examples=[
+                {'app_id': {'type': 'string', 'path_in_connector_config': ['app_id']}},
+                {
+                    'app_id': {
+                        'type': 'string',
+                        'path_in_connector_config': ['info', 'app_id'],
+                    }
+                },
+            ],
+            title='OAuth user input',
+        )
     )
     complete_oauth_output_specification: Optional[Dict[str, Any]] = Field(
         None,
@@ -792,6 +928,10 @@ class WaitUntilTimeFromHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class Decoder(BaseModel):
+    __root__: Any
+
+
 class AddedFieldDefinition(BaseModel):
     type: Literal['AddedFieldDefinition']
     path: List[str] = Field(
@@ -900,7 +1040,7 @@ class CursorPagination(BaseModel):
         ],
         title='Stop Condition',
     )
-    decoder: Optional[JsonDecoder] = Field(
+    decoder: Optional[Decoder] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
         title='Decoder',
@@ -918,8 +1058,8 @@ class DatetimeBasedCursor(BaseModel):
     )
     datetime_format: str = Field(
         ...,
-        description='The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`\n  * **%W**: Week number of the year (starting Monday) - `00`, ..., `53`\n  * **%c**: Date and time - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date standard format - `08/16/1988`\n  * **%X**: Time standard format - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
-        examples=['%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%d', '%s', '%ms'],
+        description='The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:\n  * **%s**: Epoch unix timestamp - `1686218963`\n  * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`\n  * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`\n  * **%a**: Weekday (abbreviated) - `Sun`\n  * **%A**: Weekday (full) - `Sunday`\n  * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)\n  * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`\n  * **%b**: Month (abbreviated) - `Jan`\n  * **%B**: Month (full) - `January`\n  * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`\n  * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`\n  * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`\n  * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`\n  * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`\n  * **%p**: AM/PM indicator\n  * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`\n  * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`\n  * **%f**: Microsecond (zero-padded to 6 digits) - `000000`\n  * **%z**: UTC offset - `(empty)`, `+0000`, `-04:00`\n  * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`\n  * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`\n  * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`\n  * **%W**: Week number of the year (starting Monday) - `00`, ..., `53`\n  * **%c**: Date and time - `Tue Aug 16 21:30:00 1988`\n  * **%x**: Date standard format - `08/16/1988`\n  * **%X**: Time standard format - `21:30:00`\n  * **%%**: Literal \'%\' character\n\n  Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).\n',
+        examples=['%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%d', '%s', '%ms', '%s_as_float'],
         title='Outgoing Datetime Format',
     )
     start_datetime: Union[str, MinMaxDatetime] = Field(
@@ -954,6 +1094,16 @@ class DatetimeBasedCursor(BaseModel):
         None,
         description='A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.',
         title='Whether the target API is formatted as a data feed',
+    )
+    is_client_side_incremental: Optional[bool] = Field(
+        None,
+        description='If the target API endpoint does not take cursor values to filter records and returns all records anyway, the connector with this cursor will filter out records locally, and only emit new records from the last sync, hence incremental. This means that all records would be read from the API, but only new records will be emitted to the destination.',
+        title='Whether the target API does not support filtering and returns all data (the cursor filters records in the client instead of the API side)',
+    )
+    is_compare_strictly: Optional[bool] = Field(
+        False,
+        description='Set to True if the target API does not accept queries where the start time equal the end time.',
+        title='Whether to skip requests if the start time equals the end time',
     )
     lookback_window: Optional[str] = Field(
         None,
@@ -1050,10 +1200,8 @@ class DpathExtractor(BaseModel):
         ],
         title='Field Path',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None,
-        description='Component decoding the response so records can be extracted.',
-        title='Decoder',
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None, title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1142,7 +1290,10 @@ class DeclarativeSource(BaseModel):
     type: Literal['DeclarativeSource']
     check: CheckStream
     streams: List[DeclarativeStream]
-    version: str
+    version: str = Field(
+        ...,
+        description='The version of the Airbyte CDK used to build and test the source.',
+    )
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
@@ -1171,6 +1322,7 @@ class SelectiveAuthenticator(BaseModel):
             BearerAuthenticator,
             CustomAuthenticator,
             OAuthAuthenticator,
+            JwtAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
             LegacySessionTokenAuthenticator,
@@ -1183,6 +1335,7 @@ class SelectiveAuthenticator(BaseModel):
                 'authenticators': {
                     'token': '#/definitions/ApiKeyAuthenticator',
                     'oauth': '#/definitions/OAuthAuthenticator',
+                    'jwt': '#/definitions/JwtAuthenticator',
                 }
             }
         ],
@@ -1201,12 +1354,12 @@ class DeclarativeStream(BaseModel):
         description='Component used to coordinate how records are extracted across stream slices and request pages.',
         title='Retriever',
     )
-    incremental_sync: Optional[
-        Union[CustomIncrementalSync, DatetimeBasedCursor]
-    ] = Field(
-        None,
-        description='Component used to fetch data incrementally based on a time field in the data.',
-        title='Incremental Sync',
+    incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = (
+        Field(
+            None,
+            description='Component used to fetch data incrementally based on a time field in the data.',
+            title='Incremental Sync',
+        )
     )
     name: Optional[str] = Field(
         '', description='The stream name.', example=['Users'], title='Name'
@@ -1307,6 +1460,7 @@ class HttpRequester(BaseModel):
             BearerAuthenticator,
             CustomAuthenticator,
             OAuthAuthenticator,
+            JwtAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
             LegacySessionTokenAuthenticator,
@@ -1397,6 +1551,11 @@ class ParentStreamConfig(BaseModel):
         description='A request option describing where the parent key value should be injected into and under what field name if applicable.',
         title='Request Option',
     )
+    incremental_dependency: Optional[bool] = Field(
+        False,
+        description='Indicates whether the parent stream should be read incrementally based on updates in the child stream.',
+        title='Incremental Dependency',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1433,6 +1592,11 @@ class SimpleRetriever(BaseModel):
         [],
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
+    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 

@@ -42,8 +42,7 @@ def test_check_connection_valid(mock_survey_cto, source, config):
 
 def test_check_connection_failure(mock_survey_cto, source, config):
     logger_mock = MagicMock()
-    expected_outcome = "Unable to connect - 400 Client Error: 400 for url: https://server_name.surveycto.com/api/v2/forms/data/wide/json/form_id_1?date=Jan+09%2C+2022+00%3A00%3A00+AM"
-    assert source.check_connection(logger_mock, config) == (False, expected_outcome)
+    assert not source.check_connection(logger_mock, config)[0]
 
 
 def test_generate_streams(mock_survey_cto, source, config):

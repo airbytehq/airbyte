@@ -35,6 +35,20 @@ The Commcare source connector supports the following streams:
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-|---------|------|--------------|---------|
-| 0.1.0   | 2022-11-08 | [20220](https://github.com/airbytehq/airbyte/pull/20220)   | Commcare Source Connector |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                   |
+| ------- | ---------- | -------------------------------------------------------- | ------------------------- |
+| 0.1.9 | 2024-07-20 | [42184](https://github.com/airbytehq/airbyte/pull/42184) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41907](https://github.com/airbytehq/airbyte/pull/41907) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41512](https://github.com/airbytehq/airbyte/pull/41512) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40807](https://github.com/airbytehq/airbyte/pull/40807) | Update dependencies |
+| 0.1.5 | 2024-06-26 | [40542](https://github.com/airbytehq/airbyte/pull/40542) | Update dependencies |
+| 0.1.4 | 2024-06-25 | [40325](https://github.com/airbytehq/airbyte/pull/40325) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40057](https://github.com/airbytehq/airbyte/pull/40057) | Update dependencies |
+| 0.1.2 | 2024-06-04 | [39026](https://github.com/airbytehq/airbyte/pull/39026) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.1 | 2024-05-21 | [38519](https://github.com/airbytehq/airbyte/pull/38519) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-11-08 | [20220](https://github.com/airbytehq/airbyte/pull/20220) | Commcare Source Connector |
+
+</details>

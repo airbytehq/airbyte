@@ -3,43 +3,55 @@
   "type": "object",
   "properties": {
     "path": {
+      "description": "Path to the sitemap file",
       "type": ["null", "string"]
     },
     "lastSubmitted": {
+      "description": "Timestamp when the sitemap was last submitted",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "isPending": {
+      "description": "Flag indicating if the sitemap is pending for processing",
       "type": ["null", "boolean"]
     },
     "isSitemapsIndex": {
+      "description": "Flag indicating if the data represents a sitemap index",
       "type": ["null", "boolean"]
     },
     "type": {
+      "description": "Type of the sitemap",
       "type": ["null", "string"]
     },
     "lastDownloaded": {
+      "description": "Timestamp when the sitemap was last downloaded",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "warnings": {
+      "description": "Warnings encountered while processing the sitemaps",
       "type": ["null", "string"]
     },
     "errors": {
+      "description": "Errors encountered while processing the sitemaps",
       "type": ["null", "string"]
     },
     "contents": {
+      "description": "Data related to the sitemap contents",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "type": {
+            "description": "Type of the sitemap content",
             "type": ["null", "string"]
           },
           "submitted": {
+            "description": "Number of submitted sitemap URLs",
             "type": ["null", "string"]
           },
           "indexed": {
+            "description": "Number of indexed sitemap URLs",
             "type": ["null", "string"]
           }
         }

@@ -4,64 +4,82 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the differential price data.",
       "type": ["string", "null"]
     },
     "item_price_id": {
+      "description": "The identifier of the item price related to the differential price.",
       "type": ["string", "null"]
     },
     "parent_item_id": {
+      "description": "The ID of the parent item linked to this differential price data.",
       "type": ["string", "null"]
     },
     "price": {
+      "description": "The price value of the differential price.",
       "type": ["integer", "null"]
     },
     "price_in_decimal": {
+      "description": "The price value in decimal format for precise calculations.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "The status of the differential price data (e.g., active, inactive).",
       "type": ["string", "null"]
     },
     "resource_version": {
+      "description": "The version of the resource for tracking changes.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "The timestamp when the differential price data was last updated.",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "The timestamp when the differential price data was created.",
       "type": ["integer", "null"]
     },
     "modified_at": {
+      "description": "The timestamp when the differential price data was last modified.",
       "type": ["integer", "null"]
     },
     "currency_code": {
+      "description": "The currency code associated with the differential price data.",
       "type": ["string", "null"]
     },
     "tiers": {
+      "description": "Contains information about price tiers",
       "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
           "starting_unit": {
+            "description": "The starting unit for a specific price tier.",
             "type": ["integer", "null"]
           },
           "ending_unit": {
+            "description": "The end unit for a specific price tier.",
             "type": ["integer", "null"]
           },
           "price": {
+            "description": "The price for the tier within specified units.",
             "type": ["integer", "null"]
           }
         }
       }
     },
     "parent_periods": {
+      "description": "Contains information about the parent periods",
       "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
           "period_unit": {
+            "description": "The unit of the period (e.g., days, months) for the parent item.",
             "type": ["string", "null"]
           },
           "period": {
+            "description": "The period associated with the parent item.",
             "type": ["array", "null"],
             "items": {
               "type": ["integer", "null"]
@@ -71,9 +89,11 @@
       }
     },
     "object": {
+      "description": "The object type which this data represents.",
       "type": ["string", "null"]
     },
     "custom_fields": {
+      "description": "Custom fields associated with the differential price data.",
       "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }

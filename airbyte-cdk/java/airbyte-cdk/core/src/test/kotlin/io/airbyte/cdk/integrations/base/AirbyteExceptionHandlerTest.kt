@@ -3,6 +3,7 @@
  */
 package io.airbyte.cdk.integrations.base
 
+import io.airbyte.cdk.integrations.util.ConnectorExceptionHandler
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.AirbyteMessage
@@ -10,7 +11,6 @@ import io.airbyte.protocol.models.AirbyteTraceMessage
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.*
-import lombok.SneakyThrows
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -202,11 +202,13 @@ class AirbyteExceptionHandlerTest {
         // because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
         val thread: Thread =
             object : Thread() {
-                @SneakyThrows
                 override fun run() {
                     val runner = Mockito.mock(IntegrationRunner::class.java)
-                    Mockito.doThrow(throwable).`when`(runner).run(arrayOf("write"))
-                    runner.run(arrayOf("write"))
+                    val exceptionHandler = ConnectorExceptionHandler()
+                    Mockito.doThrow(throwable)
+                        .`when`(runner)
+                        .run(arrayOf("write"), exceptionHandler)
+                    runner.run(arrayOf("write"), exceptionHandler)
                 }
             }
         thread.uncaughtExceptionHandler = airbyteExceptionHandler
@@ -234,7 +236,7 @@ class AirbyteExceptionHandlerTest {
                         .dropLastWhile { it.isEmpty() }
                         .toTypedArray()
                 )
-                .map { line: String? ->
+                .map { line: String ->
                     // these tests sometimes emit non-json stdout (e.g. log4j warnings)
                     // so we try-catch to handle those malformed lines.
                     try {

@@ -1,34 +1,325 @@
-version: "0.29.0"
+version: 0.78.5
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - whois
 
 definitions:
-  selector:
-    extractor:
-      field_path: []
-  requester:
-    url_base: "https://api.ip2whois.com"
-    http_method: "GET"
-    request_parameters:
-      key: "{{ config['api_key'] }}"
-      domain: "{{ config['domain'] }}"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-  whois_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "whois"
-      primary_key: "domain_id"
-      path: "/v2"
+  streams:
+    whois:
+      type: DeclarativeStream
+      name: whois
+      primary_key:
+        - domain_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2
+          http_method: GET
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            domain: "{{ config['domain'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/whois"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.ip2whois.com
 
 streams:
-  - "#/definitions/whois_stream"
-check:
-  stream_names:
-    - "whois"
+  - $ref: "#/definitions/streams/whois"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties:
+      api_key:
+        type: string
+        title: API key
+        description: >-
+          Your API Key. See <a
+          href="https://www.ip2whois.com/developers-api">here</a>.
+        airbyte_secret: true
+        order: 0
+      domain:
+        type: string
+        title: Domain
+        description: >-
+          Domain name. See <a
+          href="https://www.ip2whois.com/developers-api">here</a>.
+        examples:
+          - www.google.com
+          - www.facebook.com
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    whois: false
+
+schemas:
+  whois:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      admin:
+        type: object
+        additionalProperties: true
+        description: Details of the administrative contact
+        properties:
+          city:
+            type: string
+            description: City of the administrative contact
+          country:
+            type: string
+            description: Country of the administrative contact
+          email:
+            type: string
+            description: Email of the administrative contact
+          fax:
+            type: string
+            description: Fax number of the administrative contact
+          name:
+            type: string
+            description: Name of the administrative contact
+          organization:
+            type: string
+            description: Organization of the administrative contact
+          phone:
+            type: string
+            description: Phone number of the administrative contact
+          region:
+            type: string
+            description: Region of the administrative contact
+          street_address:
+            type: string
+            description: Street address of the administrative contact
+          zip_code:
+            type: string
+            description: Zip code of the administrative contact
+        required:
+          - name
+          - organization
+          - street_address
+          - city
+          - region
+          - zip_code
+          - country
+          - phone
+          - fax
+          - email
+      billing:
+        type: object
+        additionalProperties: true
+        description: Details of the billing contact
+        properties:
+          city:
+            type: string
+            description: City of the billing contact
+          country:
+            type: string
+            description: Country of the billing contact
+          email:
+            type: string
+            description: Email of the billing contact
+          fax:
+            type: string
+            description: Fax number of the billing contact
+          name:
+            type: string
+            description: Name of the billing contact
+          organization:
+            type: string
+            description: Organization of the billing contact
+          phone:
+            type: string
+            description: Phone number of the billing contact
+          region:
+            type: string
+            description: Region of the billing contact
+          street_address:
+            type: string
+            description: Street address of the billing contact
+          zip_code:
+            type: string
+            description: Zip code of the billing contact
+        required:
+          - name
+          - organization
+          - street_address
+          - city
+          - region
+          - zip_code
+          - country
+          - phone
+          - fax
+          - email
+      create_date:
+        type: string
+        description: Date and time when the domain was created
+        format: date-time
+      domain:
+        type: string
+        description: Domain name
+      domain_age:
+        type: integer
+        description: Age of the domain in years
+      domain_id:
+        type: string
+        description: Unique identifier for the domain
+      expire_date:
+        type: string
+        description: Date and time when the domain will expire
+        format: date-time
+      nameservers:
+        type: array
+        description: List of nameservers associated with the domain
+      registrant:
+        type: object
+        additionalProperties: true
+        description: Details of the registrant contact
+        properties:
+          city:
+            type: string
+            description: City of the registrant contact
+          country:
+            type: string
+            description: Country of the registrant contact
+          email:
+            type: string
+            description: Email of the registrant contact
+          fax:
+            type: string
+            description: Fax number of the registrant contact
+          name:
+            type: string
+            description: Name of the registrant contact
+          organization:
+            type: string
+            description: Organization of the registrant contact
+          phone:
+            type: string
+            description: Phone number of the registrant contact
+          region:
+            type: string
+            description: Region of the registrant contact
+          street_address:
+            type: string
+            description: Street address of the registrant contact
+          zip_code:
+            type: string
+            description: Zip code of the registrant contact
+        required:
+          - name
+          - organization
+          - street_address
+          - city
+          - region
+          - zip_code
+          - country
+          - phone
+          - fax
+          - email
+      registrar:
+        type: object
+        additionalProperties: true
+        description: Details of the registrar for the domain
+        properties:
+          iana_id:
+            type: string
+            description: IANA ID of the registrar
+          name:
+            type: string
+            description: Name of the registrar
+          url:
+            type: string
+            description: URL of the registrar
+        required:
+          - iana_id
+          - name
+          - url
+      status:
+        type: string
+        description: Status of the domain registration
+      tech:
+        type: object
+        additionalProperties: true
+        description: Details of the technical contact
+        properties:
+          city:
+            type: string
+            description: City of the technical contact
+          country:
+            type: string
+            description: Country of the technical contact
+          email:
+            type: string
+            description: Email of the technical contact
+          fax:
+            type: string
+            description: Fax number of the technical contact
+          name:
+            type: string
+            description: Name of the technical contact
+          organization:
+            type: string
+            description: Organization of the technical contact
+          phone:
+            type: string
+            description: Phone number of the technical contact
+          region:
+            type: string
+            description: Region of the technical contact
+          street_address:
+            type: string
+            description: Street address of the technical contact
+          zip_code:
+            type: string
+            description: Zip code of the technical contact
+        required:
+          - name
+          - organization
+          - street_address
+          - city
+          - region
+          - zip_code
+          - country
+          - phone
+          - fax
+          - email
+      update_date:
+        type: string
+        description: Date and time when the domain record was last updated
+        format: date-time
+      whois_server:
+        type: string
+        description: Whois server used to query the domain registration information
+    required:
+      - domain
+      - domain_id
+      - status
+      - create_date
+      - update_date
+      - expire_date
+      - domain_age
+      - whois_server
+      - registrar
+      - registrant
+      - admin
+      - tech
+      - billing
+      - nameservers

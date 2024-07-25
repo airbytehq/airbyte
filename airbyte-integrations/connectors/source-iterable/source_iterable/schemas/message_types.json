@@ -1,12 +1,15 @@
 {
   "properties": {
     "id": {
+      "description": "The unique identifier for the message type.",
       "type": ["null", "number"]
     },
     "name": {
+      "description": "The display name for the message type.",
       "type": ["null", "string"]
     },
     "channelId": {
+      "description": "The unique identifier for the channel the message belongs to.",
       "type": ["null", "number"]
     }
   },

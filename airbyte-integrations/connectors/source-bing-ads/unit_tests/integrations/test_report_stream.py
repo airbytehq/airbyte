@@ -25,7 +25,7 @@ class TestReportStream(BaseTest):
     def _download_file(self, file: Optional[str] = None) -> Path:
         """
         Returns path to temporary file of downloaded data that will be use in read.
-        Base file should be named as {file_name}.cvs in resource/response folder.
+        Base file should be named as {file_name}.csv in resource/response folder.
         """
         if file:
             path_to_tmp_file = Path(__file__).parent.parent / f"resource/response/{file}.csv"

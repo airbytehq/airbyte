@@ -3,16 +3,18 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "_ab_source_file_last_modified": "2999-01-01T00:00:00.000000Z_simple_test.csv",
+        "_ab_source_file_last_modified": "2999-01-02T00:00:00.000000Z_test_payroll/Fiscal_Year=2022/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet",
         "history": {
-          "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z",
-          "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Hour/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z",
           "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ON%20LEAVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z",
-          "test_payroll/Fiscal_Year=2022/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z",
-          "test_payroll/Fiscal_Year=2022/Leave_Status_as_of_June_30=ON%20LEAVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z"
+          "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Hour/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z",
+          "test_payroll/Fiscal_Year=2021/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-02T00:00:00.000000Z",
+          "test_payroll/Fiscal_Year=2022/Leave_Status_as_of_June_30=ON%20LEAVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z",
+          "test_payroll/Fiscal_Year=2022/Leave_Status_as_of_June_30=ACTIVE/Pay_Basis=per%20Annum/4e0ea65c5a074c0592e43f7b950f3ce8-0.parquet": "2999-01-01T00:00:00.000000Z"
         }
       },
-      "stream_descriptor": { "name": "airbyte-source-azure-blob-storage-test" }
+      "stream_descriptor": {
+        "name": "airbyte-source-azure-blob-storage-test"
+      }
     }
   }
 ]

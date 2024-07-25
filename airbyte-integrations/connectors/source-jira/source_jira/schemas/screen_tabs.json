@@ -4,17 +4,17 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
       "description": "The ID of the screen tab.",
+      "type": "integer",
       "readOnly": true
     },
     "name": {
-      "type": "string",
-      "description": "The name of the screen tab. The maximum length is 255 characters."
+      "description": "The name of the screen tab. The maximum length is 255 characters.",
+      "type": "string"
     },
     "screenId": {
-      "type": ["null", "integer"],
-      "description": "Id of the related screen."
+      "description": "Id of the related screen.",
+      "type": ["null", "integer"]
     }
   },
   "additionalProperties": true,

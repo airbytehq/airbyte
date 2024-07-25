@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "$ref": "campaign_properties.json",
+    "estimated_recipient_count": { "type": ["null", "integer"] },
+    "campaign_message": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": { "type": "string" },
+        "id": { "type": "string" },
+        "attributes": {
+          "type": ["null", "object"],
+          "properties": {
+            "label": { "type": ["null", "string"] },
+            "channel": { "type": ["null", "string"] },
+            "content": {
+              "type": ["null", "object"],
+              "properties": {
+                "subject": { "type": ["null", "string"] },
+                "preview_text": { "type": ["null", "string"] },
+                "from_email": { "type": ["null", "string"] },
+                "from_label": { "type": ["null", "string"] },
+                "template_id": { "type": ["null", "string"] },
+                "template_name": { "type": ["null", "string"] }
+              }
+            },
+            "send_times": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "datetime": {
+                    "type": ["null", "string"],
+                    "format": "date-time"
+                  },
+                  "is_local": { "type": ["null", "boolean"] }
+                }
+              }
+            },
+            "created_at": { "type": ["null", "string"], "format": "date-time" },
+            "updated_at": { "type": ["null", "string"], "format": "date-time" },
+            "campaign_id": { "type": ["null", "string"] }
+          }
+        },
+        "links": {
+          "type": ["null", "object"],
+          "properties": {
+            "self": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

@@ -29,7 +29,7 @@ class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
         if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
             error_data = error.response.json()[0]
             error_code = error_data.get("errorCode", "")
-            if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
+            if error_code != "REQUEST_LIMIT_EXCEEDED":
                 return False, f"Cannot receive data for stream '{stream.name}', error message: '{error_data.get('message')}'"
             return True, None
         raise error

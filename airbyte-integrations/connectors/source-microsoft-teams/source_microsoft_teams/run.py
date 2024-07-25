@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_microsoft_teams import SourceMicrosoftTeams
+
+from .source import SourceMicrosoftTeams
 
 
 def run():

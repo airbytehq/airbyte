@@ -1,135 +1,80 @@
-version: "0.29.0"
+version: 0.79.1
 
-definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: []
-
-  requester:
-    type: HttpRequester
-    url_base: "https://api.openweathermap.org/data/3.0/"
-    http_method: "GET"
-    request_parameters:
-      lat: "{% if -90.00 <= config['lat']|float <= 90.00 %}{{ config['lat'] }}{% else %} WRONG LATITUDE{% endif %}"
-      lon: "{% if -180.00 <= config['lon']|float <= 180.00 %}{{ config['lon'] }}{% else %}WRONG LONGITUDE{% endif %}"
-      appid: "{{ config['appid'] }}"
-      lang: "{{ config.get('lang')}}"
-      units: "{{ config.get('units')}}"
-    error_handler:
-      response_filters:
-        - http_codes: [500]
-          action: RETRY
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: NoPagination
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
-  # incremental_sync_base:
-  #   type: DatetimeBasedCursor
-  #   cursor_field: "sync_field"
-  #   datetime_format: "%s"
-  #   cursor_granularity: "PT0.000001S"
-  #   lookback_window: "P5D"
-  #   start_datetime:
-  #     datetime: "{{ config['dt'] }}"
-  #     datetime_format: "%s"
-  #   end_datetime:
-  #     datetime: "{{ format_datetime(now_utc(), '%s') }}"
-  #     datetime_format: "%s"
-  #   step: "P1M"
-
-  onecall_stream:
-    $ref: "#/definitions/base_stream"
-    name: "onecall"
-    retriever:
-      $ref: "#/definitions/retriever"
-    $parameters:
-      path: "onecall"
-    # the commented section is for incremental sync which is not supported by the API
-    # path: "{% if config['dt']%}onecall/timemachine{% else %}onecall{% endif %}"
-    # transformations:
-    #   - type: AddFields
-    #     fields:
-    #       - path: [ "sync_field" ]
-    #         value: "{{ record['current']['dt'] }}"
-    # incremental_cursor: ["current","dt"]
-    # incremental_sync:
-    #       $ref: "#/definitions/incremental_sync_base"
-
-streams:
-  - "#/definitions/onecall_stream"
+type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - "onecall"
+    - onecall
+
+definitions:
+  streams:
+    onecall:
+      type: DeclarativeStream
+      name: onecall
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: onecall
+          http_method: GET
+          request_parameters:
+            lat: >-
+              {% if -90.00 <= config['lat']|float <= 90.00 %}{{ config['lat']
+              }}{% else %} WRONG LATITUDE{% endif %}
+            lon: >-
+              {% if -180.00 <= config['lon']|float <= 180.00 %}{{ config['lon']
+              }}{% else %}WRONG LONGITUDE{% endif %}
+            appid: "{{ config['appid'] }}"
+            lang: "{{ config.get('lang')}}"
+            units: "{{ config.get('units')}}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    http_codes:
+                      - 500
+                    action: RETRY
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/onecall"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.openweathermap.org/data/3.0/
+
+streams:
+  - $ref: "#/definitions/streams/onecall"
 
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/openweather
   connection_specification:
-    title: Openweather Spec
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     required:
+      - appid
       - lat
       - lon
-      - appid
-    additionalProperties: true
     properties:
-      lat:
-        type: string
-        pattern: "^[-]?\\d{1,2}(\\.\\d+)?$"
-        description: "Latitude, decimal (-90; 90). If you need the geocoder to automatic convert city names and zip-codes to geo coordinates and the other way around, please use our Geocoding API"
-        examples:
-          - "45.7603"
-          - "-21.249107858038816"
-      lon:
-        type: string
-        pattern: "^[-]?\\d{1,2}(\\.\\d+)?$"
-        description: "Longitude, decimal (-180; 180). If you need the geocoder to automatic convert city names and zip-codes to geo coordinates and the other way around, please use our Geocoding API"
-        examples:
-          - "4.835659"
-          - "-70.39482074115321"
       appid:
         type: string
-        description: "API KEY"
+        description: API KEY
         airbyte_secret: true
-      units:
-        type: string
-        description: "Units of measurement. standard, metric and imperial units are available. If you do not use the units parameter, standard units will be applied by default."
-        enum:
-          - standard
-          - metric
-          - imperial
-        examples:
-          - "standard"
-          - "metric"
-          - "imperial"
-      # dt:
-      #   type: string
-      #   description : "Date in UNIX format"
-      #   example:
-      #     - '1693023447'
-      only_current:
-        type: boolean
-        description: "True for particular day"
-        example:
-          - "true"
+        order: 0
       lang:
         type: string
-        description:
-          You can use lang parameter to get the output in your language.
-          The contents of the description field will be translated. See <a href="https://openweathermap.org/api/one-call-api#multi">here</a>
-          for the list of supported languages.
+        description: >-
+          You can use lang parameter to get the output in your language. The
+          contents of the description field will be translated. See <a
+          href="https://openweathermap.org/api/one-call-api#multi">here</a> for
+          the list of supported languages.
         enum:
           - af
           - al
@@ -187,3 +132,138 @@ spec:
           - uk
           - zh_cn
           - zh_tw
+        order: 1
+      lat:
+        type: string
+        pattern: ^[-]?\d{1,2}(\.\d+)?$
+        description: >-
+          Latitude, decimal (-90; 90). If you need the geocoder to automatic
+          convert city names and zip-codes to geo coordinates and the other way
+          around, please use our Geocoding API
+        examples:
+          - "45.7603"
+          - "-21.249107858038816"
+        order: 2
+      lon:
+        type: string
+        pattern: ^[-]?\d{1,2}(\.\d+)?$
+        description: >-
+          Longitude, decimal (-180; 180). If you need the geocoder to automatic
+          convert city names and zip-codes to geo coordinates and the other way
+          around, please use our Geocoding API
+        examples:
+          - "4.835659"
+          - "-70.39482074115321"
+        order: 3
+      only_current:
+        type: boolean
+        description: True for particular day
+        example:
+          - "true"
+        order: 4
+      units:
+        type: string
+        description: >-
+          Units of measurement. standard, metric and imperial units are
+          available. If you do not use the units parameter, standard units will
+          be applied by default.
+        enum:
+          - standard
+          - metric
+          - imperial
+        examples:
+          - standard
+          - metric
+          - imperial
+        order: 5
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    onecall: false
+
+schemas:
+  onecall:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      alerts:
+        type: array
+        description: Weather alerts for the requested location
+      current:
+        type: object
+        additionalProperties: true
+        description: Contains current weather data
+        properties:
+          clouds:
+            type: number
+            description: Cloudiness percentage
+          dew_point:
+            type: number
+            description: Dew point temperature
+          dt:
+            type: number
+            description: Time of the data forecasted
+          feels_like:
+            type: number
+            description: Apparent (feels like) temperature
+          humidity:
+            type: number
+            description: Humidity percentage
+          pressure:
+            type: number
+            description: Atmospheric pressure on the sea level
+          rain:
+            type: object
+            additionalProperties: true
+            description: Information about precipitation in the last hour
+            properties:
+              1h:
+                type: number
+                description: Rain volume for the last hour
+          sunrise:
+            type: number
+            description: Sunrise time
+          sunset:
+            type: number
+            description: Sunset time
+          temp:
+            type: number
+            description: Temperature
+          uvi:
+            type: number
+            description: UV index
+          visibility:
+            type: number
+            description: Visibility distance
+          weather:
+            type: array
+            description: Weather condition
+          wind_deg:
+            type: number
+            description: Wind direction in degrees
+          wind_speed:
+            type: number
+            description: Wind speed in meters per second
+      daily:
+        type: array
+        description: Weather forecast for the next 7 days
+      hourly:
+        type: array
+        description: Weather forecast for the next 48 hours
+      lat:
+        type: number
+        description: Latitude of the requested location
+      lon:
+        type: number
+        description: Longitude of the requested location
+      minutely:
+        type: array
+        description: Minute forecast for the next hour
+      timezone:
+        type: string
+        description: Time zone name for the requested location
+      timezone_offset:
+        type: number
+        description: Time offset in seconds from UTC

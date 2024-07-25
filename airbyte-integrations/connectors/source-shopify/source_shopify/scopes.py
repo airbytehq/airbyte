@@ -7,9 +7,11 @@ import logging
 from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
-from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, SSLError
+from airbyte_cdk.sources.streams.http import HttpClient
+from requests.exceptions import InvalidURL, JSONDecodeError
 
-from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyWrongShopNameError
+from .http_request import ShopifyErrorHandler
+from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyWrongShopNameError
 
 SCOPES_MAPPING: Mapping[str, set[str]] = {
     # SCOPE: read_customers
@@ -18,7 +20,9 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "CustomerSavedSearch": ("read_customers",),
     "CustomerAddress": ("read_customers",),
     # SCOPE: read_orders
+    "OrderAgreements": ("read_orders",),
     "Orders": ("read_orders",),
+    "CustomerJourneySummary": ("read_orders",),
     "AbandonedCheckouts": ("read_orders",),
     "TenderTransactions": ("read_orders",),
     "Transactions": ("read_orders",),
@@ -83,35 +87,32 @@ class ShopifyScopes:
     logger = logging.getLogger("airbyte")
 
     def __init__(self, config: Mapping[str, Any]) -> None:
+        self.permitted_streams: List[str] = list(ALWAYS_PERMITTED_STREAMS)
+        self.not_permitted_streams: List[set[str, str]] = []
+        self._error_handler = ShopifyErrorHandler()
+        self._http_client = HttpClient("ShopifyScopes", self.logger, self._error_handler, session=requests.Session())
+
         self.user_scopes = self.get_user_scopes(config)
         # for each stream check the authenticated user has all scopes required
         self.get_streams_from_user_scopes()
         # log if there are streams missing scopes and should be omitted
         self.emit_missing_scopes()
 
-    # the list of validated streams
-    permitted_streams: List[str] = ALWAYS_PERMITTED_STREAMS
-    # the list of not permitted streams
-    not_permitted_streams: List[set[str, str]] = []
     # template for the log message
     missing_scope_message: str = (
         "The stream `{stream}` could not be synced without the `{scope}` scope. Please check the `{scope}` is granted."
     )
 
-    @staticmethod
-    def get_user_scopes(config) -> list[Any]:
-        session = requests.Session()
+    def get_user_scopes(self, config) -> list[Any]:
         url = f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json"
         headers = config["authenticator"].get_auth_header()
         try:
-            response = session.get(url, headers=headers).json()
-            access_scopes = [scope.get("handle") for scope in response.get("access_scopes")]
+            _, response = self._http_client.send_request("GET", url, headers=headers, request_kwargs={})
+            access_scopes = [scope.get("handle") for scope in response.json().get("access_scopes")]
         except InvalidURL:
             raise ShopifyWrongShopNameError(url)
         except JSONDecodeError as json_error:
             raise ShopifyBadJsonError(json_error)
-        except (SSLError, ConnectionError) as con_error:
-            raise ShopifyConnectionError(con_error)
 
         if access_scopes:
             return access_scopes

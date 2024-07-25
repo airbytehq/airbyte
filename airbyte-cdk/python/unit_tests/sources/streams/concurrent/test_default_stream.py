@@ -73,7 +73,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         )
         actual_airbyte_stream = self._stream.as_airbyte_stream()
 
-        assert expected_airbyte_stream == actual_airbyte_stream
+        assert actual_airbyte_stream == expected_airbyte_stream
 
     def test_as_airbyte_stream_with_primary_key(self):
         json_schema = {
@@ -105,7 +105,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         )
 
         airbyte_stream = stream.as_airbyte_stream()
-        assert expected_airbyte_stream == airbyte_stream
+        assert airbyte_stream == expected_airbyte_stream
 
     def test_as_airbyte_stream_with_composite_primary_key(self):
         json_schema = {
@@ -137,7 +137,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         )
 
         airbyte_stream = stream.as_airbyte_stream()
-        assert expected_airbyte_stream == airbyte_stream
+        assert airbyte_stream == expected_airbyte_stream
 
     def test_as_airbyte_stream_with_a_cursor(self):
         json_schema = {
@@ -169,7 +169,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         )
 
         airbyte_stream = stream.as_airbyte_stream()
-        assert expected_airbyte_stream == airbyte_stream
+        assert airbyte_stream == expected_airbyte_stream
 
     def test_as_airbyte_stream_with_namespace(self):
         stream = DefaultStream(
@@ -194,4 +194,4 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         )
         actual_airbyte_stream = stream.as_airbyte_stream()
 
-        assert expected_airbyte_stream == actual_airbyte_stream
+        assert actual_airbyte_stream == expected_airbyte_stream

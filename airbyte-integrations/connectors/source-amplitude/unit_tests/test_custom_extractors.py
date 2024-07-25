@@ -267,6 +267,6 @@ class TestEventsExtractor:
 
         state = {"server_upload_time": "2023-01-01"}
         for record in cursor_fields_smaple:
-            state = stream.get_updated_state(state, record)
+            state = stream._get_updated_state(state, record)
 
         assert state["server_upload_time"] == "2023-08-31 00:00:00.000000"

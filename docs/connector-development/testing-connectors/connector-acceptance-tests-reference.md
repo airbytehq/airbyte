@@ -145,7 +145,7 @@ These backward compatibility tests can be bypassed by changing the value of the 
 One more test validates the specification against containing exposed secrets. This means fields that potentially could hold a secret value should be explicitly marked with `"airbyte_secret": true`. If an input field like `api_key` / `password` / `client_secret` / etc. is exposed, the test will fail.
 
 | Input                                                            | Type    | Default             | Note                                                                                                                  |
-|:-----------------------------------------------------------------|:--------|:--------------------|:----------------------------------------------------------------------------------------------------------------------|
+| :--------------------------------------------------------------- | :------ | :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
 | `spec_path`                                                      | string  | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector                             |
 | `backward_compatibility_tests_config.previous_connector_version` | string  | `latest`            | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
 | `backward_compatibility_tests_config.disable_for_version`        | string  | None                | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
@@ -170,43 +170,47 @@ Verifies when a `discover` operation is run on the connector using the given con
 Additional tests are validating the backward compatibility of the discovered catalog compared to the catalog of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped.
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
 
-| Input                                                            | Type   | Default                                     | Note                                                                                                                  |
-| :--------------------------------------------------------------- | :----- | :------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------- |
-| `config_path`                                                    | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
-| `configured_catalog_path`                                        | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
-| `timeout_seconds`                                                | int    | 30                                          | Test execution timeout in seconds                                                                                     |
-| `backward_compatibility_tests_config.previous_connector_version` | string | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
-| `backward_compatibility_tests_config.disable_for_version`        | string | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| Input                                                            | Type    | Default                                     | Note                                                                                                                  |
+|:-----------------------------------------------------------------|:--------|:--------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
+| `config_path`                                                    | string  | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                    |
+| `configured_catalog_path`                                        | string  | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                            |
+| `timeout_seconds`                                                | int     | 30                                          | Test execution timeout in seconds                                                                                     |
+| `backward_compatibility_tests_config.previous_connector_version` | string  | `latest`                                    | Previous connector version to use for backward compatibility tests (expects a version following semantic versioning). |
+| `backward_compatibility_tests_config.disable_for_version`        | string  | None                                        | Disable the backward compatibility test for a specific version (expects a version following semantic versioning).     |
+| `validate_primary_keys_data_type`                                | boolean | True                                        | Verify that primary keys data types are correct                                                                       |
 
 ## Test Basic Read
 
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages. Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
 Set `validate_data_points=True` if possible. This validation is going to be enabled by default and won't be configurable in future releases.
 
-| Input                                           | Type             | Default                                     | Note                                                                                                          |
-|:------------------------------------------------|:-----------------|:--------------------------------------------|:--------------------------------------------------------------------------------------------------------------|
-| `config_path`                                   | string           | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                            |
-| `configured_catalog_path`                       | string           | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                    |
-| `empty_streams`                                 | array of objects | \[\]                                        | List of streams that might be empty with a `bypass_reason`                                                    |
-| `empty_streams[0].name`                         | string           |                                             | Name of the empty stream                                                                                      |
-| `empty_streams[0].bypass_reason`                | string           | None                                        | Reason why this stream is empty                                                                               |
-| `ignored_fields[stream][0].name`                | string           |                                             | Name of the ignored field                                                                                     |
-| `ignored_fields[stream][0].bypass_reason`       | string           | None                                        | Reason why this field is ignored                                                                              |
-| `validate_schema`                               | boolean          | True                                        | Verify that structure and types of records matches the schema from discovery command                          |
-| `fail_on_extra_columns`                         | boolean          | True                                        | Fail schema validation if undeclared columns are found in records. Only relevant when `validate_schema=True`  |
-| `validate_data_points`                          | boolean          | False                                       | Validate that all fields in all streams contained at least one data point                                     |
-| `timeout_seconds`                               | int              | 5\*60                                       | Test execution timeout in seconds                                                                             |
-| `expect_trace_message_on_failure`               | boolean          | True                                        | Ensure that a trace message is emitted when the connector crashes                                             |
-| `expect_records`                                | object           | None                                        | Compare produced records with expected records, see details below                                             |
-| `expect_records.path`                           | string           |                                             | File with expected records                                                                                    |
-| `expect_records.bypass_reason`                  | string           |                                             | Explain why this test is bypassed                                                                             |
-| `expect_records.exact_order`                    | boolean          | False                                       | Ensure that records produced in exact same order                                                              |
-| `file_types`                                    | object           | None                                        | Configure file-based connectors specific tests                                                                |
-| `file_types.skip_test`                          | boolean          | False                                       | Skip file-based connectors specific tests for the current config with a `bypass_reason`                       |
-| `file_types.bypass_reason`                      | string           | None                                        | Reason why file-based connectors specific tests are skipped                                                   |
-| `file_types.unsupported_types`                  | array of objects | None                                        | Configure file types which are not supported by a source                                                      |
-| `file_types.unsupported_types[0].extension`     | string           |                                             | File type in `.csv` format which cannot be added to a test account                                            |
-| `file_types.unsupported_types[0].bypass_reason` | string           | None                                        | Reason why this file type cannot be added to a test account                                                   |
+| Input                                           | Type             | Default                                     | Note                                                                                                         |
+|:------------------------------------------------|:-----------------|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------|
+| `config_path`                                   | string           | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                           |
+| `configured_catalog_path`                       | string           | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                   |
+| `empty_streams`                                 | array of objects | \[\]                                        | List of streams that might be empty with a `bypass_reason`                                                   |
+| `empty_streams[0].name`                         | string           |                                             | Name of the empty stream                                                                                     |
+| `empty_streams[0].bypass_reason`                | string           | None                                        | Reason why this stream is empty                                                                              |
+| `ignored_fields[stream][0].name`                | string           |                                             | Name of the ignored field                                                                                    |
+| `ignored_fields[stream][0].bypass_reason`       | string           | None                                        | Reason why this field is ignored                                                                             |
+| `validate_schema`                               | boolean          | True                                        | Verify that structure and types of records matches the schema from discovery command                         |
+| `validate_stream_statuses`                      | boolean          | False                                       | Ensure that all streams emit status messages                                                                 |
+| `validate_state_messages`                       | boolean          | True                                        | Ensure that state messages emitted as expected                                                               |
+| `validate_primary_keys_data_type`               | boolean          | True                                        | Verify that primary keys data types are correct                                                              |
+| `fail_on_extra_columns`                         | boolean          | True                                        | Fail schema validation if undeclared columns are found in records. Only relevant when `validate_schema=True` |
+| `validate_data_points`                          | boolean          | False                                       | Validate that all fields in all streams contained at least one data point                                    |
+| `timeout_seconds`                               | int              | 5\*60                                       | Test execution timeout in seconds                                                                            |
+| `expect_trace_message_on_failure`               | boolean          | True                                        | Ensure that a trace message is emitted when the connector crashes                                            |
+| `expect_records`                                | object           | None                                        | Compare produced records with expected records, see details below                                            |
+| `expect_records.path`                           | string           |                                             | File with expected records                                                                                   |
+| `expect_records.bypass_reason`                  | string           |                                             | Explain why this test is bypassed                                                                            |
+| `expect_records.exact_order`                    | boolean          | False                                       | Ensure that records produced in exact same order                                                             |
+| `file_types`                                    | object           | None                                        | Configure file-based connectors specific tests                                                               |
+| `file_types.skip_test`                          | boolean          | False                                       | Skip file-based connectors specific tests for the current config with a `bypass_reason`                      |
+| `file_types.bypass_reason`                      | string           | None                                        | Reason why file-based connectors specific tests are skipped                                                  |
+| `file_types.unsupported_types`                  | array of objects | None                                        | Configure file types which are not supported by a source                                                     |
+| `file_types.unsupported_types[0].extension`     | string           |                                             | File type in `.csv` format which cannot be added to a test account                                           |
+| `file_types.unsupported_types[0].bypass_reason` | string           | None                                        | Reason why this file type cannot be added to a test account                                                  |
 
 `expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped.
 
@@ -284,22 +288,22 @@ This test verifies that sync produces no records when run with the STATE with ab
 Verifies that certain properties of the connector and its streams guarantee a higher level of usability standards for certified connectors.
 Some examples of the types of tests covered are verification that streams define primary keys, correct OAuth spec configuration, or a connector emits the correct stream status during a read.
 
-| Input                                     | Type             | Default               | Note                                                                   |
-|:------------------------------------------|:-----------------|:----------------------|:-----------------------------------------------------------------------|
-| `config_path`                             | string           | `secrets/config.json` | Path to a JSON object representing a valid connector configuration     |
-| `streams_without_primary_key`             | array of objects | None                  | List of streams that do not support a primary key like reports streams |
-| `streams_without_primary_key.name`             | string | None                  | Name of the stream missing the PK |
-| `streams_without_primary_key.bypass_reason`             | string | None                  | The reason the stream doesn't have the PK |
-| `allowed_hosts.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `allowedHosts` check for the certified connector should be skipped |
-| `suggested_streams.bypass_reason`             | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `suggestedStreams` check for the certified connector should be skipped |
+| Input                                       | Type                        | Default               | Note                                                                                                                         |
+| :------------------------------------------ | :-------------------------- | :-------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| `config_path`                               | string                      | `secrets/config.json` | Path to a JSON object representing a valid connector configuration                                                           |
+| `streams_without_primary_key`               | array of objects            | None                  | List of streams that do not support a primary key like reports streams                                                       |
+| `streams_without_primary_key.name`          | string                      | None                  | Name of the stream missing the PK                                                                                            |
+| `streams_without_primary_key.bypass_reason` | string                      | None                  | The reason the stream doesn't have the PK                                                                                    |
+| `allowed_hosts.bypass_reason`               | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `allowedHosts` check for the certified connector should be skipped     |
+| `suggested_streams.bypass_reason`           | object with `bypass_reason` | None                  | Defines the `bypass_reason` description about why the `suggestedStreams` check for the certified connector should be skipped |
 
 ## Test Connector Documentation
 
-Verifies that connectors documentation follows our standard template, does have correct order of headings, 
-does not have missing headings and all required fields in Prerequisites section. 
+Verifies that connectors documentation follows our standard template, does have correct order of headings,
+does not have missing headings and all required fields in Prerequisites section.
 
 | Input             | Type   | Default               | Note                                                               |
-|:------------------|:-------|:----------------------|:-------------------------------------------------------------------|
+| :---------------- | :----- | :-------------------- | :----------------------------------------------------------------- |
 | `config_path`     | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
 | `timeout_seconds` | int    | 20\*60                | Test execution timeout in seconds                                  |
 

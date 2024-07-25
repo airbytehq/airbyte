@@ -1,29 +1,39 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.14
   dockerRepository: airbyte/source-google-pagespeed-insights
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
   githubIssueLabel: source-google-pagespeed-insights
   icon: google-pagespeed-insights.svg
   license: MIT
   name: Google PageSpeed Insights
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-google-pagespeed-insights
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-pagespeed-insights
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GOOGLE-PAGESPEED-INSIGHTS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

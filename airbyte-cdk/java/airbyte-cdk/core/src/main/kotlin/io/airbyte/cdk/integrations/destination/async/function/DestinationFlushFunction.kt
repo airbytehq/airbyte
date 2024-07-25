@@ -31,13 +31,13 @@ interface DestinationFlushFunction {
     /**
      * Flush a batch of data to the destination.
      *
-     * @param decs the Airbyte stream the data stream belongs to
+     * @param streamDescriptor the Airbyte stream the data stream belongs to
      * @param stream a bounded [AirbyteMessage] stream ideally of [.getOptimalBatchSizeBytes] size
      * @throws Exception
      */
     @Throws(Exception::class)
     fun flush(
-        decs: StreamDescriptor,
+        streamDescriptor: StreamDescriptor,
         stream: Stream<PartialAirbyteMessage>,
     )
 

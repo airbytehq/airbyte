@@ -3,178 +3,236 @@
   "type": "object",
   "properties": {
     "AccountName": {
+      "description": "The name of the Bing Ads account.",
       "type": ["null", "string"]
     },
     "AccountNumber": {
+      "description": "The account number associated with the Bing Ads account.",
       "type": ["null", "string"]
     },
     "AccountId": {
+      "description": "The unique identifier of the Bing Ads account.",
       "type": ["null", "integer"]
     },
     "TimePeriod": {
+      "description": "The time period of the data.",
       "type": ["null", "string"],
       "format": "date"
     },
     "CampaignName": {
+      "description": "The name of the campaign.",
       "type": ["null", "string"]
     },
     "CampaignId": {
+      "description": "The unique identifier of the campaign.",
       "type": ["null", "integer"]
     },
     "AdGroupName": {
+      "description": "The name of the ad group.",
       "type": ["null", "string"]
     },
     "AdGroupId": {
+      "description": "The unique identifier of the ad group.",
       "type": ["null", "integer"]
     },
     "AdId": {
+      "description": "The unique identifier of the ad.",
       "type": ["null", "integer"]
     },
     "AdType": {
+      "description": "The type of ad (text ad, responsive ad, etc.).",
       "type": ["null", "string"]
     },
     "DestinationUrl": {
+      "description": "The URL where the ad directs traffic.",
       "type": ["null", "string"]
     },
     "BidMatchType": {
+      "description": "The type of match (bidded, auto, etc.) for the keyword bid.",
       "type": ["null", "string"]
     },
     "DeliveredMatchType": {
+      "description": "The type of match (exact, broad, etc.) for the keyword delivery.",
       "type": ["null", "string"]
     },
     "CampaignStatus": {
+      "description": "The status of the campaign.",
       "type": ["null", "string"]
     },
     "AdStatus": {
+      "description": "The status of the ad.",
       "type": ["null", "string"]
     },
     "Impressions": {
+      "description": "The total number of times the ad was shown.",
       "type": ["null", "integer"]
     },
     "Clicks": {
+      "description": "The total number of clicks.",
       "type": ["null", "integer"]
     },
     "Ctr": {
+      "description": "The click-through rate.",
       "type": ["null", "number"]
     },
     "AverageCpc": {
+      "description": "The average cost per click.",
       "type": ["null", "number"]
     },
     "Spend": {
+      "description": "The total spend on the ad.",
       "type": ["null", "number"]
     },
     "AveragePosition": {
+      "description": "The average position of the ad on search results pages.",
       "type": ["null", "number"]
     },
     "SearchQuery": {
+      "description": "The search query that triggered the ad.",
       "type": ["null", "string"]
     },
     "Keyword": {
+      "description": "The keyword associated with the ad.",
       "type": ["null", "string"]
     },
     "AdGroupCriterionId": {
+      "description": "The unique identifier of the ad group criterion.",
       "type": ["null", "string"]
     },
     "Conversions": {
+      "description": "The total number of conversions.",
       "type": ["null", "integer"]
     },
     "ConversionRate": {
+      "description": "The percentage of clicks that resulted in a conversion.",
       "type": ["null", "number"]
     },
     "CostPerConversion": {
+      "description": "The cost per conversion.",
       "type": ["null", "number"]
     },
     "Language": {
+      "description": "The language setting targeted by the ad.",
       "type": ["null", "string"]
     },
     "KeywordId": {
+      "description": "The unique identifier of the keyword.",
       "type": ["null", "integer"]
     },
     "Network": {
+      "description": "The network where the ad was shown (Bing, partner sites, etc.).",
       "type": ["null", "string"]
     },
     "TopVsOther": {
+      "description": "Indicates if the ad was shown in the top position or elsewhere.",
       "type": ["null", "string"]
     },
     "DeviceType": {
+      "description": "The type of device (desktop, mobile, tablet, etc.).",
       "type": ["null", "string"]
     },
     "DeviceOS": {
+      "description": "The operating system of the device where the ad was displayed.",
       "type": ["null", "string"]
     },
     "Assists": {
+      "description": "The number of assists on conversions.",
       "type": ["null", "integer"]
     },
     "Revenue": {
+      "description": "The total revenue generated.",
       "type": ["null", "number"]
     },
     "ReturnOnAdSpend": {
+      "description": "The return on ad spend.",
       "type": ["null", "number"]
     },
     "CostPerAssist": {
+      "description": "The cost per assist on conversions.",
       "type": ["null", "number"]
     },
     "RevenuePerConversion": {
+      "description": "The average revenue per conversion.",
       "type": ["null", "number"]
     },
     "RevenuePerAssist": {
+      "description": "The average revenue per assist.",
       "type": ["null", "number"]
     },
     "AccountStatus": {
+      "description": "The status of the Bing Ads account.",
       "type": ["null", "string"]
     },
     "AdGroupStatus": {
+      "description": "The status of the ad group.",
       "type": ["null", "string"]
     },
     "KeywordStatus": {
+      "description": "The status of the keyword.",
       "type": ["null", "string"]
     },
     "CampaignType": {
+      "description": "The type of campaign (search, display, etc.).",
       "type": ["null", "string"]
     },
     "CustomerId": {
+      "description": "The unique identifier of the customer.",
       "type": ["null", "integer"]
     },
     "CustomerName": {
+      "description": "The name of the customer.",
       "type": ["null", "string"]
     },
     "AllConversions": {
+      "description": "The total number of all conversions.",
       "type": ["null", "integer"]
     },
     "AllRevenue": {
+      "description": "The total revenue generated from all conversions.",
       "type": ["null", "number"]
     },
     "AllConversionRate": {
+      "description": "The percentage of all clicks that resulted in a conversion.",
       "type": ["null", "number"]
     },
     "AllCostPerConversion": {
+      "description": "The cost per conversion for all conversions.",
       "type": ["null", "number"]
     },
     "AllReturnOnAdSpend": {
+      "description": "The return on ad spend for all conversions.",
       "type": ["null", "number"]
     },
     "AllRevenuePerConversion": {
+      "description": "The average revenue per conversion for all conversions.",
       "type": ["null", "number"]
     },
     "Goal": {
+      "description": "The goal associated with the campaign.",
       "type": ["null", "string"]
     },
     "GoalType": {
+      "description": "The type of goal (e.g., ROAS, CPA) for the campaign.",
       "type": ["null", "string"]
     },
     "AbsoluteTopImpressionRatePercent": {
+      "description": "The percentage of impressions shown at the absolute top of the search results page.",
       "type": ["null", "number"]
     },
     "TopImpressionRatePercent": {
+      "description": "The percentage of impressions shown at the top of the search results page.",
       "type": ["null", "number"]
     },
     "AverageCpm": {
+      "description": "The average cost per thousand impressions.",
       "type": ["null", "number"]
     },
     "ConversionsQualified": {
+      "description": "The total number of qualified conversions.",
       "type": ["null", "number"]
     },
     "AllConversionsQualified": {
+      "description": "The total number of qualified conversions.",
       "type": ["null", "number"]
     }
   }

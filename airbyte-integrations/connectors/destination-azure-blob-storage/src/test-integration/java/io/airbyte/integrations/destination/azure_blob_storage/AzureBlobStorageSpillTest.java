@@ -10,8 +10,11 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlFormatConfig;
 import io.airbyte.integrations.destination.azure_blob_storage.writer.ProductionWriterFactory;
@@ -43,11 +46,13 @@ public class AzureBlobStorageSpillTest {
 
   private BlobContainerClient blobContainerClient;
 
+  private static final ObjectMapper mapper = MoreMappers.initMapper();
+
   @BeforeEach
   void setup() {
     azureBlobStorageContainer = new AzureBlobStorageContainer().withExposedPorts(10000);
     azureBlobStorageContainer.start();
-    var azureBlobStorageDestinationConfig = createConfig(azureBlobStorageContainer.getMappedPort(10000));
+    var azureBlobStorageDestinationConfig = createConfig(azureBlobStorageContainer.getHost(), azureBlobStorageContainer.getMappedPort(10000));
     var configuredAirbyteCatalog = createConfiguredAirbyteCatalog();
     azureBlobStorageConsumer =
         new AzureBlobStorageConsumer(azureBlobStorageDestinationConfig, configuredAirbyteCatalog,
@@ -96,15 +101,20 @@ public class AzureBlobStorageSpillTest {
 
   }
 
-  private static AzureBlobStorageDestinationConfig createConfig(Integer mappedPort) {
+  private static AzureBlobStorageDestinationConfig createConfig(String host, Integer mappedPort) {
+    final ObjectNode stubFormatConfig = mapper.createObjectNode();
+    stubFormatConfig.put("file_extension", Boolean.TRUE);
+    final ObjectNode stubConfig = mapper.createObjectNode();
+    stubConfig.set("format", stubFormatConfig);
+
     return new AzureBlobStorageDestinationConfig(
-        "http://127.0.0.1:" + mappedPort + "/devstoreaccount1",
+        "http://" + host + ":" + mappedPort + "/devstoreaccount1",
         "devstoreaccount1",
         "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
         "container-name",
         1,
         1,
-        new AzureBlobStorageJsonlFormatConfig());
+        new AzureBlobStorageJsonlFormatConfig(stubConfig));
   }
 
   private static AirbyteMessage createAirbyteMessage(JsonNode data) {

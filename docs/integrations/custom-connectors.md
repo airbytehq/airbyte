@@ -20,6 +20,11 @@ It's easy to code your own connectors on Airbyte. Here is a link to instruct on 
 
 While the guides in the link above are specific to the languages used most frequently to write integrations, **Airbyte connectors can be written in any language**. Please reach out to us if you'd like help developing connectors in other languages.
 
+:::caution
+If you don't use one of the official development options, remember to set the `AIRBYTE_ENTRYPOINT` environment variable to your Docker image's entrypoint!
+Otherwise, your connector will not run correctly.
+:::
+
 ## Adding your connectors in the UI
 
 There are only 3 easy steps to do that:
@@ -38,7 +43,7 @@ Once this is filled, you will see your connector in the UI and your team will be
 
 Note that this new connector could just be an updated version of an existing connector that you adapted to your specific edge case. Anything is possible!
 
-When using Airbyte on Kubernetes, the repository name must be a valid Kubernetes name. That is, it must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc'). Other names will work locally on Docker but cause an error on Kubernetes (Internal Server Error: Get Spec job failed).
+When using Airbyte on Kubernetes, the repository name must be a valid Kubernetes name. That is, it must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name', or '123-abc'). Other names will work locally on Docker but cause an error on Kubernetes (Internal Server Error: Get Spec job failed).
 
 ## Upgrading a connector
 
@@ -47,4 +52,3 @@ To upgrade your connector version, go to the admin panel in the left hand side o
 ![](../.gitbook/assets/upgrading_connector_admin_panel.png)
 
 To browse the available connector versions, simply click on the relevant link in the `Image` column to navigate to the connector's DockerHub page. From there, simply click on the `Tags` section in the top bar.
-

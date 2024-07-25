@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.s3.amazonaws.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 4.5.11
+  dockerImageTag: 4.7.1
   dockerRepository: airbyte/source-s3
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   githubIssueLabel: source-s3
@@ -31,17 +31,251 @@ data:
   releases:
     breakingChanges:
       4.0.0:
-        message:
-          UX improvement, multi-stream support and deprecation of some parsing
-          features
+        message: UX improvement, multi-stream support and deprecation of some parsing features
         upgradeDeadline: "2023-10-05"
       4.0.4:
-        message:
-          Following 4.0.0 config change, we are eliminating the `streams.*.file_type`
-          field which was redundant with `streams.*.format`
+        message: Following 4.0.0 config change, we are eliminating the `streams.*.file_type` field which was redundant with `streams.*.format`
         upgradeDeadline: "2023-10-18"
   supportLevel: certified
   tags:
     - language:python
     - cdk:python-file-based
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-S3_AVRO__CREDS
+          fileName: avro_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_CREDS_V4
+          fileName: v4_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_IAM_ROLE__CREDS
+          fileName: config_iam_role.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_JSONL_NEWLINES__CREDS
+          fileName: jsonl_newlines_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_JSONL__CREDS
+          fileName: jsonl_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_AVRO_DECIMAL_CREDS
+          fileName: legacy_avro_decimal_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_AVRO_DURATIONS_CREDS
+          fileName: legacy_avro_duration_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_CUSTOM_ENCODING_CREDS
+          fileName: legacy_csv_custom_encoding_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_CUSTOM_FORMAT_CREDS
+          fileName: legacy_csv_custom_format_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_NO_HEADER_CREDS
+          fileName: legacy_csv_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_SKIP_ROWS_CREDS
+          fileName: legacy_csv_skip_rows_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_SKIP_ROWS_NO_HEADER_CREDS
+          fileName: legacy_csv_skip_rows_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_USER_SCHEMA_CAST_COMPLEX_CREDS
+          fileName: legacy_csv_user_schema_cast_complex.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_USER_SCHEMA_CREDS
+          fileName: legacy_csv_user_schema_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_WITH_NULLS_CREDS
+          fileName: legacy_csv_with_nulls_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_CSV_WITH_NULL_BOOLS_CREDS
+          fileName: legacy_csv_with_null_bools_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_PARQUET_DECIMAL_CREDS
+          fileName: legacy_parquet_decimal_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_LEGACY_PARQUET_DURATION_LIST_STRUCT_CREDS
+          fileName: legacy_parquet_duration_list_struct_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_PARQUET_DATASET__CREDS
+          fileName: parquet_dataset_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_PARQUET__CREDS
+          fileName: parquet_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_UNSTRUCTURED__CREDS
+          fileName: unstructured_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_AVRO_DECIMAL_AS_FLOAT__CREDS
+          fileName: v4_avro_decimal_as_float_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_AVRO_DECIMAL__CREDS
+          fileName: v4_avro_decimal_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_AVRO_DURATIONS__CREDS
+          fileName: v4_avro_duration_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_AVRO__CREDS
+          fileName: v4_avro_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_CUSTOM_ENCODING__CREDS
+          fileName: v4_csv_custom_encoding_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_CUSTOM_FORMAT__CREDS
+          fileName: v4_csv_custom_format_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_NO_HEADER__CREDS
+          fileName: v4_csv_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_SKIP_ROWS_NO_HEADER__CREDS
+          fileName: v4_csv_skip_rows_no_header_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_SKIP_ROWS__CREDS
+          fileName: v4_csv_skip_rows_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_USER_SCHEMA_CAST_COMPLEX__CREDS
+          fileName: v4_csv_user_schema_cast_complex_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_USER_SCHEMA__CREDS
+          fileName: v4_csv_user_schema_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_WITH_NULLS__CREDS
+          fileName: v4_csv_with_nulls_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_CSV_WITH_NULL_BOOLS__CREDS
+          fileName: v4_csv_with_null_bools_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_JSONL_NEWLINE__CREDS
+          fileName: v4_jsonl_newlines_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_JSONL__CREDS
+          fileName: v4_jsonl_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_PARQUET_DATASET__CREDS
+          fileName: v4_parquet_dataset_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_PARQUET_DECIMAL_AS_FLOAT__CREDS
+          fileName: v4_parquet_decimal_as_float_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_PARQUET_DECIMAL__CREDS
+          fileName: v4_parquet_decimal_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_PARQUET_DURATION_LIST_STRUCT__CREDS
+          fileName: v4_parquet_duration_list_struct_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_V4_PARQUET__CREDS
+          fileName: v4_parquet_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_ZIP_AVRO__CREDS
+          fileName: zip_config_avro.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_ZIP_CSV_CUSTOM_ENCODING__CREDS
+          fileName: zip_config_csv_custom_encoding.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_ZIP_CSV__CREDS
+          fileName: zip_config_csv.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_ZIP_JSONL__CREDS
+          fileName: zip_config_jsonl.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3_ZIP_PARQUET__CREDS
+          fileName: zip_config_parquet.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-S3__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

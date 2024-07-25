@@ -1,32 +1,42 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - api.polygon.io
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.13
   dockerRepository: airbyte/source-polygon-stock-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
   githubIssueLabel: source-polygon-stock-api
   icon: polygon.svg
   license: MIT
   name: Polygon Stock API
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-polygon-stock-api
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-polygon-stock-api
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POLYGON-STOCK-API__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

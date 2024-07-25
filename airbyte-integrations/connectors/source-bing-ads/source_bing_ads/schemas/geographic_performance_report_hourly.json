@@ -4,209 +4,277 @@
   "additionalProperties": true,
   "properties": {
     "AccountId": {
+      "description": "The unique identifier for the Bing Ads account.",
       "type": ["null", "integer"]
     },
     "CampaignId": {
+      "description": "The unique identifier for the campaign.",
       "type": ["null", "integer"]
     },
     "AdGroupId": {
+      "description": "The unique identifier for the ad group.",
       "type": ["null", "integer"]
     },
     "TimePeriod": {
+      "description": "The time period for the data, formatted as date-time.",
       "type": ["null", "string"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "AccountNumber": {
+      "description": "The account number associated with the Bing Ads account.",
       "type": ["null", "string"]
     },
     "Country": {
+      "description": "The country where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "State": {
+      "description": "The state where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "MetroArea": {
+      "description": "The metropolitan area where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "City": {
+      "description": "The city where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "ProximityTargetLocation": {
+      "description": "The target location for proximity targeting.",
       "type": ["null", "string"]
     },
     "Radius": {
+      "description": "The radius set for proximity targeting.",
       "type": ["null", "string"]
     },
     "LocationType": {
+      "description": "The type of location where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "MostSpecificLocation": {
+      "description": "The most specific location where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "AccountStatus": {
+      "description": "The status of the Bing Ads account.",
       "type": ["null", "string"]
     },
     "CampaignStatus": {
+      "description": "The status of the campaign.",
       "type": ["null", "string"]
     },
     "AdGroupStatus": {
+      "description": "The status of the ad group.",
       "type": ["null", "string"]
     },
     "County": {
+      "description": "The county where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "PostalCode": {
+      "description": "The postal code of the location where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "LocationId": {
+      "description": "The unique identifier for the location.",
       "type": ["null", "string"]
     },
     "BaseCampaignId": {
+      "description": "The base campaign identifier.",
       "type": ["null", "string"]
     },
     "Goal": {
+      "description": "The goal set for the campaign.",
       "type": ["null", "string"]
     },
     "GoalType": {
+      "description": "The type of goal set for the campaign.",
       "type": ["null", "string"]
     },
     "AbsoluteTopImpressionRatePercent": {
+      "description": "The percentage of absolute top impressions in relation to total impressions.",
       "type": ["null", "number"]
     },
     "TopImpressionRatePercent": {
+      "description": "The percentage of top impressions in relation to total impressions.",
       "type": ["null", "string"]
     },
     "AllConversionsQualified": {
+      "description": "The number of qualified conversions for all interactions.",
       "type": ["null", "string"]
     },
     "Neighborhood": {
+      "description": "The neighborhood where the ad interactions occurred.",
       "type": ["null", "string"]
     },
     "ViewThroughRevenue": {
+      "description": "The total revenue generated from view-through conversions.",
       "type": ["null", "string"]
     },
     "CampaignType": {
+      "description": "The type of the campaign.",
       "type": ["null", "string"]
     },
     "AssetGroupId": {
+      "description": "The unique identifier for the asset group.",
       "type": ["null", "string"]
     },
     "AssetGroupName": {
+      "description": "The name of the asset group.",
       "type": ["null", "string"]
     },
     "AssetGroupStatus": {
+      "description": "The status of the asset group.",
       "type": ["null", "string"]
     },
     "CurrencyCode": {
+      "description": "The currency code used for reporting.",
       "type": ["null", "string"]
     },
     "DeliveredMatchType": {
+      "description": "The match type of the delivered ad.",
       "type": ["null", "string"]
     },
     "AdDistribution": {
+      "description": "The distribution network where the ad was displayed.",
       "type": ["null", "string"]
     },
     "DeviceType": {
+      "description": "The type of device where the ad was interacted with.",
       "type": ["null", "string"]
     },
     "Language": {
+      "description": "The language setting of the user interacting with the ad.",
       "type": ["null", "string"]
     },
     "Network": {
+      "description": "The network used for ad distribution.",
       "type": ["null", "string"]
     },
     "DeviceOS": {
+      "description": "The operating system on the device where the ad was interacted with.",
       "type": ["null", "string"]
     },
     "TopVsOther": {
+      "description": "The comparison of top impressions versus other impression types.",
       "type": ["null", "string"]
     },
     "BidMatchType": {
+      "description": "The match type used for bidding.",
       "type": ["null", "string"]
     },
     "AccountName": {
+      "description": "The name of the Bing Ads account.",
       "type": ["null", "string"]
     },
     "CampaignName": {
+      "description": "The name of the campaign.",
       "type": ["null", "string"]
     },
     "AdGroupName": {
+      "description": "The name of the ad group.",
       "type": ["null", "string"]
     },
     "Impressions": {
+      "description": "The total number of times the ad was shown.",
       "type": ["null", "integer"]
     },
     "Clicks": {
+      "description": "The total number of clicks.",
       "type": ["null", "integer"]
     },
     "Ctr": {
+      "description": "The click-through rate.",
       "type": ["null", "number"]
     },
     "Spend": {
+      "description": "The total amount spent on ad interactions.",
       "type": ["null", "number"]
     },
     "CostPerConversion": {
+      "description": "The cost incurred per conversion.",
       "type": ["null", "number"]
     },
     "Assists": {
+      "description": "The number of assists in conversions.",
       "type": ["null", "integer"]
     },
     "ReturnOnAdSpend": {
+      "description": "The return on ad spend for interactions.",
       "type": ["null", "number"]
     },
     "CostPerAssist": {
+      "description": "The cost incurred per assist in a conversion.",
       "type": ["null", "number"]
     },
     "ViewThroughConversions": {
+      "description": "The total number of view-through conversions.",
       "type": ["null", "integer"]
     },
     "ViewThroughConversionsQualified": {
+      "description": "The number of qualified view-through conversions.",
       "type": ["null", "number"]
     },
     "AllCostPerConversion": {
+      "description": "The cost incurred per all conversion.",
       "type": ["null", "number"]
     },
     "AllReturnOnAdSpend": {
+      "description": "The return on ad spend for all interactions.",
       "type": ["null", "number"]
     },
     "Conversions": {
+      "description": "The total number of conversions.",
       "type": ["null", "number"]
     },
     "ConversionRate": {
+      "description": "The rate of conversions in relation to total interactions.",
       "type": ["null", "number"]
     },
     "ConversionsQualified": {
+      "description": "The number of qualified conversions.",
       "type": ["null", "number"]
     },
     "AverageCpc": {
+      "description": "The average cost per click.",
       "type": ["null", "number"]
     },
     "AveragePosition": {
+      "description": "The average position of the ad when shown.",
       "type": ["null", "number"]
     },
     "AverageCpm": {
+      "description": "The average cost per thousand impressions.",
       "type": ["null", "number"]
     },
     "AllConversions": {
+      "description": "The total number of all conversions.",
       "type": ["null", "integer"]
     },
     "AllConversionRate": {
+      "description": "The rate of all conversions in relation to total interactions.",
       "type": ["null", "number"]
     },
     "AllRevenue": {
+      "description": "The total revenue generated from all interactions.",
       "type": ["null", "number"]
     },
     "AllRevenuePerConversion": {
+      "description": "The revenue generated per all conversion.",
       "type": ["null", "number"]
     },
     "Revenue": {
+      "description": "The total revenue generated from interactions.",
       "type": ["null", "number"]
     },
     "RevenuePerConversion": {
+      "description": "The revenue generated per conversion.",
       "type": ["null", "number"]
     },
     "RevenuePerAssist": {
+      "description": "The revenue generated per assist in a conversion.",
       "type": ["null", "number"]
     }
   }

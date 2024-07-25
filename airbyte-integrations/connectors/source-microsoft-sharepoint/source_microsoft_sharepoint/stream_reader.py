@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import logging
 from datetime import datetime
 from functools import lru_cache
@@ -10,9 +11,9 @@ from typing import Iterable, List, Optional, Tuple
 
 import requests
 import smart_open
+from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from msal import ConfidentialClientApplication
 from office365.graph_client import GraphClient
 from source_microsoft_sharepoint.spec import SourceMicrosoftSharePointSpec
@@ -199,14 +200,18 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
         """
         drives = execute_query_with_retry(self.one_drive_client.drives.get())
 
-        if self.config.credentials.auth_type == "Client":
-            my_drive = execute_query_with_retry(self.one_drive_client.me.drive.get())
-        else:
-            my_drive = execute_query_with_retry(
-                self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get()
-            )
+        # skip this step for application authentication flow
+        if self.config.credentials.auth_type != "Client" or (
+            hasattr(self.config.credentials, "refresh_token") and self.config.credentials.refresh_token
+        ):
+            if self.config.credentials.auth_type == "Client":
+                my_drive = execute_query_with_retry(self.one_drive_client.me.drive.get())
+            else:
+                my_drive = execute_query_with_retry(
+                    self.one_drive_client.users.get_by_principal_name(self.config.credentials.user_principal_name).drive.get()
+                )
 
-        drives.add_child(my_drive)
+            drives.add_child(my_drive)
 
         return drives
 
@@ -226,11 +231,15 @@ class SourceMicrosoftSharePointStreamReader(AbstractFileBasedStreamReader):
             # Get files from accessible drives
             yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
 
-        if self.config.search_scope in ("SHARED_ITEMS", "ALL"):
-            parsed_drives = [] if self.config.search_scope == "SHARED_ITEMS" else self.drives
+        # skip this step for application authentication flow
+        if self.config.credentials.auth_type != "Client" or (
+            hasattr(self.config.credentials, "refresh_token") and self.config.credentials.refresh_token
+        ):
+            if self.config.search_scope in ("SHARED_ITEMS", "ALL"):
+                parsed_drives = [] if self.config.search_scope == "SHARED_ITEMS" else self.drives
 
-            # Get files from shared items
-            yield from self._get_shared_files_from_all_drives(parsed_drives)
+                # Get files from shared items
+                yield from self._get_shared_files_from_all_drives(parsed_drives)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """

@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.CAPTURE_MODE_POST_IMAGE_OPTION;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.UPDATE_CAPTURE_MODE;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
@@ -31,11 +33,14 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   static final String COLLECTION_INCLUDE_LIST_KEY = "collection.include.list";
   static final String DATABASE_INCLUDE_LIST_KEY = "database.include.list";
+
+  static final String MONGODB_POST_IMAGE_KEY = "capture.mode.full.update.type";
+  static final String MONGODB_POST_IMAGE_VALUE = "post_image";
   static final String CAPTURE_TARGET_KEY = "capture.target";
   static final String DOUBLE_QUOTES_PATTERN = "\"";
   static final String MONGODB_AUTHSOURCE_KEY = "mongodb.authsource";
   static final String MONGODB_CONNECTION_MODE_KEY = "mongodb.connection.mode";
-  static final String MONGODB_CONNECTION_MODE_VALUE = "replica_set";
+  static final String MONGODB_CONNECTION_MODE_VALUE = "sharded";
   static final String MONGODB_CONNECTION_STRING_KEY = "mongodb.connection.string";
   static final String MONGODB_PASSWORD_KEY = "mongodb.password";
   static final String MONGODB_SSL_ENABLED_KEY = "mongodb.ssl.enabled";
@@ -44,8 +49,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   public MongoDbDebeziumPropertiesManager(final Properties properties,
                                           final JsonNode config,
-                                          final ConfiguredAirbyteCatalog catalog) {
-    super(properties, config, catalog);
+                                          final ConfiguredAirbyteCatalog catalog,
+                                          final List<String> streamNames) {
+    super(properties, config, catalog, streamNames);
   }
 
   @Override
@@ -65,6 +71,9 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
       properties.setProperty(MONGODB_AUTHSOURCE_KEY, config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText());
     }
     properties.setProperty(MONGODB_SSL_ENABLED_KEY, MONGODB_SSL_ENABLED_VALUE);
+    if (config.has(UPDATE_CAPTURE_MODE) && config.get(UPDATE_CAPTURE_MODE).asText().equals(CAPTURE_MODE_POST_IMAGE_OPTION)) {
+      properties.setProperty(MONGODB_POST_IMAGE_KEY, MONGODB_POST_IMAGE_VALUE);
+    }
     return properties;
   }
 
@@ -74,20 +83,21 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
   }
 
   @Override
-  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
+  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config, final List<String> cdcStreamNames) {
     final Properties properties = new Properties();
 
     // Database/collection selection
-    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams()));
+    properties.setProperty(COLLECTION_INCLUDE_LIST_KEY, createCollectionIncludeString(catalog.getStreams(), cdcStreamNames));
     properties.setProperty(DATABASE_INCLUDE_LIST_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
     properties.setProperty(CAPTURE_TARGET_KEY, config.get(DATABASE_CONFIGURATION_KEY).asText());
 
     return properties;
   }
 
-  protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams) {
+  protected String createCollectionIncludeString(final List<ConfiguredAirbyteStream> streams, final List<String> cdcStreamNames) {
     return streams.stream()
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
+        .filter(s -> cdcStreamNames.contains(s))
         .collect(Collectors.joining(","));
   }
 

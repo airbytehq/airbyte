@@ -3,6 +3,7 @@
 #
 import datetime
 
+import asyncclick as click
 import pytest
 import requests
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
@@ -41,9 +42,10 @@ def context_with_setup(dagger_client, python_connector_with_setup_not_latest_cdk
         connector=python_connector_with_setup_not_latest_cdk,
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
-        use_remote_secrets=False,
         pipeline_start_timestamp=datetime.datetime.now().isoformat(),
     )
     context.dagger_client = dagger_client

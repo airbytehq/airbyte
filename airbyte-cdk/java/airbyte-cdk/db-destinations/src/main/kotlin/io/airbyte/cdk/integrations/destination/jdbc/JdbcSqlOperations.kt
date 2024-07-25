@@ -21,12 +21,12 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 abstract class JdbcSqlOperations : SqlOperations {
-    protected val schemaSet: MutableSet<String?> = HashSet()
+    protected val schemaSet: MutableSet<String> = HashSet()
 
-    protected constructor() {}
+    protected constructor()
 
     @Throws(Exception::class)
-    override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String?) {
+    override fun createSchemaIfNotExists(database: JdbcDatabase?, schemaName: String) {
         try {
             if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
                 database!!.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName))
@@ -45,7 +45,9 @@ abstract class JdbcSqlOperations : SqlOperations {
      * @param e the exception to check.
      * @return A ConfigErrorException with a message with actionable feedback to the user.
      */
-    protected fun checkForKnownConfigExceptions(e: Exception?): Optional<ConfigErrorException> {
+    protected open fun checkForKnownConfigExceptions(
+        e: Exception?
+    ): Optional<ConfigErrorException> {
         return Optional.empty()
     }
 
@@ -118,7 +120,8 @@ abstract class JdbcSqlOperations : SqlOperations {
           %s JSONB,
           %s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           %s TIMESTAMP WITH TIME ZONE DEFAULT NULL,
-          %s JSONB
+          %s JSONB,
+          %s BIGINT
         );
         
         """.trimIndent(),
@@ -128,25 +131,50 @@ abstract class JdbcSqlOperations : SqlOperations {
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
+            JavaBaseConstants.COLUMN_NAME_AB_META,
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
         )
     }
 
     // TODO: This method seems to be used by Postgres and others while staging to local temp files.
     // Should there be a Local staging operations equivalent
     @Throws(Exception::class)
-    protected fun writeBatchToFile(tmpFile: File?, records: List<PartialAirbyteMessage>) {
+    protected fun writeBatchToFile(
+        tmpFile: File?,
+        records: List<PartialAirbyteMessage>,
+        syncId: Long,
+        generationId: Long
+    ) {
         PrintWriter(tmpFile, StandardCharsets.UTF_8).use { writer ->
             CSVPrinter(writer, CSVFormat.DEFAULT).use { csvPrinter ->
                 for (record in records) {
                     val uuid = UUID.randomUUID().toString()
 
                     val jsonData = record.serialized
-                    val airbyteMeta = Jsons.serialize(record.record!!.meta)
+                    val airbyteMeta =
+                        if (record.record!!.meta == null) {
+                            """{"changes":[],${JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY}":$syncId}"""
+                        } else {
+                            Jsons.serialize(
+                                record.record!!
+                                    .meta!!
+                                    .withAdditionalProperty(
+                                        JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY,
+                                        syncId,
+                                    )
+                            )
+                        }
                     val extractedAt =
                         Timestamp.from(Instant.ofEpochMilli(record.record!!.emittedAt))
                     if (isDestinationV2) {
-                        csvPrinter.printRecord(uuid, jsonData, extractedAt, null, airbyteMeta)
+                        csvPrinter.printRecord(
+                            uuid,
+                            jsonData,
+                            extractedAt,
+                            null,
+                            airbyteMeta,
+                            generationId
+                        )
                     } else {
                         csvPrinter.printRecord(uuid, jsonData, extractedAt)
                     }
@@ -155,14 +183,10 @@ abstract class JdbcSqlOperations : SqlOperations {
         }
     }
 
-    protected fun formatData(data: JsonNode): JsonNode {
-        return data
-    }
-
     override fun truncateTableQuery(
-        database: JdbcDatabase?,
-        schemaName: String?,
-        tableName: String?
+        database: JdbcDatabase,
+        schemaName: String,
+        tableName: String,
     ): String {
         return String.format("TRUNCATE TABLE %s.%s;\n", schemaName, tableName)
     }
@@ -170,15 +194,15 @@ abstract class JdbcSqlOperations : SqlOperations {
     override fun insertTableQuery(
         database: JdbcDatabase?,
         schemaName: String?,
-        srcTableName: String?,
-        dstTableName: String?
+        sourceTableName: String?,
+        destinationTableName: String?
     ): String? {
         return String.format(
             "INSERT INTO %s.%s SELECT * FROM %s.%s;\n",
             schemaName,
-            dstTableName,
+            destinationTableName,
             schemaName,
-            srcTableName
+            sourceTableName
         )
     }
 
@@ -206,7 +230,7 @@ abstract class JdbcSqlOperations : SqlOperations {
         }
     }
 
-    fun dropTableIfExistsQuery(schemaName: String?, tableName: String?): String {
+    open fun dropTableIfExistsQuery(schemaName: String?, tableName: String?): String {
         return String.format("DROP TABLE IF EXISTS %s.%s;\n", schemaName, tableName)
     }
 
@@ -222,33 +246,25 @@ abstract class JdbcSqlOperations : SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long
     ) {
-        if (isDestinationV2) {
-            insertRecordsInternalV2(database, records, schemaName, tableName)
-        } else {
-            insertRecordsInternal(database, records, schemaName, tableName)
-        }
+        insertRecordsInternalV2(database, records, schemaName, tableName, syncId, generationId)
     }
-
-    @Throws(Exception::class)
-    protected abstract fun insertRecordsInternal(
-        database: JdbcDatabase,
-        records: List<PartialAirbyteMessage>,
-        schemaName: String?,
-        tableName: String?
-    )
 
     @Throws(Exception::class)
     protected abstract fun insertRecordsInternalV2(
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     companion object {
-        protected const val SHOW_SCHEMAS: String = "show schemas;"
-        protected const val NAME: String = "name"
+        const val SHOW_SCHEMAS: String = "show schemas;"
+        const val NAME: String = "name"
     }
 }

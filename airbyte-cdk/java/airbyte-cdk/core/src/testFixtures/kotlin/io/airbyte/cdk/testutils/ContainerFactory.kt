@@ -6,23 +6,23 @@ package io.airbyte.cdk.testutils
 import com.google.common.collect.Lists
 import io.airbyte.commons.logging.LoggingHelper
 import io.airbyte.commons.logging.MdcScope
+import io.github.oshai.kotlinlogging.DelegatingKLogger
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.reflect.InvocationTargetException
-import java.util.List
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Supplier
-import java.util.stream.Stream
 import kotlin.concurrent.Volatile
-import org.apache.commons.lang3.StringUtils
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.output.OutputFrame
 import org.testcontainers.containers.output.Slf4jLogConsumer
 import org.testcontainers.utility.DockerImageName
 
+private val LOGGER: KLogger = KotlinLogging.logger {}
 /**
  * ContainerFactory is the companion to [TestDatabase] and provides it with suitable testcontainer
  * instances.
@@ -32,7 +32,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     private data class ContainerKey<C : GenericContainer<*>>(
         val clazz: Class<out ContainerFactory<*>>,
         val imageName: DockerImageName,
-        val methods: kotlin.collections.List<String>
+        val methods: List<String>
     )
 
     private class ContainerOrException(
@@ -47,7 +47,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
                 synchronized(this) {
                     if (!::_exception.isInitialized && !::_container.isInitialized) {
                         try {
-                            _container = containerSupplier!!.get()
+                            _container = containerSupplier.get()
                             checkNotNull(_container) {
                                 "testcontainer instance was not constructed"
                             }
@@ -65,16 +65,12 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     }
 
     private fun getTestContainerLogMdcBuilder(
-        imageName: DockerImageName?,
-        containerModifiers: MutableList<out NamedContainerModifier<C>>
+        imageName: DockerImageName,
+        containerModifiers: List<NamedContainerModifier<C>>
     ): MdcScope.Builder {
         return MdcScope.Builder()
             .setLogPrefix(
-                "testcontainer %s (%s[%s]):".formatted(
-                    containerId!!.incrementAndGet(),
-                    imageName,
-                    StringUtils.join(containerModifiers, ",")
-                )
+                "testcontainer ${containerId.incrementAndGet()} ($imageName[${containerModifiers.joinToString(",") { it.name() }}]):"
             )
             .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND)
     }
@@ -83,7 +79,7 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      * Creates a new, unshared testcontainer instance. This usually wraps the default constructor
      * for the testcontainer type.
      */
-    protected abstract fun createNewContainer(imageName: DockerImageName?): C?
+    protected abstract fun createNewContainer(imageName: DockerImageName): C
 
     /**
      * Returns a shared instance of the testcontainer.
@@ -93,26 +89,24 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     fun shared(imageName: String, vararg methods: String): C {
         return shared(
             imageName,
-            Stream.of(*methods)
-                .map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-                .toList()
+            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
         )
     }
 
     fun shared(imageName: String, vararg namedContainerModifiers: NamedContainerModifier<C>): C {
-        return shared(imageName, List.of(*namedContainerModifiers))
+        return shared(imageName, listOf(*namedContainerModifiers))
     }
 
     @JvmOverloads
     fun shared(
         imageName: String,
-        namedContainerModifiers: MutableList<out NamedContainerModifier<C>> = ArrayList()
+        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
     ): C {
         val containerKey =
             ContainerKey<C>(
                 javaClass,
                 DockerImageName.parse(imageName),
-                namedContainerModifiers.map { it.name() }.toList()
+                namedContainerModifiers.map { it.name() }
             )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
@@ -120,13 +114,13 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         // Container creation can be exceedingly slow.
         // Furthermore, we need to handle exceptions raised during container creation.
         val containerOrError =
-            SHARED_CONTAINERS!!.computeIfAbsent(containerKey) { key: ContainerKey<*>? ->
+            SHARED_CONTAINERS.computeIfAbsent(containerKey) { key: ContainerKey<*> ->
                 ContainerOrException {
-                    createAndStartContainer(key!!.imageName, namedContainerModifiers)
+                    createAndStartContainer(key.imageName, namedContainerModifiers)
                 }
             }
         // Instead, the container creation (if applicable) is deferred to here.
-        return containerOrError!!.container() as C
+        @Suppress("UNCHECKED_CAST") return containerOrError!!.container() as C
     }
 
     /**
@@ -137,20 +131,18 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     fun exclusive(imageName: String, vararg methods: String): C {
         return exclusive(
             imageName,
-            Stream.of(*methods)
-                .map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-                .toList()
+            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
         )
     }
 
     fun exclusive(imageName: String, vararg namedContainerModifiers: NamedContainerModifier<C>): C {
-        return exclusive(imageName, List.of(*namedContainerModifiers))
+        return exclusive(imageName, listOf(*namedContainerModifiers))
     }
 
     @JvmOverloads
     fun exclusive(
         imageName: String,
-        namedContainerModifiers: MutableList<out NamedContainerModifier<C>> = ArrayList()
+        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
     ): C {
         return createAndStartContainer(DockerImageName.parse(imageName), namedContainerModifiers)
     }
@@ -161,8 +153,10 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         fun modifier(): Consumer<C>
     }
 
-    class NamedContainerModifierImpl<C : GenericContainer<*>>(name: String, method: Consumer<C>) :
-        NamedContainerModifier<C> {
+    class NamedContainerModifierImpl<C : GenericContainer<*>>(
+        val name: String,
+        val method: Consumer<C>
+    ) : NamedContainerModifier<C> {
         override fun name(): String {
             return name
         }
@@ -170,17 +164,9 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         override fun modifier(): Consumer<C> {
             return method
         }
-
-        val name: String
-        val method: Consumer<C>
-
-        init {
-            this.name = name
-            this.method = method
-        }
     }
 
-    private fun resolveModifierByName(methodName: String?): Consumer<C> {
+    private fun resolveModifierByName(methodName: String): Consumer<C> {
         val self: ContainerFactory<C> = this
         val resolvedMethod = Consumer { c: C ->
             try {
@@ -199,47 +185,46 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
     }
 
     private fun createAndStartContainer(
-        imageName: DockerImageName?,
-        namedContainerModifiers: MutableList<out NamedContainerModifier<C>>
+        imageName: DockerImageName,
+        namedContainerModifiers: List<NamedContainerModifier<C>>
     ): C {
-        LOGGER!!.info(
+        LOGGER.info(
             "Creating new container based on {} with {}.",
             imageName,
-            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c!!.name() }
+            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c.name() }
         )
         val container = createNewContainer(imageName)
+        @Suppress("unchecked_cast")
         val logConsumer: Slf4jLogConsumer =
-            object : Slf4jLogConsumer(LOGGER) {
+            object : Slf4jLogConsumer((LOGGER as DelegatingKLogger<Logger>).underlyingLogger) {
                 override fun accept(frame: OutputFrame) {
-                    if (frame.utf8StringWithoutLineEnding.trim { it <= ' ' }.length > 0) {
+                    if (frame.utf8StringWithoutLineEnding.trim { it <= ' ' }.isNotEmpty()) {
                         super.accept(frame)
                     }
                 }
             }
-        getTestContainerLogMdcBuilder(imageName, namedContainerModifiers)!!.produceMappings {
+        getTestContainerLogMdcBuilder(imageName, namedContainerModifiers).produceMappings {
             key: String?,
-            value: String? ->
+            value: String ->
             logConsumer.withMdc(key, value)
         }
-        container!!.withLogConsumer(logConsumer)
-        for (resolvedNamedContainerModifier in namedContainerModifiers!!) {
+        container.withLogConsumer(logConsumer)
+        for (resolvedNamedContainerModifier in namedContainerModifiers) {
             LOGGER.info(
                 "Calling {} in {} on new container based on {}.",
-                resolvedNamedContainerModifier!!.name(),
+                resolvedNamedContainerModifier.name(),
                 javaClass.name,
                 imageName
             )
-            resolvedNamedContainerModifier.modifier()!!.accept(container)
+            resolvedNamedContainerModifier.modifier().accept(container)
         }
         container.start()
         return container
     }
 
     companion object {
-        private val LOGGER: Logger? = LoggerFactory.getLogger(ContainerFactory::class.java)
-
-        private val SHARED_CONTAINERS: ConcurrentMap<ContainerKey<*>?, ContainerOrException?>? =
+        private val SHARED_CONTAINERS: ConcurrentMap<ContainerKey<*>, ContainerOrException> =
             ConcurrentHashMap()
-        private val containerId: AtomicInteger? = AtomicInteger(0)
+        private val containerId: AtomicInteger = AtomicInteger(0)
     }
 }

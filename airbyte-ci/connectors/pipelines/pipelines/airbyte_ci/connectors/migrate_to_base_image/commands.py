@@ -16,10 +16,27 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     short_help="Make the selected connectors use our base image: remove dockerfile, update metadata.yaml and update documentation.",
 )
 @click.option("--pull-request-number", type=str, required=False, default=None)
+@click.option(
+    "--changelog",
+    help="Add message to the changelog.",
+    type=bool,
+    is_flag=True,
+    required=False,
+    default=False,
+)
+@click.option(
+    "--bump",
+    help="Bump the metadata.yaml version. Can be `major`, `minor`, or `patch`.",
+    type=click.Choice(["patch", "minor", "major"]),
+    required=False,
+    default=None,
+)
 @click.pass_context
 async def migrate_to_base_image(
     ctx: click.Context,
     pull_request_number: str | None,
+    changelog: bool,
+    bump: str | None,
 ) -> bool:
     """
     Bump a connector version: update metadata.yaml, changelog and delete legacy files.
@@ -35,14 +52,15 @@ async def migrate_to_base_image(
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
+            diffed_branch=ctx.obj["diffed_branch"],
+            git_repo_url=ctx.obj["git_repo_url"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
-            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             dagger_logs_url=ctx.obj.get("dagger_logs_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             enable_report_auto_open=False,
@@ -61,7 +79,6 @@ async def migrate_to_base_image(
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
-        pull_request_number,
     )
 
     return True

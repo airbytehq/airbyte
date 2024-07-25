@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_linkedin_pages import SourceLinkedinPages
+
+from .source import SourceLinkedinPages
 
 
 def run():

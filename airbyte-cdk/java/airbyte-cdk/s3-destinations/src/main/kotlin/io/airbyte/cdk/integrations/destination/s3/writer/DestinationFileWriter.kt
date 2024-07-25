@@ -3,12 +3,12 @@
  */
 package io.airbyte.cdk.integrations.destination.s3.writer
 
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 
 interface DestinationFileWriter : DestinationWriter {
     val fileLocation: String
 
-    val fileFormat: S3Format?
+    val fileFormat: FileUploadFormat?
 
     val outputPath: String
 }

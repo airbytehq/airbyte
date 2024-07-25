@@ -17,6 +17,7 @@ static_checker_reports/
 acceptance_tests_logs/
 airbyte_ci_logs/
 live_tests_debug_reports/
+dagger_engine_logs*
 
 # Secrets
 secrets
@@ -26,8 +27,8 @@ updated_configurations
 # Connector debug configs
 airbyte-integrations/connectors/**/src/test/resources/debug_resources
 
-# Test logs
-acceptance_tests_logs
+# Connector CAT test related files
+airbyte-integrations/connectors/**/integration_tests/temp
 
 # Python
 *.egg-info
@@ -35,6 +36,7 @@ __pycache__
 .eggs
 .venv
 .mypy_cache
+.ruff_cache
 .ipynb_checkpoints
 .pytest_
 

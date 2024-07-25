@@ -3,19 +3,61 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "id": { "type": "integer" },
-    "name": { "type": ["null", "string"] },
-    "is_open": { "type": ["null", "boolean"] },
-    "is_declined": { "type": ["null", "boolean"] },
-    "is_cancelled": { "type": ["null", "boolean"] },
-    "is_shipped": { "type": ["null", "boolean"] },
-    "color": { "type": ["null", "string"] },
-    "email_template_id": { "type": ["null", "integer"] },
-    "updated_at": { "type": ["null", "string"] },
-    "created_at": { "type": ["null", "string"] },
-    "is_fully_refunded": { "type": ["null", "boolean"] },
-    "is_partially_refunded": { "type": ["null", "boolean"] },
-    "is_quote_status": { "type": ["null", "boolean"] },
-    "is_partially_shipped": { "type": ["null", "boolean"] }
+    "id": {
+      "description": "The unique identifier for the order status.",
+      "type": "integer"
+    },
+    "name": {
+      "description": "The name or description of the order status.",
+      "type": ["null", "string"]
+    },
+    "is_open": {
+      "description": "Indicates if the order is open for processing.",
+      "type": ["null", "boolean"]
+    },
+    "is_declined": {
+      "description": "Indicates if the order has been declined.",
+      "type": ["null", "boolean"]
+    },
+    "is_cancelled": {
+      "description": "Indicates if the order has been cancelled.",
+      "type": ["null", "boolean"]
+    },
+    "is_shipped": {
+      "description": "Indicates if the order has been shipped.",
+      "type": ["null", "boolean"]
+    },
+    "color": {
+      "description": "The color associated with the order status.",
+      "type": ["null", "string"]
+    },
+    "email_template_id": {
+      "description": "The ID of the email template associated with the order status.",
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "description": "The timestamp when the order status was last updated.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp when the order status was created.",
+      "type": ["null", "string"]
+    },
+    "is_fully_refunded": {
+      "description": "Indicates if the order has been fully refunded.",
+      "type": ["null", "boolean"]
+    },
+    "is_partially_refunded": {
+      "description": "Indicates if the order has been partially refunded.",
+      "type": ["null", "boolean"]
+    },
+    "is_quote_status": {
+      "description": "Indicates if the order has a quote status.",
+      "type": ["null", "boolean"]
+    },
+    "is_partially_shipped": {
+      "description": "Indicates if the order has been partially shipped.",
+      "type": ["null", "boolean"]
+    }
   }
 }

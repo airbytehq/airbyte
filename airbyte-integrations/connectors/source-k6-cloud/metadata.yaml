@@ -1,29 +1,39 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: e300ece7-b073-43a3-852e-8aff36a57f13
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-k6-cloud
+  documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
   githubIssueLabel: source-k6-cloud
   icon: k6cloud.svg
   license: MIT
   name: K6 Cloud
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-k6-cloud
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/k6-cloud
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-k6-cloud
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-K6-CLOUD__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -8,6 +8,7 @@ For information about how to use this connector within Airbyte, see [the user do
 #### Build with Gradle
 
 From the Airbyte repository root, run:
+
 ```
 ./gradlew :airbyte-integrations:connectors:destination-starburst-galaxy:build
 ```
@@ -24,15 +25,18 @@ If you are an Airbyte core member, you must follow the [instructions](https://do
 #### Build
 
 Build the connector image with Gradle:
+
 ```
 ./gradlew :airbyte-integrations:connectors:destination-starburst-galaxy:buildConnectorImage
 ```
+
 When building with Gradle, the Docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` labels in
 the Dockerfile.
 
 #### Run
 
-Following example commands are Starburst Galaxy-specific version of the [Airbyte protocol commands](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol):  
+Following example commands are Starburst Galaxy-specific version of the [Airbyte protocol commands](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol):
+
 ```
 docker run --rm airbyte/destination-starburst-galaxy:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-starburst-galaxy:dev check --config /secrets/config.json
@@ -41,13 +45,16 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 
 ### Run tests with Gradle
 
-All commands should be run from airbyte project root. 
+All commands should be run from airbyte project root.
 
 To run unit tests:
+
 ```
 ./gradlew :airbyte-integrations:connectors:destination-starburst-galaxy:unitTest
 ```
+
 To run acceptance and custom integration tests:
+
 ```
 ./gradlew :airbyte-integrations:connectors:destination-starburst-galaxy:integrationTest
 ```

@@ -5,18 +5,19 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 version = "0.2.0"
 name = "source-trustpilot"
-description = "Source implementation for trustpilot."
+description = "Source implementation for Trustpilot."
 authors = [ "Airbyte <contact@airbyte.io>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/trustpilot"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_trustpilot" }, {include = "main.py" } ]
+[[tool.poetry.packages]]
+include = "source_trustpilot"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "^1"
 
 [tool.poetry.scripts]
 source-trustpilot = "source_trustpilot.run:run"

@@ -10,6 +10,7 @@ from dagger import Client, Platform
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.models.contexts.python_registry_publish import PythonPackageMetadata, PythonRegistryPublishContext
+from pipelines.models.secrets import InMemorySecretStore, Secret
 from pipelines.models.steps import StepStatus
 
 pytestmark = [
@@ -19,16 +20,21 @@ pytestmark = [
 
 @pytest.fixture
 def context(dagger_client: Client):
+    in_memory_secret_store = InMemorySecretStore()
+    in_memory_secret_store.add_secret("python_registry_token", "test")
+
     context = PythonRegistryPublishContext(
         package_path="test",
         version="0.2.0",
-        python_registry_token="test",
+        python_registry_token=Secret("python_registry_token", in_memory_secret_store),
         package_name="test",
         registry_check_url="http://local_registry:8080/",
         registry="http://local_registry:8080/",
         is_local=True,
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         ci_report_bucket="test",
     )

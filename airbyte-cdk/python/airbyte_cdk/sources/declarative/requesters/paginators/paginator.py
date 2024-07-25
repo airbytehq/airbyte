@@ -4,11 +4,11 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.types import Record
 
 
 @dataclass
@@ -21,18 +21,21 @@ class Paginator(ABC, RequestOptionsProvider):
     """
 
     @abstractmethod
-    def reset(self) -> None:
+    def reset(self, reset_value: Optional[Any] = None) -> None:
         """
         Reset the pagination's inner state
         """
 
     @abstractmethod
-    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self, response: requests.Response, last_page_size: int, last_record: Optional[Record]
+    ) -> Optional[Mapping[str, Any]]:
         """
         Returns the next_page_token to use to fetch the next page of records.
 
         :param response: the response to process
-        :param last_records: the records extracted from the response
+        :param last_page_size: the number of records read from the response
+        :param last_record: the last record extracted from the response
         :return: A mapping {"next_page_token": <token>} for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
         pass

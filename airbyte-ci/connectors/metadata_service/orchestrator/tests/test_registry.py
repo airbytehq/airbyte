@@ -27,6 +27,7 @@ from orchestrator.assets.registry_report import (
     oss_sources_dataframe,
 )
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 from pydantic import ValidationError
 
 VALID_METADATA_DICT = {
@@ -64,11 +65,13 @@ def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result
     mock_blob.name = blob_name
     mock_blob.download_as_string.return_value = blob_content.encode("utf-8")
 
+    metadata_dict = yaml_blob_to_dict(mock_blob)
+
     if expected_exception:
         with pytest.raises(expected_exception):
-            safe_parse_metadata_definition(mock_blob)
+            safe_parse_metadata_definition(mock_blob.name, metadata_dict)
     else:
-        result = safe_parse_metadata_definition(mock_blob)
+        result = safe_parse_metadata_definition(mock_blob.name, metadata_dict)
         # assert the name is set correctly
         assert result == expected_result
 
@@ -220,7 +223,7 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
 
     result = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert "definitionId" not in result
-    assert result[expected_id_field] == "test-id"
+    assert "test-id" == result[expected_id_field]
 
 
 def test_tombstone_custom_public_set():

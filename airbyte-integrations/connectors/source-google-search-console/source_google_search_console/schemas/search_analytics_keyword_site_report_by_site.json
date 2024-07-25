@@ -4,35 +4,45 @@
   "additionalProperties": true,
   "properties": {
     "site_url": {
+      "description": "The URL of the site for which the search analytics data is recorded.",
       "type": ["null", "string"]
     },
     "search_type": {
+      "description": "The type of search (e.g., web search, image search) that generated the analytics data.",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date for which the search analytics data is recorded.",
       "type": ["null", "string"],
       "format": "date"
     },
     "country": {
+      "description": "The country from which the search originated.",
       "type": ["null", "string"]
     },
     "device": {
+      "description": "The type of device used by the user during the search (e.g., desktop, mobile).",
       "type": ["null", "string"]
     },
     "query": {
+      "description": "The search query used by the user to find the site in search results.",
       "type": ["null", "string"]
     },
     "clicks": {
+      "description": "The number of times users clicked on the search result linking to the site.",
       "type": ["null", "integer"]
     },
     "impressions": {
+      "description": "The number of times the site was shown in search results to users.",
       "type": ["null", "integer"]
     },
     "ctr": {
+      "description": "Click-through rate represents the percentage of users who clicked on the site's link after seeing it in search results.",
       "type": ["null", "number"],
       "multipleOf": 1e-25
     },
     "position": {
+      "description": "The average ranking position of the site in search results.",
       "type": ["null", "number"],
       "multipleOf": 1e-25
     }

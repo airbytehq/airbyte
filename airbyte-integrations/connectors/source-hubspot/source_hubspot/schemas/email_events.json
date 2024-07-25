@@ -3,227 +3,297 @@
   "type": ["null", "object"],
   "properties": {
     "appId": {
+      "description": "The unique identifier of the application associated with the email event.",
       "type": ["null", "integer"]
     },
     "appName": {
+      "description": "The name of the application associated with the email event.",
       "type": ["null", "string"]
     },
     "bcc": {
+      "description": "The blind carbon copy recipients of the email.",
       "type": ["null", "array"]
     },
     "cc": {
+      "description": "The carbon copy recipients of the email.",
       "type": ["null", "array"]
     },
     "attempt": {
+      "description": "The number of attempts made to send the email.",
       "type": ["null", "integer"]
     },
     "bounced": {
+      "description": "Indicates if the email bounced.",
       "type": ["null", "boolean"]
     },
     "browser": {
+      "description": "Details about the email event recipient's browser.",
       "type": ["null", "object"],
       "properties": {
         "family": {
+          "description": "The family of the browser used by the recipient.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the browser.",
           "type": ["null", "string"]
         },
         "producer": {
+          "description": "The producer of the browser.",
           "type": ["null", "string"]
         },
         "producerUrl": {
+          "description": "The URL of the producer's website.",
           "type": ["null", "string"]
         },
         "type": {
+          "description": "The type of the browser.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "The URL of the browser.",
           "type": ["null", "string"]
         },
         "version": {
+          "description": "The version of the browser used by the recipient.",
           "type": ["null", "array"],
           "items": {
+            "description": "The version of the browser.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "category": {
+      "description": "The category of the email event.",
       "type": ["null", "string"]
     },
     "causedBy": {
+      "description": "Information about the action that caused the email event.",
       "type": ["null", "object"],
       "properties": {
         "created": {
+          "description": "The timestamp of when the event was created.",
           "type": ["null", "integer"]
         },
         "id": {
+          "description": "The unique identifier of the event causing this event.",
           "type": ["null", "string"]
         }
       }
     },
     "created": {
+      "description": "The timestamp of when the email event was created.",
       "type": ["null", "integer"]
     },
     "deviceType": {
+      "description": "The type of device used by the recipient.",
       "type": ["null", "string"]
     },
     "dropMessage": {
+      "description": "The message associated with dropped email.",
       "type": ["null", "string"]
     },
     "dropReason": {
+      "description": "The reason for dropping the email.",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "The duration of the email event.",
       "type": ["null", "integer"]
     },
     "emailCampaignId": {
+      "description": "The ID of the email campaign associated with the event.",
       "type": ["null", "integer"]
     },
     "emailCampaignGroupId": {
+      "description": "The group ID of the email campaign associated with the event.",
       "type": ["null", "integer"]
     },
     "filteredEvent": {
+      "description": "Indicates if the event is filtered.",
       "type": ["null", "boolean"]
     },
     "from": {
+      "description": "The sender of the email.",
       "type": ["null", "string"]
     },
     "hmid": {
+      "description": "The HubSpot Marketing ID.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the email event.",
       "type": ["null", "string"]
     },
     "ipAddress": {
+      "description": "The IP address of the recipient.",
       "type": ["null", "string"]
     },
     "linkId": {
+      "description": "The ID of the link in the email.",
       "type": ["null", "integer"]
     },
     "location": {
+      "description": "Details about the geographical location associated with the email event.",
       "type": ["null", "object"],
       "properties": {
         "city": {
+          "description": "The city of the recipient's location.",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "The country of the recipient's location.",
           "type": ["null", "string"]
         },
         "latitude": {
+          "description": "The latitude coordinate of the recipient's location.",
           "type": ["null", "number"]
         },
         "longitude": {
+          "description": "The longitude coordinate of the recipient's location.",
           "type": ["null", "number"]
         },
         "state": {
+          "description": "The state of the recipient's location.",
           "type": ["null", "string"]
         },
         "zipcode": {
+          "description": "The zipcode of the recipient's location.",
           "type": ["null", "string"]
         }
       }
     },
     "obsoletedBy": {
+      "description": "Information about any email event that this event has made obsolete.",
       "type": ["null", "object"],
       "properties": {
         "created": {
+          "description": "The timestamp of when the event was obsoleted.",
           "type": ["null", "integer"]
         },
         "id": {
+          "description": "The ID of the event that obsoleted this event.",
           "type": ["null", "string"]
         }
       }
     },
     "portalId": {
+      "description": "The ID of the HubSpot portal.",
       "type": ["null", "integer"]
     },
     "portalSubscriptionStatus": {
+      "description": "The subscription status of the portal.",
       "type": ["null", "string"]
     },
     "recipient": {
+      "description": "The recipient of the email.",
       "type": ["null", "string"]
     },
     "referer": {
+      "description": "The referer URL of the email.",
       "type": ["null", "string"]
     },
     "replyTo": {
+      "description": "The email address to which replies should be directed.",
       "type": ["null", "array"],
       "items": {
+        "description": "The email address for replying to the email.",
         "type": ["null", "string"]
       }
     },
     "requestedBy": {
+      "description": "The entity that requested the email event.",
       "type": ["null", "string"]
     },
     "requestedByUserId": {
+      "description": "The ID of the user who requested the email event.",
       "type": ["null", "integer"]
     },
     "response": {
+      "description": "The response code related to the email event.",
       "type": ["null", "string"]
     },
     "sentBy": {
+      "description": "Details about the entity that sent the email event.",
       "type": ["null", "object"],
       "properties": {
         "created": {
+          "description": "The timestamp of when the email was sent.",
           "type": ["null", "integer"]
         },
         "id": {
+          "description": "The ID of the sender of the email.",
           "type": ["null", "string"]
         }
       }
     },
     "smtpId": {
+      "description": "The SMTP ID associated with email event.",
       "type": ["null", "string"]
     },
     "source": {
+      "description": "The source of the email event.",
       "type": ["null", "string"]
     },
     "sourceId": {
+      "description": "The unique identifier of the email event source.",
       "type": ["null", "string"]
     },
     "subscriptions": {
+      "description": "Information about the subscriptions associated with the email event.",
       "type": ["null", "array"],
       "items": {
+        "description": "Details about a specific subscription.",
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The ID of the subscription.",
             "type": ["null", "integer"]
           },
           "legalBasisChange": {
+            "description": "Information about any changes in legal basis related to the subscription.",
             "type": ["null", "object"],
             "properties": {
               "legalBasisExplanation": {
+                "description": "Explanation for legal basis change.",
                 "type": ["null", "string"]
               },
               "legalBasisType": {
+                "description": "The type of legal basis for subscription change.",
                 "type": ["null", "string"]
               },
               "optState": {
+                "description": "The state of opt-in.",
                 "type": ["null", "string"]
               }
             }
           },
           "status": {
+            "description": "The status of the subscription.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "status": {
+      "description": "The status of the email event.",
       "type": ["null", "string"]
     },
     "subject": {
+      "description": "The subject of the email.",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The type of email event.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL associated with the email event.",
       "type": ["null", "string"]
     },
     "userAgent": {
+      "description": "The user agent of the recipient.",
       "type": ["null", "string"]
     }
   }

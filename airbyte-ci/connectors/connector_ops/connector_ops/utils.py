@@ -16,6 +16,7 @@ import git
 import requests
 import yaml
 from ci_credentials import SecretsManager
+from pydash.collections import find
 from pydash.objects import get
 from rich.console import Console
 from simpleeval import simple_eval
@@ -24,6 +25,7 @@ console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
 OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
+CLOUD_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/cloud_registry.json"
 BASE_AIRBYTE_DOCS_URL = "https://docs.airbyte.com"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
@@ -56,8 +58,11 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
-METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
+DOCKERFILE_FILE_NAME = "Dockerfile"
+PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
+POETRY_LOCK_FILE_NAME = "poetry.lock"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
     "sl": 200,
@@ -79,18 +84,6 @@ class ConnectorVersionNotFound(Exception):
 
 def get_connector_name_from_path(path):
     return path.split("/")[2]
-
-
-def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
-
-    Args:
-        diff_regex (str): Find the edited files that contain the following regex in their change.
-
-    Returns:
-        Set[Connector]: Set of connectors that were changed
-    """
-    return get_changed_file(ACCEPTANCE_TEST_CONFIG_FILE_NAME, diff_regex)
 
 
 def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
@@ -214,26 +207,6 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
     return project_dependencies, test_dependencies
 
 
-def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path]:
-    """Recursively retrieve all transitive dependencies of a Gradle project.
-
-    Args:
-        with_test_dependencies: True to include test dependencies.
-
-    Returns:
-        List[Path]: All dependencies of the project.
-    """
-    base_path = Path("airbyte-cdk/java/airbyte-cdk")
-    found: List[Path] = [base_path]
-    for submodule in ["core", "db-sources", "db-destinations"]:
-        found.append(base_path / submodule)
-        project_dependencies, test_dependencies = parse_gradle_dependencies(base_path / Path(submodule) / Path("build.gradle"))
-        found += project_dependencies
-        if with_test_dependencies:
-            found += test_dependencies
-    return list(set(found))
-
-
 def get_all_gradle_dependencies(
     build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
 ) -> List[Path]:
@@ -249,12 +222,6 @@ def get_all_gradle_dependencies(
     if found_dependencies is None:
         found_dependencies = []
     project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
-
-    # Since first party project folders are transitive (compileOnly) in the
-    # CDK, we always need to add them as the project dependencies.
-    project_dependencies += get_local_cdk_gradle_dependencies(False)
-    test_dependencies += get_local_cdk_gradle_dependencies(with_test_dependencies=True)
-
     all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
     for dependency_path in all_dependencies:
         if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
@@ -268,6 +235,7 @@ class ConnectorLanguage(str, Enum):
     PYTHON = "python"
     JAVA = "java"
     LOW_CODE = "low-code"
+    MANIFEST_ONLY = "manifest-only"
 
 
 class ConnectorLanguageError(Exception):
@@ -360,8 +328,35 @@ class Connector:
         return Path(f"./{CONNECTOR_PATH_PREFIX}/{self.relative_connector_path}")
 
     @property
+    def python_source_dir_path(self) -> Path:
+        return self.code_directory / self.technical_name.replace("-", "_")
+
+    @property
+    def _manifest_only_path(self) -> Path:
+        return self.code_directory / MANIFEST_FILE_NAME
+
+    @property
+    def _manifest_low_code_path(self) -> Path:
+        return self.python_source_dir_path / MANIFEST_FILE_NAME
+
+    @property
+    def manifest_path(self) -> Path:
+        if self._manifest_only_path.is_file():
+            return self._manifest_only_path
+
+        return self._manifest_low_code_path
+
+    @property
     def has_dockerfile(self) -> bool:
-        return (self.code_directory / "Dockerfile").is_file()
+        return self.dockerfile_file_path.is_file()
+
+    @property
+    def dockerfile_file_path(self) -> Path:
+        return self.code_directory / DOCKERFILE_FILE_NAME
+
+    @property
+    def pyproject_file_path(self) -> Path:
+        return self.code_directory / PYPROJECT_FILE_NAME
 
     @property
     def metadata_file_path(self) -> Path:
@@ -376,11 +371,13 @@ class Connector:
 
     @property
     def language(self) -> ConnectorLanguage:
+        if Path(self.code_directory / "manifest.yaml").is_file():
+            return ConnectorLanguage.MANIFEST_ONLY
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
-        if Path(self.code_directory / "src" / "main" / "java").exists():
+        if Path(self.code_directory / "src" / "main" / "java").exists() or Path(self.code_directory / "src" / "main" / "kotlin").exists():
             return ConnectorLanguage.JAVA
         return None
 
@@ -557,6 +554,40 @@ class Connector:
         return Path(self.code_directory / "pyproject.toml").exists()
 
     @property
+    def registry_primary_key_field(self) -> str:
+        """
+        The primary key field of the connector in the registry.
+
+        example:
+        - source -> sourceDefinitionId
+        - destination -> destinationDefinitionId
+        """
+        return f"{self.connector_type}DefinitionId"
+
+    @property
+    def is_enabled_in_any_registry(self) -> bool:
+        """Check if the connector is enabled in the registry.
+
+        Example:
+          - {registries: null} -> false
+          - {registries: {oss: {enabled: false }}} -> false
+          - {registries: {oss: {enabled: true }}} -> true
+          - {registries: {cloud: {enabled: true }}} -> true
+
+        Returns:
+            bool: True if the connector is enabled, False otherwise.
+        """
+        registries = self.metadata.get("registries")
+        if not registries:
+            return False
+
+        for registry in registries.values():
+            if registry.get("enabled"):
+                return True
+
+        return False
+
+    @property
     def is_released(self) -> bool:
         """Pull the the OSS registry and check if it the current definition ID and docker image tag are in the registry.
         If there is a match it means the connector is released.
@@ -569,11 +600,54 @@ class Connector:
         registry = download_catalog(OSS_CATALOG_URL)
         for connector in registry[f"{self.connector_type}s"]:
             if (
-                connector[f"{self.connector_type}DefinitionId"] == metadata["definitionId"]
+                connector[self.registry_primary_key_field] == metadata["definitionId"]
                 and connector["dockerImageTag"] == metadata["dockerImageTag"]
             ):
                 return True
         return False
+
+    @property
+    def cloud_usage(self) -> Optional[str]:
+        """Pull the cloud registry, check if the connector is in the registry and return the usage metrics.
+
+        Returns:
+            Optional[str]: The usage metrics of the connector, could be one of ["low", "medium", "high"] or None if the connector is not in the registry.
+        """
+        metadata = self.metadata
+        definition_id = metadata.get("definitionId")
+        cloud_registry = download_catalog(CLOUD_CATALOG_URL)
+
+        all_connectors_of_type = cloud_registry[f"{self.connector_type}s"]
+        connector_entry = find(all_connectors_of_type, {self.registry_primary_key_field: definition_id})
+        if not connector_entry:
+            return None
+
+        return get(connector_entry, "generated.metrics.cloud.usage")
+
+    @property
+    def image_address(self) -> str:
+        return f'{self.metadata["dockerRepository"]}:{self.metadata["dockerImageTag"]}'
+
+    @property
+    def cdk_name(self) -> str | None:
+        try:
+            return [tag.split(":")[-1] for tag in self.metadata["tags"] if tag.startswith("cdk:")][0]
+        except IndexError:
+            return None
+
+    @property
+    def base_image_address(self) -> str | None:
+        return self.metadata.get("connectorBuildOptions", {}).get("baseImage")
+
+    @property
+    def uses_base_image(self) -> bool:
+        return self.base_image_address is not None
+
+    @property
+    def base_image_version(self) -> str | None:
+        if not self.uses_base_image:
+            return None
+        return self.base_image_address.split(":")[1].split("@")[0]
 
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
@@ -585,6 +659,7 @@ class Connector:
     def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
+            dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk")]
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )

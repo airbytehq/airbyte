@@ -2,38 +2,49 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "The ID of the dispute.",
       "type": ["string"]
     },
     "object": {
+      "description": "Type of object being returned.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount of the dispute.",
       "type": ["null", "integer"]
     },
     "balance_transactions": {
+      "description": "List of balance transactions associated with the dispute",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of each balance transaction",
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The ID of the balance transaction related to the dispute.",
             "type": ["string"]
           }
         }
       }
     },
     "charge": {
+      "description": "The charge ID associated with the dispute.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the dispute was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The timestamp when the dispute was last updated.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the dispute amount.",
       "type": ["null", "string"]
     },
     "evidence": {
+      "description": "Evidence provided for the dispute.",
       "type": ["null", "string", "object"],
       "properties": {
         "refund_policy": {
@@ -120,6 +131,7 @@
       }
     },
     "evidence_details": {
+      "description": "Details about the evidence provided for the dispute.",
       "type": ["null", "object"],
       "properties": {
         "due_by": {
@@ -137,31 +149,40 @@
       }
     },
     "is_charge_refundable": {
+      "description": "Flag indicating if the charge is refundable.",
       "type": ["null", "boolean"]
     },
     "livemode": {
+      "description": "Indicates if the dispute is in live mode.",
       "type": ["null", "boolean"]
     },
     "metadata": {
+      "description": "Additional metadata related to the dispute.",
       "type": ["null", "object"],
       "properties": {}
     },
     "reason": {
+      "description": "The reason for the dispute.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the dispute.",
       "type": ["null", "string"]
     },
     "payment_intent": {
+      "description": "The payment intent associated with the dispute.",
       "type": ["null", "string"]
     },
     "balance_transaction": {
+      "description": "The balance transaction ID related to the dispute.",
       "type": ["null", "string"]
     },
     "payment_method_details": {
+      "description": "Details of the payment method associated with the dispute.",
       "type": ["null", "object"],
       "properties": {
         "card": {
+          "description": "Details of the card used for payment.",
           "type": ["null", "object"],
           "properties": {
             "brand": {
@@ -173,6 +194,7 @@
           }
         },
         "type": {
+          "description": "Type of payment method used.",
           "type": ["null", "string"]
         }
       }

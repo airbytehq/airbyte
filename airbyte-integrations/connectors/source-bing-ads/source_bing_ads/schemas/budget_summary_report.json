@@ -3,31 +3,40 @@
   "type": "object",
   "properties": {
     "AccountName": {
+      "description": "Name of the account",
       "type": ["null", "string"]
     },
     "AccountNumber": {
+      "description": "Account number associated with the account",
       "type": ["null", "string"]
     },
     "AccountId": {
+      "description": "Unique identifier for the account",
       "type": ["null", "integer"]
     },
     "CampaignId": {
+      "description": "Unique identifier for the campaign",
       "type": ["null", "integer"]
     },
     "CampaignName": {
+      "description": "Name of the campaign",
       "type": ["null", "string"]
     },
     "Date": {
+      "description": "Date of the data record",
       "type": ["null", "string"],
       "format": "date"
     },
     "MonthlyBudget": {
+      "description": "Budget amount set for the campaign for the entire month",
       "type": ["null", "number"]
     },
     "DailySpend": {
+      "description": "Amount spent on the campaign on a daily basis",
       "type": ["null", "number"]
     },
     "MonthToDateSpend": {
+      "description": "Total amount spent on the campaign from the beginning of the month",
       "type": ["null", "number"]
     }
   }

@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.2"
+version = "0.6.3"
 name = "source-chargebee"
 description = "Source implementation for Chargebee."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,8 +17,7 @@ include = "source_chargebee"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0.67.1"
-freezegun = "^1.4.0"
+airbyte-cdk = "0.80.0"
 
 [tool.poetry.scripts]
 source-chargebee = "source_chargebee.run:run"
@@ -27,3 +26,4 @@ source-chargebee = "source_chargebee.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 pytest = "^6.2"
+freezegun = "^1.4.0"

@@ -6,16 +6,15 @@ package io.airbyte.cdk.integrations.base.adaptive
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Supplier
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This class launches different variants of a destination connector based on where Airbyte is
  * deployed.
  */
 object AdaptiveDestinationRunner {
-    private val LOGGER: Logger = LoggerFactory.getLogger(AdaptiveDestinationRunner::class.java)
 
     private const val DEPLOYMENT_MODE_KEY = EnvVariableFeatureFlags.DEPLOYMENT_MODE
     private const val CLOUD_MODE = "CLOUD"
@@ -52,12 +51,12 @@ object AdaptiveDestinationRunner {
     ) {
         private val destination: Destination
             get() {
-                LOGGER.info("Running destination under deployment mode: {}", deploymentMode)
+                LOGGER.info { "Running destination under deployment mode: $deploymentMode" }
                 if (deploymentMode != null && deploymentMode == CLOUD_MODE) {
                     return cloudDestinationSupplier.get()
                 }
                 if (deploymentMode == null) {
-                    LOGGER.warn("Deployment mode is null, default to OSS mode")
+                    LOGGER.warn { "Deployment mode is null, default to OSS mode" }
                 }
                 return ossDestinationSupplier.get()
             }
@@ -65,9 +64,9 @@ object AdaptiveDestinationRunner {
         @Throws(Exception::class)
         fun run(args: Array<String>) {
             val destination = destination
-            LOGGER.info("Starting destination: {}", destination.javaClass.name)
+            LOGGER.info { "Starting destination: ${destination.javaClass.name}" }
             IntegrationRunner(destination).run(args)
-            LOGGER.info("Completed destination: {}", destination.javaClass.name)
+            LOGGER.info { "Completed destination: ${destination.javaClass.name}" }
         }
     }
 }

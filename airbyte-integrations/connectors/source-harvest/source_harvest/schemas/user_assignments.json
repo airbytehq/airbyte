@@ -3,52 +3,67 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the assignment",
       "type": ["null", "integer"]
     },
     "is_project_manager": {
+      "description": "Flag indicating if the user is a project manager for the assignment",
       "type": ["null", "boolean"]
     },
     "is_active": {
+      "description": "Flag indicating if the assignment is currently active",
       "type": ["null", "boolean"]
     },
     "use_default_rates": {
+      "description": "Flag indicating if default rates are used for the assignment",
       "type": ["null", "boolean"]
     },
     "budget": {
+      "description": "The budget allocated for the assignment",
       "type": ["null", "number"]
     },
     "created_at": {
+      "description": "The date and time when the assignment was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the assignment was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "hourly_rate": {
+      "description": "The hourly rate for the assignment",
       "type": ["null", "number"]
     },
     "project": {
+      "description": "Details of the project the user is assigned to.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the project",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the project associated with the assignment",
           "type": ["null", "string"]
         },
         "code": {
+          "description": "The project code associated with the assignment",
           "type": ["null", "string"]
         }
       }
     },
     "user": {
+      "description": "Details of the user assignment.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The unique identifier of the user assigned to the project",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the user assigned to the project",
           "type": ["null", "string"]
         }
       }

@@ -3,145 +3,192 @@
   "type": "object",
   "properties": {
     "segments.date": {
+      "description": "The date related to the user location view data.",
       "type": ["null", "string"],
       "format": "date"
     },
     "segments.day_of_week": {
+      "description": "The day of the week.",
       "type": ["null", "string"]
     },
     "segments.month": {
+      "description": "The month.",
       "type": ["null", "string"]
     },
     "segments.week": {
+      "description": "The week of the year.",
       "type": ["null", "string"]
     },
     "segments.quarter": {
+      "description": "The quarter of the year.",
       "type": ["null", "string"]
     },
     "segments.year": {
+      "description": "The year.",
       "type": ["null", "integer"]
     },
     "segments.ad_network_type": {
+      "description": "The type of ad network.",
       "type": ["null", "string"]
     },
     "customer.currency_code": {
+      "description": "The currency code used by the customer.",
       "type": ["null", "string"]
     },
     "customer.id": {
+      "description": "The ID of the customer.",
       "type": ["null", "integer"]
     },
     "customer.descriptive_name": {
+      "description": "The descriptive name of the customer.",
       "type": ["null", "string"]
     },
     "customer.time_zone": {
+      "description": "The time zone set for the customer.",
       "type": ["null", "string"]
     },
     "user_location_view.country_criterion_id": {
+      "description": "The country criterion ID for the user location.",
       "type": ["null", "integer"]
     },
     "user_location_view.targeting_location": {
+      "description": "The targeted location for the user location view.",
       "type": ["null", "boolean"]
     },
     "user_location_view.resource_name": {
+      "description": "The resource name associated with the user location view.",
       "type": ["null", "string"]
     },
     "campaign.base_campaign": {
+      "description": "The base campaign information tied to the user location view data.",
       "type": ["null", "string"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign linked to the user location view data.",
       "type": ["null", "integer"]
     },
     "campaign.name": {
+      "description": "The name of the campaign associated with the user location view data.",
       "type": ["null", "string"]
     },
     "campaign.status": {
+      "description": "The status of the campaign related to the user location view data.",
       "type": ["null", "string"]
     },
     "ad_group.name": {
+      "description": "The name of the ad group associated with the user location view data.",
       "type": ["null", "string"]
     },
     "ad_group.status": {
+      "description": "The status of the ad group related to the user location view data.",
       "type": ["null", "string"]
     },
     "ad_group.base_ad_group": {
+      "description": "The base ad group information related to the user location view data.",
       "type": ["null", "string"]
     },
     "metrics.all_conversions": {
+      "description": "Total number of conversions for all actions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_from_interactions_rate": {
+      "description": "The rate of all conversions from interactions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_value": {
+      "description": "The total value of all conversions.",
       "type": ["null", "number"]
     },
     "metrics.average_cost": {
+      "description": "The average cost of all clicks.",
       "type": ["null", "number"]
     },
     "metrics.average_cpc": {
+      "description": "The average cost per click.",
       "type": ["null", "number"]
     },
     "metrics.average_cpm": {
+      "description": "The average cost per thousand impressions.",
       "type": ["null", "number"]
     },
     "metrics.average_cpv": {
+      "description": "The average cost per view.",
       "type": ["null", "number"]
     },
     "metrics.clicks": {
+      "description": "Total number of clicks.",
       "type": ["null", "integer"]
     },
     "metrics.conversions": {
+      "description": "Total number of conversions.",
       "type": ["null", "number"]
     },
     "metrics.conversions_from_interactions_rate": {
+      "description": "The rate of conversions from interactions.",
       "type": ["null", "number"]
     },
     "metrics.conversions_value": {
+      "description": "The total value of conversions.",
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
+      "description": "The cost in micros (millionths of the currency).",
       "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
+      "description": "Cost per all conversions.",
       "type": ["null", "number"]
     },
     "metrics.cost_per_conversion": {
+      "description": "Cost per conversion.",
       "type": ["null", "number"]
     },
     "metrics.cross_device_conversions": {
+      "description": "Total number of cross-device conversions.",
       "type": ["null", "number"]
     },
     "metrics.ctr": {
+      "description": "Click-through rate.",
       "type": ["null", "number"]
     },
     "metrics.impressions": {
+      "description": "Total number of times the ad was shown.",
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
+      "description": "Types of interaction events.",
       "type": ["null", "array"],
       "items": {
+        "description": "Specific interaction event type.",
         "type": ["null", "string"]
       }
     },
     "metrics.interaction_rate": {
+      "description": "The rate of interactions.",
       "type": ["null", "number"]
     },
     "metrics.interactions": {
+      "description": "Total number of interactions.",
       "type": ["null", "integer"]
     },
     "metrics.value_per_all_conversions": {
+      "description": "Value per all conversions.",
       "type": ["null", "number"]
     },
     "metrics.value_per_conversion": {
+      "description": "Value per conversion.",
       "type": ["null", "number"]
     },
     "metrics.video_view_rate": {
+      "description": "The rate of video views.",
       "type": ["null", "number"]
     },
     "metrics.video_views": {
+      "description": "Total number of video views.",
       "type": ["null", "integer"]
     },
     "metrics.view_through_conversions": {
+      "description": "Total number of view-through conversions.",
       "type": ["null", "integer"]
     }
   }

@@ -1,14 +1,3 @@
-java {
-    // TODO: rewrite code to avoid javac wornings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-deprecation,-removal,-this-escape"
-    }
-    compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-try,-this-escape"
-    }
-}
-
-compileKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestFixturesKotlin.compilerOptions.allWarningsAsErrors = false
 compileTestKotlin.compilerOptions.allWarningsAsErrors = false
 

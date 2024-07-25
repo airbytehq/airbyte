@@ -4,68 +4,18 @@
 package io.airbyte.cdk.integrations.util
 
 import com.google.common.collect.ImmutableList
-import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage
-import io.airbyte.commons.exceptions.ConfigErrorException
-import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.functional.Either
-import java.sql.SQLException
-import java.sql.SQLSyntaxErrorException
-import java.util.stream.Collectors
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /** Utility class defining methods for handling configuration exceptions in connectors. */
 object ConnectorExceptionUtil {
-    private val LOGGER: Logger = LoggerFactory.getLogger(ConnectorExceptionUtil::class.java)
 
     const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
         "Could not connect with provided configuration. Error: %s"
-    const val RECOVERY_CONNECTION_ERROR_MESSAGE: String =
-        "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
-            "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds"
 
     @JvmField val HTTP_AUTHENTICATION_ERROR_CODES: List<Int> = ImmutableList.of(401, 403)
-
-    fun isConfigError(e: Throwable?): Boolean {
-        return isConfigErrorException(e) ||
-            isConnectionError(e) ||
-            isRecoveryConnectionException(e) ||
-            isUnknownColumnInFieldListException(e)
-    }
-
-    fun getDisplayMessage(e: Throwable?): String? {
-        return if (e is ConfigErrorException) {
-            e.displayMessage
-        } else if (e is ConnectionErrorException) {
-            ErrorMessage.getErrorMessage(e.stateCode, e.errorCode, e.exceptionMessage, e)
-        } else if (isRecoveryConnectionException(e)) {
-            RECOVERY_CONNECTION_ERROR_MESSAGE
-        } else if (isUnknownColumnInFieldListException(e)) {
-            e!!.message
-        } else {
-            String.format(
-                COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-                if (e!!.message != null) e.message else ""
-            )
-        }
-    }
-
-    /**
-     * Returns the first instance of an exception associated with a configuration error (if it
-     * exists). Otherwise, the original exception is returned.
-     */
-    fun getRootConfigError(e: Exception?): Throwable? {
-        var current: Throwable? = e
-        while (current != null) {
-            if (isConfigError(current)) {
-                return current
-            } else {
-                current = current.cause
-            }
-        }
-        return e
-    }
 
     /**
      * Log all the exceptions, and rethrow the first. This is useful for e.g. running multiple
@@ -81,11 +31,10 @@ object ConnectorExceptionUtil {
     fun <T : Throwable> logAllAndThrowFirst(initialMessage: String, throwables: Collection<T>) {
         if (!throwables.isEmpty()) {
             val stacktraces =
-                throwables
-                    .stream()
-                    .map { throwable: Throwable? -> ExceptionUtils.getStackTrace(throwable) }
-                    .collect(Collectors.joining("\n"))
-            LOGGER.error("$initialMessage$stacktraces\nRethrowing first exception.")
+                throwables.joinToString("\n") { throwable: Throwable ->
+                    ExceptionUtils.getStackTrace(throwable)
+                }
+            LOGGER.error { "$initialMessage$stacktraces\nRethrowing first exception." }
             throw throwables.iterator().next()
         }
     }
@@ -95,30 +44,11 @@ object ConnectorExceptionUtil {
         initialMessage: String,
         eithers: List<Either<out T, Result>>
     ): List<Result> {
-        val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }.toList()
+        val throwables: List<T> = eithers.filter { it.isLeft() }.map { it.left!! }
         if (throwables.isNotEmpty()) {
             logAllAndThrowFirst(initialMessage, throwables)
         }
         // No need to filter on isRight since isLeft will throw before reaching this line.
-        return eithers.stream().map { obj: Either<out T, Result> -> obj.right!! }.toList()
-    }
-
-    private fun isConfigErrorException(e: Throwable?): Boolean {
-        return e is ConfigErrorException
-    }
-
-    private fun isConnectionError(e: Throwable?): Boolean {
-        return e is ConnectionErrorException
-    }
-
-    private fun isRecoveryConnectionException(e: Throwable?): Boolean {
-        return e is SQLException &&
-            e.message!!.lowercase().contains("due to conflict with recovery")
-    }
-
-    private fun isUnknownColumnInFieldListException(e: Throwable?): Boolean {
-        return (e is SQLSyntaxErrorException &&
-            e.message!!.lowercase().contains("unknown column") &&
-            e.message!!.lowercase().contains("in 'field list'"))
+        return eithers.map { obj: Either<out T, Result> -> obj.right!! }
     }
 }

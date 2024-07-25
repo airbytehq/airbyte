@@ -1,29 +1,39 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-emailoctopus
+  documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
   githubIssueLabel: source-emailoctopus
   icon: emailoctopus.svg
   license: MIT
   name: EmailOctopus
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-emailoctopus
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-emailoctopus
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-EMAILOCTOPUS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

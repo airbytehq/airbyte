@@ -4,32 +4,41 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the usage record",
       "type": ["null", "string"]
     },
     "invoice": {
+      "description": "The ID of the invoice associated with this usage record",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Indicates whether this usage record is in live mode or test mode",
       "type": ["null", "boolean"]
     },
     "object": {
+      "description": "Represents the type of object, in this case, 'usage_record'",
       "type": ["null", "string"]
     },
     "period": {
+      "description": "The period during which the usage occurred",
       "type": ["null", "object"],
       "properties": {
         "start": {
+          "description": "The start date of the usage period",
           "type": ["null", "integer"]
         },
         "end": {
+          "description": "The end date of the usage period",
           "type": ["null", "integer"]
         }
       }
     },
     "subscription_item": {
+      "description": "The item within the subscription that this usage record is associated with",
       "type": ["null", "string"]
     },
     "total_usage": {
+      "description": "The total quantity of units used for this usage record",
       "type": ["null", "integer"]
     }
   }

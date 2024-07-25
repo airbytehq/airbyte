@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mssql;
 
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -281,6 +282,7 @@ public class MsSqlTestDatabaseWithBackgroundThreads extends MsSQLTestDatabase {
       bgThread.stop = true;
     }
     super.close();
+    MssqlDebeziumStateUtil.disposeInitialState();
   }
 
   private final Map<String, MssqlTestDatabaseBackgroundThreadQueryCdcTable> bgThreadByInstance = new ConcurrentHashMap<>();

@@ -1,128 +1,549 @@
-version: "0.29.0"
+version: 0.78.5
 
-definitions:
-  selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: ["data"]
-
-  requester:
-    type: HttpRequester
-    url_base: "https://driftapi.com"
-    http_method: "GET"
-    authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['credentials']['access_token'] }}"
-
-  retriever:
-    type: SimpleRetriever
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: "NoPagination"
-    requester:
-      $ref: "#/definitions/requester"
-
-  base_stream:
-    type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/retriever"
-
-  base_paginator:
-    type: "DefaultPaginator"
-    pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ last_records['next'] }}"
-    page_token_option:
-      type: "RequestPath"
-      field_name: "page_token"
-      inject_into: "request_parameter"
-
-  accounts_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["data", "accounts"]
-    name: "accounts"
-    primary_key: "ownerId"
-    $parameters:
-      path: "/accounts"
-
-  conversations_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
-    name: "conversations"
-    primary_key: "id"
-    $parameters:
-      path: "/conversations"
-
-  users_stream:
-    $ref: "#/definitions/base_stream"
-    name: "users"
-    primary_key: "id"
-    $parameters:
-      path: "/users"
-
-  contacts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "contacts"
-      primary_key: "id"
-      path: "/contacts"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          email: "{{ config['email'] }}"
-
-  messages_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/conversations_stream"
-        parent_key: "id"
-        partition_field: "parent_id"
-
-  messages_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "messages"
-      primary_key: "id"
-      path: "/conversations/{{ stream_partition.parent_id }}/messages"
-    retriever:
-      $ref: "#/definitions/retriever"
-      paginator:
-        $ref: "#/definitions/base_paginator"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: ["data", "messages"]
-      partition_router:
-        $ref: "#/definitions/messages_partition_router"
-
-streams:
-  - "#/definitions/accounts_stream"
-  - "#/definitions/conversations_stream"
-  - "#/definitions/users_stream"
-  - "#/definitions/contacts_stream"
-  - "#/definitions/messages_stream"
+type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - "accounts"
-    - "conversations"
-    - "users"
-    - "contacts"
-    - "messages"
+    - accounts
+
+definitions:
+  streams:
+    accounts:
+      type: DeclarativeStream
+      name: accounts
+      primary_key:
+        - ownerId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /accounts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - accounts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ last_record['next'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/accounts"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ last_record['next'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    contacts:
+      type: DeclarativeStream
+      name: contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /contacts
+          http_method: GET
+          request_parameters:
+            email: "{{ config['email'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+    messages:
+      type: DeclarativeStream
+      name: messages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /conversations/{{ stream_partition.parent_id }}/messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - messages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ last_record['next'] }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: parent_id
+                stream:
+                  $ref: "#/definitions/streams/conversations"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/messages"
+  base_requester:
+    type: HttpRequester
+    url_base: https://driftapi.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['credentials']['access_token'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/contacts"
+  - $ref: "#/definitions/streams/messages"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties:
+      credentials:
+        type: object
+        title: Authorization Method
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - client_id
+              - client_secret
+              - access_token
+              - refresh_token
+            properties:
+              credentials:
+                type: string
+                const: oauth2.0
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The Client ID of your Drift developer application.
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client Secret
+                description: The Client Secret of your Drift developer application.
+                airbyte_secret: true
+              access_token:
+                type: string
+                title: Access Token
+                description: Access Token for making authenticated requests.
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh Token to renew the expired Access Token.
+                airbyte_secret: true
+          - type: object
+            title: Access Token
+            required:
+              - access_token
+            properties:
+              credentials:
+                type: string
+                const: access_token
+                order: 0
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  Drift Access Token. See the <a
+                  href="https://docs.airbyte.com/integrations/sources/drift">docs</a>
+                  for more information on how to generate this key.
+                airbyte_secret: true
+        order: 0
+      email:
+        type: string
+        description: Email used as parameter for contacts stream
+        title: Email parameter for contacts stream
+        default: test@test.com
+        order: 1
+    additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - credentials
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+
+metadata:
+  autoImportSchema:
+    accounts: false
+    conversations: false
+    users: false
+    contacts: false
+    messages: false
+
+schemas:
+  accounts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      accountId:
+        type: string
+        description: The unique identifier for the account
+      createDateTime:
+        type: integer
+        description: The date and time when the account was created
+      customProperties:
+        type: array
+        description: Additional custom properties for the account
+        items:
+          type: object
+          description: A custom property for the account
+          properties:
+            type:
+              type: string
+              description: The type of the custom property
+            label:
+              type: string
+              description: The label for a custom property
+            name:
+              type: string
+              description: The name of the custom property
+            value:
+              description: The value of the custom property
+      deleted:
+        type: boolean
+        description: Indicates if the account has been deleted
+      domain:
+        type: string
+        description: The domain associated with the account
+      name:
+        type: string
+        description: The name of the account
+      ownerId:
+        type: integer
+        description: The unique identifier of the account owner
+      targeted:
+        type: boolean
+        description: Indicates if the account is a targeted account
+      updateDateTime:
+        type: integer
+        description: The date and time when the account was last updated
+    additionalProperties: true
+  conversations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      contactId:
+        type: integer
+        description: The unique identifier of the contact associated with the conversation.
+      conversationTags:
+        type: array
+        description: Tags associated with the conversation
+        items:
+          type: object
+          description: Properties of each conversation tag
+          properties:
+            color:
+              type: string
+              description: HEX value
+            name:
+              type: string
+              description: The name of the tag associated with the conversation.
+      createdAt:
+        type: integer
+        description: The timestamp when the conversation was created.
+      id:
+        type: integer
+        description: The unique identifier of the conversation.
+      inboxId:
+        type: integer
+        description: The unique identifier of the inbox where the conversation belongs.
+      participants:
+        type: array
+        description: List of participants involved in the conversation
+        items:
+          type: integer
+          description: Details of the participants in the conversation.
+      relatedPlaybookId:
+        type:
+          - "null"
+          - string
+        description: >-
+          The unique identifier of the playbook related to the conversation, if
+          any.
+      status:
+        type: string
+        description: The status of the conversation (e.g., open, closed, in progress).
+        enum:
+          - open
+          - closed
+          - pending
+          - bulk_sent
+      updatedAt:
+        type: integer
+        description: The timestamp when the conversation was last updated.
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      alias:
+        type: string
+        description: User's alias used for identification.
+      availability:
+        type: string
+        description: User's availability status.
+      avatarUrl:
+        type: string
+        description: URL for the user's avatar image.
+      bot:
+        type: boolean
+        description: Flag indicating if the user is a bot.
+      createdAt:
+        type: integer
+        description: Timestamp when the user was created.
+      email:
+        type: string
+        description: User's email address.
+      id:
+        type: integer
+        description: Unique identifier for the user.
+      locale:
+        type: string
+        description: User's preferred language and region settings.
+      name:
+        type: string
+        description: User's full name.
+      orgId:
+        type: integer
+        description: Identifier for the organization the user belongs to.
+      phone:
+        type: string
+        description: User's phone number.
+      role:
+        type: string
+        description: User's role or permission level.
+      timeZone:
+        type: string
+        description: User's preferred time zone.
+      updatedAt:
+        type: integer
+        description: Timestamp when the user was last updated.
+      verified:
+        type: boolean
+        description: Flag indicating if the user's account is verified.
+    additionalProperties: true
+  contacts:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      attributes:
+        type: object
+        description: Additional details of the contact
+        properties:
+          email:
+            type: string
+            description: Email address of the contact
+          events:
+            description: Events related to the contact
+          name:
+            type: string
+            description: Name of the contact
+          phone:
+            type: string
+            description: Phone number of the contact
+          socialProfiles:
+            description: Social media profiles of the contact
+          tags:
+            type: array
+            description: Tags associated with the contact
+            items:
+              type: string
+              description: Tag name
+      createdAt:
+        type: integer
+        description: Timestamp of when the contact was created
+      id:
+        type: integer
+        description: Unique identifier for the contact
+      name:
+        type: string
+        description: Name of the contact
+    additionalProperties: true
+  messages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type: string
+        description: Type of message (e.g., text, image, file).
+      attributes:
+        type: object
+        description: Additional attributes associated with the message.
+      author:
+        type: object
+        description: Details about the author of the message.
+        properties:
+          type:
+            type: string
+            description: Type of the author (e.g., user, bot).
+            enum:
+              - contact
+              - user
+          bot:
+            type: boolean
+            description: Boolean flag indicating if the author is a bot.
+          id:
+            type: integer
+            description: Unique identifier of the author.
+      body:
+        type: string
+        description: The main content/body of the message.
+      buttons:
+        type: array
+        description: Action buttons associated with the message.
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+              description: Type of button (e.g., call to action, link).
+            label:
+              type: string
+              description: Text label displayed on the button.
+            reaction:
+              type: object
+              description: Reaction associated with the button click.
+              properties:
+                type:
+                  type: string
+                  description: Type of reaction triggered (e.g., message, action).
+                message:
+                  type: string
+                  description: Message triggered by clicking the button.
+            style:
+              type: string
+              description: Visual style of the button (e.g., primary, secondary).
+            value:
+              type: string
+              description: Value associated with the button (e.g., URL, action name).
+      context:
+        type: object
+        description: Contextual information related to the message.
+        properties:
+          ip:
+            type: string
+            description: IP address associated with the message.
+          userAgent:
+            type: string
+            description: User agent information of the client device.
+      conversationId:
+        type: integer
+        description: Unique identifier of the conversation associated with the message.
+      createdAt:
+        type: integer
+        description: Timestamp indicating when the message was created.
+      id:
+        type: integer
+        description: Unique identifier of the message.
+      orgId:
+        type: integer
+        description: Unique identifier of the organization associated with the message.
+    additionalProperties: true

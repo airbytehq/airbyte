@@ -116,10 +116,6 @@ The Stripe source connector supports the following streams:
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
-
-
-
-
 ### Data type mapping
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
@@ -146,6 +142,7 @@ Please be aware: this also means that any change older than 30 days will not be 
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
+
 - `Balance Transactions`
 - `Events`
 - `File Links`
@@ -199,6 +196,7 @@ On the other hand, the following streams use the `updated` field value as a curs
 ## Incremental deletes
 
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
+
 - `Bank Accounts`
 - `Coupons`
 - `Customers`
@@ -213,7 +211,8 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 - `Subscriptions`
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
-* Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+- Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 ### Data type mapping
 
@@ -221,13 +220,36 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
-|:--------|:-----------| :-------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.3.0   | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978)  | Upgrade CDK to start emitting record counts with state and full refresh state                                                                                                                                                 |
-| 5.2.4   | 2024-02-12 | [35137](https://github.com/airbytehq/airbyte/pull/35137)  | Fix license in `pyproject.toml`                                                                                                                                                                                               |
-| 5.2.3   | 2024-02-09 | [35068](https://github.com/airbytehq/airbyte/pull/35068)  | Manage dependencies with Poetry.                                                                                                                                                                                              |
-| 5.2.2   | 2024-01-31 | [34619](https://github.com/airbytehq/airbyte/pull/34619)  | Events stream concurrent on incremental syncs                                                                                                                                                                                 |
-| 5.2.1   | 2024-01-18 | [34495](https://github.com/airbytehq/airbyte/pull/34495)  | Fix deadlock issue                                                                                                                                                                                                            |
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.10 | 2024-07-20 | [42305](https://github.com/airbytehq/airbyte/pull/42305) | Update dependencies |
+| 5.4.9 | 2024-07-13 | [41760](https://github.com/airbytehq/airbyte/pull/41760) | Update dependencies |
+| 5.4.8 | 2024-07-10 | [41477](https://github.com/airbytehq/airbyte/pull/41477) | Update dependencies |
+| 5.4.7 | 2024-07-09 | [40869](https://github.com/airbytehq/airbyte/pull/40869) | Update dependencies |
+| 5.4.6 | 2024-07-08 | [41044](https://github.com/airbytehq/airbyte/pull/41044) | Use latest `CDK` version possible |
+| 5.4.5 | 2024-06-25 | [40404](https://github.com/airbytehq/airbyte/pull/40404) | Update dependencies |
+| 5.4.4 | 2024-06-22 | [40040](https://github.com/airbytehq/airbyte/pull/40040) | Update dependencies |
+| 5.4.3 | 2024-06-06 | [39284](https://github.com/airbytehq/airbyte/pull/39284) | [autopull] Upgrade base image to v1.2.2 |
+| 5.4.2 | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412) | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream |
+| 5.4.1 | 2024-06-11 | [39393](https://github.com/airbytehq/airbyte/pull/39393) | Added missing `event types` (incremental sync) for `Invoices` stream |
+| 5.4.0 | 2024-06-05 | [39138](https://github.com/airbytehq/airbyte/pull/39138) | Fixed the `Refunds` stream missing data for the `incremental` sync |
+| 5.3.9 | 2024-05-22 | [38550](https://github.com/airbytehq/airbyte/pull/38550) | Update authenticator package |
+| 5.3.8 | 2024-05-15 | [38248](https://github.com/airbytehq/airbyte/pull/38248) | Replace AirbyteLogger with logging.Logger |
+| 5.3.7 | 2024-04-24 | [36663](https://github.com/airbytehq/airbyte/pull/36663) | Schema descriptions |
+| 5.3.6 | 2024-04-18 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type |
+| 5.3.5 | 2024-04-18 | [37418](https://github.com/airbytehq/airbyte/pull/37418) | Ensure python return code != 0 in case of error |
+| 5.3.4 | 2024-04-11 | [37406](https://github.com/airbytehq/airbyte/pull/37406) | Update CDK version to have partitioned state fix |
+| 5.3.3 | 2024-04-11 | [37001](https://github.com/airbytehq/airbyte/pull/37001) | Update airbyte-cdk to flush print buffer for every message |
+| 5.3.2 | 2024-04-11 | [36964](https://github.com/airbytehq/airbyte/pull/36964) | Update CDK version to fix breaking change before another devs work on it |
+| 5.3.1 | 2024-04-10 | [36960](https://github.com/airbytehq/airbyte/pull/36960) | Remove unused imports |
+| 5.3.0 | 2024-03-12 | [35978](https://github.com/airbytehq/airbyte/pull/35978) | Upgrade CDK to start emitting record counts with state and full refresh state |
+| 5.2.4 | 2024-02-12 | [35137](https://github.com/airbytehq/airbyte/pull/35137) | Fix license in `pyproject.toml` |
+| 5.2.3 | 2024-02-09 | [35068](https://github.com/airbytehq/airbyte/pull/35068) | Manage dependencies with Poetry. |
+| 5.2.2 | 2024-01-31 | [34619](https://github.com/airbytehq/airbyte/pull/34619) | Events stream concurrent on incremental syncs |
+| 5.2.1 | 2024-01-18 | [34495](https://github.com/airbytehq/airbyte/pull/34495) | Fix deadlock issue |
 | 5.2.0   | 2024-01-18 | [34347](https://github.com/airbytehq/airbyte/pull//34347) | Add new fields invoices and subscription streams. Upgrade the CDK for better memory usage.                                                                                                                                    |
 | 5.1.3   | 2023-12-18 | [33306](https://github.com/airbytehq/airbyte/pull/33306/) | Adding integration tests                                                                                                                                                                                                      |
 | 5.1.2   | 2024-01-04 | [33414](https://github.com/airbytehq/airbyte/pull/33414)  | Prepare for airbyte-lib                                                                                                                                                                                                       |
@@ -319,4 +341,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 | 0.1.10  | 2021-05-28 | [3728](https://github.com/airbytehq/airbyte/pull/3728)    | Update data types to be number instead of int                                                                                                                                                                                 |
 | 0.1.9   | 2021-05-13 | [3367](https://github.com/airbytehq/airbyte/pull/3367)    | Add acceptance tests for connected accounts                                                                                                                                                                                   |
 | 0.1.8   | 2021-05-11 | [3566](https://github.com/airbytehq/airbyte/pull/3368)    | Bump CDK connectors                                                                                                                                                                                                           |
+
+</details>
+
 </HideInUI>

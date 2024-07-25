@@ -48,6 +48,16 @@ The Wikipedia Pageviews source connector supports the following [sync modes](htt
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject        |
+| :------ | :--------- | :-------------------------------------------------------- | :------------- |
+| 0.1.5 | 2024-07-20 | [42242](https://github.com/airbytehq/airbyte/pull/42242) | Update dependencies |
+| 0.1.4 | 2024-07-13 | [41686](https://github.com/airbytehq/airbyte/pull/41686) | Update dependencies |
+| 0.1.3 | 2024-07-10 | [41560](https://github.com/airbytehq/airbyte/pull/41560) | Update dependencies |
+| 0.1.2 | 2024-07-09 | [41081](https://github.com/airbytehq/airbyte/pull/41081) | Update dependencies |
+| 0.1.1 | 2024-05-31 | [38724](https://github.com/airbytehq/airbyte/pull/38724) | Make connector compatible with builder |
 | 0.1.0   | 2022-10-31 | [#18343](https://github.com/airbytehq/airbyte/pull/18343) | Initial commit |
+
+</details>

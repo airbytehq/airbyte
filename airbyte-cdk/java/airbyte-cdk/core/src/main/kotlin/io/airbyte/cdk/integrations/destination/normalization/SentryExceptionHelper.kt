@@ -3,16 +3,15 @@
  */
 package io.airbyte.cdk.integrations.destination.normalization
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * This is copied out of platform
  * (https://github.com/airbytehq/airbyte-platform/blob/main/airbyte-persistence/job-persistence/src/main/java/io/airbyte/persistence/job/errorreporter/SentryExceptionHelper.java#L257)
  */
 object SentryExceptionHelper {
-    private val LOGGER: Logger = LoggerFactory.getLogger(SentryExceptionHelper::class.java)
 
     fun getUsefulErrorMessageAndTypeFromDbtError(stacktrace: String): Map<ErrorMapKeys, String> {
         // the dbt 'stacktrace' is really just all the log messages at 'error' level, stuck
@@ -122,11 +121,7 @@ object SentryExceptionHelper {
                             errorMessageAndType[ErrorMapKeys.ERROR_MAP_MESSAGE_KEY] =
                                 String.format(
                                     "%s",
-                                    stacktraceLines[
-                                            Arrays.stream(stacktraceLines)
-                                                .toList()
-                                                .indexOf(followingLine) + 1
-                                        ]
+                                    stacktraceLines[stacktraceLines.indexOf(followingLine) + 1]
                                         .trim { it <= ' ' }
                                 )
                             errorMessageAndType[ErrorMapKeys.ERROR_MAP_TYPE_KEY] =
@@ -153,9 +148,9 @@ object SentryExceptionHelper {
             } catch (e: ArrayIndexOutOfBoundsException) {
                 // this means our logic is slightly off, our assumption of where error lines are is
                 // incorrect
-                LOGGER.warn(
+                LOGGER.warn {
                     "Failed trying to parse useful error message out of dbt error, defaulting to full stacktrace"
-                )
+                }
             }
         }
         if (errorMessageAndType.isEmpty()) {

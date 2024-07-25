@@ -3,57 +3,74 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "Repository to which the milestone belongs",
       "type": "string"
     },
     "url": {
+      "description": "API endpoint URL for the milestone",
       "type": ["null", "string"]
     },
     "html_url": {
+      "description": "URL to view the milestone in a web browser",
       "type": ["null", "string"]
     },
     "labels_url": {
+      "description": "URL to fetch labels associated with the milestone",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the milestone",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "Unique identifier for the milestone node",
       "type": ["null", "string"]
     },
     "number": {
+      "description": "Numeric identifier for the milestone",
       "type": ["null", "integer"]
     },
     "state": {
+      "description": "Current state of the milestone (open/closed)",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "Title or name of the milestone",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Brief description of the milestone",
       "type": ["null", "string"]
     },
     "creator": {
+      "description": "User who created the milestone",
       "$ref": "user.json"
     },
     "open_issues": {
+      "description": "Total number of open issues within the milestone",
       "type": ["null", "integer"]
     },
     "closed_issues": {
+      "description": "Total number of issues closed within the milestone",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the milestone was created",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp indicating when the milestone was last updated",
       "type": "string",
       "format": "date-time"
     },
     "closed_at": {
+      "description": "Timestamp indicating when the milestone was closed",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "due_on": {
+      "description": "Timestamp indicating when the milestone is due",
       "type": ["null", "string"],
       "format": "date-time"
     }

@@ -241,7 +241,8 @@
           "maxResults": 20,
           "total": 0,
           "worklogs": []
-        }
+        },
+        "PrIssueId": "PullRequestOverallDetails{openCount=1, mergedCount=1, declinedCount=1}"
       },
       "projectId": "10016",
       "projectKey": "TESTKEY13",

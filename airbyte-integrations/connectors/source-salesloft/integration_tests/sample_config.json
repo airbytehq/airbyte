@@ -1,6 +1,7 @@
 {
-  "client_id": "thisisclientid",
-  "client_secret": "thisisclientsecret",
-  "refresh_token": "refreshme",
+  "credentials": {
+    "auth_type": "api_key",
+    "api_key": "ENTER_VALID_API_KEY"
+  },
   "start_date": "2020-11-16T00:00:00Z"
 }

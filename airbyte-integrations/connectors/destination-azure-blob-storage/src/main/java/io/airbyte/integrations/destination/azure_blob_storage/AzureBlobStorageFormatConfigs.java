@@ -31,7 +31,7 @@ public class AzureBlobStorageFormatConfigs {
         return new AzureBlobStorageCsvFormatConfig(formatConfig);
       }
       case JSONL -> {
-        return new AzureBlobStorageJsonlFormatConfig();
+        return new AzureBlobStorageJsonlFormatConfig(formatConfig);
       }
       default -> throw new RuntimeException("Unexpected output format: " + Jsons.serialize(config));
 

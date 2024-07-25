@@ -7,15 +7,18 @@ import logging
 import re
 from abc import ABC
 from datetime import datetime
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import pytz
 import requests
+from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
@@ -45,9 +48,23 @@ class ZendeskConfigException(AirbyteTracedException):
         super(ZendeskConfigException, self).__init__(failure_type=failure_type, **kwargs)
 
 
-class BaseZendeskSupportStream(HttpStream, ABC):
-    raise_on_http_errors = True
+class ZendeskSupportBackoffStrategy(BackoffStrategy):
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+    ) -> Optional[float]:
+        if isinstance(response_or_exception, requests.Response):
+            retry_after = int(to_int(response_or_exception.headers.get("Retry-After", 0)))
+            if retry_after > 0:
+                return retry_after
 
+            # the header X-Rate-Limit returns the amount of requests per minute
+            rate_limit = float(response_or_exception.headers.get("X-Rate-Limit", 0))
+            if rate_limit and rate_limit > 0:
+                return 60.0 / rate_limit
+        return None
+
+
+class BaseZendeskSupportStream(HttpStream, ABC):
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
 
@@ -55,27 +72,8 @@ class BaseZendeskSupportStream(HttpStream, ABC):
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
 
-    @property
-    def max_retries(self) -> Union[int, None]:
-        return 10
-
-    def backoff_time(self, response: requests.Response) -> Union[int, float]:
-        """
-        The rate limit is 700 requests per minute
-        # monitoring-your-request-activity
-        See https://developer.zendesk.com/api-reference/ticketing/account-configuration/usage_limits/
-        The response has a Retry-After header that tells you for how many seconds to wait before retrying.
-        """
-
-        retry_after = int(to_int(response.headers.get("Retry-After", 0)))
-        if retry_after > 0:
-            return retry_after
-
-        # the header X-Rate-Limit returns the amount of requests per minute
-        rate_limit = float(response.headers.get("X-Rate-Limit", 0))
-        if rate_limit and rate_limit > 0:
-            return 60.0 / rate_limit
-        return super().backoff_time(response)
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return ZendeskSupportBackoffStrategy()
 
     @staticmethod
     def str2datetime(str_dt: str) -> datetime:
@@ -121,20 +119,20 @@ class BaseZendeskSupportStream(HttpStream, ABC):
                 if not cursor_date or updated > cursor_date:
                     yield record
 
-    def should_retry(self, response: requests.Response) -> bool:
-        status_code = response.status_code
-        if status_code == 403 or status_code == 404:
-            try:
-                error = response.json().get("error")
-            except requests.exceptions.JSONDecodeError:
-                reason = response.reason
-                error = {"title": f"{reason}", "message": "Received empty JSON response"}
-            self.logger.error(
-                f"Skipping stream {self.name}, error message: {error}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-            )
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        return super().should_retry(response)
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        error_mapping = DEFAULT_ERROR_MAPPING | {
+            403: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support.",
+            ),
+            404: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support.",
+            ),
+        }
+        return HttpStatusErrorHandler(logger=self.logger, max_retries=10, error_mapping=error_mapping)
 
     def read_records(
         self,
@@ -323,11 +321,11 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
     """
 
     @property
-    def response_list_name() -> str:
+    def response_list_name(self) -> str:
         raise NotImplementedError("The `response_list_name` must be implemented")
 
     @property
-    def next_page_field() -> str:
+    def next_page_field(self) -> str:
         raise NotImplementedError("The `next_page_field` varies depending on stream and must be set individually")
 
     @staticmethod
@@ -380,9 +378,9 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
     https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export
 
     @ param response_list_name: the main nested entity to look at inside of response, default = "ticket_events"
-    @ param response_target_entity: nested property inside of `response_list_name`, default = "child_events"
+    @ param response_target_entity: nested property inside `response_list_name`, default = "child_events"
     @ param list_entities_from_event : the list of nested child_events entities to include from parent record
-    @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc]
+    @ param event_type : specific event_type to check ["Audit", "Change", "Comment", etc.]
     @ param sideload_param : parameter variable to include various information to response
     """
 
@@ -493,9 +491,58 @@ class Tickets(SourceZendeskIncrementalExportStream):
         return super().validate_start_time(requested_start_time, value=3)
 
 
+class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_state = None
+        if stream_state:
+            cursor_value = stream_state.get(self.cursor_field)
+            parent_stream_state = {self.parent.cursor_field: pendulum.parse(cursor_value).int_timestamp}
+        else:
+            cursor_value = self._start_date
+
+        parent_records = self.parent.read_records(
+            sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=None, stream_state=parent_stream_state
+        )
+
+        for record in parent_records:
+            yield {"ticket_id": record["id"], self.cursor_field: cursor_value}
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            #  not found in case of deleted ticket
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        error_mapping = DEFAULT_ERROR_MAPPING | {
+            403: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support.",
+            ),
+            404: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="Not found. Ticket was deleted. If the issue persists, contact Zendesk support.",
+            ),
+        }
+        return HttpStatusErrorHandler(logger=self.logger, max_retries=10, error_mapping=error_mapping)
+
+
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
-    Fetch the TicketComments incrementaly from TicketEvents Export stream
+    Fetch the TicketComments incrementally from TicketEvents Export stream
     """
 
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
@@ -539,8 +586,13 @@ class SatisfactionRatings(CursorPaginationZendeskSupportStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.update({"sort_by": "asc"})
+        params = {
+            "start_time": self.get_stream_state_value(stream_state),
+            "page[size]": self.page_size,
+            "sort_by": "created_at",
+        }
+        if next_page_token:
+            params.update(next_page_token)
         return params
 
 
@@ -552,8 +604,40 @@ class TicketForms(TimeBasedPaginationZendeskSupportStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
 
-class TicketMetrics(CursorPaginationZendeskSupportStream):
-    """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
+class TicketMetrics(TicketSubstream):
+    """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/#show-ticket-metrics"""
+
+    response_list_name = "ticket_metric"
+
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return f"tickets/{stream_slice['ticket_id']}/metrics"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        """try to select relevant data only"""
+
+        try:
+            data = response.json().get(self.response_list_name or self.name) or {}
+        except requests.exceptions.JSONDecodeError:
+            data = {}
+
+        # no data in case of http errors
+        if data:
+            cursor_date = (stream_slice or {}).get(self.cursor_field)
+            updated = data[self.cursor_field]
+            if not cursor_date or updated >= cursor_date:
+                yield data
 
 
 class TicketSkips(CursorPaginationZendeskSupportStream):
@@ -642,6 +726,41 @@ class TicketAudits(IncrementalZendeskSupportStream):
                 self.logger.error(f"Skipping stream `{self.name}`. Timed out waiting for response: {e.response.text}...")
             else:
                 raise e
+
+    def _validate_response(self, response: requests.Response, stream_state: Mapping[str, Any]) -> bool:
+        """
+        Ticket Audits endpoint doesn't allow filtering by date, but all data sorted by descending.
+        This method used to stop making requests once we receive a response with cursor value greater than actual cursor.
+        This action decreases sync time as we don't filter extra records in parse response.
+        """
+        data = response.json().get(self.response_list_name, [{}])
+        created_at = data[0].get(self.cursor_field, "")
+        cursor_date = (stream_state or {}).get(self.cursor_field) or self._start_date
+        return created_at >= cursor_date
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+        while not pagination_complete:
+            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
+            yield from records_generator_fn(request, response, stream_state, stream_slice)
+
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+            if not self._validate_response(response, stream_state):
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
 
 class Tags(FullRefreshZendeskSupportStream):

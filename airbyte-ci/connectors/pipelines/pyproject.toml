@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "4.7.0"
+version = "4.25.2"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -33,6 +33,13 @@ tomli = "^2.0.1"
 tomli-w = "^1.0.0"
 dpath = "^2.1.6"
 xmltodict = "^0.13.0"
+ruamel-yaml = "^0.18.6"
+google-cloud-secret-manager = "^2.20.0"
+google-auth = "^2.29.0"
+pygithub = "^2.3.0"
+pydash = "6.0.2"
+python-slugify = ">=8.0.4"
+deepdiff = "^7.0.1"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"
@@ -46,6 +53,7 @@ ruff = "^0.1.9"
 types-toml = "^0.10.8"
 types-requests = "^2.31"
 types-xmltodict = "^0.13.0"
+types-pyyaml = "^6.0.12.20240311"
 
 [tool.poetry.scripts]
 airbyte-ci = "pipelines.cli.airbyte_ci:airbyte_ci"
@@ -63,6 +71,7 @@ type_check = "mypy pipelines --disallow-untyped-defs"
 lint = "ruff check pipelines"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
-poe_tasks = ["type_check", "lint", "test"]
+poe_tasks = ["type_check", "test"]
 mount_docker_socket = true

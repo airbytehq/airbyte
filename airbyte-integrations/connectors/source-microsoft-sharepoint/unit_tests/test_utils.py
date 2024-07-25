@@ -1,11 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+
 from datetime import datetime, timedelta
 from http import HTTPStatus
 from unittest.mock import Mock, patch
 
 import pytest
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException
 from source_microsoft_sharepoint.utils import execute_query_with_retry, filter_http_urls
 
 

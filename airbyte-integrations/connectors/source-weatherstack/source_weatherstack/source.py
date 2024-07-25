@@ -9,13 +9,12 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 from .constants import url_base
 
 
 class CurrentWeather(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -63,7 +62,7 @@ class CurrentWeather(HttpStream):
 
 
 class Weatherstack(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -111,7 +110,7 @@ class Weatherstack(HttpStream):
 
 
 class IncrementalWeatherstack(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -159,7 +158,7 @@ class IncrementalWeatherstack(HttpStream):
 
 
 class Forecast(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -207,7 +206,7 @@ class Forecast(HttpStream):
 
 
 class Historical(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -255,7 +254,7 @@ class Historical(HttpStream):
 
 
 class LocationLookup(HttpStream):
-    url_base = "http://api.weatherstack.com/"
+    url_base = "https://api.weatherstack.com/"
 
     # Set this as a noop.
     primary_key = None
@@ -320,7 +319,7 @@ class SourceWeatherstack(AbstractSource):
             return False, repr(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = NoAuth()
+        auth = None
         streams = [
             CurrentWeather(authenticator=auth, config=config),
             Forecast(authenticator=auth, config=config),

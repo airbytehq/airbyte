@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface AzureBlobStorageFormatConfig {
 
+  boolean isFileExtensionRequired();
+
   AzureBlobStorageFormat getFormat();
 
   static String withDefault(final JsonNode config, final String property, final String defaultValue) {

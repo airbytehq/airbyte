@@ -84,7 +84,7 @@ class ConnectorDependenciesMetadata(BaseModel):
     connector_repository: str
     connector_version: str
     connector_definition_id: str
-    dependencies: Dict[str, str]
+    dependencies: List[Dict[str, str]]
     generation_time: datetime = datetime.utcnow()
 
 
@@ -100,7 +100,9 @@ class UploadDependenciesToMetadataService(Step):
         ], "This step can only run for Python connectors."
         built_container = built_containers_per_platform[LOCAL_BUILD_PLATFORM]
         pip_freeze_output = await built_container.with_exec(["pip", "freeze"], skip_entrypoint=True).stdout()
-        dependencies = {line.split("==")[0]: line.split("==")[1] for line in pip_freeze_output.splitlines() if "==" in line}
+        dependencies = [
+            {"package_name": line.split("==")[0], "version": line.split("==")[1]} for line in pip_freeze_output.splitlines() if "==" in line
+        ]
         connector_technical_name = self.context.connector.technical_name
         connector_version = self.context.metadata["dockerImageTag"]
         dependencies_metadata = ConnectorDependenciesMetadata(
@@ -121,7 +123,7 @@ class UploadDependenciesToMetadataService(Step):
             file,
             key,
             self.context.metadata_bucket_name,
-            self.context.metadata_service_gcs_credentials_secret,
+            self.context.metadata_service_gcs_credentials,
             flags=['--cache-control="no-cache"'],
         )
         if exit_code != 0:
@@ -280,7 +282,7 @@ class UploadSpecToCache(Step):
                 file,
                 key,
                 self.context.spec_cache_bucket_name,
-                self.context.spec_cache_gcs_credentials_secret,
+                self.context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
             if exit_code != 0:
@@ -307,9 +309,9 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     metadata_upload_step = MetadataUpload(
         context=context,
-        metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
-        docker_hub_username_secret=context.docker_hub_username_secret,
-        docker_hub_password_secret=context.docker_hub_password_secret,
+        metadata_service_gcs_credentials=context.metadata_service_gcs_credentials,
+        docker_hub_username=context.docker_hub_username,
+        docker_hub_password=context.docker_hub_password,
         metadata_bucket_name=context.metadata_bucket_name,
         pre_release=context.pre_release,
         pre_release_tag=context.docker_image_tag,

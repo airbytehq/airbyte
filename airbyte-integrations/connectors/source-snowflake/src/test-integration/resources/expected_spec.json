@@ -15,6 +15,7 @@
             "title": "OAuth2.0",
             "order": 0,
             "required": ["client_id", "client_secret", "auth_type"],
+            "airbyte_hidden": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -124,7 +125,6 @@
       }
     }
   },
-  "supported_destination_sync_modes": [],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["credentials", "auth_type"],

@@ -77,3 +77,16 @@ class TestCheck:
         # Assert
         assert all(result.status == CheckStatus.SKIPPED for result in results)
         assert all(result.message == "Check does not apply to released connectors" for result in results)
+
+    def test_skip_when_connector_support_level_does_not_apply_to(self, mocker):
+        # Arrange
+        connector = mocker.MagicMock(support_level="community")
+
+        # Act
+        results = []
+        for check in ENABLED_CHECKS:
+            if check.applies_to_connector_support_levels and connector.support_level not in check.applies_to_connector_support_levels:
+                results.append(check.run(connector))
+
+        # Assert
+        assert all(result.status == CheckStatus.SKIPPED for result in results)

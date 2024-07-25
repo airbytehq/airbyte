@@ -11,20 +11,21 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.writer.BaseGcsWriter
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.create
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class GcsJsonlWriter(
     config: GcsDestinationConfig,
@@ -40,16 +41,13 @@ class GcsJsonlWriter(
 
     init {
         val outputFilename: String =
-            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, S3Format.JSONL)
+            BaseGcsWriter.Companion.getOutputFilename(uploadTimestamp, FileUploadFormat.JSONL)
         outputPath = java.lang.String.join("/", outputPrefix, outputFilename)
 
         fileLocation = String.format("gs://%s/%s", config.bucketName, outputPath)
-        LOGGER.info(
-            "Full GCS path for stream '{}': {}/{}",
-            stream.name,
-            config.bucketName,
-            outputPath
-        )
+        LOGGER.info {
+            "Full GCS path for stream '${stream.name}': ${config.bucketName}/$outputPath"
+        }
 
         this.uploadManager = create(config.bucketName, outputPath, s3Client).get()
 
@@ -84,11 +82,10 @@ class GcsJsonlWriter(
         uploadManager.abort()
     }
 
-    override val fileFormat: S3Format
-        get() = S3Format.JSONL
+    override val fileFormat: FileUploadFormat
+        get() = FileUploadFormat.JSONL
 
     companion object {
-        protected val LOGGER: Logger = LoggerFactory.getLogger(GcsJsonlWriter::class.java)
 
         private val MAPPER: ObjectMapper = MoreMappers.initMapper()
     }

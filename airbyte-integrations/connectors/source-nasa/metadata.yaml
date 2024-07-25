@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a8667d7-7978-43cd-ba4d-d32cbd478971
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.10
   dockerRepository: airbyte/source-nasa
   githubIssueLabel: source-nasa
   icon: nasa.svg
@@ -27,4 +27,16 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  # Disable acceptance tests for now
+  # No/Low Airbyte cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-NASA__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"
