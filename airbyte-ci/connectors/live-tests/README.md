@@ -144,7 +144,6 @@ poetry run pytest src/live_tests \
  --config-path=<path-to-config-path> \
  --catalog-path=<path-to-catalog-path> \
  --target-version=dev \
- --control-version=latest \
  --pr-url=<PR-URL> # The URL of the PR you are testing
 ```
 
@@ -156,7 +155,6 @@ The live connection objects will be fetched.
  poetry run pytest src/live_tests \
  --connector-image=airbyte/source-faker \
  --target-version=dev \
- --control-version=latest \
   --pr-url=<PR-URL> # The URL of the PR you are testing
 ```
 
@@ -263,8 +261,8 @@ The traffic recorded on the control connector is passed to the target connector 
 
 | Argument                   | Description                                                                                                                                  | Required/Optional |
 |----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------| ----------------- |
-| `--connector-image`        | Docker image name of the connector to debug (e.g., `airbyte/source-faker:latest`, `airbyte/source-faker:dev`).                               | Required          |
-| `--control-version`        | Version of the control connector for regression testing.                                                                                     | Required          |
+| `--connector-image`        | Docker image name of the connector to debug (e.g., `airbyte/source-faker`, `airbyte/source-faker`).                                          | Required          |
+| `--control-version`        | Version of the control connector for regression testing. Must be an unambiguous connector version (e.g. 1.2.3 rather than `latest`)          | Required          |
 | `--target-version`         | Version of the connector being tested. (Defaults to dev)                                                                                     | Optional          |
 | `--pr-url`                 | URL of the pull request being tested.                                                                                                        | Required          |
 | `--connection-id`          | ID of the connection for live testing. If not provided, a prompt will appear to choose.                                                      | Optional          |
@@ -277,8 +275,17 @@ The traffic recorded on the control connector is passed to the target connector 
 | `--stream`                 | Name of the stream to test. Can be specified multiple times to test multiple streams.                                                        | Optional          |
 | `--should-read-with-state` | Specify whether to read with state. If not provided, a prompt will appear to choose.                                                         | Optional          |
 | `--test-evaluation-mode`   | Whether to run tests in "diagnostic" mode or "strict" mode. In diagnostic mode, eligible tests will always pass unless there's an exception. | Optional          |
+| `--connection-subset`      | The subset of connections to select from. Possible values are "sandboxes" or "all" (defaults to sandboxes).                                  | Optional          |
 
 ## Changelog
+
+### 0.18.1
+
+Fix extra argument.
+
+### 0.18.0
+
+Add support for selecting from a subset of connections.
 
 ### 0.17.8
 

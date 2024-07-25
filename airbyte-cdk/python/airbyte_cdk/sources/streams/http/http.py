@@ -12,14 +12,14 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget
-from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
+from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
-from airbyte_cdk.sources.types import Record
+from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.sources.utils.types import JsonType
 from deprecated import deprecated
 from requests.auth import AuthBase
@@ -28,7 +28,7 @@ from requests.auth import AuthBase
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
-class HttpStream(Stream, ABC):
+class HttpStream(Stream, CheckpointMixin, ABC):
     """
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
     """
@@ -37,6 +37,7 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     def __init__(self, authenticator: Optional[AuthBase] = None, api_budget: Optional[APIBudget] = None):
+        self._exit_on_rate_limit: bool = False
         self._http_client = HttpClient(
             name=self.name,
             logger=self.logger,
@@ -47,6 +48,25 @@ class HttpStream(Stream, ABC):
             backoff_strategy=self.get_backoff_strategy(),
             message_repository=InMemoryMessageRepository(),
         )
+
+        # Stream's with at least one cursor_field is incremental and thus a superior sync than RFR. We also cannot
+        # assume that streams overriding read_records() will call the parent implementation
+        # which
+        if len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+            self.cursor = ResumableFullRefreshCursor()
+        else:
+            self.cursor = None
+
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        """
+        :return: False if the stream will retry endlessly when rate limited
+        """
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self._exit_on_rate_limit = value
 
     @property
     def cache_filename(self) -> str:
@@ -109,10 +129,6 @@ class HttpStream(Stream, ABC):
         Override if needed. Specifies factor for backoff policy.
         """
         return 5
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -313,9 +329,44 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
+        # A cursor_field indicates this is an incremental stream which offers better checkpointing than RFR enabled via the cursor
+        if self.cursor_field or not isinstance(self.get_cursor(), ResumableFullRefreshCursor):
+            yield from self._read_pages(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+        else:
+            yield from self._read_single_page(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        cursor = self.get_cursor()
+        if cursor:
+            return cursor.get_stream_state()  # type: ignore
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.set_initial_state(value)
+        self._state = value
+
+    def get_cursor(self) -> Optional[Cursor]:
+        # I don't love that this is semi-stateful but not sure what else to do. We don't know exactly what type of cursor to
+        # instantiate when creating the class. We can make a few assumptions like if there is a cursor_field which implies
+        # incremental, but we don't know until runtime if this is a substream. This makes for a slightly awkward getter that
+        # is stateful because `has_multiple_slices` can be reassigned at runtime after we inspect slices.
+        # This code temporarily gates RFR off for substreams by always removing the RFR cursor if there are multiple slices
+        if self.has_multiple_slices:
+            return None
+        else:
+            return self.cursor
 
     def _read_pages(
         self,
@@ -339,6 +390,48 @@ class HttpStream(Stream, ABC):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
+    def _read_single_page(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        partition, cursor_slice, remaining_slice = self._extract_slice_fields(stream_slice=stream_slice)
+        stream_state = stream_state or {}
+        next_page_token = cursor_slice or None
+
+        request, response = self._fetch_next_page(remaining_slice, stream_state, next_page_token)
+        yield from records_generator_fn(request, response, stream_state, remaining_slice)
+
+        next_page_token = self.next_page_token(response) or {"__ab_full_refresh_sync_complete": True}
+
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=partition))
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
+    @staticmethod
+    def _extract_slice_fields(stream_slice: Optional[Mapping[str, Any]]) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+        if not stream_slice:
+            return {}, {}, {}
+
+        if isinstance(stream_slice, StreamSlice):
+            partition = stream_slice.partition
+            cursor_slice = stream_slice.cursor_slice
+            remaining = {k: v for k, v in stream_slice.items()}
+        else:
+            # RFR streams that implement stream_slices() to generate stream slices in the legacy mapping format are converted into a
+            # structured stream slice mapping by the LegacyCursorBasedCheckpointReader. The structured mapping object has separate
+            # fields for the partition and cursor_slice value
+            partition = stream_slice.get("partition", {})
+            cursor_slice = stream_slice.get("cursor_slice", {})
+            remaining = {key: val for key, val in stream_slice.items() if key != "partition" and key != "cursor_slice"}
+        return partition, cursor_slice, remaining
+
     def _fetch_next_page(
         self,
         stream_slice: Optional[Mapping[str, Any]] = None,
@@ -359,6 +452,7 @@ class HttpStream(Stream, ABC):
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             dedupe_query_params=True,
             log_formatter=self.get_log_formatter(),
+            exit_on_rate_limit=self.exit_on_rate_limit,
         )
 
         return request, response
@@ -378,6 +472,8 @@ class HttpSubStream(HttpStream, ABC):
         """
         super().__init__(**kwargs)
         self.parent = parent
+        self.has_multiple_slices = True  # Substreams are based on parent records which implies there are multiple slices
+        self.cursor = None  # todo: HttpSubStream does not currently support RFR so this is set to None
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -416,29 +512,43 @@ class HttpStreamAdapterHttpStatusErrorHandler(HttpStatusErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, Exception):
             return super().interpret_response(response_or_exception)
-        should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
-        if should_retry:
-            return ErrorResolution(
-                response_action=ResponseAction.RETRY,
-                failure_type=FailureType.transient_error,
-                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
-            )
-        else:
-            if response_or_exception.ok:  # type: ignore # noqa
+        elif isinstance(response_or_exception, requests.Response):
+            should_retry = self.stream.should_retry(response_or_exception)  # type: ignore # noqa
+            if should_retry:
+                if response_or_exception.status_code == 429:
+                    return ErrorResolution(
+                        response_action=ResponseAction.RATE_LIMITED,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
+                    )
                 return ErrorResolution(
-                    response_action=ResponseAction.SUCCESS,
-                    failure_type=None,
-                    error_message=None,
-                )
-            if self.stream.raise_on_http_errors:
-                return ErrorResolution(
-                    response_action=ResponseAction.FAIL,
+                    response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
+                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",  # type: ignore[union-attr]
                 )
             else:
-                return ErrorResolution(
-                    response_action=ResponseAction.IGNORE,
-                    failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
-                )
+                if response_or_exception.ok:  # type: ignore # noqa
+                    return ErrorResolution(
+                        response_action=ResponseAction.SUCCESS,
+                        failure_type=None,
+                        error_message=None,
+                    )
+                if self.stream.raise_on_http_errors:
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Unexpected error. Failed.",  # type: ignore[union-attr]
+                    )
+                else:
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=FailureType.transient_error,
+                        error_message=f"Response status code: {response_or_exception.status_code}. Ignoring...",  # type: ignore[union-attr]
+                    )
+        else:
+            self._logger.error(f"Received unexpected response type: {type(response_or_exception)}")
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message=f"Received unexpected response type: {type(response_or_exception)}",
+            )

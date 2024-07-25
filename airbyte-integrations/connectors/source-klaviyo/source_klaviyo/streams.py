@@ -12,7 +12,11 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from requests import Response
+from source_klaviyo.components.klaviyo_backoff_strategy import KlaviyoBackoffStrategy
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -111,15 +115,11 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
         current_stream_state[self.cursor_field] = latest_cursor.isoformat()
         return current_stream_state
 
-    def backoff_time(self, response: Response) -> Optional[float]:
-        if response.status_code == 429:
-            retry_after = response.headers.get("Retry-After")
-            retry_after = float(retry_after) if retry_after else None
-            if retry_after and retry_after >= self.max_time:
-                raise KlaviyoBackoffError(
-                    f"Stream {self.name} has reached rate limit with 'Retry-After' of {retry_after} seconds, exit from stream."
-                )
-            return retry_after
+    def get_backoff_strategy(self) -> BackoffStrategy:
+        return KlaviyoBackoffStrategy(max_time=self.max_time, name=self.name)
+
+    def get_error_handler(self) -> ErrorHandler:
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=DEFAULT_ERROR_MAPPING, max_retries=self.max_retries)
 
     def read_records(
         self,
@@ -233,8 +233,6 @@ class Campaigns(IncrementalKlaviyoStreamWithArchivedRecords):
 
 
 class CampaignsDetailed(Campaigns):
-    raise_on_http_errors = False
-
     def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         for record in super().parse_response(response, **kwargs):
             yield self._transform_record(record)
@@ -246,11 +244,12 @@ class CampaignsDetailed(Campaigns):
 
     def _set_recipient_count(self, record: Mapping[str, Any]) -> None:
         campaign_id = record["id"]
-        recipient_count_request = self._create_prepared_request(
-            path=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
+        _, recipient_count_response = self._http_client.send_request(
+            url=f"{self.url_base}campaign-recipient-estimations/{campaign_id}",
+            request_kwargs={},
             headers=self.request_headers(),
+            http_method="GET",
         )
-        recipient_count_response = self._send_request(recipient_count_request, {})
         record["estimated_recipient_count"] = (
             recipient_count_response.json().get("data", {}).get("attributes", {}).get("estimated_recipient_count", 0)
         )
@@ -258,11 +257,18 @@ class CampaignsDetailed(Campaigns):
     def _set_campaign_message(self, record: Mapping[str, Any]) -> None:
         message_id = record.get("attributes", {}).get("message")
         if message_id:
-            campaign_message_request = self._create_prepared_request(
-                path=f"{self.url_base}campaign-messages/{message_id}", headers=self.request_headers()
+            _, campaign_message_response = self._http_client.send_request(
+                url=f"{self.url_base}campaign-messages/{message_id}", request_kwargs={}, headers=self.request_headers(), http_method="GET"
             )
-            campaign_message_response = self._send_request(campaign_message_request, {})
             record["campaign_message"] = campaign_message_response.json().get("data")
+
+    def get_error_handler(self) -> ErrorHandler:
+
+        error_mapping = DEFAULT_ERROR_MAPPING | {
+            404: ErrorResolution(ResponseAction.IGNORE, FailureType.config_error, "Resource not found. Ignoring.")
+        }
+
+        return HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping, max_retries=self.max_retries)
 
 
 class Flows(IncrementalKlaviyoStreamWithArchivedRecords):

@@ -53,7 +53,7 @@ class _MockStream(Stream):
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for partition in self._slice_to_records.keys():
-            yield {"partition": partition}
+            yield {"partition_key": partition}
 
     def read_records(
         self,
@@ -62,7 +62,7 @@ class _MockStream(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._slice_to_records[stream_slice["partition"]]
+        yield from self._slice_to_records[stream_slice["partition_key"]]
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._mocked_json_schema
@@ -92,7 +92,7 @@ class _MockIncrementalStream(_MockStream, CheckpointMixin):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         cursor = self.cursor_field[0]
-        for record in self._slice_to_records[stream_slice["partition"]]:
+        for record in self._slice_to_records[stream_slice["partition_key"]]:
             yield record
             if cursor not in self._state:
                 self._state[cursor] = record.get(cursor)
@@ -186,8 +186,8 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     )
     internal_config = InternalConfig()
     records = [
-        {"id": 1, "partition": 1},
-        {"id": 2, "partition": 1},
+        {"id": 1, "partition_key": 1},
+        {"id": 2, "partition_key": 1},
     ]
     slice_to_partition = {1: records}
     slice_logger = DebugSliceLogger()
@@ -201,7 +201,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
             type=MessageType.LOG,
             log=AirbyteLogMessage(
                 level=Level.INFO,
-                message='slice:{"partition": 1}',
+                message='slice:{"partition_key": 1}',
             ),
         ),
         *records,

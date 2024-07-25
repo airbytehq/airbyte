@@ -157,7 +157,7 @@ abstract class AzureBlobStorageStreamCopier(
     }
 
     @Throws(Exception::class)
-    override fun createDestinationTable(): String? {
+    override fun createDestinationTable(): String {
         @Suppress("DEPRECATION") val destTableName = nameTransformer.getRawTableName(streamName)
         LOGGER.info { "Preparing table $destTableName in destination." }
         sqlOperations.createTableIfNotExists(db, schemaName, destTableName)
@@ -167,7 +167,7 @@ abstract class AzureBlobStorageStreamCopier(
     }
 
     @Throws(Exception::class)
-    override fun generateMergeStatement(destTableName: String?): String {
+    override fun generateMergeStatement(destTableName: String): String {
         LOGGER.info {
             "Preparing to merge tmp table $tmpTableName to dest table: $destTableName, schema: $schemaName, in destination."
         }
