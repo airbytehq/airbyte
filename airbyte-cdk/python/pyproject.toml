@@ -81,6 +81,12 @@ file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfmi
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
+[tool.ruff]
+# Setting python version to at least 3.10 avoids `from __future__ import annotations`.
+target-version = "py310"
+# This is consistent with airbytehq/airbyte root pyproject.toml Black rule defined.
+line-length = 140
+
 [tool.poe.tasks]
 # Build tasks
 assemble = {cmd = "bin/generate-component-manifest-dagger.sh", help = "Generate component manifest files."}
