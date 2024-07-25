@@ -36,6 +36,7 @@ __pycache__
 .eggs
 .venv
 .mypy_cache
+.ruff_cache
 .ipynb_checkpoints
 .pytest_
 
