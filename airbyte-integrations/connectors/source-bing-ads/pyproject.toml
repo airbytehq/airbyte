@@ -20,7 +20,7 @@ python = "^3.9,<3.12"
 bingads = "==13.0.18.1"
 pandas = "==2.2.0"
 urllib3 = "==1.26.18"
-airbyte-cdk = "0.84.0"
+airbyte-cdk = "^3"
 cached-property = "==1.5.2"
 
 [tool.poetry.scripts]
