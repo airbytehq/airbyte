@@ -553,8 +553,13 @@ definitions:
                 to continue and retry 500 - server-side error, should retry after 60
                 sec. "
               response_filters:
-                - http_codes: [400, 500]
+                - http_codes: [400]
                   action: RETRY
+                  failure_type: transient_error
+                  error_message: "A scroll (export) job is already in progress for this Intercom account, causing the request to fail. Only one active scroll per Intercom account is allowed; ensure no overlap by limiting active connections or scheduling jobs appropriately."
+                - http_codes: [500]
+                  action: RETRY
+                  failure_type: transient_error
               backoff_strategies:
                 - type: ConstantBackoffStrategy
                   backoff_time_in_seconds: 60
