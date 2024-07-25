@@ -573,7 +573,7 @@ For Python connectors, sets the `airbyte-cdk` dependency in `pyproject.toml` and
 
 | Argument      | Description                                             |
 | ------------- | ------------------------------------------------------- |
-| `CDK_VERSION` | CDK version to set (default to the most recent version) |
+| `CDK_VERSION` | CDK version constraint to set (default to `^{most_recent_patch_version}`) |
 
 #### Notes
 
