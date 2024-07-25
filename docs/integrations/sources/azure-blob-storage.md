@@ -250,8 +250,7 @@ The Azure Blob Storage connector should not encounter any [Microsoft API limitat
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| 0.6.0 | 2024-07-16 | [42016](https://github.com/airbytehq/airbyte/pull/42016) | Migrate to CDK v3.5.3 |
-| 0.5.0 | 2024-07-16 | [42014](https://github.com/airbytehq/airbyte/pull/42014) | Migrate to CDK v2.4.0 |
+| 0.5.0 | 2024-07-26 | [42016](https://github.com/airbytehq/airbyte/pull/42016) | Migrate to CDK v3.9.3 |
 | 0.4.4 | 2024-06-06 | [39275](https://github.com/airbytehq/airbyte/pull/39275) | [autopull] Upgrade base image to v1.2.2 |
 | 0.4.3 | 2024-05-29 | [38701](https://github.com/airbytehq/airbyte/pull/38701) | Avoid error on empty stream when running discover |
 | 0.4.2 | 2024-04-23 | [37504](https://github.com/airbytehq/airbyte/pull/37504) | Update specification |
