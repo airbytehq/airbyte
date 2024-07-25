@@ -134,8 +134,6 @@ class BigQueryDestination : BaseConnector(), Destination {
         // TODO: Need to add a step in this method to first check permissions
         //  using testIamPermissions before trying the actual copying of data
 
-        val datasetId = BigQueryUtils.getDatasetId(config)
-
         val datasetLocation = BigQueryUtils.getDatasetLocation(config)
         val bigquery = getBigQuery(config)
 
