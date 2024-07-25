@@ -6,9 +6,8 @@
 from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
-from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic.v1 import AnyUrl, BaseModel, ConfigDict, Field
 
 
 class Oauth2(BaseModel):
@@ -30,7 +29,7 @@ class Oauth2(BaseModel):
         airbyte_secret=True,
     )
 
-    model_config = {"title": "Authenticate via Oauth2", "discriminator": "auth_type"}
+    model_config = ConfigDict(title="Authenticate via Oauth2", discriminator="auth_type")
 
 
 class StorageAccountKey(BaseModel):
@@ -44,7 +43,7 @@ class StorageAccountKey(BaseModel):
         order=3,
     )
 
-    model_config = {"title": "Authenticate via Storage Account Key", "discriminator": "auth_type"}
+    model_config = ConfigDict(title="Authenticate via Storage Account Key", discriminator="auth_type")
 
 
 class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
