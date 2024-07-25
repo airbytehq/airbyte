@@ -1,5 +1,29 @@
 # Changelog
 
+## 3.9.3
+add name property to http_client for convenience
+
+## 3.9.2
+low-code: fix record selector factory when using custom components
+
+## 3.9.1
+ fix OOM on predicate for streamable responses
+
+## 3.9.0
+low code: add new Decoders: JsonlDecoder, IterableDecoder
+
+## 3.8.2
+low-code: fix overwrite for default backoff strategy
+
+## 3.8.1
+CDK: fix handling for rate limit errors when checking connection
+
+## 3.8.0
+resumable full refresh: Automatically apply RFR to streams (not including substreams) that are not incremental and implement next_page_token
+
+## 3.7.0
+Deprecate AvailabilityStrategy
+
 ## 3.6.0
 CDK: add not exiting when rate limited
 

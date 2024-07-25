@@ -207,9 +207,9 @@ class PostgresDestination :
         fun main(args: Array<String>) {
             addThrowableForDeinterpolation(PSQLException::class.java)
             val destination = sshWrappedDestination()
-            LOGGER.info("starting destination: {}", PostgresDestination::class.java)
+            LOGGER.info("starting destination-postgres: {}", PostgresDestination::class.java)
             IntegrationRunner(destination).run(args)
-            LOGGER.info("completed destination: {}", PostgresDestination::class.java)
+            LOGGER.info("completed destination-postgres: {}", PostgresDestination::class.java)
         }
     }
 }

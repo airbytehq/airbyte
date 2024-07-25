@@ -609,6 +609,14 @@ class JsonDecoder(BaseModel):
     type: Literal['JsonDecoder']
 
 
+class JsonlDecoder(BaseModel):
+    type: Literal['JsonlDecoder']
+
+
+class IterableDecoder(BaseModel):
+    type: Literal['IterableDecoder']
+
+
 class MinMaxDatetime(BaseModel):
     type: Literal['MinMaxDatetime']
     datetime: str = Field(
@@ -920,6 +928,10 @@ class WaitUntilTimeFromHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class Decoder(BaseModel):
+    __root__: Any
+
+
 class AddedFieldDefinition(BaseModel):
     type: Literal['AddedFieldDefinition']
     path: List[str] = Field(
@@ -1028,7 +1040,7 @@ class CursorPagination(BaseModel):
         ],
         title='Stop Condition',
     )
-    decoder: Optional[JsonDecoder] = Field(
+    decoder: Optional[Decoder] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
         title='Decoder',
@@ -1188,10 +1200,8 @@ class DpathExtractor(BaseModel):
         ],
         title='Field Path',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None,
-        description='Component decoding the response so records can be extracted.',
-        title='Decoder',
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None, title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1582,6 +1592,11 @@ class SimpleRetriever(BaseModel):
         [],
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
+    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 

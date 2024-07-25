@@ -11,10 +11,12 @@ package io.airbyte.commons.exceptions
 class TransientErrorException : RuntimeException {
     val internalMessage: String
 
+    @JvmOverloads
     constructor(displayMessage: String, internalMessage: String = "") : super(displayMessage) {
         this.internalMessage = internalMessage
     }
 
+    @JvmOverloads
     constructor(
         displayMessage: String,
         exception: Throwable?,
