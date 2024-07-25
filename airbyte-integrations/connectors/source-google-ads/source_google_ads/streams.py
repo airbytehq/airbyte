@@ -123,7 +123,12 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
     def get_current_state(self, customer_id, default=None):
         default = default or self.state.get(self.cursor_field)
-        return self.state.get(customer_id, {}).get(self.cursor_field) or default
+        if self.state is not None:
+            customer = self.state.get(customer_id, {})
+            if isinstance(customer, MutableMapping):
+                return customer.get(self.cursor_field)
+        else:
+            return default
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
