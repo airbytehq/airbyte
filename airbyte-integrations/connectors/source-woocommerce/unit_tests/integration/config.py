@@ -1,4 +1,6 @@
-from typing import MutableMapping, Any
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from typing import Any, MutableMapping
 
 
 class ConfigBuilder:
