@@ -8,8 +8,7 @@ from airbyte_cdk.sources.streams import Stream
 
 
 class HardcodedStream(Stream, ABC):
-    primary_key = "id"
-    cursor_field = "updated_at"
+    primary_key = None
     sample_record = None
 
     def __init__(self, count: int, **kwargs):
@@ -111,4 +110,14 @@ class Customers(HardcodedStream):
             "default": True,
         },
         "shop_url": "airbyte-integration-test",
+    }
+
+
+class DummyFields(HardcodedStream):
+    sample_record = {
+        "field1": "valuevaluevaluevaluevalue1",
+        "field2": "valuevaluevaluevaluevalue1",
+        "field3": "valuevaluevaluevaluevalue1",
+        "field4": "valuevaluevaluevaluevalue1",
+        "field5": "valuevaluevaluevaluevalue1",
     }

@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
-from .streams import Customers, Products
+from .streams import Customers, DummyFields, Products
 
 DEFAULT_COUNT = 1_000
 
@@ -22,4 +22,4 @@ class SourceHardcodedRecords(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else DEFAULT_COUNT
 
-        return [Products(count), Customers(count)]
+        return [Products(count), Customers(count), DummyFields(count)]
