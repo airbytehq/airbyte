@@ -12,11 +12,13 @@ from pydantic import AnyUrl, BaseModel, Field
 
 
 class Oauth2(BaseModel):
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Authenticate via Oauth2"
         discriminator = "auth_type"
 
-    auth_type: Literal["oauth2"] = Field("oauth2", const=True)
+    auth_type: Literal["oauth2"] = "oauth2"
     tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft Azure Application user", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",
@@ -36,11 +38,13 @@ class Oauth2(BaseModel):
 
 
 class StorageAccountKey(BaseModel):
+    # TODO[pydantic]: The `Config` class inherits from another class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config(OneOfOptionConfig):
         title = "Authenticate via Storage Account Key"
         discriminator = "auth_type"
 
-    auth_type: Literal["storage_account_key"] = Field("storage_account_key", const=True)
+    auth_type: Literal["storage_account_key"] = "storage_account_key"
     azure_blob_storage_account_key: str = Field(
         title="Azure Blob Storage account key",
         description="The Azure blob storage account key.",
