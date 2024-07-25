@@ -38,7 +38,11 @@ def logger():
 
 @pytest.fixture
 def basic_config():
-    return {"shop": "test_shop", "credentials": {"auth_method": "api_password", "api_password": "api_password"}}
+    return {
+        "shop": "test_shop", 
+        "credentials": {"auth_method": "api_password", "api_password": "api_password"},
+        "shop_id": 0,
+    }
 
 
 @pytest.fixture
@@ -48,6 +52,7 @@ def auth_config():
         "start_date": "2023-01-01",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "authenticator": None,
+        
     }
 
 

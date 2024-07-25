@@ -177,9 +177,14 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the check point interval to the limit of the records output
     state_checkpoint_interval = 250
-    # guarantee for the NestedSubstreams to emit the STATE
-    # when we have the abnormal STATE distance between Parent and Substream
-    filter_by_state_checkpoint = False
+
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        """
+        This filtering flag stands to guarantee for the NestedSubstreams to emit the STATE correctly,
+        when we have the abnormal STATE distance between Parent and Substream
+        """
+        return False
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
@@ -223,7 +228,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     def should_checkpoint(self, index: int) -> bool:
         return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
-    # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
+    # Parse the `records` with respect to the `stream_state` for the `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(
@@ -630,23 +635,23 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     parent_stream_class: Optional[Union[ShopifyStream, IncrementalShopifyStream]] = None
 
-    filter_by_state_checkpoint = True
-
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
-        # init BULK Query instance, pass `shop_id` from config
-        self.query: ShopifyBulkQuery = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
             http_client=self.bulk_http_client,
             base_url=f"{self.url_base}{self.path()}",
-            query=self.query,
+            query=self.bulk_query(config),
             job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
             job_size=config.get("bulk_window_in_days", 30.0),
             # provide the job checkpoint interval value, default value is 200k lines collected
             job_checkpoint_interval=config.get("job_checkpoint_interval", 200_000),
         )
+
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        return self.job_manager._supports_checkpointing
 
     @property
     def bulk_http_client(self) -> HttpClient:
@@ -731,10 +736,14 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
         slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
-        checkpointing_message = f"Checkpoint after `{self.job_manager.job_checkpoint_interval}` lines"
-        self.logger.info(
-            f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}. {checkpointing_message}."
-        )
+        slice_message = f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}."
+
+        if self.job_manager._supports_checkpointing:
+            checkpointing_message = f" The BULK checkpoint after `{self.job_manager.job_checkpoint_interval}` lines."
+        else:
+            checkpointing_message = f" The BULK checkpointing is not supported."
+
+        self.logger.info(slice_message + checkpointing_message)
 
     def emit_checkpoint_message(self) -> None:
         if self.job_manager._job_adjust_slice_from_checkpoint:

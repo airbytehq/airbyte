@@ -152,8 +152,15 @@ class ShopifyBulkManager:
         return False
 
     @property
+    def _supports_checkpointing(self) -> bool:
+        """
+        The flag to determine whether or not the BULK Stream supports the `BULK checkpointing`.
+        """
+        return self.query.supports_checkpointing
+
+    @property
     def _job_should_checkpoint(self) -> bool:
-        return self._job_last_rec_count >= self._job_checkpoint_interval
+        return self._supports_checkpointing and self._job_last_rec_count >= self._job_checkpoint_interval
 
     @property
     def _job_any_lines_collected(self) -> bool:
@@ -195,11 +202,11 @@ class ShopifyBulkManager:
         # set the running job object count to default
         self._job_last_rec_count = 0
 
-    def set_checkpointing(self) -> None:
+    def _set_checkpointing(self) -> None:
         # set the flag to adjust the next slice from the checkpointed cursor value
         self._job_adjust_slice_from_checkpoint = True
 
-    def reset_checkpointing(self) -> None:
+    def _reset_checkpointing(self) -> None:
         # reseting the checkpoint flag, if bulk job has completed normally
         self._job_adjust_slice_from_checkpoint = False
 
@@ -264,7 +271,7 @@ class ShopifyBulkManager:
     def _job_get_checkpointed_result(self, response: Optional[requests.Response]) -> None:
         if self._job_any_lines_collected or self._job_should_checkpoint:
             # set the flag to adjust the next slice from the checkpointed cursor value
-            self.set_checkpointing()
+            self._set_checkpointing()
             # fetch the collected records from CANCELED Job on checkpointing
             self._job_result_filename = self._job_get_result(response)
 
@@ -497,7 +504,7 @@ class ShopifyBulkManager:
     def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
         if self._job_adjust_slice_from_checkpoint:
             # set the checkpointing to default, before the next slice is emitted, to avoid inf.loop
-            self.reset_checkpointing()
+            self._reset_checkpointing()
             return self._adjust_slice_end(slice_end, checkpointed_cursor)
 
         if self._is_long_running_job:
@@ -510,7 +517,7 @@ class ShopifyBulkManager:
         final_message = f"Stream: `{self.http_client._name}`, the BULK Job: `{self._job_id}` time elapsed: {job_current_elapsed_time} sec."
 
         if self._job_any_lines_collected:
-            lines_collected_message = f" Rows collected: `{self._job_last_rec_count}`."
+            lines_collected_message = f" Rows collected: {self._job_last_rec_count} --> records: `{self.record_producer.record_composed}`."
             final_message = final_message + lines_collected_message
 
         # emit final Bulk job status message
