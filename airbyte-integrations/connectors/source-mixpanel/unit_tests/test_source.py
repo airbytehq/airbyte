@@ -135,6 +135,7 @@ def test_streams_string_date(requests_mock, config_raw):
                 "select_properties_by_default": True,
                 "region": "EU",
                 "date_window_size": 10,
+                "page_size": 1000
             },
             True,
             None,
