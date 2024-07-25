@@ -7,7 +7,6 @@ import TabItem from '@theme/TabItem';
 
 # Secret Management
 
-
 Airbyte's default behavior is to store connector secrets on your configured database. Airbyte recommends storing connector secrets in an external secret manager. The currently supported Secret managers are: AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault. Upon creating a new connector, secrets (e.g. OAuth tokens, database passwords) will be written to and read from the configured Secrets manager.
 
 ## Secrets
@@ -89,4 +88,3 @@ global:
 
 </TabItem>
 </Tabs>
-

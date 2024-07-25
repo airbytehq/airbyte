@@ -116,6 +116,7 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.22 | 2024-07-20 | [42213](https://github.com/airbytehq/airbyte/pull/42213) | Update dependencies |
 | 0.0.21 | 2024-07-13 | [41793](https://github.com/airbytehq/airbyte/pull/41793) | Update dependencies |
 | 0.0.20 | 2024-07-10 | [41495](https://github.com/airbytehq/airbyte/pull/41495) | Update dependencies |
 | 0.0.19 | 2024-07-06 | [40632](https://github.com/airbytehq/airbyte/pull/40632) | Update dependencies |

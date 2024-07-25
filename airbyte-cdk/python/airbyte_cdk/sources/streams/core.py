@@ -5,11 +5,10 @@
 import inspect
 import itertools
 import logging
-import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
@@ -31,10 +30,6 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSch
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated import deprecated
-
-if typing.TYPE_CHECKING:
-    from airbyte_cdk.sources import Source
-    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
@@ -116,6 +111,7 @@ class Stream(ABC):
     """
 
     _configured_json_schema: Optional[Dict[str, Any]] = None
+    _exit_on_rate_limit: bool = False
 
     # Use self.logger in subclasses to log any messages
     @property
@@ -357,34 +353,13 @@ class Stream(ABC):
 
     @property
     def exit_on_rate_limit(self) -> bool:
-        """
-        :return: False if the stream will retry endlessly when rate limited
-        """
-        return False
+        """Exit on rate limit getter, should return bool value. False if the stream will retry endlessly when rate limited."""
+        return self._exit_on_rate_limit
 
-    @deprecated(version="3.7.0")
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Checks whether this stream is available.
-
-        :param logger: source logger
-        :param source: (optional) source
-        :return: A tuple of (boolean, str). If boolean is true, then this stream
-          is available, and no str is required. Otherwise, this stream is unavailable
-          for some reason and the str should describe what went wrong and how to
-          resolve the unavailability, if possible.
-        """
-        if self.availability_strategy:
-            return self.availability_strategy.check_availability(self, logger, source)
-        return True, None
-
-    @property
-    @deprecated(version="3.7.0")
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        """
-        :return: The AvailabilityStrategy used to check whether this stream is available.
-        """
-        return None
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        """Exit on rate limit setter, accept bool value."""
+        self._exit_on_rate_limit = value
 
     @property
     @abstractmethod
