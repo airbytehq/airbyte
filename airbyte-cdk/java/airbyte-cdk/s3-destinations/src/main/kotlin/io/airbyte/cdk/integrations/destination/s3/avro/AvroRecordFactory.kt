@@ -77,8 +77,6 @@ class AvroRecordFactory(private val schema: Schema?, private val converter: Json
 
         jsonRecord.setAll<JsonNode>(recordMessage.data as ObjectNode)
 
-        // Do last to get as close to load time as possible.
-
         return converter!!.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema)
     }
 
