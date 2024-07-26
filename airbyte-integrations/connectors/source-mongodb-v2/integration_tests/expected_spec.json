@@ -177,16 +177,6 @@
         "order": 11,
         "group": "advanced"
       },
-      "initial_load_timeout_hours": {
-        "type": "integer",
-        "title": "Initial Load Timeout in Hours (Advanced)",
-        "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
-        "default": 8,
-        "min": 4,
-        "max": 24,
-        "order": 10,
-        "group": "advanced"
-      },
       "update_capture_mode": {
         "type": "string",
         "title": "Capture mode (Advanced)",
@@ -194,6 +184,16 @@
         "enum": ["Lookup", "Post Image"],
         "default": "Lookup",
         "order": 12,
+        "group": "advanced"
+      },
+      "initial_load_timeout_hours": {
+        "type": "integer",
+        "title": "Initial Load Timeout in Hours (Advanced)",
+        "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+        "default": 8,
+        "min": 4,
+        "max": 24,
+        "order": 13,
         "group": "advanced"
       }
     },
