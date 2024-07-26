@@ -4,7 +4,9 @@
 
 from typing import Any
 import git
-import logging
+import shutil
+import yaml
+
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
@@ -22,7 +24,7 @@ VALID_FILES = [
   "source.py"
 ]
 FILES_TO_LEAVE = [
-  "__init__.py"
+  "__init__.py",
   "manifest.yaml",
   "metadata.yaml",
   "icon.svg",
@@ -58,23 +60,19 @@ class CheckIsManifestMigrationCandidate(Step):
       
       # Detect sus python files in the connector source directory
       connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
-      self.logger.info(f"Checking the connector source code directory: {connector_source_code_dir}")
       for file in connector_source_code_dir.iterdir():
         if file.name not in VALID_FILES:
           self.invalid_files.append(file.name)
       if self.invalid_files:
-        self.logger.info(f"Unrecognized files in the connector source code directory: {self.invalid_files}")
         return StepResult(
           step=self,
           status=StepStatus.SKIPPED,
           stdout=f"The connector has unrecognized source files: {self.invalid_files}",
         )
       
-      # TODO: Detect connector class name to make sure it's inherited from source declarative manifest 
-      # and does not override `streams`
-
+      # Detect connector class name to make sure it's inherited from source declarative manifest 
+      # and does not override `streams` method
       connector_source_py = (connector_source_code_dir / "source.py").read_text()
-      self.logger.info(f"Checking the connector source code: {connector_source_py}")
 
       if "YamlDeclarativeSource" not in connector_source_py:
         return StepResult(
@@ -101,24 +99,46 @@ class StripConnector(Step):
     title = "Strip the connector to manifest-only."
 
     async def _run(self) -> StepResult:
-       
-      # TODO
+
       # 1. Move manifest.yaml to the root level of the directory
+      self.logger.info(f"Moving manifest to the root level of the directory")
       connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
+
       manifest_file = connector_source_code_dir / "manifest.yaml"
-      manifest_file.rename(self.context.connector.code_directory / "manifest.yaml")
-      self.logger.info(f"Moved manifest to the root level of the directory")
+      manifest_file = manifest_file.rename(self.context.connector.code_directory / "manifest.yaml")
+
+      if manifest_file not in self.context.connector.code_directory.iterdir():
+        return StepResult(
+          step=self,
+          status=StepStatus.FAILURE,
+          stdout="Failed to move manifest.yaml to the root level of the directory."
+        )
 
       # 2. Delete everything that is not in an allow-list of files
       for file in self.context.connector.code_directory.iterdir():
-        if file.name not in FILES_TO_LEAVE:
+        if file.name not in FILES_TO_LEAVE and not file.is_dir():
+          self.logger.info(f"Deleting {file.name}")
           file.unlink()
-          self.logger.info(f"Deleted {file.name}")
+        if file.name not in FILES_TO_LEAVE:
+          self.logger.info(f"Deleting {file.name} folder")
+          shutil.rmtree(file)
 
-      # 3. Write metadata.yaml
+        if file in self.context.connector.code_directory.iterdir() and file.name not in FILES_TO_LEAVE:
+          return StepResult(
+            step=self,
+            status=StepStatus.FAILURE,
+            stdout=f"Failed to delete {file.name}"
+          )
+
+      # 3. Grab the version from metadata.yaml
       metadata_file = self.context.connector.code_directory / "metadata.yaml"
-      metadata = metadata_file.read_text()
+      with open(metadata_file, "r") as file:
+        metadata = yaml.safe_load(file)
+        metadata['tags'].replace("low-code", "manifest-only")
+
+
       self.logger.info(f"Read metadata.yaml: {metadata}")
+      # Grab the version from metadata.yaml
 
       # 4. Pray that the changes are saved automatically
       for file in self.context.connector.code_directory.iterdir():
@@ -132,7 +152,7 @@ class StripConnector(Step):
       return StepResult(
         step=self,
         status=StepStatus.SUCCESS,
-        stdout="The connector has been successfully stripped to manifest-only."
+        stdout="The connector has been successfully migrated to manifest-only."
       )
 
 ## MAIN FUNCTION
@@ -175,31 +195,3 @@ async def run_connectors_strip_pipeline(
         context.report = report
 
   return report
-
-  # TODO: validate_connector:
-
-    # is the connector a low-code connector?
-      # if yes, continue. if no, return false
-
-    # does it use our base image?
-      # if yes, continue, if no, return false
-
-    # does the connector have custom components?
-      # if yes, return false. if no, continue
-
-    # does the source class have any methods other than __init__?
-      # if yes, return false. if no, return true
-    
-  # TODO: strip_connector:
-
-  # for each file in the directory:
-  # if the file is named "manifest.yaml", "metadata.yaml", "icon.svg" (acceptance-test-config and samplefiles?)
-    # continue
-  # else
-    # into the dustbin!
-
-  # Update metadata.yaml
-
-  # Move manifest.yaml to the root level of the directory
-
-  # Return the updated directory
