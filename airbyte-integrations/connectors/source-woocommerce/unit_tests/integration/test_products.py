@@ -6,10 +6,10 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_protocol.models import SyncMode
 from .config import ConfigBuilder
-from .request_builder import get_orders_request
+from .request_builder import get_products_request
 from .utils import config, get_json_http_response, read_output
 
-_STREAM_NAME = "orders"
+_STREAM_NAME = "products"
 
 
 class TestFullRefresh(TestCase):
@@ -22,7 +22,7 @@ class TestFullRefresh(TestCase):
     def test_read_records(self, http_mocker: HttpMocker) -> None:
         # Register mock response
         http_mocker.get(
-            get_orders_request()
+            get_products_request()
             .with_param("orderby", "id")
             .with_param("order", "asc")
             .with_param("dates_are_gmt", "true")
@@ -30,7 +30,7 @@ class TestFullRefresh(TestCase):
             .with_param("modified_after", "2017-01-01T00:00:00")
             .with_param("modified_before", "2017-01-30T23:59:59")
             .build(),
-            get_json_http_response("orders.json", 200),
+            get_json_http_response("products.json", 200),
             )
 
         # Read records

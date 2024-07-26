@@ -60,6 +60,26 @@ def get_product_tags_request() -> RequestBuilder:
     return RequestBuilder.get_product_tags_endpoint()
 
 
+def get_products_request() -> RequestBuilder:
+    return RequestBuilder.get_products_endpoint()
+
+
+def get_product_variations_request(product_id: str) -> RequestBuilder:
+    return RequestBuilder.get_product_variations_endpoint(product_id)
+
+
+def get_refunds_request(order_id: str) -> RequestBuilder:
+    return RequestBuilder.get_refunds_endpoint(order_id)
+
+
+def get_shipping_methods_request() -> RequestBuilder:
+    return RequestBuilder.get_shipping_methods_endpoint()
+
+
+def get_shipping_zones_request() -> RequestBuilder:
+    return RequestBuilder.get_shipping_zones_endpoint()
+
+
 class RequestBuilder:
     @classmethod
     def get_customers_endpoint(cls) -> RequestBuilder:
@@ -104,6 +124,26 @@ class RequestBuilder:
     @classmethod
     def get_product_tags_endpoint(cls) -> RequestBuilder:
         return cls(resource="products/tags")
+
+    @classmethod
+    def get_products_endpoint(cls) -> RequestBuilder:
+        return cls(resource="products")
+
+    @classmethod
+    def get_product_variations_endpoint(cls, product_id: str) -> RequestBuilder:
+        return cls(resource=f"products/{product_id}/variations")
+
+    @classmethod
+    def get_refunds_endpoint(cls, order_id: str) -> RequestBuilder:
+        return cls(resource=f"orders/{order_id}/refunds")
+
+    @classmethod
+    def get_shipping_methods_endpoint(cls) -> RequestBuilder:
+        return cls(resource="shipping_methods")
+
+    @classmethod
+    def get_shipping_zones_endpoint(cls) -> RequestBuilder:
+        return cls(resource="shipping/zones")
 
     def __init__(self, resource: Optional[str] = "") -> None:
         self._item_id = None
