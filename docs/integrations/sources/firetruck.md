@@ -1,4 +1,4 @@
-# Oracle (incubating enterprise source)
+# Source Oracle
 
 Airbyte's incubating Oracle enterprise source connector offers the following features:
 
@@ -15,7 +15,7 @@ Airbyte's incubating Oracle enterprise source connector offers the following fea
 ## Features
 
 | Feature                       | Supported   | Notes              |
-|:------------------------------|:------------| :----------------- |
+| :---------------------------- | :---------- | :----------------- |
 | Full Refresh Sync             | Yes         |                    |
 | Incremental Sync - Append     | Yes         |                    |
 | Replicate Incremental Deletes | Coming soon |                    |
@@ -41,7 +41,6 @@ This is dependent on your networking setup. The easiest way to verify if Airbyte
 to your Oracle instance is by testing the connection in the UI.
 
 #### 2. Create a dedicated read-only user with access to the relevant tables (Recommended but optional)
-
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
@@ -112,11 +111,11 @@ what each piece of configuration means.
 2. `SSH Tunnel Method` defaults to `No Tunnel` (meaning a direct connection). If you want to use
    an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
 
-    1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
-       establishing the SSH Tunnel (see below for more information on generating this key).
+   1. Choose `Key Authentication` if you will be using an RSA private key as your secret for
+      establishing the SSH Tunnel (see below for more information on generating this key).
 
-    2. Choose `Password Authentication` if you will be using a password as your secret for
-       establishing the SSH Tunnel.
+   2. Choose `Password Authentication` if you will be using a password as your secret for
+      establishing the SSH Tunnel.
 
 3. `SSH Tunnel Jump Server Host` refers to the intermediate (bastion) server that Airbyte will
    connect to. This should be a hostname or an IP Address.
@@ -153,14 +152,14 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 ## Change Data Capture (CDC)
 
-We aim to support Oracle CDC soon.  Please reach out to your sales engineer if you are interested in being a design partner for CDC support in Oracle.
+We aim to support Oracle CDC soon. Please reach out to your sales engineer if you are interested in being a design partner for CDC support in Oracle.
 
 ## Data type mapping
 
 Oracle data types are mapped to the following data types when synchronizing data.
 
 | Oracle Type                      | Airbyte Type            | Notes                       |
-|:---------------------------------|:------------------------|:----------------------------|
+| :------------------------------- | :---------------------- | :-------------------------- |
 | `BFILE`                          | string                  | base-64 encoded binary data |
 | `BINARY_FLOAT`                   | number                  |                             |
 | `BINARY_DOUBLE`                  | number                  |                             |
@@ -221,6 +220,7 @@ feedback on preferred mappings.
   <summary>Expand to review</summary>
 
 The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
+
 - 0.0.1
 - 0.0.2
 - 0.0.3
