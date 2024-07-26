@@ -1407,6 +1407,7 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
         // Test for recovery - it should be able to resume using any previous state. Using the 3rd
         // state to test. This is a phase where 1st stream has been checkpointed
         // but 2nd stream has not.
+        // In the 2nd read we expect 3 records from 1st stream and 6 records from 2nd stream.
         val recoveryState = Jsons.jsonNode(listOf(stateAfterFirstBatch[2]))
 
         val recoverySyncIterator =
@@ -1433,11 +1434,16 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         Assertions.assertEquals(9, stateAfterRecoverySync.size)
         Assertions.assertEquals(9, recordsFromRecoverySync.size)
+        assertExpectedStateMessageCountMatches(stateAfterRecoverySync, 9)
 
         // Test for recovery part 2. Using the 10th
-        // state to test. This is a phase where both streams have been checkpointed.
+        // state to test.
+        //
+        // Expect to have 2 more message from stream2 in the follow up sync, but will have 3 state
+        // message because the first stream will resend the its final state message.
+        //
+        // This is a phase where both streams have been checkpointed.
         val recoveryState2 = Jsons.jsonNode(listOf(stateAfterFirstBatch[9]))
-        print("recovertystate2: " + recoveryState2)
 
         val recoverySyncIterator2 =
             source().read(config()!!, fullRefreshConfiguredCatalog, recoveryState2)
@@ -1453,10 +1459,10 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
             Assertions.assertEquals(2, streamsInRecoveryState.size)
         }
 
-        print("recovery2:" + stateAfterRecoverySync2)
 
         Assertions.assertEquals(3, stateAfterRecoverySync2.size)
         Assertions.assertEquals(2, recordsFromRecoverySync2.size)
+        assertExpectedStateMessageCountMatches(stateAfterRecoverySync2, 2)
     }
 
     protected open fun assertStateMessagesForNewTableSnapshotTest(
