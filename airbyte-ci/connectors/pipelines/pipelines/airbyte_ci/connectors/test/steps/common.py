@@ -573,7 +573,6 @@ class LiveTests(Step):
         self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
         self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
-        self._validate_job_can_run()
 
     def _validate_job_can_run(self) -> None:
         connector_type = self.context.connector.metadata.get("connectorType")
@@ -593,6 +592,15 @@ class LiveTests(Step):
         Returns:
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
+        try:
+            self._validate_job_can_run()
+        except AssertionError as exc:
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                exc_info=exc,
+            )
+
         container = await self._build_test_container(await connector_under_test_container.id())
         container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
         tests_artifacts_dir = str(self.local_tests_artifacts_dir)
