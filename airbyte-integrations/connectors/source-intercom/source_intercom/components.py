@@ -364,61 +364,6 @@ class IntercomRateLimiter:
         return decorator
 
 
-@dataclass(eq=False)
-class IntercomHttpRequester(HttpRequester):
-
-    request_body_json: Optional[RequestInput] = None
-    request_headers: Optional[RequestInput] = None
-    request_parameters: Optional[RequestInput] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-
-        self.request_parameters = self.request_parameters if self.request_parameters else {}
-        self.request_headers = self.request_headers if self.request_headers else {}
-        self.request_body_json = self.request_body_json if self.request_body_json else {}
-
-        self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, parameters=parameters
-        )
-        self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, parameters=parameters
-        )
-        self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, parameters=parameters
-        )
-
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        interpolated_value = self._parameter_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-        if isinstance(interpolated_value, dict):
-            return interpolated_value
-        return {}
-
-    def get_request_headers(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        return self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-
-    def get_request_body_json(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
-        return self._body_json_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-
-
 class ErrorHandlerWithRateLimiter(DefaultErrorHandler):
     """
     The difference between the built-in `DefaultErrorHandler` and this one is the custom decorator,

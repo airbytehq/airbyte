@@ -9,8 +9,7 @@ definitions:
       field_path: ["{{ parameters.get('data_field', 'data')}}"]
   requester:
     description: "Base Requester for Full Refresh streams"
-    type: CustomRequester
-    class_name: source_intercom.components.IntercomHttpRequester
+    type: HttpRequester
     url_base: "https://api.intercom.io/"
     http_method: "GET"
     authenticator:
