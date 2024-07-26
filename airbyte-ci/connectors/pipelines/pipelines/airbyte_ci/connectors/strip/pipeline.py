@@ -35,9 +35,9 @@ FILES_TO_LEAVE = [
 class CheckIsManifestMigrationCandidate(Step):
     context: ConnectorContext
 
-    title = "Check if the connector is a candidate for migration to poetry."
-    airbyte_repo = git.Repo(search_parent_directories=True)
-    invalid_files = []
+    title: str = "Check if the connector is a candidate for migration to poetry."
+    airbyte_repo: git.Repo = git.Repo(search_parent_directories=True)
+    invalid_files: list = []
 
     async def _run(self) -> StepResult:
       connector_dir_entries = await (await self.context.get_connector_dir()).entries()
@@ -107,15 +107,32 @@ class StripConnector(Step):
       connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
       manifest_file = connector_source_code_dir / "manifest.yaml"
       manifest_file.rename(self.context.connector.code_directory / "manifest.yaml")
-      self.logger.info(f"Moved {manifest_file} to the root level of the directory")
+      self.logger.info(f"Moved manifest to the root level of the directory")
 
       # 2. Delete everything that is not in an allow-list of files
-      # 3. Update metadata.yaml
+      for file in self.context.connector.code_directory.iterdir():
+        if file.name not in FILES_TO_LEAVE:
+          file.unlink()
+          self.logger.info(f"Deleted {file.name}")
+
+      # 3. Write metadata.yaml
+      metadata_file = self.context.connector.code_directory / "metadata.yaml"
+      metadata = metadata_file.read_text()
+      self.logger.info(f"Read metadata.yaml: {metadata}")
+
       # 4. Pray that the changes are saved automatically
+      for file in self.context.connector.code_directory.iterdir():
+        if file.name not in FILES_TO_LEAVE:
+          return StepResult(
+            step=self,
+            status=StepStatus.FAILURE,
+            stdout="Your prayers were not answered. Please save the changes manually."
+          )
 
       return StepResult(
         step=self,
-        status=StepStatus.SUCCESS
+        status=StepStatus.SUCCESS,
+        stdout="The connector has been successfully stripped to manifest-only."
       )
 
 ## MAIN FUNCTION
