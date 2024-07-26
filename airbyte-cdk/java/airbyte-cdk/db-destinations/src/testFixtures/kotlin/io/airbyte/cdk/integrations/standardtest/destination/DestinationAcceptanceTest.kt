@@ -218,9 +218,9 @@ abstract class DestinationAcceptanceTest(
                 for (dataEntry in entry.value.fields()) {
                     jsons.replace(dataEntry.key, dataEntry.value)
                 }
+            } else {
+                jsons.replace(entry.key, entry.value)
             }
-
-            jsons.replace(entry.key, entry.value)
         }
 
         return jsons
