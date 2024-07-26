@@ -110,7 +110,6 @@ protected constructor(
                 DateTime.now(DateTimeZone.UTC),
                 s3DestinationConfig.pathFormat!!,
             )
-        println("outputPrefix: $outputPrefix")
         // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
         val parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1)
         val objectSummaries =
