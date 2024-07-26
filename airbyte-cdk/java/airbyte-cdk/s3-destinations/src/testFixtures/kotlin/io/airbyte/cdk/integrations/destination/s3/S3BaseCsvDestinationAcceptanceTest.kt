@@ -93,14 +93,6 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
         ): JsonNode {
             val json: ObjectNode = MAPPER.createObjectNode()
 
-            //            if (input.containsKey(JavaBaseConstants.COLUMN_NAME_DATA)) {
-            //                val data =
-            // Jsons.deserialize(input[JavaBaseConstants.COLUMN_NAME_DATA])
-            //                for ((key, value) in data.fields()) {
-            //                    json.set<JsonNode>(key, value)
-            //                }
-            //            }
-
             for ((key, value) in input) {
                 if (
                     key == JavaBaseConstants.COLUMN_NAME_AB_ID ||

@@ -128,7 +128,6 @@ class AvroSerializedBuffer(
                         stream.namespace,
                         useV2FieldNames = useV2FieldNames
                     )
-                println("schema: $schema")
                 AvroSerializedBuffer(
                     createStorageFunction.call(),
                     codecFactory,
