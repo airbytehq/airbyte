@@ -354,6 +354,10 @@ class HttpClient:
 
         return response  # type: ignore # will either return a valid response of type requests.Response or raise an exception
 
+    @property
+    def name(self) -> str:
+        return self._name
+
     def send_request(
         self,
         http_method: str,

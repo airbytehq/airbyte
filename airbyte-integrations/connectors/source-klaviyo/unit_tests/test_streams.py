@@ -5,6 +5,7 @@
 
 from typing import Any, List, Mapping, Optional
 from unittest import mock
+from unittest.mock import patch
 
 import pendulum
 import pytest
@@ -138,19 +139,19 @@ class TestKlaviyoStream:
     )
     def test_backoff_time(self, status_code, retry_after, expected_time):
         stream = SomeStream(api_key=API_KEY)
-        response_mock = mock.MagicMock()
+        response_mock = mock.MagicMock(spec=requests.Response)
         response_mock.status_code = status_code
         response_mock.headers = {"Retry-After": retry_after}
-        assert stream.backoff_time(response_mock) == expected_time
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_time
 
     def test_backoff_time_large_retry_after(self):
         stream = SomeStream(api_key=API_KEY)
-        response_mock = mock.MagicMock()
+        response_mock = mock.MagicMock(spec=requests.Response)
         response_mock.status_code = 429
         retry_after = stream.max_time + 5
         response_mock.headers = {"Retry-After": retry_after}
         with pytest.raises(KlaviyoBackoffError) as e:
-            stream.backoff_time(response_mock)
+            stream.get_backoff_strategy().backoff_time(response_mock)
         error_message = (
             f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, "
             "exit from stream."
@@ -549,13 +550,12 @@ class TestCampaignsDetailedStream:
         campaign_id = "1"
         record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
 
-        requests_mock.register_uri(
-            "GET",
-            f"https://a.klaviyo.com/api/campaign-recipient-estimations/{campaign_id}",
-            status_code=404,
-            json={},
-        )
-        stream._set_recipient_count(record)
+        mocked_response = mock.MagicMock(spec=requests.Response)
+        mocked_response.ok = False
+        mocked_response.status_code = 404
+        mocked_response.json.return_value = {}
+        with patch.object(stream._http_client, "send_request", return_value=(mock.MagicMock(spec=requests.PreparedRequest), mocked_response)):
+            stream._set_recipient_count(record)
         assert record["estimated_recipient_count"] == 0
 
     def test_set_campaign_message(self, requests_mock):
