@@ -407,6 +407,7 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
 ):
     stream = CustomObject(
         entity="animals",
+        name="animals",
         schema=expected_custom_object_json_schema,
         fully_qualified_name="p123_animals",
         custom_properties={"name": {"type": ["null", "string"]}},
