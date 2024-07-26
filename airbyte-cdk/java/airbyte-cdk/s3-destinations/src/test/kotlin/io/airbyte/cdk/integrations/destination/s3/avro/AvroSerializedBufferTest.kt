@@ -169,7 +169,7 @@ class AvroSerializedBufferTest() {
         ) {
             val outputFile: File = buffer.file
             (AvroSerializedBuffer.createFunction(config) { buffer }
-                .apply(
+                    .apply(
                         streamPair,
                         catalog,
                     ) as AvroSerializedBuffer)
