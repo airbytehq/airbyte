@@ -2471,7 +2471,7 @@ class ProductVariant(ShopifyBulkQuery):
 
     @property
     def _should_include_presentment_prices(self) -> bool:
-        return self.config.get("job_product_variants_include_pres_prices")
+        return self.config.get("job_product_variants_include_pres_prices", True)
 
     @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
