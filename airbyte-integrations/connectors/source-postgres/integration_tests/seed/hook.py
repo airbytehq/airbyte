@@ -130,6 +130,7 @@ def generate_schema_date_with_suffix() -> str:
 
 def prepare() -> None:
     schema_name = generate_schema_date_with_suffix()
+    print(f"schema_name: {schema_name}")
     with open("./generated_schema.txt", "w") as f:
         f.write(schema_name)
 

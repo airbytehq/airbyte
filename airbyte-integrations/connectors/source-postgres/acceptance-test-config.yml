@@ -86,7 +86,7 @@ acceptance_tests:
             - "python"
             - "./hook.py"
             - "setup_cdc"
-          teardown_command:
+          final_teardown_command:
             - "python"
             - "./hook.py"
             - "teardown"

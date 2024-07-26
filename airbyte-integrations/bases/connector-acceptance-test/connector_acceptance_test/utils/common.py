@@ -165,6 +165,7 @@ def build_configured_catalog_from_custom_catalog(configured_catalog_path: str, d
         ConfiguredAirbyteCatalog: a configured Airbyte catalog
     """
     catalog = ConfiguredAirbyteCatalog.parse_file(configured_catalog_path)
+    print(f"discovered_catalog: {discovered_catalog}")
     for configured_stream in catalog.streams:
         try:
             configured_stream.stream = discovered_catalog[configured_stream.stream.name]
