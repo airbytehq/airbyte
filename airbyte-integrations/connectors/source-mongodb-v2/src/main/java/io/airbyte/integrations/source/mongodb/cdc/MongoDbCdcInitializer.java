@@ -170,13 +170,13 @@ public class MongoDbCdcInitializer {
         .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream)))
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
 
-
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName),
             config, true, false, emittedAt, Optional.of(initialLoadTimeout));
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, queueSize, false);
+
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
 
@@ -184,14 +184,6 @@ public class MongoDbCdcInitializer {
         .filter(stream -> stream.getSyncMode() == SyncMode.INCREMENTAL)
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
         .toList();
-
-    final var propertiesManager =
-        new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog, cdcStreamList);
-    final var eventConverter =
-        new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
-
-    final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
-        propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
 
     // We can close the client after the initial snapshot is complete, incremental
     // iterator does not make use of the client.
@@ -220,6 +212,13 @@ public class MongoDbCdcInitializer {
        * with ALL of the incremental streams configured. This is because if step 1 completes, the initial
        * load can be considered finished.
        */
+      final var propertiesManager =
+          new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog, cdcStreamList);
+      final var eventConverter =
+          new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+          propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
+
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream.of(
@@ -235,6 +234,12 @@ public class MongoDbCdcInitializer {
        * should be run in the following order: 1. Run the debezium iterators with ALL of the incremental
        * streams configured.
        */
+      final var propertiesManager =
+          new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog, cdcStreamList);
+      final var eventConverter =
+          new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+          propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream.of(
@@ -250,9 +255,16 @@ public class MongoDbCdcInitializer {
        * have been fully or partially completed configured. 2. Resume initial load for partially completed
        * and not started streams. This step will timeout and throw a transient error if run for too long
        * (> 8hrs by default). 3. Emit a transient error. This is to signal to the platform to restart the
-       * sync to clear the oplog. We cannot simply add the same cdc iterators as their target end
-       * position is fixed to the tip of the oplog at the start of the sync.
+       * sync to clear the oplog. We cannot simply add the same cdc iterators as their target end position
+       * is fixed to the tip of the oplog at the start of the sync.
        */
+      final var propertiesManager =
+          new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog,
+              startedCdcStreamList);
+      final var eventConverter =
+          new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
+          propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
               Stream.of(
