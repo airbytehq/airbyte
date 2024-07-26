@@ -229,7 +229,7 @@ public class MongoDbCdcInitializer {
                   cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     } else if (initialSnapshotIterators.isEmpty()) {
-      LOGGER.info("Initial load has finished completely - only reading the binlog");
+      LOGGER.info("Initial load has finished completely - only reading the oplog");
       /*
        * In this case, the initial load has completed and only debezium should be run. The iterators
        * should be run in the following order: 1. Run the debezium iterators with ALL of the incremental
@@ -243,15 +243,15 @@ public class MongoDbCdcInitializer {
                   cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     } else {
-      LOGGER.info("Initial load is in progress - reading binlog first and then resuming with initial load.");
+      LOGGER.info("Initial load is in progress - reading oplog first and then resuming with initial load.");
       /*
        * In this case, the initial load has partially completed (WASS case). The iterators should be run
        * in the following order: 1. Run the debezium iterators with only the incremental streams which
        * have been fully or partially completed configured. 2. Resume initial load for partially completed
        * and not started streams. This step will timeout and throw a transient error if run for too long
        * (> 8hrs by default). 3. Emit a transient error. This is to signal to the platform to restart the
-       * sync to clear the binlog. We cannot simply add the same cdc iterators as their target end
-       * position is fixed to the tip of the binlog at the start of the sync.
+       * sync to clear the oplog. We cannot simply add the same cdc iterators as their target end
+       * position is fixed to the tip of the oplog at the start of the sync.
        */
       return Collections.singletonList(
           AutoCloseableIterators.concatWithEagerClose(
