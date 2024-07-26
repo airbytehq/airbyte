@@ -219,6 +219,13 @@ Follow these instructions to add the Airbyte helm repository:
 ```yaml
 global:
   edition: enterprise
+
+# Optional - enables Airbyte's second generation Workers, which allows for better back pressure and self-healing in resource constrained environments.
+workload-api-server:
+  enabled: true
+
+workload-launcher:
+  enabled:
 ```
 
 3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
@@ -460,14 +467,6 @@ spec:
                   number: 8180
             path: /auth
             pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte--server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
-            pathType: Prefix
 ```
 
 </TabItem>
@@ -512,14 +511,6 @@ spec:
                 port:
                   number: 8180
             path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
             pathType: Prefix
 ```
 
@@ -605,7 +596,7 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
       {
         "Effect": "Allow",
         "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME",
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME"
       },
       {
         "Effect": "Allow",
@@ -615,11 +606,11 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             "s3:PutObjectAcl",
             "s3:GetObject",
             "s3:GetObjectAcl",
-            "s3:DeleteObject",
+            "s3:DeleteObject"
           ],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
-      },
-    ],
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
+      }
+    ]
 }
 ```
 

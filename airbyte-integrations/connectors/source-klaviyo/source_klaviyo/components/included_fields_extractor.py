@@ -16,27 +16,36 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
         # Evaluate and retrieve the extraction paths
         evaluated_field_paths = [field_path.eval(self.config) for field_path in self._field_path]
         target_records = self.extract_records_by_path(response, evaluated_field_paths)
-        included_records = self.extract_records_by_path(response, ["included"])
+        included_relations = list(self.extract_records_by_path(response, ["included"]))
 
         # Update target records with included records
-        updated_records = self.update_target_records_with_included(target_records, included_records)
+        updated_records = self.update_target_records_with_included(target_records, included_relations)
         yield from updated_records
 
     @staticmethod
     def update_target_records_with_included(
-        target_records: Iterable[Mapping[str, Any]], included_records: Iterable[Mapping[str, Any]]
+        target_records: Iterable[Mapping[str, Any]], included_relations: Iterable[Mapping[str, Any]]
     ) -> Iterable[Mapping[str, Any]]:
-        for included_record in included_records:
-            included_attributes = included_record.get("attributes", {})
-            for target_record in target_records:
-                target_relationships = target_record.get("relationships", {})
-                included_record_type = included_record["type"]
-                if included_record_type in target_relationships:
-                    target_relationships[included_record_type]["data"].update(included_attributes)
-                yield target_record
+        for target_record in target_records:
+            target_relationships = target_record.get("relationships", {})
+
+            for included_relation in included_relations:
+                included_relation_attributes = included_relation.get("attributes", {})
+                included_relation_type = included_relation["type"]
+                included_relation_id = included_relation["id"]
+
+                target_relationship_id = target_relationships.get(included_relation_type, {}).get("data")["id"]
+
+                if included_relation_id == target_relationship_id:
+                    target_relationships[included_relation_type]["data"].update(included_relation_attributes)
+
+            yield target_record
 
     def extract_records_by_path(self, response: requests.Response, field_paths: list = None) -> Iterable[Mapping[str, Any]]:
-        response_body = self.decoder.decode(response)
+        try:
+            response_body = response.json()
+        except Exception as e:
+            raise Exception(f"Failed to parse response body as JSON: {e}")
 
         # Extract data from the response body based on the provided field paths
         if not field_paths:
@@ -44,9 +53,9 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
         else:
             field_path_str = "/".join(field_paths)  # Convert list of field paths to a single string path for dpath
             if "*" in field_path_str:
-                extracted_data = dpath.util.values(response_body, field_path_str)
+                extracted_data = dpath.values(response_body, field_path_str)
             else:
-                extracted_data = dpath.util.get(response_body, field_path_str, default=[])
+                extracted_data = dpath.get(response_body, field_path_str, default=[])
 
         # Yield extracted data as individual records
         if isinstance(extracted_data, list):

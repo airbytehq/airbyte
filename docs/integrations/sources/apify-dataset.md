@@ -72,6 +72,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.1.13 | 2024-07-20 | [42364](https://github.com/airbytehq/airbyte/pull/42364) | Update dependencies |
 | 2.1.12 | 2024-07-13 | [41893](https://github.com/airbytehq/airbyte/pull/41893) | Update dependencies |
 | 2.1.11 | 2024-07-10 | [41344](https://github.com/airbytehq/airbyte/pull/41344) | Update dependencies |
 | 2.1.10 | 2024-07-09 | [41189](https://github.com/airbytehq/airbyte/pull/41189) | Update dependencies |

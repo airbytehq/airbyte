@@ -242,7 +242,7 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
 
     @HttpMocker()
@@ -485,7 +485,7 @@ class MultipleStreamTest(TestCase):
             Type.STATE
         ], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_0)
