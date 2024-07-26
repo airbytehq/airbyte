@@ -30,9 +30,13 @@ class PrintBuffer:
             self.buffer = StringIO()
 
     def __enter__(self) -> "PrintBuffer":
-        self.old_stdout = sys.stdout
-        sys.stdout = self
+        self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
+        # Used to disable buffering during the pytest session, because it is not compatible with capsys
+        if "pytest" not in str(type(sys.stdout)).lower():
+            sys.stdout = self
+            sys.stderr = self
         return self
 
     def __exit__(self, exc_type: Optional[BaseException], exc_val: Optional[BaseException], exc_tb: Optional[TracebackType]) -> None:
         self.flush()
+        sys.stdout, sys.stderr = self.old_stdout, self.old_stderr
