@@ -10,6 +10,9 @@ inputs:
   github_token:
     description: "GitHub token"
     required: false
+  github_maintenance_token:
+    description: "GitHub maintenance token"
+    required: false
   dagger_cloud_token:
     description: "Dagger Cloud token"
     required: false
@@ -121,6 +124,7 @@ runs:
         CI_GIT_REPO_URL: ${{ inputs.git_repo_url }}
         CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
         CI_GITHUB_ACCESS_TOKEN: ${{ inputs.github_token }}
+        CI_GITHUB_MAINTENANCE_TOKEN: ${{ inputs.github_maintenance_token }}
         CI_JOB_KEY: ${{ inputs.ci_job_key }}
         CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
         DAGGER_CLOUD_TOKEN: "${{ inputs.dagger_cloud_token }}"

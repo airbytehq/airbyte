@@ -83,6 +83,7 @@ class PipelineContext:
         ci_gcp_credentials: Optional[Secret] = None,
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[Secret] = None,
+        ci_github_maintenance_token: Optional[Secret] = None,
         run_step_options: RunStepOptions = RunStepOptions(),
         enable_report_auto_open: bool = True,
         secret_stores: Dict[str, SecretStore] | None = None,
@@ -129,6 +130,7 @@ class PipelineContext:
         self.ci_report_bucket = ci_report_bucket
         self.ci_git_user = ci_git_user
         self.ci_github_access_token = ci_github_access_token
+        self.ci_github_maintenance_token = ci_github_maintenance_token
         self.started_at = None
         self.stopped_at = None
         self.secrets_to_mask = []

@@ -13,7 +13,7 @@ from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import ClassVar, List, Optional, Set
+from typing import Any, ClassVar, Dict, List, Optional, Set
 
 import requests  # type: ignore
 import semver
@@ -445,7 +445,7 @@ class IncrementalAcceptanceTests(Step):
 
 
 class LiveTestSuite(Enum):
-    ALL = "all"
+    ALL = "live"
     REGRESSION = "regression"
     VALIDATION = "validation"
 
@@ -557,13 +557,10 @@ class LiveTests(Step):
         self.connector_image = context.docker_image.split(":")[0]
         options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS, {})
 
-        self.connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
-        self.pr_url = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
-
-        if not self.connection_id and self.pr_url:
-            raise ValueError("`connection-id` and `pr-url` are required to run live tests.")
-
         self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
+        self.connection_id = self._get_connection_id(options)
+        self.pr_url = self._get_pr_url(options)
+
         self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
@@ -573,7 +570,30 @@ class LiveTests(Step):
         self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
+    def _get_connection_id(self, options: Dict[str, List[Any]]) -> Optional[str]:
+        if self.context.is_pr:
+            connection_id = self._get_connection_from_connection_options()
+            self.logger.info(
+                f"Context is {self.context.ci_context}; got connection_id={connection_id} from metadata.yaml liveTests connectionOptions."
+            )
+        else:
+            connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
+            self.logger.info(f"Context is {self.context.ci_context}; got connection_id={connection_id} from input options.")
+        return connection_id
+
+    def _get_pr_url(self, options: Dict[str, List[Any]]) -> Optional[str]:
+        if self.context.is_pr:
+            pull_request = self.context.pull_request.url if self.context.pull_request else None
+            self.logger.info(f"Context is {self.context.ci_context}; got pull_request={pull_request} from context.")
+        else:
+            pull_request = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
+            self.logger.info(f"Context is {self.context.ci_context}; got pull_request={pull_request} from input options.")
+        return pull_request
+
     def _validate_job_can_run(self) -> None:
+        assert self.connection_id, "`connection-id` is required to run live tests."
+        assert self.pr_url, "`pr_url` is required to run live tests."
+
         connector_type = self.context.connector.metadata.get("connectorType")
         connector_subtype = self.context.connector.metadata.get("connectorSubtype")
         assert connector_type == "source", f"Live tests can only run against source connectors, got `connectorType={connector_type}`."
@@ -581,6 +601,24 @@ class LiveTests(Step):
             assert (
                 self.connection_subset == "sandboxes"
             ), f"Live tests for database sources may only be run against sandbox connections, got `connection_subset={self.connection_subset}`."
+
+        if self.context.is_pr:
+            connection_id_is_valid = False
+            for test_suite in self.context.connector.metadata.get("connectorTestSuitesOptions", []):
+                if test_suite["suite"] == "liveTests":
+                    assert self.connection_id in [option["connectionId"] for option in test_suite.get("connectionOptions", [])]
+                    connection_id_is_valid = True
+                    break
+            assert connection_id_is_valid, f"Connection ID {self.connection_id} is not a valid sandbox connection ID."
+
+    def _get_connection_from_connection_options(self) -> Optional[str]:
+        for test_suite in self.context.connector.metadata.get("connectorTestSuitesOptions", []):
+            if test_suite["suite"] == "liveTests":
+                for option in test_suite.get("connectionOptions", []):
+                    connection_id = option["connectionId"]
+                    connection_name = option["connectionName"]
+                    self.logger.info(f"Using connection {connection_name}; connectionId={connection_id}")
+                    return connection_id
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the regression test suite.
@@ -676,16 +714,17 @@ class LiveTests(Step):
                     ]
                 )
                 .with_secret_variable(
-                    "CI_GITHUB_ACCESS_TOKEN",
+                    "CI_GITHUB_MAINTENANCE_TOKEN",
                     self.context.dagger_client.set_secret(
-                        "CI_GITHUB_ACCESS_TOKEN", self.context.ci_github_access_token.value if self.context.ci_github_access_token else ""
+                        "CI_GITHUB_MAINTENANCE_TOKEN",
+                        self.context.ci_github_maintenance_token.value if self.context.ci_github_maintenance_token else "",
                     ),
                 )
                 .with_exec(
                     [
                         "/bin/sh",
                         "-c",
-                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN",
+                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_MAINTENANCE_TOKEN",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
