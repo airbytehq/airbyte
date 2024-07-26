@@ -29,8 +29,7 @@ FILES_TO_LEAVE = [
   "metadata.yaml",
   "icon.svg",
   "run.py",
-  "source.py",
-  "acceptance-test-config.json"
+  "source.py"
 ]
 
 
@@ -113,13 +112,16 @@ class StripConnector(Step):
           status=StepStatus.FAILURE,
           stdout="Failed to move manifest.yaml to the root level of the directory."
         )
+      
+      # We don't want to delete the source_<name> folder
+      FILES_TO_LEAVE.append(self.context.connector.technical_name.replace("-", "_"))
 
       # 2. Delete everything that is not in an allow-list of files
       for file in self.context.connector.code_directory.iterdir():
         if file.name not in FILES_TO_LEAVE and not file.is_dir():
           self.logger.info(f"Deleting {file.name}")
           file.unlink()
-        if file.name not in FILES_TO_LEAVE:
+        elif file.name not in FILES_TO_LEAVE and file.is_dir():
           self.logger.info(f"Deleting {file.name} folder")
           shutil.rmtree(file)
 
@@ -130,24 +132,20 @@ class StripConnector(Step):
             stdout=f"Failed to delete {file.name}"
           )
 
-      # 3. Grab the version from metadata.yaml
+      # 3. Grab the cdk tag from metadata.yaml and update it
       metadata_file = self.context.connector.code_directory / "metadata.yaml"
       with open(metadata_file, "r") as file:
         metadata = yaml.safe_load(file)
-        metadata['tags'].replace("low-code", "manifest-only")
+        tags = metadata['data']['tags']
+        for i, tag in enumerate(tags):
+          if tag == "cdk:low-code":
+            tags[i] = "cdk:manifest-only"
 
+      # Write the changes to metadata.yaml
+      with open(metadata_file, "w") as file:
+        yaml.dump(metadata, file, default_flow_style=False)
 
-      self.logger.info(f"Read metadata.yaml: {metadata}")
-      # Grab the version from metadata.yaml
-
-      # 4. Pray that the changes are saved automatically
-      for file in self.context.connector.code_directory.iterdir():
-        if file.name not in FILES_TO_LEAVE:
-          return StepResult(
-            step=self,
-            status=StepStatus.FAILURE,
-            stdout="Your prayers were not answered. Please save the changes manually."
-          )
+      # TODO: Add more failure checks
 
       return StepResult(
         step=self,
