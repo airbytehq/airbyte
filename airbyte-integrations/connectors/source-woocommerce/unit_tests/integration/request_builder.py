@@ -20,10 +20,34 @@ def get_customers_request() -> RequestBuilder:
     return RequestBuilder.get_customers_endpoint()
 
 
+def get_coupons_request() -> RequestBuilder:
+    return RequestBuilder.get_coupons_endpoint()
+
+
+def get_orders_request() -> RequestBuilder:
+    return RequestBuilder.get_orders_endpoint()
+
+
+def get_order_notes_request(order_id: str) -> RequestBuilder:
+    return RequestBuilder.get_order_notes_endpoint(order_id)
+
+
 class RequestBuilder:
     @classmethod
     def get_customers_endpoint(cls) -> RequestBuilder:
         return cls(resource="customers")
+
+    @classmethod
+    def get_coupons_endpoint(cls) -> RequestBuilder:
+        return cls(resource="coupons")
+
+    @classmethod
+    def get_orders_endpoint(cls) -> RequestBuilder:
+        return cls(resource="orders")
+
+    @classmethod
+    def get_order_notes_endpoint(cls, order_id: str) -> RequestBuilder:
+        return cls(resource=f"orders/{order_id}/notes")
 
     def __init__(self, resource: Optional[str] = "") -> None:
         self._item_id = None
@@ -52,7 +76,7 @@ class RequestBuilder:
         self._item_id_is_sub_path = is_sub_path
         return self
 
-    def with_custom_param(self, param: str, value: Union[str, List[str]], with_format=False):
+    def with_param(self, param: str, value: Union[str, List[str]], with_format=False):
         if with_format and isinstance(value, List):
             value = self._get_formatted_fields(value)
         self._query_params[param] = value
