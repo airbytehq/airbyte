@@ -88,6 +88,18 @@ def get_shipping_zone_methods_request(zone_id: str) -> RequestBuilder:
     return RequestBuilder.get_shipping_zone_methods_endpoint(zone_id)
 
 
+def get_system_status_tools_request() -> RequestBuilder:
+    return RequestBuilder.get_system_status_tools_endpoint()
+
+
+def get_tax_rates_request() -> RequestBuilder:
+    return RequestBuilder.get_tax_rates_endpoint()
+
+
+def get_tax_classes_request() -> RequestBuilder:
+    return RequestBuilder.get_tax_classes_endpoint()
+
+
 class RequestBuilder:
     @classmethod
     def get_customers_endpoint(cls) -> RequestBuilder:
@@ -160,6 +172,18 @@ class RequestBuilder:
     @classmethod
     def get_shipping_zone_methods_endpoint(cls, zone_id: str) -> RequestBuilder:
         return cls(resource=f"shipping/zones/{zone_id}/methods")
+
+    @classmethod
+    def get_system_status_tools_endpoint(cls) -> RequestBuilder:
+        return cls(resource="system_status/tools")
+
+    @classmethod
+    def get_tax_rates_endpoint(cls) -> RequestBuilder:
+        return cls(resource="taxes")
+
+    @classmethod
+    def get_tax_classes_endpoint(cls) -> RequestBuilder:
+        return cls(resource="taxes/classes")
 
     def __init__(self, resource: Optional[str] = "") -> None:
         self._item_id = None
