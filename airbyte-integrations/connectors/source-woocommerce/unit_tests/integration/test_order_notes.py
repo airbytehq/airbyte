@@ -8,7 +8,7 @@ from airbyte_protocol.models import SyncMode
 from freezegun import freeze_time
 
 from .config import ConfigBuilder
-from .request_builder import get_orders_request, get_order_notes_request
+from .request_builder import get_order_notes_request, get_orders_request
 from .utils import config, get_json_http_response, read_output
 
 _STREAM_NAME = "order_notes"

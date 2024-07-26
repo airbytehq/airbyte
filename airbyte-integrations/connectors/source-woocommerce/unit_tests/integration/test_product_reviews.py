@@ -6,6 +6,7 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_protocol.models import SyncMode
 from freezegun import freeze_time
+
 from .config import ConfigBuilder
 from .request_builder import get_product_reviews_request
 from .utils import config, get_json_http_response, read_output

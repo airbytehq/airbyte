@@ -7,9 +7,7 @@
     "enabled": true,
     "method_title": "BACS",
     "method_description": "Allows payments by BACS, more commonly known as direct bank/wire transfer.",
-    "method_supports": [
-      "products"
-    ],
+    "method_supports": ["products"],
     "settings": {
       "title": {
         "id": "title",
@@ -53,9 +51,7 @@
     "enabled": false,
     "method_title": "Check payments",
     "method_description": "Allows check payments. Why would you take checks in this day and age? Well you probably wouldn't but it does allow you to make test purchases for testing order emails and the 'success' pages etc.",
-    "method_supports": [
-      "products"
-    ],
+    "method_supports": ["products"],
     "settings": {
       "title": {
         "id": "title",
@@ -99,9 +95,7 @@
     "enabled": false,
     "method_title": "Cash on delivery",
     "method_description": "Have your customers pay with cash (or by other means) upon delivery.",
-    "method_supports": [
-      "products"
-    ],
+    "method_supports": ["products"],
     "settings": {
       "title": {
         "id": "title",
@@ -170,10 +164,7 @@
     "enabled": true,
     "method_title": "PayPal",
     "method_description": "PayPal Standard sends customers to PayPal to enter their payment information. PayPal IPN requires fsockopen/cURL support to update order statuses after payment. Check the <a href=\"https://example.com/wp-admin/admin.php?page=wc-status\">system status</a> page for more details.",
-    "method_supports": [
-      "products",
-      "refunds"
-    ],
+    "method_supports": ["products", "refunds"],
     "settings": {
       "title": {
         "id": "title",
