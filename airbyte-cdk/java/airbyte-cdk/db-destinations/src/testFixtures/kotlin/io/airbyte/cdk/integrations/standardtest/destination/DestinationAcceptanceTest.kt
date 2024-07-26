@@ -353,7 +353,7 @@ abstract class DestinationAcceptanceTest(
         return listOf(identifier)
     }
 
-@BeforeEach
+    @BeforeEach
     @Throws(Exception::class)
     fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
@@ -709,7 +709,9 @@ abstract class DestinationAcceptanceTest(
     @Throws(Exception::class)
     fun testIncrementalSync() {
         if (!implementsAppend()) {
-            LOGGER.info { "Destination's spec.json does not include '\"supportsIncremental\" ; true'" }
+            LOGGER.info {
+                "Destination's spec.json does not include '\"supportsIncremental\" ; true'"
+            }
             return
         }
 
@@ -940,7 +942,7 @@ abstract class DestinationAcceptanceTest(
     open fun testIncrementalDedupeSync() {
         if (!implementsAppendDedup()) {
             LOGGER.info {
-            "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'"
+                "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'"
             }
             return
         }
