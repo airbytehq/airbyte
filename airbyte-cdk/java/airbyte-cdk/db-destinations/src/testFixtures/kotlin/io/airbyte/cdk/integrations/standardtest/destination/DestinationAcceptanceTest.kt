@@ -95,7 +95,7 @@ abstract class DestinationAcceptanceTest(
     open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
 
     protected open fun getTestDataComparator(): TestDataComparator {
-        return BasicTestDataComparator { @Suppress("deprecated") this.resolveIdentifier(it) }
+        return BasicTestDataComparator { @Suppress("deprecation") this.resolveIdentifier(it) }
     }
 
     protected abstract val imageName: String
@@ -205,7 +205,7 @@ abstract class DestinationAcceptanceTest(
             return null
         }
         val schema = config["schema"].asText()
-        testSchemas!!.add(schema)
+        testSchemas.add(schema)
         return schema
     }
 
@@ -353,7 +353,7 @@ abstract class DestinationAcceptanceTest(
         return listOf(identifier)
     }
 
-    @BeforeEach
+@BeforeEach
     @Throws(Exception::class)
     fun setUpInternal() {
         val testDir = Path.of("/tmp/airbyte_tests/")
@@ -361,8 +361,8 @@ abstract class DestinationAcceptanceTest(
         val workspaceRoot = Files.createTempDirectory(testDir, "test")
         jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"))
         localRoot = Files.createTempDirectory(testDir, "output")
-        LOGGER.info("jobRoot: {}", jobRoot)
-        LOGGER.info("localRoot: {}", localRoot)
+        LOGGER.info { "${"jobRoot: {}"} $jobRoot" }
+        LOGGER.info { "${"localRoot: {}"} $localRoot" }
         testEnv = TestDestinationEnv(localRoot)
         mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater::class.java)
         testSchemas = HashSet()
@@ -484,7 +484,7 @@ abstract class DestinationAcceptanceTest(
     @Throws(Exception::class)
     fun testSecondSync() {
         if (!implementsOverwrite()) {
-            LOGGER.info("Destination's spec.json does not support overwrite sync mode.")
+            LOGGER.info { "Destination's spec.json does not support overwrite sync mode." }
             return
         }
 
@@ -709,7 +709,7 @@ abstract class DestinationAcceptanceTest(
     @Throws(Exception::class)
     fun testIncrementalSync() {
         if (!implementsAppend()) {
-            LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'")
+            LOGGER.info { "Destination's spec.json does not include '\"supportsIncremental\" ; true'" }
             return
         }
 
@@ -939,9 +939,9 @@ abstract class DestinationAcceptanceTest(
     @Throws(Exception::class)
     open fun testIncrementalDedupeSync() {
         if (!implementsAppendDedup()) {
-            LOGGER.info(
-                "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'"
-            )
+            LOGGER.info {
+            "Destination's spec.json does not include 'append_dedupe' in its '\"supportedDestinationSyncModes\"'"
+            }
             return
         }
 
@@ -1109,7 +1109,7 @@ abstract class DestinationAcceptanceTest(
                 )
             )
         runner.start()
-        val transformationRoot = Files.createDirectories(jobRoot!!.resolve("transform"))
+        val transformationRoot = Files.createDirectories(jobRoot.resolve("transform"))
         val dbtConfig =
             OperatorDbt() // Forked from https://github.com/dbt-labs/jaffle_shop because they made a
                 // change that would have
@@ -1198,7 +1198,7 @@ abstract class DestinationAcceptanceTest(
                 )
             )
         runner.start()
-        val transformationRoot = Files.createDirectories(jobRoot!!.resolve("transform"))
+        val transformationRoot = Files.createDirectories(jobRoot.resolve("transform"))
         val dbtConfig =
             OperatorDbt()
                 .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
@@ -1236,7 +1236,7 @@ abstract class DestinationAcceptanceTest(
             )
         // A unique namespace is required to avoid test isolation problems.
         val namespace = TestingNamespaces.generate("source_namespace")
-        testSchemas!!.add(namespace)
+        testSchemas.add(namespace)
 
         catalog.streams.forEach(Consumer { stream: AirbyteStream -> stream.namespace = namespace })
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
@@ -1277,12 +1277,12 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val namespace1 = TestingNamespaces.generate("source_namespace")
-        testSchemas!!.add(namespace1)
+        testSchemas.add(namespace1)
         catalog.streams.forEach(Consumer { stream: AirbyteStream -> stream.namespace = namespace1 })
 
         val diffNamespaceStreams = ArrayList<AirbyteStream>()
         val namespace2 = TestingNamespaces.generate("diff_source_namespace")
-        testSchemas!!.add(namespace2)
+        testSchemas.add(namespace2)
         val mapper = MoreMappers.initMapper()
         for (stream in catalog.streams) {
             val clonedStream =
@@ -1340,7 +1340,7 @@ abstract class DestinationAcceptanceTest(
             assertNamespaceNormalization(
                 testCaseId,
                 namespaceInDst,
-                namingConventionTransformer.getNamespace(namespaceInCatalog!!)
+                namingConventionTransformer.getNamespace(namespaceInCatalog)
             )
         }
 
@@ -1377,7 +1377,7 @@ abstract class DestinationAcceptanceTest(
         try {
             runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false)
             // Add to the list of schemas to clean up.
-            testSchemas!!.add(namespaceInCatalog)
+            testSchemas.add(namespaceInCatalog)
         } catch (e: Exception) {
             throw IOException(
                 String.format(
@@ -1421,7 +1421,7 @@ abstract class DestinationAcceptanceTest(
     @Throws(Exception::class)
     fun testSyncNotFailsWithNewFields() {
         if (!implementsOverwrite()) {
-            LOGGER.info("Destination's spec.json does not support overwrite sync mode.")
+            LOGGER.info { "Destination's spec.json does not support overwrite sync mode." }
             return
         }
 
@@ -1608,7 +1608,7 @@ abstract class DestinationAcceptanceTest(
                     .checkConnection
             return standardCheckConnectionOutput.status
         } catch (e: Exception) {
-            LOGGER.error("Failed to check connection:" + e.message)
+            LOGGER.error { "Failed to check connection:" + e.message }
         }
         return StandardCheckConnectionOutput.Status.FAILED
     }
@@ -1737,7 +1737,7 @@ abstract class DestinationAcceptanceTest(
                 getNormalizationIntegrationType()
             )
         runner.start()
-        val normalizationRoot = Files.createDirectories(jobRoot!!.resolve("normalize"))
+        val normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"))
         if (
             !runner.normalize(
                 JOB_ID,
@@ -1912,7 +1912,7 @@ abstract class DestinationAcceptanceTest(
 
         // iterate through streams
         for (streamCounter in 0 until streamsSize) {
-            LOGGER.info("Started new stream processing with #$streamCounter")
+            LOGGER.info { "Started new stream processing with #$streamCounter" }
             // iterate through msm inside a particular stream
             // Generate messages and put it to stream
             for (msgCounter in 0 until messagesNumber) {
@@ -1941,7 +1941,7 @@ abstract class DestinationAcceptanceTest(
                         )
                     )
                 } catch (e: Exception) {
-                    LOGGER.error("Failed to write a RECORD message: $e")
+                    LOGGER.error { "Failed to write a RECORD message: $e" }
                     throw RuntimeException(e)
                 }
 
@@ -1971,20 +1971,20 @@ abstract class DestinationAcceptanceTest(
                     )
                 )
             } catch (e: Exception) {
-                LOGGER.error("Failed to write a STATE message: $e")
+                LOGGER.error { "Failed to write a STATE message: $e" }
                 throw RuntimeException(e)
             }
 
             currentStreamNumber.set(streamCounter)
         }
 
-        LOGGER.info(
+        LOGGER.info {
             String.format(
                 "Added %s messages to each of %s streams",
                 currentRecordNumberForStream,
                 currentStreamNumber
             )
-        )
+        }
         // Close destination
         destination.notifyEndOfInput()
     }
@@ -2068,7 +2068,6 @@ abstract class DestinationAcceptanceTest(
                 )
             )
         val config = getConfig()
-        val defaultSchema = getDefaultSchema(config)
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2097,7 +2096,6 @@ abstract class DestinationAcceptanceTest(
                 )
             )
         val config = getConfig()
-        val defaultSchema = getDefaultSchema(config)
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2128,7 +2126,6 @@ abstract class DestinationAcceptanceTest(
                 )
             )
         val config = getConfig()
-        val defaultSchema = getDefaultSchema(config)
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2160,7 +2157,6 @@ abstract class DestinationAcceptanceTest(
                 )
             )
         val config = getConfig()
-        val defaultSchema = getDefaultSchema(config)
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2172,10 +2168,10 @@ abstract class DestinationAcceptanceTest(
         messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>
     ) {
         if (normalizationFromDefinition()) {
-            LOGGER.info("Normalization is supported! Run test with normalization.")
+            LOGGER.info { "Normalization is supported! Run test with normalization." }
             runAndCheckWithNormalization(messages, configuredCatalog, catalog)
         } else {
-            LOGGER.info("Normalization is not supported! Run test without normalization.")
+            LOGGER.info { "Normalization is not supported! Run test without normalization." }
             runAndCheckWithoutNormalization(messages, configuredCatalog, catalog)
         }
     }
