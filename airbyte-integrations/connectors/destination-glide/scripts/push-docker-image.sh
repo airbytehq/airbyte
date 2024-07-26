@@ -42,3 +42,15 @@ docker image tag $LOCAL_BUILT_IMAGE_NAME $GLIDE_DOCKER_IMAGE_NAME:$new_version
 
 # Push the image with the new tag
 docker push $GLIDE_DOCKER_IMAGE_NAME:$new_version
+
+echo "Do you want to make this new version the 'latest' tag in Docker too (so that new pulls get this version by default)? (y/n)"
+read answer
+
+if [ "$answer" != "${answer#[Yy]}" ] ; then
+    echo "Taging latest..."
+    docker image tag $LOCAL_BUILT_IMAGE_NAME $GLIDE_DOCKER_IMAGE_NAME:latest
+    docker push $GLIDE_DOCKER_IMAGE_NAME:latest
+else
+    echo "Exiting..."
+    exit 0
+fi
