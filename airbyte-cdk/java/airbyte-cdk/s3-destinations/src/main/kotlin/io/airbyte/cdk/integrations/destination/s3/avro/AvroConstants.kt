@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination.s3.avro
 
+import org.apache.avro.SchemaBuilder
+
 class AvroConstants {
 
     companion object {
@@ -17,5 +19,22 @@ class AvroConstants {
             setOf("_ab_additional_properties", AVRO_EXTRA_PROPS_FIELD)
 
         @JvmField val NAME_TRANSFORMER: AvroNameTransformer = AvroNameTransformer()
+
+        val AVRO_CHANGES_SCHEMA = SchemaBuilder.builder()
+            .record("change")
+            .fields()
+            .name("field")
+            .type()
+            .stringType()
+            .noDefault()
+            .name("change")
+            .type()
+            .stringType()
+            .noDefault()
+            .name("reason")
+            .type()
+            .stringType()
+            .noDefault()
+            .endRecord()
     }
 }
