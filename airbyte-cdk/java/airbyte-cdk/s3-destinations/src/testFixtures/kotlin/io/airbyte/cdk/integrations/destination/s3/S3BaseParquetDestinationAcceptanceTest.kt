@@ -53,7 +53,7 @@ abstract class S3BaseParquetDestinationAcceptanceTest protected constructor() :
                     var record: GenericData.Record?
                     while ((parquetReader.read().also { record = it }) != null) {
                         val jsonBytes =
-                            AvroRecordFactory.createV1JsonToAvroConverter().convertToJson(record)
+                            AvroRecordFactory.createV2JsonToAvroConverter().convertToJson(record)
                         var jsonRecord = jsonReader.readTree(jsonBytes)
                         jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord)
                         jsonRecords.add(jsonRecord)

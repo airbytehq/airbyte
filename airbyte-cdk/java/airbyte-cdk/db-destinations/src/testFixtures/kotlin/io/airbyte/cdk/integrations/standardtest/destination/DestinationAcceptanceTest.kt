@@ -65,6 +65,10 @@ import java.net.URISyntaxException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -85,7 +89,8 @@ abstract class DestinationAcceptanceTest(
     // If false, ignore counts and only verify the final state message.
     private val verifyIndividualStateAndCounts: Boolean = false,
     private val useV2Fields: Boolean = false,
-    private val supportsChangeCapture: Boolean = false
+    private val supportsChangeCapture: Boolean = false,
+    private val expectNumericTimestamps: Boolean = false
 ) {
     protected var testSchemas: HashSet<String> = HashSet()
 
@@ -202,7 +207,9 @@ abstract class DestinationAcceptanceTest(
                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
                 JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
                 JavaBaseConstants.COLUMN_NAME_AB_META,
-                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
+                // Sometimes added
+                "_airbyte_additional_properties"
             )
 
         val jsons = MoreMappers.initMapper().createObjectNode()
@@ -1608,7 +1615,7 @@ abstract class DestinationAcceptanceTest(
         val generationId = configuredCatalog.streams[0].generationId
         val stream = configuredCatalog.streams[0].stream
         val destinationOutput =
-            retrieveRecords(testEnv, "users", getDefaultSchema(config)!!, stream.jsonSchema)
+            retrieveRecords(testEnv, "users", getDefaultSchema(config)!! /* ignored */, stream.jsonSchema)
 
         // Resolve common field keys.
         val abIdKey: String =
@@ -1685,6 +1692,84 @@ abstract class DestinationAcceptanceTest(
             val twoChanges =
                 getMeta(badRowWithPreviousChange)["changes"].elements().asSequence().toList()
             Assertions.assertEquals(2, twoChanges.size)
+        }
+    }
+
+    private fun toTimeTypeMap(schemaMap: Map<String, JsonNode>, format: String): Map<String, Map<String, Boolean>> {
+        return schemaMap.mapValues { schema ->
+            schema.value["properties"].fields().asSequence()
+                .filter { (_, value) -> value["format"]?.asText() == format }
+                .map { (key, value) ->
+                    val hasTimeZone = !(value.has("airbyte_type") && value["airbyte_type"]!!.asText().endsWith("without_timezone"))
+                    key to hasTimeZone
+                }
+                .toMap()
+        }
+    }
+
+    @Test
+    fun testAirbyteTimeTypes() {
+        val configuredCatalog =
+            Jsons.deserialize(
+                MoreResources.readResource("v0/every_time_type_configured_catalog.json"),
+                ConfiguredAirbyteCatalog::class.java
+            )
+        println(configuredCatalog)
+        val config = getConfig()
+        val messages =
+            MoreResources.readResource("v0/every_time_type_messages.txt")
+                .trim()
+                .lines()
+                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+
+        val expectedByStream = messages.filter { it.type == Type.RECORD }.groupBy { it.record.stream }
+        val schemasByStreamName = configuredCatalog.streams.associateBy { it.stream.name }.mapValues { it.value.stream.jsonSchema }
+        val dateFieldMeta = toTimeTypeMap(schemasByStreamName, "date")
+        val datetimeFieldMeta = toTimeTypeMap(schemasByStreamName, "date-time")
+        val timeFieldMeta = toTimeTypeMap(schemasByStreamName, "time")
+
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        for (stream in configuredCatalog.streams) {
+            val name = stream.stream.name
+            val schema = stream.stream.jsonSchema
+            val records =
+                retrieveRecordsDataOnly(testEnv, stream.stream.name, getDefaultSchema(config)!! /* ignored */, schema)
+            val actual = records.map { node -> pruneAndMaybeFlatten(node) }
+            val expected = expectedByStream[stream.stream.name]!!.map {
+                if (expectNumericTimestamps) {
+                    val node = MoreMappers.initMapper().createObjectNode()
+                    it.record.data.fields().forEach { (k, v) ->
+                        if (dateFieldMeta[name]!!.containsKey(k)) {
+                            val daysSinceEpoch = LocalDate.parse(v.asText()).toEpochDay()
+                            node.put(k, daysSinceEpoch.toInt())
+                        } else if (datetimeFieldMeta[name]!!.containsKey(k)) {
+                            val hasTimeZone = datetimeFieldMeta[name]!![k]!!
+                            val millisSinceEpoch = if (hasTimeZone) {
+                                Instant.parse(v.asText()).toEpochMilli() * 1000
+                            } else {
+                                LocalDateTime.parse(v.asText()).toInstant(ZoneOffset.UTC).toEpochMilli() * 1000
+                            }
+                            node.put(k, millisSinceEpoch)
+                        } else if (timeFieldMeta[name]!!.containsKey(k)) {
+                            val hasTimeZone = timeFieldMeta[name]!![k]!!
+                            val timeOfDayMicros = if (hasTimeZone) {
+                                val time = v.asText().take(8)
+                                LocalTime.parse(time).toNanoOfDay() / 1000
+                            } else {
+                                LocalTime.parse(v.asText()).toNanoOfDay() / 1000
+                            }
+                            node.put(k, timeOfDayMicros)
+                        } else {
+                            node.set(k, v)
+                        }
+                    }
+                    node
+                } else {
+                    it.record.data
+                }
+            }
+
+            Assertions.assertEquals(expected, actual)
         }
     }
 
