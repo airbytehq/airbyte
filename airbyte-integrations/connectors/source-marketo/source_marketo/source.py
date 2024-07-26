@@ -171,14 +171,17 @@ class MarketoExportBase(IncrementalMarketoStream):
         return {}
 
     def create_export(self, param):
+        self.logger.info('creating export job')
         return next(MarketoExportCreate(self.config, stream_name=self.stream_name, param=param).read_records(sync_mode=None), {})
 
     def start_export(self, stream_slice):
+        self.logger.info('starting export job')
         return next(
             MarketoExportStart(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
         )
 
     def get_export_status(self, stream_slice):
+        self.logger.info('getting export job status')
         return next(
             MarketoExportStatus(self.config, stream_name=self.stream_name, export_id=stream_slice["id"]).read_records(sync_mode=None)
         )
@@ -202,6 +205,7 @@ class MarketoExportBase(IncrementalMarketoStream):
         return date_slices
 
     def sleep_till_export_completed(self, stream_slice: Mapping[str, Any]) -> bool:
+        self.logger.info('sleeping till export completed')
         while True:
             status = self.get_export_status(stream_slice)
             self.logger.info(f"Export {self.name} from {stream_slice['startAt']} to {stream_slice['endAt']} status is {status}")
@@ -229,7 +233,7 @@ class MarketoExportBase(IncrementalMarketoStream):
 
         :return an iterable containing each record in the response
         """
-
+        self.logger.info('parsing export job response')
         default_prop = {"type": ["null", "string"]}
         schema = self.get_json_schema()["properties"]
         response.encoding = "utf-8"
@@ -261,9 +265,11 @@ class MarketoExportBase(IncrementalMarketoStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         self.sleep_till_export_completed(stream_slice)
+        self.logger.info('awake from sleep - reading records')
         return super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def filter_null_bytes(self, response_lines: Iterable[str]) -> Iterable[str]:
+        self.logger.info('filtering null bytes')
         for line in response_lines:
             res = line.replace("\x00", "")
             if len(res) < len(line):
@@ -307,11 +313,18 @@ class MarketoExportCreate(MarketoStream):
             if errors[0].get("code") == "1029" and re.match("Export daily quota \d+MB exceeded", errors[0].get("message")):
                 message = "Daily limit for job extractions has been reached (resets daily at 12:00AM CST)."
                 raise AirbyteTracedException(internal_message=response.text, message=message, failure_type=FailureType.config_error)
-        result = response.json().get("result")[0]
+        
+        result = response.json().get("result")
+        if not result:
+            self.logger.warning("No result found in the response!")
+            return True
+        
+        result = result[0]
         status, export_id = result.get("status", "").lower(), result.get("exportId")
         if status != "created" or not export_id:
             self.logger.warning(f"Failed to create export job! Status is {status}!")
             return True
+        
         return False
 
     def request_body_json(self, **kwargs) -> Optional[Mapping]:
@@ -358,11 +371,12 @@ class MarketoExportStatus(MarketoStream):
 
 class Leads(MarketoExportBase):
     """
-    Return list of all leeds.
+    Return list of all leads.
     API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
     """
 
     cursor_field = "updatedAt"
+    _schema_cache = None  # Class variable to cache the schema
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config, self.name)
@@ -375,9 +389,51 @@ class Leads(MarketoExportBase):
         return list(standard_properties & available_fields)
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        # TODO: make schema truly dynamic like in stream Activities
-        #  now blocked by https://github.com/airbytehq/airbyte/issues/30530 due to potentially > 500 fields in schema (can cause OOM)
-        return super().get_json_schema()
+        if Leads._schema_cache is not None:  # Use cached schema if available
+            return Leads._schema_cache
+
+        standard_properties = super().get_json_schema()
+        resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+        fields = resp.json().get("result")
+        if fields is None:
+            self.logger.info('retrying to get fields, sleeping 10 seconds...')
+            sleep(10)
+            resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+            fields = resp.json().get("result")
+            self.logger.info('retried retriving fields')
+        
+        STRING_TYPES = ["string", "email", "phone", "url", "textarea", "reference"]
+        for field in fields:
+            field_name = field.get("rest", {}).get("name")
+            if not field_name:
+                continue
+
+            data_type = field.get("dataType")
+            if data_type == "date":
+                field_schema = {"type": "string", "format": "date"}
+            elif data_type == "datetime":
+                field_schema = {"type": "string", "format": "date-time"}
+            elif data_type in ["integer", "percent", "score"]:
+                field_schema = {"type": "integer"}
+            elif data_type in ["float", "currency"]:
+                field_schema = {"type": "number"}
+            elif data_type == "boolean":
+                field_schema = {"type": "boolean"}
+            elif data_type in STRING_TYPES:
+                field_schema = {"type": "string"}
+            elif data_type == "array":
+                field_schema = {"type": "array", "items": {"type": ["integer", "number", "string", "null"]}}
+            else:
+                field_schema = {"type": "string"}
+
+            # Allow null values for all field types
+            field_schema["type"] = [field_schema["type"], "null"]
+            standard_properties["properties"][field_name] = field_schema
+
+        self.logger.info('caching leads schema')
+        Leads._schema_cache = standard_properties  # Cache the schema
+        return standard_properties
+
 
 
 class Activities(MarketoExportBase):
