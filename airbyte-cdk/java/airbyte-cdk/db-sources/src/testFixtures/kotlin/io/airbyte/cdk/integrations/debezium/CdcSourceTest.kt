@@ -1418,15 +1418,19 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         for (i in 0 until 2) {
             val streamsInRecoveryState =
-                stateAfterRecoverySync[i].global.streamStates
-                .map { obj: AirbyteStreamState -> obj.streamDescriptor }
-                .toSet()
+                stateAfterRecoverySync[i]
+                    .global
+                    .streamStates
+                    .map { obj: AirbyteStreamState -> obj.streamDescriptor }
+                    .toSet()
             Assertions.assertEquals(1, streamsInRecoveryState.size)
         }
 
         for (i in 2 until 9) {
             val streamsInRecoveryState =
-                stateAfterRecoverySync[i].global.streamStates
+                stateAfterRecoverySync[i]
+                    .global
+                    .streamStates
                     .map { obj: AirbyteStreamState -> obj.streamDescriptor }
                     .toSet()
             Assertions.assertEquals(2, streamsInRecoveryState.size)
@@ -1453,12 +1457,13 @@ abstract class CdcSourceTest<S : Source, T : TestDatabase<*, T, *>> {
 
         for (i in 0 until 2) {
             val streamsInRecoveryState =
-                stateAfterRecoverySync2[i].global.streamStates
+                stateAfterRecoverySync2[i]
+                    .global
+                    .streamStates
                     .map { obj: AirbyteStreamState -> obj.streamDescriptor }
                     .toSet()
             Assertions.assertEquals(2, streamsInRecoveryState.size)
         }
-
 
         Assertions.assertEquals(3, stateAfterRecoverySync2.size)
         Assertions.assertEquals(2, recordsFromRecoverySync2.size)
