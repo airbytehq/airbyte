@@ -1,7 +1,7 @@
 data:
   ab_internal:
-    ql: 400
-    sl: 200
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - ${domain}
@@ -25,8 +25,8 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: generally_available
-  supportLevel: certified
+  releaseStage: beta
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code

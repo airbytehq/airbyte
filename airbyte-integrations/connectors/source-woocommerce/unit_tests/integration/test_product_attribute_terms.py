@@ -26,7 +26,7 @@ class TestFullRefresh(TestCase):
         # Register mock response
         http_mocker.get(
             get_product_attributes_request()
-            .with_param("orderby", "id") # TODO: check if this repeats in all requests.
+            .with_param("orderby", "id")
             .with_param("order", "asc")
             .with_param("dates_are_gmt", "true")
             .with_param("per_page", "100")
