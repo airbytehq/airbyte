@@ -32,6 +32,34 @@ def get_order_notes_request(order_id: str) -> RequestBuilder:
     return RequestBuilder.get_order_notes_endpoint(order_id)
 
 
+def get_payment_gateways_request() -> RequestBuilder:
+    return RequestBuilder.get_payment_gateways_endpoint()
+
+
+def get_product_attributes_request() -> RequestBuilder:
+    return RequestBuilder.get_product_attributes_endpoint()
+
+
+def get_product_attribute_terms_request(attribute_id: str) -> RequestBuilder:
+    return RequestBuilder.get_product_attribute_terms_endpoint(attribute_id)
+
+
+def get_product_categories_request() -> RequestBuilder:
+    return RequestBuilder.get_product_categories_endpoint()
+
+
+def get_product_reviews_request() -> RequestBuilder:
+    return RequestBuilder.get_product_reviews_endpoint()
+
+
+def get_product_shipping_classes_request() -> RequestBuilder:
+    return RequestBuilder.get_product_shipping_classes_endpoint()
+
+
+def get_product_tags_request() -> RequestBuilder:
+    return RequestBuilder.get_product_tags_endpoint()
+
+
 class RequestBuilder:
     @classmethod
     def get_customers_endpoint(cls) -> RequestBuilder:
@@ -48,6 +76,34 @@ class RequestBuilder:
     @classmethod
     def get_order_notes_endpoint(cls, order_id: str) -> RequestBuilder:
         return cls(resource=f"orders/{order_id}/notes")
+
+    @classmethod
+    def get_payment_gateways_endpoint(cls) -> RequestBuilder:
+        return cls(resource="payment_gateways")
+
+    @classmethod
+    def get_product_attributes_endpoint(cls) -> RequestBuilder:
+        return cls(resource="products/attributes")
+
+    @classmethod
+    def get_product_attribute_terms_endpoint(cls, attribute_id: str) -> RequestBuilder:
+        return cls(resource=f"products/attributes/{attribute_id}/terms")
+
+    @classmethod
+    def get_product_categories_endpoint(cls) -> RequestBuilder:
+        return cls(resource="products/categories")
+
+    @classmethod
+    def get_product_reviews_endpoint(cls) -> RequestBuilder:
+        return cls(resource="products/reviews")
+
+    @classmethod
+    def get_product_shipping_classes_endpoint(cls) -> RequestBuilder:
+        return cls(resource="products/shipping_classes")
+
+    @classmethod
+    def get_product_tags_endpoint(cls) -> RequestBuilder:
+        return cls(resource="products/tags")
 
     def __init__(self, resource: Optional[str] = "") -> None:
         self._item_id = None
