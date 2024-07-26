@@ -42,7 +42,7 @@ data:
       2.0.0:
         message: >
           Version 2.0.0 updates schemas for all hourly reports (end in report_hourly),
-        and the following streams: Accounts, Campaigns, Search Query Performance
+          and the following streams: Accounts, Campaigns, Search Query Performance
           Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword
           Labels, Ad Group Labels, Keywords, and Budget Summary Report.
           Users will need to refresh the source schema and reset affected streams
