@@ -1,4 +1,4 @@
-# Oracle (incubating enterprise source)
+# Source Oracle
 
 Airbyte's incubating Oracle enterprise source connector offers the following features:
 
