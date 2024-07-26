@@ -1,8 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import sys
 import time
 from io import StringIO
-import sys
 from threading import RLock
 from types import TracebackType
 from typing import Optional
