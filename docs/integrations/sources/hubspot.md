@@ -337,7 +337,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.14 | 2024-07-18 | [41639](https://github.com/airbytehq/airbyte/pull/41639) | Handle custom object name collisions with standard objects |
+| 4.2.14 | 2024-07-26 | [41639](https://github.com/airbytehq/airbyte/pull/41639) | Handle custom object name collisions with standard objects |
 | 4.2.13 | 2024-07-20 | [42264](https://github.com/airbytehq/airbyte/pull/42264) | Update dependencies |
 | 4.2.12 | 2024-07-13 | [41766](https://github.com/airbytehq/airbyte/pull/41766) | Update dependencies |
 | 4.2.11 | 2024-07-10 | [41558](https://github.com/airbytehq/airbyte/pull/41558) | Update dependencies |
