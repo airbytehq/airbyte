@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.6
+
+Allow a final teardown command to be run after all tests.
+
 ## 3.8.5
 
 Update CAT tests for discover to deduplicate on namespace and stream name pair.

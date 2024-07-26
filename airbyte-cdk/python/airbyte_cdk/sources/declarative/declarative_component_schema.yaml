@@ -32,6 +32,9 @@ properties:
     type: object
     description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
     additionalProperties: true
+  description:
+    type: string
+    description: A description of the connector. It will be presented on the Source documentation page.
 additionalProperties: false
 definitions:
   AddedFieldDefinition:
