@@ -261,9 +261,7 @@ public class MongoDbCdcInitializer {
                   cdcStreamsStartStatusEmitters,
                   Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
                   Collections.singletonList(initialSnapshotIterator),
-                  cdcStreamsCompleteStatusEmitters,
-                  List.of(new TransientErrorTraceEmitterIterator(
-                      new TransientErrorException("Forcing a new sync after the initial load to read the binlog"))))
+                  cdcStreamsCompleteStatusEmitters)
                   .flatMap(Collection::stream).collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     }
