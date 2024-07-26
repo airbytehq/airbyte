@@ -1662,9 +1662,11 @@ abstract class DestinationAcceptanceTest(
             }
         } else {
             /* Null the states and collect only the final messages */
-            val finalActual = actual.lastOrNull()
-                ?: throw IllegalArgumentException(
-                    "All message sets used for testing should include a state record")
+            val finalActual =
+                actual.lastOrNull()
+                    ?: throw IllegalArgumentException(
+                        "All message sets used for testing should include a state record"
+                    )
             val clone = finalActual.state
             clone.destinationStats = null
             finalActual.state = clone
