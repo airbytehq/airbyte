@@ -80,6 +80,10 @@ def get_shipping_zones_request() -> RequestBuilder:
     return RequestBuilder.get_shipping_zones_endpoint()
 
 
+def get_shipping_zone_locations_request(zone_id: str) -> RequestBuilder:
+    return RequestBuilder.get_shipping_zone_locations_endpoint(zone_id)
+
+
 class RequestBuilder:
     @classmethod
     def get_customers_endpoint(cls) -> RequestBuilder:
@@ -144,6 +148,10 @@ class RequestBuilder:
     @classmethod
     def get_shipping_zones_endpoint(cls) -> RequestBuilder:
         return cls(resource="shipping/zones")
+
+    @classmethod
+    def get_shipping_zone_locations_endpoint(cls, zone_id: str) -> RequestBuilder:
+        return cls(resource=f"shipping/zones/{zone_id}/locations")
 
     def __init__(self, resource: Optional[str] = "") -> None:
         self._item_id = None
