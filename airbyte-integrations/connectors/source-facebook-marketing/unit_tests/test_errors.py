@@ -446,7 +446,7 @@ class TestRealErrors:
             assert False
         except Exception as error:
             assert isinstance(error, AirbyteTracedException)
-            # assert error.failure_type == failure_type
+            assert error.failure_type == failure_type
             assert (friendly_msg) in error.message
 
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
