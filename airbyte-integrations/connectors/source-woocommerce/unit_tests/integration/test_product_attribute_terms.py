@@ -8,7 +8,7 @@ from airbyte_protocol.models import SyncMode
 from freezegun import freeze_time
 
 from .config import ConfigBuilder
-from .request_builder import get_product_attributes_request, get_product_attribute_terms_request
+from .request_builder import get_product_attribute_terms_request, get_product_attributes_request
 from .utils import config, get_json_http_response, read_output
 
 _STREAM_NAME = "product_attribute_terms"
