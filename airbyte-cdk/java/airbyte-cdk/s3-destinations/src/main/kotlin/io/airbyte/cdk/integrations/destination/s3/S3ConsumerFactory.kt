@@ -54,7 +54,6 @@ class S3ConsumerFactory {
         )
     }
 
-
     private fun onStartFunction(
         storageOperations: BlobStorageOperations,
         writeConfigs: List<WriteConfig>
