@@ -172,8 +172,9 @@ corresponds to that version.
 
 ### Java CDK
 
-| Version    | Date       | Pull Request                                                    | Subject                                                                                                                                                        |
-|:-----------|:-----------|:----------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                               | Subject                                                                                                                                                        |
+|:-----------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.43.3     | 2024-07-22 | [\#42417](https://github.com/airbytehq/airbyte/pull/42417) | Handle null exception message in ConnectorExceptionHandler. |
 | 0.43.2     | 2024-07-22 | [\#42431](https://github.com/airbytehq/airbyte/pull/42431)      | Filter out debezium message change events                                                                                                                      |
 | 0.43.1     | 2024-07-22 | [\#41622](https://github.com/airbytehq/airbyte/pull/41622)      | Fix null safety bug in debezium event processing                                                                                                               |
 | 0.43.0     | 2024-07-17 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954)      | fix refreshes for connectors using the old SqlOperations                                                                                                       |

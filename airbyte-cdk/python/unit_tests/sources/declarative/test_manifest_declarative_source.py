@@ -69,8 +69,9 @@ class TestManifestDeclarativeSource:
 
     def test_valid_manifest(self):
         manifest = {
-            "version": "0.29.3",
+            "version": "3.8.2",
             "definitions": {},
+            "description": "This is a sample source connector that is very valid.",
             "streams": [
                 {
                     "type": "DeclarativeStream",
@@ -139,6 +140,7 @@ class TestManifestDeclarativeSource:
         assert len(streams) == 2
         assert isinstance(streams[0], DeclarativeStream)
         assert isinstance(streams[1], DeclarativeStream)
+        assert source.resolved_manifest["description"] == "This is a sample source connector that is very valid."
 
     def test_manifest_with_spec(self):
         manifest = {
