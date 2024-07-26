@@ -1,0 +1,30 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "destination-palantir-foundry"
+description = "Destination implementation for palantir-foundry."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/palantir-foundry"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "destination_palantir_foundry" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^3.3.0"
+foundry-platform-sdk = "^0.6.0"
+mockito = "^1.5.0"
+python-dateutil = "^2.9.0.post0"
+
+[tool.poetry.scripts]
+destination-palantir-foundry = "destination_palantir_foundry.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"

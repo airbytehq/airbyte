@@ -1,0 +1,87 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/palantir-foundry",
+  "supported_destination_sync_modes" : [
+    "append"
+  ],
+  "supportsIncremental" : false,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Palantir Foundry",
+    "type" : "object",
+    "required" : [
+      "host",
+      "auth",
+      "destination_config"
+    ],
+    "additionalProperties" : false,
+    "properties" : {
+      "host" : {
+        "title" : "Palantir Foundry Host",
+        "description" : "ex: mystack.palantirfoundry.com",
+        "type" : "string",
+        "order" : 0
+      },
+      "auth" : {
+        "title" : "OAuth 2.0 Client Credentials",
+        "required" : [
+          "client_id",
+          "client_secret"
+        ],
+        "type" : "object",
+        "properties" : {
+          "client_id" : {
+            "title" : "Client ID",
+            "type" : "string",
+            "order" : 0
+          },
+          "client_secret" : {
+            "title" : "Client Secret",
+            "type" : "string",
+            "order" : 1,
+            "airbyte_secret" : true
+          }
+        }
+      },
+      "destination_config" : {
+        "title" : "Destination Configuration",
+        "type" : "object",
+        "required" : [
+          "project_rid",
+          "materialization_mode"
+        ],
+        "order" : 2,
+        "properties" : {
+          "project_rid" : {
+            "title" : "Project RID",
+            "type" : "string",
+            "order" : 0
+          },
+          "materialization_mode" : {
+            "title" : "Materialization Mode",
+            "description" : "The materialization mode specifies in what format to push and store the data in your Foundry instance, either utilizing Foundry Streams or static Foundry Datasets.",
+            "type" : "object",
+            "oneOf" : [
+              {
+                "title" : "Foundry Streams",
+                "type" : "object",
+                "order" : 0,
+                "properties" : {
+                  "instance" : {
+                    "type" : "string",
+                    "enum" : [
+                      "foundry_streams"
+                    ],
+                    "default" : "foundry_streams",
+                    "airbyte_hidden" : true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
