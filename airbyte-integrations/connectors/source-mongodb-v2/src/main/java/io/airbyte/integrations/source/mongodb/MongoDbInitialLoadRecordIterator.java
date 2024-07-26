@@ -4,32 +4,30 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 import static io.airbyte.integrations.source.mongodb.state.IdType.idToStringRepresenation;
 import static io.airbyte.integrations.source.mongodb.state.IdType.parseBinaryIdString;
 import static io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus.IN_PROGRESS;
-import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 
-import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.commons.exceptions.TransientErrorException;
 import com.google.common.collect.AbstractIterator;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import org.bson.*;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.time.Duration;
-import java.time.Instant;
-
-
 
 /**
  * This record iterator operates over a single stream. It continuously reads data from a table via
@@ -74,10 +72,10 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   @Override
   protected Document computeNext() {
     if (cdcInitialLoadTimeout.isPresent()
-            && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
       final String cdcInitialLoadTimeoutMessage = String.format(
-              "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
-              getAirbyteStream().get(), cdcInitialLoadTimeout.get());
+          "Initial load for table %s has taken longer than %s, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get());
       LOGGER.info(cdcInitialLoadTimeoutMessage);
       AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
       throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
