@@ -29,6 +29,10 @@ If setting up an Airbyte server does not fit your use case needs (i.e. you're us
 
 - To use `abctl`, you'll need to have **Docker Desktop** installed. See Docker's instructions for installation: [Mac](https://docs.docker.com/desktop/install/mac-install/), [Windows](https://docs.docker.com/desktop/install/windows-install/), [Linux](https://docs.docker.com/desktop/install/linux-install/) 
 
+## Video Overview
+
+<YouTube id="yl_SCzZQ-zI" title="Airbyte Demo: Intro to abctl" paddingBottom="calc(61.416666666666664% + 41px)" />
+
 ## 1: Install `abctl`
 
 Follow the instructions for your operating system:

@@ -9,6 +9,7 @@ import { SpecSchema } from "@site/src/components/SpecSchema";
 import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { ProductInformation } from "@site/src/components/ProductInformation";
 import { Arcade } from "@site/src/components/Arcade";
+import { YouTube } from "@site/src/components/YouTube";
 
 export default {
   // Re-use the default mapping
@@ -21,4 +22,5 @@ export default {
   SpecSchema,
   PyAirbyteExample,
   ProductInformation,
+  YouTube
 };
