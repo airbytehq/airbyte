@@ -93,12 +93,13 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
                 .filter { o: S3ObjectSummary -> o.key.contains("$streamNameStr/") }
                 .sortedWith(Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time })
 
-        LOGGER.info(
-            "All objects: {}",
-            objectSummaries.map { o: S3ObjectSummary ->
-                String.format("%s/%s", o.bucketName, o.key)
-            },
-        )
+        LOGGER.info {
+            "${"All objects: {}"} ${
+                objectSummaries.map { o: S3ObjectSummary ->
+                    String.format("%s/%s", o.bucketName, o.key)
+                }
+            }"
+        }
         return objectSummaries
     }
 
@@ -130,11 +131,7 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
                 storageProvider(),
                 getConnectorEnv()
             )
-        LOGGER.info(
-            "Test full path: {}/{}",
-            s3DestinationConfig.bucketName,
-            s3DestinationConfig.bucketPath,
-        )
+        LOGGER.info { "${"Test full path: {}/{}"} ${s3DestinationConfig.bucketName} ${s3DestinationConfig.bucketPath}" }
 
         this.s3Client = s3DestinationConfig.getS3Client()
         this.s3nameTransformer = S3NameTransformer()
@@ -154,16 +151,12 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
         }
 
         if (keysToDelete.size > 0) {
-            LOGGER.info(
-                "Tearing down test bucket path: {}/{}",
-                s3DestinationConfig.bucketName,
-                s3DestinationConfig.bucketPath,
-            )
+            LOGGER.info { "${"Tearing down test bucket path: {}/{}"} ${s3DestinationConfig.bucketName} ${s3DestinationConfig.bucketPath}" }
             val result =
                 s3Client!!.deleteObjects(
                     DeleteObjectsRequest(s3DestinationConfig.bucketName).withKeys(keysToDelete),
                 )
-            LOGGER.info("Deleted {} file(s).", result.deletedObjects.size)
+            LOGGER.info { "${"Deleted {} file(s)."} ${result.deletedObjects.size}" }
         }
     }
 
