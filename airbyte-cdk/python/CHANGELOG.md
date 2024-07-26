@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9.4
+Adding  text field to declarative manifest schema for general connector description.
+
 ## 3.9.3
 add name property to http_client for convenience
 
