@@ -240,7 +240,7 @@ class JsonToAvroSchemaConverter {
                     fieldSchema = LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG))
                 } else {
                     fieldSchema = Schema.create(Schema.Type.LONG)
-                    LogicalTypes.timestampMillis().addToSchema(fieldSchema)
+                    LogicalTypes.timestampMicros().addToSchema(fieldSchema)
                 }
             }
             JsonSchemaType.TIME_WITH_TIMEZONE_V1,
@@ -249,7 +249,7 @@ class JsonToAvroSchemaConverter {
                     fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG))
                 } else {
                     fieldSchema = Schema.create(Schema.Type.LONG)
-                    LogicalTypes.timeMillis().addToSchema(fieldSchema)
+                    LogicalTypes.timeMicros().addToSchema(fieldSchema)
                 }
             }
             JsonSchemaType.INTEGER_V0,
