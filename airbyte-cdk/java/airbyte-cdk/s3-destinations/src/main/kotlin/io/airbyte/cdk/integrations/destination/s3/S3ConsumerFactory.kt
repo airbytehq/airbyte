@@ -3,13 +3,17 @@
  */
 package io.airbyte.cdk.integrations.destination.s3
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
+import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
@@ -27,6 +31,29 @@ import org.joda.time.DateTimeZone
 private val LOGGER = KotlinLogging.logger {}
 
 class S3ConsumerFactory {
+    fun create(
+        outputRecordCollector: Consumer<AirbyteMessage>,
+        storageOperations: BlobStorageOperations,
+        onCreateBuffer: BufferCreateFunction,
+        s3Config: S3DestinationConfig,
+        catalog: ConfiguredAirbyteCatalog
+    ): AirbyteMessageConsumer {
+        val writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog)
+        return BufferedStreamConsumer(
+            outputRecordCollector,
+            onStartFunction(storageOperations, writeConfigs),
+            SerializedBufferingStrategy(
+                onCreateBuffer,
+                catalog,
+                flushBufferFunction(storageOperations, writeConfigs, catalog)
+            ),
+            onCloseFunction(storageOperations, writeConfigs),
+            catalog,
+            { jsonNode: JsonNode? -> storageOperations.isValidData(jsonNode!!) },
+            null,
+        )
+    }
+
 
     private fun onStartFunction(
         storageOperations: BlobStorageOperations,
