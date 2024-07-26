@@ -5,16 +5,8 @@
     "state": "AL",
     "postcode": "35041",
     "city": "Cardiff",
-    "postcodes": [
-      "35014",
-      "35036",
-      "35041"
-    ],
-    "cities": [
-      "Alpine",
-      "Brookside",
-      "Cardiff"
-    ],
+    "postcodes": ["35014", "35036", "35041"],
+    "cities": ["Alpine", "Brookside", "Cardiff"],
     "rate": "4.0000",
     "name": "State Tax",
     "priority": 0,

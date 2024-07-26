@@ -55,13 +55,7 @@
     "reviews_allowed": true,
     "average_rating": "0.00",
     "rating_count": 0,
-    "related_ids": [
-      31,
-      22,
-      369,
-      414,
-      56
-    ],
+    "related_ids": [31, 22, 369, 414, 56],
     "upsell_ids": [],
     "cross_sell_ids": [],
     "parent_id": 0,
@@ -128,10 +122,7 @@
         "position": 0,
         "visible": false,
         "variation": true,
-        "options": [
-          "Black",
-          "Green"
-        ]
+        "options": ["Black", "Green"]
       },
       {
         "id": 0,
@@ -139,10 +130,7 @@
         "position": 0,
         "visible": true,
         "variation": true,
-        "options": [
-          "S",
-          "M"
-        ]
+        "options": ["S", "M"]
       }
     ],
     "default_attributes": [],
@@ -219,13 +207,7 @@
     "reviews_allowed": true,
     "average_rating": "0.00",
     "rating_count": 0,
-    "related_ids": [
-      463,
-      47,
-      31,
-      387,
-      458
-    ],
+    "related_ids": [463, 47, 31, 387, 458],
     "upsell_ids": [],
     "cross_sell_ids": [],
     "parent_id": 0,

@@ -8,7 +8,7 @@ from airbyte_protocol.models import SyncMode
 from freezegun import freeze_time
 
 from .config import ConfigBuilder
-from .request_builder import get_shipping_zones_request, get_shipping_zone_methods_request
+from .request_builder import get_shipping_zone_methods_request, get_shipping_zones_request
 from .utils import config, get_json_http_response, read_output
 
 _STREAM_NAME = "shipping_zone_methods"
