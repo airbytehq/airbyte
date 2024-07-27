@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import base64
 import hashlib
@@ -237,6 +238,26 @@ def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_f
     return metadata_dict
 
 
+def _apply_components_py_file_to_metadata_file(
+    metadata_dict: dict,
+    components_py_file_path: Optional[Path] | None,
+) -> dict:
+    """Apply the components.py file to the metadata file before uploading it to GCS."""
+    if components_py_file_path:
+        metadata_dict = set_(
+            metadata_dict,
+            "data.generated.components_py.required",
+            True
+        )
+        metadata_dict = set_(
+            metadata_dict,
+            "data.generated.components_py.md5",
+            compute_gcs_md5(components_py_file_path),
+        )
+
+    return metadata_dict
+
+
 def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
     """Write the metadata to a temporary file."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
@@ -254,7 +275,11 @@ def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
         raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml: {e}")
 
 
-def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, validator_opts: ValidatorOptions) -> Path:
+def _apply_modifications_to_metadata_file(
+    original_metadata_file_path: Path,
+    validator_opts: ValidatorOptions,
+    components_py_file_path: Optional[Path] | None = None,
+) -> Path:
     """Apply modifications to the metadata file before uploading it to GCS.
 
     e.g. The git commit hash, the date of the commit, the author of the commit, etc.
@@ -263,6 +288,7 @@ def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, val
     metadata = _safe_load_metadata_file(original_metadata_file_path)
     metadata = _apply_prerelease_overrides(metadata, validator_opts)
     metadata = _apply_author_info_to_metadata_file(metadata, original_metadata_file_path)
+    metadata = _apply_components_py_file_to_metadata_file(metadata, components_py_file_path)
 
     return _write_metadata_to_tmp_file(metadata)
 
@@ -282,7 +308,19 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
     icon_file_path = metadata_file_path.parent / ICON_FILE_NAME
-    metadata_file_path = _apply_modifications_to_metadata_file(metadata_file_path, validator_opts)
+    connector_name_snake_case = metadata_file_path.parent.name.replace("-", "_")
+    yaml_manifest_file_path: Path | None = metadata_file_path.parent / connector_name_snake_case / "manifest.yaml"
+    if not yaml_manifest_file_path.exists():
+        yaml_manifest_file_path = None
+    components_py_file_path: Path | None = metadata_file_path.parent / connector_name_snake_case / "components.py"
+    if not components_py_file_path.exists():
+        components_py_file_path = None
+
+    metadata_file_path = _apply_modifications_to_metadata_file(
+        original_metadata_file_path=metadata_file_path,
+        validator_opts=validator_opts,
+        components_py_file_path=components_py_file_path,
+    )
 
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, validator_opts)
     if metadata is None:
