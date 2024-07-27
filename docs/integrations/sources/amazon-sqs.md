@@ -101,8 +101,9 @@ Extra care should be taken to understand this risk before enabling this option.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                           |
-| :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| :------ | :--------- |:----------------------------------------------------------|:----------------------------------|
+| 0.1.1   | 2024-01-03 | [#42835](https://github.com/airbytehq/airbyte/pull/42835) | Migrate to Poetry                 |
 | 0.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region |
-| 0.1.0   | 2021-10-10 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000)  | Initial version                   |
+| 0.1.0   | 2021-10-10 | [#0000](https://github.com/airbytehq/airbyte/pull/0000)   | Initial version                   |
 
 </details>
