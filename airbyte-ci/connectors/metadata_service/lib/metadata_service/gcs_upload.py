@@ -342,6 +342,12 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
 
     doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, False)
     doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
+    manifest_yml_uploaded, manifest_yml_blob_id = upload_file_if_changed(
+        yaml_manifest_file_path, bucket, f"{METADATA_FOLDER}/{metadata.data.dockerRepository}/manifest.yaml"
+    )
+    components_py_uploaded, components_py_blob_id = upload_file_if_changed(
+        yaml_manifest_file_path, bucket, f"{METADATA_FOLDER}/{metadata.data.dockerRepository}/components.py"
+    )
 
     if not validator_opts.prerelease_tag:
         latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
@@ -350,6 +356,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     else:
         latest_uploaded, latest_blob_id = False, None
         doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
+        manifest_yml_latest_uploaded, manifest_yml_latest_blob_id = False, None
+        components_py_latest_uploaded, components_py_latest_blob_id = False, None
 
     return MetadataUploadInfo(
         metadata_uploaded=version_uploaded or latest_uploaded,
@@ -384,6 +392,30 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
                 uploaded=doc_latest_uploaded,
                 description="latest doc",
                 blob_id=doc_latest_blob_id,
+            ),
+            UploadedFile(
+                id="manifest_yml",
+                description="versioned doc",
+                uploaded=manifest_yml_uploaded,
+                blob_id=manifest_yml_blob_id,
+            ),
+            UploadedFile(
+                id="components_py",
+                description="components.py file",
+                uploaded=components_py_uploaded,
+                blob_id=components_py_blob_id,
+            ),
+            UploadedFile(
+                id="manifest_yml_latest",
+                description="versioned doc",
+                uploaded=manifest_yml_latest_uploaded,
+                blob_id=manifest_yml_latest_blob_id,
+            ),
+            UploadedFile(
+                id="components_py_latest",
+                description="latest components.py file",
+                uploaded=components_py_latest_uploaded,
+                blob_id=components_py_latest_blob_id,
             ),
             UploadedFile(
                 id="doc_inapp_version",
