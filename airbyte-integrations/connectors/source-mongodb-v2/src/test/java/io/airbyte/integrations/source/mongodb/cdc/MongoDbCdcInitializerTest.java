@@ -195,7 +195,7 @@ class MongoDbCdcInitializerTest {
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
     assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertTrue(iterators.get(0).hasNext(),
+    assertTrue(iterators.get(1).hasNext(),
         "Initial snapshot iterator should at least have one message if the initial snapshot state is set as in progress");
   }
 
@@ -206,8 +206,7 @@ class MongoDbCdcInitializerTest {
     final List<AutoCloseableIterator<AirbyteMessage>> iterators = cdcInitializer
         .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT, CONFIG);
     assertNotNull(iterators);
-    assertEquals(2, filterTraceIterator(iterators).size(), "Should always have 2 iterators: 1 for the initial snapshot and 1 for the cdc stream");
-    assertFalse(iterators.get(0).hasNext(), "Initial snapshot iterator should have no messages if its snapshot state is set as complete");
+    assertEquals(1, filterTraceIterator(iterators).size(), "Should always have 1 iterator for the cdc stream (due to WASS)");
   }
 
   @Test
