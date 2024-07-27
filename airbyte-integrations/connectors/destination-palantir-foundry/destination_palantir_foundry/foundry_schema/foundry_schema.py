@@ -22,15 +22,17 @@ class FoundryFieldSchemaBase(BaseModel):
 
     @abstractmethod
     def ser(self):
+        # HACKHACK: Needed since we can't control how foundry platform sdk serializes these objects
         pass
 
 
 class ArrayFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["ARRAY"] = Field("ARRAY", alias='type')
-    arraySubtype: 'FoundryFieldSchema'
+    arraySubtype: 'FoundryFieldSchema' = Field(...)
 
     @model_serializer
     def ser(self):
+        print(self)
         return {
             **self._base_to_dict(),
             "type": self.type_,
@@ -38,30 +40,8 @@ class ArrayFieldSchema(FoundryFieldSchemaBase):
         }
 
 
-class BinaryFieldSchema(FoundryFieldSchemaBase):
-    type_: Literal["BINARY"] = Field("BINARY", alias='type')
-
-    @model_serializer
-    def ser(self):
-        return {
-            **self._base_to_dict(),
-            "type": self.type_,
-        }
-
-
 class BooleanFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["BOOLEAN"] = Field("BOOLEAN", alias='type')
-
-    @model_serializer
-    def ser(self):
-        return {
-            **self._base_to_dict(),
-            "type": self.type_,
-        }
-
-
-class ByteFieldSchema(FoundryFieldSchemaBase):
-    type_: Literal["BYTE"] = Field("BYTE", alias='type')
 
     @model_serializer
     def ser(self):
@@ -79,21 +59,6 @@ class DateFieldSchema(FoundryFieldSchemaBase):
         return {
             **self._base_to_dict(),
             "type": self.type_,
-        }
-
-
-class DecimalFieldSchema(FoundryFieldSchemaBase):
-    type_: Literal["DECIMAL"] = Field("DECIMAL", alias='type')
-    precision: int
-    scale: int
-
-    @model_serializer
-    def ser(self):
-        return {
-            **self._base_to_dict(),
-            "type": self.type_,
-            "precision": self.precision,
-            "scale": self.scale
         }
 
 
@@ -141,32 +106,6 @@ class LongFieldSchema(FoundryFieldSchemaBase):
         }
 
 
-class MapFieldSchema(FoundryFieldSchemaBase):
-    type_: Literal["MAP"] = Field("MAP", alias='type')
-    keyType: 'FoundryFieldSchema'
-    valueType: 'FoundryFieldSchema'
-
-    @model_serializer
-    def ser(self):
-        return {
-            **self._base_to_dict(),
-            "type": self.type_,
-            "keyType": self.keyType.ser(),
-            "valueType": self.valueType.ser()
-        }
-
-
-class ShortFieldSchema(FoundryFieldSchemaBase):
-    type_: Literal["SHORT"] = Field("SHORT", alias='type')
-
-    @model_serializer
-    def ser(self):
-        return {
-            **self._base_to_dict(),
-            "type": self.type_,
-        }
-
-
 class StringFieldSchema(FoundryFieldSchemaBase):
     type_: Literal["STRING"] = Field("STRING", alias='type')
 
@@ -204,17 +143,12 @@ class TimestampFieldSchema(FoundryFieldSchemaBase):
 
 FoundryFieldSchema = Annotated[Union[
     ArrayFieldSchema,
-    BinaryFieldSchema,
     BooleanFieldSchema,
-    ByteFieldSchema,
     DateFieldSchema,
-    DecimalFieldSchema,
     DoubleFieldSchema,
     FloatFieldSchema,
     IntegerFieldSchema,
     LongFieldSchema,
-    MapFieldSchema,
-    ShortFieldSchema,
     StringFieldSchema,
     StructFieldSchema,
     TimestampFieldSchema,
@@ -225,13 +159,3 @@ class FoundrySchema(BaseModel):
     fieldSchemaList: List[FoundryFieldSchema]
     dataFrameReaderClass: str
     customMetadata: Dict
-
-    @model_serializer
-    def ser(self):
-        return {
-            "fieldSchemaList": [field.ser() for field in self.fieldSchemaList],
-            "dataFrameReaderClass": self.dataFrameReaderClass,
-            "customMetadata": self.customMetadata
-        }
-
-# TODO(jcrowson): Subtypes don't need names, so can ignore in that case

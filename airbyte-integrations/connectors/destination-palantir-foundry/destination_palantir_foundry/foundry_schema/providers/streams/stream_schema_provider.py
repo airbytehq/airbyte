@@ -16,6 +16,5 @@ class StreamSchemaProvider(ABC):
             self,
             airbyte_record: AirbyteRecordMessage,
             foundry_schema: FoundrySchema,
-            generation_id: int
     ) -> Dict[str, Any]:
         pass

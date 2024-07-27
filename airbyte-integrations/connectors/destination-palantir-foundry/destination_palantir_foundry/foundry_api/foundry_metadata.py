@@ -35,6 +35,9 @@ class FoundryMetadata(FoundryService):
             request_timeout=REQUEST_TIMEOUT,
         )
 
-        print(foundry_schema.model_dump())
+        s = foundry_schema
+        a = foundry_schema.model_dump(exclude_unset=True, by_alias=True)
+        
+        print(s, a)
 
         return self.api_client.call_api(get_resource_request)

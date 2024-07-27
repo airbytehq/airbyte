@@ -20,7 +20,7 @@ from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
 from destination_palantir_foundry.utils.project_helper import ProjectHelper
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 from destination_palantir_foundry.writer.foundry_streams.foundry_stream_writer import FoundryStreamWriter
-from integration_tests.schema import JSON_SCHEMA_ALL_DATA_TYPES, SAMPLE_RECORDS
+from integration_tests.test_schema_and_records import JSON_SCHEMA_ALL_DATA_TYPES, SAMPLE_RECORDS
 
 
 def get_current_milliseconds():

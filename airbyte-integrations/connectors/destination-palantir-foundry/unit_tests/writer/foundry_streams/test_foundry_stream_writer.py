@@ -4,7 +4,7 @@ from mockito import unstub, mock, when, verifyZeroInteractions, verify
 
 from destination_palantir_foundry.foundry_api import compass, stream_catalog, stream_proxy, foundry_metadata
 from destination_palantir_foundry.foundry_api.stream_catalog import MaybeGetStreamResponse
-from destination_palantir_foundry.foundry_schema.providers import stream_schema_provider
+from destination_palantir_foundry.foundry_schema.providers.streams import stream_schema_provider
 from destination_palantir_foundry.utils import project_helper
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 from destination_palantir_foundry.writer.foundry_streams import foundry_stream_buffer_registry
@@ -88,8 +88,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
             MINIMAL_CONFIGURED_AIRBYTE_STREAM)
 
         verify(self.buffer_registry).register_foundry_stream(
-            MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name, DATASET_RID, VIEW_RID, FOUNDRY_SCHEMA,
-            MINIMAL_CONFIGURED_AIRBYTE_STREAM)
+            MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name, DATASET_RID, VIEW_RID, FOUNDRY_SCHEMA)
         verifyZeroInteractions(self.foundry_metadata)
         verifyZeroInteractions(self.stream_proxy)
 
@@ -108,8 +107,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
             MINIMAL_CONFIGURED_AIRBYTE_STREAM)
 
         verify(self.buffer_registry, times=1).register_foundry_stream(
-            MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name, DATASET_RID, VIEW_RID, FOUNDRY_SCHEMA,
-            MINIMAL_CONFIGURED_AIRBYTE_STREAM)
+            MINIMAL_AIRBYTE_STREAM.namespace, MINIMAL_AIRBYTE_STREAM.name, DATASET_RID, VIEW_RID, FOUNDRY_SCHEMA)
         verify(self.stream_catalog, times=1)
         verify(self.foundry_metadata, times=1).put_schema(
             DATASET_RID, FOUNDRY_SCHEMA)
@@ -127,7 +125,7 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
     def test_addRecord_registeredDataset_addsToBuffer(self):
         when(self.buffer_registry).get(
             NAMESPACE, STREAM_NAME).thenReturn(
-            BufferRegistryEntry(DATASET_RID, VIEW_RID, [], FOUNDRY_SCHEMA, MINIMAL_CONFIGURED_AIRBYTE_STREAM))
+            BufferRegistryEntry(DATASET_RID, VIEW_RID, [], FOUNDRY_SCHEMA))
 
         record = {"test": 1}
 
@@ -139,26 +137,24 @@ class TestUnbufferedFoundryStreamWriter(unittest.TestCase):
     def test_ensureFlushed_noBufferedRecords_doesNothing(self):
         when(self.buffer_registry).flush_buffer(
             NAMESPACE, STREAM_NAME).thenReturn(
-            BufferRegistryEntry(DATASET_RID, VIEW_RID, [], FOUNDRY_SCHEMA, MINIMAL_CONFIGURED_AIRBYTE_STREAM))
+            BufferRegistryEntry(DATASET_RID, VIEW_RID, [], FOUNDRY_SCHEMA))
 
-        self.foundry_stream_writer.ensure_flushed(
+        self.foundry_stream_writer.flush_to_destination(
             NAMESPACE, STREAM_NAME)
 
         verifyZeroInteractions(self.stream_proxy)
 
     def test_ensureFlushed_bufferedRecords_pushesToStreamProxy(self):
-        entry = BufferRegistryEntry(DATASET_RID, VIEW_RID, [MINIMAL_AIRBYTE_RECORD_MESSAGE], FOUNDRY_SCHEMA,
-                                    MINIMAL_CONFIGURED_AIRBYTE_STREAM)
+        entry = BufferRegistryEntry(DATASET_RID, VIEW_RID, [MINIMAL_AIRBYTE_RECORD_MESSAGE], FOUNDRY_SCHEMA)
         when(self.buffer_registry).flush_buffer(
             NAMESPACE, STREAM_NAME).thenReturn(entry)
 
         when(self.stream_schema_provider).get_converted_record(
             MINIMAL_AIRBYTE_RECORD_MESSAGE,
             FOUNDRY_SCHEMA,
-            MINIMAL_CONFIGURED_AIRBYTE_STREAM.generation_id
         ).thenReturn({"test": "test"})
 
-        self.foundry_stream_writer.ensure_flushed(
+        self.foundry_stream_writer.flush_to_destination(
             NAMESPACE, STREAM_NAME)
 
         verify(self.stream_proxy, times=1).put_json_records(DATASET_RID, VIEW_RID, [{"test": "test"}])

@@ -48,21 +48,21 @@ class DestinationPalantirFoundry(Destination):
 
             elif message.type == Type.STATE:
                 stream_descriptor = message.state.stream.stream_descriptor
-                foundry_writer.ensure_flushed(
+                foundry_writer.flush_to_destination(
                     stream_descriptor.namespace, stream_descriptor.name)
                 yield message
 
             else:
-                logger.info(
+                logger.warning(
                     f"Received unsupported message type {message.type}")
                 continue
 
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, ab_logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
 
-        :param logger: Logging object to display debug/info/error to the logs
+        :param ab_logger: Logging object to display debug/info/error to the logs
             (logs will not be accessible via airbyte UI if they are not passed to this logger)
         :param config: Json object containing the configuration of this destination, content of this json is as specified in
         the properties of the spec.json file
@@ -71,11 +71,11 @@ class DestinationPalantirFoundry(Destination):
         """
         try:
             foundry_config = FoundryConfig.from_raw(config)
-        except Exception as e:
+        except Exception:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"Invalid config spec format.")
 
         config_validator = ConfigValidator(
-            logger, ConfidentialClientAuthFactory())
+            ab_logger, ConfidentialClientAuthFactory())
         config_error = config_validator.get_config_errors(foundry_config)
         if config_error is not None:
             return AirbyteConnectionStatus(status=Status.FAILED, message=config_error)

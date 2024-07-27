@@ -14,7 +14,7 @@ def _find_field_schema(field_name: str, field_schemas: List[FoundryFieldSchema])
     raise ValueError(f"Could not find field schema for field {field_name} in Foundry schema.")
 
 
-def convert_timestamp_to_unix_ms(timestamp: str) -> float:
+def _convert_timestamp_to_unix_ms(timestamp: str) -> float:
     dt = parser.parse(timestamp)
 
     if dt.tzinfo is None:
@@ -58,7 +58,7 @@ def convert_field(value: Any, field_schema: FoundryFieldSchema):
         if isinstance(value, str):
             if value.endswith("BC"):
                 raise ValueError("Cannot parse BC date type")
-            
+
             return value
 
         raise ValueError(f"Cannot parse nonstring date type {value}")
@@ -104,7 +104,7 @@ def convert_field(value: Any, field_schema: FoundryFieldSchema):
 
     elif field_schema.type_ == "TIMESTAMP":
         if isinstance(value, str):
-            return convert_timestamp_to_unix_ms(value)
+            return _convert_timestamp_to_unix_ms(value)
         elif isinstance(value, int):
             # unix?
             return value

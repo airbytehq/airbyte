@@ -6,7 +6,7 @@ from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStream, Airbyte
 from destination_palantir_foundry.foundry_api.foundry_metadata import FoundryMetadata
 from destination_palantir_foundry.foundry_api.stream_catalog import StreamCatalog
 from destination_palantir_foundry.foundry_api.stream_proxy import StreamProxy
-from destination_palantir_foundry.foundry_schema.providers.stream_schema_provider import StreamSchemaProvider
+from destination_palantir_foundry.foundry_schema.providers.streams.stream_schema_provider import StreamSchemaProvider
 from destination_palantir_foundry.utils.project_helper import ProjectHelper
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
 from destination_palantir_foundry.writer.foundry_streams.foundry_stream_buffer_registry import \
@@ -75,7 +75,7 @@ class FoundryStreamWriter(Writer):
             logger.info(
                 f"Existing Foundry stream was found for {resource_name}. Adding to registry.")
             self.buffer_registry.register_foundry_stream(
-                namespace, stream_name, maybe_resource.rid, maybe_stream.view.viewRid, foundry_stream_schema, airbyte_stream)
+                namespace, stream_name, maybe_resource.rid, maybe_stream.view.viewRid, foundry_stream_schema)
         else:
             logger.info(
                 f"No existing Foundry stream found for stream {resource_name}, creating a new one.")
@@ -87,7 +87,7 @@ class FoundryStreamWriter(Writer):
             foundry_stream_view_rid = create_stream_response.view.viewRid
 
             self.buffer_registry.register_foundry_stream(
-                namespace, stream_name, foundry_stream_dataset_rid, foundry_stream_view_rid, foundry_stream_schema, airbyte_stream)
+                namespace, stream_name, foundry_stream_dataset_rid, foundry_stream_view_rid, foundry_stream_schema)
 
             logger.info(
                 f"Setting the new Foundry stream's schema.")
@@ -104,7 +104,7 @@ class FoundryStreamWriter(Writer):
 
         self.buffer_registry.add_record_to_buffer(airbyte_record)
 
-    def ensure_flushed(self, namespace: str, stream_name: str):
+    def flush_to_destination(self, namespace: str, stream_name: str):
         buffer_entry = self.buffer_registry.flush_buffer(namespace, stream_name)
         if len(buffer_entry.records) == 0:
             return
@@ -115,7 +115,6 @@ class FoundryStreamWriter(Writer):
         converted_records = [
             self.stream_schema_provider.get_converted_record(
                 record, buffer_entry.foundry_schema,
-                buffer_entry.configured_airbyte_stream.generation_id
             ) for record in buffer_entry.records
         ]
 

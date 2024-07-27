@@ -1,9 +1,10 @@
 import unittest
 
-from destination_palantir_foundry.foundry_schema.airbyte_record_converter import convert_field
+from destination_palantir_foundry.foundry_schema.converters.airbyte_record_converter import convert_field, \
+    convert_ab_record
 from destination_palantir_foundry.foundry_schema.foundry_schema import ArrayFieldSchema, StringFieldSchema, \
     BooleanFieldSchema, DateFieldSchema, DoubleFieldSchema, IntegerFieldSchema, FloatFieldSchema, LongFieldSchema, \
-    ShortFieldSchema, StructFieldSchema, TimestampFieldSchema
+    StructFieldSchema, TimestampFieldSchema, FoundrySchema
 
 
 class TestAirbyteRecordConverter(unittest.TestCase):
@@ -209,20 +210,6 @@ class TestAirbyteRecordConverter(unittest.TestCase):
         for result in results:
             self.assertEquals(result, 10000000)
 
-    def test_convertField_short_converts(self):
-        values = [1, "1"]
-
-        results = [convert_field(
-            value,
-            ShortFieldSchema(
-                name="short",
-                nullable=False,
-            )
-        ) for value in values]
-
-        for result in results:
-            self.assertEquals(result, 1)
-
     def test_convertField_string_converts(self):
         values = [1, "1"]
 
@@ -333,3 +320,82 @@ class TestAirbyteRecordConverter(unittest.TestCase):
         )
 
         self.assertEquals(result, 1658476800000)
+
+    def test_convertRecord_(self):
+        schema = FoundrySchema(
+            fieldSchemaList=[
+                StringFieldSchema(name="stringField", nullable=False),
+                BooleanFieldSchema(name="booleanField", nullable=False),
+                DateFieldSchema(name="dateField", nullable=False),
+                TimestampFieldSchema(name="timestampWithoutTimezoneField", nullable=False),
+                TimestampFieldSchema(name="timestampWithTimezoneField", nullable=False),
+                TimestampFieldSchema(name="timestampWithTimezoneField2", nullable=False),
+                StringFieldSchema(name="timeWithoutTimezoneField", nullable=False),
+                StringFieldSchema(name="timeWithTimezoneField", nullable=False),
+                IntegerFieldSchema(name="integerField", nullable=False),
+                IntegerFieldSchema(name="integerFieldWithAirbyte", nullable=False),
+                DoubleFieldSchema(name="numberField", nullable=False),
+                ArrayFieldSchema(
+                    name="stringArrayField",
+                    nullable=False,
+                    arraySubtype=StringFieldSchema(
+                        nullable=False
+                    )
+                ),
+                StructFieldSchema(name="objectField", nullable=False, subSchemas=[
+                    StringFieldSchema(name="objStringField", nullable=False),
+                    ArrayFieldSchema(
+                        name="objIntArrayField",
+                        nullable=False,
+                        arraySubtype=IntegerFieldSchema(
+                            nullable=False
+                        )
+                    )
+                ]),
+                StringFieldSchema(name="unionField", nullable=False)
+            ],
+            dataFrameReaderClass="fakereader",
+            customMetadata={}
+        )
+
+        record = {
+            "stringField": "Hello, OpenAI!",
+            "booleanField": False,
+            "dateField": "2022-01-01",
+            "timestampWithoutTimezoneField": "2022-01-01T12:00:00",
+            "timestampWithTimezoneField": "2022-01-01T12:00:00Z",
+            "timestampWithTimezoneField2": "2022-01-01T12:00:00+00:00",
+            "timeWithoutTimezoneField": "12:00:00",
+            "timeWithTimezoneField": "12:00:00+00:00",
+            "integerField": 12345,
+            "integerFieldWithAirbyte": 67890,
+            "numberField": 123.45,
+            "stringArrayField": ["item1", "item2", "item3"],
+            "objectField": {
+                "objStringField": "Nested string",
+                "objIntArrayField": [1, 2, 3, 4, 5]
+            },
+            "unionField": "This can be a string, a number, or a boolean"
+        }
+
+        result = convert_ab_record(record, schema)
+
+        self.assertEquals(result, {
+            "stringField": "Hello, OpenAI!",
+            "booleanField": False,
+            "dateField": "2022-01-01",
+            "timestampWithoutTimezoneField": 1641038400000,
+            "timestampWithTimezoneField": 1641038400000,
+            "timestampWithTimezoneField2": 1641038400000,
+            "timeWithoutTimezoneField": "12:00:00",
+            "timeWithTimezoneField": "12:00:00+00:00",
+            "integerField": 12345,
+            "integerFieldWithAirbyte": 67890,
+            "numberField": 123.45,
+            "stringArrayField": ["item1", "item2", "item3"],
+            "objectField": {
+                "objStringField": "Nested string",
+                "objIntArrayField": [1, 2, 3, 4, 5]
+            },
+            "unionField": "This can be a string, a number, or a boolean"
+        })

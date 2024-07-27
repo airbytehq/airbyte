@@ -25,5 +25,5 @@ class Writer(ABC):
     """
 
     @abstractmethod
-    def ensure_flushed(self, namespace: str, stream_name: str):
+    def flush_to_destination(self, namespace: str, stream_name: str):
         pass

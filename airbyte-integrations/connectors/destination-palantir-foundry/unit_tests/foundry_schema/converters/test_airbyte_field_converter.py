@@ -1,6 +1,7 @@
 import unittest
 
-from destination_palantir_foundry.foundry_schema.airbyte_schema_converter import convert_ab_field_to_foundry_field
+from destination_palantir_foundry.foundry_schema.converters.airbyte_field_converter import \
+    convert_ab_field_to_foundry_field
 from destination_palantir_foundry.foundry_schema.foundry_schema import StringFieldSchema, BooleanFieldSchema, \
     DateFieldSchema, TimestampFieldSchema, IntegerFieldSchema, DoubleFieldSchema, ArrayFieldSchema, StructFieldSchema
 

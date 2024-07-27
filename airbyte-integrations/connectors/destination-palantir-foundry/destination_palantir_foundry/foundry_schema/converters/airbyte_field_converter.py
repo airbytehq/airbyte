@@ -1,11 +1,11 @@
-from typing import Dict, Any, Optional, List
+from typing import Optional, Dict, Any, List
 
-from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema, FoundryFieldSchema, \
-    StringFieldSchema, BooleanFieldSchema, DateFieldSchema, TimestampFieldSchema, IntegerFieldSchema, DoubleFieldSchema, \
-    ArrayFieldSchema, StructFieldSchema
-from destination_palantir_foundry.foundry_schema.providers.streams.common import STREAM_DATA_FRAME_READER_CLASS
+from destination_palantir_foundry.foundry_schema.foundry_schema import FoundryFieldSchema, StringFieldSchema, \
+    DateFieldSchema, \
+    TimestampFieldSchema, BooleanFieldSchema, IntegerFieldSchema, ArrayFieldSchema, StructFieldSchema, DoubleFieldSchema
 
 
+# https://docs.airbyte.com/understanding-airbyte/supported-data-types
 def convert_ab_field_to_foundry_field(ab_field_name: Optional[str], ab_field_schema: Dict[str, Any]) -> FoundryFieldSchema:
     ab_field_types = ab_field_schema.get("type", [])
 
@@ -29,7 +29,6 @@ def convert_ab_field_to_foundry_field(ab_field_name: Optional[str], ab_field_sch
                 nullable=nullable,
             )
         elif string_format == "date-time":
-            # date_time_type = property_schema.get("airbyte_type", None) (maybe?)
             return TimestampFieldSchema(
                 name=ab_field_name,
                 nullable=nullable,
@@ -101,25 +100,8 @@ def convert_ab_field_to_foundry_field(ab_field_name: Optional[str], ab_field_sch
             nullable=nullable,
         )
     else:
-        # anything else, just assume json
+        # anything else, just assume will be dumped as json
         return StringFieldSchema(
             name=ab_field_name,
             nullable=nullable,
         )
-
-
-def convert_ab_to_foundry_stream_schema(ab_json_schema: Dict[str, Any]) -> FoundrySchema:
-    field_schemas = []
-    for property_name, property_schema in ab_json_schema.get("properties", {}).items():
-        field_schemas.append(convert_ab_field_to_foundry_field(property_name, property_schema))
-
-    return FoundrySchema(
-        fieldSchemaList=field_schemas,
-        dataFrameReaderClass=STREAM_DATA_FRAME_READER_CLASS,
-        customMetadata={
-            "streaming": {
-                "type": "avro"
-            },
-            "format": "avro"
-        }
-    )

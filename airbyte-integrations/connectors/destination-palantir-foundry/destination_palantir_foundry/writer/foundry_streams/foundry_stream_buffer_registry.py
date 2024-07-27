@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, List, Dict
 
-from airbyte_protocol.models import AirbyteRecordMessage, ConfiguredAirbyteStream
+from airbyte_protocol.models import AirbyteRecordMessage
 
 from destination_palantir_foundry.foundry_schema.foundry_schema import FoundrySchema
 from destination_palantir_foundry.utils.resource_names import get_foundry_resource_name
@@ -13,7 +13,6 @@ class BufferRegistryEntry:
     view_rid: str
     records: List[AirbyteRecordMessage]
     foundry_schema: FoundrySchema
-    configured_airbyte_stream: ConfiguredAirbyteStream
 
 
 class FoundryStreamBufferRegistry:
@@ -21,9 +20,9 @@ class FoundryStreamBufferRegistry:
         self._registry: Dict[str, BufferRegistryEntry] = {}
 
     def register_foundry_stream(self, namespace: Optional[str], stream_name: str, dataset_rid: str, view_rid: str,
-                                foundry_schema: FoundrySchema, configured_airbyte_stream: ConfiguredAirbyteStream):
+                                foundry_schema: FoundrySchema):
         self._registry[get_foundry_resource_name(
-            namespace, stream_name)] = BufferRegistryEntry(dataset_rid, view_rid, [], foundry_schema, configured_airbyte_stream)
+            namespace, stream_name)] = BufferRegistryEntry(dataset_rid, view_rid, [], foundry_schema)
 
     def add_record_to_buffer(self, record: AirbyteRecordMessage):
         resource_name = get_foundry_resource_name(record.namespace, record.stream)
