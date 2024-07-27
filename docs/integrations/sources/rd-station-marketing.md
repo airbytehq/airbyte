@@ -47,6 +47,7 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.2.6 | 2024-07-27 | [42665](https://github.com/airbytehq/airbyte/pull/42665) | Update dependencies |
 | 0.2.5 | 2024-07-20 | [42187](https://github.com/airbytehq/airbyte/pull/42187) | Update dependencies |
 | 0.2.4 | 2024-07-13 | [41898](https://github.com/airbytehq/airbyte/pull/41898) | Update dependencies |
 | 0.2.3 | 2024-07-10 | [41525](https://github.com/airbytehq/airbyte/pull/41525) | Update dependencies |
