@@ -18,12 +18,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: queries/run/json
           http_method: POST
           request_body_json:
             view: history
-            limit: '10000'
+            limit: "10000"
             model: i__looker
             sorts: '["history.created_time", "query.id",]'
             fields: >-
@@ -39,7 +39,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/query_history'
+          $ref: "#/schemas/query_history"
     roles:
       type: DeclarativeStream
       name: roles
@@ -48,7 +48,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: roles
           http_method: GET
         record_selector:
@@ -59,7 +59,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/roles'
+          $ref: "#/schemas/roles"
     user_attributes:
       type: DeclarativeStream
       name: user_attributes
@@ -68,7 +68,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user_attributes
           http_method: GET
         record_selector:
@@ -79,14 +79,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_attributes'
+          $ref: "#/schemas/user_attributes"
     user_attribute_values:
       type: DeclarativeStream
       name: user_attribute_values
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users/{{ stream_partition['id'] }}/attribute_values
           http_method: GET
         record_selector:
@@ -101,11 +101,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/users'
+                $ref: "#/definitions/streams/users"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_attribute_values'
+          $ref: "#/schemas/user_attribute_values"
     users:
       type: DeclarativeStream
       name: users
@@ -114,7 +114,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: users
           http_method: GET
         record_selector:
@@ -125,14 +125,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/users'
+          $ref: "#/schemas/users"
     versions:
       type: DeclarativeStream
       name: versions
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: versions
           http_method: GET
         record_selector:
@@ -143,7 +143,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/versions'
+          $ref: "#/schemas/versions"
     workspaces:
       type: DeclarativeStream
       name: workspaces
@@ -152,7 +152,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: workspaces
           http_method: GET
         record_selector:
@@ -163,7 +163,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/workspaces'
+          $ref: "#/schemas/workspaces"
     scheduled_plans:
       type: DeclarativeStream
       name: scheduled_plans
@@ -172,7 +172,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: scheduled_plans
           http_method: GET
         record_selector:
@@ -183,7 +183,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/scheduled_plans'
+          $ref: "#/schemas/scheduled_plans"
     user_attribute_group_values:
       type: DeclarativeStream
       name: user_attribute_group_values
@@ -192,7 +192,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /user_attributes/{{ stream_partition['id'] }}/group_values
           http_method: GET
         record_selector:
@@ -207,18 +207,18 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/user_attributes'
+                $ref: "#/definitions/streams/user_attributes"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_attribute_group_values'
+          $ref: "#/schemas/user_attribute_group_values"
     user_login_lockouts:
       type: DeclarativeStream
       name: user_login_lockouts
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: user_login_lockouts
           http_method: GET
         record_selector:
@@ -229,7 +229,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_login_lockouts'
+          $ref: "#/schemas/user_login_lockouts"
     user_sessions:
       type: DeclarativeStream
       name: user_sessions
@@ -238,7 +238,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /users/{{ stream_partition['id'] }}/sessions
           http_method: GET
         record_selector:
@@ -253,11 +253,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/users'
+                $ref: "#/definitions/streams/users"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/user_sessions'
+          $ref: "#/schemas/user_sessions"
     content_metadata:
       type: DeclarativeStream
       name: content_metadata
@@ -266,7 +266,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /content_metadata/{{ stream_partition['content_metadata_id'] }}
           http_method: GET
         record_selector:
@@ -281,32 +281,32 @@ definitions:
                 parent_key: content_metadata_id
                 partition_field: content_metadata_id
                 stream:
-                  $ref: '#/definitions/streams/dashboards'
+                  $ref: "#/definitions/streams/dashboards"
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
                 parent_key: content_metadata_id
                 partition_field: content_metadata_id
                 stream:
-                  $ref: '#/definitions/streams/folders'
+                  $ref: "#/definitions/streams/folders"
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
                 parent_key: content_metadata_id
                 partition_field: content_metadata_id
                 stream:
-                  $ref: '#/definitions/streams/boards'
+                  $ref: "#/definitions/streams/boards"
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
                 parent_key: content_metadata_id
                 partition_field: content_metadata_id
                 stream:
-                  $ref: '#/definitions/streams/looks'
+                  $ref: "#/definitions/streams/looks"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/content_metadata'
+          $ref: "#/schemas/content_metadata"
     content_metadata_access:
       type: DeclarativeStream
       name: content_metadata_access
@@ -315,7 +315,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: content_metadata_access
           http_method: GET
         record_selector:
@@ -326,7 +326,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/content_metadata_access'
+          $ref: "#/schemas/content_metadata_access"
     dashboard_elements:
       type: DeclarativeStream
       name: dashboard_elements
@@ -335,7 +335,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dashboards/{{ stream_partition['id'] }}/dashboard_elements
           http_method: GET
         record_selector:
@@ -350,11 +350,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/dashboards'
+                $ref: "#/definitions/streams/dashboards"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_elements'
+          $ref: "#/schemas/dashboard_elements"
     dashboard_filters:
       type: DeclarativeStream
       name: dashboard_filters
@@ -363,7 +363,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dashboards/{{ stream_partition['id'] }}/dashboard_filters
           http_method: GET
         record_selector:
@@ -378,11 +378,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/dashboards'
+                $ref: "#/definitions/streams/dashboards"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_filters'
+          $ref: "#/schemas/dashboard_filters"
     dashboard_layout_components:
       type: DeclarativeStream
       name: dashboard_layout_components
@@ -391,7 +391,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: >-
             /dashboard_layouts/{{ stream_partition['id']
             }}/dashboard_layout_components
@@ -408,11 +408,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/dashboard_layouts'
+                $ref: "#/definitions/streams/dashboard_layouts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_layout_components'
+          $ref: "#/schemas/dashboard_layout_components"
     dashboard_layouts:
       type: DeclarativeStream
       name: dashboard_layouts
@@ -421,7 +421,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /dashboards/{{ stream_partition['id'] }}/dashboard_layouts
           http_method: GET
         record_selector:
@@ -436,11 +436,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/dashboards'
+                $ref: "#/definitions/streams/dashboards"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboard_layouts'
+          $ref: "#/schemas/dashboard_layouts"
     folder_ancestors:
       type: DeclarativeStream
       name: folder_ancestors
@@ -449,7 +449,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /folders/{{ stream_partition['id'] }}/ancestors
           http_method: GET
         record_selector:
@@ -464,18 +464,18 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/folders'
+                $ref: "#/definitions/streams/folders"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/folder_ancestors'
+          $ref: "#/schemas/folder_ancestors"
     git_branches:
       type: DeclarativeStream
       name: git_branches
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /projects/{{ stream_partition['id'] }}/git_branches
           http_method: GET
         record_selector:
@@ -490,11 +490,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/projects'
+                $ref: "#/definitions/streams/projects"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/git_branches'
+          $ref: "#/schemas/git_branches"
     project_files:
       type: DeclarativeStream
       name: project_files
@@ -503,7 +503,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /projects/{{ stream_partition['id'] }}/files
           http_method: GET
         record_selector:
@@ -518,11 +518,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/projects'
+                $ref: "#/definitions/streams/projects"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/project_files'
+          $ref: "#/schemas/project_files"
     role_groups:
       type: DeclarativeStream
       name: role_groups
@@ -531,7 +531,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /roles/{{ stream_partition['id'] }}/groups
           http_method: GET
         record_selector:
@@ -546,18 +546,18 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/roles'
+                $ref: "#/definitions/streams/roles"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/role_groups'
+          $ref: "#/schemas/role_groups"
     run_looks:
       type: DeclarativeStream
       name: run_looks
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: looks/{{ stream_partition['id'] }}/run/json
           http_method: GET
         record_selector:
@@ -572,11 +572,11 @@ definitions:
               parent_key: id
               partition_field: id
               stream:
-                $ref: '#/definitions/streams/search_looks'
+                $ref: "#/definitions/streams/search_looks"
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/run_looks'
+          $ref: "#/schemas/run_looks"
     board_items:
       type: DeclarativeStream
       name: board_items
@@ -585,7 +585,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: board_items
           http_method: GET
         record_selector:
@@ -596,7 +596,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/board_items'
+          $ref: "#/schemas/board_items"
     board_sections:
       type: DeclarativeStream
       name: board_sections
@@ -605,7 +605,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: board_sections
           http_method: GET
         record_selector:
@@ -616,7 +616,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/board_sections'
+          $ref: "#/schemas/board_sections"
     boards:
       type: DeclarativeStream
       name: boards
@@ -625,7 +625,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: boards
           http_method: GET
         record_selector:
@@ -636,7 +636,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/boards'
+          $ref: "#/schemas/boards"
     color_collections:
       type: DeclarativeStream
       name: color_collections
@@ -645,7 +645,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: color_collections
           http_method: GET
         record_selector:
@@ -656,14 +656,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/color_collections'
+          $ref: "#/schemas/color_collections"
     connections:
       type: DeclarativeStream
       name: connections
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: connections
           http_method: GET
         record_selector:
@@ -674,7 +674,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/connections'
+          $ref: "#/schemas/connections"
     dashboards:
       type: DeclarativeStream
       name: dashboards
@@ -683,7 +683,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: dashboards
           http_method: GET
         record_selector:
@@ -694,7 +694,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/dashboards'
+          $ref: "#/schemas/dashboards"
     datagroups:
       type: DeclarativeStream
       name: datagroups
@@ -703,7 +703,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: datagroups
           http_method: GET
         record_selector:
@@ -714,7 +714,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/datagroups'
+          $ref: "#/schemas/datagroups"
     folders:
       type: DeclarativeStream
       name: folders
@@ -723,7 +723,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: folders
           http_method: GET
         record_selector:
@@ -734,7 +734,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/folders'
+          $ref: "#/schemas/folders"
     groups:
       type: DeclarativeStream
       name: groups
@@ -743,7 +743,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: groups
           http_method: GET
         record_selector:
@@ -754,7 +754,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/groups'
+          $ref: "#/schemas/groups"
     integration_hubs:
       type: DeclarativeStream
       name: integration_hubs
@@ -763,7 +763,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: integration_hubs
           http_method: GET
         record_selector:
@@ -774,7 +774,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/integration_hubs'
+          $ref: "#/schemas/integration_hubs"
     integrations:
       type: DeclarativeStream
       name: integrations
@@ -783,7 +783,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: integrations
           http_method: GET
         record_selector:
@@ -794,7 +794,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/integrations'
+          $ref: "#/schemas/integrations"
     legacy_features:
       type: DeclarativeStream
       name: legacy_features
@@ -803,7 +803,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: legacy_features
           http_method: GET
         record_selector:
@@ -814,14 +814,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/legacy_features'
+          $ref: "#/schemas/legacy_features"
     lookml_models:
       type: DeclarativeStream
       name: lookml_models
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: lookml_models
           http_method: GET
         record_selector:
@@ -832,7 +832,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/lookml_models'
+          $ref: "#/schemas/lookml_models"
     looks:
       type: DeclarativeStream
       name: looks
@@ -841,7 +841,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: looks
           http_method: GET
         record_selector:
@@ -852,7 +852,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/looks'
+          $ref: "#/schemas/looks"
     model_sets:
       type: DeclarativeStream
       name: model_sets
@@ -861,7 +861,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: model_sets
           http_method: GET
         record_selector:
@@ -872,7 +872,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/model_sets'
+          $ref: "#/schemas/model_sets"
     permission_sets:
       type: DeclarativeStream
       name: permission_sets
@@ -881,7 +881,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: permission_sets
           http_method: GET
         record_selector:
@@ -892,14 +892,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/permission_sets'
+          $ref: "#/schemas/permission_sets"
     permissions:
       type: DeclarativeStream
       name: permissions
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: permissions
           http_method: GET
         record_selector:
@@ -910,7 +910,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/permissions'
+          $ref: "#/schemas/permissions"
     primary_homepage_sections:
       type: DeclarativeStream
       name: primary_homepage_sections
@@ -919,7 +919,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: primary_homepage_sections
           http_method: GET
         record_selector:
@@ -930,7 +930,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/primary_homepage_sections'
+          $ref: "#/schemas/primary_homepage_sections"
     projects:
       type: DeclarativeStream
       name: projects
@@ -939,7 +939,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: projects
           http_method: GET
         record_selector:
@@ -950,7 +950,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/projects'
+          $ref: "#/schemas/projects"
     search_looks:
       type: DeclarativeStream
       name: search_looks
@@ -959,12 +959,12 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /looks/search
           http_method: GET
           request_parameters:
-            id: '{{ config[''run_look_ids'']|join('','') }}'
-            limit: '10000'
+            id: "{{ config['run_look_ids']|join(',') }}"
+            limit: "10000"
             fields: id,title,model(id)
         record_selector:
           type: RecordSelector
@@ -974,7 +974,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/search_looks'
+          $ref: "#/schemas/search_looks"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['domain'] }}/api/4.0/
@@ -983,48 +983,48 @@ definitions:
       class_name: source_looker.components.LookerAuthenticator
 
 streams:
-  - $ref: '#/definitions/streams/query_history'
-  - $ref: '#/definitions/streams/roles'
-  - $ref: '#/definitions/streams/user_attributes'
-  - $ref: '#/definitions/streams/user_attribute_values'
-  - $ref: '#/definitions/streams/users'
-  - $ref: '#/definitions/streams/versions'
-  - $ref: '#/definitions/streams/workspaces'
-  - $ref: '#/definitions/streams/scheduled_plans'
-  - $ref: '#/definitions/streams/user_attribute_group_values'
-  - $ref: '#/definitions/streams/user_login_lockouts'
-  - $ref: '#/definitions/streams/user_sessions'
-  - $ref: '#/definitions/streams/content_metadata'
-  - $ref: '#/definitions/streams/content_metadata_access'
-  - $ref: '#/definitions/streams/dashboard_elements'
-  - $ref: '#/definitions/streams/dashboard_filters'
-  - $ref: '#/definitions/streams/dashboard_layout_components'
-  - $ref: '#/definitions/streams/dashboard_layouts'
-  - $ref: '#/definitions/streams/folder_ancestors'
-  - $ref: '#/definitions/streams/git_branches'
-  - $ref: '#/definitions/streams/project_files'
-  - $ref: '#/definitions/streams/role_groups'
-  - $ref: '#/definitions/streams/run_looks'
-  - $ref: '#/definitions/streams/board_items'
-  - $ref: '#/definitions/streams/board_sections'
-  - $ref: '#/definitions/streams/boards'
-  - $ref: '#/definitions/streams/color_collections'
-  - $ref: '#/definitions/streams/connections'
-  - $ref: '#/definitions/streams/dashboards'
-  - $ref: '#/definitions/streams/datagroups'
-  - $ref: '#/definitions/streams/folders'
-  - $ref: '#/definitions/streams/groups'
-  - $ref: '#/definitions/streams/integration_hubs'
-  - $ref: '#/definitions/streams/integrations'
-  - $ref: '#/definitions/streams/legacy_features'
-  - $ref: '#/definitions/streams/lookml_models'
-  - $ref: '#/definitions/streams/looks'
-  - $ref: '#/definitions/streams/model_sets'
-  - $ref: '#/definitions/streams/permission_sets'
-  - $ref: '#/definitions/streams/permissions'
-  - $ref: '#/definitions/streams/primary_homepage_sections'
-  - $ref: '#/definitions/streams/projects'
-  - $ref: '#/definitions/streams/search_looks'
+  - $ref: "#/definitions/streams/query_history"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/user_attributes"
+  - $ref: "#/definitions/streams/user_attribute_values"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/versions"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/scheduled_plans"
+  - $ref: "#/definitions/streams/user_attribute_group_values"
+  - $ref: "#/definitions/streams/user_login_lockouts"
+  - $ref: "#/definitions/streams/user_sessions"
+  - $ref: "#/definitions/streams/content_metadata"
+  - $ref: "#/definitions/streams/content_metadata_access"
+  - $ref: "#/definitions/streams/dashboard_elements"
+  - $ref: "#/definitions/streams/dashboard_filters"
+  - $ref: "#/definitions/streams/dashboard_layout_components"
+  - $ref: "#/definitions/streams/dashboard_layouts"
+  - $ref: "#/definitions/streams/folder_ancestors"
+  - $ref: "#/definitions/streams/git_branches"
+  - $ref: "#/definitions/streams/project_files"
+  - $ref: "#/definitions/streams/role_groups"
+  - $ref: "#/definitions/streams/run_looks"
+  - $ref: "#/definitions/streams/board_items"
+  - $ref: "#/definitions/streams/board_sections"
+  - $ref: "#/definitions/streams/boards"
+  - $ref: "#/definitions/streams/color_collections"
+  - $ref: "#/definitions/streams/connections"
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/datagroups"
+  - $ref: "#/definitions/streams/folders"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/integration_hubs"
+  - $ref: "#/definitions/streams/integrations"
+  - $ref: "#/definitions/streams/legacy_features"
+  - $ref: "#/definitions/streams/lookml_models"
+  - $ref: "#/definitions/streams/looks"
+  - $ref: "#/definitions/streams/model_sets"
+  - $ref: "#/definitions/streams/permission_sets"
+  - $ref: "#/definitions/streams/permissions"
+  - $ref: "#/definitions/streams/primary_homepage_sections"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/search_looks"
 
 spec:
   type: Spec
@@ -1184,11 +1184,11 @@ schemas:
     properties:
       dashboard.id:
         type:
-          - 'null'
+          - "null"
           - integer
       history.created_date:
         type:
-          - 'null'
+          - "null"
           - string
         format: date
       history.created_time:
@@ -1196,36 +1196,36 @@ schemas:
         format: date-time
       history.query_run_count:
         type:
-          - 'null'
+          - "null"
           - integer
       history.total_runtime:
         type:
-          - 'null'
+          - "null"
           - number
         multipleOf: 1.e-20
       look.id:
         type:
-          - 'null'
+          - "null"
           - integer
       query.id:
         type:
-          - 'null'
+          - "null"
           - integer
       query.model:
         type:
-          - 'null'
+          - "null"
           - string
       query.view:
         type:
-          - 'null'
+          - "null"
           - string
       space.id:
         type:
-          - 'null'
+          - "null"
           - integer
       user.id:
         type:
-          - 'null'
+          - "null"
           - integer
   roles:
     type: object
@@ -1234,15 +1234,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   user_attributes:
     type: object
@@ -1251,15 +1251,15 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
   user_attribute_values:
     type: object
@@ -1268,15 +1268,15 @@ schemas:
     properties:
       name:
         type:
-          - 'null'
+          - "null"
           - string
       user_id:
         type:
-          - 'null'
+          - "null"
           - string
       value:
         type:
-          - 'null'
+          - "null"
           - string
   users:
     type: object
@@ -1285,15 +1285,15 @@ schemas:
     properties:
       email:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   versions:
     type: object
@@ -1302,15 +1302,15 @@ schemas:
     properties:
       api_server_url:
         type:
-          - 'null'
+          - "null"
           - string
       looker_release_version:
         type:
-          - 'null'
+          - "null"
           - string
       web_server_url:
         type:
-          - 'null'
+          - "null"
           - string
   workspaces:
     type: object
@@ -1319,7 +1319,7 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
   scheduled_plans:
     type: object
@@ -1328,15 +1328,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       user_id:
         type:
-          - 'null'
+          - "null"
           - string
   user_attribute_group_values:
     type: object
@@ -1345,15 +1345,15 @@ schemas:
     properties:
       group_id:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       value:
         type:
-          - 'null'
+          - "null"
           - string
   user_login_lockouts:
     type: object
@@ -1362,15 +1362,15 @@ schemas:
     properties:
       auth_type:
         type:
-          - 'null'
+          - "null"
           - string
       key:
         type:
-          - 'null'
+          - "null"
           - string
       user_id:
         type:
-          - 'null'
+          - "null"
           - string
   user_sessions:
     type: object
@@ -1379,15 +1379,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       ip_address:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   content_metadata:
     type: object
@@ -1396,15 +1396,15 @@ schemas:
     properties:
       content_type:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
   content_metadata_access:
     type: object
@@ -1413,15 +1413,15 @@ schemas:
     properties:
       content_metadata_id:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       permission_type:
         type:
-          - 'null'
+          - "null"
           - string
   dashboard_elements:
     type: object
@@ -1430,15 +1430,15 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   dashboard_filters:
     type: object
@@ -1447,15 +1447,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   dashboard_layout_components:
     type: object
@@ -1464,15 +1464,15 @@ schemas:
     properties:
       dashboard_element_id:
         type:
-          - 'null'
+          - "null"
           - string
       element_title:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
   dashboard_layouts:
     type: object
@@ -1481,15 +1481,15 @@ schemas:
     properties:
       type:
         type:
-          - 'null'
+          - "null"
           - string
       dashboard_title:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
   folder_ancestors:
     type: object
@@ -1498,15 +1498,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       parent_id:
         type:
-          - 'null'
+          - "null"
           - string
   git_branches:
     type: object
@@ -1515,15 +1515,15 @@ schemas:
     properties:
       name:
         type:
-          - 'null'
+          - "null"
           - string
       remote:
         type:
-          - 'null'
+          - "null"
           - string
       remote_name:
         type:
-          - 'null'
+          - "null"
           - string
   project_files:
     type: object
@@ -1532,15 +1532,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       path:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   role_groups:
     type: object
@@ -1549,15 +1549,15 @@ schemas:
     properties:
       external_group_id:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
   run_looks:
     type: object
@@ -1571,15 +1571,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   board_sections:
     type: object
@@ -1588,15 +1588,15 @@ schemas:
     properties:
       board_id:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   boards:
     type: object
@@ -1605,15 +1605,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       user_id:
         type:
-          - 'null'
+          - "null"
           - string
   color_collections:
     type: object
@@ -1622,11 +1622,11 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       label:
         type:
-          - 'null'
+          - "null"
           - string
   connections:
     type: object
@@ -1635,15 +1635,15 @@ schemas:
     properties:
       host:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       port:
         type:
-          - 'null'
+          - "null"
           - string
   dashboards:
     type: object
@@ -1652,15 +1652,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       user_id:
         type:
-          - 'null'
+          - "null"
           - string
   datagroups:
     type: object
@@ -1669,15 +1669,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       model_name:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
   folders:
     type: object
@@ -1686,15 +1686,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       namw:
         type:
-          - 'null'
+          - "null"
           - string
       parent_id:
         type:
-          - 'null'
+          - "null"
           - string
   groups:
     type: object
@@ -1703,15 +1703,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       user_count:
         type:
-          - 'null'
+          - "null"
           - string
   integration_hubs:
     type: object
@@ -1720,15 +1720,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       label:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   integrations:
     type: object
@@ -1737,15 +1737,15 @@ schemas:
     properties:
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       integration_hub_id:
         type:
-          - 'null'
+          - "null"
           - string
   legacy_features:
     type: object
@@ -1754,15 +1754,15 @@ schemas:
     properties:
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
   lookml_models:
     type: object
@@ -1771,15 +1771,15 @@ schemas:
     properties:
       label:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       project_name:
         type:
-          - 'null'
+          - "null"
           - string
   looks:
     type: object
@@ -1788,15 +1788,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
       user_id:
         type:
-          - 'null'
+          - "null"
           - string
   model_sets:
     type: object
@@ -1805,15 +1805,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   permission_sets:
     type: object
@@ -1822,15 +1822,15 @@ schemas:
     properties:
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
       url:
         type:
-          - 'null'
+          - "null"
           - string
   permissions:
     type: object
@@ -1839,15 +1839,15 @@ schemas:
     properties:
       description:
         type:
-          - 'null'
+          - "null"
           - string
       parent:
         type:
-          - 'null'
+          - "null"
           - string
       permission:
         type:
-          - 'null'
+          - "null"
           - string
   primary_homepage_sections:
     type: object
@@ -1856,15 +1856,15 @@ schemas:
     properties:
       description:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       title:
         type:
-          - 'null'
+          - "null"
           - string
   projects:
     type: object
@@ -1873,15 +1873,15 @@ schemas:
     properties:
       git_remote_url:
         type:
-          - 'null'
+          - "null"
           - string
       id:
         type:
-          - 'null'
+          - "null"
           - string
       name:
         type:
-          - 'null'
+          - "null"
           - string
   search_looks:
     type: object
