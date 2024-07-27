@@ -264,7 +264,7 @@ public class ConnectionsHandler {
         workspaceIdRequestBody.getSourceDefinitionId(), workspaceIdRequestBody.getDestinationDefinitionId(), workspaceIdRequestBody.getStatus(),
         workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent(), workspaceIdRequestBody.getSortDetails().getSortFieldName(),
         workspaceIdRequestBody.getSortDetails().getSortDirection())) {
-      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+        connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);

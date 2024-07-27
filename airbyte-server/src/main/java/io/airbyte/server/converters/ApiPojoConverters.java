@@ -143,6 +143,7 @@ public class ApiPojoConverters {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
+        .advanceSetting(CatalogConverter.toConnectionAdvanceSetting(standardSync.getAdvanceSetting()))
         .sourceCatalogId(standardSync.getSourceCatalogId());
 
     if (standardSync.getResourceRequirements() != null) {
