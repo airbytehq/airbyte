@@ -1,0 +1,173 @@
+version: 3.8.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - jobs_resource
+
+definitions:
+  streams:
+    jobs_resource:
+      type: DeclarativeStream
+      name: jobs_resource
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: jobs
+          http_method: GET
+          request_body_json:
+            name: Airbyte reporting job
+            reportTypeId: jobs_resource
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - jobs
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/jobs_resource'
+    report_resources:
+      type: DeclarativeStream
+      name: report_resources
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: jobs/{{ stream_partition['job_id'] }}/reports
+          http_method: GET
+          request_parameters:
+            startTimeAtOrAfter: '{{ now_utc() }}'
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reports
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: '#/definitions/streams/jobs_resource'
+              parent_key: id
+              partition_field: job_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/report_resources'
+    channel_annotations_a1:
+      type: DeclarativeStream
+      name: channel_annotations_a1
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: '#/definitions/streams/report_resources'
+              parent_key: downloadUrl
+              partition_field: path
+      primary_key:
+        - date
+        - channel_id
+        - video_id
+        - live_or_on_demand
+        - subscribed_status
+        - country_code
+        - annotation_type
+        - annotation_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/channel_annotations_a1'
+  base_requester:
+    type: HttpRequester
+    url_base: https://youtubereporting.googleapis.com/v1/
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: '{{ config["client_id"] }}'
+      grant_type: refresh_token
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token"] }}'
+      refresh_request_body: {}
+      token_refresh_endpoint: https://oauth2.googleapis.com/token
+
+streams:
+  - $ref: '#/definitions/streams/jobs_resource'
+  - $ref: '#/definitions/streams/report_resources'
+  - $ref: '#/definitions/streams/channel_annotations_a1'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    jobs_resource:
+      hasRecords: false
+      streamHash: ff2992789fe26a83fb4dda39ce62421d4ff11bf2
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
+  autoImportSchema:
+    jobs_resource: true
+    report_resources: true
+    channel_annotations_a1: true
+
+schemas:
+  jobs_resource:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  report_resources:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
+  channel_annotations_a1:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties: {}
+    additionalProperties: true
