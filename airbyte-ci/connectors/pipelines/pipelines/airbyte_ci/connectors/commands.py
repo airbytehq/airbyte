@@ -125,7 +125,7 @@ def validate_environment(is_local: bool) -> None:
         "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up-to-date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
         "pull-request": "pipelines.airbyte_ci.connectors.pull_request.commands.pull_request",
-        "strip": "pipelines.airbyte_ci.connectors.strip.commands.strip"
+        "strip": "pipelines.airbyte_ci.connectors.strip.commands.strip",
     },
 )
 @click.option(
