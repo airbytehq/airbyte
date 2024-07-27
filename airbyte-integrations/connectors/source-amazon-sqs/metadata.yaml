@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 983fd355-6bf3-4709-91b5-37afa391eeb6
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-amazon-sqs
   githubIssueLabel: source-amazon-sqs
   icon: awssqs.svg
