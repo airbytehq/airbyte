@@ -16,7 +16,7 @@ packages = [ { include = "source_looker" }, { include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "^3.8.2"
 pytz = "^2024.1"
 
 [tool.poetry.scripts]
