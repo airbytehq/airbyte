@@ -1,7 +1,5 @@
 # XKCD
 
-This page guides you through the process of setting up the xkcd source connector.
-
 ## Prerequisites
 
 XKCD is an open API, so no credentials are needed to set up the surce.
