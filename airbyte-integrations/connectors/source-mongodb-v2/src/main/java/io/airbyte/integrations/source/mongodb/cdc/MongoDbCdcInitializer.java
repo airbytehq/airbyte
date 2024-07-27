@@ -220,10 +220,10 @@ public class MongoDbCdcInitializer {
           propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
 
       return Stream.of(
-                  cdcStreamsStartStatusEmitters,
-                  Collections.singletonList(initialSnapshotIterator),
-                  Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-                  cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).toList();
+          cdcStreamsStartStatusEmitters,
+          Collections.singletonList(initialSnapshotIterator),
+          Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+          cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).toList();
     } else if (initialSnapshotIterators.isEmpty()) {
       LOGGER.info("Initial load has finished completely - only reading the oplog");
       /*
@@ -238,9 +238,9 @@ public class MongoDbCdcInitializer {
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
           propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
       return Stream.of(
-                  cdcStreamsStartStatusEmitters,
-                  Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-                  cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).toList();
+          cdcStreamsStartStatusEmitters,
+          Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+          cdcStreamsCompleteStatusEmitters).flatMap(Collection::stream).toList();
     } else {
       LOGGER.info("Initial load is in progress - reading oplog first and then resuming with initial load.");
       /*
@@ -260,11 +260,11 @@ public class MongoDbCdcInitializer {
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(
           propertiesManager, eventConverter, cdcSavedInfoFetcher, mongoDbCdcStateHandler);
       return Stream.of(
-                      cdcStreamsStartStatusEmitters,
-                      Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
-                      Collections.singletonList(initialSnapshotIterator),
-                      cdcStreamsCompleteStatusEmitters)
-              .flatMap(Collection::stream).toList();
+          cdcStreamsStartStatusEmitters,
+          Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)),
+          Collections.singletonList(initialSnapshotIterator),
+          cdcStreamsCompleteStatusEmitters)
+          .flatMap(Collection::stream).toList();
     }
   }
 
