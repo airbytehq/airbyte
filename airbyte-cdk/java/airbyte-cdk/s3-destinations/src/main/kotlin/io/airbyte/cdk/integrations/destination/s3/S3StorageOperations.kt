@@ -460,6 +460,42 @@ open class S3StorageOperations(
         }
     }
 
+    override fun listExistingObjects(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String
+    ): List<String> {
+        val regexFormat: Pattern =
+            Pattern.compile(getRegexFormat(namespace, streamName, pathFormat))
+        var keys = listOf<String>()
+        var objects: ObjectListing = listObjects(objectPath)
+        while (objects.objectSummaries.size > 0) {
+            keys =
+                keys +
+                    objects.objectSummaries
+                        .filter { obj: S3ObjectSummary ->
+                            regexFormat
+                                .matcher(
+                                    obj.key,
+                                )
+                                .matches()
+                        }
+                        .map { obj: S3ObjectSummary -> obj.key }
+            if (objects.isTruncated) {
+                objects = s3Client.listNextBatchOfObjects(objects)
+            } else {
+                break
+            }
+        }
+        return keys
+    }
+
+    override fun cleanUpObjects(keysToDelete: List<String>) {
+        val bucket: String? = s3Config.bucketName
+        cleanUpObjects(bucket, keysToDelete.map { DeleteObjectsRequest.KeyVersion(it) })
+    }
+
     protected open fun cleanUpObjects(
         bucket: String?,
         keysToDelete: List<DeleteObjectsRequest.KeyVersion>

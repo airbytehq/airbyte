@@ -53,6 +53,22 @@ abstract class BlobStorageOperations protected constructor() {
         pathFormat: String
     )
 
+    /** Clean up all the objects matching the provided [keysToDelete] */
+    abstract fun cleanUpObjects(keysToDelete: List<String>)
+
+    /**
+     * List all the existing bucket objects for a given [namespace], [streamName], [objectPath]
+     * which matches the [pathFormat] regex.
+     *
+     * @return List of keys of the objects
+     */
+    abstract fun listExistingObjects(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String
+    ): List<String>
+
     abstract fun dropBucketObject(objectPath: String)
 
     abstract fun isValidData(jsonNode: JsonNode): Boolean

@@ -70,17 +70,20 @@ class S3ConsumerFactory {
                 val pathFormat = writeConfig.pathFormat
                 if (mustCleanUpExistingObjects(writeConfig, storageOperations)) {
                     LOGGER.info {
-                        "Clearing storage area in destination started for namespace $namespace " +
+                        "Listing objects to cleanup for namespace $namespace " +
                             "stream $stream bucketObject $outputBucketPath pathFormat $pathFormat"
                     }
-                    storageOperations.cleanUpBucketObject(
-                        namespace,
-                        stream,
-                        outputBucketPath,
-                        pathFormat
+                    writeConfig.objectsFromOldGeneration.addAll(
+                        storageOperations.listExistingObjects(
+                            namespace,
+                            stream,
+                            outputBucketPath,
+                            pathFormat,
+                        ),
                     )
                     LOGGER.info {
-                        "Clearing storage area in destination completed for namespace $namespace stream $stream bucketObject $outputBucketPath"
+                        "Marked ${writeConfig.objectsFromOldGeneration.size} keys for deletion at end of sync " +
+                            "for namespace $namespace stream $stream bucketObject $outputBucketPath"
                     }
                 } else {
                     LOGGER.info {
@@ -139,8 +142,17 @@ class S3ConsumerFactory {
         storageOperations: BlobStorageOperations,
         writeConfigs: List<WriteConfig>
     ): OnCloseFunction {
-        return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary> ->
+
+        val streamDescriptorToWriteConfig =
+            writeConfigs.associateBy {
+                StreamDescriptor().withNamespace(it.namespace).withName(it.streamName)
+            }
+        return OnCloseFunction {
+            hasFailed: Boolean,
+            streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             if (hasFailed) {
+                // TODO: From the code looks like hasFailed is set to true after onClose is called
+                //  Does this ever get invoked ?
                 LOGGER.info { "Cleaning up destination started for ${writeConfigs.size} streams" }
                 for (writeConfig in writeConfigs) {
                     storageOperations.cleanUpBucketObject(
@@ -150,6 +162,39 @@ class S3ConsumerFactory {
                     writeConfig.clearStoredFiles()
                 }
                 LOGGER.info { "Cleaning up destination completed." }
+            }
+
+            // On stream success clean up the objects marked for deletion per stream. This is done
+            // on per-stream basis
+            streamSyncSummaries.forEach { entry: Map.Entry<StreamDescriptor, StreamSyncSummary> ->
+                val streamSuccessful =
+                    entry.value.terminalStatus ==
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                if (streamSuccessful) {
+                    val writeConfig = streamDescriptorToWriteConfig[entry.key]
+                    writeConfig?.let {
+                        if (it.objectsFromOldGeneration.isNotEmpty()) {
+                            // Although S3API is safe to send empty list of keys, just avoiding
+                            // unnecessary S3 call
+                            // Logic to determine what to delete is in onStart so not doing any
+                            // redundant checks for
+                            // destinationSyncMode.
+                            LOGGER.info {
+                                "Found ${it.objectsFromOldGeneration.size} marked for deletion in namespace: ${entry.key.namespace},stream: ${entry.key.name} " +
+                                    "Proceeding with cleaning up the objects"
+                            }
+                            storageOperations.cleanUpObjects(it.objectsFromOldGeneration)
+                            LOGGER.info {
+                                "Cleaning up completed for namespace: ${entry.key.namespace},stream: ${entry.key.name}"
+                            }
+                        }
+                    }
+                } else {
+                    LOGGER.info {
+                        "Stream not successful with status ${entry.value.terminalStatus} for namespace: ${entry.key.namespace}, name: ${entry.key.name} " +
+                            "Skipping deletion of any old objects marked for deletion."
+                    }
+                }
             }
         }
     }

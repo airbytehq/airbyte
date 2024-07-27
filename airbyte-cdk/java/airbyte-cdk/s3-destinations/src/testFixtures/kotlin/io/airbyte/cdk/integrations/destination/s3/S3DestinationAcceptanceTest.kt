@@ -459,6 +459,66 @@ protected constructor(
         )
     }
 
+    /** Test runs 2 failed syncs and verifies the previous sync objects are not cleaned up. */
+    @Test
+    fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
+        assumeTrue(
+            implementsOverwrite(),
+            "Destination's spec.json does not support overwrite sync mode."
+        )
+        val config = getConfig()
+
+        // Run first failed attempt of same generation
+        val catalogPair =
+            getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 42, 12, 12)
+        val firstSyncMessages: List<AirbyteMessage> =
+            getFirstSyncMessagesFixture1(
+                catalogPair.first,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+            )
+        try {
+            runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+            fail { "Should not succeed the sync when Trace message is INCOMPLETE" }
+        } catch (_: TestHarnessException) {}
+
+        // Run second failed attempt of same generation
+        val catalogPair2 =
+            getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 43, 12, 12)
+        val secondSyncMessages =
+            getFirstSyncMessagesFixture1(
+                catalogPair2.first,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+            )
+
+        try {
+            runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false)
+            fail { "Should not succeed the sync when Trace message is INCOMPLETE" }
+        } catch (_: TestHarnessException) {}
+
+        // Verify our delayed delete logic creates no data downtime.
+        val defaultSchema = getDefaultSchema(config)
+        retrieveRawRecordsAndAssertSameMessages(
+            catalogPair.second,
+            firstSyncMessages + secondSyncMessages,
+            defaultSchema
+        )
+
+        // This doesn't happen in real world but just verifying if the generationId is incremented,
+        // we disregard old data
+        // Run a successful sync with incremented generationId, This should nuke all old generation
+        // files which were preserved.
+        val catalogPair3 =
+            getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 43, 13, 13)
+        val thirdSyncMessages = getSyncMessagesFixture2()
+        runSyncAndVerifyStateOutput(config, thirdSyncMessages, catalogPair3.first, false)
+
+        retrieveRawRecordsAndAssertSameMessages(
+            catalogPair.second,
+            thirdSyncMessages,
+            defaultSchema
+        )
+    }
+
     /**
      * Test runs 2 successful OVERWRITE syncs but with same generation and a sync to another catalog
      * with no generationId, this shouldn't happen from platform but acts as a simulation for
