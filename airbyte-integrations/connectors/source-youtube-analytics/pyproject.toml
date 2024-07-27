@@ -14,7 +14,6 @@ homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
 [[tool.poetry.packages]]
 include = "source_youtube_analytics"
-include = "main.py"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
