@@ -2,14 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, FailureType
+from airbyte_cdk.sources.streams.http.http import HttpStatusErrorHandler
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import Status
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
 from source_google_analytics_data_api.source import MetadataDescriptor
-from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO_NAME, WRONG_JSON_SYNTAX
+from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO_NAME, WRONG_CUSTOM_REPORT_CONFIG, WRONG_JSON_SYNTAX
 
 
 @pytest.mark.parametrize(
@@ -91,12 +93,13 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
     assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
 
 
-def test_check_failure(requests_mock, config_gen):
+@pytest.mark.parametrize("error_code", (400, 403))
+def test_check_failure_throws_exception(requests_mock, config_gen, error_code):
     requests_mock.register_uri(
         "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
     )
     requests_mock.register_uri(
-        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=error_code
     )
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
@@ -105,15 +108,30 @@ def test_check_failure(requests_mock, config_gen):
     assert e.value.failure_type == FailureType.config_error
     assert "Access was denied to the property ID entered." in e.value.message
 
+@pytest.mark.parametrize("error_code", (402,404, 405))
+def test_check_failure(requests_mock, config_gen, error_code):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=error_code
+    )
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    with patch.object(HttpStatusErrorHandler, 'max_retries', new=0):
+        airbyte_status = source.check(logger, config_gen(property_ids=["UA-11111111"]))
+        assert airbyte_status.status == Status.FAILED
+        assert airbyte_status.message == repr("Failed to get metadata, over quota, try later")
+
 
 @pytest.mark.parametrize(
-    ("status_code", "expected_message"),
+    ("status_code", "response_error_message"),
     (
-        (403, "Please check configuration for custom report cohort_report. "),
-        (400, "Please check configuration for custom report cohort_report. Granularity in the cohortsRange is required."),
+        (403, "Forbidden for some reason"),
+        (400, "Granularity in the cohortsRange is required."),
     ),
 )
-def test_check_incorrect_custom_reports_config(requests_mock, config_gen, status_code, expected_message):
+def test_check_incorrect_custom_reports_config(requests_mock, config_gen, status_code, response_error_message):
     requests_mock.register_uri(
         "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
     )
@@ -129,14 +147,16 @@ def test_check_incorrect_custom_reports_config(requests_mock, config_gen, status
         "POST",
         "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
         status_code=status_code,
-        json={"error": {"message": "Granularity in the cohortsRange is required."}},
+        json={"error": {"message": response_error_message}},
     )
-    config = {"custom_reports_array": '[{"name": "cohort_report", "dimensions": ["date"], "metrics": ["totalUsers"]}]'}
+    report_name = "cohort_report"
+    config = {"custom_reports_array": f'[{{"name": "{report_name}", "dimensions": ["date"], "metrics": ["totalUsers"]}}]'}
+    friendly_message = WRONG_CUSTOM_REPORT_CONFIG.format(report=report_name)
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
     status, message = source.check_connection(logger, config_gen(**config))
     assert status is False
-    assert message == expected_message
+    assert message == f"{friendly_message}. {response_error_message}"
 
 
 @pytest.mark.parametrize("status_code", (403, 401))

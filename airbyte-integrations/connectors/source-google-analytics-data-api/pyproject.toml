@@ -17,10 +17,10 @@ include = "source_google_analytics_data_api"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-cryptography = "==37.0.4"
+cryptography = "==42.0.5"
 requests = "==2.31.0"
-airbyte-cdk = "^0"
-PyJWT = "==2.4.0"
+airbyte-cdk = "^3"
+PyJWT = "==2.8.0"
 pandas = "==2.2.0"
 
 [tool.poetry.scripts]
