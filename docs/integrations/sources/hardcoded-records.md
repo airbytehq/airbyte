@@ -149,6 +149,7 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject          |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------|
-| 0.0.1   | 2024-07-23 | [42434](https://github.com/airbytehq/airbyte/pull/42434) | Initial Release  |
+| 0.0.2 | 2024-07-27 | [42828](https://github.com/airbytehq/airbyte/pull/42828) | Update dependencies |
+| 0.0.1 | 2024-07-23 | [42434](https://github.com/airbytehq/airbyte/pull/42434) | Initial Release |
 
 </details>
