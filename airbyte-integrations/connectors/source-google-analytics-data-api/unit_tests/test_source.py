@@ -156,7 +156,7 @@ def test_check_incorrect_custom_reports_config(requests_mock, config_gen, status
     logger = MagicMock()
     status, message = source.check_connection(logger, config_gen(**config))
     assert status is False
-    assert message == f"{friendly_message}. {response_error_message}"
+    assert message == f"{friendly_message} {response_error_message}"
 
 
 @pytest.mark.parametrize("status_code", (403, 401))

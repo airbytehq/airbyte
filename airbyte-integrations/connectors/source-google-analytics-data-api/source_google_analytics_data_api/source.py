@@ -581,7 +581,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                     stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
                     next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
                 except MessageRepresentationAirbyteTracedErrors as e:
-                    return False, f"{e.message}. {self._extract_message_details(e.internal_message)}"
+                    return False, f"{e.message} {self._extract_internal_message_error_response(e.internal_message)}"
 
             return True, None
 
@@ -630,11 +630,10 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return type(name, report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)
 
     @staticmethod
-    def _extract_message_details(message):
+    def _extract_internal_message_error_response(message):
         pattern = r"error message '(.*?)'"
         match = re.search(pattern, message)
         if match:
             error_message = match.group(1)
             return error_message
-        else:
-            return message
+        return ""
