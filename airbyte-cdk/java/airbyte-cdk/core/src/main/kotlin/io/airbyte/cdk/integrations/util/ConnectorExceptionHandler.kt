@@ -170,6 +170,14 @@ open class ConnectorExceptionHandler {
     }
 
     private fun checkErrorType(e: Throwable?, failureType: FailureType?): Boolean {
+        if (failureType == FailureType.CONFIG && e is ConfigErrorException) {
+            return true
+        }
+
+        if (failureType == FailureType.TRANSIENT && e is TransientErrorException) {
+            return true
+        }
+
         for (error in connectorErrorDictionary) {
             if (
                 error.failureType == failureType &&
