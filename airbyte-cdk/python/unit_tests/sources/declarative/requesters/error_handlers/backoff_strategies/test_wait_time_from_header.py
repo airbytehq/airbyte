@@ -5,12 +5,11 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_protocol.models import FailureType
-
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from airbyte_protocol.models import FailureType
 from requests import Response
 
 SOME_BACKOFF_TIME = 60

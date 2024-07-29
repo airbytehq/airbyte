@@ -1201,7 +1201,7 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
             config=config,
             regex=model.regex,
-            max_waiting_time_in_seconds=model.max_waiting_time_in_seconds
+            max_waiting_time_in_seconds=model.max_waiting_time_in_seconds,
         )
 
     @staticmethod
