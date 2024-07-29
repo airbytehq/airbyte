@@ -10,6 +10,7 @@ import logging
 import os
 import re
 import tempfile
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -101,6 +102,15 @@ def compute_gcs_md5(file_name: str) -> str:
             hash_md5.update(chunk)
 
     return base64.b64encode(hash_md5.digest()).decode("utf8")
+
+
+def compute_sha256(file_name: str) -> str:
+    hash_sha256 = hashlib.sha256()
+    with Path.open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_sha256.update(chunk)
+
+    return base64.b64encode(hash_sha256.digest()).decode("utf8")
 
 
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:
@@ -242,17 +252,17 @@ def _apply_components_py_file_to_metadata_file(
     metadata_dict: dict,
     components_py_file_path: Optional[Path] | None,
 ) -> dict:
-    """Apply the components.py file to the metadata file before uploading it to GCS."""
+    """Apply the components.py file data to the metadata file before uploading it to GCS."""
     if components_py_file_path:
         metadata_dict = set_(
             metadata_dict,
-            "data.generated.components_py.required",
+            "data.generated.pythonComponentsFile.required",
             True
         )
         metadata_dict = set_(
             metadata_dict,
-            "data.generated.components_py.md5",
-            compute_gcs_md5(components_py_file_path),
+            "data.generated.pythonComponentsFile.sha256",
+            compute_sha256(components_py_file_path),
         )
 
     return metadata_dict
@@ -321,6 +331,14 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         validator_opts=validator_opts,
         components_py_file_path=components_py_file_path,
     )
+    if components_py_file_path:
+        python_components_zip_file_path = metadata_file_path.parent / "python_components.zip"
+        python_components_sha256_file_path = metadata_file_path.parent / "python_components.sha256"
+        # Zip the python components file if it exists
+        with zipfile.ZipFile(python_components_zip_file_path, 'w') as zipf:
+            zipf.write(filename=components_py_file_path, arcname=components_py_file_path.name)
+            zipf.write(filename=yaml_manifest_file_path, arcname=yaml_manifest_file_path.name)
+        python_components_sha256_file_path.write_text(compute_sha256(python_components_zip_file_path))
 
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, validator_opts)
     if metadata is None:
@@ -400,8 +418,14 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
                 blob_id=manifest_yml_blob_id,
             ),
             UploadedFile(
-                id="components_py",
-                description="components.py file",
+                id="components_zip",
+                description="python_components.zip file",
+                uploaded=components_py_uploaded,
+                blob_id=components_py_blob_id,
+            ),
+            UploadedFile(
+                id="components_zip_sha256",
+                description="python_components.zip.sha256 file",
                 uploaded=components_py_uploaded,
                 blob_id=components_py_blob_id,
             ),
@@ -412,8 +436,14 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
                 blob_id=manifest_yml_latest_blob_id,
             ),
             UploadedFile(
-                id="components_py_latest",
-                description="latest components.py file",
+                id="components_zip_latest",
+                description="latest python_components.zip file",
+                uploaded=components_py_latest_uploaded,
+                blob_id=components_py_latest_blob_id,
+            ),
+            UploadedFile(
+                id="components_zip_sha256_latest",
+                description="latest python_components.zip.sha256 file",
                 uploaded=components_py_latest_uploaded,
                 blob_id=components_py_latest_blob_id,
             ),
