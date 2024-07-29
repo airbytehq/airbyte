@@ -6,6 +6,7 @@ package io.airbyte.server.handlers.helpers;
 
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
+import io.airbyte.api.model.generated.ConnectionAdvanceSetting;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
@@ -86,6 +87,13 @@ public class CatalogConverter {
         })
         .collect(Collectors.toList());
     return new io.airbyte.api.model.generated.AirbyteCatalog().streams(streams);
+  }
+
+  public static ConnectionAdvanceSetting toConnectionAdvanceSetting(final io.airbyte.config.AdvanceSetting advanceSetting) {
+    if (advanceSetting != null) {
+      return new ConnectionAdvanceSetting().startDate(advanceSetting.getStartDate()).endDate(advanceSetting.getEndDate());
+    }
+    return null;
   }
 
   /**

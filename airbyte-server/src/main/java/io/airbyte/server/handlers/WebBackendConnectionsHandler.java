@@ -262,6 +262,7 @@ public class WebBackendConnectionsHandler {
         .source(source)
         .destination(destination)
         .operations(operations.getOperations())
+        .advanceSetting(connectionRead.getAdvanceSetting())
         .resourceRequirements(connectionRead.getResourceRequirements());
   }
 
