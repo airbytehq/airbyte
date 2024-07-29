@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.google.common.base.Preconditions
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType.*
 import io.airbyte.commons.util.MoreIterators
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.LinkedList
@@ -227,7 +228,7 @@ class JsonToAvroSchemaConverter {
         addStringToLogicalTypes: Boolean,
     ): Schema {
         Preconditions.checkState(
-            fieldType != JsonSchemaType.NULL,
+            fieldType != NULL,
             "Null types should have been filtered out",
         )
 
@@ -239,12 +240,12 @@ class JsonToAvroSchemaConverter {
 
         val fieldSchema: Schema
         when (fieldType) {
-            JsonSchemaType.INTEGER_V1,
-            JsonSchemaType.NUMBER_V1,
-            JsonSchemaType.BOOLEAN_V1,
-            JsonSchemaType.STRING_V1,
-            JsonSchemaType.BINARY_DATA_V1 -> fieldSchema = Schema.create(fieldType.avroType)
-            JsonSchemaType.DATE_V1 -> {
+            INTEGER_V1,
+            NUMBER_V1,
+            BOOLEAN_V1,
+            STRING_V1,
+            BINARY_DATA_V1 -> fieldSchema = Schema.create(fieldType.avroType)
+            DATE_V1 -> {
                 if (addStringToLogicalTypes) {
                     fieldSchema = LogicalTypes.date().addToSchema(Schema.create(Schema.Type.INT))
                 } else {
@@ -252,8 +253,8 @@ class JsonToAvroSchemaConverter {
                     LogicalTypes.date().addToSchema(fieldSchema)
                 }
             }
-            JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1,
-            JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
+            TIMESTAMP_WITH_TIMEZONE_V1,
+            TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
                 if (addStringToLogicalTypes) {
                     fieldSchema = LogicalTypes.timestampMicros().addToSchema(Schema.create(Schema.Type.LONG))
                 } else {
@@ -261,8 +262,8 @@ class JsonToAvroSchemaConverter {
                     LogicalTypes.timestampMicros().addToSchema(fieldSchema)
                 }
             }
-            JsonSchemaType.TIME_WITH_TIMEZONE_V1,
-            JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1 -> {
+            TIME_WITH_TIMEZONE_V1,
+            TIME_WITHOUT_TIMEZONE_V1 -> {
                 if (addStringToLogicalTypes) {
                     fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG))
                 } else {
@@ -270,13 +271,13 @@ class JsonToAvroSchemaConverter {
                     LogicalTypes.timeMicros().addToSchema(fieldSchema)
                 }
             }
-            JsonSchemaType.INTEGER_V0,
-            JsonSchemaType.NUMBER_V0,
-            JsonSchemaType.NUMBER_INT_V0,
-            JsonSchemaType.NUMBER_BIGINT_V0,
-            JsonSchemaType.NUMBER_FLOAT_V0,
-            JsonSchemaType.BOOLEAN_V0 -> fieldSchema = Schema.create(fieldType.avroType)
-            JsonSchemaType.STRING_V0 -> {
+            INTEGER_V0,
+            NUMBER_V0,
+            NUMBER_INT_V0,
+            NUMBER_BIGINT_V0,
+            NUMBER_FLOAT_V0,
+            BOOLEAN_V0 -> fieldSchema = Schema.create(fieldType.avroType)
+            STRING_V0 -> {
                 if (fieldDefinition.has("format")) {
                     val format: String = fieldDefinition.get("format").asText()
                     fieldSchema =
@@ -297,7 +298,7 @@ class JsonToAvroSchemaConverter {
                     fieldSchema = Schema.create(fieldType.avroType)
                 }
             }
-            JsonSchemaType.COMBINED -> {
+            COMBINED -> {
                 val combinedRestriction: Optional<JsonNode> =
                     getCombinedRestriction(fieldDefinition)
                 val unionTypes: List<Schema> =
@@ -310,7 +311,7 @@ class JsonToAvroSchemaConverter {
                     )
                 fieldSchema = createUnionAndCheckLongTypesDuplications(unionTypes)
             }
-            JsonSchemaType.ARRAY -> {
+            ARRAY -> {
                 val items: JsonNode? = fieldDefinition.get("items")
                 if (items == null) {
                     logger.warn {
@@ -377,7 +378,7 @@ class JsonToAvroSchemaConverter {
                         )
                 }
             }
-            JsonSchemaType.OBJECT ->
+            OBJECT ->
                 fieldSchema =
                     getAvroSchema(
                         fieldDefinition,
@@ -693,7 +694,7 @@ class JsonToAvroSchemaConverter {
         @Suppress("DEPRECATION")
         fun getNonNullTypes(fieldName: String?, fieldDefinition: JsonNode): List<JsonSchemaType> {
             return getTypes(fieldName, fieldDefinition).filter { type: JsonSchemaType ->
-                type != JsonSchemaType.NULL
+                type != NULL
             }
         }
 
@@ -701,7 +702,7 @@ class JsonToAvroSchemaConverter {
         fun getTypes(fieldName: String?, fieldDefinition: JsonNode): List<JsonSchemaType> {
             val combinedRestriction: Optional<JsonNode> = getCombinedRestriction(fieldDefinition)
             if (combinedRestriction.isPresent) {
-                return listOf(JsonSchemaType.COMBINED)
+                return listOf(COMBINED)
             }
 
             val typeProperty: JsonNode? = fieldDefinition.get(TYPE)
@@ -737,7 +738,7 @@ class JsonToAvroSchemaConverter {
             logger.warn {
                 "Field \"$fieldName\" has unexpected type $referenceType. It will default to string."
             }
-            return listOf(JsonSchemaType.STRING_V1)
+            return listOf(STRING_V1)
         }
 
         private fun hasTextValue(value: JsonNode?): Boolean {
