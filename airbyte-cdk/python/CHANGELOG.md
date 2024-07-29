@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.0.0
+General performance enhancement
+
 ## 3.9.6
 fix declarative schema refs for Decoder
 
