@@ -98,10 +98,10 @@ jobs:
       - name: Publish to OSS Build Failure Slack Channel
         uses: abinoda/slack-action@master
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          SLACK_BOT_TOKEN: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
         with:
           args: >-
-            {\"channel\":\"C056HGD1QSW\", \"blocks\":[
+            {\"channel\":\"C07F5NUU63S\", \"blocks\":[
             {\"type\":\"divider\"},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Publish Connector Failed! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
