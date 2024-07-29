@@ -20,9 +20,9 @@ abnormal_state_write_file = "/connector/integration_tests/temp/abnormal_state_co
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
 secret_config_file = '/connector/secrets/config.json'
-secret_active_config_file = '/connector/integration_tests/config_active.json'
+secret_active_config_file = '/connector/integration_tests/temp/config_active.json'
 secret_config_cdc_file = '/connector/secrets/config_cdc.json'
-secret_active_config_cdc_file = '/connector/integration_tests/config_cdc_active.json'
+secret_active_config_cdc_file = '/connector/integration_tests/temp/config_cdc_active.json'
 
 def connect_to_db() -> extensions.connection:
     with open(secret_config_file) as f:
@@ -134,10 +134,6 @@ def prepare() -> None:
     with open("./generated_schema.txt", "w") as f:
         f.write(schema_name)
 
-def setup() -> None:
-    schema_name = load_schema_name_from_catalog()
-    write_supporting_file(schema_name)
-
 def cdc_insert():
     schema_name = load_schema_name_from_catalog()
     new_records = [
@@ -165,17 +161,16 @@ def setup(with_cdc=False):
     # Connect to the database
     connection = connect_to_db()
 
-    if connection:
-        # Create the schema
-        create_schema(connection, schema_name)
-        create_table(connection, schema_name, table_name)
-        if (with_cdc):
-            setup_cdc(connection, replication_slot_and_publication_name=schema_name)
-        # Insert the records
-        insert_records(connection, schema_name, table_name, records)
+    # Create the schema
+    create_schema(connection, schema_name)
+    create_table(connection, schema_name, table_name)
+    if (with_cdc):
+        setup_cdc(connection, replication_slot_and_publication_name=schema_name)
+    # Insert the records
+    insert_records(connection, schema_name, table_name, records)
 
-        # Close the connection
-        connection.close()
+    # Close the connection
+    connection.close()
 
 def replication_slot_existed(connection, replication_slot_name):
     cursor = connection.cursor()
@@ -261,6 +256,13 @@ def teardown() -> None:
     delete_schemas_with_prefix(conn, formatted_yesterday)
     delete_cdc_with_prefix(conn, formatted_yesterday)
 
+def final_teardown() -> None:
+    conn = connect_to_db()
+    schema_name = load_schema_name_from_catalog()
+    print(f"delete schema {schema_name}")
+    delete_schemas_with_prefix(conn, schema_name)
+    delete_cdc_with_prefix(conn, schema_name)
+
 if __name__ == "__main__":
     command = sys.argv[1]
     if command == "setup":
@@ -269,9 +271,12 @@ if __name__ == "__main__":
         setup(with_cdc=True)
     elif command == "teardown":
         teardown()
+    elif command == "final_teardown":
+        final_teardown()
     elif command == "prepare":
         prepare()
     elif command == "insert":
         cdc_insert()
     else:
+        print(f"Unrecognized command {command}.")
         exit(1)

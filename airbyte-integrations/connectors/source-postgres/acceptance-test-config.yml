@@ -26,7 +26,7 @@ acceptance_tests:
           disable_for_version: "2.1.1"
   basic_read:
     tests:
-      - config_path: "integration_tests/config_active.json"
+      - config_path: "integration_tests/temp/config_active.json"
         configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
@@ -43,7 +43,7 @@ acceptance_tests:
             - "teardown"
   full_refresh:
     tests:
-      - config_path: "integration_tests/config_active.json"
+      - config_path: "integration_tests/temp/config_active.json"
         configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
@@ -58,7 +58,7 @@ acceptance_tests:
             - "teardown"
   incremental:
     tests:
-      - config_path: "integration_tests/config_active.json"
+      - config_path: "integration_tests/temp/config_active.json"
         configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
@@ -77,7 +77,7 @@ acceptance_tests:
             - "insert"
         future_state:
           future_state_path: "integration_tests/temp/abnormal_state_copy.json"
-      - config_path: "integration_tests/config_cdc_active.json"
+      - config_path: "integration_tests/temp/config_cdc_active.json"
         configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
         client_container_config:
           client_container_dockerfile_path: "integration_tests/Dockerfile"
@@ -89,7 +89,7 @@ acceptance_tests:
           final_teardown_command:
             - "python"
             - "./hook.py"
-            - "teardown"
+            - "final_teardown"
           between_syncs_command:
             - "python"
             - "./hook.py"
