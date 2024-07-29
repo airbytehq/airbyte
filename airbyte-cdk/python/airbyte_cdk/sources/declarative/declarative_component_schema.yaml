@@ -387,7 +387,7 @@ definitions:
       decoder:
         title: Decoder
         description: Component decoding the response so records can be extracted.
-        "$ref": "#/definitions/Decoder"
+        "$ref": "#/definitions/JsonDecoder"
       $parameters:
         type: object
         additionalProperties: true
