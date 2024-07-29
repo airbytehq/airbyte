@@ -558,20 +558,26 @@ Bump source-openweather:
 | ----------- | ----------------------------------------------------------------------------------------- |
 | --pr-number | Explicitly set the PR number in the changelog entry, a placeholder will be set otherwise. |
 
-### <a id="connectors-upgrade_cdk"></a>`connectors upgrade_cdk` command
+### <a id="connectors-upgrade-cdk"></a>`connectors upgrade-cdk` command
 
-Upgrade the CDK version of the selected connectors by updating the dependency in the setup.py file.
+Updates the CDK version of the selected connectors.
+For Python connectors, sets the `airbyte-cdk` dependency in `pyproject.toml` and refreshes the lockfile, updating only essential dependencies.
 
 ### Examples
 
-Upgrade for source-openweather:
-`airbyte-ci connectors --name=source-openweather upgrade_cdk <new-cdk-version>`
+`airbyte-ci connectors --language=python upgrade-cdk` -> Updates all python connectors to the caret range of the latest version.
+`airbyte-ci connectors --name=source-openweather upgrade-cdk "3.0.0"` -> Pins source-openweather to version 3.0.0
+`airbyte-ci connectors --modified upgrade-cdk "<4"` -> Updates all modified connectors to the highest available version of major version 3.x.x
 
 #### Arguments
 
 | Argument      | Description                                             |
 | ------------- | ------------------------------------------------------- |
-| `CDK_VERSION` | CDK version to set (default to the most recent version) |
+| `CDK_VERSION` | CDK version constraint to set (default to `^{most_recent_patch_version}`) |
+
+#### Notes
+
+When using < (less than) or > (greater than) for the `CDK_VERSION` argument, it must be wrapped in quotation marks ("<3"). Otherwise the shell (zsh or bash) will interprete these characters as redirection operators.
 
 ### <a id="connectors-migrate-to-base-image"></a>`connectors migrate-to-base-image` command
 
@@ -767,12 +773,14 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
-| 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410) | Live/regression tests: disable approval requirement on forks                                                                 |
-| 4.25.0  | [#42044](https://github.com/airbytehq/airbyte/pull/42044) | Live/regression tests: add support for selecting from a subset of connections                                                |
-| 4.24.3  | [#42040](https://github.com/airbytehq/airbyte/pull/42040) | Always send regression test approval status check; skip on auto-merge PRs.                                                   |
-| 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676) | Send regression test approval status check when skipped.                                                                     |
-| 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642) | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                           |
-| 4.24.0  | [#41627](https://github.com/airbytehq/airbyte/pull/41627) | Require manual regression test approval for certified connectors                                                             |
+| 4.25.3  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Ugrade-cdk: Update to work with Python connectors using poetry                                                               |
+| 4.25.2  | [#42077](https://github.com/airbytehq/airbyte/pull/42077)  | Live/regression tests: add status check for regression test runs                                                             |
+| 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410)  | Live/regression tests: disable approval requirement on forks                                                                 |
+| 4.25.0  | [#42044](https://github.com/airbytehq/airbyte/pull/42044)  | Live/regression tests: add support for selecting from a subset of connections                                                |
+| 4.24.3  | [#42040](https://github.com/airbytehq/airbyte/pull/42040)  | Always send regression test approval status check; skip on auto-merge PRs.                                                   |
+| 4.24.2  | [#41676](https://github.com/airbytehq/airbyte/pull/41676)  | Send regression test approval status check when skipped.                                                                     |
+| 4.24.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642)  | Use the AIRBYTE_GITHUB_REPO environment variable to run airbyte-ci in other repos.                                           |
+| 4.24.0  | [#41627](https://github.com/airbytehq/airbyte/pull/41627)  | Require manual regression test approval for certified connectors                                                             |
 | 4.23.1  | [#41541](https://github.com/airbytehq/airbyte/pull/41541)  | Add support for submodule use-case.                                                                                          |
 | 4.23.0  | [#39906](https://github.com/airbytehq/airbyte/pull/39906)  | Add manifest only build pipeline                                                                                             |
 | 4.22.0  | [#41623](https://github.com/airbytehq/airbyte/pull/41623)  | Make `airbyte-ci` run on private forks.                                                                                      |

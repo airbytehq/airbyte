@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.9.6
+fix declarative schema refs for Decoder
+
+## 3.9.5
+Fixed: Resolved an issue in HttpClient that prevented correct error messages from being presented.
+
+## 3.9.4
+Adding  text field to declarative manifest schema for general connector description.
+
+## 3.9.3
+add name property to http_client for convenience
+
 ## 3.9.2
 low-code: fix record selector factory when using custom components
 

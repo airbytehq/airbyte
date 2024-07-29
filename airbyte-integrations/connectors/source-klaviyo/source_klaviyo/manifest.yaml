@@ -18,23 +18,19 @@ definitions:
     authenticator: "#/definitions/authenticator"
     http_method: GET
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: "Retry-After"
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes: [429]
-        - type: DefaultErrorHandler # adding this DefaultErrorHandler for 5XX error codes
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes: [401, 403]
-              error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes: [429]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401, 403]
+          failure_type: config_error
+          error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
     request_headers:
       Accept: "application/json"
       Revision: "2023-10-15"
@@ -242,7 +238,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_klaviyo.components.inclouded_fields_extractor.KlaviyoIncludedFieldExtractor
+          class_name: source_klaviyo.components.included_fields_extractor.KlaviyoIncludedFieldExtractor
           field_path: ["data"]
       requester:
         $ref: "#/definitions/requester"
