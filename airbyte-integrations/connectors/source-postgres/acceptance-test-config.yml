@@ -4,6 +4,12 @@ connector_image: airbyte/source-postgres:dev
 custom_environment_variables:
   USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
+  client_container_config:
+    client_container_dockerfile_path: "integration_tests/Dockerfile"
+    final_teardown_command:
+      - "python"
+      - "./hook.py"
+      - "final_teardown"
   spec:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
@@ -86,10 +92,6 @@ acceptance_tests:
             - "python"
             - "./hook.py"
             - "setup_cdc"
-          final_teardown_command:
-            - "python"
-            - "./hook.py"
-            - "final_teardown"
           between_syncs_command:
             - "python"
             - "./hook.py"

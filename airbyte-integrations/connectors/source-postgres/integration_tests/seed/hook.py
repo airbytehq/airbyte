@@ -198,7 +198,7 @@ def load_schema_name_from_catalog():
     with open("./generated_schema.txt", "r") as f:
         return f.read()
 
-def delete_cdc_with_prefix(conn, date_prefix):
+def delete_cdc_with_prefix(conn, prefix):
     try:
         # Connect to the PostgreSQL database
         cursor = conn.cursor()
@@ -206,16 +206,17 @@ def delete_cdc_with_prefix(conn, date_prefix):
         # Fetch all results
         slots = cursor.fetchall()
         for slot in slots:
-            if slot[0].startswith(date_prefix):
-                print(f"Start dropping replication slot and publication {slot}")
-                drop_replication_slot_query = sql.SQL("SELECT pg_drop_replication_slot(%s);").format(sql.Identifier(slot))
-                drop_publication_query = sql.SQL("DROP PUBLICATION (%s);").format(sql.Identifier(slot))
+            if slot[0].startswith(prefix):
+                print(f"Start dropping replication slot and publication {slot[0]}")
+                drop_replication_slot_query = sql.SQL("SELECT pg_drop_replication_slot({});").format(sql.Literal(slot[0]))
+                drop_publication_query = sql.SQL("DROP PUBLICATION {};").format(sql.Identifier(slot[0]))
                 cursor.execute(drop_publication_query)
                 cursor.execute(drop_replication_slot_query)
-                print(f"Dropping {slot} done")
+                print(f"Dropping {slot[0]} done")
         conn.commit()
     except Exception as e:
         print(f"An error occurred: {e}")
+        exit(1)
     finally:
         if cursor:
             cursor.close()
