@@ -8,7 +8,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from conftest import find_stream
 from source_linkedin_ads.source import SourceLinkedinAds
@@ -58,13 +58,14 @@ class TestAllStreams:
     _instance: SourceLinkedinAds = SourceLinkedinAds()
 
     @pytest.mark.parametrize("error_code", [429, 500, 503])
-    def test_should_retry_on_error(self, error_code, requests_mock):
+    def test_should_retry_on_error(self, error_code, requests_mock, mocker):
+        mocker.patch("time.sleep", lambda x: None)
         stream = find_stream("accounts", TEST_CONFIG)
         requests_mock.register_uri(
             "GET", "https://api.linkedin.com/rest/adAccounts", [{"status_code": error_code, "json": {"elements": []}}]
         )
-
-        with pytest.raises(UserDefinedBackoffException):
+        stream.exit_on_rate_limit = True
+        with pytest.raises(DefaultBackoffException):
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     def test_custom_streams(self):
@@ -107,24 +108,21 @@ class TestAllStreams:
                         400,
                         False,
                         (
-                                "Unable to connect to stream accounts - "
-                                "Request to https://api.linkedin.com/rest/adAccounts?q=search&pageSize=500 "
-                                "failed with status code 400 and error message None"
+                                "Bad request. Please check your request parameters."
                         ),
                 ),
                 (
                         403,
                         False,
                         (
-                                "Unable to connect to stream accounts - "
-                                "Request to https://api.linkedin.com/rest/adAccounts?q=search&pageSize=500 "
-                                "failed with status code 403 and error message None"
+                                "Forbidden. You don't have permission to access this resource."
                         ),
                 ),
                 (200, True, None),
         ),
     )
-    def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg):
+    def test_check_connection(self, requests_mock, status_code, is_connection_successful, error_msg, mocker):
+        mocker.patch("time.sleep", lambda x: None)
         json = {"elements": [{"data": []}] * 500} if 200 >= status_code < 300 else {}
         requests_mock.register_uri(
             "GET",

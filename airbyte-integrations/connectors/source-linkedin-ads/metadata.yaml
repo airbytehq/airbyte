@@ -67,7 +67,7 @@ data:
               - "ad_member_company_analytics"
       3.0.0:
         message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users will need to reset affected streams after upgrading. Please see migration guide for more details.
-        upgradeDeadline: "2024-07-08"
+        upgradeDeadline: "2024-08-20"
         scopedImpact:
           - scopeType: stream
             impactedScopes:

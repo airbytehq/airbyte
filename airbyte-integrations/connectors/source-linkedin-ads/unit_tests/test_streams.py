@@ -42,7 +42,7 @@ def test_analytics_stream_slices(requests_mock):
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
     requests_mock.get("https://api.linkedin.com/rest/adAccounts/1/adCampaigns", json={"elements": [{"id": 123}]})
-
+    print([dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())])
     assert [dict(i) for i in list(stream.retriever.stream_slicer.stream_slices())] == load_json_file("output_slices.json")
 
 
