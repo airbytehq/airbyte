@@ -197,6 +197,7 @@ def _file_upload(
     *,
     upload_as_version: str | Literal[False],
     upload_as_latest: bool,
+    skip_if_not_exists: bool = True,
 ) -> tuple[tuple[bool, str], tuple[bool, str]]:
     """Upload a file to GCS.
 
@@ -210,11 +211,20 @@ def _file_upload(
         upload_as_version: The version to upload the file as or 'False' to skip uploading
             the versioned copy.
         upload_as_latest: Whether to upload the file as the latest version.
+        skip_if_not_exists: Whether to skip the upload if the file does not exist. Otherwise,
+            an exception will be raised if the file does not exist.
 
     Returns: Tuple of two tuples, each containing a boolean indicating whether the file was
         uploaded and the blob id. The first tuple is for the versioned file, the second for the
         latest file.
     """
+    if not local_path.exists():
+        if skip_if_not_exists:
+            return (False, None), (False, None)
+
+        msg = f"Expected to find file at {local_path}, but none was found."
+        raise FileNotFoundError(msg)
+
     versioned_file_uploaded, latest_file_uploaded = False, False
     versioned_blob_id, latest_blob_id = None, None
     if upload_as_version:
