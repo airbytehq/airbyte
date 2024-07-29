@@ -9,6 +9,34 @@ from typing import Optional
 
 
 class PrintBuffer:
+    """
+    A class to buffer print statements and flush them at a specified interval.
+
+    The PrintBuffer class is designed to capture and buffer output that would
+    normally be printed to the standard output (stdout). This can be useful for
+    scenarios where you want to minimize the number of I/O operations by grouping
+    multiple print statements together and flushing them as a single operation.
+
+    Attributes:
+        buffer (StringIO): A buffer to store the messages before flushing.
+        flush_interval (float): The time interval (in seconds) after which the buffer is flushed.
+        last_flush_time (float): The last time the buffer was flushed.
+        lock (RLock): A reentrant lock to ensure thread-safe operations.
+
+    Methods:
+        write(message: str) -> None:
+            Writes a message to the buffer and flushes if the interval has passed.
+
+        flush() -> None:
+            Flushes the buffer content to the standard output.
+
+        __enter__() -> "PrintBuffer":
+            Enters the runtime context related to this object, redirecting stdout and stderr.
+
+        __exit__(exc_type, exc_val, exc_tb) -> None:
+            Exits the runtime context and restores the original stdout and stderr.
+    """
+
     def __init__(self, flush_interval: float = 0.1):
         self.buffer = StringIO()
         self.flush_interval = flush_interval
