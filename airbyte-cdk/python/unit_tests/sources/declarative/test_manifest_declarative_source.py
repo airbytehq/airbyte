@@ -5,9 +5,9 @@
 import json
 import logging
 import os
-from pathlib import Path
 import sys
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, List, Mapping
 from unittest.mock import call, patch
 
