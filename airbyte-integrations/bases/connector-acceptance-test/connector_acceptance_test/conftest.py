@@ -148,9 +148,9 @@ async def client_container_config_global_fixture(acceptance_test_config: Config)
 
 
 @pytest.fixture(name="client_container_config_secrets")
-def client_container_config_secrets_fixture(client_container_config) -> Optional[SecretDict]:
+def client_container_config_secrets_fixture(base_path, client_container_config) -> Optional[SecretDict]:
     if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
-        with open(str(client_container_config.secrets_path), "r") as file:
+        with open(str(base_path / client_container_config.secrets_path), "r") as file:
             contents = file.read()
         return SecretDict(json.loads(contents))
     return None

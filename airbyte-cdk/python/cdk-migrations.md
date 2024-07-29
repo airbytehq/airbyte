@@ -1,5 +1,9 @@
 # CDK Migration Guide
 
+## Upgrading to 4.0.0
+
+Updated the codebase to utilize new Python syntax features. As a result, support for Python 3.9 has been dropped. The minimum required Python version is now 3.10.
+
 ## Upgrading to 3.0.0
 Version 3.0.0 of the CDK updates the `HTTPStream` class by reusing the `HTTPClient` under the hood.
 
