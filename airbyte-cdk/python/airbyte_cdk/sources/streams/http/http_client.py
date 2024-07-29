@@ -292,7 +292,7 @@ class HttpClient:
             print(f"{message}\n", end="", flush=True)
 
         if error_resolution.response_action == ResponseAction.FAIL:
-            if response:
+            if response is not None:
                 error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self._error_message_parser.parse_response_error_message(response)}'"
             else:
                 error_message = f"'{request.method}' request to '{request.url}' failed with exception: '{exc}'"
@@ -304,7 +304,7 @@ class HttpClient:
             )
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
-            if response:
+            if response is not None:
                 log_message = (
                     f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
                 )
@@ -353,6 +353,10 @@ class HttpClient:
                 raise e
 
         return response  # type: ignore # will either return a valid response of type requests.Response or raise an exception
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def send_request(
         self,
