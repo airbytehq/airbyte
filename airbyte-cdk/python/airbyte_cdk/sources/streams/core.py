@@ -7,7 +7,7 @@ import itertools
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -125,7 +125,7 @@ class Stream(ABC):
 
     has_multiple_slices = False
 
-    @property
+    @cached_property
     def name(self) -> str:
         """
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
@@ -396,7 +396,7 @@ class Stream(ABC):
         """
         return None
 
-    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
+    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.", action="ignore")
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
     ) -> MutableMapping[str, Any]:
