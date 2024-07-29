@@ -292,21 +292,26 @@ def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_f
     return metadata_dict
 
 
-def _apply_components_py_file_to_metadata_file(
+def _apply_python_components_sha_to_metadata_file(
     metadata_dict: dict,
-    components_py_file_path: Optional[Path] | None,
+    python_components_sha256: Optional[Path] | None = None,
 ) -> dict:
-    """Apply the components.py file data to the metadata file before uploading it to GCS."""
-    if components_py_file_path:
+    """If a `components.py` file is required, store the necessary information in the metadata.
+
+    This adds a `required=True` flag and the sha256 hash of the `python_components.zip` file.
+
+    This is a no-op if `python_components_sha256` is not provided.
+    """
+    if python_components_sha256:
         metadata_dict = set_(
             metadata_dict,
-            "data.generated.pythonComponentsFile.required",
+            "data.generated.pythonComponents.required",
             True
         )
         metadata_dict = set_(
             metadata_dict,
-            "data.generated.pythonComponentsFile.sha256",
-            compute_sha256(components_py_file_path),
+            "data.generated.pythonComponents.sha256",
+            python_components_sha256,
         )
 
     return metadata_dict
@@ -332,17 +337,22 @@ def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
 def _apply_modifications_to_metadata_file(
     original_metadata_file_path: Path,
     validator_opts: ValidatorOptions,
-    components_py_file_path: Optional[Path] | None = None,
+    components_zip_sha256: str | None = None,
 ) -> Path:
     """Apply modifications to the metadata file before uploading it to GCS.
 
     e.g. The git commit hash, the date of the commit, the author of the commit, etc.
 
+    Args:
+        original_metadata_file_path (Path): Path to the original metadata file.
+        validator_opts (ValidatorOptions): Options to use when validating the metadata file.
+        components_zip_sha256 (str): The sha256 hash of the `python_components.zip` file. This is
+            required if the `python_components.zip` file is present.
     """
     metadata = _safe_load_metadata_file(original_metadata_file_path)
     metadata = _apply_prerelease_overrides(metadata, validator_opts)
     metadata = _apply_author_info_to_metadata_file(metadata, original_metadata_file_path)
-    metadata = _apply_components_py_file_to_metadata_file(metadata, components_py_file_path)
+    metadata = _apply_python_components_sha_to_metadata_file(metadata, components_zip_sha256)
 
     return _write_metadata_to_tmp_file(metadata)
 
@@ -370,11 +380,6 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     if not components_py_file_path.exists():
         components_py_file_path = None
 
-    metadata_file_path = _apply_modifications_to_metadata_file(
-        original_metadata_file_path=metadata_file_path,
-        validator_opts=validator_opts,
-        components_py_file_path=components_py_file_path,
-    )
     if components_py_file_path:
         # Create a zip containing the python components file and manifest file together.
         # Also create a sha256 file for the zip file.
@@ -385,7 +390,14 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             zipf.write(filename=yaml_manifest_file_path, arcname=yaml_manifest_file_path.name)
 
         # Compute the sha256 of the zip file and write it to a file.
-        python_components_zip_sha256_file_path.write_text(compute_sha256(python_components_zip_file_path))
+        components_zip_sha256 = compute_sha256(python_components_zip_file_path)
+        python_components_zip_sha256_file_path.write_text(components_zip_sha256)
+
+    metadata_file_path = _apply_modifications_to_metadata_file(
+        original_metadata_file_path=metadata_file_path,
+        validator_opts=validator_opts,
+        components_zip_sha256=components_zip_sha256,
+    )
 
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, validator_opts)
     if metadata is None:
