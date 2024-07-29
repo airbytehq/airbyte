@@ -12,6 +12,15 @@ from airbyte_protocol.models import FailureType
 
 
 class MixpanelStreamErrorHandler(HttpStatusErrorHandler):
+    """
+    Custom error handler for Mixpanel stream that interprets responses and exceptions.
+
+    This handler specifically addresses:
+    - 400 status code with "Unable to authenticate request" message, indicating potential credential expiration.
+    - 402 status code, indicating a payment required error.
+
+    If the response does not match these specific cases, the handler defers to the parent class's implementation.
+    """
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             if response_or_exception.status_code == 400 and "Unable to authenticate request" in response_or_exception.text:

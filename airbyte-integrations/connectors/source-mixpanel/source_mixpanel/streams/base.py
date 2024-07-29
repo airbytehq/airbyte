@@ -105,11 +105,11 @@ class MixpanelStream(HttpStream, ABC):
         # parse the whole response
         yield from self.process_response(response, stream_state=stream_state, **kwargs)
 
-        # if self.reqs_per_hour_limit > 0:
-        #     # we skip this block, if self.reqs_per_hour_limit = 0,
-        #     # in all other cases wait for X seconds to match API limitations
-        #     self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
-        #     time.sleep(3600 / self.reqs_per_hour_limit)
+        if self.reqs_per_hour_limit > 0:
+            # we skip this block, if self.reqs_per_hour_limit = 0,
+            # in all other cases wait for X seconds to match API limitations
+            self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
+            time.sleep(3600 / self.reqs_per_hour_limit)
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         return MixpanelStreamBackoffStrategy(stream=self)
