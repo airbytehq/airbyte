@@ -53,7 +53,8 @@ Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-req
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| :------ | :--------- | :------------------------------------------------------- |:-------------------------------------------------------------------|
+| 0.3.1   | 2024-07-30 | [42861](https://github.com/airbytehq/airbyte/pull/42861) | Migrate to Poetry                                                  |
 | 0.3.0   | 2023-11-04 | [31857](https://github.com/airbytehq/airbyte/pull/31857) | Add Campaigns, Canvases, Segments Details Streams                  |
 | 0.2.0   | 2023-10-28 | [31607](https://github.com/airbytehq/airbyte/pull/31607) | Fix CanvasAnalytics Stream Null Data for step_stats, variant_stats |
 | 0.1.4   | 2023-11-03 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | Fix integration tests                                              |
