@@ -25,6 +25,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
 import java.util.Map;
@@ -85,13 +86,22 @@ public class S3GlueConsumerFactory {
       final String customOutputFormat = String.join("/", bucketPath, s3Config.getPathFormat());
       final String fullOutputPath = storageOperations.getBucketObjectPath(namespace, streamName, SYNC_DATETIME, customOutputFormat);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
+      final SyncMode sourceSyncMode = stream.getSyncMode();
       final JsonNode jsonSchema = abStream.getJsonSchema();
-      final String location = "s3://" + s3Config.getBucketName() + "/" +
-          fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
+      String location = "s3://" + s3Config.getBucketName() + "/";
+      if (sourceSyncMode == SyncMode.FULL_REFRESH) {
+        LOGGER.info("Source stream sync mode is full");
+        location += fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/") + 1);
+      } else if (sourceSyncMode == SyncMode.INCREMENTAL) {
+        LOGGER.info("Source stream sync mode is incremental");
+        // For incremental syncs, we don't use the date part of the path and look one directly higher
+        int lastSlashIndex = fullOutputPath.lastIndexOf("/") - 1;
+        location += fullOutputPath.substring(0, fullOutputPath.lastIndexOf("/", lastSlashIndex) + 1);
+      } else {
+        throw new RuntimeException("Unknown sync mode: " + sourceSyncMode);
+      }
       final S3GlueWriteConfig writeConfig =
-          new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode,
-              jsonSchema, location);
-      LOGGER.info("Write config: {}", writeConfig);
+          new S3GlueWriteConfig(namespace, streamName, bucketPath, customOutputFormat, fullOutputPath, syncMode, jsonSchema, location);
       return writeConfig;
     };
   }
