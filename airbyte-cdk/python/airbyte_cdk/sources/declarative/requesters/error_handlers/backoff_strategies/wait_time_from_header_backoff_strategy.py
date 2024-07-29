@@ -48,7 +48,7 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
             if self.max_waiting_time_in_seconds and header_value and header_value >= self.max_waiting_time_in_seconds:
                 raise AirbyteTracedException(
                     internal_message=f"Rate limit wait time {header_value} is greater than max waiting time of {self.max_waiting_time_in_seconds} seconds. Stopping the stream...",
-                    message=f"The rate limit is greater than max waiting time has been reached.",
+                    message="The rate limit is greater than max waiting time has been reached.",
                     failure_type=FailureType.transient_error,
                 )
         return header_value
