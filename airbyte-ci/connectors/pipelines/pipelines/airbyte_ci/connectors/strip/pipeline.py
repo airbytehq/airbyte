@@ -5,27 +5,27 @@
 import shutil
 from typing import Any
 
-import git
-from ruamel.yaml import YAML
-import shutil
-from pathlib import Path
-from anyio import Semaphore
+import git  # type: ignore
+from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
+from ruamel.yaml import YAML  # type: ignore
 
 ## GLOBAL VARIABLES
 
 VALID_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py"]
 FILES_TO_LEAVE = ["__init__.py", "manifest.yaml", "metadata.yaml", "icon.svg", "run.py", "source.py"]
 
+
 # Initialize YAML handler with desired output style
 yaml = YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
 yaml.preserve_quotes = True
+
 
 class CheckIsManifestMigrationCandidate(Step):
     context: ConnectorContext
@@ -104,7 +104,7 @@ class StripConnector(Step):
             return StepResult(
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
-        
+
         # 2. Delete everything that is not in an allow-list of files
         for file in self.context.connector.code_directory.iterdir():
             if file.name not in FILES_TO_LEAVE and not file.is_dir():
@@ -124,25 +124,25 @@ class StripConnector(Step):
         backup_metadata_file = self.context.connector.code_directory / "metadata.yaml.bak"
         shutil.copy(metadata_file, backup_metadata_file)
 
-        try:  
-          with open(metadata_file, "r") as file:
-            metadata = yaml.load(file)
-            if metadata and 'data' in metadata:
-              tags = metadata["data"]["tags"]
-              tags.append("language:manifest-only")
+        try:
+            with open(metadata_file, "r") as file:
+                metadata = yaml.load(file)
+                if metadata and "data" in metadata:
+                    tags = metadata["data"]["tags"]
+                    tags.append("language:manifest-only")
 
-              # Write the changes to metadata.yaml
-              with open(metadata_file, "w") as file:
-                yaml.dump(metadata, file)
-            else:
-              return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to read metadata.yaml content.")
+                    # Write the changes to metadata.yaml
+                    with open(metadata_file, "w") as file:
+                        yaml.dump(metadata, file)
+                else:
+                    return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to read metadata.yaml content.")
         except Exception as e:
-          shutil.copy(backup_metadata_file, metadata_file)
-          return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
-        
+            shutil.copy(backup_metadata_file, metadata_file)
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
+
         # delete the backup file
         backup_metadata_file.unlink()
-        
+
         # TODO: Add more failure checks
 
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully migrated to manifest-only.")
