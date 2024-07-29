@@ -5,6 +5,7 @@
 import json
 import logging
 import os
+from pathlib import Path
 import sys
 from copy import deepcopy
 from typing import Any, List, Mapping
@@ -1299,6 +1300,5 @@ def test_declarative_component_schema_valid_ref_links():
         invalid_refs = [ref for ref in refs if not resolve_pointer(data, ref.replace('#', ''))]
         return invalid_refs
 
-    yaml_file_path = os.path.abspath('../../../airbyte_cdk/sources/declarative/declarative_component_schema.yaml')
-
+    yaml_file_path = Path(__file__).resolve().parent.parent.parent.parent / 'airbyte_cdk/sources/declarative/declarative_component_schema.yaml'
     assert not validate_refs(yaml_file_path)
