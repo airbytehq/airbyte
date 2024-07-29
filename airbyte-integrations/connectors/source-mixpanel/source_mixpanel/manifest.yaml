@@ -47,6 +47,10 @@ definitions:
       - error_message_contains: "Query rate limit exceeded"
         action: RATE_LIMITED
         error_message: Query rate limit exceeded.
+      - http_codes: [500]
+        error_message_contains: "unknown error"
+        action: RETRY
+        error_message: An unknown error occurred
       - error_message_contains: "to_date cannot be later than today"
         action: FAIL
         error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
@@ -153,7 +157,7 @@ definitions:
       type: CustomPaginationStrategy
       class_name: "source_mixpanel.components.EngagePaginationStrategy"
       start_from_page: 1
-      page_size: 1000
+      page_size: '{{ config["page_size"] or 1000 }}'
     page_token_option:
       type: RequestOption
       inject_into: request_parameter

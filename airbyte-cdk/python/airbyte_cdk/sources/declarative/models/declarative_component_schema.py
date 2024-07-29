@@ -609,6 +609,14 @@ class JsonDecoder(BaseModel):
     type: Literal['JsonDecoder']
 
 
+class JsonlDecoder(BaseModel):
+    type: Literal['JsonlDecoder']
+
+
+class IterableDecoder(BaseModel):
+    type: Literal['IterableDecoder']
+
+
 class MinMaxDatetime(BaseModel):
     type: Literal['MinMaxDatetime']
     datetime: str = Field(
@@ -1188,10 +1196,8 @@ class DpathExtractor(BaseModel):
         ],
         title='Field Path',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None,
-        description='Component decoding the response so records can be extracted.',
-        title='Decoder',
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None, title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1290,6 +1296,10 @@ class DeclarativeSource(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(
         None,
         description='For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.',
+    )
+    description: Optional[str] = Field(
+        None,
+        description='A description of the connector. It will be presented on the Source documentation page.',
     )
 
 
@@ -1582,6 +1592,11 @@ class SimpleRetriever(BaseModel):
         [],
         description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
         title='Partition Router',
+    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 

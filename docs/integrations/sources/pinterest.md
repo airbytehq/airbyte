@@ -203,6 +203,8 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.7 | 2024-07-27 | [42603](https://github.com/airbytehq/airbyte/pull/42603) | Update dependencies |
+| 2.0.6 | 2024-07-20 | [42343](https://github.com/airbytehq/airbyte/pull/42343) | Update dependencies |
 | 2.0.5 | 2024-07-13 | [41765](https://github.com/airbytehq/airbyte/pull/41765) | Update dependencies |
 | 2.0.4 | 2024-07-10 | [41449](https://github.com/airbytehq/airbyte/pull/41449) | Update dependencies |
 | 2.0.3 | 2024-07-06 | [39972](https://github.com/airbytehq/airbyte/pull/39972) | Update dependencies |
