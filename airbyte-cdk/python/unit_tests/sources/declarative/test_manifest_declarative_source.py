@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, List, Mapping
 from unittest.mock import call, patch
 
@@ -1261,3 +1262,43 @@ def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMess
         ]
     )
     return list(source.read(logger, {}, catalog, {}))
+
+
+def test_declarative_component_schema_valid_ref_links():
+    def load_yaml(file_path) -> Mapping[str, Any]:
+        with open(file_path, 'r') as file:
+            return yaml.safe_load(file)
+
+    def extract_refs(data, base_path='#') -> List[str]:
+        refs = []
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key == '$ref' and isinstance(value, str) and value.startswith('#'):
+                    ref_path = value
+                    refs.append(ref_path)
+                else:
+                    refs.extend(extract_refs(value, base_path))
+        elif isinstance(data, list):
+            for item in data:
+                refs.extend(extract_refs(item, base_path))
+        return refs
+
+    def resolve_pointer(data: Mapping[str, Any], pointer: str) -> bool:
+        parts = pointer.split('/')[1:]  # Skip the first empty part due to leading '#/'
+        current = data
+        try:
+            for part in parts:
+                part = part.replace('~1', '/').replace('~0', '~')  # Unescape JSON Pointer
+                current = current[part]
+            return True
+        except (KeyError, TypeError):
+            return False
+
+    def validate_refs(yaml_file: str) -> List[str]:
+        data = load_yaml(yaml_file)
+        refs = extract_refs(data)
+        invalid_refs = [ref for ref in refs if not resolve_pointer(data, ref.replace('#', ''))]
+        return invalid_refs
+
+    yaml_file_path = Path(__file__).resolve().parent.parent.parent.parent / 'airbyte_cdk/sources/declarative/declarative_component_schema.yaml'
+    assert not validate_refs(yaml_file_path)
