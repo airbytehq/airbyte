@@ -219,8 +219,8 @@ class InitialSnapshotHandlerTest {
     assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, NAME_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
         collection1StreamMessage3.getRecord().getData());
 
-    final AirbyteMessage collection1SateMessage = collection1.next();
-    assertEquals(Type.STATE, collection1SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    final AirbyteMessage collection1StateMessage = collection1.next();
+    assertEquals(Type.STATE, collection1StateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     assertFalse(collection1.hasNext());
 
@@ -239,8 +239,8 @@ class InitialSnapshotHandlerTest {
     assertConfiguredFieldsEqualsRecordDataFields(Set.of(CURSOR_FIELD, CDC_UPDATED_AT, CDC_DELETED_AT, CDC_DEFAULT_CURSOR),
         collection2StreamMessage1.getRecord().getData());
 
-    final AirbyteMessage collection2SateMessage = collection2.next();
-    assertEquals(Type.STATE, collection2SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    final AirbyteMessage collection2StateMessage = collection2.next();
+    assertEquals(Type.STATE, collection2StateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     assertFalse(collection2.hasNext());
 
@@ -254,8 +254,8 @@ class InitialSnapshotHandlerTest {
     assertFalse(collection3StreamMessage1.getRecord().getData().has(CDC_DELETED_AT));
     assertFalse(collection3StreamMessage1.getRecord().getData().has(CDC_DEFAULT_CURSOR));
 
-    final AirbyteMessage collection3SateMessage = collection3.next();
-    assertEquals(Type.STATE, collection3SateMessage.getType(), "State message is expected after all records in a stream are emitted");
+    final AirbyteMessage collection3StateMessage = collection3.next();
+    assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
 
     // collection4
     final AirbyteMessage collection4StreamMessage1 = collection4.next();
