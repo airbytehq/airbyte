@@ -115,7 +115,6 @@ class GoogleAnalyticsDatApiErrorHandler(HttpStatusErrorHandler):
 class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     url_base = "https://analyticsdata.googleapis.com/v1beta/"
     http_method = "POST"
-    _config: Mapping[str, Any] = {}
 
     def __init__(self, *, config: Mapping[str, Any], page_size: int = 100_000, **kwargs):
         self._config = config

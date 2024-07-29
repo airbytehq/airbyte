@@ -12,6 +12,9 @@ MESSAGE = "Incorrect Property ID: {property_id}. Access was denied to the proper
 
 
 def get_google_analytics_data_api_metadata_error_mapping(property_id) -> Mapping[Union[int, str, Type[Exception]], ErrorResolution]:
+    """
+    Adding friendly messages to bad request and forbidden responses that includes the property id and the documentation guidance.
+    """
     return DEFAULT_ERROR_MAPPING | {
         403: ErrorResolution(
             response_action=ResponseAction.FAIL,

@@ -102,7 +102,7 @@ class GoogleAnalyticsApiQuotaBase:
             self.response_action = quota.get("response_action")
             self.stop_iter = quota.get("stop_iter")
             self.backoff_time = quota.get("backoff")
-            self.error_message = quota.get("error_message") or quota.get("error_pattern")
+            self.error_message = quota.get("error_message",  quota.get("error_pattern"))
 
     def _set_default_handle_error_attrs(self) -> None:
         self.response_action = ResponseAction.RETRY
