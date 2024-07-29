@@ -372,20 +372,21 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
-    icon_file_path = metadata_file_path.parent / ICON_FILE_NAME
-    connector_name_snake_case = metadata_file_path.parent.name.replace("-", "_")
-    yaml_manifest_file_path: Path | None = metadata_file_path.parent / connector_name_snake_case / "manifest.yaml"
-    if not yaml_manifest_file_path.exists():
-        yaml_manifest_file_path = None
-    components_py_file_path: Path | None = metadata_file_path.parent / connector_name_snake_case / "components.py"
-    if not components_py_file_path.exists():
-        components_py_file_path = None
+    # Get our working directory and temp directories
+    working_directory = metadata_file_path.parent
+    temp_directory = working_directory / "temp"
+    temp_directory.mkdir(exist_ok=True)
 
-    if components_py_file_path:
+    # Declare paths to the files that may be uploaded to GCS
+    yaml_manifest_file_path = working_directory / "manifest.yaml"
+    components_py_file_path = working_directory / "components.py"
+    python_components_zip_file_path = temp_directory / "python_components.zip"
+    python_components_zip_sha256_file_path = temp_directory / "python_components.zip.sha256"
+
+    components_zip_sha256: str | None = None
+    if components_py_file_path.exists():
         # Create a zip containing the python components file and manifest file together.
         # Also create a sha256 file for the zip file.
-        python_components_zip_file_path = metadata_file_path.parent / "python_components.zip"
-        python_components_zip_sha256_file_path = metadata_file_path.parent / "python_components.zip.sha256"
         with zipfile.ZipFile(python_components_zip_file_path, 'w') as zipf:
             zipf.write(filename=components_py_file_path, arcname=components_py_file_path.name)
             zipf.write(filename=yaml_manifest_file_path, arcname=yaml_manifest_file_path.name)
@@ -413,17 +414,17 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
     docs_path = Path(validator_opts.docs_path)
+    gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
+    upload_as_version = metadata.data.dockerImageTag
+    upload_as_latest = not validator_opts.prerelease_tag
 
-    icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, icon_file_path)
+    icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path.parent / ICON_FILE_NAME)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
 
     doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, False)
     doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
 
-    gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
-    upload_as_version = metadata.data.dockerImageTag
-    upload_as_latest = not validator_opts.prerelease_tag
     (manifest_yml_uploaded, manifest_yml_blob_id), \
     (manifest_yml_latest_uploaded, manifest_yml_latest_blob_id) = _file_upload(
         local_path=python_components_zip_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
@@ -440,7 +441,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
     )
 
-    if not validator_opts.prerelease_tag:
+    if upload_as_latest:
         latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
         doc_latest_uploaded, doc_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, False)
         doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, True)
