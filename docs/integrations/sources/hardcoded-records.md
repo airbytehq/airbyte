@@ -147,9 +147,10 @@ None!
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject          |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------|
-| 0.0.2 | 2024-07-27 | [42828](https://github.com/airbytehq/airbyte/pull/42828) | Update dependencies |
-| 0.0.1 | 2024-07-23 | [42434](https://github.com/airbytehq/airbyte/pull/42434) | Initial Release |
+| Version | Date       | Pull Request                                             | Subject                  |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.3   | 2024-07-29 | [42850](https://github.com/airbytehq/airbyte/pull/42850) | Update Airbyte CDK to v4 |
+| 0.0.2   | 2024-07-27 | [42828](https://github.com/airbytehq/airbyte/pull/42828) | Update dependencies      |
+| 0.0.1   | 2024-07-23 | [42434](https://github.com/airbytehq/airbyte/pull/42434) | Initial Release          |
 
 </details>
