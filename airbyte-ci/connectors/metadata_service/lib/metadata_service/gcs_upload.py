@@ -35,6 +35,9 @@ from pydash import set_
 from pydash.objects import get
 
 
+LATEST = "latest"
+
+
 @dataclass(frozen=True)
 class UploadedFile:
     id: str
@@ -151,7 +154,7 @@ def upload_file_if_changed(
 
 
 def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
-    latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
+    latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, LATEST)
     return upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
 
 
@@ -161,7 +164,7 @@ def _version_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.buc
 
 
 def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, icon_file_path: Path) -> Tuple[bool, str]:
-    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
+    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, LATEST)
     if not icon_file_path.exists():
         return False, f"No Icon found at {icon_file_path}"
     return upload_file_if_changed(icon_file_path, bucket, latest_icon_path)
@@ -174,7 +177,7 @@ def _doc_upload(
     if not local_doc_path:
         return False, f"Metadata does not contain a valid Airbyte documentation url, skipping doc upload."
 
-    remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, inapp)
+    remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, LATEST if latest else metadata.data.dockerImageTag, inapp)
 
     if local_doc_path.exists():
         doc_uploaded, doc_blob_id = upload_file_if_changed(local_doc_path, bucket, remote_doc_path)
@@ -189,25 +192,40 @@ def _doc_upload(
 
 def _file_upload(
     local_path: Path,
-    connector_upload_path: str,
+    gcp_connector_dir: str,
     bucket: storage.bucket.Bucket,
     *,
     upload_as_version: str | Literal[False],
     upload_as_latest: bool,
 ) -> tuple[tuple[bool, str], tuple[bool, str]]:
+    """Upload a file to GCS.
+
+    Optionally upload it as a versioned file and/or as the latest version.
+
+    Args:
+        local_path: Path to the file to upload.
+        gcp_connector_dir: Path to the connector folder in GCS. This is the parent folder,
+            containing the versioned and "latest" folders as its subdirectories.
+        bucket: GCS bucket to upload the file to.
+        upload_as_version: The version to upload the file as.
+        upload_as_latest: Whether to upload the file as the latest version.
+
+    Returns: Tuple of two tuples, each containing a boolean indicating whether the file was
+        uploaded and the blob id. The first tuple is for the versioned file, the second for the
+        latest file.
+    """
     versioned_file_uploaded, latest_file_uploaded = False, False
     versioned_blob_id, latest_blob_id = None, None
-    base_name = local_path.name
     if upload_as_version:
-        remote_upload_path = connector_upload_path / upload_as_version
+        remote_upload_path = gcp_connector_dir / upload_as_version
         versioned_file_uploaded, versioned_blob_id = upload_file_if_changed(
-            local_file_path=local_path, bucket=bucket, blob_path=remote_upload_path / base_name,
+            local_file_path=local_path, bucket=bucket, blob_path=remote_upload_path / local_path.name,
         )
 
     if upload_as_latest:
-        remote_upload_path = connector_upload_path / "latest"
+        remote_upload_path = gcp_connector_dir / LATEST
         versioned_file_uploaded, versioned_blob_id = upload_file_if_changed(
-            local_file_path=local_path, bucket=bucket, blob_path=remote_upload_path / base_name,
+            local_file_path=local_path, bucket=bucket, blob_path=remote_upload_path / local_path.name,
         )
 
     return (versioned_file_uploaded, versioned_blob_id), (latest_file_uploaded, latest_blob_id)
@@ -390,22 +408,22 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, False)
     doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
 
-    connector_upload_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
+    gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
     upload_as_version = metadata.data.dockerImageTag
     upload_as_latest = not validator_opts.prerelease_tag
     (manifest_yml_uploaded, manifest_yml_blob_id), \
     (manifest_yml_latest_uploaded, manifest_yml_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path, connector_upload_path=connector_upload_dir, bucket=bucket,
+        local_path=python_components_zip_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
         upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
     )
     (components_zip_sha256_uploaded, components_zip_sha256_blob_id), \
     (components_zip_sha256_latest_uploaded, components_zip_sha256_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path, connector_upload_path=connector_upload_dir, bucket=bucket,
+        local_path=python_components_zip_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
         upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
     )
     (components_zip_uploaded, components_zip_blob_id), \
     (components_zip_latest_uploaded, components_zip_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path, connector_upload_path=connector_upload_dir, bucket=bucket,
+        local_path=python_components_zip_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
         upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
     )
 
