@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "3.9.6"
+version = "4.0.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-3.9.6-py3-none-any.whl", hash = "sha256:4d4cb095926249247d87437c8b4dd762df52bb8e24c76e05f166982842f6876d"},
-    {file = "airbyte_cdk-3.9.6.tar.gz", hash = "sha256:9e31eadeb32b63c1b4b9fbcb26334239ca83c314645b4a164e01c95e9a8ab1f5"},
+    {file = "airbyte_cdk-4.0.0-py3-none-any.whl", hash = "sha256:058b605e859e679a77ce4af8df7d40365b75db0f9515bbeb4b629975ef4f12a5"},
+    {file = "airbyte_cdk-4.0.0.tar.gz", hash = "sha256:604212ebd2af786e03de54257fa978b38132a99a0af4e9a31d9dbac0f33d0a4b"},
 ]
 
 [package.dependencies]
@@ -1238,13 +1238,13 @@ tests = ["coverage (>=6.0.0)", "flake8", "mypy", "pytest (>=7.0.0)", "pytest-asy
 
 [[package]]
 name = "setuptools"
-version = "71.1.0"
+version = "72.1.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-71.1.0-py3-none-any.whl", hash = "sha256:33874fdc59b3188304b2e7c80d9029097ea31627180896fb549c578ceb8a0855"},
-    {file = "setuptools-71.1.0.tar.gz", hash = "sha256:032d42ee9fb536e33087fb66cac5f840eb9391ed05637b3f2a76a7c8fb477936"},
+    {file = "setuptools-72.1.0-py3-none-any.whl", hash = "sha256:5a03e1860cf56bb6ef48ce186b0e557fdba433237481a9a625176c2831be15d1"},
+    {file = "setuptools-72.1.0.tar.gz", hash = "sha256:8d243eff56d095e5817f796ede6ae32941278f542e0f941867cc05ae52b162ec"},
 ]
 
 [package.extras]
@@ -1437,5 +1437,5 @@ files = [
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.9,<3.12"
-content-hash = "8c4606210e1fe88f16b9b05189ae853fb2a178e0bbb7fb377df17a11e7b91914"
+python-versions = "^3.10,<3.12"
+content-hash = "0783f782cd3c521d2a994ff084e2a31cb722c12270d3007110035ff30871ca43"
