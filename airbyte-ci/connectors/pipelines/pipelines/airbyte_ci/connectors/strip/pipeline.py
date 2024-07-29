@@ -2,10 +2,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import shutil
+from pathlib import Path
 from typing import Any
 
 import git  # type: ignore
+import jinja2
 from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -118,6 +121,7 @@ class StripConnector(Step):
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
 
         # 3. Grab the cdk tag from metadata.yaml and update it
+        # TODO: Also update the base image
         metadata_file = self.context.connector.code_directory / "metadata.yaml"
 
         # Backup the original file before modifying
@@ -140,10 +144,16 @@ class StripConnector(Step):
             shutil.copy(backup_metadata_file, metadata_file)
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
 
-        # delete the backup file
+        # delete the backup metadata file
         backup_metadata_file.unlink()
 
-        # TODO: Add more failure checks
+        # 4. Update the connector's README
+        readme = readme_for_connector(self.context.connector.technical_name)
+        with open(self.context.connector.code_directory / "README.md", "w") as file:
+            file.write(readme)
+
+        # TODO: Update the connector's docs page
+        # TODO: Thorough error handling
 
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully migrated to manifest-only.")
 
@@ -179,3 +189,12 @@ async def run_connectors_strip_pipeline(context: ConnectorContext, semaphore: "S
             context.report = report
 
     return report
+
+
+## HELPER FUNCTIONS
+def readme_for_connector(name: str) -> str:
+    dir_path = Path(__file__).parent / "templates"
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
+    template = env.get_template("README.md.j2")
+    rendered = template.render(source_name=name)
+    return rendered
