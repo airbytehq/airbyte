@@ -148,7 +148,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
 
     def _http_get(self, url, params=None, headers=None):
         """Make a GET request to the given URL and return the response as a JSON."""
-        response = self._session.get(url, params=params, headers=headers)
+        response = self._http_client._session.get(url, params=params, headers=headers)
         response.raise_for_status()
         return response.json()
 
@@ -156,7 +156,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
         response_data = self._http_get(
-            urljoin(self.url_base, api_path), params={"token": report.token}, headers=self._session.auth.get_auth_header()
+            urljoin(self.url_base, api_path), params={"token": report.token}
         )
         try:
             report_status = ReportStatusDetails.parse_raw(json.dumps(response_data))
@@ -267,9 +267,10 @@ class KeywordReport(PinterestAnalyticsTargetingReportStream):
 
 class CustomReport(PinterestAnalyticsTargetingReportStream):
     def __init__(self, **kwargs):
+        # as HttpStream.__init__ requires the name of the stream, we need to assign `self._custom_class_name` before calling the parent
+        self._custom_class_name = f"Custom_{kwargs['config']['name']}"
         super().__init__(**kwargs)
 
-        self._custom_class_name = f"Custom_{self.config['name']}"
         self._level = self.config["level"]
         self.granularity = self.config["granularity"]
         self.click_window_days = self.config["click_window_days"]
