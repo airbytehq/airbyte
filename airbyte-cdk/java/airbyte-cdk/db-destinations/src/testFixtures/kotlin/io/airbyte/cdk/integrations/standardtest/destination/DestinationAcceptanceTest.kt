@@ -4,6 +4,7 @@
 package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
@@ -68,6 +69,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -90,7 +92,9 @@ abstract class DestinationAcceptanceTest(
     private val verifyIndividualStateAndCounts: Boolean = false,
     private val useV2Fields: Boolean = false,
     private val supportsChangeCapture: Boolean = false,
-    private val expectNumericTimestamps: Boolean = false
+    private val expectNumericTimestamps: Boolean = false,
+    private val expectSchemalessObjectsCoercedToStrings: Boolean = false,
+    private val expectUnionsPromotedToDisjointRecords: Boolean = false
 ) {
     protected var testSchemas: HashSet<String> = HashSet()
 
@@ -787,6 +791,7 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+
         configuredCatalog.streams.forEach {
             it.withSyncMode(SyncMode.INCREMENTAL)
                 .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -1615,7 +1620,12 @@ abstract class DestinationAcceptanceTest(
         val generationId = configuredCatalog.streams[0].generationId
         val stream = configuredCatalog.streams[0].stream
         val destinationOutput =
-            retrieveRecords(testEnv, "users", getDefaultSchema(config)!! /* ignored */, stream.jsonSchema)
+            retrieveRecords(
+                testEnv,
+                "users",
+                getDefaultSchema(config)!! /* ignored */,
+                stream.jsonSchema
+            )
 
         // Resolve common field keys.
         val abIdKey: String =
@@ -1695,12 +1705,19 @@ abstract class DestinationAcceptanceTest(
         }
     }
 
-    private fun toTimeTypeMap(schemaMap: Map<String, JsonNode>, format: String): Map<String, Map<String, Boolean>> {
+    private fun toTimeTypeMap(
+        schemaMap: Map<String, JsonNode>,
+        format: String
+    ): Map<String, Map<String, Boolean>> {
         return schemaMap.mapValues { schema ->
-            schema.value["properties"].fields().asSequence()
+            schema.value["properties"]
+                .fields()
+                .asSequence()
                 .filter { (_, value) -> value["format"]?.asText() == format }
                 .map { (key, value) ->
-                    val hasTimeZone = !(value.has("airbyte_type") && value["airbyte_type"]!!.asText().endsWith("without_timezone"))
+                    val hasTimeZone =
+                        !(value.has("airbyte_type") &&
+                            value["airbyte_type"]!!.asText().endsWith("without_timezone"))
                     key to hasTimeZone
                 }
                 .toMap()
@@ -1714,16 +1731,18 @@ abstract class DestinationAcceptanceTest(
                 MoreResources.readResource("v0/every_time_type_configured_catalog.json"),
                 ConfiguredAirbyteCatalog::class.java
             )
-        println(configuredCatalog)
         val config = getConfig()
         val messages =
-            MoreResources.readResource("v0/every_time_type_messages.txt")
-                .trim()
-                .lines()
-                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+            MoreResources.readResource("v0/every_time_type_messages.txt").trim().lines().map {
+                Jsons.deserialize(it, AirbyteMessage::class.java)
+            }
 
-        val expectedByStream = messages.filter { it.type == Type.RECORD }.groupBy { it.record.stream }
-        val schemasByStreamName = configuredCatalog.streams.associateBy { it.stream.name }.mapValues { it.value.stream.jsonSchema }
+        val expectedByStream =
+            messages.filter { it.type == Type.RECORD }.groupBy { it.record.stream }
+        val schemasByStreamName =
+            configuredCatalog.streams
+                .associateBy { it.stream.name }
+                .mapValues { it.value.stream.jsonSchema }
         val dateFieldMeta = toTimeTypeMap(schemasByStreamName, "date")
         val datetimeFieldMeta = toTimeTypeMap(schemasByStreamName, "date-time")
         val timeFieldMeta = toTimeTypeMap(schemasByStreamName, "time")
@@ -1733,42 +1752,191 @@ abstract class DestinationAcceptanceTest(
             val name = stream.stream.name
             val schema = stream.stream.jsonSchema
             val records =
-                retrieveRecordsDataOnly(testEnv, stream.stream.name, getDefaultSchema(config)!! /* ignored */, schema)
+                retrieveRecordsDataOnly(
+                    testEnv,
+                    stream.stream.name,
+                    getDefaultSchema(config)!!, /* ignored */
+                    schema
+                )
             val actual = records.map { node -> pruneAndMaybeFlatten(node) }
-            val expected = expectedByStream[stream.stream.name]!!.map {
-                if (expectNumericTimestamps) {
-                    val node = MoreMappers.initMapper().createObjectNode()
-                    it.record.data.fields().forEach { (k, v) ->
-                        if (dateFieldMeta[name]!!.containsKey(k)) {
-                            val daysSinceEpoch = LocalDate.parse(v.asText()).toEpochDay()
-                            node.put(k, daysSinceEpoch.toInt())
-                        } else if (datetimeFieldMeta[name]!!.containsKey(k)) {
-                            val hasTimeZone = datetimeFieldMeta[name]!![k]!!
-                            val millisSinceEpoch = if (hasTimeZone) {
-                                Instant.parse(v.asText()).toEpochMilli() * 1000
+            val expected =
+                expectedByStream[stream.stream.name]!!.map {
+                    if (expectNumericTimestamps) {
+                        val node = MoreMappers.initMapper().createObjectNode()
+                        it.record.data.fields().forEach { (k, v) ->
+                            if (dateFieldMeta[name]!!.containsKey(k)) {
+                                val daysSinceEpoch = LocalDate.parse(v.asText()).toEpochDay()
+                                node.put(k, daysSinceEpoch.toInt())
+                            } else if (datetimeFieldMeta[name]!!.containsKey(k)) {
+                                val hasTimeZone = datetimeFieldMeta[name]!![k]!!
+                                val millisSinceEpoch =
+                                    if (hasTimeZone) {
+                                        Instant.parse(v.asText()).toEpochMilli() * 1000L
+                                    } else {
+                                        LocalDateTime.parse(v.asText())
+                                            .toInstant(ZoneOffset.UTC)
+                                            .toEpochMilli() * 1000L
+                                    }
+                                node.put(k, millisSinceEpoch)
+                            } else if (timeFieldMeta[name]!!.containsKey(k)) {
+                                val hasTimeZone = timeFieldMeta[name]!![k]!!
+                                val timeOfDayMicros =
+                                    if (hasTimeZone) {
+                                        val offsetTime = OffsetTime.parse(v.asText())
+                                        val microsLocal =
+                                            offsetTime.toLocalTime().toNanoOfDay() / 1000L
+                                        val microsUTC =
+                                            microsLocal -
+                                                offsetTime.offset.totalSeconds * 1_000_000L
+                                        if (microsUTC < 0) {
+                                            microsUTC + 24L * 60L * 60L * 1_000_000L
+                                        } else {
+                                            microsUTC
+                                        }
+                                    } else {
+                                        LocalTime.parse(v.asText()).toNanoOfDay() / 1000L
+                                    }
+                                node.put(k, timeOfDayMicros)
                             } else {
-                                LocalDateTime.parse(v.asText()).toInstant(ZoneOffset.UTC).toEpochMilli() * 1000
+                                node.set(k, v)
                             }
-                            node.put(k, millisSinceEpoch)
-                        } else if (timeFieldMeta[name]!!.containsKey(k)) {
-                            val hasTimeZone = timeFieldMeta[name]!![k]!!
-                            val timeOfDayMicros = if (hasTimeZone) {
-                                val time = v.asText().take(8)
-                                LocalTime.parse(time).toNanoOfDay() / 1000
-                            } else {
-                                LocalTime.parse(v.asText()).toNanoOfDay() / 1000
-                            }
-                            node.put(k, timeOfDayMicros)
-                        } else {
-                            node.set(k, v)
                         }
+                        node
+                    } else {
+                        it.record.data
                     }
-                    node
-                } else {
-                    it.record.data
                 }
+
+            Assertions.assertEquals(expected, actual)
+        }
+    }
+
+    @Test
+    fun testProblematicTypes() {
+        // Kind of a hack, since we'd prefer to test this not happen on some destinations,
+        // but verifiying that for CSV is painful.
+        Assumptions.assumeTrue(
+            expectSchemalessObjectsCoercedToStrings || expectUnionsPromotedToDisjointRecords
+        )
+
+        val configuredCatalog =
+            Jsons.deserialize(
+                MoreResources.readResource("v0/problematic_types_configured_catalog.json"),
+                ConfiguredAirbyteCatalog::class.java
+            )
+        val config = getConfig()
+        val messages =
+            MoreResources.readResource("v0/problematic_fields_messages.txt").trim().lines().map {
+                Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        for (stream in configuredCatalog.streams) {
+            val schema = stream.stream.jsonSchema
+            val actual =
+                retrieveRecordsDataOnly(
+                    testEnv,
+                    stream.stream.name,
+                    getDefaultSchema(config)!! /* ignored */,
+                    schema
+                )
+            val expected = messages.filter { it.type == Type.RECORD }.map { it.record.data }
+            expected.forEach { data ->
+                if (expectSchemalessObjectsCoercedToStrings) {
+                    val obj = (data as ObjectNode)["schemaless_object"]
+                    if (!(obj == null || obj.isNull)) {
+                        data.replace(
+                            "schemaless_object",
+                            JsonNodeFactory.instance.textNode(Jsons.serialize(obj))
+                        )
+                    }
+
+                    val arrayObj = data["schemaless_array"]
+                    if (!(arrayObj == null || arrayObj.isNull)) {
+                        data.replace(
+                            "schemaless_array",
+                            JsonNodeFactory.instance.textNode(Jsons.serialize(arrayObj))
+                        )
+                    } else {
+                        data.replace("schemaless_array", JsonNodeFactory.instance.nullNode())
+                    }
+
+                    val mixedArrayObj = data["mixed_array_integer_and_schemaless_object"]
+                    val newMixedArrayObj = MoreMappers.initMapper().createArrayNode()
+                    if (!(mixedArrayObj == null || mixedArrayObj.isNull)) {
+                        mixedArrayObj.forEach { item ->
+                            if (item == null || item.isNull) {
+                                newMixedArrayObj.add(JsonNodeFactory.instance.nullNode())
+                            } else if (item.isIntegralNumber) {
+                                newMixedArrayObj.add(item)
+                            } else /* is schemaless object */ {
+                                newMixedArrayObj.add(
+                                    JsonNodeFactory.instance.textNode(Jsons.serialize(item))
+                                )
+                            }
+                        }
+                        data.replace("mixed_array_integer_and_schemaless_object", newMixedArrayObj)
+                    } else {
+                        data.replace(
+                            "mixed_array_integer_and_schemaless_object",
+                            JsonNodeFactory.instance.nullNode()
+                        )
+                    }
+
+                    val unionArrayObj = data["array_of_union_integer_and_schemaless_array"]
+                    val newUnionArrayObj = MoreMappers.initMapper().createArrayNode()
+                    if (!(unionArrayObj == null || unionArrayObj.isNull)) {
+                        unionArrayObj.forEach { item ->
+                            if (item == null || item.isNull) {
+                                newUnionArrayObj.add(JsonNodeFactory.instance.nullNode())
+                            } else if (item.isIntegralNumber) {
+                                newUnionArrayObj.add(item)
+                            } else /* is schemaless array */ {
+                                newUnionArrayObj.add(
+                                    JsonNodeFactory.instance.textNode(Jsons.serialize(item))
+                                )
+                            }
+                        }
+                        data.replace(
+                            "array_of_union_integer_and_schemaless_array",
+                            newUnionArrayObj
+                        )
+                    } else {
+                        data.replace(
+                            "array_of_union_integer_and_schemaless_array",
+                            JsonNodeFactory.instance.nullNode()
+                        )
+                    }
+                }
+                if (expectUnionsPromotedToDisjointRecords) {
+                    listOf("combined_type", "union_type").forEach { key ->
+                        val disjointRecord = MoreMappers.initMapper().createObjectNode()
+                        val unionValue = data[key]
+                        if (!(unionValue == null || unionValue.isNull)) {
+                            if (unionValue.isTextual) {
+                                disjointRecord.put("type", "string")
+                                disjointRecord.put("string", unionValue.asText())
+                                disjointRecord.replace(
+                                    "integer",
+                                    JsonNodeFactory.instance.nullNode()
+                                )
+                            } else if (unionValue.isIntegralNumber) {
+                                disjointRecord.put("type", "integer")
+                                disjointRecord.put("integer", unionValue.asInt())
+                                disjointRecord.replace(
+                                    "string",
+                                    JsonNodeFactory.instance.nullNode()
+                                )
+                            } else {
+                                throw IllegalArgumentException(
+                                    "Unexpected union value in test data: $unionValue"
+                                )
+                            }
+                            (data as ObjectNode).replace(key, disjointRecord)
+                        }
+                    }
+                }
+            }
             Assertions.assertEquals(expected, actual)
         }
     }
