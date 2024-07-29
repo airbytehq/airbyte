@@ -108,16 +108,31 @@ class StripConnector(Step):
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
 
-        # 2. Delete everything that is not in an allow-list of files
+        # 2. Delete all non-essential files
+        # TODO: clean this section up so it's less of an eyesore
         for file in self.context.connector.code_directory.iterdir():
-            if file.name not in FILES_TO_LEAVE and not file.is_dir():
-                self.logger.info(f"Deleting {file.name}")
-                file.unlink()
-            elif file.name not in FILES_TO_LEAVE and file.is_dir():
+            if file.name in FILES_TO_LEAVE:
+                continue  # Preserve the allow-list files
+            elif file.name == "unit_tests":
+                for unit_test_file in file.iterdir():
+                    if unit_test_file.name == "integration":
+                        continue  # Preserve the integration folder
+                    # Delete everything else in the unit_tests folder
+                    if unit_test_file.is_dir():
+                        self.logger.info(f"Deleting {unit_test_file.name} folder")
+                        shutil.rmtree(unit_test_file)
+                    else:
+                        self.logger.info(f"Deleting {unit_test_file.name}")
+                        unit_test_file.unlink()
+            # Delete everything else in root folder
+            elif file.is_dir():
                 self.logger.info(f"Deleting {file.name} folder")
                 shutil.rmtree(file)
+            else:
+                self.logger.info(f"Deleting {file.name}")
+                file.unlink()
 
-            if file in self.context.connector.code_directory.iterdir() and file.name not in FILES_TO_LEAVE:
+            if file in self.context.connector.code_directory.iterdir() and file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
 
         # 3. Grab the cdk tag from metadata.yaml and update it
@@ -152,7 +167,8 @@ class StripConnector(Step):
         with open(self.context.connector.code_directory / "README.md", "w") as file:
             file.write(readme)
 
-        # TODO: Update the connector's docs page
+        # TODO: 5 Update the connector's documentation
+
         # TODO: Thorough error handling
 
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully migrated to manifest-only.")
@@ -197,4 +213,11 @@ def readme_for_connector(name: str) -> str:
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
     template = env.get_template("README.md.j2")
     rendered = template.render(source_name=name)
+    return rendered
+
+## TODO: use this helper method for generating new docs
+def docs_file_for_connector(connector, metadata: dict) -> str:
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
+    template = env.get_template("documentation.md.j2")
+    rendered = template.render(manifest=connector.resolved_manifest, source_name=connector.name, metadata=metadata)
     return rendered
