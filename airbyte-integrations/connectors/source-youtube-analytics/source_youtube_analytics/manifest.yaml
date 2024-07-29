@@ -15,7 +15,7 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: jobs
           http_method: GET
           request_body_json:
@@ -30,18 +30,18 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/jobs_resource'
+          $ref: "#/schemas/jobs_resource"
     report_resources:
       type: DeclarativeStream
       name: report_resources
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: jobs/{{ stream_partition['job_id'] }}/reports
           http_method: GET
           request_parameters:
-            startTimeAtOrAfter: '{{ now_utc() }}'
+            startTimeAtOrAfter: "{{ now_utc() }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -53,7 +53,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               stream:
-                $ref: '#/definitions/streams/jobs_resource'
+                $ref: "#/definitions/streams/jobs_resource"
               parent_key: id
               partition_field: job_id
       primary_key:
@@ -61,14 +61,14 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/report_resources'
+          $ref: "#/schemas/report_resources"
     channel_annotations_a1:
       type: DeclarativeStream
       name: channel_annotations_a1
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: '#/definitions/base_requester'
+          $ref: "#/definitions/base_requester"
           path: /
           http_method: GET
         record_selector:
@@ -81,7 +81,7 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               stream:
-                $ref: '#/definitions/streams/report_resources'
+                $ref: "#/definitions/streams/report_resources"
               parent_key: downloadUrl
               partition_field: path
       primary_key:
@@ -96,7 +96,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: '#/schemas/channel_annotations_a1'
+          $ref: "#/schemas/channel_annotations_a1"
   base_requester:
     type: HttpRequester
     url_base: https://youtubereporting.googleapis.com/v1/
@@ -110,9 +110,9 @@ definitions:
       token_refresh_endpoint: https://oauth2.googleapis.com/token
 
 streams:
-  - $ref: '#/definitions/streams/jobs_resource'
-  - $ref: '#/definitions/streams/report_resources'
-  - $ref: '#/definitions/streams/channel_annotations_a1'
+  - $ref: "#/definitions/streams/jobs_resource"
+  - $ref: "#/definitions/streams/report_resources"
+  - $ref: "#/definitions/streams/channel_annotations_a1"
 
 spec:
   type: Spec
