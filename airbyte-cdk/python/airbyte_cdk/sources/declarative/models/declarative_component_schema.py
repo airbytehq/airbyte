@@ -928,10 +928,6 @@ class WaitUntilTimeFromHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
-class Decoder(BaseModel):
-    __root__: Any
-
-
 class AddedFieldDefinition(BaseModel):
     type: Literal['AddedFieldDefinition']
     path: List[str] = Field(
@@ -1040,7 +1036,7 @@ class CursorPagination(BaseModel):
         ],
         title='Stop Condition',
     )
-    decoder: Optional[Decoder] = Field(
+    decoder: Optional[JsonDecoder] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
         title='Decoder',

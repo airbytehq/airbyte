@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9.6
+fix declarative schema refs for Decoder
+
 ## 3.9.5
 Fixed: Resolved an issue in HttpClient that prevented correct error messages from being presented.
 
