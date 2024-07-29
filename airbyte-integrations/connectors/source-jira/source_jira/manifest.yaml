@@ -38,6 +38,12 @@ definitions:
       type: DpathExtractor
       field_path: ["{{ parameters.extract_field }}"]
 
+  selector_base:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: [ ]
+  
   # Paginator
 
   no_pagination_paginator:
@@ -110,10 +116,11 @@ definitions:
     $ref: "#/definitions/full_refresh_stream"
     name: application_roles
     primary_key: "key"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     $parameters:
       path: "applicationrole"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get
   avatars_stream:
@@ -195,10 +202,11 @@ definitions:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_fields
     primary_key: "id"
-    retriever: "#/definitions/retriever_no_pagination_use_cache"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination_use_cache"
+      record_selector: "#/definitions/selector_base"
     $parameters:
       path: "field"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
   issue_field_configurations_stream:
@@ -222,11 +230,12 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get
   issue_navigator_settings_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: issue_navigator_settings
     $parameters:
       path: "settings/columns"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get
   issue_notification_schemes_stream:
@@ -268,12 +277,13 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
   issue_types_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: issue_types
     primary_key: "id"
     $parameters:
       path: "issuetype"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get
   issue_type_schemes_stream:
@@ -296,12 +306,13 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
   jira_settings_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: jira_settings
     primary_key: "id"
     $parameters:
       path: "application-properties"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get
   labels_stream:
@@ -318,7 +329,6 @@ definitions:
     primary_key: "label"
     $parameters:
       path: "label"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-permissions-get
   permissions_stream:
@@ -336,7 +346,6 @@ definitions:
     primary_key: "key"
     $parameters:
       path: "permissions"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-get
   permission_schemes_stream:
@@ -387,6 +396,7 @@ definitions:
     $ref: "#/definitions/full_refresh_stream"
     retriever:
       $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
       requester:
         $ref: "#/definitions/requester"
         error_handler:
@@ -398,26 +408,27 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "projectCategory"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get
   project_roles_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever:
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: project_roles
     primary_key: "id"
     $parameters:
       path: "role"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get
   project_types_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: project_types
     $parameters:
       path: "project/type"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get
   screens_stream:
@@ -441,12 +452,13 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get
   time_tracking_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: time_tracking
     primary_key: "key"
     $parameters:
       path: "configuration/timetracking/list"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-users-search-get
   users_stream:
@@ -460,9 +472,9 @@ definitions:
         pagination_strategy:
           type: OffsetIncrement
           page_size: 50
+      record_selector: "#/definitions/selector_base"
     $parameters:
       path: "users/search"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
   workflows_stream:
@@ -494,22 +506,24 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
   workflow_statuses_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: workflow_statuses
     primary_key: "id"
     $parameters:
       path: "status"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get
   workflow_status_categories_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: "#/definitions/retriever_no_pagination"
+    retriever: 
+      $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
     name: workflow_status_categories
     primary_key: "id"
     $parameters:
       path: "statuscategory"
-      extract_field: "*"
 
   # Substream Based Fullrefresh Streams
 
@@ -520,6 +534,7 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -535,7 +550,6 @@ definitions:
             value: "{{ stream_slice.filter_id }}"
     $parameters:
       path: "filter/{{ stream_slice.filter_id }}/permission"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
   __custom_issue_fields_substream:
@@ -543,7 +557,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_no_pagination_use_cache"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "#/definitions/selector_base"
         record_filter:
           condition: "{{ record.get('custom', False) }}"
 
@@ -678,7 +692,6 @@ definitions:
             value: "{{ stream_slice.parent_slice.issue_property_key }}"
     $parameters:
       path: "issue/{{ stream_slice.parent_slice.issue_property_key }}/properties/{{ stream_slice.property_key }}"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
   issue_remote_links_stream:
@@ -687,6 +700,7 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -702,7 +716,6 @@ definitions:
             value: "{{ stream_slice.issue_property_key }}"
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/remotelink"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-transitions-get
   issue_transitions_stream:
@@ -756,7 +769,6 @@ definitions:
             value: "{{ stream_slice.issue_property_key }}"
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/votes"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
   issue_watchers_stream:
@@ -791,7 +803,6 @@ definitions:
             value: "{{ stream_slice.issue_property_key }}"
     $parameters:
       path: "issue/{{ stream_slice.issue_property_key }}/watchers"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
   project_avatars_stream:
@@ -932,6 +943,7 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever_no_pagination_use_cache"
+      record_selector: "#/definitions/selector_base"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -956,7 +968,6 @@ definitions:
             value: "{{ stream_slice.screen_id }}"
     $parameters:
       path: "screens/{{ stream_slice.screen_id }}/tabs"
-      extract_field: "*"
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get
   screen_tab_fields_stream:
@@ -965,6 +976,7 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever_no_pagination"
+      record_selector: "#/definitions/selector_base"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -983,7 +995,6 @@ definitions:
             value: "{{ stream_slice.parent_slice.screen_id }}"
     $parameters:
       path: "screens/{{ stream_slice.parent_slice.screen_id }}/tabs/{{ stream_slice.tab_id }}/fields"
-      extract_field: "*"
 
   __boards_substream:
     $ref: "#/definitions/boards_stream"
@@ -1057,7 +1068,6 @@ definitions:
           field_path: []
     $parameters:
       path: "user"
-      extract_field: "*"
 
   # Incremental Streams
 
