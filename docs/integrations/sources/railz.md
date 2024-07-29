@@ -95,6 +95,7 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.1.5 | 2024-07-27 | [42674](https://github.com/airbytehq/airbyte/pull/42674) | Update dependencies |
 | 0.1.4 | 2024-07-20 | [40029](https://github.com/airbytehq/airbyte/pull/40029) | Update dependencies |
 | 0.1.3 | 2024-07-19 | [42125](https://github.com/airbytehq/airbyte/pull/42125) | Fix Python MRO bug |
 | 0.1.2 | 2024-05-21 | [38545](https://github.com/airbytehq/airbyte/pull/38545) | [autopull] base image + poetry + up_to_date |
