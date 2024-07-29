@@ -49,15 +49,14 @@ class PendoPythonStream(HttpStream, ABC):
                 fields = {}
                 for field in metadata[key]:
                     field_type = metadata[key][field]["Type"]
+                    # TODO: Hardcoding these fields for now until we understand the Pendo schema better
+                    # These fields are being returned by the Pendo API in multiple formats.
                     if field == "pricingtiersf":
                         fields[field] = {"type": ["null", "integer", "string"]}
                     elif field == "accountnumbersf":
                         fields[field] = {"type": ["null", "string", "number"]}
                     else:
                         fields[field] = self.get_valid_field_info(field_type)
-                    # field_type = metadata[key][field]["Type"]
-                    # fields[field] = self.get_valid_field_info(field_type)
-                    # print(f'Field - {field}, {fields[field]}')
 
                 full_schema["properties"]["metadata"]["properties"][key] = {"type": ["null", "object"], "properties": fields}
         return full_schema

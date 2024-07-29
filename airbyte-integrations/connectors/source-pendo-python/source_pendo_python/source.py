@@ -66,7 +66,7 @@ class SourcePendoPython(AbstractSource):
 
         default_start_date = datetime.now() - timedelta(days=2*365)
         start_date = config.get("start_date", default_start_date.strftime('%Y-%m-%dT%H:%M:%S'))
-        day_page_size = config.get("day_page_size")
+        day_page_size = config.get("day_page_size", 21)
 
         result = [
             Feature(authenticator=auth),
@@ -82,12 +82,12 @@ class SourcePendoPython(AbstractSource):
             GuideEvents(start_date=start_date, day_page_size=day_page_size, authenticator=auth)
         ]
 
-        all_reports = self.get_reports(config)
-        reports = config.get("reports")
-        if reports and len(reports) > 0:
-            for report_id in reports:
+        report_allowlist = config.get("report_allowlist")
+        if reports and len(report_allowlist) > 0:
+            for report_id in report_allowlist:
                 result.append(ReportResult(report=report_id, authenticator=auth))
         else:
+            all_reports = self.get_reports(config)
             for report in all_reports:
                 result.append(ReportResult(report=report, authenticator=auth))
 

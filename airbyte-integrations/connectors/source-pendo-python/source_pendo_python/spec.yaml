@@ -10,8 +10,8 @@ connectionSpecification:
       type: string
       title: API Key
       airbyte_secret: true
-    reports:
-      title: Reports
+    report_allowlist:
+      title: Reports Allow List
       type: array
       description: List of reports to sync. Defaults to all reports. Requires the reportId which can be found at the end of the URL when viewing a report within the app. For example, the reportId for https://app.pendo.io/admin/reporting/usage/123456 would be 123456.
       uniqueItems: true
