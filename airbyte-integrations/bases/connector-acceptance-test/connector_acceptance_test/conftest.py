@@ -45,7 +45,7 @@ def acceptance_test_config_fixture(pytestconfig) -> Config:
     return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
 
 
-@pytest.fixture(name="base_path")
+@pytest.fixture(name="base_path", scope="session")
 def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
     """Fixture to define base path for every path-like fixture"""
     if acceptance_test_config.base_path:
@@ -138,10 +138,19 @@ def client_container_config_fixture(inputs, base_path, acceptance_test_config) -
         return inputs.client_container_config
 
 
+@pytest.fixture(name="client_container_config_global", scope="session")
+async def client_container_config_global_fixture(acceptance_test_config: Config) -> ClientContainerConfig:
+    if (
+        hasattr(acceptance_test_config.acceptance_tests, "client_container_config")
+        and acceptance_test_config.acceptance_tests.client_container_config
+    ):
+        return acceptance_test_config.acceptance_tests.client_container_config
+
+
 @pytest.fixture(name="client_container_config_secrets")
-def client_container_config_secrets_fixture(client_container_config) -> Optional[SecretDict]:
+def client_container_config_secrets_fixture(base_path, client_container_config) -> Optional[SecretDict]:
     if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
-        with open(str(client_container_config.secrets_path), "r") as file:
+        with open(str(base_path / client_container_config.secrets_path), "r") as file:
             contents = file.read()
         return SecretDict(json.loads(contents))
     return None
@@ -223,14 +232,28 @@ async def client_container(
         )
 
 
+@pytest.fixture(scope="session")
+async def client_final_teardown_container(
+    base_path: Path,
+    dagger_client: dagger.Client,
+    client_container_config_global: Optional[ClientContainerConfig],
+) -> Optional[dagger.Container]:
+    if client_container_config_global:
+        return await client_container_runner.get_client_container(
+            dagger_client,
+            base_path,
+            base_path / client_container_config_global.client_container_dockerfile_path,
+        )
+
+
 @pytest.fixture(autouse=True)
 async def setup_and_teardown(
-    client_container: dagger.Container,
+    client_container: Optional[dagger.Container],
     client_container_config: Optional[ClientContainerConfig],
-    client_container_config_secrets: SecretDict,
+    client_container_config_secrets: Optional[SecretDict],
     base_path: Path,
 ):
-    if client_container:
+    if client_container and hasattr(client_container_config, "setup_command") and client_container_config.setup_command:
         logging.info("Running setup")
         setup_teardown_container = await client_container_runner.do_setup(
             client_container,
@@ -240,13 +263,29 @@ async def setup_and_teardown(
         )
         logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
     yield None
-    if client_container:
+    if client_container and hasattr(client_container_config, "teardown_command") and client_container_config.teardown_command:
         logging.info("Running teardown")
         setup_teardown_container = await client_container_runner.do_teardown(
             client_container,
             client_container_config.teardown_command,
         )
         logging.info(f"Teardown stdout: {await setup_teardown_container.stdout()}")
+
+
+@pytest.fixture(scope="session")
+async def final_teardown(
+    client_container_config_global: Optional[ClientContainerConfig],
+    client_final_teardown_container: Optional[dagger.Container],
+):
+    yield
+    if client_final_teardown_container and client_container_config_global:
+        logging.info("Doing final teardown.")
+        if hasattr(client_container_config_global, "final_teardown_command"):
+            setup_teardown_container = await client_container_runner.do_teardown(
+                client_final_teardown_container,
+                client_container_config_global.final_teardown_command,
+            )
+            logging.info(f"Final teardown stdout: {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="previous_connector_image_name")

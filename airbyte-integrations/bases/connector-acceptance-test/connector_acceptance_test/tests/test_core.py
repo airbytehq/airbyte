@@ -882,6 +882,7 @@ def _extract_primary_key_value(record: Mapping[str, Any], primary_key: List[List
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
+@pytest.mark.usefixtures("final_teardown")
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):

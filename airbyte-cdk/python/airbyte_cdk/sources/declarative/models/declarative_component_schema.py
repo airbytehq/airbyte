@@ -928,10 +928,6 @@ class WaitUntilTimeFromHeader(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
-class Decoder(BaseModel):
-    __root__: Any
-
-
 class AddedFieldDefinition(BaseModel):
     type: Literal['AddedFieldDefinition']
     path: List[str] = Field(
@@ -1040,7 +1036,7 @@ class CursorPagination(BaseModel):
         ],
         title='Stop Condition',
     )
-    decoder: Optional[Decoder] = Field(
+    decoder: Optional[JsonDecoder] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
         title='Decoder',
@@ -1300,6 +1296,10 @@ class DeclarativeSource(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(
         None,
         description='For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.',
+    )
+    description: Optional[str] = Field(
+        None,
+        description='A description of the connector. It will be presented on the Source documentation page.',
     )
 
 
