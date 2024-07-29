@@ -36,5 +36,5 @@ data:
   supportLevel: community
   tags:
     - language:python
-    - cdk:low-code
+    - cdk:python
 metadataSpecVersion: "1.0"
