@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from __future__ import annotations
 
 import base64
 import hashlib
@@ -458,7 +457,6 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     else:
         latest_uploaded, latest_blob_id = False, None
         doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
-        manifest_yml_latest_uploaded, manifest_yml_latest_blob_id = False, None
 
     return MetadataUploadInfo(
         metadata_uploaded=version_uploaded or latest_uploaded,
