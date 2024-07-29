@@ -207,7 +207,8 @@ def _file_upload(
         gcp_connector_dir: Path to the connector folder in GCS. This is the parent folder,
             containing the versioned and "latest" folders as its subdirectories.
         bucket: GCS bucket to upload the file to.
-        upload_as_version: The version to upload the file as.
+        upload_as_version: The version to upload the file as or 'False' to skip uploading
+            the versioned copy.
         upload_as_latest: Whether to upload the file as the latest version.
 
     Returns: Tuple of two tuples, each containing a boolean indicating whether the file was
@@ -430,7 +431,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     )
     (components_zip_sha256_uploaded, components_zip_sha256_blob_id), \
     (components_zip_sha256_latest_uploaded, components_zip_sha256_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
+        local_path=python_components_zip_sha256_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
         upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
     )
     (components_zip_uploaded, components_zip_blob_id), \
@@ -484,7 +485,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             ),
             UploadedFile(
                 id="manifest_yml",
-                description="versioned doc",
+                description="versioned manifest.yml file",
                 uploaded=manifest_yml_uploaded,
                 blob_id=manifest_yml_blob_id,
             ),
@@ -502,7 +503,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             ),
             UploadedFile(
                 id="manifest_yml_latest",
-                description="versioned doc",
+                description="latest manifest.yml file",
                 uploaded=manifest_yml_latest_uploaded,
                 blob_id=manifest_yml_latest_blob_id,
             ),
