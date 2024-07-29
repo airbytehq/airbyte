@@ -168,6 +168,20 @@ class StripConnector(Step):
             file.write(readme)
 
         # TODO: 5 Update the connector's documentation
+        current_path = os.getcwd()
+        full_connector_name = self.context.connector.technical_name.split("-")
+        connector_folder = f"{full_connector_name[0]}s"
+        connector_name = full_connector_name[1]
+        docs_path = f"{current_path}/docs/integrations/{connector_folder}/{connector_name}.md"
+
+        # Save the existing documentation in a variable, as well as the Changelog
+        with open(docs_path, "r") as file:
+            existing_docs = file.read()
+            changelog = existing_docs.split("## Changelog")[1]
+
+        with open(docs_path, "w") as file:
+            new_docs = docs_file_for_connector(self.context.connector, manifest_file, metadata_file)
+            file.write(new_docs + "\n## Changelog" + changelog)
 
         # TODO: Thorough error handling
 
@@ -216,8 +230,10 @@ def readme_for_connector(name: str) -> str:
     return rendered
 
 ## TODO: use this helper method for generating new docs
-def docs_file_for_connector(connector, metadata: dict) -> str:
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="./templates"))
+def docs_file_for_connector(connector, manifest, metadata: dict) -> str:
+    dir_path = Path(__file__).parent / "templates"
+    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
     template = env.get_template("documentation.md.j2")
-    rendered = template.render(manifest=connector.resolved_manifest, source_name=connector.name, metadata=metadata)
+    resolved_manifest = yaml.load(manifest)
+    rendered = template.render(manifest=resolved_manifest, source_name=connector.name, metadata=metadata)
     return rendered
