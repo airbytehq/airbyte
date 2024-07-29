@@ -26,6 +26,8 @@ from .airbyte_protocol import (
     AirbyteStreamState,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
+    AirbyteStreamStatusReason,
+    AirbyteStreamStatusReasonType,
     AirbyteTraceMessage,
     AuthFlowType,
     ConfiguredAirbyteCatalog,

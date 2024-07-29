@@ -371,9 +371,9 @@ class JusticeSongs(HttpStream, CheckpointMixin, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_page(cursor_field, stream_slice, stream_state)
+        yield from self._read_single_page(cursor_field, stream_slice, stream_state)
 
-    def _read_page(
+    def _read_single_page(
         self,
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
@@ -406,7 +406,7 @@ class JusticeSongs(HttpStream, CheckpointMixin, ABC):
         if has_more:
             self._state = {"page": current_page + 1}
         else:
-            self._state = None
+            self._state = {"__ab_full_refresh_sync_complete": True}
 
 
 class SourceFixture(AbstractSource):

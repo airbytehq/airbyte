@@ -32,6 +32,9 @@ properties:
     type: object
     description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
     additionalProperties: true
+  description:
+    type: string
+    description: A description of the connector. It will be presented on the Source documentation page.
 additionalProperties: false
 definitions:
   AddedFieldDefinition:
@@ -1295,8 +1298,10 @@ definitions:
           - ["data", "*", "record"]
       decoder:
         title: Decoder
-        description: Component decoding the response so records can be extracted.
-        "$ref": "#/definitions/JsonDecoder"
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1570,11 +1575,25 @@ definitions:
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
         examples:
           - SUCCESS
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
+      failure_type:
+        title: Failure Type
+        description: Failure type of traced exception if a response matches the filter.
+        type: string
+        enum:
+          - system_error
+          - config_error
+          - transient_error
+        examples:
+          - system_error
+          - config_error
+          - transient_error
       error_message:
         title: Error Message
         description: Error Message to display if the response matches the filter.
@@ -1656,6 +1675,26 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
+  JsonlDecoder:
+    title: JSONL Decoder
+    description: Use this if the response consists of JSON objects separated by new lines (`\n`) in JSONL format.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [JsonlDecoder]
+  IterableDecoder:
+    title: Iterable Decoder
+    description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap each row into a JSON object with the `record` key.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [IterableDecoder]
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2292,6 +2331,13 @@ definitions:
                 - "$ref": "#/definitions/CustomPartitionRouter"
                 - "$ref": "#/definitions/ListPartitionRouter"
                 - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true

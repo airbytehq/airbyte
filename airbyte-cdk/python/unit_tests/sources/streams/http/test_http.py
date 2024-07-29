@@ -6,12 +6,15 @@
 import json
 import logging
 from http import HTTPStatus
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
+from airbyte_cdk.sources.streams import CheckpointMixin
+from airbyte_cdk.sources.streams.checkpoint import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
@@ -42,6 +45,10 @@ class StubBasicReadHttpStream(HttpStream):
 
     def must_deduplicate_query_params(self) -> bool:
         return self._deduplicate_query_params
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return ["updated_at"]
 
 
 def test_default_authenticator():
@@ -225,6 +232,7 @@ def test_raise_on_http_errors_off_429(mocker):
 
     mocker.patch.object(requests.Session, "send", return_value=req)
     with pytest.raises(DefaultBackoffException, match="Too many requests"):
+        stream.exit_on_rate_limit = True
         list(stream.read_records(SyncMode.full_refresh))
 
 
@@ -357,6 +365,9 @@ class TestRequestBody:
 
 class CacheHttpStream(StubBasicReadHttpStream):
     use_cache = True
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
 
 
 class CacheHttpSubStream(HttpSubStream):
@@ -506,7 +517,7 @@ def test_send_raise_on_http_errors_logs(mocker, status_code):
     mocker.patch.object(requests.Session, "send", return_value=res)
     mocker.patch.object(stream._http_client, "_logger")
     with pytest.raises(requests.exceptions.HTTPError):
-        response = stream._http_client.send_request("GET", "https://g", {})
+        response = stream._http_client.send_request("GET", "https://g", {}, exit_on_rate_limit=True)
         stream._http_client.logger.error.assert_called_with(response.text)
         assert response.status_code == status_code
 
@@ -661,3 +672,423 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, pa
 def test_connection_pool():
     stream = StubBasicReadHttpStream(authenticator=TokenAuthenticator("test-token"))
     assert stream._http_client._session.adapters["https://"]._pool_connections == 20
+
+
+class StubParentHttpStream(HttpStream, CheckpointMixin):
+    primary_key = "primary_key"
+
+    counter = 0
+
+    def __init__(self, records: List[Mapping[str, Any]]):
+        super().__init__()
+        self._records = records
+        self._state: MutableMapping[str, Any] = {}
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {"__ab_full_refresh_sync_complete": True}
+
+    def _read_single_page(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._records
+
+        self.state = {"__ab_full_refresh_sync_complete": True}
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
+
+class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
+    primary_key = "primary_key"
+
+    counter = 0
+
+    def __init__(self, record_pages: List[List[Mapping[str, Any]]]):
+        super().__init__()
+        self._record_pages = record_pages
+        self._state: MutableMapping[str, Any] = {}
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {"__ab_full_refresh_sync_complete": True}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        page_number = self.state.get("page") or 1
+        yield from self._record_pages[page_number - 1]
+
+        if page_number < len(self._record_pages):
+            self.state = {"page": page_number + 1}
+        else:
+            self.state = {"__ab_full_refresh_sync_complete": True}
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
+
+class StubHttpSubstream(HttpSubStream):
+    primary_key = "primary_key"
+
+    @property
+    def url_base(self) -> str:
+        return "https://airbyte.io/api/v1"
+
+    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
+             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+        return "/stub"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        return [
+            {"id": "abc", "parent": stream_slice.get("id")},
+            {"id", "def", "parent", stream_slice.get("id")},
+        ]
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            *,
+            stream_state: Mapping[str, Any],
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Mapping[str, Any]]:
+        return []
+
+
+def test_substream_with_incremental_parent():
+    expected_slices = [
+        {"parent": {"id": "abc"}},
+        {"parent": {"id": "def"}},
+    ]
+
+    parent_records = [
+        {"id": "abc"},
+        {"id": "def"},
+    ]
+
+    parent_stream = StubParentHttpStream(records=parent_records)
+    substream = StubHttpSubstream(parent=parent_stream)
+
+    actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]
+    assert actual_slices == expected_slices
+
+
+def test_substream_with_resumable_full_refresh_parent():
+    parent_pages = [
+        [
+            {"id": "page_1_abc"},
+            {"id": "page_1_def"},
+        ],
+        [
+            {"id": "page_2_abc"},
+            {"id": "page_2_def"},
+        ],
+        [
+            {"id": "page_3_abc"},
+            {"id": "page_3_def"},
+        ]
+    ]
+
+    expected_slices = [
+        {"parent": {"id": "page_1_abc"}},
+        {"parent": {"id": "page_1_def"}},
+        {"parent": {"id": "page_2_abc"}},
+        {"parent": {"id": "page_2_def"}},
+        {"parent": {"id": "page_3_abc"}},
+        {"parent": {"id": "page_3_def"}},
+    ]
+
+    parent_stream = StubParentResumableFullRefreshStream(record_pages=parent_pages)
+    substream = StubHttpSubstream(parent=parent_stream)
+
+    actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]
+    assert actual_slices == expected_slices
+
+
+def test_substream_skips_non_record_messages():
+    expected_slices = [
+        {"parent": {"id": "abc"}},
+        {"parent": {"id": "def"}},
+        {"parent": {"id": "ghi"}},
+    ]
+
+    parent_records = [
+        {"id": "abc"},
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="should_not_be_parent_record")),
+        {"id": "def"},
+        {"id": "ghi"},
+    ]
+
+    parent_stream = StubParentHttpStream(records=parent_records)
+    substream = StubHttpSubstream(parent=parent_stream)
+
+    actual_slices = [slice for slice in substream.stream_slices(sync_mode=SyncMode.full_refresh)]
+    assert actual_slices == expected_slices
+
+
+class StubFullRefreshHttpStream(HttpStream):
+    url_base = "https://test_base_url.com"
+    primary_key = "id"
+
+    def __init__(self, deduplicate_query_params: bool = False, pages: int = 5, **kwargs):
+        super().__init__(**kwargs)
+        self._pages_request_count = 0
+        self._page_counter = 0
+        self.resp_counter = 0
+        self._deduplicate_query_params = deduplicate_query_params
+        self._pages = pages
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        current_page = self.cursor.get_stream_state().get("page", 1)
+        if current_page < self._pages:
+            current_page += 1
+            page_token = {"page": current_page}
+            return page_token
+        return None
+
+    def path(self, **kwargs) -> str:
+        return ""
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.resp_counter += 1
+        stubResp = {"data": self.resp_counter}
+        yield stubResp
+
+    def must_deduplicate_query_params(self) -> bool:
+        return self._deduplicate_query_params
+
+
+class StubFullRefreshLegacySliceHttpStream(StubFullRefreshHttpStream):
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
+
+
+def test_resumable_full_refresh_read_from_start(mocker):
+    """
+    Validates the default behavior of a stream that supports resumable full refresh by using read_records() which gets one
+    page per invocation and emits state afterward.
+    parses over
+    """
+    pages = 5
+    stream = StubFullRefreshHttpStream(pages=pages)
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
+
+    # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
+    mocker.patch.object(stream, "_read_single_page", wraps=getattr(stream, "_read_single_page"))
+    methods = ["request_params", "request_headers", "request_body_json"]
+    for method in methods:
+        mocker.patch.object(stream, method, wraps=getattr(stream, method))
+
+    checkpoint_reader = stream._get_checkpoint_reader(
+        cursor_field=[], logger=logging.getLogger("airbyte"), sync_mode=SyncMode.full_refresh, stream_state={}
+    )
+    next_stream_slice = checkpoint_reader.next()
+    records = []
+
+    expected_checkpoints = [{"page": 2}, {"page": 3}, {"page": 4}, {"page": 5}, {"__ab_full_refresh_sync_complete": True}]
+    i = 0
+    while next_stream_slice is not None:
+        next_records = list(stream.read_records(SyncMode.full_refresh, stream_slice=next_stream_slice))
+        records.extend(next_records)
+        checkpoint_reader.observe(stream.state)
+        assert checkpoint_reader.get_checkpoint() == expected_checkpoints[i]
+        next_stream_slice = checkpoint_reader.next()
+        i += 1
+
+    assert getattr(stream, "_read_single_page").call_count == 5
+
+    # Since we have 5 pages, and we don't pass in the first page, we expect 4 tokens starting at {"page":2}, {"page":3}, etc...
+    expected_next_page_tokens = expected_checkpoints[:4]
+    for method in methods:
+        # First assert that they were called with no next_page_token. This is the first call in the pagination loop.
+        getattr(stream, method).assert_any_call(next_page_token=None, stream_slice={}, stream_state={})
+        for token in expected_next_page_tokens:
+            # Then verify that each method
+            getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=token, stream_state={})
+
+    expected = [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}, {"data": 5}]
+
+    assert records == expected
+
+
+def test_resumable_full_refresh_read_from_state(mocker):
+    """
+    Validates the default behavior of a stream that supports resumable full refresh with an incoming state by using
+    read_records() which gets one page per invocation and emits state afterward.
+    parses over
+    """
+    pages = 5
+    stream = StubFullRefreshHttpStream(pages=pages)
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
+
+    # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
+    mocker.patch.object(stream, "_read_single_page", wraps=getattr(stream, "_read_single_page"))
+    methods = ["request_params", "request_headers", "request_body_json"]
+    for method in methods:
+        mocker.patch.object(stream, method, wraps=getattr(stream, method))
+
+    checkpoint_reader = stream._get_checkpoint_reader(
+        cursor_field=[],
+        logger=logging.getLogger("airbyte"),
+        sync_mode=SyncMode.full_refresh,
+        stream_state={"page": 3}
+    )
+    next_stream_slice = checkpoint_reader.next()
+    records = []
+
+    expected_checkpoints = [{"page": 4}, {"page": 5}, {"__ab_full_refresh_sync_complete": True}]
+    i = 0
+    while next_stream_slice is not None:
+        next_records = list(stream.read_records(SyncMode.full_refresh, stream_slice=next_stream_slice))
+        records.extend(next_records)
+        checkpoint_reader.observe(stream.state)
+        assert checkpoint_reader.get_checkpoint() == expected_checkpoints[i]
+        next_stream_slice = checkpoint_reader.next()
+        i += 1
+
+    assert getattr(stream, "_read_single_page").call_count == 3
+
+    # Since we start at page 3, we expect 3 tokens starting at {"page":3}, {"page":4}, etc...
+    expected_next_page_tokens = [{"page": 3}, {"page": 4}, {"page": 5}]
+    for method in methods:
+        for token in expected_next_page_tokens:
+            # Then verify that each method
+            getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=token, stream_state={})
+
+    expected = [{"data": 1}, {"data": 2}, {"data": 3}]
+
+    assert records == expected
+
+
+def test_resumable_full_refresh_legacy_stream_slice(mocker):
+    """
+    Validates the default behavior of a stream that supports resumable full refresh where incoming stream slices use the
+    legacy Mapping format
+    """
+    pages = 5
+    stream = StubFullRefreshLegacySliceHttpStream(pages=pages)
+    blank_response = {}  # Send a blank response is fine as we ignore the response in `parse_response anyway.
+    mocker.patch.object(stream._http_client, "send_request", return_value=(None, blank_response))
+
+    # Wrap all methods we're interested in testing with mocked objects to spy on their input args and verify they were what we expect
+    mocker.patch.object(stream, "_read_single_page", wraps=getattr(stream, "_read_single_page"))
+    methods = ["request_params", "request_headers", "request_body_json"]
+    for method in methods:
+        mocker.patch.object(stream, method, wraps=getattr(stream, method))
+
+    checkpoint_reader = stream._get_checkpoint_reader(
+        cursor_field=[],
+        logger=logging.getLogger("airbyte"),
+        sync_mode=SyncMode.full_refresh,
+        stream_state={"page": 2}
+    )
+    next_stream_slice = checkpoint_reader.next()
+    records = []
+
+    expected_checkpoints = [{"page": 3}, {"page": 4}, {"page": 5}, {"__ab_full_refresh_sync_complete": True}]
+    i = 0
+    while next_stream_slice is not None:
+        next_records = list(stream.read_records(SyncMode.full_refresh, stream_slice=next_stream_slice))
+        records.extend(next_records)
+        checkpoint_reader.observe(stream.state)
+        assert checkpoint_reader.get_checkpoint() == expected_checkpoints[i]
+        next_stream_slice = checkpoint_reader.next()
+        i += 1
+
+    assert getattr(stream, "_read_single_page").call_count == 4
+
+    # Since we start at page 3, we expect 3 tokens starting at {"page":3}, {"page":4}, etc...
+    expected_next_page_tokens = [{"page": 2}, {"page": 3}, {"page": 4}, {"page": 5}]
+    for method in methods:
+        for token in expected_next_page_tokens:
+            # Then verify that each method
+            getattr(stream, method).assert_any_call(next_page_token=token, stream_slice=token, stream_state={})
+
+    expected = [{"data": 1}, {"data": 2}, {"data": 3}, {"data": 4}]
+
+    assert records == expected
+
+
+class StubWithCursorFields(StubBasicReadHttpStream):
+    def __init__(self, has_multiple_slices: bool, set_cursor_field: List[str], deduplicate_query_params: bool = False, **kwargs):
+        self.has_multiple_slices = has_multiple_slices
+        self._cursor_field = set_cursor_field
+        super().__init__()
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self._cursor_field
+
+
+@pytest.mark.parametrize(
+    "cursor_field, is_substream, expected_cursor",
+    [
+        pytest.param([], False, ResumableFullRefreshCursor(), id="test_stream_supports_resumable_full_refresh_cursor"),
+        pytest.param(["updated_at"], False, None, id="test_incremental_stream_does_not_use_cursor"),
+        pytest.param([], True, None, id="test_substream_does_not_use_cursor"),
+        pytest.param(["updated_at"], True, None, id="test_incremental_substream_does_not_use_cursor"),
+    ]
+)
+def test_get_cursor(cursor_field, is_substream, expected_cursor):
+    stream = StubWithCursorFields(set_cursor_field=cursor_field, has_multiple_slices=is_substream)
+    actual_cursor = stream.get_cursor()
+
+    assert actual_cursor == expected_cursor

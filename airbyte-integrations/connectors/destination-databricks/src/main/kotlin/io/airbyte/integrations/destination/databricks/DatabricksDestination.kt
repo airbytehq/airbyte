@@ -15,10 +15,10 @@ import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
 import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
-import io.airbyte.cdk.integrations.util.addDefaultNamespaceToStreams
 import io.airbyte.integrations.base.destination.operation.DefaultFlush
 import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
@@ -60,7 +60,7 @@ class DatabricksDestination : BaseConnector(), Destination {
         val datasource = DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)
         val destinationHandler =
-            DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase)
+            DatabricksDestinationHandler(sqlGenerator, connectorConfig.database, jdbcDatabase)
         val workspaceClient =
             DatabricksConnectorClientsFactory.createWorkspaceClient(
                 connectorConfig.hostname,
@@ -85,6 +85,17 @@ class DatabricksDestination : BaseConnector(), Destination {
                 dummyNamespace,
                 dummyName
             )
+        val streamConfig =
+            StreamConfig(
+                id = streamId,
+                destinationSyncMode = DestinationSyncMode.OVERWRITE,
+                primaryKey = listOf(),
+                cursor = Optional.empty(),
+                columns = linkedMapOf(),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 0
+            )
 
         try {
             storageOperations.prepareStage(streamId, DestinationSyncMode.OVERWRITE)
@@ -98,9 +109,14 @@ class DatabricksDestination : BaseConnector(), Destination {
         try {
             val writeBuffer = DatabricksFileBufferFactory.createBuffer(FileUploadFormat.CSV)
             writeBuffer.use {
-                it.accept("{\"airbyte_check\":\"passed\"}", "{}", System.currentTimeMillis())
+                it.accept(
+                    "{\"airbyte_check\":\"passed\"}",
+                    "{}",
+                    generationId = 0,
+                    System.currentTimeMillis()
+                )
                 it.flush()
-                storageOperations.writeToStage(streamId, writeBuffer)
+                storageOperations.writeToStage(streamConfig, writeBuffer)
             }
         } catch (e: Exception) {
             log.error(e) { "Failed to write to stage as part of CHECK" }
@@ -129,13 +145,12 @@ class DatabricksDestination : BaseConnector(), Destination {
 
         // TODO: Deserialization should be taken care by connector runner framework later
         val connectorConfig = DatabricksConnectorConfig.deserialize(config)
-        // TODO: This abomination continues to stay, this call should be implicit in ParsedCatalog
-        //  with defaultNamespace injected
-        addDefaultNamespaceToStreams(catalog, connectorConfig.schema)
 
         val sqlGenerator =
             DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
-        val catalogParser = CatalogParser(sqlGenerator, connectorConfig.rawSchemaOverride)
+        val defaultNamespace = connectorConfig.schema
+        val catalogParser =
+            CatalogParser(sqlGenerator, defaultNamespace, connectorConfig.rawSchemaOverride)
         val parsedCatalog = catalogParser.parseCatalog(catalog)
         val workspaceClient =
             DatabricksConnectorClientsFactory.createWorkspaceClient(
@@ -145,7 +160,7 @@ class DatabricksDestination : BaseConnector(), Destination {
         val datasource = DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
         val jdbcDatabase = DefaultJdbcDatabase(datasource)
         val destinationHandler =
-            DatabricksDestinationHandler(connectorConfig.database, jdbcDatabase)
+            DatabricksDestinationHandler(sqlGenerator, connectorConfig.database, jdbcDatabase)
 
         // Minimum surface area for AsyncConsumer's lifecycle functions to call.
         val storageOperations =
@@ -164,7 +179,7 @@ class DatabricksDestination : BaseConnector(), Destination {
             DefaultSyncOperation(
                 parsedCatalog,
                 destinationHandler,
-                connectorConfig.schema,
+                defaultNamespace,
                 DatabricksStreamOperationFactory(storageOperations),
                 listOf()
             )
@@ -179,9 +194,9 @@ class DatabricksDestination : BaseConnector(), Destination {
             catalog = catalog,
             bufferManager =
                 BufferManager(
+                    defaultNamespace = defaultNamespace,
                     (Runtime.getRuntime().maxMemory() * BufferManager.MEMORY_LIMIT_RATIO).toLong(),
                 ),
-            defaultNamespace = Optional.of(connectorConfig.schema),
             airbyteMessageDeserializer = AirbyteMessageDeserializer(),
         )
     }

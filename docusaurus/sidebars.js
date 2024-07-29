@@ -391,58 +391,36 @@ const deployAirbyte = {
   type: "category",
   label: "Deploy Airbyte",
   link: {
-    type: "generated-index",
+    type: "doc",
+    id: "deploying-airbyte/deploying-airbyte",
   },
   items: [
     {
-      type: "doc",
-      label: "Using docker compose",
-      id: "deploying-airbyte/docker-compose",
+      type: "category",
+      label: "Infrastructure",
+      items: [
+        "deploying-airbyte/infrastructure/aws",
+        "deploying-airbyte/infrastructure/gcp",
+        // "deploying-airbyte/infrastructure/azure",
+      ],
     },
+
+    {
+      type: "category",
+      label: "Integrations",
+      items: [
+        "deploying-airbyte/integrations/storage",
+        "deploying-airbyte/integrations/secrets",
+        "deploying-airbyte/integrations/database",
+        // "deploying-airbyte/integrations/monitoring",
+        "deploying-airbyte/integrations/ingress",
+      ],
+    },
+
     {
       type: "doc",
-      label: "On AWS EC2",
-      id: "deploying-airbyte/on-aws-ec2",
-    },
-    {
-      type: "doc",
-      label: "On AWS ECS",
-      id: "deploying-airbyte/on-aws-ecs",
-    },
-    {
-      type: "doc",
-      label: "On Azure",
-      id: "deploying-airbyte/on-azure-vm-cloud-shell",
-    },
-    {
-      type: "doc",
-      label: "On Google (GCP)",
-      id: "deploying-airbyte/on-gcp-compute-engine",
-    },
-    {
-      type: "doc",
-      label: "On Kubernetes using Helm",
-      id: "deploying-airbyte/on-kubernetes-via-helm",
-    },
-    {
-      type: "doc",
-      label: "On Restack",
-      id: "deploying-airbyte/on-restack",
-    },
-    {
-      type: "doc",
-      label: "On Plural",
-      id: "deploying-airbyte/on-plural",
-    },
-    {
-      type: "doc",
-      label: "On Oracle Cloud",
-      id: "deploying-airbyte/on-oci-vm",
-    },
-    {
-      type: "doc",
-      label: "On DigitalOcean",
-      id: "deploying-airbyte/on-digitalocean-droplet",
+      label: "Creating a Secret",
+      id: "deploying-airbyte/creating-secrets",
     },
   ],
 };
@@ -490,7 +468,9 @@ const understandingAirbyte = {
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/operations",
+    "understanding-airbyte/secrets",
     "understanding-airbyte/cdc",
+    "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
     "understanding-airbyte/tech-stack",

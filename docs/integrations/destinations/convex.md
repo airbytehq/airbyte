@@ -57,6 +57,7 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.6 | 2024-07-09 | [41275](https://github.com/airbytehq/airbyte/pull/41275) | Update dependencies |
 | 0.2.5 | 2024-07-06 | [40987](https://github.com/airbytehq/airbyte/pull/40987) | Update dependencies |
 | 0.2.4 | 2024-06-25 | [40496](https://github.com/airbytehq/airbyte/pull/40496) | Update dependencies |
 | 0.2.3 | 2024-06-22 | [40122](https://github.com/airbytehq/airbyte/pull/40122) | Update dependencies |

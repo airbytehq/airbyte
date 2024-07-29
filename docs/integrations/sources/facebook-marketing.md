@@ -198,6 +198,16 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 |      array       |    array     |
 |      object      |    object    |
 
+## Troubleshooting
+
+### Handling "_Please reduce the amount of data you're asking for, then retry your request_" response from Facebook Graph API
+
+This response indicates that the Facebook Graph API requires you to reduce the fields (amount of data) requested. To resolve this issue:
+
+1. **Go to the Schema Tab**: Navigate to the schema tab of your connection.
+2. **Select the Source**: Click on the source that is having issues with synchronization.
+3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
+
 ## Changelog
 
 <details>
@@ -205,6 +215,13 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.15 | 2024-07-15 | [42562](https://github.com/airbytehq/airbyte/pull/42562) | Add friendly messages for "reduce fields" and "start date" errors |
+| 3.3.14 | 2024-07-15 | [41958](https://github.com/airbytehq/airbyte/pull/41958) | Update cdk to filter invalid fields from configured catalog |
+| 3.3.13 | 2024-07-13 | [41732](https://github.com/airbytehq/airbyte/pull/41732) | Update dependencies |
+| 3.3.12 | 2024-07-11 | [41644](https://github.com/airbytehq/airbyte/pull/41644) | Remove discriminator with missing schemas |
+| 3.3.11 | 2024-07-10 | [41039](https://github.com/airbytehq/airbyte/pull/41039) | Pick request fields from configured json schema properties if present |
+| 3.3.10 | 2024-07-10 | [41458](https://github.com/airbytehq/airbyte/pull/41458) | Update dependencies |
+| 3.3.9 | 2024-07-09 | [41106](https://github.com/airbytehq/airbyte/pull/41106) | Update dependencies |
 | 3.3.8 | 2024-07-06 | [40934](https://github.com/airbytehq/airbyte/pull/40934) | Update dependencies |
 | 3.3.7 | 2024-07-01 | [40645](https://github.com/airbytehq/airbyte/pull/40645) | Use latest `CDK` version possible |
 | 3.3.6 | 2024-06-24 | [40241](https://github.com/airbytehq/airbyte/pull/40241) | Update AdsInsights fields - removed `adset_start` |

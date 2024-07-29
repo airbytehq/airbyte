@@ -166,6 +166,12 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.6.3 | 2024-07-27 | [42826](https://github.com/airbytehq/airbyte/pull/42826) | Update dependencies |
+| 0.6.2 | 2024-07-22 | [41993](https://github.com/airbytehq/airbyte/pull/41993) | Avoid syncs with rate limits being considered successful |
+| 0.6.1 | 2024-07-20 | [42376](https://github.com/airbytehq/airbyte/pull/42376) | Update dependencies |
+| 0.6.0 | 2024-07-17 | [42071](https://github.com/airbytehq/airbyte/pull/42071) | Migrate to CDK v3.9.0 |
+| 0.5.11 | 2024-07-13 | [41527](https://github.com/airbytehq/airbyte/pull/41527) | Update dependencies |
+| 0.5.10 | 2024-07-09 | [41273](https://github.com/airbytehq/airbyte/pull/41273) | Update dependencies |
 | 0.5.9 | 2024-07-06 | [41005](https://github.com/airbytehq/airbyte/pull/41005) | Update dependencies |
 | 0.5.8 | 2024-06-28 | [40587](https://github.com/airbytehq/airbyte/pull/40587) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.5.7 | 2024-06-25 | [40560](https://github.com/airbytehq/airbyte/pull/40560) | Catch an auth error during discover and raise a config error |

@@ -40,6 +40,9 @@ The Appfollow connector ideally should gracefully handle Appfollow API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
+| 1.0.8 | 2024-07-27 | [42387](https://github.com/airbytehq/airbyte/pull/42387) | Update dependencies |
+| 1.0.7 | 2024-07-13 | [41372](https://github.com/airbytehq/airbyte/pull/41372) | Update dependencies |
+| 1.0.6 | 2024-07-09 | [41234](https://github.com/airbytehq/airbyte/pull/41234) | Update dependencies |
 | 1.0.5 | 2024-07-06 | [40793](https://github.com/airbytehq/airbyte/pull/40793) | Update dependencies |
 | 1.0.4 | 2024-06-25 | [40284](https://github.com/airbytehq/airbyte/pull/40284) | Update dependencies |
 | 1.0.3 | 2024-06-22 | [40014](https://github.com/airbytehq/airbyte/pull/40014) | Update dependencies |

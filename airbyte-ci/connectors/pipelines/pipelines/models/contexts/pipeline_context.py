@@ -20,11 +20,11 @@ from dagger import Secret as DaggerSecret
 from dagger import Service
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.consts import CIContext, ContextState
+from pipelines.consts import MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES, CIContext, ContextState
 from pipelines.helpers.execution.run_steps import RunStepOptions
-from pipelines.helpers.github import update_commit_status_check
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.utils import AIRBYTE_REPO_URL, java_log_scrub_pattern
+from pipelines.helpers.utils import java_log_scrub_pattern
 from pipelines.models.reports import Report
 from pipelines.models.secrets import Secret, SecretStore
 
@@ -159,7 +159,7 @@ class PipelineContext:
 
     @property
     def repo(self) -> GitRepository:
-        return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
+        return self.dagger_client.git(AIRBYTE_GITHUB_REPO_URL, keep_git_dir=True)
 
     @property
     def report(self) -> Report | ConnectorReport | None:
@@ -193,7 +193,7 @@ class PipelineContext:
             "target_url": target_url,
             "description": self.state.value["description"],
             "context": self.pipeline_name,
-            "should_send": self.is_pr,
+            "should_send": self._should_send_status_check(),
             "logger": self.logger,
             "is_optional": self.is_ci_optional,
         }
@@ -217,6 +217,13 @@ class PipelineContext:
     @property
     def remote_storage_enabled(self) -> bool:
         return self.is_ci and bool(self.ci_report_bucket) and bool(self.ci_gcp_credentials)
+
+    def _should_send_status_check(self) -> bool:
+        should_send = self.is_pr or any(
+            self.pipeline_name.startswith(override) for override in MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES
+        )
+        self.logger.info(f"Should send status check: {should_send}")
+        return should_send
 
     def get_repo_file(self, file_path: str) -> File:
         """Get a file from the current repository.

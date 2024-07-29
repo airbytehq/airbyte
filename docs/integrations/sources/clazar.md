@@ -65,17 +65,17 @@ The Clazar source connector supports the following [sync modes](https://docs.air
 - [Contracts](https://developers.clazar.io/reference/get-contracts-1)
 - Opportunities
 - Analytics
-  - AWS
+  - [AWS](https://developers.clazar.io/docs/aws-analytics)
     - Disbursement
     - Revenue
     - Opportunities
-  - Azure
+  - [Azure](https://developers.clazar.io/docs/analytics)
     - Revenue
     - Customers
     - Orders
     - Metered usage
     - Opportunities
-  - GCP
+  - [GCP](https://developers.clazar.io/docs/gcp-analytics)
     - Disbursement
     - Disbursement summary
     - Charges & usage
@@ -110,10 +110,16 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject            |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.2.2 | 2024-07-27 | [42617](https://github.com/airbytehq/airbyte/pull/42617) | Update dependencies |
+| 0.2.1 | 2024-07-20 | [42315](https://github.com/airbytehq/airbyte/pull/42315) | Update dependencies |
+| 0.2.0 | 2024-07-18 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | removed redundant columns from streams, added documentation for analytics |
+| 0.1.4 | 2024-07-13 | [41759](https://github.com/airbytehq/airbyte/pull/41759) | Update dependencies |
+| 0.1.3 | 2024-07-10 | [41351](https://github.com/airbytehq/airbyte/pull/41351) | Update dependencies |
+| 0.1.2 | 2024-07-09 | [41123](https://github.com/airbytehq/airbyte/pull/41123) | Update dependencies |
 | 0.1.1 | 2024-07-06 | [40922](https://github.com/airbytehq/airbyte/pull/40922) | Update dependencies |
-| 0.1.0 | 2024-06-27 | [40562](https://github.com/airbytehq/airbyte/pull/40562) | New Source: Clazar |
+| 0.1.0 | 2024-07-02 | [40562](https://github.com/airbytehq/airbyte/pull/40562) | New Source: Clazar |
 
 </details>
 
