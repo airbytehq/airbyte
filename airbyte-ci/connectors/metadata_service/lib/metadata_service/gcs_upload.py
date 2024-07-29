@@ -477,7 +477,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             ),
             UploadedFile(
                 id="manifest_yml",
-                description="versioned doc",
+                description="versioned manifest.yml file",
                 uploaded=manifest_yml_uploaded,
                 blob_id=manifest_yml_blob_id,
             ),
@@ -495,7 +495,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             ),
             UploadedFile(
                 id="manifest_yml_latest",
-                description="versioned doc",
+                description="latest manifest.yml file",
                 uploaded=manifest_yml_latest_uploaded,
                 blob_id=manifest_yml_latest_blob_id,
             ),
