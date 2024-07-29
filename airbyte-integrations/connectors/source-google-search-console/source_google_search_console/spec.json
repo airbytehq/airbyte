@@ -107,7 +107,7 @@
       "custom_reports": {
         "order": 4,
         "type": "string",
-        "title": "Custom Reports",
+        "title": "Custom Reports"
       },
       "data_state": {
         "type": "string",
