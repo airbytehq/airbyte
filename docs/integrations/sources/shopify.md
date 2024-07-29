@@ -159,7 +159,7 @@ Check the following Shopify documentation for more information about [retrieving
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--------------- | :----------- |
+|:-----------------|:-------------|
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -169,7 +169,7 @@ Check the following Shopify documentation for more information about [retrieving
 ## Features
 
 | Feature                   | Supported?\(Yes/No\) |
-| :------------------------ | :------------------- |
+|:--------------------------|:---------------------|
 | Full Refresh Sync         | Yes                  |
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
@@ -211,7 +211,15 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-| :------ |:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.15 | 2024-07-27 | [42806](https://github.com/airbytehq/airbyte/pull/42806) | Update dependencies |
+| 2.4.14 | 2024-07-20 | [42150](https://github.com/airbytehq/airbyte/pull/42150) | Update dependencies |
+| 2.4.13 | 2024-07-13 | [41809](https://github.com/airbytehq/airbyte/pull/41809) | Update dependencies |
+| 2.4.12 | 2024-07-10 | [41103](https://github.com/airbytehq/airbyte/pull/41103) | Update dependencies |
+| 2.4.11 | 2024-07-09 | [41068](https://github.com/airbytehq/airbyte/pull/41068) | Added `options` field to `Product Variants` stream |
+| 2.4.10 | 2024-07-09 | [41042](https://github.com/airbytehq/airbyte/pull/41042) | Use latest `CDK`: 3.0.0 |
+| 2.4.9 | 2024-07-06 | [40768](https://github.com/airbytehq/airbyte/pull/40768) | Update dependencies |
+| 2.4.8 | 2024-07-03 | [40707](https://github.com/airbytehq/airbyte/pull/40707) | Fixed the bug when `product_images` stream emitted records with no `primary_key` |
 | 2.4.7 | 2024-06-27 | [40593](https://github.com/airbytehq/airbyte/pull/40593) | Use latest `CDK` version possible |
 | 2.4.6 | 2024-06-26 | [40526](https://github.com/airbytehq/airbyte/pull/40526) | Made `BULK Job termination threshold` limit adjustable from `input configuration`, increased the default value to `1 hour`. |
 | 2.4.5 | 2024-06-25 | [40484](https://github.com/airbytehq/airbyte/pull/40484) | Update dependencies |

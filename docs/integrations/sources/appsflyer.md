@@ -23,6 +23,12 @@ The Airbyte Source for [AppsFLyer](https://www.appsflyer.com/)
 
 | Version | Date       | Pull Request                                           | Subject                                     |
 | :------ | :--------- | :----------------------------------------------------- | :------------------------------------------ |
+| 0.2.9 | 2024-07-27 | [42681](https://github.com/airbytehq/airbyte/pull/42681) | Update dependencies |
+| 0.2.8 | 2024-07-20 | [42322](https://github.com/airbytehq/airbyte/pull/42322) | Update dependencies |
+| 0.2.7 | 2024-07-13 | [41831](https://github.com/airbytehq/airbyte/pull/41831) | Update dependencies |
+| 0.2.6 | 2024-07-10 | [41600](https://github.com/airbytehq/airbyte/pull/41600) | Update dependencies |
+| 0.2.5 | 2024-07-09 | [41146](https://github.com/airbytehq/airbyte/pull/41146) | Update dependencies |
+| 0.2.4 | 2024-07-06 | [40766](https://github.com/airbytehq/airbyte/pull/40766) | Update dependencies |
 | 0.2.3 | 2024-06-25 | [40476](https://github.com/airbytehq/airbyte/pull/40476) | Update dependencies |
 | 0.2.2 | 2024-06-22 | [40059](https://github.com/airbytehq/airbyte/pull/40059) | Update dependencies |
 | 0.2.1 | 2024-06-11 | [39407](https://github.com/airbytehq/airbyte/pull/39407) | Fix Organic In-App Events Stream |

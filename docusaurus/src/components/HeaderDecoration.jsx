@@ -4,6 +4,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import styles from "./HeaderDecoration.module.css";
 import { Chip } from "./Chip";
 import { Callout } from "./Callout";
+import { getSupportLevelDisplay } from "../connector_registry";
 
 // Extend Day.js with the relativeTime plugin
 dayjs.extend(relativeTime);
@@ -254,7 +255,7 @@ const ConnectorMetadataCallout = ({
       </MetadataStat>
       <MetadataStat label="Support Level">
         <a href="/integrations/connector-support-levels/">
-          <Chip>{supportLevel}</Chip>
+          <Chip>{getSupportLevelDisplay(supportLevel)}</Chip>
         </a>
       </MetadataStat>
       {supportLevel !== "archived" && (

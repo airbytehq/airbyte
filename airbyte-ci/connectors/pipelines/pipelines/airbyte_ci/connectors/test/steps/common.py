@@ -13,8 +13,9 @@ from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import ClassVar, List, Optional, Set
+from typing import Any, ClassVar, Dict, List, Optional, Set
 
+import dagger
 import requests  # type: ignore
 import semver
 import yaml  # type: ignore
@@ -26,6 +27,7 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
+from pipelines.helpers.github import AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
@@ -35,12 +37,13 @@ from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, Ste
 # live_test can't resolve the passed connector container otherwise.
 from slugify import slugify  # type: ignore
 
+GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/master/airbyte-integrations/connectors"
+
 
 class VersionCheck(Step, ABC):
     """A step to validate the connector version was bumped if files were modified"""
 
     context: ConnectorContext
-    GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
 
     @property
@@ -49,7 +52,7 @@ class VersionCheck(Step, ABC):
 
     @property
     def github_master_metadata_url(self) -> str:
-        return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
+        return f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
     def master_metadata(self) -> Optional[dict]:
@@ -392,9 +395,7 @@ class IncrementalAcceptanceTests(Step):
         Returns:
             Artifact: The report log of the acceptance tests run on the released image.
         """
-        raw_master_metadata = requests.get(
-            f"https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/{self.context.connector.technical_name}/metadata.yaml"
-        )
+        raw_master_metadata = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
         master_metadata = yaml.safe_load(raw_master_metadata.text)
         master_docker_image_tag = master_metadata["data"]["dockerImageTag"]
         released_image = f'{master_metadata["data"]["dockerRepository"]}:{master_docker_image_tag}'
@@ -513,7 +514,10 @@ class LiveTests(Step):
             command_options += ["--should-read-with-state", self.should_read_with_state]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
-        return command_options + ["--stream", self.selected_streams] if self.selected_streams else []
+        if self.selected_streams:
+            command_options += ["--stream", self.selected_streams]
+        command_options += ["--connection-subset", self.connection_subset]
+        return command_options
 
     def _run_command_with_proxy(self, command: str) -> List[str]:
         """
@@ -562,11 +566,12 @@ class LiveTests(Step):
 
         self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
         self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
-        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
+        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
         self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
-        self.test_evaluation_mode = self.context.run_step_options.get_item_or_default(options, "test-evaluation-mode", "strict")
+        self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
+        self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
@@ -653,13 +658,17 @@ class LiveTests(Step):
                         "https://github.com/airbytehq/airbyte-platform-internal.git",
                     ]
                 )
+                .with_secret_variable(
+                    "CI_GITHUB_ACCESS_TOKEN",
+                    self.context.dagger_client.set_secret(
+                        "CI_GITHUB_ACCESS_TOKEN", self.context.ci_github_access_token.value if self.context.ci_github_access_token else ""
+                    ),
+                )
                 .with_exec(
                     [
-                        "poetry",
-                        "config",
-                        "http-basic.airbyte-platform-internal-source",
-                        self.github_user,
-                        self.context.ci_github_access_token.value if self.context.ci_github_access_token else "",
+                        "/bin/sh",
+                        "-c",
+                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)

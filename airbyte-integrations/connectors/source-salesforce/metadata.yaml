@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.salesforce.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: b117307c-14b6-41aa-9422-947e34922962
-  dockerImageTag: 2.5.17
+  dockerImageTag: 2.5.24
   dockerRepository: airbyte/source-salesforce
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   githubIssueLabel: source-salesforce

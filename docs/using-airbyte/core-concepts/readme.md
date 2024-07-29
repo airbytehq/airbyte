@@ -85,6 +85,10 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
 
 Read more about each [sync mode](/using-airbyte/core-concepts/sync-modes/README.md) and how they differ.
 
+## Resumability
+
+[Resumability](/understanding-airbyte/resumability.md) is an important principle in Airbyte's approach to reliability. To ensure your syncs run smoothly with minimal maintenance, we checkpoint a sync's progress and automatically re-attempt the sync under the hood. 
+
 ## Typing and Deduping
 
 Typing and deduping ensures the data emitted from sources is written into the correct type-cast relational columns, and if deduplication is selected, only contains unique records. Typing and deduping is only relevant for relational database & warehouse destinations. For more details, see our [Typing & Deduping documentation](/using-airbyte/core-concepts/typing-deduping).

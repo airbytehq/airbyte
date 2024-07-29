@@ -27,8 +27,13 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     private val isTruncateSync: Boolean
     private val rawTableSuffix: String
     private val finalTmpTableSuffix: String
-    // null for truncate syncs, where we don't care at all about the initial status.
-    private val initialRawTableStatus: InitialRawTableStatus?
+    /**
+     * The status of the raw table that "matters" for this sync. Specifically:
+     * * For normal syncs / merge refreshes, this is the status of the real raw table)
+     * * For truncate refreshes, this is the status of the temp raw table (because we never even
+     * look at the real raw table)
+     */
+    private val initialRawTableStatus: InitialRawTableStatus
 
     /**
      * After running any sync setup code, we may update the destination state. This field holds that
@@ -52,7 +57,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         if (isTruncateSync) {
             prepareStageForTruncate(destinationInitialStatus, stream)
             rawTableSuffix = TMP_TABLE_SUFFIX
-            initialRawTableStatus = null
+            initialRawTableStatus = destinationInitialStatus.initialTempRawTableStatus
         } else {
             rawTableSuffix = NO_SUFFIX
             initialRawTableStatus = prepareStageForNormalSync(stream, destinationInitialStatus)
@@ -278,25 +283,32 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
         if (
             !isTruncateSync &&
                 syncSummary.recordsWritten == 0L &&
-                !initialRawTableStatus!!.hasUnprocessedRecords
+                !initialRawTableStatus.hasUnprocessedRecords
         ) {
             log.info {
                 "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} " +
                     "because it had no records during this sync and no unprocessed records from a previous sync."
             }
-        } else if (isTruncateSync && (!streamSuccessful || syncSummary.recordsWritten == 0L)) {
+        } else if (
+            isTruncateSync &&
+                (!streamSuccessful ||
+                    (syncSummary.recordsWritten == 0L &&
+                        !(initialRawTableStatus.rawTableExists &&
+                            initialRawTableStatus.hasUnprocessedRecords)))
+        ) {
             // But truncate syncs should only T+D if the sync was successful, since we're T+Ding
-            // into a temp final table anyway. And we only need to check if _this_ sync emitted
-            // records, since we've nuked the old raw data.
+            // into a temp final table anyway.
+            // We only run T+D if the current sync had some records, or a previous attempt wrote
+            // some records to the temp raw table.
             log.info {
-                "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName}. Stream success: $streamSuccessful; records written: ${syncSummary.recordsWritten}"
+                "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} running as truncate sync. Stream success: $streamSuccessful; records written: ${syncSummary.recordsWritten}; temp raw table already existed: ${initialRawTableStatus.rawTableExists}; temp raw table had records: ${initialRawTableStatus.hasUnprocessedRecords}"
             }
         } else {
             // In truncate mode, we want to read all the raw records. Typically, this is equivalent
             // to filtering on timestamp, but might as well be explicit.
             val timestampFilter =
                 if (!isTruncateSync) {
-                    initialRawTableStatus!!.maxProcessedTimestamp
+                    initialRawTableStatus.maxProcessedTimestamp
                 } else {
                     Optional.empty()
                 }
@@ -319,7 +331,7 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
     }
 
     companion object {
-        private const val NO_SUFFIX = ""
+        const val NO_SUFFIX = ""
         const val TMP_TABLE_SUFFIX = "_airbyte_tmp"
     }
 }

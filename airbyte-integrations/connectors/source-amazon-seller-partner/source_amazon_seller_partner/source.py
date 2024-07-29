@@ -73,6 +73,9 @@ from source_amazon_seller_partner.streams import (
 )
 from source_amazon_seller_partner.utils import AmazonConfigException
 
+# given the retention period: 730
+DEFAULT_RETENTION_PERIOD_IN_DAYS = 730
+
 
 class SourceAmazonSellerPartner(AbstractSource):
     @staticmethod
@@ -86,18 +89,26 @@ class SourceAmazonSellerPartner(AbstractSource):
             host=endpoint.replace("https://", ""),
             refresh_access_token_headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        start_date = (
-            config.get("replication_start_date")
-            if config.get("replication_start_date")
-            else pendulum.now("utc").subtract(years=2).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        start_date = config.get("replication_start_date")
+        use_default_start_date = (
+            not start_date or (pendulum.now("utc") - pendulum.parse(start_date)).days > DEFAULT_RETENTION_PERIOD_IN_DAYS
         )
+        if use_default_start_date:
+            start_date = pendulum.now("utc").subtract(days=DEFAULT_RETENTION_PERIOD_IN_DAYS).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        end_date = config.get("replication_end_date")
+        use_default_end_date = not end_date or end_date < start_date
+        if use_default_end_date:
+            end_date = None  # None to sync all data
+
         stream_kwargs = {
             "url_base": endpoint,
             "authenticator": auth,
             "replication_start_date": start_date,
             "marketplace_id": marketplace_id,
             "period_in_days": config.get("period_in_days", 30),
-            "replication_end_date": config.get("replication_end_date"),
+            "replication_end_date": end_date,
         }
         return stream_kwargs
 

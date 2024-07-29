@@ -310,6 +310,12 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.10 | 2024-07-27 | [42714](https://github.com/airbytehq/airbyte/pull/42714) | Update dependencies |
+| 3.5.9 | 2024-07-20 | [42339](https://github.com/airbytehq/airbyte/pull/42339) | Update dependencies |
+| 3.5.8 | 2024-07-13 | [41911](https://github.com/airbytehq/airbyte/pull/41911) | Update dependencies |
+| 3.5.7 | 2024-07-10 | [41528](https://github.com/airbytehq/airbyte/pull/41528) | Update dependencies |
+| 3.5.6 | 2024-07-09 | [41323](https://github.com/airbytehq/airbyte/pull/41323) | Update dependencies |
+| 3.5.5 | 2024-07-06 | [40933](https://github.com/airbytehq/airbyte/pull/40933) | Update dependencies |
 | 3.5.4 | 2024-06-25 | [40326](https://github.com/airbytehq/airbyte/pull/40326) | Update dependencies |
 | 3.5.3 | 2024-06-22 | [40158](https://github.com/airbytehq/airbyte/pull/40158) | Update dependencies |
 | `3.5.2` | 2024-06-06 | [39277](https://github.com/airbytehq/airbyte/pull/39277) | [autopull] Upgrade base image to v1.2.2 |

@@ -9,6 +9,7 @@ from enum import Enum
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
+MANIFEST_FILE_PATH = "manifest.yaml"
 LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",
@@ -64,6 +65,8 @@ SETUP_PY_FILE_PATH = "setup.py"
 DEFAULT_PYTHON_PACKAGE_REGISTRY_URL = "https://upload.pypi.org/legacy/"
 DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL = "https://pypi.org/pypi"
 MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS = "airbyte-connector-testing-secret-store"
+AIRBYTE_SUBMODULE_DIR_NAME = "airbyte-submodule"
+MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES = ["Regression Tests"]
 
 
 class CIContext(str, Enum):

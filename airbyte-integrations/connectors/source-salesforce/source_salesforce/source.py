@@ -8,7 +8,6 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import isodate
 import pendulum
-import requests
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource

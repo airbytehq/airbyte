@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector-acceptance-test"
-version = "3.8.3"
+version = "3.8.5"
 description = "Contains acceptance tests for connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -48,5 +48,6 @@ test = "pytest unit_tests"
 ci = ["test"]
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 poe_tasks = ["test"]
 mount_docker_socket = true

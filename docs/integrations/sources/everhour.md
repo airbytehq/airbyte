@@ -28,6 +28,12 @@ This project supports the following streams:
 
 | Version | Date       | Pull Request                                             | Subject         |
 |:--------|:-----------| :------------------------------------------------------- | :-------------- |
+| 0.1.11 | 2024-07-27 | [42696](https://github.com/airbytehq/airbyte/pull/42696) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42195](https://github.com/airbytehq/airbyte/pull/42195) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41834](https://github.com/airbytehq/airbyte/pull/41834) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41534](https://github.com/airbytehq/airbyte/pull/41534) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41187](https://github.com/airbytehq/airbyte/pull/41187) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40871](https://github.com/airbytehq/airbyte/pull/40871) | Update dependencies |
 | 0.1.5 | 2024-06-25 | [40262](https://github.com/airbytehq/airbyte/pull/40262) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40168](https://github.com/airbytehq/airbyte/pull/40168) | Update dependencies |
 | 0.1.3 | 2024-06-19 | [38633](https://github.com/airbytehq/airbyte/pull/38633) | Make connector compatible with Builder |

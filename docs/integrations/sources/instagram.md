@@ -115,10 +115,18 @@ Instagram limits the number of requests that can be made at a time. See Facebook
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
-| 3.0.14 | 2024-06-26 | [39303](https://github.com/airbytehq/airbyte/pull/40524) | Fix Api stream when the results contain not business accounts |
+| :------ |:-----------|:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
+| 3.0.22 | 2024-07-27 | [42721](https://github.com/airbytehq/airbyte/pull/42721) | Update dependencies |
+| 3.0.21 | 2024-07-20 | [42346](https://github.com/airbytehq/airbyte/pull/42346) | Update dependencies |
+| 3.0.20 | 2024-07-13 | [41784](https://github.com/airbytehq/airbyte/pull/41784) | Update dependencies |
+| 3.0.19 | 2024-07-10 | [41586](https://github.com/airbytehq/airbyte/pull/41586) | Update dependencies |
+| 3.0.18 | 2024-07-09 | [41109](https://github.com/airbytehq/airbyte/pull/41109) | Update dependencies |
+| 3.0.17 | 2024-07-08 | [41046](https://github.com/airbytehq/airbyte/pull/41046) | Use latest `CDK` version possible |
+| 3.0.16 | 2024-07-06 | [40903](https://github.com/airbytehq/airbyte/pull/40903) | Update dependencies |
+| 3.0.15 | 2024-07-02 | [40569](https://github.com/airbytehq/airbyte/pull/40569) | Migrate MediaInsights and StoryInsights to low-code |
+| 3.0.14 | 2024-06-26 | [40524](https://github.com/airbytehq/airbyte/pull/40524) | Fix Api stream when the results contain not business accounts |
 | 3.0.13 | 2024-06-25 | [40456](https://github.com/airbytehq/airbyte/pull/40456) | Update dependencies |
-| 3.0.12 | 2024-06-24 | [39303](https://github.com/airbytehq/airbyte/pull/39504) | Migrate Media, Users, UserLifeTimeInsights and Stories to low-code |
+| 3.0.12 | 2024-06-24 | [39504](https://github.com/airbytehq/airbyte/pull/39504) | Migrate Media, Users, UserLifeTimeInsights and Stories to low-code |
 | 3.0.11 | 2024-06-22 | [40127](https://github.com/airbytehq/airbyte/pull/40127) | Update dependencies |
 | 3.0.10 | 2024-06-06 | [39303](https://github.com/airbytehq/airbyte/pull/39303) | [autopull] Upgrade base image to v1.2.2 |
 | 3.0.9 | 2024-05-21 | [38554](https://github.com/airbytehq/airbyte/pull/38554) | Upgrade to API v19.0 |
