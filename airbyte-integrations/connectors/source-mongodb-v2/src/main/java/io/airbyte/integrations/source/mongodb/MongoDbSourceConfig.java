@@ -13,6 +13,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_AUTH
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.COLLECTIONS_INCLUSION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INITIAL_RECORD_WAITING_TIME_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
@@ -21,6 +22,9 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFOR
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalInt;
 
 /**
@@ -88,6 +92,23 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
   public boolean getEnforceSchema() {
     return getDatabaseConfig().has(SCHEMA_ENFORCED_CONFIGURATION_KEY) ? getDatabaseConfig().get(SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true)
         : true;
+  }
+
+  public boolean filterCollections() {
+    return rawConfig.has(COLLECTIONS_INCLUSION_KEY) && rawConfig.get(COLLECTIONS_INCLUSION_KEY).isArray() && rawConfig.get(COLLECTIONS_INCLUSION_KEY).size() > 0;
+  }
+
+  public List<String> getCollections() {
+     if ( !filterCollections()) {
+      return Collections.emptyList();
+     }
+
+    ArrayList<String> collections = new ArrayList<String>();
+      for (final JsonNode collection : rawConfig.get(COLLECTIONS_INCLUSION_KEY)) {
+        collections.add(collection.asText());
+      }
+
+    return collections;
   }
 
   public Integer getInitialWaitingTimeSeconds() {

@@ -176,6 +176,19 @@
         "default": "Fail sync",
         "order": 11,
         "group": "advanced"
+      },
+      "collections": {
+          "title": "Collections",
+          "description": "The list of collections (case sensitive) to sync. Defaults to all.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "uniqueItems": true,
+          "default": [],
+          "order": 12,
+          "group": "advanced"
       }
     },
     "groups": [
