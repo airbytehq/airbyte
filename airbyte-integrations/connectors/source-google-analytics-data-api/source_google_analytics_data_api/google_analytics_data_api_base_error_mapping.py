@@ -10,7 +10,7 @@ from source_google_analytics_data_api.utils import WRONG_CUSTOM_REPORT_CONFIG
 
 
 def get_google_analytics_data_api_base_error_mapping(report_name) -> Mapping[Union[int, str, Type[Exception]], ErrorResolution]:
-    """"
+    """
     Updating base default error messages friendly config error message that includes the steam report name
     """
     stream_error_mapping = {}
