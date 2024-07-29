@@ -61,6 +61,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.13 | 2024-07-27 | [42718](https://github.com/airbytehq/airbyte/pull/42718) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42282](https://github.com/airbytehq/airbyte/pull/42282) | Update dependencies |
 | 0.1.11 | 2024-07-13 | [41858](https://github.com/airbytehq/airbyte/pull/41858) | Update dependencies |
 | 0.1.10 | 2024-07-10 | [41585](https://github.com/airbytehq/airbyte/pull/41585) | Update dependencies |
