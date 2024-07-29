@@ -17,29 +17,26 @@ from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.exceptions import HTTPError
 from source_jira.type_transfromer import DateTimeTransformer
 
 from .utils import read_full_refresh, read_incremental, safe_max
 
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-
-from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
-
 API_VERSION = 3
 
 
 class JiraErrorHandler(HttpStatusErrorHandler):
-
     def __init__(
-            self,
-            stream_name: str,
-            ignore_status_codes: List[int],
-            logger: logging.Logger,
-            error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
-            max_retries: int = 5,
-            max_time: timedelta = timedelta(seconds=600),
+        self,
+        stream_name: str,
+        ignore_status_codes: List[int],
+        logger: logging.Logger,
+        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
+        max_retries: int = 5,
+        max_time: timedelta = timedelta(seconds=600),
     ) -> None:
         super().__init__(logger, error_mapping, max_retries, max_time)
         self.stream_name = stream_name
@@ -54,8 +51,7 @@ class JiraErrorHandler(HttpStatusErrorHandler):
                 error_message = f"The user doesn't have permission to the project. Please grant the user to the project. {error_message}"
 
             return ErrorResolution(
-                error_message=f"Skipping stream {self.stream_name}. {error_message}",
-                response_action=ResponseAction.IGNORE
+                error_message=f"Skipping stream {self.stream_name}. {error_message}", response_action=ResponseAction.IGNORE
             )
 
         return super().interpret_response(response_or_exception)

@@ -42,8 +42,8 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: [ ]
-  
+      field_path: []
+
   # Paginator
 
   no_pagination_paginator:
@@ -116,7 +116,7 @@ definitions:
     $ref: "#/definitions/full_refresh_stream"
     name: application_roles
     primary_key: "key"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     $parameters:
@@ -202,7 +202,7 @@ definitions:
     $ref: "#/definitions/full_refresh_stream"
     name: issue_fields
     primary_key: "id"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination_use_cache"
       record_selector: "#/definitions/selector_base"
     $parameters:
@@ -230,7 +230,7 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get
   issue_navigator_settings_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     name: issue_navigator_settings
@@ -277,7 +277,7 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
   issue_types_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     name: issue_types
@@ -306,7 +306,7 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
   jira_settings_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     name: jira_settings
@@ -423,7 +423,7 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get
   project_types_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     name: project_types
@@ -452,7 +452,7 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get
   time_tracking_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     name: time_tracking
@@ -506,7 +506,7 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get
   workflow_statuses_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     name: workflow_statuses
@@ -517,7 +517,7 @@ definitions:
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get
   workflow_status_categories_stream:
     $ref: "#/definitions/full_refresh_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/retriever_no_pagination"
       record_selector: "#/definitions/selector_base"
     name: workflow_status_categories
