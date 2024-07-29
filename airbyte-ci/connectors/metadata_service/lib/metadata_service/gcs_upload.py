@@ -297,7 +297,11 @@ def _apply_components_py_file_to_metadata_file(
     metadata_dict: dict,
     components_py_file_path: Optional[Path] | None,
 ) -> dict:
-    """Apply the components.py file data to the metadata file before uploading it to GCS."""
+    """Apply the components.py file data to the metadata file before uploading it to GCS.
+
+    Currently, we only set the boolean `required=True` and we provide a hash of the
+    expected contents of `components.py`.
+    """
     if components_py_file_path:
         metadata_dict = set_(
             metadata_dict,
