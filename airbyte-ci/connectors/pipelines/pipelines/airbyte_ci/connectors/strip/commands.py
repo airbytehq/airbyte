@@ -9,7 +9,7 @@ from pipelines.airbyte_ci.connectors.strip.pipeline import run_connectors_strip_
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
-@click.command(cls=DaggerPipelineCommand, short_help="Migrate low-code connector to manifest-only")
+@click.command(cls=DaggerPipelineCommand, short_help="Migrate a low-code connector to manifest-only")
 @click.pass_context
 async def strip(ctx: click.Context) -> bool:
 
