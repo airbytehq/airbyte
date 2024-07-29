@@ -624,7 +624,9 @@ def test_python_issues_stream(config, mock_projects_responses_additional_project
     assert "non_empty_field" in records[0]["fields"]
 
     assert len(responses.calls) == 3
-    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
+    error_message = ('Skipping stream issues. The user doesn\'t have permission to the project. '
+                     'Please grant the user to the project. '
+                     'Errors: ["The value \'3\' does not exist for the field \'project\'."]')
     assert error_message in caplog.messages
 
 

@@ -105,11 +105,11 @@ def test_sprint_issues_substream_partition_router(fields_data, other_data, expec
 
     # Mocking fields_parent_stream to return specific stream slices
     fields_parent_stream.stream_slices.return_value = [StreamSlice(partition={"partition_id": val}, cursor_slice={}) for val in fields_data]
-    fields_parent_stream.read_records.return_value = [{"id": 1, "partition_id": val} for val in fields_data]
+    fields_parent_stream.read_only_records.return_value = [{"id": 1, "partition_id": val} for val in fields_data]
 
     # Mocking other_parent_stream to return specific stream slices
     other_parent_stream.stream_slices.return_value = [StreamSlice(partition={"partition_id": val}, cursor_slice={}) for val in other_data]
-    other_parent_stream.read_records.return_value = [{"id": 2, "partition_id": val} for val in other_data]
+    other_parent_stream.read_only_records.return_value = [{"id": 2, "partition_id": val} for val in other_data]
 
     # Collecting results from stream_slices
     slices = list(router.stream_slices())
