@@ -207,7 +207,8 @@ def _file_upload(
         gcp_connector_dir: Path to the connector folder in GCS. This is the parent folder,
             containing the versioned and "latest" folders as its subdirectories.
         bucket: GCS bucket to upload the file to.
-        upload_as_version: The version to upload the file as.
+        upload_as_version: The version to upload the file as or 'False' to skip uploading
+            the versioned copy.
         upload_as_latest: Whether to upload the file as the latest version.
 
     Returns: Tuple of two tuples, each containing a boolean indicating whether the file was
