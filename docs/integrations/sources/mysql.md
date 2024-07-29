@@ -233,6 +233,9 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.5   | 2024-07-24 | [42417](https://github.com/airbytehq/airbyte/pull/42417) | Handle null error message in ConnectorExceptionHandler. |
+| 3.6.4   | 2024-07-23 | [42421](https://github.com/airbytehq/airbyte/pull/42421) | Remove final transient error emitter iterators.                                                                                                |
+| 3.6.3   | 2024-07-22 | [42024](https://github.com/airbytehq/airbyte/pull/42024) | Fix a NPE bug on resuming from a failed attempt.                                                                                                |
 | 3.6.2   | 2024-07-17 | [42087](https://github.com/airbytehq/airbyte/pull/42087) | Adding more error translations for MySql source.                                                                                                |
 | 3.6.1   | 2024-07-19 | [42122](https://github.com/airbytehq/airbyte/pull/42122) | Improve wass error message + logging.                                                                                                           |
 | 3.6.0   | 2024-07-17 | [40208](https://github.com/airbytehq/airbyte/pull/40208) | Start using the new error MySql source error handler that comes with a new error translation layer.                                             | 

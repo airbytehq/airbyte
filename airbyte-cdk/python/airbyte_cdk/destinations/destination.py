@@ -117,4 +117,4 @@ class Destination(Connector, ABC):
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:
-            print(message.json(exclude_unset=True))
+            print(message.model_dump_json(exclude_unset=True))
