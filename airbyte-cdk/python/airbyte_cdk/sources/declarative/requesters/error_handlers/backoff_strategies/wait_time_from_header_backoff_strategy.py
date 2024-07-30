@@ -23,6 +23,7 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     Attributes:
         header (str): header to read wait time from
         regex (Optional[str]): optional regex to apply on the header to extract its value
+        max_waiting_time_in_seconds: (Optional[float]): given the value extracted from the header is greater than this value, stop the stream
     """
 
     header: Union[InterpolatedString, str]
