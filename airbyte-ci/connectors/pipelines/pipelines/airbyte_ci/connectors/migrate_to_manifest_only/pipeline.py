@@ -11,13 +11,17 @@ from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.utils import (
+    get_latest_base_image,
+    readme_for_connector,
+    revert_connector_directory,
+)
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.utils import get_latest_base_image, readme_for_connector, revert_connector_directory
 from ruamel.yaml import YAML  # type: ignore
 
-## GLOBAL VARIABLES
+## GLOBAL VARIABLES ##
 
 VALID_SOURCE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py"]
 FILES_TO_LEAVE = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml"]
@@ -28,6 +32,8 @@ yaml = YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
 yaml.preserve_quotes = True
 
+
+## STEPS ##
 
 class CheckIsManifestMigrationCandidate(Step):
     """
@@ -41,6 +47,7 @@ class CheckIsManifestMigrationCandidate(Step):
 
     async def _run(self) -> StepResult:
 
+        ## 1. Confirm the connector is low-code and not already manifest-only
         if self.context.connector.language != ConnectorLanguage.LOW_CODE:
             return StepResult(
                 step=self,
@@ -55,7 +62,7 @@ class CheckIsManifestMigrationCandidate(Step):
                 stderr="The connector is already in manifest-only format.",
             )
 
-        # Detect invalid python files in the connector's source directory
+        ## 2. Detect invalid python files in the connector's source directory
         connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
         for file in connector_source_code_dir.iterdir():
             if file.name not in VALID_SOURCE_FILES:
@@ -67,7 +74,7 @@ class CheckIsManifestMigrationCandidate(Step):
                 stdout=f"The connector has unrecognized source files: {self.invalid_files}",
             )
 
-        # Detect connector class name to make sure it's inherited from source declarative manifest
+        ## 3. Detect connector class name to make sure it's inherited from source declarative manifest
         # and does not override the `streams` method
         connector_source_py = (connector_source_code_dir / "source.py").read_text()
 
@@ -140,11 +147,11 @@ class StripConnector(Step):
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete files: {e}")
 
-        # Check that only allowed files remain
+        ## 3. Verify that only allowed files remain
         for file in self.context.connector.code_directory.iterdir():
             if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
-            
+
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully stripped.")
 
 
@@ -158,7 +165,7 @@ class UpdateManifestOnlyFiles(Step):
 
     async def _run(self) -> StepResult:
 
-    ## 3. Update the acceptance test config to point to the right spec path
+        ## 1. Update the acceptance test config to point to the right spec path
         acceptance_test_config = self.context.connector.code_directory / "acceptance-test-config.yml"
         try:
             with open(acceptance_test_config, "r") as file:
@@ -175,7 +182,7 @@ class UpdateManifestOnlyFiles(Step):
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
 
-        ## 4. Update the connector's metadata
+        ## 2. Update the connector's metadata
         metadata_file = self.context.connector.code_directory / "metadata.yaml"
         # Backup the original file before modifying
         backup_metadata_file = self.context.connector.code_directory / "metadata.yaml.bak"
@@ -200,6 +207,7 @@ class UpdateManifestOnlyFiles(Step):
                         yaml.dump(metadata, file)
                 else:
                     return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to read metadata.yaml content.")
+
         except Exception as e:
             # Restore the original file and return the report
             shutil.copy(backup_metadata_file, metadata_file)
@@ -209,7 +217,7 @@ class UpdateManifestOnlyFiles(Step):
         # delete the backup metadata file once done
         backup_metadata_file.unlink()
 
-        ## 5. Update the connector's README
+        ## 3. Update the connector's README
         self.logger.info(f"Updating README file")
 
         readme = readme_for_connector(self.context.connector.technical_name)
@@ -219,18 +227,11 @@ class UpdateManifestOnlyFiles(Step):
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully migrated to manifest-only.")
 
 
-## MAIN FUNCTION
+## MAIN FUNCTION ##
 async def run_connectors_manifest_only_pipeline(context: ConnectorContext, semaphore: "Semaphore", *args: Any) -> ConnectorReport:
 
     steps_to_run: STEP_TREE = []
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_CHECK, 
-                step=CheckIsManifestMigrationCandidate(context)
-                )
-        ]
-    )
+    steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_CHECK, step=CheckIsManifestMigrationCandidate(context))])
 
     steps_to_run.append(
         [
@@ -259,10 +260,11 @@ async def run_connectors_manifest_only_pipeline(context: ConnectorContext, semap
                 options=context.run_step_options,
             )
             results = list(result_dict.values())
-            ## If the pipeline failed, use git restore on the connector directory to revert the changes
+            # If the pipeline failed, restore the connector directory to revert any changes
             if any(result.status == StepStatus.FAILURE for result in results):
                 context.logger.error("The pipeline failed. Restoring the connector directory.")
                 revert_connector_directory(context.connector.code_directory)
+
             report = ConnectorReport(context, steps_results=results, name="STRIP MIGRATION RESULTS")
             context.report = report
 

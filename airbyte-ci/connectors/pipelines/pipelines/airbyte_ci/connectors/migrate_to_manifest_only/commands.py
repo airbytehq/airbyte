@@ -4,8 +4,8 @@
 
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.pipeline import run_connectors_manifest_only_pipeline
+from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 

@@ -4,10 +4,12 @@
 
 import subprocess
 from pathlib import Path
+
 import jinja2
 import requests
 
 ## HELPER FUNCTIONS for migrate_to_manifest_only.py
+
 
 def readme_for_connector(name: str) -> str:
     dir_path = Path(__file__).parent / "templates"
