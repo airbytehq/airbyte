@@ -11,6 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk import BackoffStrategy, AirbyteTracedException
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
@@ -97,28 +98,8 @@ class PinterestErrorHandler(ErrorHandler):
         return ErrorResolution(ResponseAction.SUCCESS)
 
 
-class RetryAfterBackoffStrategy(BackoffStrategy):
-    def __init__(self, name: str, retry_after_header: str = "Retry-After", max_time: int = 600) -> None:
-        self._name = name
-        self._max_time = max_time
-        self._retry_after_header = retry_after_header
-
-    def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs
-    ) -> Optional[float]:
-
-        if isinstance(response_or_exception, requests.Response):
-            if response_or_exception.status_code == 429:
-                retry_after = response_or_exception.headers.get(self._retry_after_header)
-                retry_after = float(retry_after) if retry_after else None
-                if retry_after and retry_after >= self._max_time:
-                    raise AirbyteTracedException(
-                        internal_message=f"Stream {self._name} has reached rate limit with '{self._retry_after_header}' of {retry_after} seconds, exit from stream.",
-                        message=f"The rate limit for stream {self._name} has been reached.",
-                        failure_type=FailureType.transient_error,
-                    )
-                return float(retry_after) if retry_after else None
-        return None
+def _create_retry_after_backoff_strategy() -> BackoffStrategy:
+    return WaitTimeFromHeaderBackoffStrategy(header="Retry-After", max_waiting_time_in_seconds=600, parameters={}, config={})
 
 
 class PinterestStream(HttpStream, ABC):
@@ -134,7 +115,7 @@ class PinterestStream(HttpStream, ABC):
         self.config = config
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return RetryAfterBackoffStrategy(self.name, "X-RateLimit-Reset")
+        return _create_retry_after_backoff_strategy()
 
     def get_error_handler(self) -> ErrorHandler:
         return PinterestErrorHandler(self.logger, self.name)
@@ -308,8 +289,8 @@ class PinterestAnalyticsErrorHandler(ErrorHandler):
 
 
 class AnalyticsApiBackoffStrategyDecorator(BackoffStrategy):
-    def __init__(self, name: str) -> None:
-        self._decorated = RetryAfterBackoffStrategy(name, "X-RateLimit-Reset")
+    def __init__(self) -> None:
+        self._decorated = _create_retry_after_backoff_strategy()
 
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs
@@ -327,7 +308,7 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
     analytics_target_ids = None
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return AnalyticsApiBackoffStrategyDecorator(self.name)
+        return AnalyticsApiBackoffStrategyDecorator()
 
     def get_error_handler(self) -> ErrorHandler:
         return PinterestAnalyticsErrorHandler(self.logger, self.name)

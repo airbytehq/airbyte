@@ -12,8 +12,8 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, RateLimitExceeded, \
-    PinterestErrorHandler, RetryAfterBackoffStrategy, NonJSONResponse, AnalyticsApiBackoffStrategyDecorator
+from source_pinterest.streams import PinterestAnalyticsStream, PinterestStream, PinterestSubStream, PinterestErrorHandler, \
+    NonJSONResponse, AnalyticsApiBackoffStrategyDecorator
 from source_pinterest.utils import get_analytics_columns
 
 from .conftest import get_stream_by_name
@@ -108,11 +108,6 @@ def test_response_action(requests_mock, patch_base_class, http_status, expected_
     assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_response_action
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
-    assert RetryAfterBackoffStrategy(_ANY_STREAM_NAME).backoff_time(response_mock) is None
-
-
 @pytest.mark.parametrize(
     ("test_response", "status_code", "expected_response_action"),
     (
@@ -138,35 +133,6 @@ def test_non_json_response(requests_mock, patch_base_class):
     assert "Received unexpected response in non json format" in str(exception)
 
 
-def test_given_retry_after_smaller_than_backoff_time_when_backoff_time_then_return_retry_after(requests_mock):
-    url = "https://api.pinterest.com/v5/boards"
-    retry_header_value = _A_MAX_TIME - 1
-    requests_mock.get(
-        url,
-        json={},
-        headers={_RETRY_AFTER_HEADER: str(retry_header_value)},
-        status_code=429,
-    )
-    response = requests.get(url)
-
-    assert RetryAfterBackoffStrategy(_ANY_STREAM_NAME, _RETRY_AFTER_HEADER, _A_MAX_TIME).backoff_time(response) == retry_header_value
-
-
-def test_given_retry_after_greater_than_backoff_time_when_backoff_time_then_raise_exception(requests_mock):
-    url = "https://api.pinterest.com/v5/boards"
-    retry_header_value = _A_MAX_TIME + 1
-    requests_mock.get(
-        url,
-        json={},
-        headers={_RETRY_AFTER_HEADER: str(retry_header_value)},
-        status_code=429,
-    )
-    response = requests.get(url)
-
-    with pytest.raises(AirbyteTracedException):
-        RetryAfterBackoffStrategy(_ANY_STREAM_NAME, _RETRY_AFTER_HEADER, _A_MAX_TIME).backoff_time(response)
-
-
 @pytest.mark.parametrize(("response", "expected_backoff_time"), (({"code": 1}, 1),))
 def test_analytics_stream_backoff_time(requests_mock, response, expected_backoff_time):
     url = "https://api.pinterest.com/v5/boards"
@@ -177,7 +143,7 @@ def test_analytics_stream_backoff_time(requests_mock, response, expected_backoff
     )
     response = requests.get(url)
 
-    assert AnalyticsApiBackoffStrategyDecorator(_ANY_STREAM_NAME).backoff_time(response) == 1
+    assert AnalyticsApiBackoffStrategyDecorator().backoff_time(response) == 1
 
 
 def test_analytics_stream_request_params(patch_base_class):
