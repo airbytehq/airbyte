@@ -312,31 +312,6 @@ The Cloud Storage store is treated as the source-of-truth of execution state.
 
 The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm Charts deploys.
 
-```mermaid
----
-title: Start a new Sync
----
-sequenceDiagram
-%%    participant API
-    participant Temporal as Temporal Queues
-    participant Sync as Sync Workflow
-    participant ReplicationA as Replication Activity
-    participant ReplicationP as Replication Process
-    participant PersistA as Persistent Activity
-    participant AirbyteDB
-    Sync->>Temporal: Start a replication Activity
-    Temporal->>Sync: Pick up a new Sync
-    Temporal->>ReplicationA: Pick up a new task
-    ReplicationA->>ReplicationP: Starts a process
-    ReplicationP->>ReplicationA: Replication Summary with State message and stats
-    ReplicationA->>Temporal: Return Output (States and Summary)
-    Temporal->>Sync: Read results from Replication Activity
-    Sync->>Temporal: Start Persistent State Activity
-    Temporal->>PersistA: Pick up new task
-    PersistA->>AirbyteDB: Persist States
-    PersistA->>Temporal: Return output
-```
-
 Users running Airbyte Docker should be aware of the above pitfalls.
 
 ## Configuring Jobs & Workers
@@ -348,9 +323,5 @@ Details on configuring jobs & workers can be found [here](../operator-guides/con
 Airbyte exposes the following environment variable to change the maximum number of each type of worker allowed to run in parallel.
 Tweaking these values might help you run more jobs in parallel and increase the workload of your Airbyte instance:
 
-- `MAX_SPEC_WORKERS`: Maximum number of _Spec_ workers allowed to run in parallel.
-- `MAX_CHECK_WORKERS`: Maximum number of _Check connection_ workers allowed to run in parallel.
-- `MAX_DISCOVERY_WORKERS`: Maximum number of _Discovery_ workers allowed to run in parallel.
-- `MAX_SYNC_WORKERS`: Maximum number of _Sync_ workers allowed to run in parallel.
-
-The current default value for these environment variables is currently set to **5**.
+- `MAX_CHECK_WORKERS`: Maximum number of _Non-Sync_ workers allowed to run in parallel. Default to **5**.
+- `MAX_SYNC_WORKERS`: Maximum number of _Sync_ workers allowed to run in parallel. Defaults to **10**.

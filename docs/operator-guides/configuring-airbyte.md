@@ -114,10 +114,8 @@ The following variables are relevant to both Docker and Kubernetes.
 
 #### Worker
 
-1. `MAX_SPEC_WORKERS` - Defines the maximum number of Spec workers each Airbyte Worker container can support. Defaults to 5.
-2. `MAX_CHECK_WORKERS` - Defines the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
-3. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
-4. `MAX_DISCOVER_WORKERS` - Defines the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
+1. `MAX_CHECK_WORKERS` - Defines the maximum number of Non-Sync workers each Airbyte Worker container can support. Defaults to 5.
+2. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 10.
 
 #### Launcher
 
