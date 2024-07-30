@@ -2421,6 +2421,12 @@ definitions:
         type: string
         examples:
           - "([-+]?\\d+)"
+      max_waiting_time_in_seconds:
+        title: Max Waiting Time in Seconds
+        description: Given the value extracted from the header is greater than this value, stop the stream.
+        type: number
+        examples:
+          - 3600
       $parameters:
         type: object
         additionalProperties: true
