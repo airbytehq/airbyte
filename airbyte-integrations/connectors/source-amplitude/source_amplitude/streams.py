@@ -225,10 +225,10 @@ class Events(HttpStream, CheckpointMixin):
             404: ErrorResolution(
                 response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message="No data collected."
             ),
-            503: ErrorResolution(
+            504: ErrorResolution(
                 response_action=ResponseAction.FAIL,
-                failure_type=FailureType.config_error,
-                error_message="The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.",
+                failure_type=FailureType.transient_error,
+                error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.",
             ),
         }
         return HttpStatusErrorHandler(logger=LOGGER, error_mapping=error_mapping)

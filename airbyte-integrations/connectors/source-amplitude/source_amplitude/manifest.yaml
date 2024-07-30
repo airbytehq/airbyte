@@ -24,7 +24,8 @@ definitions:
           failure_type: config_error
           error_message:
             The file size of the exported data is too large. Shorten the
-            time ranges and try again. The limit size is 4GB.
+            time ranges and try again. The limit size is 4GB. Please provide
+            a shorter 'request_time_range' interval.
         - http_codes: [403]
           action: FAIL
           failure_type: config_error
@@ -33,13 +34,12 @@ definitions:
             key or wrong data region.
         - http_codes: [404]
           action: IGNORE
-          error_message: No data collected
+          error_message: No data collected.
         - http_codes: [504]
           action: FAIL
-          failure_type: config_error
           error_message:
-            The amount of data is large causing a timeout. For large amounts
-            of data, the Amazon S3 destination is recommended.
+            The amount of data is large and may be causing a timeout.
+            For large amounts of data, the Amazon S3 destination is recommended.
 
   retriever:
     type: SimpleRetriever
