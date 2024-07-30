@@ -133,7 +133,6 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
 
 
 @pytest.mark.default_timeout(TWENTY_MINUTES)
-@pytest.mark.usefixtures("final_teardown")
 class TestIncremental(BaseTest):
     async def test_two_sequential_reads(
         self,

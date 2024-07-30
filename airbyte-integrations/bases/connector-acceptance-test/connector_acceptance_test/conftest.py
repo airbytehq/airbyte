@@ -3,6 +3,7 @@
 #
 
 
+import asyncio
 import copy
 import itertools
 import json
@@ -145,15 +146,6 @@ def client_container_config_fixture(inputs, base_path, acceptance_test_config) -
         return inputs.client_container_config
 
 
-@pytest.fixture(name="client_container_config_global", scope="session")
-async def client_container_config_global_fixture(acceptance_test_config: Config) -> ClientContainerConfig:
-    if (
-        hasattr(acceptance_test_config.acceptance_tests, "client_container_config")
-        and acceptance_test_config.acceptance_tests.client_container_config
-    ):
-        return acceptance_test_config.acceptance_tests.client_container_config
-
-
 @pytest.fixture(name="client_container_config_secrets")
 def client_container_config_secrets_fixture(base_path, client_container_config) -> Optional[SecretDict]:
     if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
@@ -242,20 +234,6 @@ async def client_container(
         )
 
 
-@pytest.fixture(scope="session")
-async def client_final_teardown_container(
-    base_path: Path,
-    dagger_client: dagger.Client,
-    client_container_config_global: Optional[ClientContainerConfig],
-) -> Optional[dagger.Container]:
-    if client_container_config_global:
-        return await client_container_runner.get_client_container(
-            dagger_client,
-            base_path,
-            base_path / client_container_config_global.client_container_dockerfile_path,
-        )
-
-
 @pytest.fixture(autouse=True)
 async def setup_and_teardown(
     client_container: Optional[dagger.Container],
@@ -280,22 +258,6 @@ async def setup_and_teardown(
             client_container_config.teardown_command,
         )
         logging.info(f"Teardown stdout: {await setup_teardown_container.stdout()}")
-
-
-@pytest.fixture(scope="session")
-async def final_teardown(
-    client_container_config_global: Optional[ClientContainerConfig],
-    client_final_teardown_container: Optional[dagger.Container],
-):
-    yield
-    if client_final_teardown_container and client_container_config_global:
-        logging.info("Doing final teardown.")
-        if hasattr(client_container_config_global, "final_teardown_command"):
-            setup_teardown_container = await client_container_runner.do_teardown(
-                client_final_teardown_container,
-                client_container_config_global.final_teardown_command,
-            )
-            logging.info(f"Final teardown stdout: {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -489,6 +451,9 @@ def pytest_sessionfinish(session, exitstatus):
     """Called after whole test run finished, right before returning the exit status to the system.
     https://docs.pytest.org/en/6.2.x/reference.html#pytest.hookspec.pytest_sessionfinish
     """
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(_do_final_teardown(session))
+
     logger = logging.getLogger()
 
     # this is specifically for contributors to run tests locally and show success for a git hash
@@ -506,6 +471,39 @@ def pytest_sessionfinish(session, exitstatus):
     except Exception as e:
         logger.info(e)  # debug
         pass
+
+
+async def _do_final_teardown(session) -> ClientContainerConfig:
+    """
+    Run a final teardown command, if provided.
+
+    We do this outside of pytest fixtures because when tests are parallelized with xdist, session-scoped fixtures may end up
+    being executed >1 time.
+    """
+    acceptance_test_path = session.config.getoption("--acceptance-test-config", skip=True)
+    acceptance_test_config = load_config(acceptance_test_path)
+    base_path = (
+        Path(acceptance_test_config.base_path).absolute() if acceptance_test_config.base_path else Path(acceptance_test_path).absolute()
+    )
+    if (
+        hasattr(acceptance_test_config.acceptance_tests, "client_container_config")
+        and acceptance_test_config.acceptance_tests.client_container_config
+        and hasattr(acceptance_test_config.acceptance_tests.client_container_config, "final_teardown_command")
+        and acceptance_test_config.acceptance_tests.client_container_config.final_teardown_command
+    ):
+        client_container_config_global = acceptance_test_config.acceptance_tests.client_container_config
+        async with dagger.Connection(config=dagger.Config(log_output=sys.stderr)) as client:
+            client_final_teardown_container = await client_container_runner.get_client_container(
+                client,
+                base_path,
+                base_path / client_container_config_global.client_container_dockerfile_path,
+            )
+            logging.info("Doing final teardown.")
+            setup_teardown_container = await client_container_runner.do_teardown(
+                client_final_teardown_container,
+                client_container_config_global.final_teardown_command,
+            )
+            logging.info(f"Final teardown stdout: {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="connector_metadata")
