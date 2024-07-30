@@ -7,7 +7,6 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from pytest import fixture
