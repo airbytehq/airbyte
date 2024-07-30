@@ -21,33 +21,6 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
 
 LOGGER = logging.getLogger("airbyte")
 
-HTTP_ERROR_CODES = {
-    400: {
-        "msg": "The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.",
-        "lvl": "ERROR",
-    },
-    404: {
-        "msg": "No data collected",
-        "lvl": "WARN",
-    },
-    504: {
-        "msg": "The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.",
-        "lvl": "ERROR",
-    },
-}
-
-
-def error_msg_from_status(status: int = None):
-    if status:
-        level = HTTP_ERROR_CODES[status]["lvl"]
-        message = HTTP_ERROR_CODES[status]["msg"]
-        if level == "ERROR":
-            LOGGER.error(message)
-        elif level == "WARN":
-            LOGGER.warning(message)
-        else:
-            LOGGER.error(f"Unknown error occured: code {status}")
-
 
 class Events(HttpStream, CheckpointMixin):
     api_version = 2
@@ -181,22 +154,10 @@ class Events(HttpStream, CheckpointMixin):
         end = pendulum.parse(stream_slice["end"])
         if start > end:
             yield from []
-        # sometimes the API throws a 404 error for not obvious reasons, we have to handle it and log it.
-        # for example, if there is no data from the specified time period, a 404 exception is thrown
-        # https://developers.amplitude.com/docs/export-api#status-codes
-        try:
-            self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
-            for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-                self.state = self._get_updated_state(self.state, record)
-                yield record
-        except requests.exceptions.HTTPError as error:
-            status = error.response.status_code
-            if status in HTTP_ERROR_CODES.keys():
-                error_msg_from_status(status)
-                yield from []
-            else:
-                self.logger.error(f"Error during syncing {self.name} stream - {error}")
-                raise
+        self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
     def request_params(self, stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = self.base_params
