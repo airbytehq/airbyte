@@ -29,7 +29,9 @@ class ReportRateLimits:
 
 # https://github.com/airbytehq/alpha-beta-issues/issues/3717#issuecomment-2203717834
 STREAM_THRESHOLD_PERIOD = {
-    "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL": ReportRateLimits(threshold=12, period_in_minutes=480),
+    # Threshold sleep logic for GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL takes 40m between requests,
+    # which is too long for certified connectors. Keeping it as documentation for now.
+    # "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL": ReportRateLimits(threshold=12, period_in_minutes=480),
     "GET_AFN_INVENTORY_DATA": ReportRateLimits(threshold=2, period_in_minutes=25),
     "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA": ReportRateLimits(threshold=2000, period_in_minutes=60),
 }
