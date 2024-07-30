@@ -9,7 +9,7 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 import backoff
 import pendulum
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
@@ -90,7 +90,7 @@ class GoogleAdsStream(Stream, ABC):
             yield from self.parse_response(response, stream_slice)
 
 
-class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
+class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
     primary_key = None
     days_of_data_storage = None
     cursor_field = "segments.date"
@@ -643,7 +643,7 @@ class ChangeStatus(IncrementalGoogleAdsStream):
         return query
 
 
-class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
+class IncrementalEventsStream(GoogleAdsStream, CheckpointMixin, ABC):
     """
     Abstract class used for getting incremental updates based on events returned from ChangeStatus stream.
     Only Ad Group Criterion and Campaign Criterion streams are fetched using this class, for other resources
