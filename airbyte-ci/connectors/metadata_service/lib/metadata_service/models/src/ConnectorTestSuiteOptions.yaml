@@ -21,8 +21,8 @@ properties:
     type: array
     items:
       "$ref": "Secret.yaml"
-  connectionOptions:
+  testConnections:
     description: "List of sandbox cloud connections that tests can be run against"
     type: array
     items:
-      "$ref": "ConnectionOptions.yaml"
+      "$ref": "TestConnections.yaml"
