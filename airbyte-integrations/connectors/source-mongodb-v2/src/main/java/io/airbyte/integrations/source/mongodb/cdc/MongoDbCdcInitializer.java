@@ -172,7 +172,7 @@ public class MongoDbCdcInitializer {
 
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName),
-            config, true, false, emittedAt, Optional.of(initialLoadTimeout));
+            config, false, false, emittedAt, Optional.of(initialLoadTimeout));
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, queueSize, false);
@@ -191,7 +191,6 @@ public class MongoDbCdcInitializer {
         AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close);
 
     final List<AutoCloseableIterator<AirbyteMessage>> cdcStreamsStartStatusEmitters = incrementalOnlyStreamsCatalog.getStreams().stream()
-        .filter(stream -> !initialSnapshotStreams.contains(stream))
         .map(stream -> (AutoCloseableIterator<AirbyteMessage>) new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(
             new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace()),
             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)))
