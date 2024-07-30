@@ -13,9 +13,8 @@ from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, ClassVar, Dict, List, Optional, Set
+from typing import ClassVar, List, Optional, Set
 
-import dagger
 import requests  # type: ignore
 import semver
 import yaml  # type: ignore
