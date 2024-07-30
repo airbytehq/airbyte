@@ -33,7 +33,6 @@ from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATOR
 from pydash import set_
 from pydash.objects import get
 
-
 LATEST = "latest"
 
 
@@ -229,13 +228,17 @@ def _file_upload(
     if upload_as_version:
         remote_upload_path = gcp_connector_dir / upload_as_version
         versioned_file_uploaded, versioned_blob_id = upload_file_if_changed(
-            local_file_path=local_path, bucket=bucket, blob_path=remote_upload_path / local_path.name,
+            local_file_path=local_path,
+            bucket=bucket,
+            blob_path=remote_upload_path / local_path.name,
         )
 
     if upload_as_latest:
         remote_upload_path = gcp_connector_dir / LATEST
         versioned_file_uploaded, versioned_blob_id = upload_file_if_changed(
-            local_file_path=local_path, bucket=bucket, blob_path=remote_upload_path / local_path.name,
+            local_file_path=local_path,
+            bucket=bucket,
+            blob_path=remote_upload_path / local_path.name,
         )
 
     return (versioned_file_uploaded, versioned_blob_id), (latest_file_uploaded, latest_blob_id)
@@ -313,11 +316,7 @@ def _apply_python_components_sha_to_metadata_file(
     This is a no-op if `python_components_sha256` is not provided.
     """
     if python_components_sha256:
-        metadata_dict = set_(
-            metadata_dict,
-            "data.generated.pythonComponents.required",
-            True
-        )
+        metadata_dict = set_(metadata_dict, "data.generated.pythonComponents.required", True)
         metadata_dict = set_(
             metadata_dict,
             "data.generated.pythonComponents.sha256",
@@ -396,7 +395,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     if components_py_file_path.exists():
         # Create a zip containing the python components file and manifest file together.
         # Also create a sha256 file for the zip file.
-        with zipfile.ZipFile(python_components_zip_file_path, 'w') as zipf:
+        with zipfile.ZipFile(python_components_zip_file_path, "w") as zipf:
             zipf.write(filename=components_py_file_path, arcname=components_py_file_path.name)
             zipf.write(filename=yaml_manifest_file_path, arcname=yaml_manifest_file_path.name)
 
@@ -434,20 +433,29 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, False)
     doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
 
-    (manifest_yml_uploaded, manifest_yml_blob_id), \
-    (manifest_yml_latest_uploaded, manifest_yml_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
-        upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
+    (manifest_yml_uploaded, manifest_yml_blob_id), (manifest_yml_latest_uploaded, manifest_yml_latest_blob_id) = _file_upload(
+        local_path=python_components_zip_file_path,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        upload_as_version=upload_as_version,
+        upload_as_latest=upload_as_latest,
     )
-    (components_zip_sha256_uploaded, components_zip_sha256_blob_id), \
-    (components_zip_sha256_latest_uploaded, components_zip_sha256_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_sha256_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
-        upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
+    (components_zip_sha256_uploaded, components_zip_sha256_blob_id), (
+        components_zip_sha256_latest_uploaded,
+        components_zip_sha256_latest_blob_id,
+    ) = _file_upload(
+        local_path=python_components_zip_sha256_file_path,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        upload_as_version=upload_as_version,
+        upload_as_latest=upload_as_latest,
     )
-    (components_zip_uploaded, components_zip_blob_id), \
-    (components_zip_latest_uploaded, components_zip_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path, gcp_connector_dir=gcp_connector_dir, bucket=bucket,
-        upload_as_version=upload_as_version, upload_as_latest=upload_as_latest,
+    (components_zip_uploaded, components_zip_blob_id), (components_zip_latest_uploaded, components_zip_latest_blob_id) = _file_upload(
+        local_path=python_components_zip_file_path,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        upload_as_version=upload_as_version,
+        upload_as_latest=upload_as_latest,
     )
 
     if upload_as_latest:
