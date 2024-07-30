@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 239463f5-64bb-4d88-b4bd-18ce673fd572
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/source-coinmarketcap
   githubIssueLabel: source-coinmarketcap
   icon: coinmarketcap.svg

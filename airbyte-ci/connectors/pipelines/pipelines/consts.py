@@ -68,6 +68,9 @@ MAIN_CONNECTOR_TESTING_SECRET_STORE_ALIAS = "airbyte-connector-testing-secret-st
 AIRBYTE_SUBMODULE_DIR_NAME = "airbyte-submodule"
 MANUAL_PIPELINE_STATUS_CHECK_OVERRIDE_PREFIXES = ["Regression Tests"]
 
+PUBLISH_UPDATES_SLACK_CHANNEL = "#connector-publish-updates"
+PUBLISH_FAILURE_SLACK_CHANNEL = "#connector-publish-failures"
+
 
 class CIContext(str, Enum):
     """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
