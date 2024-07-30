@@ -16,7 +16,7 @@ data:
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   definitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.11
   dockerRepository: airbyte/source-lemlist
   githubIssueLabel: source-lemlist
   icon: lemlist.svg
