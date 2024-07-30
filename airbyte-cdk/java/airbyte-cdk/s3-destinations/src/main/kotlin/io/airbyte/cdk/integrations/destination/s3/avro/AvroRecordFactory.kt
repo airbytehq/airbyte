@@ -20,7 +20,11 @@ import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 
-class AvroRecordFactory(private val schema: Schema?, private val converter: JsonAvroConverter?) {
+class AvroRecordFactory(
+    private val schema: Schema?,
+    private val converter: JsonAvroConverter?,
+    private val recordPreprocessor: JsonRecordTransformer? = null,
+) {
 
     companion object {
         private val MAPPER: ObjectMapper = MoreMappers.initMapper()
@@ -75,7 +79,10 @@ class AvroRecordFactory(private val schema: Schema?, private val converter: Json
             MAPPER.valueToTree(recordMessage.meta) as ObjectNode
         )
 
-        jsonRecord.setAll<JsonNode>(recordMessage.data as ObjectNode)
+        // Preprocess the client data to add features not supported by the converter
+        val data = recordMessage.data as ObjectNode
+        val preprocessed = recordPreprocessor?.accept(data) ?: data
+        jsonRecord.setAll<JsonNode>(preprocessed as ObjectNode)
 
         return converter!!.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema)
     }

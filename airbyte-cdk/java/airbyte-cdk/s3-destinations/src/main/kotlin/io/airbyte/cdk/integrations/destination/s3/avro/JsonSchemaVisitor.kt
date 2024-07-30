@@ -2,6 +2,7 @@ package io.airbyte.cdk.integrations.destination.s3.avro
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.commons.jackson.MoreMappers
 
 abstract class JsonSchemaVisitor() {
     // Objects
@@ -22,10 +23,12 @@ abstract class JsonSchemaVisitor() {
 
     // Unions
     abstract fun visitStartOfUnion(node: ObjectNode)
+    abstract fun visitUnionOption(node: ObjectNode)
     abstract fun visitEndOfUnion(node: ObjectNode)
 
     // Simple primitive types
     abstract fun visitString(node: ObjectNode)
+    abstract fun visitBinaryData(node: ObjectNode)
     abstract fun visitBoolean(node: ObjectNode)
     abstract fun visitInteger(node: ObjectNode)
     abstract fun visitNumber(node: ObjectNode)
@@ -53,6 +56,7 @@ abstract class JsonSchemaVisitor() {
                 }
                 visitEndOfObjectWithProperties(schema)
             }
+
             AirbyteJsonSchemaType.OBJECT_WITHOUT_PROPERTIES ->
                 visitObjectWithoutProperties(schema)
 
@@ -63,11 +67,13 @@ abstract class JsonSchemaVisitor() {
                 }
                 visitEndOfArrayWithItems(schema)
             }
+
             AirbyteJsonSchemaType.ARRAY_WITH_ITEM -> {
                 visitArrayWithSingleItem(schema)
                 visit(schema["items"])
                 visitEndOfArrayWithSingleItem(schema)
             }
+
             AirbyteJsonSchemaType.ARRAY_WITHOUT_ITEMS ->
                 visitArrayWithoutItems(schema)
 
@@ -77,14 +83,26 @@ abstract class JsonSchemaVisitor() {
             AirbyteJsonSchemaType.TIMESTAMP_WITH_TIMEZONE -> visitDateTimeWithTimezone(schema)
             AirbyteJsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> visitDateTimeWithoutTimezone(schema)
 
-            AirbyteJsonSchemaType.STRING ->  visitString(schema)
+            AirbyteJsonSchemaType.STRING -> visitString(schema)
+            AirbyteJsonSchemaType.BINARY_DATA -> visitBinaryData(schema)
             AirbyteJsonSchemaType.BOOLEAN -> visitBoolean(schema)
             AirbyteJsonSchemaType.INTEGER -> visitInteger(schema)
             AirbyteJsonSchemaType.NUMBER -> visitNumber(schema)
 
+            AirbyteJsonSchemaType.COMBINED -> {
+                visitStartOfUnion(schema)
+                schema["type"].forEach { type ->
+                    val option = MoreMappers.initMapper().createObjectNode()
+                    option.put("type", type.asText())
+                    visitUnionOption(option)
+                    visit(option)
+                }
+                visitEndOfUnion(schema)
+            }
             AirbyteJsonSchemaType.UNION -> {
                 visitStartOfUnion(schema)
                 schema["oneOf"].elements().forEach { option ->
+                    visitUnionOption(option as ObjectNode)
                     visit(option)
                 }
                 visitEndOfUnion(schema)

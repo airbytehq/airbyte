@@ -6,6 +6,21 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JsonSchemaTransformerTest {
+    private fun mangleAltCombined(node: ObjectNode) {
+        val oneOf = MoreMappers.initMapper().createArrayNode()
+
+        val option1 = MoreMappers.initMapper().createObjectNode()
+        option1.put("type", "integer")
+        oneOf.add(option1)
+
+        val option2 = MoreMappers.initMapper().createObjectNode()
+        option2.put("type", "string")
+        oneOf.add(option2)
+
+        node.remove("type")
+        node.replace("oneOf", oneOf)
+    }
+
     @Test
     fun testSchemaNoopTransformation() {
         // Load resource file complex_schema.json
@@ -16,18 +31,20 @@ class JsonSchemaTransformerTest {
         val transformer = JsonSchemaTransformer()
         val transformedSchema = transformer.accept(jsonSchema as ObjectNode)
 
-        // Assert transformedSchema is equal to jsonSchema
+        // Assert transformedSchema is equal to jsonSchema, accounting for a little normalization
+        transformedSchema.remove("type")
+        mangleAltCombined(jsonSchema["properties"]["combined_type_alt"] as ObjectNode)
         Assertions.assertEquals(jsonSchema, transformedSchema)
     }
 
     @Test
     fun testAvroSchemasCoerceSchemalessObjectsToStrings() {
         // Load resource file schemaless_object.json
-        val schema = javaClass.getResource("/avro/schemaless_objects.json")?.readText()
+        val schema = javaClass.getResource("/avro/schemaless_objects_schema.json")?.readText()
         val jsonSchema = MoreMappers.initMapper().readTree(schema)
 
         // Create a JsonSchemaAvroPreprocessor object
-        val transformer = JsonSchemaAvroPreprocessor()
+        val transformer = AvroJsonSchemaPreprocessor()
         val transformedSchema = transformer.accept(jsonSchema as ObjectNode)
 
         // Assert transformedSchema is equal to expectedSchema
@@ -49,9 +66,38 @@ class JsonSchemaTransformerTest {
         val optionTypeSet = unionOptions.map { it["type"].asText() }.toSet()
         Assertions.assertEquals(setOf("string", "number"), optionTypeSet)
 
-        val arrayOfOneSchemaless = objectWithSchemaProperties["array_of_two_object_types_one_containing_schemaless_object"]
+        val arrayOfOneSchemaless = objectWithSchemaProperties["array_of_union_of_schema_object_and_integer"]
         val arrayItems = arrayOfOneSchemaless["items"].elements()
         val itemSet = arrayItems.asSequence().map { it["type"].asText() }.toSet()
         Assertions.assertEquals(setOf("string", "integer"), itemSet)
+    }
+
+    @Test
+    fun testParquetSchemasPromoteUnionsToDisjointRecords() {
+        val inputSchemaStr = javaClass.getResource("/avro/parquet_schema_disjoint_union_in.json")?.readText()
+        val inputSchema = MoreMappers.initMapper().readTree(inputSchemaStr) as ObjectNode
+        val expectedSchemaStr = javaClass.getResource("/avro/parquet_schema_disjoint_union_out.json")?.readText()
+        print("inputSchemaStr: $inputSchemaStr")
+        print("expectedSchemaStr: $expectedSchemaStr")
+        val expectedSchema = MoreMappers.initMapper().readTree(expectedSchemaStr) as ObjectNode
+
+        val transformedSchema = ParquetJsonSchemaPreprocessor().accept(inputSchema)
+
+        Assertions.assertEquals(expectedSchema, transformedSchema)
+    }
+
+    @Test
+    fun testComposingAvroAndParquet() {
+        val inputSchemaStr = javaClass.getResource("/avro/parquet_schema_disjoint_union_in.json")?.readText()
+        val inputSchema = MoreMappers.initMapper().readTree(inputSchemaStr) as ObjectNode
+        val expectedSchemaStr = javaClass.getResource("/avro/parquet_avro_schema_disjoint_union_out.json")?.readText()
+        print("inputSchemaStr: $inputSchemaStr")
+        print("expectedSchemaStr: $expectedSchemaStr")
+        val expectedSchema = MoreMappers.initMapper().readTree(expectedSchemaStr) as ObjectNode
+
+        val avroTransformed = AvroJsonSchemaPreprocessor().accept(inputSchema)
+        val transformedSchema = ParquetJsonSchemaPreprocessor().accept(avroTransformed)
+
+        Assertions.assertEquals(expectedSchema, transformedSchema)
     }
 }

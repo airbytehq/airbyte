@@ -781,6 +781,7 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+
         configuredCatalog.streams.forEach { s ->
             s.withSyncMode(SyncMode.INCREMENTAL)
             s.withDestinationSyncMode(DestinationSyncMode.APPEND)

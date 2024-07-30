@@ -50,7 +50,7 @@
             }
           ]
         },
-        "array_of_two_object_types_one_containing_schemaless_object" : {
+        "array_of_union_of_schema_object_and_integer" : {
           "type" : "array",
           "items" : [
             {

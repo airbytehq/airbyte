@@ -26,7 +26,7 @@ open class JsonSchemaTransformer: JsonSchemaVisitor() {
 
     private val contextStack: MutableList<Context> = mutableListOf()
 
-    fun accept(schema: ObjectNode): ObjectNode {
+    open fun accept(schema: ObjectNode): ObjectNode {
         visit(schema)
 
         return schemaOut ?: throw IllegalStateException("Schema must be set")
@@ -54,6 +54,18 @@ open class JsonSchemaTransformer: JsonSchemaVisitor() {
         }
     }
 
+    protected open fun addArrayType(schema: ObjectNode) {
+        add(schema)
+    }
+
+    protected open fun addObjectType(schema: ObjectNode) {
+        add(schema)
+    }
+
+    protected open fun addUnionType(schema: ObjectNode) {
+        add(schema)
+    }
+
     private fun pushContext(context: Context) {
         contextStack.add(context)
     }
@@ -79,7 +91,7 @@ open class JsonSchemaTransformer: JsonSchemaVisitor() {
 
     override fun visitEndOfObjectWithProperties(node: ObjectNode) {
         val context = popContext() as Context.PopulatingObject
-        add(context.parent)
+        addObjectType(context.parent)
     }
 
     override fun visitObjectWithoutProperties(node: ObjectNode) {
@@ -94,7 +106,7 @@ open class JsonSchemaTransformer: JsonSchemaVisitor() {
 
     override fun visitEndOfArrayWithSingleItem(node: ObjectNode) {
         val oldContext = popContext() as Context.SettingArrayType
-        add(oldContext.parent)
+        addArrayType(oldContext.parent)
     }
 
     override fun visitArrayWithItems(node: ObjectNode) {
@@ -109,10 +121,14 @@ open class JsonSchemaTransformer: JsonSchemaVisitor() {
 
     override fun visitEndOfArrayWithItems(node: ObjectNode) {
         val oldContext = popContext() as Context.AppendingToArray
-        add(oldContext.parent)
+        addArrayType(oldContext.parent)
     }
 
     override fun visitArrayWithoutItems(node: ObjectNode) {
+        addArrayType(node.deepCopy())
+    }
+
+    override fun visitBinaryData(node: ObjectNode) {
         add(node.deepCopy())
     }
 
@@ -140,9 +156,13 @@ open class JsonSchemaTransformer: JsonSchemaVisitor() {
         pushContext(Context.AppendingToArray(union, options))
     }
 
+    override fun visitUnionOption(node: ObjectNode) {
+        // Default behavior is to do nothing, the option is added directly via the type's visitor
+    }
+
     override fun visitEndOfUnion(node: ObjectNode) {
         val oldContext = popContext() as Context.AppendingToArray
-        add(oldContext.parent)
+        addUnionType(oldContext.parent)
     }
 
     override fun visitDate(node: ObjectNode) {

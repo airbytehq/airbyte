@@ -4,12 +4,15 @@
 
 package io.airbyte.cdk.integrations.destination.s3.parquet
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.UploadFormatConfig
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonRecordTransformer
+import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaTransformer
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
@@ -49,7 +52,7 @@ class ParquetSerializedBuffer(
     uploadFormatConfig: UploadFormatConfig,
     stream: AirbyteStreamNameNamespacePair,
     catalog: ConfiguredAirbyteCatalog,
-    private val useV2FieldNames: Boolean = false,
+    private val useV2FeatureSet: Boolean = false,
 ) : SerializableBuffer {
     private val avroRecordFactory: AvroRecordFactory
     private val parquetWriter: ParquetWriter<GenericData.Record>
@@ -60,30 +63,37 @@ class ParquetSerializedBuffer(
 
     init {
         val schemaConverter = JsonToAvroSchemaConverter()
+        val jsonSchema = catalog.streams
+            .firstOrNull { s: ConfiguredAirbyteStream ->
+                (s.stream.name == stream.name) &&
+                    StringUtils.equals(
+                        s.stream.namespace,
+                        stream.namespace,
+                    )
+            }
+            ?.stream
+            ?.jsonSchema
+            ?: throw RuntimeException("No such stream ${stream.namespace}.${stream.name}")
+        val preprocessedSchema = if (useV2FeatureSet) {
+            JsonSchemaTransformer().accept(jsonSchema as ObjectNode)
+        } else {
+            jsonSchema
+        }
         val schema: Schema =
             schemaConverter.getAvroSchema(
-                catalog.streams
-                    .firstOrNull { s: ConfiguredAirbyteStream ->
-                        (s.stream.name == stream.name) &&
-                            StringUtils.equals(
-                                s.stream.namespace,
-                                stream.namespace,
-                            )
-                    }
-                    ?.stream
-                    ?.jsonSchema
-                    ?: throw RuntimeException("No such stream ${stream.namespace}.${stream.name}"),
+                preprocessedSchema,
                 stream.name,
                 stream.namespace,
-                useV2FieldNames = useV2FieldNames,
+                useV2FieldNames = useV2FeatureSet,
                 addStringToLogicalTypes = false
             )
         bufferFile = Files.createTempFile(UUID.randomUUID().toString(), ".parquet")
         Files.deleteIfExists(bufferFile)
         val converter =
-            if (useV2FieldNames) AvroRecordFactory.createV2JsonToAvroConverter()
+            if (useV2FeatureSet) AvroRecordFactory.createV2JsonToAvroConverter()
             else AvroRecordFactory.createV1JsonToAvroConverter()
-        avroRecordFactory = AvroRecordFactory(schema, converter)
+        val recordPreprocessor = if (useV2FeatureSet) JsonRecordTransformer(jsonSchema as ObjectNode) else null
+        avroRecordFactory = AvroRecordFactory(schema, converter, recordPreprocessor)
         val uploadParquetFormatConfig: UploadParquetFormatConfig =
             uploadFormatConfig as UploadParquetFormatConfig
         val avroConfig = Configuration()
@@ -115,7 +125,7 @@ class ParquetSerializedBuffer(
     override fun accept(record: AirbyteRecordMessage, generationId: Long): Long {
         if (inputStream == null && !isClosed) {
             val startCount: Long = byteCount
-            if (useV2FieldNames) {
+            if (useV2FeatureSet) {
                 parquetWriter.write(
                     avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, record)
                 )
