@@ -16,7 +16,12 @@ from typesense import Client
 def get_client(config: Mapping[str, Any]) -> Client:
     hosts = config.get("host").split(",")
     path = config.get("path")
-    nodes = [{"host": host, "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https", path: path or ""} for host in hosts]
+    nodes = []
+    for host in hosts:
+        node = {"host": host, "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https"}
+        if path:
+            node["path"] = path
+        nodes.append(node)
     client = Client({"api_key": config.get("api_key"), "nodes": nodes, "connection_timeout_seconds": 3600})
 
     return client
