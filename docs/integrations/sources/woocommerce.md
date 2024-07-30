@@ -97,6 +97,24 @@ Useful links:
 | `object`         | `object`     |       |
 | `boolean`        | `boolean`    |       |
 
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about WooCommerce connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+The WooCommerce API allows to
+set [custom rate limits](https://developer.woocommerce.com/2022/11/22/store-api-now-supports-rate-limiting/) to protect
+your store. If you set a custom rate limit,
+specify it in seconds in the `maxSecondsBetweenMessages` field in the `metadata.yaml` file. This value should be the
+maximum number of seconds between API calls.
+</details>
+
 ## Changelog
 
 <details>
