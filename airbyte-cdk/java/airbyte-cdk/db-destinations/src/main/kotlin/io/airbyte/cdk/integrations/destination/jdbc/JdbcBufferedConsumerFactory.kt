@@ -105,16 +105,16 @@ object JdbcBufferedConsumerFactory {
         return parsedCatalog.streams.map {
             val rawSuffix: String =
                 if (
-                    it.minimumGenerationId == 0L ||
+                    it.minimumGenerationId == it.generationId &&
                         sqlOperations.getGenerationIdInTable(
                             database,
                             it.id.rawNamespace,
                             it.id.rawName
-                        ) == it.generationId
+                        ) != it.generationId
                 ) {
-                    AbstractStreamOperation.NO_SUFFIX
-                } else {
                     AbstractStreamOperation.TMP_TABLE_SUFFIX
+                } else {
+                    AbstractStreamOperation.NO_SUFFIX
                 }
             parsedStreamToWriteConfig(namingResolver, rawSuffix).apply(it)
         }
@@ -191,7 +191,6 @@ object JdbcBufferedConsumerFactory {
                     dstTableName + writeConfig.rawTableSuffix
                 )
                 when (writeConfig.minimumGenerationId) {
-                    0L -> {}
                     writeConfig.generationId ->
                         if (
                             sqlOperations.getGenerationIdInTable(
@@ -208,6 +207,7 @@ object JdbcBufferedConsumerFactory {
                                 )
                             )
                         }
+                    0L -> {}
                     else ->
                         throw IllegalStateException(
                             "Invalid minimumGenerationId ${writeConfig.minimumGenerationId} for stream ${writeConfig.streamName}. generationId=${writeConfig.generationId}"
@@ -277,7 +277,7 @@ object JdbcBufferedConsumerFactory {
             try {
                 catalog.streams.forEach {
                     if (
-                        it.minimumGenerationId != 0L &&
+                        it.minimumGenerationId == it.generationId &&
                             sqlOperations.getGenerationIdInTable(
                                 database,
                                 it.id.rawNamespace,

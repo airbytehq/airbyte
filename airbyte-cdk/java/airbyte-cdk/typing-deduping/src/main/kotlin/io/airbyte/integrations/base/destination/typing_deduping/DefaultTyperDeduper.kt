@@ -157,7 +157,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info { "Final Table exists for stream ${stream.id.finalName}" }
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
-                        if (stream.minimumGenerationId != 0L) {
+                        if (stream.minimumGenerationId == stream.generationId) {
                             if (
                                 initialState.isSchemaMismatch ||
                                     (!initialState.isFinalTableEmpty &&
