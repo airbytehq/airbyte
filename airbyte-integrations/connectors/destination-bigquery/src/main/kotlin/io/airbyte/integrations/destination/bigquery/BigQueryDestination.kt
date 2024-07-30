@@ -112,7 +112,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                 // Copy a temporary dataset to confirm copy permissions are working
                 val bigQueryStatus = checkBigQueryCopyPermission(config)
 
-                if (bigQueryStatus!!.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
+                if (bigQueryStatus.status != AirbyteConnectionStatus.Status.SUCCEEDED) {
                     return bigQueryStatus
                 }
             }
@@ -129,7 +129,7 @@ class BigQueryDestination : BaseConnector(), Destination {
      * check if the existing permissions are sufficient to copy data. If the permissions are not
      * sufficient, then an exception is thrown with a message showing the missing permission
      */
-    private fun checkBigQueryCopyPermission(config: JsonNode): AirbyteConnectionStatus? {
+    private fun checkBigQueryCopyPermission(config: JsonNode): AirbyteConnectionStatus {
 
         // TODO: Need to add a step in this method to first check permissions
         //  using testIamPermissions before trying the actual copying of data
@@ -144,11 +144,8 @@ class BigQueryDestination : BaseConnector(), Destination {
             GcsStorageOperations(gcsNameTransformer, gcsConfig.getS3Client(), gcsConfig)
 
         val projectId = config[bqConstants.CONFIG_PROJECT_ID].asText()
-
         val destinationHandler = BigQueryDestinationHandler(bigquery, datasetLocation)
-
         val sqlGenerator = BigQuerySqlGenerator(projectId, datasetLocation)
-
         val defaultDataset = BigQueryUtils.getDatasetId(config)
 
         val finalTableName =
