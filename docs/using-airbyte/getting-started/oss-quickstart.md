@@ -173,7 +173,7 @@ export ABCTL_LOCAL_INSTALL_USERNAME=bar
 
 After supplying a username and password, you'll see the Airbyte workspace. Using this interface, you can set up and manage all your connections and move data with ease! 
 
-As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost8000](http://localhost8000). 
+As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost:8000](http://localhost:8000). 
 
 If you quit Docker Desktop and want to return to your local Airbyte workspace, just start Docker Desktop again. Once Docker finishes restarting, you'll be able to access Airbyte's local installation as normal. 
 
