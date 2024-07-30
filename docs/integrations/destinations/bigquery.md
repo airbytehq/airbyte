@@ -1,7 +1,6 @@
 # BigQuery
 
-Setting up the BigQuery destination connector involves setting up the data loading method (BigQuery
-Standard method and Google Cloud Storage bucket) and configuring the BigQuery destination connector
+Setting up the BigQuery destination connector involves setting up the data loading method and configuring the BigQuery destination connector
 using the Airbyte UI.
 
 This page guides you through setting up the BigQuery destination connector.
@@ -32,13 +31,13 @@ This page guides you through setting up the BigQuery destination connector.
 
 ### Step 1: Set up a data loading method
 
-Although you can load data using BigQuery's
-[`INSERTS`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax), we highly
-recommend using a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction)
-not only for performance and cost but reliability since larger datasets are prone to more failures
-when using standard inserts.
+#### Using Batched Standard Inserts
 
-#### (Recommended) Using a Google Cloud Storage bucket
+You can use the BigQuery driver's built-in conversion to take `INSERT` statements and convert that to file uploads which are then loaded into BigQuery in batches. This is the simplest way to load data into BigQuery in a performant way. These staging files are managed by BigQuery and deleted automatically after the load is complete.
+
+#### Using a Google Cloud Storage bucket
+
+If you want more control of how and where your staging files are stored, you can opt to use a GCS bucket.
 
 To use a Google Cloud Storage bucket:
 
@@ -60,17 +59,6 @@ when creating a new bucket). We currently do not support buckets using customer-
 keys (CMEK). You can view this setting under the "Configuration" tab of your GCS bucket, in the
 `Encryption type` row.
 
-#### Using `INSERT`
-
-You can use BigQuery's
-[`INSERT`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax) statement to
-upload data directly from your source to BigQuery. While this is faster to set up initially, we
-strongly recommend not using this option for anything other than a quick demo. Due to the Google
-BigQuery SDK client limitations, using `INSERT` is 10x slower than using a Google Cloud Storage
-bucket, and you may see some failures for big datasets and slow sources (For example, if reading
-from a source takes more than 10-12 hours). For more details, refer to
-https://github.com/airbytehq/airbyte/issues/3549
-
 ### Step 2: Set up the BigQuery connector
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source
@@ -88,13 +76,8 @@ You cannot change the location later.
 
 7. For **Default Dataset ID**, enter the BigQuery
    [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
-8. For **Loading Method**, select [Standard Inserts](#using-insert) or
-   [GCS Staging](#recommended-using-a-google-cloud-storage-bucket).
-
-:::tip
-We recommend using the GCS Staging option.
-:::
-
+8. For **Loading Method**, select [Batched Standard Inserts](#using-batched-standard-inserts) or
+   [GCS Staging](#using-a-google-cloud-storage-bucket).
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
@@ -223,7 +206,6 @@ tutorials:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.8.6   | 2024-07-24 | [42511](https://github.com/airbytehq/airbyte/pull/42511)   | BigQueryDestination: Added a copy operation to validate copy permissions in the check function                                                                                   |
 | 2.8.5   | 2024-07-22 | [42407](https://github.com/airbytehq/airbyte/pull/42407)   | Batched Standard Inserts is default loading mode                                                                                                                                 |
 | 2.8.4   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                       |
 | 2.8.3   | 2024-07-12 | [41674](https://github.com/airbytehq/airbyte/pull/41674)   | Upgrade to latest CDK                                                                                                                                                            |
