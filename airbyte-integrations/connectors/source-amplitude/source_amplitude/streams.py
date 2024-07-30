@@ -15,6 +15,11 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import FailureType, ResponseAction, ErrorResolution
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+
+
 
 LOGGER = logging.getLogger("airbyte")
 
@@ -206,3 +211,20 @@ class Events(HttpStream, CheckpointMixin):
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/export"
+
+    def get_error_handler(self) -> ErrorHandler:
+        error_mapping = DEFAULT_ERROR_MAPPING | {
+            400: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error
+            ),
+            404: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error
+            ),
+        }
+
+        return HttpStatusErrorHandler(
+            logger=LOGGER,
+            error_mapping=error_mapping
+        )
