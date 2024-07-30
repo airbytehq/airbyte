@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 import requests
 
