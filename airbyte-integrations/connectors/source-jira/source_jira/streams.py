@@ -14,6 +14,7 @@ import pendulum
 import requests
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
+from airbyte_cdk.sources.streams.checkpoint.checkpoint_reader import FULL_REFRESH_COMPLETE_STATE
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
@@ -170,6 +171,12 @@ class JiraStream(HttpStream, ABC):
             self.logger.warning(f"Stream `{self.name}`. An error occurred, details: {errors}. Skipping for now. {custom_error}")
 
 
+class FullRefreshJiraStream(JiraStream):
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        yield from super().read_records(**kwargs)
+        self.state = FULL_REFRESH_COMPLETE_STATE
+
+
 class StartDateJiraStream(JiraStream, ABC):
     def __init__(
         self,
@@ -248,7 +255,6 @@ class Issues(IncrementalJiraStream):
     extract_field = "issues"
     use_cache = True
     _expand_fields_list = ["renderedFields", "transitions", "changelog"]
-    is_resumable = False
 
     # Issue: https://github.com/airbytehq/airbyte/issues/26712
     # we should skip the slice with wrong permissions on project level
@@ -318,7 +324,7 @@ class Issues(IncrementalJiraStream):
         return ""
 
 
-class IssueFields(JiraStream):
+class IssueFields(FullRefreshJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
 
@@ -327,7 +333,6 @@ class IssueFields(JiraStream):
     """
 
     use_cache = True
-    is_resumable = False
 
     def path(self, **kwargs) -> str:
         return "field"
@@ -339,7 +344,7 @@ class IssueFields(JiraStream):
         return results
 
 
-class Projects(JiraStream):
+class Projects(FullRefreshJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
 
@@ -349,7 +354,6 @@ class Projects(JiraStream):
 
     extract_field = "values"
     use_cache = True
-    is_resumable = False
 
     def path(self, **kwargs) -> str:
         return "project/search"
