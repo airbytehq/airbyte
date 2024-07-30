@@ -581,6 +581,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
     STREAM_SLICE_STEP = 30
+    LOOKBACK_WINDOW_IN_MINUTES = 15
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
@@ -600,7 +601,10 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         start, end = (None, None)
         now = pendulum.now(tz="UTC")
         initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
-
+        if self.primary_key:
+            # If the stream has a primary key, we can use a lookback window to avoid missing records.
+            # https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
+            initial_date = initial_date.subtract(minutes=self.LOOKBACK_WINDOW_IN_MINUTES)
         slice_number = 1
         while not end == now:
             start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
