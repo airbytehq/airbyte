@@ -571,8 +571,8 @@ For Python connectors, sets the `airbyte-cdk` dependency in `pyproject.toml` and
 
 #### Arguments
 
-| Argument      | Description                                             |
-| ------------- | ------------------------------------------------------- |
+| Argument      | Description                                                               |
+| ------------- | ------------------------------------------------------------------------- |
 | `CDK_VERSION` | CDK version constraint to set (default to `^{most_recent_patch_version}`) |
 
 #### Notes
@@ -772,7 +772,8 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-|---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.26.0  | [#42849](https://github.com/airbytehq/airbyte/pull/42849)  | Send publish failures messages to `#connector-publish-failures`                                                              |
 | 4.25.4  | [#42463](https://github.com/airbytehq/airbyte/pull/42463) | Add validation before live test runs                                                                                         |
 | 4.25.3  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Ugrade-cdk: Update to work with Python connectors using poetry                                                               |
 | 4.25.2  | [#42077](https://github.com/airbytehq/airbyte/pull/42077)  | Live/regression tests: add status check for regression test runs                                                             |
