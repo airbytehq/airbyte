@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.1
+Fix case where stream wont have a state attribute and needs to resolve get_updated_state
+
+## 4.0.0
+General performance enhancement
+
+## 3.9.6
+fix declarative schema refs for Decoder
+
 ## 3.9.5
 Fixed: Resolved an issue in HttpClient that prevented correct error messages from being presented.
 

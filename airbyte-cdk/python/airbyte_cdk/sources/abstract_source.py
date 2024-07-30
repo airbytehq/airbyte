@@ -251,10 +251,11 @@ class AbstractSource(Source, ABC):
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
-        if isinstance(record_data_or_message, AirbyteMessage):
-            return record_data_or_message
-        else:
-            return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
+        match record_data_or_message:
+            case AirbyteMessage():
+                return record_data_or_message
+            case _:
+                return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
 
     @property
     def message_repository(self) -> Union[None, MessageRepository]:
