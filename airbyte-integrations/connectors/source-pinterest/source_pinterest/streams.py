@@ -2,14 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import logging
 import pendulum
 import requests
-from airbyte_cdk import BackoffStrategy, AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, BackoffStrategy
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
@@ -75,7 +75,9 @@ class PinterestErrorHandler(ErrorHandler):
             raise NonJSONResponse(f"Received unexpected response in non json format: '{response.text}'")
 
         # when max rate limit exceeded, we should skip the stream.
-        if response.status_code == requests.codes.too_many_requests and (isinstance(resp, dict) and resp.get("code", 0) == MAX_RATE_LIMIT_CODE):
+        if response.status_code == requests.codes.too_many_requests and (
+            isinstance(resp, dict) and resp.get("code", 0) == MAX_RATE_LIMIT_CODE
+        ):
             self._logger.error(f"For stream {self._stream_name} Max Rate Limit exceeded.")
             return ErrorResolution(
                 ResponseAction.FAIL,
@@ -259,7 +261,6 @@ def _lookback_date_limit_reached(response: requests.Response) -> bool:
 
 
 class PinterestAnalyticsErrorHandler(ErrorHandler):
-
     def __init__(self, logger: logging.Logger, stream_name: str) -> None:
         self._decorated = PinterestErrorHandler(logger, stream_name)
 

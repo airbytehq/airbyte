@@ -155,9 +155,7 @@ class PinterestAnalyticsReportStream(PinterestAnalyticsStream):
     def _verify_report_status(self, report: dict, stream_slice: Mapping[str, Any]) -> tuple:
         """Verify the report status and return it along with the report URL."""
         api_path = self._build_api_path(stream_slice["parent"]["id"])
-        response_data = self._http_get(
-            urljoin(self.url_base, api_path), params={"token": report.token}
-        )
+        response_data = self._http_get(urljoin(self.url_base, api_path), params={"token": report.token})
         try:
             report_status = ReportStatusDetails.parse_raw(json.dumps(response_data))
         except ValueError as error:
