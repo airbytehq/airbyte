@@ -212,8 +212,9 @@ class Events(HttpStream, CheckpointMixin):
 
     def get_error_handler(self) -> ErrorHandler:
         error_mapping = DEFAULT_ERROR_MAPPING | {
-            400: ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error),
-            404: ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error),
+            400: ErrorResolution(response_action=ResponseAction.FAIL, failure_type=FailureType.config_error, error_message="The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB."),
+            403: ErrorResolution(response_action=ResponseAction.FAIL, failure_type=FailureType.config_error, error_message="Access denied due to lack of permission or invalid API/Secret key or wrong data region."),
+            404: ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message="No data collected."),
+            503: ErrorResolution(response_action=ResponseAction.FAIL, failure_type=FailureType.config_error, error_message="The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.")
         }
-
         return HttpStatusErrorHandler(logger=LOGGER, error_mapping=error_mapping)

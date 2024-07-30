@@ -21,11 +21,13 @@ definitions:
       response_filters:
         - http_codes: [400]
           action: FAIL
+          failure_type: config_error
           error_message:
             The file size of the exported data is too large. Shorten the
             time ranges and try again. The limit size is 4GB.
         - http_codes: [403]
           action: FAIL
+          failure_type: config_error
           error_message:
             Access denied due to lack of permission or invalid API/Secret
             key or wrong data region.
@@ -34,6 +36,7 @@ definitions:
           error_message: No data collected
         - http_codes: [504]
           action: FAIL
+          failure_type: config_error
           error_message:
             The amount of data is large causing a timeout. For large amounts
             of data, the Amazon S3 destination is recommended.

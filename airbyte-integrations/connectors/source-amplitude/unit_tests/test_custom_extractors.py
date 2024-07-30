@@ -12,6 +12,7 @@ import pendulum
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 from source_amplitude.components import ActiveUsersRecordExtractor, AverageSessionLengthRecordExtractor, EventsExtractor
 from source_amplitude.streams import Events
 
@@ -139,7 +140,7 @@ class TestEventsExtractor:
     @pytest.mark.parametrize(
         "error_code, expectation",
         [
-            (400, does_not_raise()),
+            (400, pytest.raises(AirbyteTracedException)),
             (404, does_not_raise()),
             (504, does_not_raise()),
             (500, pytest.raises(requests.exceptions.HTTPError)),
