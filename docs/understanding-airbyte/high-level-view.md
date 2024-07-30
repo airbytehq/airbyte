@@ -15,22 +15,27 @@ A more concrete diagram can be seen below:
 ```mermaid
 ---
 title: Architecture Overview
-config:
-  theme: neutral
 ---
 flowchart LR
     W[fa:fa-display WebApp/UI]
     S[fa:fa-server Server/Config API]
     D[(fa:fa-table Config & Jobs)]
+    L[(fa:fa-server Launcher)]
+    O[(fa:fa-superpowers Orchestrator)]
+    Q[(fa:fa-superpowers Queue)]
     T(fa:fa-calendar Temporal)
     W2[1..n Airbyte Workers]
     W -->|sends API requests| S
     S -->|store data| D
     S -->|create workflow| T
     T -->|launch task| W2
-    W2 -->|return job| T
-    W2 -->|launches| Source
-    W2 -->|launches| Destination
+    W2 -->|return status| T
+    W2 -->|queues job| Q
+    Q  -->|reads from| L
+    L -->|launches| O
+    O -->|launches/reads from| Source
+    O -->|launches/reads from/writes to| Destination
+    O -->|reports status to|S
 ```
 
 - **Web App/UI** [`airbyte-webapp`, `airbyte-proxy`]: An easy-to-use graphical interface for interacting with the Airbyte API.
