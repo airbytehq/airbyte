@@ -5,6 +5,7 @@
 import os
 import shutil
 from pathlib import Path
+import requests
 from typing import Any
 
 import git  # type: ignore
@@ -143,12 +144,19 @@ class StripConnector(Step):
         backup_metadata_file = self.context.connector.code_directory / "metadata.yaml.bak"
         shutil.copy(metadata_file, backup_metadata_file)
 
+        latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
+
         try:
             with open(metadata_file, "r") as file:
                 metadata = yaml.load(file)
                 if metadata and "data" in metadata:
+                    # Update the metadata tab
                     tags = metadata["data"]["tags"]
                     tags.append("language:manifest-only")
+
+                    # Update the base image
+                    base_image = metadata["data"]["connectorBuildOptions"]
+                    base_image["baseImage"] = latest_base_image
 
                     # Write the changes to metadata.yaml
                     with open(metadata_file, "w") as file:
@@ -229,7 +237,6 @@ def readme_for_connector(name: str) -> str:
     rendered = template.render(source_name=name)
     return rendered
 
-## TODO: use this helper method for generating new docs
 def docs_file_for_connector(connector, manifest, metadata: dict) -> str:
     dir_path = Path(__file__).parent / "templates"
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
@@ -237,3 +244,32 @@ def docs_file_for_connector(connector, manifest, metadata: dict) -> str:
     resolved_manifest = yaml.load(manifest)
     rendered = template.render(manifest=resolved_manifest, source_name=connector.name, metadata=metadata)
     return rendered
+
+def get_latest_base_image(image_name: str) -> str:
+    base_url = "https://hub.docker.com/v2/repositories/"
+
+    tags_url = f"{base_url}{image_name}/tags/?page_size=2&ordering=last_updated"
+    response = requests.get(tags_url)
+    if response.status_code != 200:
+        raise requests.ConnectionError(f"Error fetching tags: {response.status_code}")
+
+    tags_data = response.json()
+    if not tags_data["results"]:
+        raise ValueError("No tags found for the image")
+
+    # the latest tag (at 0) is always `latest`, but we want the versioned one.
+    latest_tag = tags_data["results"][1]["name"]
+
+    manifest_url = f"{base_url}{image_name}/tags/{latest_tag}"
+    response = requests.get(manifest_url)
+    if response.status_code != 200:
+        raise requests.ConnectionError(f"Error fetching manifest: {response.status_code}")
+
+    manifest_data = response.json()
+    digest = manifest_data.get("digest")
+
+    if not digest:
+        raise ValueError("No digest found for the image")
+
+    full_reference = f"docker.io/{image_name}:{latest_tag}@{digest}"
+    return full_reference
