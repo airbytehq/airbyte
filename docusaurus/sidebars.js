@@ -362,17 +362,6 @@ const connectorCatalog = {
       ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
     {
-      type: "category",
-      label: "Enterprise Connectors",
-      link: {
-        type: "doc",
-        id: "integrations/enterprise-connectors/README",
-      },
-      items: [...getEnterpriseConnectors()].sort((itemA, itemB) =>
-        itemA.label.localeCompare(itemB.label)
-      ),
-    },
-    {
       type: "doc",
       id: "integrations/custom-connectors",
     },
@@ -561,6 +550,17 @@ module.exports = {
         "enterprise-setup/api-access-config",
         "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
+        {
+          type: "category",
+          label: "Enterprise Connectors",
+          link: {
+            type: "doc",
+            id: "integrations/enterprise-connectors/README",
+          },
+          items: [...getEnterpriseConnectors()].sort((itemA, itemB) =>
+            itemA.label.localeCompare(itemB.label)
+          ),
+        },
       ],
     },
     "operator-guides/upgrading-airbyte",
