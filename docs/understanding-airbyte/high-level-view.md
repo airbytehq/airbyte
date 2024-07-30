@@ -16,7 +16,8 @@ A more concrete diagram can be seen below:
 ---
 title: Architecture Overview
 ---
-flowchart
+%%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
+flowchart LR
     W[fa:fa-display WebApp/UI]
     S[fa:fa-server Config API Server]
     D[(fa:fa-table Config & Jobs)]
