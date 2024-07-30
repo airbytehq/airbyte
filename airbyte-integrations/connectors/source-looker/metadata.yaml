@@ -22,7 +22,7 @@ data:
     breakingChanges:
       1.0.0:
         message: Version 1.0.0 introduces changes to the connection configuration which has been upgraded to the API v4.0 from v3.1. Due to this upgrade, certain streams were affected and schemas changed generally.
-        upgradeDeadline: "2024-08-06"
+        upgradeDeadline: "2024-08-15"
   documentationUrl: https://docs.airbyte.com/integrations/sources/looker
   tags:
     - language:python

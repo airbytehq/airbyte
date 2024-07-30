@@ -41,19 +41,16 @@ class LookerAuthenticator(NoAuth):
         try:
             resp = requests.post(url=url, headers=headers, data=f"client_id={client_id}&client_secret={client_secret}")
             if resp.status_code != 200:
-                return "Unable to connect to the Looker API. Please check your credentials."
+                raise LookerException("auth error: Unable to connect to the Looker API. Please check your credentials.")
         except ConnectionError as error:
-            return str(error)
+            raise LookerException(f"auth error: {str(error)}")
         data = resp.json()
         self._access_token = data["access_token"]
         self._token_expiry_date = pendulum.now().add(seconds=data["expires_in"])
-        return None
 
     def get_auth_header(self) -> Mapping[str, Any]:
         if self._token_expiry_date < pendulum.now():
-            err = self.update_access_token()
-            if err:
-                raise LookerException(f"auth error: {err}")
+            self.update_access_token()
         return {"Authorization": f"token {self._access_token}"}
 
 
