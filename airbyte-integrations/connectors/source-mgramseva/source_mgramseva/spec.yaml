@@ -1,0 +1,41 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Mgramseva Spec
+  type: object
+  required:
+    - client_user
+    - base_url
+    - username
+    - password
+  properties:
+    client_user:
+      type: string
+      title: user for Basic Auth
+      order: 0
+    client_password:
+      type: string
+      title: password for Basic Auth
+      airbyte_secret: true
+      default: ""
+      order: 1
+    base_url:
+      type: string
+      title: Base URL
+      order: 2
+    username:
+      type: string
+      title: username for API
+      order: 3
+    password:
+      type: string
+      title: password for API
+      airbyte_secret: true
+      order: 4
+    start_date:
+      type: string
+      title: Start date for extracting records
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      default: "2022-01-01"
+      description: Date from which to look for consumer demands
+      order: 5
