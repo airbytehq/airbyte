@@ -9,8 +9,7 @@ definitions:
       field_path: ["{{ parameters.get('data_field', 'data')}}"]
   requester:
     description: "Base Requester for Full Refresh streams"
-    type: CustomRequester
-    class_name: source_intercom.components.HttpRequesterWithRateLimiter
+    type: HttpRequester
     url_base: "https://api.intercom.io/"
     http_method: "GET"
     authenticator:
@@ -22,7 +21,14 @@ definitions:
       Intercom-Version: "'2.10'"
       Accept: "application/json"
     error_handler:
-      type: "DefaultErrorHandler"
+      type: CustomErrorHandler
+      class_name: source_intercom.components.ErrorHandlerWithRateLimiter
+      response_filters:
+        - type: HttpResponseFilter
+          error_message_contains: "Active subscription needed"
+          action: FAIL
+          failure_type: config_error
+          error_message: "Failed to perform request. Error: Active subscription needed. Please, validate your current Intercom plan to continue using API."
   retriever:
     description: "Base Retriever for Full Refresh streams"
     record_selector:
@@ -546,8 +552,13 @@ definitions:
                 to continue and retry 500 - server-side error, should retry after 60
                 sec. "
               response_filters:
-                - http_codes: [400, 500]
+                - http_codes: [400]
                   action: RETRY
+                  failure_type: transient_error
+                  error_message: "A scroll (export) job is already in progress for this Intercom account, causing the request to fail. Only one active scroll per Intercom account is allowed; ensure no overlap by limiting active connections or scheduling jobs appropriately."
+                - http_codes: [500]
+                  action: RETRY
+                  failure_type: transient_error
               backoff_strategies:
                 - type: ConstantBackoffStrategy
                   backoff_time_in_seconds: 60
