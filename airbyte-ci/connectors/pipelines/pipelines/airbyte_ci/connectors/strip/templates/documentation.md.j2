@@ -12,12 +12,10 @@ This page contains the setup guide and reference information for the {{ source_n
 | `{{ property }}` | `{{ details.type }}` | {{details.get('title')}}. {{ details.get('description', '') | replace('\n', ' ') }} | {% if 'default' in details %}{{ details.default }}{% endif %} |
 {% endfor %}
 
-## Description
-TODO: { custom description people can make in the builder }
+## Supported Streams
 
-## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-{% for stream in manifest.get('streams') -%}
-| {{ stream.name }} | {{ ", ".join(stream.get('primary_key', [])) }} | {{ stream.get('retriever', {}).get('paginator', {}).get('pagination_strategy', {}).get('type', 'No pagination') }} | ✅ | {% if stream.incremental_sync is defined %} ✅ {% endif %} |
+{% for stream_name, stream in manifest.get('definitions', {}).get('streams', {}).items() -%}
+| {{ stream_name }} | {{ ", ".join(stream.get('primary_key', [])) }} | {{ stream.get('retriever', {}).get('paginator', {}).get('pagination_strategy', {}).get('type', 'No pagination') }} | ✅ | {% if stream.get('incremental_sync') is defined %} ✅ {% endif %} |
 {% endfor %}

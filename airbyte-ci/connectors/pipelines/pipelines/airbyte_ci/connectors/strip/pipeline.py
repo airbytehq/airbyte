@@ -39,7 +39,6 @@ class CheckIsManifestMigrationCandidate(Step):
     invalid_files: list = []
 
     async def _run(self) -> StepResult:
-        connector_dir_entries = await (await self.context.get_connector_dir()).entries()
 
         if self.context.connector.language != ConnectorLanguage.LOW_CODE:
             return StepResult(
