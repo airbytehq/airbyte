@@ -2,15 +2,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import os
-import subprocess
 import shutil
 from pathlib import Path
-import requests
 from typing import Any
 
 import git  # type: ignore
-import jinja2
 from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -18,6 +14,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.utils import get_latest_base_image, readme_for_connector, revert_connector_directory
 from ruamel.yaml import YAML  # type: ignore
 
 ## GLOBAL VARIABLES
@@ -38,7 +35,7 @@ class CheckIsManifestMigrationCandidate(Step):
     """
 
     context: ConnectorContext
-    title: str = "Check if the connector is a candidate for migration to poetry."
+    title: str = "Validate Manifest Migration Candidate"
     airbyte_repo: git.Repo = git.Repo(search_parent_directories=True)
     invalid_files: list = []
 
@@ -95,20 +92,21 @@ class CheckIsManifestMigrationCandidate(Step):
 
 class StripConnector(Step):
     """
-    Step to convert a low-code connector to manifest-only.
+    Step to strip a low-code connector to manifest-only files.
     """
+
     context: ConnectorContext
-    title = "Strip the connector to manifest-only."
+    title = "Strip Unnecessary Files"
 
     def _delete_file(self, file: Path) -> None:
         self.logger.info(f"Deleting {file.name}")
         try:
-          if file.is_dir():
-            shutil.rmtree(file)
-          else:
-            file.unlink()
+            if file.is_dir():
+                shutil.rmtree(file)
+            else:
+                file.unlink()
         except Exception as e:
-          raise ValueError(f"Failed to delete {file.name}: {e}")
+            raise ValueError(f"Failed to delete {file.name}: {e}")
 
     async def _run(self) -> StepResult:
 
@@ -126,44 +124,56 @@ class StripConnector(Step):
 
         ## 2. Delete all non-essential files
         try:
-          for file in self.context.connector.code_directory.iterdir():
-            if file.name in FILES_TO_LEAVE:
-              continue  # Preserve the allowed files
-            elif file.name == "unit_tests":
-              # Preserve any integration tests, delete the rest
-              for unit_test_file in file.iterdir():
-                if unit_test_file.name in {"integration", "integrations"}:
-                  continue
+            for file in self.context.connector.code_directory.iterdir():
+                if file.name in FILES_TO_LEAVE:
+                    continue  # Preserve the allowed files
+                elif file.name == "unit_tests":
+                    # Preserve any integration tests, delete the rest
+                    for unit_test_file in file.iterdir():
+                        if unit_test_file.name in {"integration", "integrations"}:
+                            continue
+                        else:
+                            self._delete_file(unit_test_file)
+                # Delete everything else in root folder
                 else:
-                  self._delete_file(unit_test_file)
-            # Delete everything else in root folder
-            else:
-                self._delete_file(file)
+                    self._delete_file(file)
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete files: {e}")
 
         # Check that only allowed files remain
         for file in self.context.connector.code_directory.iterdir():
-          if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
-            return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
-          
-        ## 3. Update the acceptance test config to point to the right spec path
+            if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
+                return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
+            
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully stripped.")
+
+
+class UpdateManifestOnlyFiles(Step):
+    """
+    Step to update metadata, acceptance-test-config and readme to comply with manifest-only requirements.
+    """
+
+    context: ConnectorContext
+    title = "Update Connector Metadata"
+
+    async def _run(self) -> StepResult:
+
+    ## 3. Update the acceptance test config to point to the right spec path
         acceptance_test_config = self.context.connector.code_directory / "acceptance-test-config.yml"
         try:
-          with open(acceptance_test_config, "r") as file:
-            acceptance_test_config_data = yaml.load(file)
+            with open(acceptance_test_config, "r") as file:
+                acceptance_test_config_data = yaml.load(file)
 
-            # Handle legacy acceptance test config:
-            if "acceptance_tests" in acceptance_test_config_data:
-              acceptance_test_config_data["acceptance_tests"]["spec"]["tests"][0]["spec_path"] = "manifest.yaml"
-            else:
-              acceptance_test_config_data["tests"]["spec"][0]["spec_path"] = "manifest.yaml"
+                # Handle legacy acceptance test config:
+                if "acceptance_tests" in acceptance_test_config_data:
+                    acceptance_test_config_data["acceptance_tests"]["spec"]["tests"][0]["spec_path"] = "manifest.yaml"
+                else:
+                    acceptance_test_config_data["tests"]["spec"][0]["spec_path"] = "manifest.yaml"
 
-          with open(acceptance_test_config, "w") as file:
-            yaml.dump(acceptance_test_config_data, file)
+            with open(acceptance_test_config, "w") as file:
+                yaml.dump(acceptance_test_config_data, file)
         except Exception as e:
-          return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
-
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
 
         ## 4. Update the connector's metadata
         metadata_file = self.context.connector.code_directory / "metadata.yaml"
@@ -210,17 +220,34 @@ class StripConnector(Step):
 
 
 ## MAIN FUNCTION
-async def run_connectors_strip_pipeline(context: ConnectorContext, semaphore: "Semaphore", *args: Any) -> ConnectorReport:
+async def run_connectors_manifest_only_pipeline(context: ConnectorContext, semaphore: "Semaphore", *args: Any) -> ConnectorReport:
 
     steps_to_run: STEP_TREE = []
-    steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.STRIP_CHECK_CANDIDATE, step=CheckIsManifestMigrationCandidate(context))])
+    steps_to_run.append(
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_CHECK, 
+                step=CheckIsManifestMigrationCandidate(context)
+                )
+        ]
+    )
 
     steps_to_run.append(
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.STRIP_MIGRATION,
+                id=CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_STRIP,
                 step=StripConnector(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.STRIP_CHECK_CANDIDATE],
+                depends_on=[CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_CHECK],
+            )
+        ]
+    )
+
+    steps_to_run.append(
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_UPDATE,
+                step=UpdateManifestOnlyFiles(context),
+                depends_on=[CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_STRIP],
             )
         ]
     )
@@ -240,52 +267,3 @@ async def run_connectors_strip_pipeline(context: ConnectorContext, semaphore: "S
             context.report = report
 
     return report
-
-
-## HELPER FUNCTIONS
-def readme_for_connector(name: str) -> str:
-    dir_path = Path(__file__).parent / "templates"
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
-    template = env.get_template("README.md.j2")
-    readme_name = name.replace("source-", "")
-    rendered = template.render(source_name=readme_name)
-    return rendered
-
-def get_latest_base_image(image_name: str) -> str:
-    base_url = "https://hub.docker.com/v2/repositories/"
-
-    tags_url = f"{base_url}{image_name}/tags/?page_size=2&ordering=last_updated"
-    response = requests.get(tags_url)
-    if response.status_code != 200:
-        raise requests.ConnectionError(f"Error fetching tags: {response.status_code}")
-
-    tags_data = response.json()
-    if not tags_data["results"]:
-        raise ValueError("No tags found for the image")
-
-    # the latest tag (at 0) is always `latest`, but we want the versioned one.
-    latest_tag = tags_data["results"][1]["name"]
-
-    manifest_url = f"{base_url}{image_name}/tags/{latest_tag}"
-    response = requests.get(manifest_url)
-    if response.status_code != 200:
-        raise requests.ConnectionError(f"Error fetching manifest: {response.status_code}")
-
-    manifest_data = response.json()
-    digest = manifest_data.get("digest")
-
-    if not digest:
-        raise ValueError("No digest found for the image")
-
-    full_reference = f"docker.io/{image_name}:{latest_tag}@{digest}"
-    return full_reference
-
-def revert_connector_directory(directory):
-    try:
-        # Restore the directory to its state at the last commit
-        subprocess.run(["git", "restore", directory], check=True)
-        # Optionally, remove untracked files and directories
-        subprocess.run(["git", "clean", "-fd", directory], check=True)
-    except subprocess.CalledProcessError as e:
-        # Handle errors in the subprocess calls
-        print(f"An error occurred while reverting changes: {str(e)}")

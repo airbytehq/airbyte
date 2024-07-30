@@ -5,17 +5,17 @@
 import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
-from pipelines.airbyte_ci.connectors.strip.pipeline import run_connectors_strip_pipeline
+from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.pipeline import run_connectors_manifest_only_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
 @click.command(cls=DaggerPipelineCommand, short_help="Migrate a low-code connector to manifest-only")
 @click.pass_context
-async def strip(ctx: click.Context) -> bool:
+async def migrate_to_manifest_only(ctx: click.Context) -> bool:
 
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name=f"Strip connector {connector.technical_name} to manifest-only",
+            pipeline_name=f"Migrate connector {connector.technical_name} to manifest-only",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
@@ -30,8 +30,8 @@ async def strip(ctx: click.Context) -> bool:
 
     await run_connectors_pipelines(
         connectors_contexts,
-        run_connectors_strip_pipeline,
-        "Strip connector to manifest-only pipeline",
+        run_connectors_manifest_only_pipeline,
+        "Migrate connector to manifest-only pipeline",
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],

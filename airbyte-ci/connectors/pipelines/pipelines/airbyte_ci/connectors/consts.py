@@ -38,8 +38,9 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     AIRBYTE_LOGGER_MIGRATION = "migration_to_logging_logger.migration"
     PULL_REQUEST_CREATE = "pull_request.create"
     PULL_REQUEST_UPDATE = "pull_request.update"
-    STRIP_CHECK_CANDIDATE = "strip.check_candidate"
-    STRIP_MIGRATION = "strip.strip_migration"
+    MANIFEST_ONLY_CHECK = "migrate_to_manifest_only.check"
+    MANIFEST_ONLY_STRIP = "migrate_to_manifest_only.strip"
+    MANIFEST_ONLY_UPDATE = "migrate_to_manifest_only.update"
 
     def __str__(self) -> str:
         return self.value
