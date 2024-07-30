@@ -170,18 +170,18 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, float]) -> AirbyteMessage:
-        if message.type == Type.RECORD:
-            stream_message_count[message_utils.get_stream_descriptor(message)] += 1.0
+        match message.type:
+            case Type.RECORD:
+                stream_message_count[HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)] += 1.0
+            case Type.STATE:
+                stream_descriptor = message_utils.get_stream_descriptor(message)
 
-        elif message.type == Type.STATE:
-            stream_descriptor = message_utils.get_stream_descriptor(message)
+                # Set record count from the counter onto the state message
+                message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
+                message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0.0)
 
-            # Set record count from the counter onto the state message
-            message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
-            message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0.0)
-
-            # Reset the counter
-            stream_message_count[stream_descriptor] = 0.0
+                # Reset the counter
+                stream_message_count[stream_descriptor] = 0.0
         return message
 
     @staticmethod
@@ -200,7 +200,7 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
-        return airbyte_message.json(exclude_unset=True)
+        return airbyte_message.model_dump_json(exclude_unset=True)
 
     @classmethod
     def extract_state(cls, args: List[str]) -> Optional[Any]:

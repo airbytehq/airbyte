@@ -12,13 +12,11 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
 from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
@@ -132,11 +130,6 @@ class HttpStream(Stream, CheckpointMixin, ABC):
         Override if needed. Specifies factor for backoff policy.
         """
         return 5
-
-    @property
-    @deprecated(version="3.7.0", reason="This functionality is handled by combination of HttpClient.ErrorHandler and AirbyteStreamStatus")
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
