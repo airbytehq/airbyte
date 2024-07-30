@@ -3,6 +3,7 @@
 #
 
 import os
+import subprocess
 import shutil
 from pathlib import Path
 import requests
@@ -111,7 +112,7 @@ class StripConnector(Step):
 
     async def _run(self) -> StepResult:
 
-        # 1. Move manifest.yaml to the root level of the directory
+        ## 1. Move manifest.yaml to the root level of the directory
         connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
         self.logger.info(f"Moving manifest to the root level of the directory")
 
@@ -123,7 +124,7 @@ class StripConnector(Step):
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
 
-        # 2. Delete all non-essential files
+        ## 2. Delete all non-essential files
         try:
           for file in self.context.connector.code_directory.iterdir():
             if file.name in FILES_TO_LEAVE:
@@ -145,11 +146,27 @@ class StripConnector(Step):
         for file in self.context.connector.code_directory.iterdir():
           if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
+          
+        ## 3. Update the acceptance test config to point to the right spec path
+        acceptance_test_config = self.context.connector.code_directory / "acceptance-test-config.yml"
+        try:
+          with open(acceptance_test_config, "r") as file:
+            acceptance_test_config_data = yaml.load(file)
 
-        # 3. Grab the cdk tag from metadata.yaml and update it
-        # TODO: Also update the base image
+            # Handle legacy acceptance test config:
+            if "acceptance_tests" in acceptance_test_config_data:
+              acceptance_test_config_data["acceptance_tests"]["spec"]["tests"][0]["spec_path"] = "manifest.yaml"
+            else:
+              acceptance_test_config_data["tests"]["spec"][0]["spec_path"] = "manifest.yaml"
+
+          with open(acceptance_test_config, "w") as file:
+            yaml.dump(acceptance_test_config_data, file)
+        except Exception as e:
+          return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
+
+
+        ## 4. Update the connector's metadata
         metadata_file = self.context.connector.code_directory / "metadata.yaml"
-
         # Backup the original file before modifying
         backup_metadata_file = self.context.connector.code_directory / "metadata.yaml.bak"
         shutil.copy(metadata_file, backup_metadata_file)
@@ -182,8 +199,9 @@ class StripConnector(Step):
         # delete the backup metadata file once done
         backup_metadata_file.unlink()
 
-        # 4. Update the connector's README
+        ## 5. Update the connector's README
         self.logger.info(f"Updating README file")
+
         readme = readme_for_connector(self.context.connector.technical_name)
         with open(self.context.connector.code_directory / "README.md", "w") as file:
             file.write(readme)
@@ -214,10 +232,10 @@ async def run_connectors_strip_pipeline(context: ConnectorContext, semaphore: "S
                 options=context.run_step_options,
             )
             results = list(result_dict.values())
-            # TODO: What do you mean we have to restore shit if things failed?
-            # if any(step_result.status is StepStatus.FAILURE for step_result in results):
-            # restore code.
-
+            ## If the pipeline failed, use git restore on the connector directory to revert the changes
+            if any(result.status == StepStatus.FAILURE for result in results):
+                context.logger.error("The pipeline failed. Restoring the connector directory.")
+                revert_connector_directory(context.connector.code_directory)
             report = ConnectorReport(context, steps_results=results, name="STRIP MIGRATION RESULTS")
             context.report = report
 
@@ -261,3 +279,13 @@ def get_latest_base_image(image_name: str) -> str:
 
     full_reference = f"docker.io/{image_name}:{latest_tag}@{digest}"
     return full_reference
+
+def revert_connector_directory(directory):
+    try:
+        # Restore the directory to its state at the last commit
+        subprocess.run(["git", "restore", directory], check=True)
+        # Optionally, remove untracked files and directories
+        subprocess.run(["git", "clean", "-fd", directory], check=True)
+    except subprocess.CalledProcessError as e:
+        # Handle errors in the subprocess calls
+        print(f"An error occurred while reverting changes: {str(e)}")
