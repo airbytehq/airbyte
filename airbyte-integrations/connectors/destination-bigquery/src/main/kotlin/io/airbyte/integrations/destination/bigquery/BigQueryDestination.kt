@@ -43,7 +43,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts as bqConstants
-import com.google.cloud.bigquery.TableId
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createDirectUploadConsumer
 import io.airbyte.integrations.destination.bigquery.BigQueryConsumerFactory.createStagingConsumer
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
@@ -99,7 +98,10 @@ class BigQueryDestination : BaseConnector(), Destination {
             val result = BigQueryUtils.executeQuery(bigquery, queryConfig)
 
             if (result.getLeft() == null) {
-                throw ConfigErrorException(result.right)
+                // throw ConfigErrorException(result.right)
+                return AirbyteConnectionStatus()
+                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                    .withMessage(result.right)
             }
 
             if (UploadingMethod.GCS == uploadingMethod) {
@@ -161,8 +163,6 @@ class BigQueryDestination : BaseConnector(), Destination {
 
         val streamId =
             sqlGenerator.buildStreamId(defaultDataset, finalTableName, rawDatasetOverride)
-
-
 
         try {
 
@@ -253,7 +253,7 @@ class BigQueryDestination : BaseConnector(), Destination {
                 StreamSyncSummary(1, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE),
             )
 
-            //Note: Deletion of the temporary table is being done in the finally block below
+            // Note: Deletion of the temporary table is being done in the finally block below
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
         } catch (e: Exception) {
