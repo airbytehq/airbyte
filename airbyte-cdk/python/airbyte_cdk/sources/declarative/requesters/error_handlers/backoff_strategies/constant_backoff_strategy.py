@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Dict, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
