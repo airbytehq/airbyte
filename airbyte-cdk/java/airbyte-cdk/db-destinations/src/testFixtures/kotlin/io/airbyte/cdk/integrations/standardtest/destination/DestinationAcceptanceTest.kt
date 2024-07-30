@@ -2229,7 +2229,6 @@ abstract class DestinationAcceptanceTest(
                     getProtocolVersion()
                 )
             )
-        val config = getConfig()
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2257,7 +2256,6 @@ abstract class DestinationAcceptanceTest(
                     getProtocolVersion()
                 )
             )
-        val config = getConfig()
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2287,7 +2285,6 @@ abstract class DestinationAcceptanceTest(
                     getProtocolVersion()
                 )
             )
-        val config = getConfig()
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2318,7 +2315,6 @@ abstract class DestinationAcceptanceTest(
                     getProtocolVersion()
                 )
             )
-        val config = getConfig()
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
