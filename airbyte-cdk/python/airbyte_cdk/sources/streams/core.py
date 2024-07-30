@@ -1,13 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 import inspect
 import itertools
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -125,7 +125,7 @@ class Stream(ABC):
 
     has_multiple_slices = False
 
-    @property
+    @cached_property
     def name(self) -> str:
         """
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
@@ -173,6 +173,7 @@ class Stream(ABC):
 
         next_slice = checkpoint_reader.next()
         record_counter = 0
+        stream_state_tracker = copy.deepcopy(stream_state)
         while next_slice is not None:
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(next_slice)
@@ -199,7 +200,8 @@ class Stream(ABC):
                     if self.cursor_field:
                         # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
                         # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
-                        self._observe_state(checkpoint_reader, self.get_updated_state(stream_state, record_data))
+                        stream_state_tracker = self.get_updated_state(stream_state_tracker, record_data)
+                        self._observe_state(checkpoint_reader, stream_state_tracker)
                     record_counter += 1
 
                     checkpoint_interval = self.state_checkpoint_interval
@@ -396,7 +398,7 @@ class Stream(ABC):
         """
         return None
 
-    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
+    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.", action="ignore")
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
     ) -> MutableMapping[str, Any]:
