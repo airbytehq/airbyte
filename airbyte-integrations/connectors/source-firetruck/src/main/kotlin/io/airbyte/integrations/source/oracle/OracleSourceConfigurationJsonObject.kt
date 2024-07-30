@@ -97,14 +97,14 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
     @JsonPropertyDescription("The password associated with the username.")
-    @JsonSchemaInject(json = """{"order":5,"airbyte_secret": true}""")
+    @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
 
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
     @JsonSchemaArrayWithUniqueItems("schemas")
     @JsonPropertyDescription("The list of schemas to sync from. Defaults to user. Case sensitive.")
-    @JsonSchemaInject(json = """{"order":6,"uniqueItems":true}""")
+    @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
     var schemas: List<String>? = null
 
     @JsonProperty("jdbc_url_params")
@@ -170,6 +170,20 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonPropertyDescription("Configures how data is extracted from the database.")
     @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
     fun getCursorConfigurationValue(): CursorConfiguration = cursorJson ?: cursor.asCursorConfiguration()
+
+    @JsonProperty("checkpoint_target_interval_seconds")
+    @JsonSchemaTitle("Checkpoint Target Time Interval")
+    @JsonSchemaInject(json = """{"order":11}""")
+    @JsonSchemaDefault("300")
+    @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
+    var checkpointTargetIntervalSeconds: Int? = 300
+
+    @JsonProperty("concurrency")
+    @JsonSchemaTitle("Concurrency")
+    @JsonSchemaInject(json = """{"order":12}""")
+    @JsonSchemaDefault("1")
+    @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
+    var concurrency: Int? = 1
 
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 
@@ -290,7 +304,7 @@ class MicronautPropertiesFriendlyEncryption {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "user_defined"),
-    JsonSubTypes.Type(value = CdcCursor::class, name = "cdc"),
+    // TODO: add CDC support
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")

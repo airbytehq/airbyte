@@ -56,5 +56,7 @@ object OracleContainerFactory {
             jdbcUrlParams = ""
             schemas = listOf(oracleContainer.username)
             setConnectionDataValue(ServiceName().apply { serviceName = "FREEPDB1" })
+            checkpointTargetIntervalSeconds = 60
+            concurrency = 1
         }
 }

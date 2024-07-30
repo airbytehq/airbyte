@@ -32,7 +32,9 @@ class OracleSourcePartitionsCreatorFactory(
                     ctx,
                     opaqueStateValue.streamPartitionsCreatorInput(ctx),
                     StreamPartitionsCreator.Parameters(preferParallelized = false),
-                    StreamPartitionReader.Parameters(preferResumable = true),
+                    StreamPartitionReader.Parameters(
+                        preferResumable = true,
+                    ),
                 )
             }
         }

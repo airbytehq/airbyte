@@ -41,7 +41,7 @@ class OracleSourceSelectQueryGeneratorTest {
             From("TBL", "SC"),
             limit = Limit(0),
         )
-            .assertSqlEquals("SELECT k, v FROM SC.TBL WHERE ROWNUM < 1")
+            .assertSqlEquals("""SELECT "k", "v" FROM "SC"."TBL" WHERE ROWNUM < 1""")
     }
 
     @Test
@@ -50,7 +50,7 @@ class OracleSourceSelectQueryGeneratorTest {
             SelectColumnMaxValue(Field("ts", OffsetDateTimeFieldType)),
             From("TBL", "SC"),
         )
-            .assertSqlEquals("SELECT MAX(ts) FROM SC.TBL")
+            .assertSqlEquals("""SELECT MAX("ts") FROM "SC"."TBL"""")
     }
 
     @Test
@@ -66,9 +66,9 @@ class OracleSourceSelectQueryGeneratorTest {
             orderBy = OrderBy(listOf(Field("k", IntFieldType))),
         )
             .assertSqlEquals(
-                "SELECT k, v FROM (SELECT * FROM (" +
-                    "SELECT * FROM SC.TBL SAMPLE(12.500) ORDER BY dbms_random.value" +
-                    ") WHERE ROWNUM <= 1000) ORDER BY k",
+                """SELECT "k", "v" FROM (SELECT * FROM (""" +
+                    """SELECT * FROM "SC"."TBL" SAMPLE(12.500) ORDER BY dbms_random.value""" +
+                    """) WHERE ROWNUM <= 1000) ORDER BY "k"""",
             )
     }
 
@@ -83,7 +83,7 @@ class OracleSourceSelectQueryGeneratorTest {
             ),
             From("TBL", "SC"),
         )
-            .assertSqlEquals("SELECT k, v FROM SC.TBL")
+            .assertSqlEquals("""SELECT "k", "v" FROM "SC"."TBL"""")
     }
 
     @Test
@@ -110,11 +110,11 @@ class OracleSourceSelectQueryGeneratorTest {
             Limit(1000),
         )
             .assertSqlEquals(
-                "SELECT k1, k2, k3, msg FROM " +
-                    "(SELECT k1, k2, k3, msg FROM SC.TBL WHERE (k1 > ?) OR " +
-                    "((k1 = ?) AND (k2 > ?)) OR " +
-                    "((k1 = ?) AND (k2 = ?) AND (k3 > ?)) " +
-                    "ORDER BY k1, k2, k3" +
+                """SELECT "k1", "k2", "k3", "msg" FROM """ +
+                    """(SELECT "k1", "k2", "k3", "msg" FROM "SC"."TBL" WHERE ("k1" > ?) OR """ +
+                    """(("k1" = ?) AND ("k2" > ?)) OR """ +
+                    """(("k1" = ?) AND ("k2" = ?) AND ("k3" > ?)) """ +
+                    """ORDER BY "k1", "k2", "k3"""" +
                     ") WHERE ROWNUM <= ?",
                 v1 to IntFieldType,
                 v1 to IntFieldType,
@@ -139,8 +139,8 @@ class OracleSourceSelectQueryGeneratorTest {
             Limit(1000),
         )
             .assertSqlEquals(
-                "SELECT msg, c FROM " +
-                    "(SELECT msg, c FROM SC.TBL WHERE (c > ?) AND (c <= ?) ORDER BY c) " +
+                """SELECT "msg", "c" FROM """ +
+                    """(SELECT "msg", "c" FROM "SC"."TBL" WHERE ("c" > ?) AND ("c" <= ?) ORDER BY "c") """ +
                     "WHERE ROWNUM <= ?",
                 lb to DoubleFieldType,
                 ub to DoubleFieldType,

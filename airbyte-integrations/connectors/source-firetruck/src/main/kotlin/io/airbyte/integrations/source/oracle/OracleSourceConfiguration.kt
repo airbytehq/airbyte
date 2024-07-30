@@ -4,6 +4,7 @@ package io.airbyte.integrations.source.oracle
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.exceptions.ConfigErrorException
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -34,8 +35,9 @@ data class OracleSourceConfiguration(
     val defaultSchema: String,
     override val schemas: Set<String>,
     val cursorConfiguration: CursorConfiguration,
-    override val workerConcurrency: Int = 1,
-    override val workUnitSoftTimeout: Duration = Duration.ofMinutes(5),
+    override val maxConcurrency: Int,
+    override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
+    override val checkpointTargetInterval: Duration,
 ) : JdbcSourceConfiguration {
     override val global = cursorConfiguration is CdcCursor
 }
@@ -115,6 +117,15 @@ class OracleSourceConfigurationFactory :
         val jdbcUrlFmt = "jdbc:oracle:thin:@(DESCRIPTION=${address}$connectData)"
         val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
+        val checkpointTargetInterval: Duration =
+            Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
+        if (!checkpointTargetInterval.isPositive) {
+            throw ConfigErrorException("Checkpoint Target Interval should be positive")
+        }
+        val maxConcurrency: Int = pojo.concurrency ?: 0
+        if ((pojo.concurrency ?: 0) <= 0) {
+            throw ConfigErrorException("Concurrency setting should be positive")
+        }
         return OracleSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -125,6 +136,8 @@ class OracleSourceConfigurationFactory :
             defaultSchema = defaultSchema,
             schemas = pojo.schemas?.toSet() ?: setOf(defaultSchema),
             cursorConfiguration = pojo.getCursorConfigurationValue(),
+            checkpointTargetInterval = checkpointTargetInterval,
+            maxConcurrency = maxConcurrency,
         )
     }
 }

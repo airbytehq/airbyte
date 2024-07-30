@@ -28,14 +28,12 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.OracleContainer
 import java.sql.Connection
-import org.junit.jupiter.api.Disabled
 
 private val log = KotlinLogging.logger {}
 
 /**
  * Reference: https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/Data-Types.html
  */
-@Disabled
 class OracleSourceDatatypeIntegrationTest {
     @TestFactory
     @Timeout(300)

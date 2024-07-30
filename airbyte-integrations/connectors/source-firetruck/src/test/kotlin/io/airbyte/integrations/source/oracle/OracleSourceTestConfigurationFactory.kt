@@ -16,5 +16,5 @@ class OracleSourceTestConfigurationFactory :
     override fun makeWithoutExceptionHandling(pojo: OracleSourceConfigurationJsonObject): OracleSourceConfiguration =
         OracleSourceConfigurationFactory()
             .makeWithoutExceptionHandling(pojo)
-            .copy(workerConcurrency = 1, workUnitSoftTimeout = Duration.ofSeconds(3))
+            .copy(maxConcurrency = 1, checkpointTargetInterval = Duration.ofSeconds(3))
 }

@@ -89,6 +89,8 @@ class OracleSourceConfigurationJsonObjectTest {
             tunnelMethod is SshPasswordAuthTunnelMethod,
             tunnelMethod::class.toString(),
         )
+        Assertions.assertEquals(60, pojo.checkpointTargetIntervalSeconds)
+        Assertions.assertEquals(2, pojo.concurrency)
     }
 }
 
@@ -120,6 +122,8 @@ const val CONFIG_JSON =
   },
   "cursor": {
     "cursor_method": "user_defined"
-  }
+  },
+  "checkpoint_target_interval_seconds": 60,
+  "concurrency": 2
 }
 """

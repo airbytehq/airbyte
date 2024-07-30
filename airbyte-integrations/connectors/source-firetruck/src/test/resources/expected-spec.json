@@ -73,6 +73,7 @@
         "description" : "The password associated with the username.",
         "title" : "Password",
         "order" : 5,
+        "always_show" : true,
         "airbyte_secret" : true
       },
       "schemas" : {
@@ -83,6 +84,7 @@
         "description" : "The list of schemas to sync from. Defaults to user. Case sensitive.",
         "title" : "Schemas",
         "order" : 6,
+        "always_show" : true,
         "uniqueItems" : true
       },
       "jdbc_url_params" : {
@@ -268,25 +270,26 @@
             }
           },
           "required" : [ "cursor_method" ]
-        }, {
-          "title" : "Read Changes using Change Data Capture (CDC)",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Oracle's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\">change data capture feature</a>. This must be enabled on your database.",
-          "properties" : {
-            "cursor_method" : {
-              "type" : "string",
-              "enum" : [ "cdc" ],
-              "default" : "cdc"
-            }
-          },
-          "required" : [ "cursor_method" ]
         } ],
         "description" : "Configures how data is extracted from the database.",
         "title" : "Update Method",
         "order" : 10,
         "display_type" : "radio",
         "type" : "object"
+      },
+      "checkpoint_target_interval_seconds" : {
+        "type" : "integer",
+        "default" : 300,
+        "description" : "How often (in seconds) a stream should checkpoint, when possible.",
+        "title" : "Checkpoint Target Time Interval",
+        "order" : 11
+      },
+      "concurrency" : {
+        "type" : "integer",
+        "default" : 1,
+        "description" : "Maximum number of concurrent queries to the database.",
+        "title" : "Concurrency",
+        "order" : 12
       }
     },
     "required" : [ "host", "port", "connection_data", "username", "encryption", "tunnel_method", "cursor" ]

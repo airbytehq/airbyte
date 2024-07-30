@@ -24,6 +24,7 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.jdbc.SystemType
 import io.airbyte.cdk.jdbc.UserDefinedArray
 import io.airbyte.cdk.jdbc.UserDefinedType
+import io.airbyte.cdk.source.Field
 import io.airbyte.cdk.source.FieldType
 import io.airbyte.cdk.source.select.And
 import io.airbyte.cdk.source.select.Equal
@@ -169,16 +170,18 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
     fun SelectNode.sql(): String =
         "SELECT " +
             when (this) {
-                is SelectColumns -> columns.map { it.id }.joinToString(", ")
-                is SelectColumnMaxValue -> "MAX(${column.id})"
+                is SelectColumns -> columns.joinToString(", ") { it.sql() }
+                is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
+
+    fun Field.sql(): String = "\"$id\""
 
     fun FromNode.sql(): String =
         when (this) {
             NoFrom ->
                 "FROM DUAL"
             is From ->
-                if (this.namespace == null) "FROM $name" else "FROM $namespace.$name"
+                if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
             is FromSample -> {
                 val sample: String = if (sampleRateInv == 1L) "" else " SAMPLE(${sampleRatePercentage.toPlainString()})"
                 val innerFrom: String = From(name, namespace).sql() + sample
@@ -195,17 +198,17 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
 
     fun WhereClauseNode.sql(): String =
         when (this) {
-            is And -> conj.map { it.sql() }.joinToString(") AND (", "(", ")")
-            is Or -> disj.map { it.sql() }.joinToString(") OR (", "(", ")")
-            is Equal -> "${column.id} = ?"
-            is Greater -> "${column.id} > ?"
-            is LesserOrEqual -> "${column.id} <= ?"
+            is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
+            is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
+            is Equal -> "${column.sql()} = ?"
+            is Greater -> "${column.sql()} > ?"
+            is LesserOrEqual -> "${column.sql()} <= ?"
         }
 
     fun OrderByNode.sql(): String =
         when (this) {
             NoOrderBy -> ""
-            is OrderBy -> "ORDER BY " + columns.map { it.id }.joinToString(", ")
+            is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
     fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + limit.bindings()
