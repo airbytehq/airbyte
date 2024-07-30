@@ -119,6 +119,10 @@ The following variables are relevant to both Docker and Kubernetes.
 3. `MAX_SYNC_WORKERS` - Defines the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
 4. `MAX_DISCOVER_WORKERS` - Defines the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
 
+#### Launcher
+
+1. `WORKLOAD_LAUNCHER_PARALLELISM` - Defines the number of jobs that can be started at once. Defaults to 10.
+
 #### Data Retention
 
 1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Defines the retention period of the job history in Temporal, defaults to 30 days. When running in docker,
