@@ -1,20 +1,27 @@
 from abc import ABC
+import ujson as json
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
+import time
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 
 
 class PendoPythonStream(HttpStream, ABC):
     url_base = "https://app.pendo.io/api/v1/"
     primary_key = None
 
+    def path(self, **kwargs) -> str:
+        return self.name
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {"Content-Type": "application/json"}
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -42,7 +49,14 @@ class PendoPythonStream(HttpStream, ABC):
                 fields = {}
                 for field in metadata[key]:
                     field_type = metadata[key][field]["Type"]
-                    fields[field] = self.get_valid_field_info(field_type)
+                    # TODO: Hardcoding these fields for now until we understand the Pendo schema better
+                    # These fields are being returned by the Pendo API in multiple formats.
+                    if field == "pricingtiersf":
+                        fields[field] = {"type": ["null", "integer", "string"]}
+                    elif field == "accountnumbersf":
+                        fields[field] = {"type": ["null", "string", "number"]}
+                    else:
+                        fields[field] = self.get_valid_field_info(field_type)
 
                 full_schema["properties"]["metadata"]["properties"][key] = {"type": ["null", "object"], "properties": fields}
         return full_schema
@@ -51,20 +65,16 @@ class PendoPythonStream(HttpStream, ABC):
 # Airbyte Streams using the Pendo /aggregation endpoint (Currently only Account and Visitor)
 class PendoAggregationStream(PendoPythonStream):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
-    page_size = 100
+    page_size = 100000 # Increasing the page size to 100000 for faster sync
 
     @property
     def http_method(self) -> str:
         return "POST"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "aggregation"
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {"Content-Type": "application/json"}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -73,12 +83,11 @@ class PendoAggregationStream(PendoPythonStream):
             return None
         return data[-1][self.primary_key]
 
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
         """
+        response.encoding = "UTF-8"
         yield from response.json().get("results", [])
 
     # Build /aggregation endpoint payload with pagination for a given source and requestId
@@ -104,122 +113,119 @@ class PendoAggregationStream(PendoPythonStream):
 
 
 # Airbyte Streams using the Pendo /aggregation endpoint (Currently only Account and Visitor)
-class PendoTimeSeriesAggregationStream(PendoPythonStream):
+class PendoTimeSeriesAggregationStream(PendoPythonStream, CheckpointMixin):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
-    MAX_DAYS = -730  # Two Years TODO : Start the window relative to the ingest start date.
-    DAY_PAGE_SIZE = 21
-    current_day = MAX_DAYS
+    DAY_MILLISECONDS = 60 * 60 * 24 * 1000
+    source_name = None
 
     @property
     def http_method(self) -> str:
         return "POST"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._state = {}
+
+    def path(self, **kwargs) -> str:
         return "aggregation"
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {"Content-Type": "application/json"}
+    def request_body_json(self, stream_slice: Mapping[str, Any] = {}, **kwargs) -> Optional[Mapping[str, Any]]:
+        start_timestamp = stream_slice.get("start_timestamp") or self.start_date_in_unix()
 
-    def next_page_token(self, response: requests.Response) -> Optional[int]:
-        self.current_day = self.current_day + self.DAY_PAGE_SIZE
-
-        if self.current_day >= 0:
-            return None
-
-        return self.current_day
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
-    ) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-        yield from response.json().get("results", [])
-
-    # Build /aggregation endpoint payload with pagination for a given source and requestId
-    def build_request_body(self, requestId, source, next_page_token) -> Optional[Mapping[str, Any]]:
         request_body = {
-            "response": {"mimeType": "application/json"},
+            "response": { "mimeType": "application/json" },
             "request": {
-                "requestId": requestId,
                 "pipeline": [
-                    {"source": source},
+                    {
+                        "source": {
+                            self.source_name: { "appId": 'expandAppIds("*")' },
+                            "timeSeries": {
+                                "first": start_timestamp,
+                                "count": self.day_page_size,
+                                "period": "dayRange"
+                            },
+                        }
+                    },
                 ],
             },
         }
 
-        if next_page_token is None:
-            request_body["request"]["pipeline"][0]["source"]["timeSeries"]["first"] = f"now() {self.MAX_DAYS} * 24*60*60*1000"
-        else:
-            request_body["request"]["pipeline"][0]["source"]["timeSeries"]["first"] = f"now() {next_page_token} * 24*60*60*1000"
+        self.logger.info(f"stream: `{self.source_name}` start_timestamp: `{start_timestamp}`") 
 
         return request_body
 
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        self.state = {"start_timestamp": stream_slice["start_timestamp"]}
+        response.encoding = "UTF-8"
+        yield from json.loads(response.text).get("results", [])
 
-# class PendoEventsStream(PendoAggregationStream):
-#     TODO: Create A Class for the Event Streams feature, page, guide
+    def stream_slices(self, stream_state: Mapping[str, Any] = {}, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        # TODO round timestamp to start of day?
+        start_timestamp = stream_state.get("start_timestamp", self.start_date_in_unix())
 
+        # End one day page size window ago to prevent a partial day read, range is end exclusive
+        end_timestamp = (int(time.time()) * 1000) - (self.day_page_size * self.DAY_MILLISECONDS)
+        for slice_timestamp in range(start_timestamp, end_timestamp, self.DAY_MILLISECONDS * self.day_page_size):
+            yield {"start_timestamp": slice_timestamp}
 
 class Feature(PendoPythonStream):
     name = "feature"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "feature"
-
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        return {"expand": "*"}
 
 class Guide(PendoPythonStream):
     name = "guide"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "guide"
-
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        return {"expand": "*"}
 
 class Page(PendoPythonStream):
     name = "page"
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "page"
-
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        return {"expand": "*"}
 
 class Report(PendoPythonStream):
     name = "report"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return "report"
-
 
 class ReportResult(PendoPythonStream):
     json_schema = None  # Field to store dynamically built Airbyte Stream Schema
     primary_key = "reportId"
 
-    def __init__(self, report: Mapping[str, Any], **kwargs):
+    def __init__(self, report: str, **kwargs):
         super().__init__(**kwargs)
         self.report = report
-        self.report_name = f"report_result_{report['id']}"
+        self.report_name = f"report_result_{report}"
 
     @property
     def name(self):
         return self.report_name
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"report/{self.report['id']}/results.json"
+    def path(self, **kwargs) -> str:
+        return f"report/{self.report}/results.json"
 
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping]:
         for record in response.json():
             yield self.transform(record=record)
 
     def transform(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        record["reportId"] = self.report['id']
+        record["reportId"] = self.report
         return record
 
     # Method to infer schema types from JSON response
@@ -274,7 +280,7 @@ class VisitorMetadata(PendoPythonStream):
     name = "visitor_metadata"
     primary_key = []
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, **kwargs) -> str:
         return "metadata/schema/visitor"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -285,7 +291,7 @@ class AccountMetadata(PendoPythonStream):
     name = "account_metadata"
     primary_key = []
 
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, **kwargs) -> str:
         return "metadata/schema/account"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -294,7 +300,6 @@ class AccountMetadata(PendoPythonStream):
 
 class Visitor(PendoAggregationStream):
     primary_key = "visitorId"
-
     name = "visitor"
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -330,19 +335,13 @@ class Visitor(PendoAggregationStream):
             self.json_schema = base_schema
         return self.json_schema
 
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping[str, Any]]:
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping[str, Any]]:
         source = {"visitors": {"identified": True}}
         return self.build_request_body("visitor-list", source, next_page_token)
 
 
 class Account(PendoAggregationStream):
     primary_key = "accountId"
-
     name = "account"
 
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -373,56 +372,46 @@ class Account(PendoAggregationStream):
             self.json_schema = base_schema
         return self.json_schema
 
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Optional[Mapping[str, Any]]:
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping[str, Any]]:
         source = {"accounts": {}}
         return self.build_request_body("account-list", source, next_page_token)
 
 
 class PageEvents(PendoTimeSeriesAggregationStream):
     name = "page_events"
-    primary_key = ["pageId", "day", "visitorId", "accountId", "server", "remoteIp", "userAgent"]
+    source_name = "pageEvents"
+    cursor_field = "day"
 
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: int = None,
-    ) -> Optional[Mapping[str, Any]]:
-        source = {
-            "pageEvents": None,
-            "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"},
-        }
-        return self.build_request_body("page-events", source, next_page_token)
-
+    def __init__(self, start_date: str, day_page_size: int, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.day_page_size = day_page_size
+    
+    def start_date_in_unix(self):
+        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
 
 class FeatureEvents(PendoTimeSeriesAggregationStream):
     name = "feature_events"
+    source_name = "featureEvents"
+    cursor_field = "day"
 
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: int = None,
-    ) -> Optional[Mapping[str, Any]]:
-        source = {"featureEvents": None, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
-
-        return self.build_request_body("feature_events", source, next_page_token)
-
+    def __init__(self, start_date: str, day_page_size: int, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.day_page_size = day_page_size
+    
+    def start_date_in_unix(self):
+        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000
 
 class GuideEvents(PendoTimeSeriesAggregationStream):
     name = "guide_events"
+    source_name = "guideEvents"
+    cursor_field = "browserTime"
 
-    def request_body_json(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: int = None,
-    ) -> Optional[Mapping[str, Any]]:
-        source = {"guideEvents": None, "timeSeries": {"first": "", "count": self.DAY_PAGE_SIZE, "period": "dayRange"}}
-
-        return self.build_request_body("guide_events", source, next_page_token)
+    def __init__(self, start_date: str, day_page_size: int, **kwargs):
+        super().__init__(**kwargs)
+        self.start_date = start_date
+        self.day_page_size = day_page_size
+    
+    def start_date_in_unix(self):
+        return int(time.mktime(time.strptime(self.start_date, "%Y-%m-%dT%H:%M:%SZ"))) * 1000

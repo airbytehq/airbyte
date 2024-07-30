@@ -10,4 +10,19 @@ connectionSpecification:
       type: string
       title: API Key
       airbyte_secret: true
+    report_allowlist:
+      title: Reports Allow List
+      type: array
+      description: List of reports to sync. Defaults to all reports. Requires the reportId which can be found at the end of the URL when viewing a report within the app. For example, the reportId for https://app.pendo.io/admin/reporting/usage/123456 would be 123456.
+      uniqueItems: true
+      default: []
+    start_date:
+      title: Start Date
+      type: string
+      format: date-time
+      description: The date to start syncing telemetry data. Defaults to 2 years from the day of connection.
+    day_page_size:
+      title: Day Page Size
+      type: integer
+      description:  The number of pages api will fetch per api call for telemetry data
   additionalProperties: true
