@@ -244,7 +244,7 @@ There are 2 flavors of workers:
    The worker extracts data from the connector and reports it to the scheduler. It does this by listening to the connector's STDOUT.
    These jobs are synchronous as they are part of the configuration process and need to be immediately run to provide a good user experience. These are also all lightweight operations.
 
-2. **Asynchronous Job Worker** - Workers that interact with 2 connectors \(e.g. sync, reset\)
+2. **Asynchronous Job Worker** - Workers that interact with 2 connectors \(e.g. sync, clear\)
 
    The worker passes data \(via record messages\) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
    These jobs are asynchronous as they are often long-running resource-intensive processes. They are decoupled from the rest of the platform to simplify development and operation.
@@ -313,6 +313,31 @@ The Cloud Storage store is treated as the source-of-truth of execution state.
 The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm Charts deploys.
 
 Users running Airbyte Docker should be aware of the above pitfalls.
+
+## Worker V2
+
+Worker V2 is Airbyte's next generation Worker architecture. It is designed to be more scalable, reliable and maintainable than the current Worker architecture. It performs particularly
+well in low-resource environments.
+
+One big flaw of Worker V1 was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for
+resource-constrained environments with spiky job scheduling.
+
+Worker V2 decouples the number of jobs that can be running (including those in queue), from the number of jobs that can be started. Jobs stay queued until more resources are available or canceled.
+This allows for better back pressure and self-healing in resource constrained environments.
+
+The Workload abstraction was introduced as an Airbyte-internal job abstraction for this purpose.
+
+Workers now communicate with the Workload API Server to create a Workload instead of directly starting jobs.
+
+The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles
+job creation based on available resources, minimising deadlock situations.
+
+With this set up, Airbyte now supports:
+- configuring the maximum number of concurrent jobs via `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.`
+- configuring the maximum number of jobs that can be started at once via ``
+- differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.
+
+This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage.
 
 ## Configuring Jobs & Workers
 
