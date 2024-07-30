@@ -21,8 +21,8 @@ from ruamel.yaml import YAML  # type: ignore
 
 ## GLOBAL VARIABLES
 
-VALID_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py"]
-FILES_TO_LEAVE = ["__init__.py", "manifest.yaml", "metadata.yaml", "icon.svg", "run.py", "source.py"]
+VALID_SOURCE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py"]
+FILES_TO_LEAVE = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml"]
 
 
 # Initialize YAML handler with desired output style
@@ -32,8 +32,11 @@ yaml.preserve_quotes = True
 
 
 class CheckIsManifestMigrationCandidate(Step):
-    context: ConnectorContext
+    """
+    Pipeline step to check if the connector is a candidate for migration to to manifest-only.
+    """
 
+    context: ConnectorContext
     title: str = "Check if the connector is a candidate for migration to poetry."
     airbyte_repo: git.Repo = git.Repo(search_parent_directories=True)
     invalid_files: list = []
@@ -54,10 +57,10 @@ class CheckIsManifestMigrationCandidate(Step):
                 stderr="The connector is already in manifest-only format.",
             )
 
-        # Detect sus python files in the connector source directory
+        # Detect invalid python files in the connector's source directory
         connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
         for file in connector_source_code_dir.iterdir():
-            if file.name not in VALID_FILES:
+            if file.name not in VALID_SOURCE_FILES:
                 self.invalid_files.append(file.name)
         if self.invalid_files:
             return StepResult(
@@ -67,7 +70,7 @@ class CheckIsManifestMigrationCandidate(Step):
             )
 
         # Detect connector class name to make sure it's inherited from source declarative manifest
-        # and does not override `streams` method
+        # and does not override the `streams` method
         connector_source_py = (connector_source_code_dir / "source.py").read_text()
 
         if "YamlDeclarativeSource" not in connector_source_py:
@@ -90,50 +93,58 @@ class CheckIsManifestMigrationCandidate(Step):
 
 
 class StripConnector(Step):
+    """
+    Step to convert a low-code connector to manifest-only.
+    """
     context: ConnectorContext
-
     title = "Strip the connector to manifest-only."
+
+    def _delete_file(self, file: Path) -> None:
+        self.logger.info(f"Deleting {file.name}")
+        try:
+          if file.is_dir():
+            shutil.rmtree(file)
+          else:
+            file.unlink()
+        except Exception as e:
+          raise ValueError(f"Failed to delete {file.name}: {e}")
 
     async def _run(self) -> StepResult:
 
         # 1. Move manifest.yaml to the root level of the directory
-        self.logger.info(f"Moving manifest to the root level of the directory")
         connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
+        self.logger.info(f"Moving manifest to the root level of the directory")
 
         manifest_file = connector_source_code_dir / "manifest.yaml"
-        manifest_file = manifest_file.rename(self.context.connector.code_directory / "manifest.yaml")
+        root_manifest_file = manifest_file.rename(self.context.connector.code_directory / "manifest.yaml")
 
-        if manifest_file not in self.context.connector.code_directory.iterdir():
+        if root_manifest_file not in self.context.connector.code_directory.iterdir():
             return StepResult(
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
 
         # 2. Delete all non-essential files
-        # TODO: clean this section up so it's less of an eyesore
-        for file in self.context.connector.code_directory.iterdir():
+        try:
+          for file in self.context.connector.code_directory.iterdir():
             if file.name in FILES_TO_LEAVE:
-                continue  # Preserve the allow-list files
+              continue  # Preserve the allowed files
             elif file.name == "unit_tests":
-                for unit_test_file in file.iterdir():
-                    if unit_test_file.name == "integration":
-                        continue  # Preserve the integration folder
-                    # Delete everything else in the unit_tests folder
-                    if unit_test_file.is_dir():
-                        self.logger.info(f"Deleting {unit_test_file.name} folder")
-                        shutil.rmtree(unit_test_file)
-                    else:
-                        self.logger.info(f"Deleting {unit_test_file.name}")
-                        unit_test_file.unlink()
+              # Preserve any integration tests, delete the rest
+              for unit_test_file in file.iterdir():
+                if unit_test_file.name in {"integration", "integrations"}:
+                  continue
+                else:
+                  self._delete_file(unit_test_file)
             # Delete everything else in root folder
-            elif file.is_dir():
-                self.logger.info(f"Deleting {file.name} folder")
-                shutil.rmtree(file)
             else:
-                self.logger.info(f"Deleting {file.name}")
-                file.unlink()
+                self._delete_file(file)
+        except Exception as e:
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete files: {e}")
 
-            if file in self.context.connector.code_directory.iterdir() and file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
-                return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
+        # Check that only allowed files remain
+        for file in self.context.connector.code_directory.iterdir():
+          if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
 
         # 3. Grab the cdk tag from metadata.yaml and update it
         # TODO: Also update the base image
@@ -142,8 +153,7 @@ class StripConnector(Step):
         # Backup the original file before modifying
         backup_metadata_file = self.context.connector.code_directory / "metadata.yaml.bak"
         shutil.copy(metadata_file, backup_metadata_file)
-
-        latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
+        self.logger.info(f"Updating metadata file")
 
         try:
             with open(metadata_file, "r") as file:
@@ -154,8 +164,9 @@ class StripConnector(Step):
                     tags.append("language:manifest-only")
 
                     # Update the base image
-                    base_image = metadata["data"]["connectorBuildOptions"]
-                    base_image["baseImage"] = latest_base_image
+                    latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
+                    connector_base_image = metadata["data"]["connectorBuildOptions"]
+                    connector_base_image["baseImage"] = latest_base_image
 
                     # Write the changes to metadata.yaml
                     with open(metadata_file, "w") as file:
@@ -163,34 +174,19 @@ class StripConnector(Step):
                 else:
                     return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to read metadata.yaml content.")
         except Exception as e:
+            # Restore the original file and return the report
             shutil.copy(backup_metadata_file, metadata_file)
+            backup_metadata_file.unlink()
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
 
-        # delete the backup metadata file
+        # delete the backup metadata file once done
         backup_metadata_file.unlink()
 
         # 4. Update the connector's README
+        self.logger.info(f"Updating README file")
         readme = readme_for_connector(self.context.connector.technical_name)
         with open(self.context.connector.code_directory / "README.md", "w") as file:
             file.write(readme)
-
-        # TODO: 5 Update the connector's documentation
-        current_path = os.getcwd()
-        full_connector_name = self.context.connector.technical_name.split("-")
-        connector_folder = f"{full_connector_name[0]}s"
-        connector_name = full_connector_name[1]
-        docs_path = f"{current_path}/docs/integrations/{connector_folder}/{connector_name}.md"
-
-        # Save the existing documentation in a variable, as well as the Changelog
-        with open(docs_path, "r") as file:
-            existing_docs = file.read()
-            changelog = existing_docs.split("## Changelog")[1]
-
-        with open(docs_path, "w") as file:
-            new_docs = docs_file_for_connector(self.context.connector, manifest_file, metadata_file)
-            file.write(new_docs + "\n## Changelog" + changelog)
-
-        # TODO: Thorough error handling
 
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully migrated to manifest-only.")
 
@@ -233,15 +229,8 @@ def readme_for_connector(name: str) -> str:
     dir_path = Path(__file__).parent / "templates"
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
     template = env.get_template("README.md.j2")
-    rendered = template.render(source_name=name)
-    return rendered
-
-def docs_file_for_connector(connector, manifest, metadata: dict) -> str:
-    dir_path = Path(__file__).parent / "templates"
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
-    template = env.get_template("documentation.md.j2")
-    resolved_manifest = yaml.load(manifest)
-    rendered = template.render(manifest=resolved_manifest, source_name=connector.name, metadata=metadata)
+    readme_name = name.replace("source-", "")
+    rendered = template.render(source_name=readme_name)
     return rendered
 
 def get_latest_base_image(image_name: str) -> str:
