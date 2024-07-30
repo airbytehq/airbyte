@@ -14,17 +14,18 @@ from .base_errors_handler import MixpanelStreamErrorHandler
 
 class ExportErrorHandler(MixpanelStreamErrorHandler):
     """
-        Custom error handler for handling export errors specific to Mixpanel streams.
+    Custom error handler for handling export errors specific to Mixpanel streams.
 
-        This handler addresses:
-        - 400 status code with "to_date cannot be later than today" message, indicating a potential timezone mismatch.
-        - ConnectionResetError during response parsing, indicating a need to retry the request.
+    This handler addresses:
+    - 400 status code with "to_date cannot be later than today" message, indicating a potential timezone mismatch.
+    - ConnectionResetError during response parsing, indicating a need to retry the request.
 
-        If the response does not match these specific cases, the handler defers to the parent class's implementation.
+    If the response does not match these specific cases, the handler defers to the parent class's implementation.
 
-        Attributes:
-            stream (HttpStream): The HTTP stream associated with this error handler.
-        """
+    Attributes:
+        stream (HttpStream): The HTTP stream associated with this error handler.
+    """
+
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
         super().__init__(**kwargs)
