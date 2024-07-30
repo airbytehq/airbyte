@@ -75,6 +75,7 @@ Stream `Events Detailed` contains field `name` for `metric` relationship - addit
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.8.1 | 2024-07-27 | [42664](https://github.com/airbytehq/airbyte/pull/42664) | Update dependencies |
 | 2.8.0   | 2024-07-19 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX)   | Migrate to CDK v3.9.0 |
 | 2.7.8 | 2024-07-20 | [42185](https://github.com/airbytehq/airbyte/pull/42185) | Update dependencies |
 | 2.7.7 | 2024-07-08 | [40608](https://github.com/airbytehq/airbyte/pull/40608) | Update the `events_detailed` stream to improve efficiency using the events API |
