@@ -308,6 +308,24 @@ def test_stream_slices():
         {"startDate": "2022-12-30", "endDate": "2023-01-01"},
     ]
 
+@freeze_time("2023-01-01 00:00:00")
+def test_full_refresh():
+    """
+    Test case when full refresh state is used
+    """
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1, "dimensions": ["browser", "country", "language"]}
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
+    full_refresh_state = {
+      "__ab_full_refresh_state_message": True
+    }
+    slices = list(stream.stream_slices(sync_mode=None, stream_state=full_refresh_state))
+    assert slices == [
+        {"startDate": "2022-12-29", "endDate": "2022-12-29"},
+        {"startDate": "2022-12-30", "endDate": "2022-12-30"},
+        {"startDate": "2022-12-31", "endDate": "2022-12-31"},
+        {"startDate": "2023-01-01", "endDate": "2023-01-01"},
+    ]
+
 
 def test_read_incremental(requests_mock):
     config = {

@@ -365,8 +365,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         today: datetime.date = datetime.date.today()
-
-        start_date = stream_state and stream_state.get(self.cursor_field)
+        start_date = None
+        if self.cursor_field:
+            start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
             start_date = (
                 serialize_to_date_string(start_date, DATE_FORMAT, self.cursor_field) if not self.cursor_field == "date" else start_date
