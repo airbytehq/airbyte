@@ -2,7 +2,14 @@
 
 Airbyte development is broken into two activities, connector development and platform development. Connector development
 is largely done in Python, though sometimes Java is used for performance reasons. Platform development is done in Java 
-and Kotlin. 
+and Kotlin. In addition to the Java and Kotlin code, the Platform also consists of the UI. The UI is developed in 
+TypeScript using React.
+
+## Submitting Code
+
+If you would like to submit code to Airbyte, please follow the [Pull Request Handbook](resources/pull-requests-handbook.md) 
+guide when creating Github Pull Requests. When you are ready to submit code, use the [Submit a New Connector](submit-new-connector.md) document to make 
+sure that the process can go as smoothly as possible.
 
 ## Prerequisites
 
@@ -20,7 +27,7 @@ The following technologies are required to build Airbyte locally.
 4. `Docker`
 5. `Jq`
 
-You should also follow the [Quickstart](../../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. In 
+You should also follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. In 
 addition to `abctl` you should also install [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries) 
 as well as [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 
@@ -132,9 +139,9 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 :::
 
-### Using the images in Kind
+### Using the images in abctl
 
-Once you have successfully built the Platform images, you can load them into the Kind cluster, for example:
+Once you have successfully built the Platform images, you can load them into the `abctl` Kind cluster, for example:
 
 ```shell
 kind load docker-image airbyte/server:dev --name airbyte-abctl
@@ -155,37 +162,6 @@ Then redeploy `abctl` by running:
 abctl local install --values values.yaml
 ```
 
-### Develop on `airbyte-webapp`
-
-- Spin up Airbyte locally in your local `airbyte-platform` repository so the UI can make requests against the local API.
-
-```bash
-BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
-```
-
-Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
-
-- Install [`nvm`](https://github.com/nvm-sh/nvm) (Node Version Manager) if not installed
-- Use `nvm` to install the required node version:
-
-```bash
-cd airbyte-webapp
-nvm install
-```
-
-- Install the `pnpm` package manager in the required version. You can use Node's [corepack](https://nodejs.org/api/corepack.html) for that:
-
-```bash
-corepack enable && corepack install
-```
-
-- Start up the react app.
-
-```bash
-pnpm install
-pnpm start
-```
-
 ### Run platform acceptance tests
 
 In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
@@ -201,19 +177,86 @@ Test containers start Airbyte locally, run the tests, and shutdown Airbyte after
 USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
 ```
 
+## Webapp Contributions
+
+To develop features in the Airbyte Webapp, you must first bring up an instance of Airbyte on TCP port 8001. To do this 
+using `abctl`, first follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. Then run the following:
+
+```bash
+abctl local install --port 8001
+```
+
+### Disabling Authentication
+
+It may be convenient to turn off authentication. If you wish to turn off authentication, create a new text file named: 
+`values.yaml` and copy the follow into the file:
+
+```yaml
+global:
+  auth:
+    enabled: false
+```
+
+Then you can run `abctl` with the following:
+
+```bash
+abctl local install --port 8001 --values ./values.yaml
+```
+
+### Installing Dependencies
+
+- Install [`nvm`](https://github.com/nvm-sh/nvm) (Node Version Manager) if not installed
+- Use `nvm` to install the required node version:
+
+```bash
+cd airbyte-webapp
+nvm install
+```
+
+- Install the `pnpm` package manager in the required version. You can use Node's [corepack](https://nodejs.org/api/corepack.html) for that:
+
+```bash
+corepack enable && corepack install
+```
+
+### Running the Webapp
+
+- Start up the react app.
+
+```bash
+pnpm install
+pnpm start
+```
+
 ## Formatting code
 
 Airbyte runs a code formatter as part of the build to enforce code styles. You should run the formatter yourself before submitting a PR (otherwise the build will fail).
 
 The command to run formatting varies slightly depending on which part of the codebase you are working in.
 
+### Connector
+
+We wrapped all our code formatting tools in [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md).
+Follow the instructions on the `airbyte-ci` page to install `airbyte-ci`.
+
+You can run `airbyte-ci format fix all` to format all the code your local `airbyte` repository.
+We wrapped this command in a pre-push hook so that you can't push code that is not formatted.
+
+To install the pre-push hook, run:
+
+```bash
+make tools.pre-commit.setup
+```
+
+This will install `airbyte-ci` and the pre-push hook.
+
+The pre-push hook runs formatting on all the repo files.
+If the hook attempts to format a file that is not part of your contribution, it means that formatting is also broken in
+the master branch. Please open a separate PR to fix the formatting in the master branch.
+
 ### Platform
 
 If you are working in the platform run `./gradlew format` from the root of the `airbyte-platform` repository.
-
-### Connector
-
-To format your local `airbyte` repository, run `airbyte-ci format fix all`.
 
 ## Troubleshooting
 
@@ -265,16 +308,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-### Could not target platform: 'Java SE 14' using tool chain: 'JDK 8 (1.8)'.
+[//]: # (### Inspecting the messages passed between connectors)
 
-Somehow gradle didn't pick up the right java version for some reason. Find the install version and set the `JAVA_HOME` environment to point to the JDK folder.
-
-For example:
-
-```text
-env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
-```
-
-### Inspecting the messages passed between connectors
-
-From your local `airbyte-platform` repository, you can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`
+[//]: # ()
+[//]: # (From your local `airbyte-platform` repository, you can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`)
