@@ -16,7 +16,7 @@ A more concrete diagram can be seen below:
 ---
 title: Architecture Overview
 ---
-flowchart LR
+flowchart
     W[fa:fa-display WebApp/UI]
     S[fa:fa-server Config API Server]
     D[(fa:fa-table Config & Jobs)]
