@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.0.2
+Add ability to stop stream when retry-after is greater than a duration
+
 ## 4.0.1
 Fix case where stream wont have a state attribute and needs to resolve get_updated_state
 
