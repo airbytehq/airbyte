@@ -322,10 +322,8 @@ well in low-resource environments.
 One big flaw of pre-Workloads architecture was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for
 resource-constrained environments with spiky job scheduling.
 
-Worker V2 decouples the number of jobs that can be running (including those in queue), from the number of jobs that can be started. Jobs stay queued until more resources are available or canceled.
-This allows for better back pressure and self-healing in resource constrained environments.
-
-The Workload abstraction was introduced as an Airbyte-internal job abstraction for this purpose.
+Workloads is an Airbyte-internal job abstraction decoupling the number of running jobs (including those in queue), from the number of jobs that can be started. Jobs stay queued
+until more resources are available or canceled. This allows for better back pressure and self-healing in resource constrained environments.
 
 Workers now communicate with the Workload API Server to create a Workload instead of directly starting jobs.
 
