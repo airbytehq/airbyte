@@ -54,7 +54,7 @@ echo 'cmhvQkhCODlMRmh1REdXMWt3REpHZTJMaUd3N3c2MjU=' | base64 -d
 ## Turning Off Authentication
 
 There may be times when your wish to turn off authentication, for instance if you have already configured a proxy that 
-authenticates users with your organizations SSO. In these cases you can turn off Airbytes authentication by adding the 
+authenticates users with your organization's SSO. In these cases you can turn off Airbyte's authentication by adding the 
 following to your values.yaml file:
 
 ```yaml
