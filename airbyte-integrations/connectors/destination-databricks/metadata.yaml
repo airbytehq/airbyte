@@ -62,4 +62,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION_DATABRICKS_PERSONAL_ACCESS_TOKEN_CONFIG
+          fileName: pat_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
