@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants;
 
 // TODO (itaseski) implement wrapper for retry logic on transient errors
 public class GlueOperations implements MetastoreOperations {
@@ -83,16 +84,19 @@ public class GlueOperations implements MetastoreOperations {
 
   }
 
-  private Collection<Column> transformSchema(JsonNode jsonSchema, S3Format s3Format) {
-    if (jsonSchema.has("properties")) {
-      Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
-      return properties.entrySet().stream()
-          .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue(), s3Format)))
-          .collect(Collectors.toSet());
-    } else {
-      return Collections.emptySet();
-    }
+private Collection<Column> transformSchema(JsonNode jsonSchema, S3Format s3Format) {
+  if (jsonSchema.has("properties")) {
+    Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
+    return properties.entrySet().stream()
+        .map(es -> {
+          String key = AvroConstants.NAME_TRANSFORMER.getIdentifier(es.getKey());
+          return new Column().withName(key).withType(transformSchemaRecursive(es.getValue(), s3Format));
+        })
+        .collect(Collectors.toSet());
+  } else {
+    return Collections.emptySet();
   }
+}
 
   private String transformSchemaRecursive(JsonNode jsonNode, S3Format s3Format) {
     String type = filterTypes(jsonNode.get("type")).iterator().next();
