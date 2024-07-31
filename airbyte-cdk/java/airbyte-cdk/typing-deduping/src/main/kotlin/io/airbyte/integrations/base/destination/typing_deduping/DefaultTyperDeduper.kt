@@ -59,7 +59,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 .build()
         )
     private lateinit var destinationInitialStatuses:
-        List<DestinationInitialStatus<DestinationState>>
+            List<DestinationInitialStatus<DestinationState>>
 
     constructor(
         sqlGenerator: SqlGenerator,
@@ -122,8 +122,8 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
 
         val prepareTablesFutureResult =
             CompletableFutures.allOf(
-                    destinationInitialStatuses.map { this.prepareTablesFuture(it) }
-                )
+                destinationInitialStatuses.map { this.prepareTablesFuture(it) }
+            )
                 .toCompletableFuture()
                 .join()
         getResultsOrLogAndThrowFirst(
@@ -154,7 +154,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info { "Final Table exists for stream ${stream.id.finalName}" }
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
-                        if (stream.generationId == stream.minimumGenerationId) {
+                        if (stream.minimumGenerationId != 0L) {
                             if (!initialState.isFinalTableEmpty || initialState.isSchemaMismatch) {
                                 // We want to overwrite an existing table. Write into a tmp table.
                                 // We'll overwrite the table at the
@@ -174,12 +174,12 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                             } else {
                                 LOGGER.info {
                                     "Final Table for stream ${stream.id.finalName} is empty and matches the expected v2 format, " +
-                                        "writing to table directly"
+                                            "writing to table directly"
                                 }
                             }
                         } else if (
                             initialState.isSchemaMismatch ||
-                                initialState.destinationState.needsSoftReset()
+                            initialState.destinationState.needsSoftReset()
                         ) {
                             // We're loading data directly into the existing table.
                             // Make sure it has the right schema.
@@ -297,7 +297,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 // Run T+D if either of those conditions are true.
                 val shouldRunTypingDeduping =
                     (nonzeroRecords || unprocessedRecordsPreexist) &&
-                        streamSyncSummary.terminalStatus ==
+                            streamSyncSummary.terminalStatus ==
                             AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
                 if (!shouldRunTypingDeduping) {
                     LOGGER.info {
@@ -334,11 +334,11 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
             ) {
                 LOGGER.warn {
                     "Skipping committing final table for for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} " +
-                        "because we could not set up the tables for this stream."
+                            "because we could not set up the tables for this stream."
                 }
                 continue
             }
-            if (streamConfig.generationId == streamConfig.minimumGenerationId) {
+            if (streamConfig.minimumGenerationId != 0L) {
                 tableCommitTasks.add(commitFinalTableTask(streamConfig))
             }
         }

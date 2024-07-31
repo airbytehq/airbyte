@@ -52,20 +52,19 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     driverClass: String,
     private val optimalBatchSizeBytes: Long,
     protected open val namingResolver: NamingConventionTransformer,
-    protected val sqlOperations: SqlOperations,
 ) : JdbcConnector(driverClass), Destination {
 
     constructor(
         driverClass: String,
-        namingResolver: NamingConventionTransformer,
-        sqlOperations: SqlOperations,
+        namingResolver: NamingConventionTransformer
     ) : this(
         driverClass,
         JdbcBufferedConsumerFactory.DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
-        namingResolver,
-        sqlOperations
+        namingResolver
     )
     protected open val configSchemaKey: String = "schema"
+
+    abstract fun getSqlOperations(config: JsonNode): SqlOperations
 
     /**
      * If the destination should always disable type dedupe, override this method to return true. We
@@ -79,6 +78,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val dataSource = getDataSource(config)
+        val sqlOperations = getSqlOperations(config)
 
         try {
             val database = getDatabase(dataSource)
@@ -139,13 +139,13 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val connectionProperties = getConnectionProperties(config)
         val builder =
             DataSourceFactory.DataSourceBuilder(
-                    jdbcConfig[JdbcUtils.USERNAME_KEY].asText(),
-                    if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
-                        jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
-                    else null,
-                    driverClassName,
-                    jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
-                )
+                jdbcConfig[JdbcUtils.USERNAME_KEY].asText(),
+                if (jdbcConfig.has(JdbcUtils.PASSWORD_KEY))
+                    jdbcConfig[JdbcUtils.PASSWORD_KEY].asText()
+                else null,
+                driverClassName,
+                jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
+            )
                 .withConnectionProperties(connectionProperties)
                 .withConnectionTimeout(getConnectionTimeout(connectionProperties))
         return modifyDataSourceBuilder(builder).build()
@@ -176,7 +176,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         for (key in defaultParameters.keys) {
             require(
                 !(customParameters.containsKey(key) &&
-                    customParameters[key] != defaultParameters[key]),
+                        customParameters[key] != defaultParameters[key]),
             ) {
                 "Cannot overwrite default JDBC parameter $key"
             }
@@ -257,10 +257,10 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     private fun isTypeDedupeDisabled(config: JsonNode): Boolean {
         return shouldAlwaysDisableTypeDedupe() ||
-            (config.has(DISABLE_TYPE_DEDUPE) &&
-                config[DISABLE_TYPE_DEDUPE].asBoolean(
-                    false,
-                ))
+                (config.has(DISABLE_TYPE_DEDUPE) &&
+                        config[DISABLE_TYPE_DEDUPE].asBoolean(
+                            false,
+                        ))
     }
 
     private fun getV2MessageConsumer(
@@ -270,6 +270,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         database: JdbcDatabase,
         defaultNamespace: String
     ): SerializedAirbyteMessageConsumer {
+        val sqlOperations = getSqlOperations(config)
         val sqlGenerator = getSqlGenerator(config)
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =
@@ -414,7 +415,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                 val outputTableName =
                     namingResolver.getIdentifier(
                         "_airbyte_connection_test_" +
-                            UUID.randomUUID().toString().replace("-".toRegex(), ""),
+                                UUID.randomUUID().toString().replace("-".toRegex(), ""),
                     )
                 sqlOps.createSchemaIfNotExists(database, outputSchema)
                 sqlOps.createTableIfNotExists(database, outputSchema, outputTableName)
