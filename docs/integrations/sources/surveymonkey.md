@@ -1,16 +1,16 @@
 # SurveyMonkey
 
-This page guides you through the process of setting up the SurveyMonkey source connector.
+Learn how to setup the SurveyMonkey source connector. A connector defines what’s required to access an API or a database such as protocol, URL paths to access, the way requests need to be structured, and how to extract records from responses. To learn more about connectors see [Core Concepts](https://docs.airbyte.com/using-airbyte/core-concepts/).
 
 :::note
 
-OAuth for Survey Monkey is officially supported only for the US. We are testing how to enable it in the EU at the moment. If you run into any issues, please [reach out to us](mailto:product@airbyte.io) so we can promptly assist you.
+SurveyMonkey only supports OAuth in the US. We are testing Oauth enablement in the EU. If you encounter any issues, please [reach out to us](mailto:product@airbyte.io) for assistance.
 
 :::
 
 <!-- env:oss -->
 
-## Prerequisites
+## Know before you begin
 
 **For Airbyte Open Source:**
 
@@ -30,24 +30,26 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. lick `Authenticate your account`.
-5. Log in and Authorize to the SurveyMonkey account
-6. Choose required Start date
-7. click `Set up source`.
+2. In the left navigation bar, click **Sources**.
+3. In the top-right corner, click **+ new source**.
+4. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
+5. Click **Authenticate your account**.
+6. Log in and Authorize the SurveyMonkey account.
+7. Choose a start date.
+8. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. Add **Access Token**
-5. Choose required Start date
-6. Click `Set up source`.
+1. Go to your local Airbyte page.
+2. In the left navigation bar, click **Sources**.
+3. In the top-right corner, click **+ new source**.
+4. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
+5. Add **Access Token**.
+6. Choose a start date.
+7. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
@@ -61,7 +63,7 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 
 ### Performance considerations
 
-The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
+The SurveyMonkey API applies heavy API quotas for default private apps, which have the following rate limits:
 
 - 125 requests per minute
 - 500 requests per day
