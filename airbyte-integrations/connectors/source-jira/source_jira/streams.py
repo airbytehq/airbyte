@@ -45,14 +45,15 @@ class JiraErrorHandler(HttpStatusErrorHandler):
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         # override default error mapping
-        if response_or_exception.status_code in self.ignore_status_codes:
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code in self.ignore_status_codes:
             error_message = f"Errors: {response_or_exception.json().get('errorMessages')}"
 
             if response_or_exception.status_code == requests.codes.BAD_REQUEST:
                 error_message = f"The user doesn't have permission to the project. Please grant the user to the project. {error_message}"
 
             return ErrorResolution(
-                error_message=f"Skipping stream {self.stream_name}. {error_message}", response_action=ResponseAction.IGNORE
+                error_message=f"Stream `{self.stream_name}`. An error occurred, details: {error_message}",
+                response_action=ResponseAction.IGNORE,
             )
 
         return super().interpret_response(response_or_exception)

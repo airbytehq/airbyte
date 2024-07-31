@@ -12,6 +12,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
 from conftest import find_stream
+from responses import matchers
 from source_jira.source import SourceJira
 from source_jira.streams import IssueFields, Issues, PullRequests
 from source_jira.utils import read_full_refresh, read_incremental
@@ -624,10 +625,65 @@ def test_python_issues_stream(config, mock_projects_responses_additional_project
     assert "non_empty_field" in records[0]["fields"]
 
     assert len(responses.calls) == 3
-    error_message = ('Skipping stream issues. The user doesn\'t have permission to the project. '
-                     'Please grant the user to the project. '
-                     'Errors: ["The value \'3\' does not exist for the field \'project\'."]')
+    error_message = ("Stream `issues`. An error occurred, details: The user doesn't have "
+                     'permission to the project. Please grant the user to the project. Errors: '
+                     '["The value \'3\' does not exist for the field \'project\'."]')
     assert error_message in caplog.messages
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "status_code, response_errorMessages, expected_log_message",
+    (
+            (400,
+             ["The value 'incorrect_project' does not exist for the field 'project'."],
+             (
+                 "Stream `issues`. An error occurred, details: The user doesn't have permission to the project."
+                 " Please grant the user to the project. "
+                 "Errors: [\"The value \'incorrect_project\' does not exist for the field \'project\'.\"]"
+             )
+             ),
+            (
+                403,
+                ["The value 'incorrect_project' doesn't have permission for the field 'project'."],
+                (
+                    'Stream `issues`. An error occurred, details:'
+                    ' Errors: ["The value \'incorrect_project\' doesn\'t have permission for the field \'project\'."]'
+                )
+            ),
+    )
+)
+def test_python_issues_stream_skip_on_http_codes_error_handling(config, status_code, response_errorMessages, expected_log_message, caplog):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json={"values": [{"key": "incorrect_project", "id": "incorrect_project"}]},
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[
+            matchers.query_param_matcher(
+                {
+                    "maxResults": 50,
+                    "fields": "*all",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (incorrect_project) ORDER BY updated asc",
+                    "expand": "renderedFields,transitions,changelog",
+                }
+            )
+        ],
+        json={"errorMessages": response_errorMessages},
+        status=status_code,
+    )
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": "incorrect_project"}
+    stream = Issues(**args)
+
+    records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
+
+    assert len(records) == 0
+    assert expected_log_message in caplog.messages
 
 
 def test_python_issues_stream_updated_state(config):
