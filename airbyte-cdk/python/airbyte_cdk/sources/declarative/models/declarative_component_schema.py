@@ -902,6 +902,12 @@ class WaitTimeFromHeader(BaseModel):
         examples=['([-+]?\\d+)'],
         title='Extraction Regex',
     )
+    max_waiting_time_in_seconds: Optional[float] = Field(
+        None,
+        description='Given the value extracted from the header is greater than this value, stop the stream.',
+        examples=[3600],
+        title='Max Waiting Time in Seconds',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
