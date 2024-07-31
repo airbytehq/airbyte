@@ -1,10 +1,10 @@
 # SurveyMonkey
 
-Learn how to setup the SurveyMonkey source connector. A connector defines what’s required to access an API or a database such as protocol, URL paths to access, the way requests need to be structured, and how to extract records from responses. To learn more about connectors see [Core Concepts](https://docs.airbyte.com/using-airbyte/core-concepts/).
+Learn how to setup the SurveyMonkey source connector. A connector defines what’s required to access an API or a database such as protocol, URL paths to access, the way requests need to be structured, and how to extract records from responses. To learn more about connectors, see [Core Concepts](https://docs.airbyte.com/using-airbyte/core-concepts/).
 
 :::note
 
-SurveyMonkey only supports OAuth in the US. We are testing Oauth enablement in the EU. If you encounter any issues, please [reach out to us](mailto:product@airbyte.io) for assistance.
+SurveyMonkey only supports OAuth in the US. Airbyte is testing Oauth enablement in the EU. If you encounter any issues, please [reach out to us](mailto:product@airbyte.io) for assistance.
 
 :::
 
@@ -12,16 +12,32 @@ SurveyMonkey only supports OAuth in the US. We are testing Oauth enablement in t
 
 ## Know before you begin
 
+If you are using Airbyte Open Source, you need a SurveyMonkey access token. Use the following token to authenticate your SurveyMonkey account with Airbyte Open Source.
+
 **For Airbyte Open Source:**
 
 - Access Token
 <!-- /env:oss -->
 
-## Setup guide
+## Set up the SurveyMonkey connector in Airbyte
 
 ### Step 1: Set up SurveyMonkey
 
-Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
+1. Create or log in to your [SurveyMonkey account](https://developer.surveymonkey.com/apps/).
+2. In My Apps, click **Add a New App**.
+3. Enter an **App Nickname** and **App Creator** email address.
+4. Select a public or private app type.
+5. Click **Create App**.
+6. Click **Settings**.
+7. In the Credentials section, copy your access token.
+
+**Step result:** You registered your SurveyMonkey app and created an access token.
+
+:::note
+
+For more information about SurveyMonkey apps, see the [SurveyMonkey API docs](https://developer.surveymonkey.com/api/v3/#SurveyMonkey-Api).
+
+:::
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -32,11 +48,15 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**.
 3. In the top-right corner, click **+ new source**.
-4. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-5. Click **Authenticate your account**.
-6. Log in and Authorize the SurveyMonkey account.
-7. Choose a start date.
-8. Click **Set up source**.
+4. On the source setup page, select **SurveyMonkey** from the Source type dropdown.
+5. Enter a name for this connector.
+6. Click **Authenticate your SurveyMonkey account**.
+7. Log in and authorize the SurveyMonkey account.
+8. Choose a **Start Date**.
+9. Click **Set up source**.
+
+**Step result:** You created a SurveyMonkey source connector.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -46,10 +66,14 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 1. Go to your local Airbyte page.
 2. In the left navigation bar, click **Sources**.
 3. In the top-right corner, click **+ new source**.
-4. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-5. Add **Access Token**.
-6. Choose a start date.
-7. Click **Set up source**.
+4. On the source setup page, select **SurveyMonkey** from the Source type dropdown.
+5. Enter a name for this connector.
+6. Enter your SurveyMonkey **Access Token**.
+7. Choose a **Start Date**.
+8. Click **Set up source**.
+
+**Step result:** You created a SurveyMonkey source connector.
+
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
