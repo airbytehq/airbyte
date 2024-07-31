@@ -191,7 +191,7 @@ class Events(HttpStream, CheckpointMixin):
             ),
             504: ErrorResolution(
                 response_action=ResponseAction.FAIL,
-                failure_type=FailureType.transient_error,
+                failure_type=FailureType.system_error,
                 error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.",
             ),
         }

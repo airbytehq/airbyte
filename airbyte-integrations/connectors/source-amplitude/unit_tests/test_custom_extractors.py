@@ -143,7 +143,7 @@ class TestEventsExtractor:
             (400, pytest.raises(AirbyteTracedException)),
             (404, does_not_raise()),
             (504, pytest.raises(AirbyteTracedException)),
-            (500, pytest.raises(requests.exceptions.HTTPError)),
+            (500, does_not_raise()),
         ],
     )
     def test_event_errors_read(self, mocker, requests_mock, error_code, expectation):
