@@ -1003,4 +1003,3 @@ def test_incremental_global_parent_state(test_name, manifest, mock_requests, exp
         assert output_data == expected_records
         final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
         assert final_state[-1] == expected_state
-        assert final_state[-1] == expected_state

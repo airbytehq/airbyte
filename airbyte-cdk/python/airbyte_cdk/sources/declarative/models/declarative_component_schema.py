@@ -1107,9 +1107,9 @@ class DatetimeBasedCursor(BaseModel):
         description='Set to True if the target API does not accept queries where the start time equal the end time.',
         title='Whether to skip requests if the start time equals the end time',
     )
-    global_parent_cursor: Optional[bool] = Field(
+    global_substream_cursor: Optional[bool] = Field(
         False,
-        description='If parent stream have thousands of partitions, it can be more efficient to store cursor as one value instead of per partition. Lookback window should be used to avoid missing records that where added during the sync',
+        description='If parent stream have thousands of partitions, it can be more efficient to store cursor as one value instead of per partition. Lookback window should be used to avoid missing records that where added during the sync.',
         title='Whether to store cursor as one value instead of per partition',
     )
     lookback_window: Optional[str] = Field(
