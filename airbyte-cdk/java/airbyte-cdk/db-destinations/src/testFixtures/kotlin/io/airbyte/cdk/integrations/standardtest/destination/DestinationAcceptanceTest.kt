@@ -435,9 +435,12 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
+        val messages: List<AirbyteMessage> =
             MoreResources.readResource(messagesFilename).trim().lines().map {
-                Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
+                Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
         val config = getConfig()
@@ -461,9 +464,12 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
+        val messages: List<AirbyteMessage> =
             MoreResources.readResource(messagesFilename).trim().lines().map {
-                Jsons.deserialize(it, io.airbyte.protocol.models.v0.AirbyteMessage::class.java)
+                Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
         /* Replicate the runs of messages and state hundreds of times, but keep trace messages at the end. */
@@ -498,8 +504,10 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-
-        val firstSyncMessages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
+        val firstSyncMessages: List<AirbyteMessage> =
             MoreResources.readResource(
                     DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
                         getProtocolVersion()
@@ -507,12 +515,7 @@ abstract class DestinationAcceptanceTest(
                 )
                 .trim()
                 .lines()
-                .map {
-                    Jsons.deserialize<io.airbyte.protocol.models.v0.AirbyteMessage>(
-                        it,
-                        io.airbyte.protocol.models.v0.AirbyteMessage::class.java
-                    )
-                }
+                .map { Jsons.deserialize<AirbyteMessage>(it, AirbyteMessage::class.java) }
 
         val config = getConfig()
         runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false)
@@ -532,25 +535,26 @@ abstract class DestinationAcceptanceTest(
             )
         dummyCatalog.streams[0].name = DUMMY_CATALOG_NAME
         val configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(dummyCatalog)
+        configuredDummyCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(20).withMinimumGenerationId(20)
+        }
         // update messages to set new dummy stream name
         firstSyncMessages
-            .filter { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
-                message.record != null
-            }
-            .forEach { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
-                message.record.stream = DUMMY_CATALOG_NAME
-            }
+            .filter { message: AirbyteMessage -> message.record != null }
+            .forEach { message: AirbyteMessage -> message.record.stream = DUMMY_CATALOG_NAME }
         firstSyncMessages
-            .filter { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
-                message.type == Type.TRACE
-            }
-            .forEach { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
+            .filter { message: AirbyteMessage -> message.type == Type.TRACE }
+            .forEach { message: AirbyteMessage ->
                 message.trace.streamStatus.streamDescriptor.name = DUMMY_CATALOG_NAME
             }
         // sync dummy data
         runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false)
 
         // Run second sync
+        val configuredCatalog2 = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog2.streams.forEach {
+            it.withSyncId(43).withGenerationId(13).withMinimumGenerationId(13)
+        }
         val descriptor = StreamDescriptor().withName(catalog.streams[0].name)
         val secondSyncMessages: List<AirbyteMessage> =
             Lists.newArrayList(
@@ -598,7 +602,7 @@ abstract class DestinationAcceptanceTest(
                     )
             )
 
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog2, false)
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema)
 
@@ -625,6 +629,9 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
         val config = getConfig()
 
         val secondSyncMessages: List<AirbyteMessage> =
@@ -725,12 +732,15 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        configuredCatalog.streams.forEach { s ->
-            s.withSyncMode(SyncMode.INCREMENTAL)
-            s.withDestinationSyncMode(DestinationSyncMode.APPEND)
+        configuredCatalog.streams.forEach {
+            it.withSyncMode(SyncMode.INCREMENTAL)
+                .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                .withSyncId(42)
+                .withGenerationId(12)
+                .withMinimumGenerationId(12)
         }
 
-        val firstSyncMessages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
+        val firstSyncMessages: List<AirbyteMessage> =
             MoreResources.readResource(
                     DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
                         getProtocolVersion()
@@ -792,9 +802,7 @@ abstract class DestinationAcceptanceTest(
 
         runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
 
-        val expectedMessagesAfterSecondSync:
-            MutableList<io.airbyte.protocol.models.v0.AirbyteMessage> =
-            ArrayList()
+        val expectedMessagesAfterSecondSync: MutableList<AirbyteMessage> = ArrayList()
         expectedMessagesAfterSecondSync.addAll(firstSyncMessages)
         expectedMessagesAfterSecondSync.addAll(secondSyncMessages)
 
@@ -876,7 +884,7 @@ abstract class DestinationAcceptanceTest(
         messages.addLast(
             Jsons.deserialize(
                 "{\"type\": \"RECORD\", \"record\": {\"stream\": \"exchange_rate\", \"emitted_at\": 1602637989500, \"data\": { \"id\": 2, \"currency\": \"EUR\", \"date\": \"2020-09-02T00:00:00Z\", \"NZD\": 1.14, \"USD\": 10.16}}}\n",
-                io.airbyte.protocol.models.v0.AirbyteMessage::class.java
+                AirbyteMessage::class.java
             )
         )
 
@@ -887,7 +895,7 @@ abstract class DestinationAcceptanceTest(
 
         // We expect all the of messages to be missing the removed column after normalization.
         val expectedMessages =
-            messages.map { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
+            messages.map { message: AirbyteMessage ->
                 if (message.record != null) {
                     (message.record.data as ObjectNode).remove("HKD")
                 }
@@ -983,11 +991,11 @@ abstract class DestinationAcceptanceTest(
             supportsNormalization()
         )
 
-        val secondSyncMessages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
+        val secondSyncMessages: List<AirbyteMessage> =
             Lists.newArrayList(
                 io.airbyte.protocol.models.v0
                     .AirbyteMessage()
-                    .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
+                    .withType(AirbyteMessage.Type.RECORD)
                     .withRecord(
                         AirbyteRecordMessage()
                             .withStream(catalog.streams[0].name)
@@ -1006,7 +1014,7 @@ abstract class DestinationAcceptanceTest(
                     ),
                 io.airbyte.protocol.models.v0
                     .AirbyteMessage()
-                    .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
+                    .withType(AirbyteMessage.Type.RECORD)
                     .withRecord(
                         AirbyteRecordMessage()
                             .withStream(catalog.streams[0].name)
@@ -1025,7 +1033,7 @@ abstract class DestinationAcceptanceTest(
                     ),
                 io.airbyte.protocol.models.v0
                     .AirbyteMessage()
-                    .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.STATE)
+                    .withType(AirbyteMessage.Type.STATE)
                     .withState(
                         AirbyteStateMessage()
                             .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
@@ -1033,9 +1041,7 @@ abstract class DestinationAcceptanceTest(
             )
         runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
 
-        val expectedMessagesAfterSecondSync:
-            MutableList<io.airbyte.protocol.models.v0.AirbyteMessage> =
-            ArrayList()
+        val expectedMessagesAfterSecondSync: MutableList<AirbyteMessage> = ArrayList()
         expectedMessagesAfterSecondSync.addAll(firstSyncMessages)
         expectedMessagesAfterSecondSync.addAll(secondSyncMessages)
 
@@ -1302,7 +1308,7 @@ abstract class DestinationAcceptanceTest(
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
         val ns1MessagesAtNamespace1 = getRecordMessagesWithNewNamespace(ns1Messages, namespace1)
-        val ns2Messages: List<io.airbyte.protocol.models.v0.AirbyteMessage> =
+        val ns2Messages: List<AirbyteMessage> =
             MoreResources.readResource(messageFile).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
@@ -1437,6 +1443,9 @@ abstract class DestinationAcceptanceTest(
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
 
         val firstSyncMessages =
             MoreResources.readResource(
@@ -1452,6 +1461,10 @@ abstract class DestinationAcceptanceTest(
         val stream = catalog.streams[0]
 
         // Run second sync with new fields on the message
+        val configuredCatalog2 = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog2.streams.forEach {
+            it.withSyncId(43).withGenerationId(13).withMinimumGenerationId(13)
+        }
         val descriptor = StreamDescriptor()
         descriptor.name = stream.name
         val secondSyncMessagesWithNewFields: MutableList<AirbyteMessage> =
@@ -1501,7 +1514,7 @@ abstract class DestinationAcceptanceTest(
         runSyncAndVerifyStateOutput(
             config,
             secondSyncMessagesWithNewFields,
-            configuredCatalog,
+            configuredCatalog2,
             false
         )
         val destinationOutput =
@@ -1632,14 +1645,48 @@ abstract class DestinationAcceptanceTest(
             )
         }
 
+    private fun getDestination(imageName: String): AirbyteDestination {
+        return DefaultAirbyteDestination(
+            integrationLauncher =
+                AirbyteIntegrationLauncher(
+                    JOB_ID,
+                    JOB_ATTEMPT,
+                    imageName,
+                    processFactory,
+                    null,
+                    null,
+                    false,
+                    EnvVariableFeatureFlags()
+                )
+        )
+    }
+
+    protected fun runSyncAndVerifyStateOutput(
+        config: JsonNode,
+        messages: List<AirbyteMessage>,
+        catalog: ConfiguredAirbyteCatalog,
+        runNormalization: Boolean,
+    ) {
+        runSyncAndVerifyStateOutput(
+            config,
+            messages,
+            catalog,
+            runNormalization,
+            imageName,
+            verifyIndividualStateAndCounts
+        )
+    }
+
     @Throws(Exception::class)
     protected fun runSyncAndVerifyStateOutput(
         config: JsonNode,
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
-        catalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        messages: List<AirbyteMessage>,
+        catalog: ConfiguredAirbyteCatalog,
         runNormalization: Boolean,
+        imageName: String,
+        verifyIndividualStateAndCounts: Boolean
     ) {
-        val destinationOutput = runSync(config, messages, catalog, runNormalization)
+        val destinationOutput = runSync(config, messages, catalog, runNormalization, imageName)
 
         var expected = messages.filter { it.type == Type.STATE }
         var actual = destinationOutput.filter { it.type == Type.STATE }
@@ -1685,7 +1732,8 @@ abstract class DestinationAcceptanceTest(
         config: JsonNode,
         messages: List<AirbyteMessage>,
         catalog: ConfiguredAirbyteCatalog,
-        runNormalization: Boolean
+        runNormalization: Boolean,
+        imageName: String,
     ): List<AirbyteMessage> {
         val destinationConfig =
             WorkerDestinationConfig()
@@ -1698,7 +1746,7 @@ abstract class DestinationAcceptanceTest(
                 )
                 .withDestinationConnectionConfiguration(config)
 
-        val destination = destination
+        val destination = getDestination(imageName)
 
         destination.start(
             destinationConfig,
@@ -1706,7 +1754,7 @@ abstract class DestinationAcceptanceTest(
             inDestinationNormalizationFlags(runNormalization)
         )
         messages.forEach(
-            Consumer { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
+            Consumer { message: AirbyteMessage ->
                 Exceptions.toRuntime {
                     destination.accept(
                         convertProtocolObject(
@@ -1759,7 +1807,7 @@ abstract class DestinationAcceptanceTest(
     @Throws(Exception::class)
     protected fun retrieveRawRecordsAndAssertSameMessages(
         catalog: AirbyteCatalog,
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
+        messages: List<AirbyteMessage>,
         defaultSchema: String?
     ) {
         val actualMessages: MutableList<AirbyteRecordMessage> = ArrayList()
@@ -1783,16 +1831,14 @@ abstract class DestinationAcceptanceTest(
 
     // ignores emitted at.
     protected fun assertSameMessages(
-        expected: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
+        expected: List<AirbyteMessage>,
         actual: List<AirbyteRecordMessage>,
         pruneAirbyteInternalFields: Boolean
     ) {
         val expectedProcessed =
             expected
-                .filter { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
-                    message.type == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD
-                }
-                .map { obj: io.airbyte.protocol.models.v0.AirbyteMessage -> obj.record }
+                .filter { message: AirbyteMessage -> message.type == AirbyteMessage.Type.RECORD }
+                .map { obj: AirbyteMessage -> obj.record }
                 .onEach { recordMessage: AirbyteRecordMessage -> recordMessage.emittedAt = null }
                 .map { recordMessage: AirbyteRecordMessage ->
                     if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
@@ -1921,7 +1967,7 @@ abstract class DestinationAcceptanceTest(
                 val msg =
                     io.airbyte.protocol.models.v0
                         .AirbyteMessage()
-                        .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
+                        .withType(AirbyteMessage.Type.RECORD)
                         .withRecord(
                             AirbyteRecordMessage()
                                 .withStream(USERS_STREAM_NAME + streamCounter)
@@ -1954,7 +2000,7 @@ abstract class DestinationAcceptanceTest(
             val msgState =
                 io.airbyte.protocol.models.v0
                     .AirbyteMessage()
-                    .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.STATE)
+                    .withType(AirbyteMessage.Type.STATE)
                     .withState(
                         AirbyteStateMessage()
                             .withData(
@@ -2041,6 +2087,9 @@ abstract class DestinationAcceptanceTest(
 
         val catalog = readCatalogFromFile(catalogFilename)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
         val messages = readMessagesFromFile(messagesFilename)
 
         runAndCheck(catalog, configuredCatalog, messages)
@@ -2166,8 +2215,8 @@ abstract class DestinationAcceptanceTest(
     @Throws(Exception::class)
     private fun runAndCheck(
         catalog: AirbyteCatalog,
-        configuredCatalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>
+        configuredCatalog: ConfiguredAirbyteCatalog,
+        messages: List<AirbyteMessage>
     ) {
         if (normalizationFromDefinition()) {
             LOGGER.info { "Normalization is supported! Run test with normalization." }
@@ -2180,8 +2229,8 @@ abstract class DestinationAcceptanceTest(
 
     @Throws(Exception::class)
     private fun runAndCheckWithNormalization(
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
-        configuredCatalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        messages: List<AirbyteMessage>,
+        configuredCatalog: ConfiguredAirbyteCatalog,
         catalog: AirbyteCatalog
     ) {
         val config = getConfig()
@@ -2193,8 +2242,8 @@ abstract class DestinationAcceptanceTest(
 
     @Throws(Exception::class)
     private fun runAndCheckWithoutNormalization(
-        messages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
-        configuredCatalog: io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog,
+        messages: List<AirbyteMessage>,
+        configuredCatalog: ConfiguredAirbyteCatalog,
         catalog: AirbyteCatalog
     ) {
         val config = getConfig()
@@ -2370,9 +2419,7 @@ abstract class DestinationAcceptanceTest(
         }
 
         @Throws(IOException::class)
-        private fun readMessagesFromFile(
-            messagesFilename: String
-        ): List<io.airbyte.protocol.models.v0.AirbyteMessage> {
+        private fun readMessagesFromFile(messagesFilename: String): List<AirbyteMessage> {
             return MoreResources.readResource(messagesFilename).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
@@ -2380,11 +2427,11 @@ abstract class DestinationAcceptanceTest(
 
         /** Mutate the input airbyte record message namespace. */
         private fun getRecordMessagesWithNewNamespace(
-            airbyteMessages: List<io.airbyte.protocol.models.v0.AirbyteMessage>,
+            airbyteMessages: List<AirbyteMessage>,
             namespace: String?
-        ): List<io.airbyte.protocol.models.v0.AirbyteMessage> {
+        ): List<AirbyteMessage> {
             airbyteMessages.forEach(
-                Consumer { message: io.airbyte.protocol.models.v0.AirbyteMessage ->
+                Consumer { message: AirbyteMessage ->
                     if (message.record != null) {
                         message.record.namespace = namespace
                     }

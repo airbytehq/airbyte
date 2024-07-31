@@ -117,8 +117,7 @@ class SerializedBufferingStrategy
 
     @Throws(Exception::class)
     override fun flushSingleStream(stream: AirbyteStreamNameNamespacePair) {
-        val buffer = allBuffers[stream]!!
-        flushSingleBuffer(stream, buffer)
+        allBuffers[stream]?.let { flushSingleBuffer(stream, it) }
     }
 
     @Throws(Exception::class)
