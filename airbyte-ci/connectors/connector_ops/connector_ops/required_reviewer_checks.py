@@ -41,12 +41,12 @@ def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
         },
         {
             "name": "Manifest-only certified connectors",
-            "teams": ["certified-connector-reviewers"],
+            "teams": list(CERTIFIED_MANIFEST_ONLY_CONNECTOR_REVIEWERS),
             "is_required": find_changed_manifest_only_connectors(support_level="certified"),
         },
         {
             "name": "Manifest-only community connectors",
-            "teams": ["standard-connector-reviewers"],
+            "teams": list(COMMUNITY_MANIFEST_ONLY_CONNECTOR_REVIEWERS),
             "is_required": find_changed_manifest_only_connectors(support_level="community"),
         },
     ]

@@ -3,6 +3,7 @@
 #
 
 import shutil
+from pathlib import Path
 from typing import List
 
 import git
@@ -25,6 +26,11 @@ def pokeapi_metadata_path():
 
 
 @pytest.fixture
+def manifest_only_community_connector_path():
+    return "airbyte-integrations/connectors/source-xkcd/metadata.yaml"
+
+
+@pytest.fixture
 def not_tracked_change_expected_team(tmp_path, pokeapi_metadata_path):
     expected_teams = []
     backup_path = tmp_path / "non_strategic_acceptance_test_config.backup"
@@ -40,12 +46,21 @@ def test_breaking_change_release_expected_team(tmp_path, pokeapi_metadata_path) 
     expected_teams = list(required_reviewer_checks.BREAKING_CHANGE_REVIEWERS)
     backup_path = tmp_path / "backup_poke_metadata"
     shutil.copyfile(pokeapi_metadata_path, backup_path)
-    with open(pokeapi_metadata_path, "a") as acceptance_test_config_file:
-        acceptance_test_config_file.write(
-            "releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01"
-        )
+    with open(pokeapi_metadata_path, "a") as metadata_file:
+        metadata_file.write("releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01")
     yield expected_teams
     shutil.copyfile(backup_path, pokeapi_metadata_path)
+
+
+@pytest.fixture
+def test_community_manifest_only_connector_expected_team(tmp_path, manifest_only_community_connector_path) -> List:
+    expected_teams = list(required_reviewer_checks.COMMUNITY_MANIFEST_ONLY_CONNECTOR_REVIEWERS)
+    backup_path = tmp_path / "backup_xkcd_metadata"
+    shutil.copyfile(manifest_only_community_connector_path, backup_path)
+    with open(manifest_only_community_connector_path, "a") as metadata_file:
+        metadata_file.write("anyKey: anyValue")
+    yield expected_teams
+    shutil.copyfile(backup_path, manifest_only_community_connector_path)
 
 
 def verify_no_requirements_file_was_generated(captured: str):
@@ -80,3 +95,7 @@ def test_find_mandatory_reviewers_breaking_change_release(capsys, test_breaking_
 
 def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_tracked_change_expected_team):
     check_review_requirements_file(capsys, not_tracked_change_expected_team)
+
+
+def test_find_changed_manifest_only_connectors(capsys, test_community_manifest_only_connector_expected_team):
+    check_review_requirements_file(capsys, test_community_manifest_only_connector_expected_team)
