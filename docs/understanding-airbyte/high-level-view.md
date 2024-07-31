@@ -48,7 +48,7 @@ flowchart LR
 - **Temporal Service** [`airbyte-temporal`]: Manages the task queue and workflows.
 - **Worker** [`airbyte-worker`]: The worker connects to a source connector, pulls the data and writes it to a destination.
 - **Workload API** [`airbyte-workload-api-server`]: Manages workloads, Airbyte's internal job abstraction.
-- **Launcher** [`airbyte-workload-launcher`]: Launch workloads.
+- **Launcher** [`airbyte-workload-launcher`]: Launches workloads.
 
 The diagram shows the steady-state operation of Airbyte, there are components not described you'll see in your deployment:
 
