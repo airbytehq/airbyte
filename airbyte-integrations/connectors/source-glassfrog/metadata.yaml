@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: glassfrog_config_dev_null
+          id: 08ee4e0c-60c1-4b0b-b05f-5be2302a550d
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GLASSFROG_CREDS

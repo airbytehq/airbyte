@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mailjet-sms_config_dev_null
+          id: 88073883-d1b9-4205-97e1-e594ef65214f
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MAILJET-SMS__CREDS

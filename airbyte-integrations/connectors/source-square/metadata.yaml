@@ -33,6 +33,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: square_config_oauth_dev_null
+          id: 83af0127-0962-4e07-ac73-c19f37326810
+        - name: square_config_dev_null
+          id: ac295afb-3984-45cc-9a67-73d35297671d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

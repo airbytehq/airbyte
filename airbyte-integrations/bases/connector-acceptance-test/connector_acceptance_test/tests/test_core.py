@@ -135,8 +135,11 @@ class TestSpec(BaseTest):
             pytest.skip(f"Skipping OAuth is default method test: {inputs.auth_default_method.bypass_reason}")
         return False
 
-    def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
+    def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: Optional[SecretDict]):
         """Check that config matches the actual schema from the spec call"""
+        if not connector_config:
+            pytest.skip("Config is not provided")
+
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
         try:

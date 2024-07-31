@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: azure-table_config_dev_null
+          id: 2a0b88ec-45fe-43bb-9d97-ec98d94f7c57
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

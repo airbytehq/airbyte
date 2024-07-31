@@ -46,6 +46,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: chargebee_config_dev_null
+          id: 092f90df-53ab-4822-9811-96603a7dc8b1
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
