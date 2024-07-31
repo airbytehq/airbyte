@@ -7,12 +7,15 @@ package io.airbyte.integrations.destination.postgres.typing_deduping;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.postgres.PostgresSQLNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -193,6 +196,61 @@ public abstract class AbstractPostgresTypingDedupingTest extends JdbcTypingDedup
     assertEquals(1, actualFinalRecords.size());
     assertEquals(largeString, actualFinalRecords.get(0).get("name").asText());
 
+  }
+
+  @Test
+  void testDropCascade() throws Exception {
+    ConfiguredAirbyteCatalog catalog =
+        new ConfiguredAirbyteCatalog()
+            .withStreams(
+                List.of(
+                    new ConfiguredAirbyteStream()
+                        .withSyncMode(SyncMode.FULL_REFRESH)
+                        .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                        .withCursorField(List.of("updated_at"))
+                        .withPrimaryKey(java.util.List.of(List.of("id1"), List.of("id2")))
+                        .withStream(
+                            new AirbyteStream()
+                                .withNamespace(getStreamNamespace())
+                                .withName(getStreamName())
+                                .withJsonSchema(getSchema()))));
+
+    // First sync
+    List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
+    runSync(catalog, messages1);
+    var expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
+    var expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+
+    String rawTableName = getRawSchema() + "." +
+        getNameTransformer().convertStreamName(
+            StreamId.concatenateRawTableName(
+                getStreamNamespace(),
+                Names.toAlphanumericAndUnderscore(getStreamName())));
+    String finalTableName = getStreamNamespace() + "." + Names.toAlphanumericAndUnderscore(getStreamName());
+    try {
+      getDatabase().execute("CREATE VIEW " + getStreamNamespace() + ".v1 AS SELECT * FROM " + rawTableName);
+      if (!disableFinalTableComparison()) {
+        getDatabase().execute("CREATE VIEW " + getStreamNamespace() + ".v2 AS SELECT * FROM " + finalTableName);
+      }
+
+      // Second sync
+      for (var message : messages1) {
+        message.getRecord().setEmittedAt(2000L);
+      }
+      runSync(catalog, messages1);
+
+      for (var record : expectedRawRecords1) {
+        ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, "1970-01-01T00:00:02.000000Z");
+      }
+      for (var record : expectedFinalRecords1) {
+        ((ObjectNode) record).put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, "1970-01-01T00:00:02.000000Z");
+      }
+      verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
+    } finally {
+      getDatabase().execute("DROP VIEW IF EXISTS " + getStreamNamespace() + ".v1");
+      getDatabase().execute("DROP VIEW IF EXISTS " + getStreamNamespace() + ".v2");
+    }
   }
 
 }
