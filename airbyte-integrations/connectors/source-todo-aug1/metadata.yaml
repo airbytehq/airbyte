@@ -1,0 +1,36 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+    - TODO  
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-todo-aug1
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:3.1.0-dev.2715f39525@sha256:92a7fd57a10c67be1afbf2879f554222b21777b86f2f5ad6bcf40e318f6f2333
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 51d0901e-3d0f-4d88-b0a4-bca894f9bcb6
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-todo-aug1
+  githubIssueLabel: source-todo-aug1
+  icon: icon.svg
+  license: MIT
+  name: SOURCE TODO
+  releaseDate: 2024-07-31
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/TODO
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+
+  ab_internal:
+    ql: 100
+    sl: 100
