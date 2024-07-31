@@ -12,13 +12,6 @@ spec:
       - shop
       - start_date
     properties:
-      shop:
-        type: string
-        order: 2
-        title: Shop Name
-        description: >-
-          The name of the store. For https://EXAMPLE.com, the shop name is
-          'EXAMPLE.com'.
       api_key:
         type: string
         order: 0
@@ -31,6 +24,13 @@ spec:
         title: Customer Secret
         description: Customer Secret for API in WooCommerce shop
         airbyte_secret: true
+      shop:
+        type: string
+        order: 2
+        title: Shop Name
+        description: >-
+          The name of the store. For https://EXAMPLE.com, the shop name is
+          'EXAMPLE.com'.
       start_date:
         type: string
         order: 3
