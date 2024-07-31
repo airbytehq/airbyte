@@ -38,8 +38,7 @@ definitions:
         - http_codes: [504]
           action: FAIL
           failure_type: config_error
-          error_message:
-            "The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
+          error_message: "The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
 
   retriever:
     type: SimpleRetriever
