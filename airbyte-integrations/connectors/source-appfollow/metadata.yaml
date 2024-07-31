@@ -36,6 +36,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: appfollow_config_dev_null
+          id: 32cc5e26-77ce-4ddd-91e3-1fbcc653d4bf
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-APPFOLLOW__CREDS

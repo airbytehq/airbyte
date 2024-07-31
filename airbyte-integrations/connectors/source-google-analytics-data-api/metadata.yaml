@@ -51,6 +51,10 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-analytics-data-api_config_dev_null
+          id: 6cee88ef-3893-4498-9812-8b80dbfcab0e
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
