@@ -419,7 +419,7 @@ class CohortReportMixin:
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [None]
+        yield from [{}]
 
     def request_body_json(
         self,
