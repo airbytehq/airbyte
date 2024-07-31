@@ -11,8 +11,8 @@ import freezegun
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import FailureType, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction, FailureType
 from pytest import fixture, mark
 from source_notion.streams import Blocks, IncrementalNotionStream, NotionStream, Pages
 

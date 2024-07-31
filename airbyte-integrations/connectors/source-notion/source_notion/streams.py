@@ -4,21 +4,21 @@
 
 import logging as Logger
 from abc import ABC
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
-from datetime import timedelta
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 import pendulum
 import pydantic.v1 as pydantic
-from pydantic.v1.utils import ROOT_KEY
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from pydantic.v1.utils import ROOT_KEY
 from requests import HTTPError
 from source_notion.components import NotionBackoffStrategy, NotionErrorHandler
 
