@@ -5,9 +5,10 @@ import os
 import tempfile
 import time
 from datetime import datetime, timedelta
-from typing import Iterable, Mapping
+from typing import Any, Iterable, Mapping, Optional
 
 import pytest
+import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.call_rate import (
     APIBudget,
@@ -28,8 +29,8 @@ class StubDummyHttpStream(HttpStream):
     url_base = "https://test_base_url.com"
     primary_key = "some_key"
 
-    def next_page_token(self, *args, **kwargs):
-        return True  # endless pages
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {"next_page_token": True}  # endless pages
 
     def path(self, **kwargs) -> str:
         return ""
@@ -265,8 +266,8 @@ class TestHttpStreamIntegration:
         )
 
         stream = StubDummyHttpStream(api_budget=api_budget, authenticator=TokenAuthenticator(token="ABCD"))
-        records = stream.read_records(SyncMode.full_refresh)
         for i in range(10):
+            records = stream.read_records(SyncMode.full_refresh)
             assert next(records) == {"data": "some_data"}
 
         assert MovingWindowCallRatePolicy.try_acquire.call_count == 10
@@ -292,9 +293,8 @@ class TestHttpStreamIntegration:
         )
 
         stream = StubDummyCacheHttpStream(api_budget=api_budget)
-        records = stream.read_records(SyncMode.full_refresh)
-
         for i in range(10):
+            records = stream.read_records(SyncMode.full_refresh)
             assert next(records) == {"data": "some_data"}
 
         assert MovingWindowCallRatePolicy.try_acquire.call_count == 1

@@ -104,6 +104,9 @@ Useful links:
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.2.13 | 2024-07-27 | [42637](https://github.com/airbytehq/airbyte/pull/42637) | Update dependencies |
+| 0.2.12 | 2024-07-20 | [42157](https://github.com/airbytehq/airbyte/pull/42157) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41731](https://github.com/airbytehq/airbyte/pull/41731) | Update dependencies |
 | 0.2.10 | 2024-07-10 | [41581](https://github.com/airbytehq/airbyte/pull/41581) | Update dependencies |
 | 0.2.9 | 2024-07-09 | [41161](https://github.com/airbytehq/airbyte/pull/41161) | Update dependencies |
 | 0.2.8 | 2024-07-06 | [40814](https://github.com/airbytehq/airbyte/pull/40814) | Update dependencies |

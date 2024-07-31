@@ -244,7 +244,7 @@ There are 2 flavors of workers:
    The worker extracts data from the connector and reports it to the scheduler. It does this by listening to the connector's STDOUT.
    These jobs are synchronous as they are part of the configuration process and need to be immediately run to provide a good user experience. These are also all lightweight operations.
 
-2. **Asynchronous Job Worker** - Workers that interact with 2 connectors \(e.g. sync, reset\)
+2. **Asynchronous Job Worker** - Workers that interact with 2 connectors \(e.g. sync, clear\)
 
    The worker passes data \(via record messages\) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
    These jobs are asynchronous as they are often long-running resource-intensive processes. They are decoupled from the rest of the platform to simplify development and operation.
@@ -312,32 +312,30 @@ The Cloud Storage store is treated as the source-of-truth of execution state.
 
 The Container Orchestrator is only available for Airbyte Kubernetes today and automatically enabled when running the Airbyte Helm Charts deploys.
 
-```mermaid
----
-title: Start a new Sync
----
-sequenceDiagram
-%%    participant API
-    participant Temporal as Temporal Queues
-    participant Sync as Sync Workflow
-    participant ReplicationA as Replication Activity
-    participant ReplicationP as Replication Process
-    participant PersistA as Persistent Activity
-    participant AirbyteDB
-    Sync->>Temporal: Start a replication Activity
-    Temporal->>Sync: Pick up a new Sync
-    Temporal->>ReplicationA: Pick up a new task
-    ReplicationA->>ReplicationP: Starts a process
-    ReplicationP->>ReplicationA: Replication Summary with State message and stats
-    ReplicationA->>Temporal: Return Output (States and Summary)
-    Temporal->>Sync: Read results from Replication Activity
-    Sync->>Temporal: Start Persistent State Activity
-    Temporal->>PersistA: Pick up new task
-    PersistA->>AirbyteDB: Persist States
-    PersistA->>Temporal: Return output
-```
-
 Users running Airbyte Docker should be aware of the above pitfalls.
+
+## Workloads
+
+Workloads is Airbyte's next generation Worker architecture. It is designed to be more scalable, reliable and maintainable than the current Worker architecture. It performs particularly
+well in low-resource environments.
+
+One big flaw of pre-Workloads architecture was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for
+resource-constrained environments with spiky job scheduling.
+
+Workloads is an Airbyte-internal job abstraction decoupling the number of running jobs (including those in queue), from the number of jobs that can be started. Jobs stay queued
+until more resources are available or canceled. This allows for better back pressure and self-healing in resource constrained environments.
+
+Workers now communicate with the Workload API Server to create a Workload instead of directly starting jobs.
+
+The **Workload API Server** places the job in a queue. The **Launcher** picks up the job and launches the resources needed to run the job e.g. Kuberenetes pods. It throttles
+job creation based on available resources, minimising deadlock situations.
+
+With this set up, Airbyte now supports:
+- configuring the maximum number of concurrent jobs via `MAX_CHECK_WORKERS` and `MAX_SYNC_WORKERS` environment variables.`
+- configuring the maximum number of jobs that can be started at once via ``
+- differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.
+
+This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage.
 
 ## Configuring Jobs & Workers
 
@@ -348,9 +346,5 @@ Details on configuring jobs & workers can be found [here](../operator-guides/con
 Airbyte exposes the following environment variable to change the maximum number of each type of worker allowed to run in parallel.
 Tweaking these values might help you run more jobs in parallel and increase the workload of your Airbyte instance:
 
-- `MAX_SPEC_WORKERS`: Maximum number of _Spec_ workers allowed to run in parallel.
-- `MAX_CHECK_WORKERS`: Maximum number of _Check connection_ workers allowed to run in parallel.
-- `MAX_DISCOVERY_WORKERS`: Maximum number of _Discovery_ workers allowed to run in parallel.
-- `MAX_SYNC_WORKERS`: Maximum number of _Sync_ workers allowed to run in parallel.
-
-The current default value for these environment variables is currently set to **5**.
+- `MAX_CHECK_WORKERS`: Maximum number of _Non-Sync_ workers allowed to run in parallel. Default to **5**.
+- `MAX_SYNC_WORKERS`: Maximum number of _Sync_ workers allowed to run in parallel. Defaults to **10**.

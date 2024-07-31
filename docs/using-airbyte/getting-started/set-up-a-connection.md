@@ -61,7 +61,7 @@ Once the first sync has completed, you can verify the sync has completed by chec
      If you followed along and created your own connection using a **Google Sheets** destination, you will now see three tabs created in your Google Sheet, `products`, `users`, and `purchases`.
 
   </TabItem>
-  <TabItem value="self-managed" label="Self Hosted">
+  <TabItem value="self-managed" label="Self-Managed">
     If you followed along and created your own connection using a `Local JSON` destination, you can use this command to check the file's contents to make sure the replication worked as intended (be sure to replace YOUR_PATH with the path you chose in your destination setup, and YOUR_STREAM_NAME with the name of an actual stream you replicated):
 
     ```bash

@@ -56,8 +56,6 @@ To make complex changes or edit multiple files, edit the files on your local mac
    cd airbyte
    ```
 
-   While cloning on Windows, you might encounter errors about long filenames. Refer to the instructions [here](../deploying-airbyte/quickstart#handling-long-filename-error) to correct it.
-
 3. Create a feature branch from which to make changes:
 
    ```bash
