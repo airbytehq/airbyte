@@ -12,15 +12,33 @@ class ParquetJsonRecordPreprocessor(
         val disjointObject: ObjectNode? = null
     )
     private val stack = mutableListOf<Context>()
-    private val settingUnionItem = stack.lastOrNull()?.disjointObject != null
+    private val settingUnionItem get() = stack.lastOrNull()?.disjointObject != null
+
+    override fun addObject(value: ObjectNode) {
+        if (settingUnionItem) {
+            setUnionItem("object", value)
+        } else {
+            super.addObject(value)
+        }
+    }
+
+    override fun addArray(value: ArrayNode) {
+        if (settingUnionItem) {
+            setUnionItem("array", value)
+        } else {
+            super.addArray(value)
+        }
+    }
 
     override fun visitUnion(tree: JsonNode?, schema: ObjectNode) {
+        println("starting union: $schema")
         val disjointObject = MoreMappers.initMapper().createObjectNode()
         stack.add(Context(disjointObject))
     }
 
     override fun visitEndOfUnion(tree: JsonNode?, schema: ObjectNode) {
         val context = stack.removeLast()
+        print("HEREHERE: adding: ${context.disjointObject}")
         add(context.disjointObject!!)
     }
 
@@ -54,10 +72,10 @@ class ParquetJsonRecordPreprocessor(
         super.visitEndOfArrayWithSingleItem(tree, schema)
     }
 
-    override fun add
-
     private fun setUnionItem(typeName: String, tree: JsonNode?) {
+        println("adding union item: $typeName, $tree")
         val disjointObject = stack.last().disjointObject!!
+        disjointObject.put("_airbyte_type", typeName)
         disjointObject.replace(typeName, tree)
     }
 

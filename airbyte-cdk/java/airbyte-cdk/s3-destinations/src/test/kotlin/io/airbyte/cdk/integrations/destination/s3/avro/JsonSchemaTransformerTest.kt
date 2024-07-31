@@ -74,9 +74,9 @@ class JsonSchemaTransformerTest {
 
     @Test
     fun testParquetSchemasPromoteUnionsToDisjointRecords() {
-        val inputSchemaStr = javaClass.getResource("/avro/parquet_schema_disjoint_union_in.json")?.readText()
+        val inputSchemaStr = javaClass.getResource("/avro/parquet_disjoint_union_schema_in.json")?.readText()
         val inputSchema = MoreMappers.initMapper().readTree(inputSchemaStr) as ObjectNode
-        val expectedSchemaStr = javaClass.getResource("/avro/parquet_schema_disjoint_union_out.json")?.readText()
+        val expectedSchemaStr = javaClass.getResource("/avro/parquet_disjoint_union_schema_out.json")?.readText()
         print("inputSchemaStr: $inputSchemaStr")
         print("expectedSchemaStr: $expectedSchemaStr")
         val expectedSchema = MoreMappers.initMapper().readTree(expectedSchemaStr) as ObjectNode
@@ -88,7 +88,7 @@ class JsonSchemaTransformerTest {
 
     @Test
     fun testComposingAvroAndParquet() {
-        val inputSchemaStr = javaClass.getResource("/avro/parquet_schema_disjoint_union_in.json")?.readText()
+        val inputSchemaStr = javaClass.getResource("/avro/parquet_disjoint_union_schema_in.json")?.readText()
         val inputSchema = MoreMappers.initMapper().readTree(inputSchemaStr) as ObjectNode
         val expectedSchemaStr = javaClass.getResource("/avro/parquet_avro_schema_disjoint_union_out.json")?.readText()
         print("inputSchemaStr: $inputSchemaStr")

@@ -51,6 +51,18 @@ open class JsonRecordTransformer(
         }
     }
 
+    protected open fun addObject(value: ObjectNode) {
+        add(value)
+    }
+
+    protected open fun addArray(value: ArrayNode) {
+        add(value)
+    }
+
+    protected open fun addUnionElement(value: JsonNode) {
+        add(value)
+    }
+
     private fun reset() {
         recordOut = null
         contextStack.clear()
@@ -63,6 +75,7 @@ open class JsonRecordTransformer(
     }
 
     override fun visitObjectWithProperties(tree: JsonNode?, schema: ObjectNode) {
+        println("At least here? object with? $schema")
         if (tree == null || tree.isNull) {
             return
         }
@@ -77,6 +90,7 @@ open class JsonRecordTransformer(
     }
 
     override fun visitObjectAdditionalProperty(name: String, value: JsonNode) {
+        println("what? $name $value")
         val currentContext = contextStack.last() as Context.PopulatingObject
         // There's nothing else we can do here since we don't have a schema.
         currentContext.objectNode.replace(name, value.deepCopy())
@@ -89,11 +103,12 @@ open class JsonRecordTransformer(
         }
 
         val oldContext = contextStack.removeLast() as Context.PopulatingObject
-        add(oldContext.objectNode)
+        addObject(oldContext.objectNode)
     }
 
     override fun visitObjectWithoutProperties(tree: JsonNode?, schema: ObjectNode) {
         // Nothing to do here since we don't have a schema.
+        println("object without?")
         add(tree?.deepCopy())
     }
 
@@ -113,7 +128,7 @@ open class JsonRecordTransformer(
         }
 
         val oldContext = contextStack.removeLast() as Context.PopulatingArray
-        add(oldContext.arrayNode)
+        addArray(oldContext.arrayNode)
     }
 
     override fun visitArrayWithSingleItem(tree: JsonNode?, schema: ObjectNode) {

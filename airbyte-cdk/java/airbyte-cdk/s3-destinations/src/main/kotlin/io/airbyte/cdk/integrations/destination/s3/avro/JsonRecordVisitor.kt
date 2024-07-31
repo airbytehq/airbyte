@@ -42,7 +42,7 @@ abstract class JsonRecordVisitor {
             AirbyteJsonSchemaType.OBJECT_WITH_PROPERTIES -> {
                 visitObjectWithProperties(tree, schema)
                 tree?.fields()?.forEach { (key, value) ->
-                    if (!schema["properties"].has("key")) {
+                    if (!schema["properties"].has(key)) {
                         visitObjectAdditionalProperty(key, value)
                     } else {
                         visitObjectPropertyName(key, schema["properties"] as ObjectNode)

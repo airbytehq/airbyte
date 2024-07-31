@@ -1,0 +1,49 @@
+[
+  {
+    "union_of_string_and_integer": {
+      "_airbyte_type": "integer",
+      "integer": 1
+    },
+    "union_of_integer_and_object": {
+      "_airbyte_type": "object",
+      "object": {
+        "nested_number": 1,
+        "nested_timestamp": "2021-08-01T00:00:00Z"
+      }
+    },
+    "union_of_array_and_object": {
+      "_airbyte_type": "object",
+      "object": {
+        "nested_number": 1,
+        "nested_timestamp": "00:00:00"
+      }
+    },
+    "union_of_schemaless_object_and_array": {
+      "_airbyte_type": "object",
+      "object": {
+        "some_stuff": [1, 2, 3],
+        "some_other_stuff": {
+          "nested_stuff": "stuff"
+        }
+      }
+    }
+  },
+  {
+    "union_of_string_and_integer": {
+      "_airbyte_type": "string",
+      "string": "string"
+    },
+    "union_of_integer_and_object": {
+      "_airbyte_type": "integer",
+      "integer": 2
+    },
+    "union_of_array_and_object": {
+      "_airbyte_type": "array",
+      "array": [true, false]
+    },
+    "union_of_schemaless_object_and_array": {
+      "_airbyte_type": "array",
+      "array": [4, 5, 6]
+    }
+  }
+]
