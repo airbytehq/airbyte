@@ -2575,7 +2575,6 @@ definitions:
         - type: ExponentialBackoffStrategy
           factor: 1
 
-
 streams:
   - $ref: "#/definitions/streams/organizations"
   - $ref: "#/definitions/streams/adaccounts"
