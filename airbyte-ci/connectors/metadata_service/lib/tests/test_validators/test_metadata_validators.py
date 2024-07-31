@@ -74,3 +74,15 @@ def test_validation_pass_on_same_docker_image_tag(source_faker_metadata_definiti
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(source_faker_metadata_definition, None)
     assert success
     assert error_message is None
+
+
+def test_validation_pass_on_docker_image_no_latest(capsys, source_faker_metadata_definition):
+    source_faker_metadata_definition.data.dockerRepository = "airbyte/unreleased"
+    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(source_faker_metadata_definition, None)
+    captured = capsys.readouterr()
+    assert (
+        "https://registry.hub.docker.com/v2/repositories/airbyte/unreleased/tags returned a 404. The connector might not be released yet."
+        in captured.out
+    )
+    assert success
+    assert error_message is None
