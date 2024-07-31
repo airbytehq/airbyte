@@ -56,7 +56,7 @@ def get_latest_base_image(image_name: str) -> str:
     return full_reference
 
 
-def revert_connector_directory(directory):
+def revert_connector_directory(directory: Path) -> None:
     """
     Revert changes to a connector directory to the state at the last commit.
     Used as a cleanup step in the manifest-only pipeline.
