@@ -71,8 +71,8 @@ abctl local install --values ./values.yaml
 
 ## Setting a Password via Secrets
 
-You can also control the default password by supplying your own values as a Kubernetes secret. The following show the 
-Secret name and fields that should be added to a file called `secret.yaml`:
+You can also control the default password by supplying your own values as a Kubernetes secret. Start by creating a file 
+called `secret.yaml` and add the following Kubernetes Secret into that file:
 
 ```yaml
 apiVersion: v1

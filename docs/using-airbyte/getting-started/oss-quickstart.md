@@ -161,7 +161,8 @@ abctl local install
 Your browser may open automatically to the Airbyte Application. If not, access it by visiting [http://localhost:8000](http://localhost:8000).
 
 You will be asked to enter your email address and an organization name. Your email address will be used to authenticate
-to your instance of Airbyte. You will also need a password, to get your password run:
+to your instance of Airbyte. You will also need a password, which is randomly generated as part of the install command.
+To get your password run:
 
 ```shell
 abctl local credentials
