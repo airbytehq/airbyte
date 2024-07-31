@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: twitter_config_dev_null
+          id: 7ed4842f-7a28-4407-a684-c2c547797648
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-TWITTER__CREDS

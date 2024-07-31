@@ -34,6 +34,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: dockerhub_config_dev_null
+          id: 1627b271-52c6-410c-ae54-b83b8f98d846
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-DOCKERHUB__CREDS

@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sap-fieldglass_config_dev_null
+          id: 59b8a28e-0784-4eb5-adb3-9a7d4b9c6fa4
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SAP-FIELDGLASS__CREDS
