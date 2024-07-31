@@ -138,7 +138,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
             case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
-            case BINARY -> parseBinaryIdString(state.id(), currentBinarySubType.get());
+            case BINARY -> parseBinaryIdString(state.id(), currentBinarySubType.orElse(BsonBinarySubType.BINARY.getValue()));
             }))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);
