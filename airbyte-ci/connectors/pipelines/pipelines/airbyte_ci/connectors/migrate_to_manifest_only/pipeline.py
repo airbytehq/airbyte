@@ -45,10 +45,10 @@ class CheckIsManifestMigrationCandidate(Step):
     context: ConnectorContext
     title: str = "Validate Manifest Migration Candidate"
     airbyte_repo: git.Repo = git.Repo(search_parent_directories=True)
-    invalid_files: list = []
 
     async def _run(self) -> StepResult:
         connector = self.context.connector
+        invalid_files: list = []
 
         ## 1. Confirm the connector is low-code and not already manifest-only
         if connector.language != ConnectorLanguage.LOW_CODE:
@@ -68,12 +68,12 @@ class CheckIsManifestMigrationCandidate(Step):
         ## 2. Detect invalid python files in the connector's source directory
         for file in connector.python_source_dir_path.iterdir():
             if file.name not in VALID_SOURCE_FILES:
-                self.invalid_files.append(file.name)
-        if self.invalid_files:
+                invalid_files.append(file.name)
+        if invalid_files:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
-                stdout=f"The connector has unrecognized source files: {self.invalid_files}",
+                stdout=f"The connector has unrecognized source files: {invalid_files}",
             )
 
         ## 3. Detect connector class name to make sure it's inherited from source-declarative-manifest
@@ -96,7 +96,7 @@ class CheckIsManifestMigrationCandidate(Step):
 
         # All checks passed, the connector is a valid candidate for migration
         return StepResult(
-            step=self, status=StepStatus.SUCCESS, stdout=f"{self.context.connector.technical_name} is a valid candidate for migration."
+            step=self, status=StepStatus.SUCCESS, stdout=f"{connector.technical_name} is a valid candidate for migration."
         )
 
 
@@ -251,6 +251,10 @@ class UpdateManifestOnlyFiles(Step):
                     # Update the metadata tab
                     tags = metadata.get("data").get("tags")
                     if tags:
+                        # Remove any existing language tags and append the manifest-only tag
+                        for tag in tags:
+                            if "language:" in tag:
+                                tags.remove(tag)
                         tags.append("language:manifest-only")
 
                     # Update the base image
