@@ -314,12 +314,12 @@ The Container Orchestrator is only available for Airbyte Kubernetes today and au
 
 Users running Airbyte Docker should be aware of the above pitfalls.
 
-## Worker V2
+## Workloads
 
-Worker V2 is Airbyte's next generation Worker architecture. It is designed to be more scalable, reliable and maintainable than the current Worker architecture. It performs particularly
+Workloads is Airbyte's next generation Worker architecture. It is designed to be more scalable, reliable and maintainable than the current Worker architecture. It performs particularly
 well in low-resource environments.
 
-One big flaw of Worker V1 was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for
+One big flaw of pre-Workloads architecture was the coupling of scheduling a job with starting a job. This complicated configuration, and created thundering herd situations for
 resource-constrained environments with spiky job scheduling.
 
 Worker V2 decouples the number of jobs that can be running (including those in queue), from the number of jobs that can be started. Jobs stay queued until more resources are available or canceled.
