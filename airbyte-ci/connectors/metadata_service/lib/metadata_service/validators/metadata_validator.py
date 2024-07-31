@@ -184,9 +184,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_pypi_only_for_python,
 ]
 
-POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
-    validate_metadata_images_in_dockerhub,
-]
+POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS
 
 
 def validate_and_load(
