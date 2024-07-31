@@ -572,9 +572,9 @@ class LiveTests(Step):
 
     def _get_connection_id(self, options: Dict[str, List[Any]]) -> Optional[str]:
         if self.context.is_pr:
-            connection_id = self._get_connection_from_connection_options()
+            connection_id = self._get_connection_from_test_connections()
             self.logger.info(
-                f"Context is {self.context.ci_context}; got connection_id={connection_id} from metadata.yaml liveTests connectionOptions."
+                f"Context is {self.context.ci_context}; got connection_id={connection_id} from metadata.yaml liveTests testConnections."
             )
         else:
             connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
@@ -611,13 +611,13 @@ class LiveTests(Step):
                     break
             assert connection_id_is_valid, f"Connection ID {self.connection_id} is not a valid sandbox connection ID."
 
-    def _get_connection_from_connection_options(self) -> Optional[str]:
+    def _get_connection_from_test_connections(self) -> Optional[str]:
         for test_suite in self.context.connector.metadata.get("connectorTestSuitesOptions", []):
             if test_suite["suite"] == "liveTests":
-                for option in test_suite.get("connectionOptions", []):
-                    connection_id = option["connectionId"]
-                    connection_name = option["connectionName"]
-                    self.logger.info(f"Using connection {connection_name}; connectionId={connection_id}")
+                for option in test_suite.get("testConnections", []):
+                    connection_id = option["id"]
+                    connection_name = option["name"]
+                    self.logger.info(f"Using connection name={connection_name}; id={connection_id}")
                     return connection_id
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
