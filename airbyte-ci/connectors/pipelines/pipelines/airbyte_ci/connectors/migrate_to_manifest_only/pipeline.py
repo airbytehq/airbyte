@@ -35,9 +35,12 @@ yaml.preserve_quotes = True
 
 ## STEPS ##
 
+
 class CheckIsManifestMigrationCandidate(Step):
     """
-    Pipeline step to check if the connector is a candidate for migration to to manifest-only.
+    Pipeline step to check if the connector is a candidate for migration to manifest-only.
+
+    returns: StepResult - SUCCESS if the connector is a valid candidate, SKIPPED if it's not.
     """
 
     context: ConnectorContext
@@ -46,16 +49,17 @@ class CheckIsManifestMigrationCandidate(Step):
     invalid_files: list = []
 
     async def _run(self) -> StepResult:
+        connector = self.context.connector
 
         ## 1. Confirm the connector is low-code and not already manifest-only
-        if self.context.connector.language != ConnectorLanguage.LOW_CODE:
+        if connector.language != ConnectorLanguage.LOW_CODE:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
                 stderr=f"The connector is not a low-code connector.",
             )
 
-        if self.context.connector.language == ConnectorLanguage.MANIFEST_ONLY:
+        if connector.language == ConnectorLanguage.MANIFEST_ONLY:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
@@ -63,8 +67,7 @@ class CheckIsManifestMigrationCandidate(Step):
             )
 
         ## 2. Detect invalid python files in the connector's source directory
-        connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
-        for file in connector_source_code_dir.iterdir():
+        for file in connector.python_source_dir_path.iterdir():
             if file.name not in VALID_SOURCE_FILES:
                 self.invalid_files.append(file.name)
         if self.invalid_files:
@@ -74,9 +77,9 @@ class CheckIsManifestMigrationCandidate(Step):
                 stdout=f"The connector has unrecognized source files: {self.invalid_files}",
             )
 
-        ## 3. Detect connector class name to make sure it's inherited from source declarative manifest
+        ## 3. Detect connector class name to make sure it's inherited from source-declarative-manifest
         # and does not override the `streams` method
-        connector_source_py = (connector_source_code_dir / "source.py").read_text()
+        connector_source_py = (connector.python_source_dir_path / "source.py").read_text()
 
         if "YamlDeclarativeSource" not in connector_source_py:
             return StepResult(
@@ -92,6 +95,7 @@ class CheckIsManifestMigrationCandidate(Step):
                 stdout="The connector overrides the streams method.",
             )
 
+        # All checks passed, the connector is a valid candidate for migration
         return StepResult(
             step=self, status=StepStatus.SUCCESS, stdout=f"{self.context.connector.technical_name} is a valid candidate for migration."
         )
@@ -103,9 +107,9 @@ class StripConnector(Step):
     """
 
     context: ConnectorContext
-    title = "Strip Unnecessary Files"
+    title = "Strip Out Unnecessary Files"
 
-    def _delete_file(self, file: Path) -> None:
+    def _delete_directory_item(self, file: Path) -> None:
         self.logger.info(f"Deleting {file.name}")
         try:
             if file.is_dir():
@@ -115,40 +119,40 @@ class StripConnector(Step):
         except Exception as e:
             raise ValueError(f"Failed to delete {file.name}: {e}")
 
+    def _handle_integration_tests(self, file: Path) -> None:
+        if file.name in {"integration", "integrations"}:
+            return
+        else:
+            self._delete_directory_item(file)
+
     async def _run(self) -> StepResult:
+        connector = self.context.connector
 
         ## 1. Move manifest.yaml to the root level of the directory
-        connector_source_code_dir = self.context.connector.code_directory / self.context.connector.technical_name.replace("-", "_")
         self.logger.info(f"Moving manifest to the root level of the directory")
+        root_manifest_file = connector.manifest_path.rename(connector.code_directory / "manifest.yaml")
 
-        manifest_file = connector_source_code_dir / "manifest.yaml"
-        root_manifest_file = manifest_file.rename(self.context.connector.code_directory / "manifest.yaml")
-
-        if root_manifest_file not in self.context.connector.code_directory.iterdir():
+        if root_manifest_file not in connector.code_directory.iterdir():
             return StepResult(
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
 
         ## 2. Delete all non-essential files
         try:
-            for file in self.context.connector.code_directory.iterdir():
-                if file.name in FILES_TO_LEAVE:
+            for item in connector.code_directory.iterdir():
+                if item.name in FILES_TO_LEAVE:
                     continue  # Preserve the allowed files
-                elif file.name == "unit_tests":
+                elif item.name == "unit_tests":
                     # Preserve any integration tests, delete the rest
-                    for unit_test_file in file.iterdir():
-                        if unit_test_file.name in {"integration", "integrations"}:
-                            continue
-                        else:
-                            self._delete_file(unit_test_file)
+                    self._handle_integration_tests(item)
                 # Delete everything else in root folder
                 else:
-                    self._delete_file(file)
+                    self._delete_directory_item(item)
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete files: {e}")
 
         ## 3. Verify that only allowed files remain
-        for file in self.context.connector.code_directory.iterdir():
+        for file in connector.code_directory.iterdir():
             if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
 
@@ -165,63 +169,53 @@ class UpdateManifestOnlyFiles(Step):
 
     async def _run(self) -> StepResult:
 
-        ## 1. Update the acceptance test config to point to the right spec path
-        acceptance_test_config = self.context.connector.code_directory / "acceptance-test-config.yml"
-        try:
-            with open(acceptance_test_config, "r") as file:
-                acceptance_test_config_data = yaml.load(file)
+        connector = self.context.connector
 
-                # Handle legacy acceptance test config:
+        ## 1. Update the acceptance test config to point to the right spec path
+        try:
+            with open(connector.acceptance_test_config_path, "r") as test_config:
+                acceptance_test_config_data = yaml.load(test_config)
+
+                # Handle legacy acceptance-test-config:
                 if "acceptance_tests" in acceptance_test_config_data:
                     acceptance_test_config_data["acceptance_tests"]["spec"]["tests"][0]["spec_path"] = "manifest.yaml"
                 else:
                     acceptance_test_config_data["tests"]["spec"][0]["spec_path"] = "manifest.yaml"
 
-            with open(acceptance_test_config, "w") as file:
+            with open(connector.acceptance_test_config_path, "w") as file:
                 yaml.dump(acceptance_test_config_data, file)
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
 
         ## 2. Update the connector's metadata
-        metadata_file = self.context.connector.code_directory / "metadata.yaml"
-        # Backup the original file before modifying
-        backup_metadata_file = self.context.connector.code_directory / "metadata.yaml.bak"
-        shutil.copy(metadata_file, backup_metadata_file)
         self.logger.info(f"Updating metadata file")
-
         try:
-            with open(metadata_file, "r") as file:
+            with open(connector.metadata_file_path, "r") as file:
                 metadata = yaml.load(file)
                 if metadata and "data" in metadata:
                     # Update the metadata tab
-                    tags = metadata["data"]["tags"]
-                    tags.append("language:manifest-only")
+                    tags = metadata.get("data").get("tags")
+                    if tags:
+                        tags.append("language:manifest-only")
 
                     # Update the base image
                     latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
-                    connector_base_image = metadata["data"]["connectorBuildOptions"]
+                    connector_base_image = metadata.get("data").get("connectorBuildOptions")
                     connector_base_image["baseImage"] = latest_base_image
 
                     # Write the changes to metadata.yaml
-                    with open(metadata_file, "w") as file:
+                    with open(connector.metadata_file_path, "w") as file:
                         yaml.dump(metadata, file)
                 else:
                     return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to read metadata.yaml content.")
 
         except Exception as e:
-            # Restore the original file and return the report
-            shutil.copy(backup_metadata_file, metadata_file)
-            backup_metadata_file.unlink()
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
-
-        # delete the backup metadata file once done
-        backup_metadata_file.unlink()
 
         ## 3. Update the connector's README
         self.logger.info(f"Updating README file")
-
-        readme = readme_for_connector(self.context.connector.technical_name)
-        with open(self.context.connector.code_directory / "README.md", "w") as file:
+        readme = readme_for_connector(connector.technical_name)
+        with open(connector.code_directory / "README.md", "w") as file:
             file.write(readme)
 
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully migrated to manifest-only.")
