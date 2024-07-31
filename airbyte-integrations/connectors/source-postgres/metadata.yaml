@@ -63,3 +63,4 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
+# TO REVERT

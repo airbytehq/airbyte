@@ -62,7 +62,7 @@ def get_base_dockerd_container(dagger_client: Client) -> Container:
     )
 
     # We cache /var/lib/docker to avoid downloading images and layers multiple times.
-    base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
+    # base_container = base_container.with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
     return base_container
 
 
