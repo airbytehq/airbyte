@@ -112,6 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.3.0 | 2024-07-31 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate to CDK v4.1.0 |
 | 4.2.2 | 2024-07-27 | [42601](https://github.com/airbytehq/airbyte/pull/42601) | Update dependencies |
 | 4.2.1 | 2024-07-20 | [42295](https://github.com/airbytehq/airbyte/pull/42295) | Update dependencies |
 | 4.2.0 | 2024-07-17 | [42085](https://github.com/airbytehq/airbyte/pull/42085) | Migrate to CDK v2.4.0 |
