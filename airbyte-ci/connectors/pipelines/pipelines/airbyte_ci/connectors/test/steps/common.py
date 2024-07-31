@@ -714,17 +714,16 @@ class LiveTests(Step):
                     ]
                 )
                 .with_secret_variable(
-                    "CI_GITHUB_MAINTENANCE_TOKEN",
+                    "CI_GITHUB_ACCESS_TOKEN",
                     self.context.dagger_client.set_secret(
-                        "CI_GITHUB_MAINTENANCE_TOKEN",
-                        self.context.ci_github_maintenance_token.value if self.context.ci_github_maintenance_token else "",
+                        "CI_GITHUB_ACCESS_TOKEN", self.context.ci_github_access_token.value if self.context.ci_github_access_token else ""
                     ),
                 )
                 .with_exec(
                     [
                         "/bin/sh",
                         "-c",
-                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_MAINTENANCE_TOKEN",
+                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)

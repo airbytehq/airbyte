@@ -146,7 +146,6 @@ async def test(
             git_repo_url=ctx.obj["git_repo_url"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
-            ci_github_maintenance_token=ctx.obj["ci_github_maintenance_token"],
             ci_report_bucket=ctx.obj["ci_report_bucket_name"],
             report_output_prefix=ctx.obj["report_output_prefix"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),

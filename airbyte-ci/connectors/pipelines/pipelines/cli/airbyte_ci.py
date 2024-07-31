@@ -164,7 +164,6 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str, callback=wrap_in_secret)
-@click.option("--ci-github-maintenance-token", envvar="CI_GITHUB_MAINTENANCE_TOKEN", type=str, callback=wrap_in_secret)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
 @click.option(
