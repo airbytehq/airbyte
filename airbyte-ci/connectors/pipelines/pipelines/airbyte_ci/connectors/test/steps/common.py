@@ -606,7 +606,7 @@ class LiveTests(Step):
             connection_id_is_valid = False
             for test_suite in self.context.connector.metadata.get("connectorTestSuitesOptions", []):
                 if test_suite["suite"] == "liveTests":
-                    assert self.connection_id in [option["connectionId"] for option in test_suite.get("connectionOptions", [])]
+                    assert self.connection_id in [option["id"] for option in test_suite.get("testConnections", [])], f"Connection ID {self.connection_id} was not in the list of valid test connections."
                     connection_id_is_valid = True
                     break
             assert connection_id_is_valid, f"Connection ID {self.connection_id} is not a valid sandbox connection ID."
@@ -632,7 +632,7 @@ class LiveTests(Step):
         try:
             self._validate_job_can_run()
         except AssertionError as exc:
-            self.logger.info(f"Could not run live tests for {self.context.connector.technical_name} due to validation error {exc}.")
+            self.logger.info(f"Could not run live tests for {self.context.connector.technical_name} due to validation error {str(exc)}.")
             return StepResult(
                 step=self,
                 status=StepStatus.FAILURE,
