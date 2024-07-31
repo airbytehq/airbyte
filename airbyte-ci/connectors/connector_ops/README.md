@@ -37,6 +37,7 @@ poetry run pytest
 ```
 
 ## Changelog
+- 0.7.0: Added required reviewers for manifest-only connector changes/additions.
 - 0.6.1: Simplified gradle dependency discovery logic.
 - 0.6.0: Added manifest-only build.
 - 0.5.0: Added `cloud_usage` property to `Connector` class.
