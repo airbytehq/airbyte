@@ -20,6 +20,7 @@ import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import java.util.Optional;
 import org.bson.*;
 import org.bson.conversions.Bson;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,9 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   private final int chunkSize;
 
   private Optional<MongoDbStreamState> currentState;
+
+  // Presents when _id is in binary type.  As of now (Aug 2024) we assume there can be only 1 type of _id.
+  private Optional<Byte> currentBinarySubType;
   private MongoCursor<Document> currentIterator;
 
   private int numSubqueries = 0;
@@ -55,6 +59,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     this.isEnforceSchema = isEnforceSchema;
     this.chunkSize = chunkSize;
     this.currentIterator = buildNewQueryIterator();
+    this.currentBinarySubType = Optional.empty();
   }
 
   @Override
@@ -86,6 +91,11 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     final var state = new MongoDbStreamState(idToStringRepresenation(currentId, idType),
         IN_PROGRESS,
         idType);
+
+    if (idType.equals(IdType.BINARY)) {
+      final var binCurrentId = (Binary) currentId;
+      currentBinarySubType = Optional.of(binCurrentId.getType());
+    }
     return Optional.of(state);
   }
 
@@ -128,7 +138,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
             case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
-            case BINARY -> parseBinaryIdString(state.id());
+            case BINARY -> parseBinaryIdString(state.id(), currentBinarySubType.get());
             }))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);
