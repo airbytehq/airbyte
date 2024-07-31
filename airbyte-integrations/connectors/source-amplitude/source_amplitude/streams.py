@@ -188,7 +188,9 @@ class Events(HttpStream, CheckpointMixin):
                 error_message="Access denied due to lack of permission or invalid API/Secret key or wrong data region.",
             ),
             404: ErrorResolution(
-                response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message="No data available for the time range requested."
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="No data available for the time range requested.",
             ),
             504: ErrorResolution(
                 response_action=ResponseAction.FAIL,
