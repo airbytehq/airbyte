@@ -201,6 +201,8 @@ class SourceMgramseva(AbstractSource):
         """
         if self.setup_complete:
             return
+        if "client_password" not in config or config["client_password"] is None:
+            config["client_password"] = ""
         if config["client_password"] == "no-pass":
             config["client_password"] = ""
         client_user_password = f'{config["client_user"]}:{config["client_password"]}'
