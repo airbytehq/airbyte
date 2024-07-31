@@ -23,7 +23,7 @@ The following technologies are required to build Airbyte locally.
 
 1. [`Java 21`](https://jdk.java.net/archive/)
 2. `Node 20.`
-3. `Python 3.9`
+3. `Python 3.10`
 4. `Docker`
 5. `Jq`
 
@@ -51,7 +51,18 @@ was successful
     - Run `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
     - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
 
-5. You can then load the newly built image into the `abctl` instance using:
+5. Verify the image was published locally by running:
+
+```shell
+docker images ls | grep airbyte/source-<source-name>:dev
+```
+
+You should see output similar to:
+```shell
+airbyte/destination-s3 | dev | 70516a5908ce | 2 minutes ago | 968MB
+```
+
+6. You can then load the newly built image into the `abctl` instance using:
 
 ```shell
 kind load docker-image airbyte/source-<source-name>:dev -n airbyte-abctl
@@ -82,10 +93,8 @@ connector, you will need to clear this cache so the new changes are registered. 
 - Log in
 - Go to `Settings` (gear icon in lower left corner)
 - Go to `Sources` or `Destinations` (depending on which connector you are testing)
-- Update the version number to most recent release docker image tag, e.g. `1.6.4`
-- Click `Change` to save the changes
-- Set the version back to `dev`
-- Click `Change` to save the changes
+- Leave the version set to `dev`
+- Click `Change` to save the changes, which will refresh the dev connectors spec
 
 ## Platform Contributions
 1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
