@@ -1,7 +1,7 @@
 # Developing Locally
 
 Airbyte development is broken into two activities, connector development and platform development. Connector development
-is largely done in Python, though sometimes Java is used for performance reasons. Platform development is done in Java 
+is largely done in Python by community contributors, though sometimes Java is used for performance reasons. Platform development is done in Java 
 and Kotlin. In addition to the Java and Kotlin code, the Platform also consists of the UI. The UI is developed in 
 TypeScript using React.
 
@@ -59,7 +59,7 @@ kind load docker-image airbyte/source-<source-name>:dev -n airbyte-abctl
 
 :::info
 
-The above connector image is tagged with `dev`. You can change this to use another tag if you'd like.
+The above connector image is tagged with `dev`. You can change this to use another tag if you'd like via the `docker image tag` command.
 
 :::
 
@@ -109,7 +109,7 @@ To compile and build the platform, run the following command in your local `airb
 
 This will build all the code and run all the unit tests.
 
-`./gradlew build` creates all the necessary artifacts \(Webapp, Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
+`./gradlew build` creates all the necessary artifacts \(Webapp, Jars, and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
 
 :::info
