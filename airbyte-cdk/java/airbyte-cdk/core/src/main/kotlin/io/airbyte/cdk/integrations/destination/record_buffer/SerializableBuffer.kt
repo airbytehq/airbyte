@@ -26,7 +26,7 @@ interface SerializableBuffer : AutoCloseable {
      */
     @Deprecated("")
     @Throws(Exception::class)
-    fun accept(record: AirbyteRecordMessage, generationId: Long = 0): Long
+    fun accept(record: AirbyteRecordMessage, generationId: Long = 0, syncId: Long = 0): Long
 
     /**
      * TODO: (ryankfu) Move all destination connectors to pass the serialized record string instead

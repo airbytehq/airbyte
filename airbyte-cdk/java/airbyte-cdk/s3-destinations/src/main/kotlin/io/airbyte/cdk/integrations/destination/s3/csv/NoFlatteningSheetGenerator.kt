@@ -16,7 +16,6 @@ class NoFlatteningSheetGenerator(
             return listOf(
                 JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-                JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
                 JavaBaseConstants.COLUMN_NAME_AB_META,
                 JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                 JavaBaseConstants.COLUMN_NAME_DATA,
@@ -32,7 +31,6 @@ class NoFlatteningSheetGenerator(
 
     /** When no flattening is needed, the record column is just one json blob. */
     override fun getRecordColumns(json: JsonNode): List<String> {
-        val tmp = Jsons.serialize(json)
-        return listOf(tmp)
+        return listOf(Jsons.serialize(json))
     }
 }

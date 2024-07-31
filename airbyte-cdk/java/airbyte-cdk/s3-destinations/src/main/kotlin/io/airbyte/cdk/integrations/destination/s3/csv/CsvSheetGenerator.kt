@@ -18,7 +18,12 @@ interface CsvSheetGenerator {
     // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized
     // recordStrings,
     // both for performance and lowers memory footprint
-    fun getDataRow(id: UUID, recordMessage: AirbyteRecordMessage, generationId: Long = 0): List<Any>
+    fun getDataRow(
+        id: UUID,
+        recordMessage: AirbyteRecordMessage,
+        generationId: Long = 0,
+        syncId: Long = 0
+    ): List<Any>
 
     fun getDataRow(formattedData: JsonNode): List<Any>
 
@@ -38,7 +43,6 @@ interface CsvSheetGenerator {
             useV2FieldNames: Boolean = false
         ): CsvSheetGenerator {
             return if (formatConfig.flattening == Flattening.NO) {
-                println("NO FLAT")
                 NoFlatteningSheetGenerator(useV2FieldNames)
             } else if (formatConfig.flattening == Flattening.ROOT_LEVEL) {
                 RootLevelFlatteningSheetGenerator(jsonSchema!!, useV2FieldNames)
