@@ -31,6 +31,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: hubplanner_config_dev_null
+          id: 38013098-1955-4daf-9143-630c45670dfb
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-HUBPLANNER__CREDS

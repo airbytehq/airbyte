@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: nytimes_config_dev_null
+          id: 458374b9-e318-4baa-87ff-d217fe32697e
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-NYTIMES__CREDS

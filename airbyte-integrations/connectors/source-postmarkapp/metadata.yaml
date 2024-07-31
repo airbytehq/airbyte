@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: postmarkapp_config_dev_null
+          id: 2c3b45cb-13d7-4883-a982-17188cf3dcae
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-POSTMARKAPP__CREDS

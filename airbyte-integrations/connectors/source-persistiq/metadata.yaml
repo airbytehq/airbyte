@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: persistiq_config_dev_null
+          id: 4e03433a-ea59-42a5-b922-81372f438a69
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PERSISTIQ__CREDS

@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mailgun_config_dev_null
+          id: 7b0849fb-fa7c-4d91-bdeb-0bdbe1e17e07
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MAILGUN_CONFIG

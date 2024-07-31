@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: braintree_config_dev_null
+          id: 8f679466-dfd0-4ebf-ac56-29516fdb7a84
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-BRAINTREE__CREDS

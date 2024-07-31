@@ -38,6 +38,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: aws-cloudtrail_config_dev_null
+          id: aa6731d0-9c6f-4b32-bdd4-1c14f0cf0119
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

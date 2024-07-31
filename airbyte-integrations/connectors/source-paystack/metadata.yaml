@@ -36,6 +36,10 @@ data:
     ql: 300
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: paystack_config_dev_null
+          id: 53f674d1-d9f9-4fc1-99c1-0d64844948dc
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

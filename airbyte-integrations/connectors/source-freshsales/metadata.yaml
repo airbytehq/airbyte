@@ -45,6 +45,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshsales_config_dev_null
+          id: 7825dcaf-24d1-43d6-8a57-8be179ef8f94
     - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-FRESHSALES__CREDS

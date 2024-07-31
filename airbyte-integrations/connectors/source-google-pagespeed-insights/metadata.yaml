@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-pagespeed-insights_config_dev_null
+          id: a70b1ba9-2358-49e2-a669-8c6ead853f0b
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GOOGLE-PAGESPEED-INSIGHTS__CREDS

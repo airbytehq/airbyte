@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: coda_config_dev_null
+          id: 4a8073c7-08e9-4b74-87cd-f5d66b448726
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-CODA__CREDS
