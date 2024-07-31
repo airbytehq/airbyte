@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pocket_config_dev_null
+          id: 40715200-70aa-481b-be17-5d4a87ce0a22
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

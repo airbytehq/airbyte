@@ -35,6 +35,10 @@ data:
   # This connector is not enabled for OSS/Cloud
   #
   # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: bigcommerce_config_dev_null
+  #         id: 793cbddc-1b3c-4f53-ab22-c8ae9b03978b
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-BIGCOMMERCE__CREDS

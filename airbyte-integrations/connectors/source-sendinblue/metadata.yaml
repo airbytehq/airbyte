@@ -36,6 +36,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sendinblue_config_dev_null
+          id: 9dc930cc-4faa-47e7-b45d-f63f60b8ee9e
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SENDINBLUE__CREDS

@@ -34,6 +34,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: recurly_config_dev_null
+          id: 33f9384f-dbd1-4f14-86b8-f20f7f0e140f
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pokeapi_config_dev_null
+          id: 5a290dcf-b2cf-4768-ac2d-a1aaca90c186
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-POKEAPI__CREDS

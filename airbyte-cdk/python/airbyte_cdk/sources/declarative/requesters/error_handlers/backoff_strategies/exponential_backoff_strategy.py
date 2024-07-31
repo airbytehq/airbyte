@@ -37,11 +37,8 @@ class ExponentialBackoffStrategy(BackoffStrategy):
         return self._factor.eval(self.config)  # type: ignore # factor is always cast to an interpolated string
 
     def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
     ) -> Optional[float]:
-        attempt_count = kwargs.get("attempt_count")
-        if attempt_count is None:
-            raise ValueError("ExponentialBackoffStrategy requires an attempt_count")
-        if not isinstance(attempt_count, int):
-            raise ValueError("ExponentialBackoffStrategy requires an attempt_count that is an integer")
         return self._retry_factor * 2**attempt_count  # type: ignore # factor is always cast to an interpolated string

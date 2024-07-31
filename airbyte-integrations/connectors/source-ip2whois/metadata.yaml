@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: ip2whois_config_dev_null
+          id: 8d51f477-0dc4-4649-a548-02e3896c3acf
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-IP2WHOIS__CREDS
