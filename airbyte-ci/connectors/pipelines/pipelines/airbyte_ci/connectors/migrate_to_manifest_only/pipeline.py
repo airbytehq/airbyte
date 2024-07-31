@@ -95,9 +95,7 @@ class CheckIsManifestMigrationCandidate(Step):
             )
 
         # All checks passed, the connector is a valid candidate for migration
-        return StepResult(
-            step=self, status=StepStatus.SUCCESS, stdout=f"{connector.technical_name} is a valid candidate for migration."
-        )
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"{connector.technical_name} is a valid candidate for migration.")
 
 
 class StripConnector(Step):
