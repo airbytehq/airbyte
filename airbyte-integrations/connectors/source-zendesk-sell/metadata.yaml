@@ -30,6 +30,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-sell_config_dev_null
+          id: 0f954007-88f7-494e-a8a0-8a12fb659200
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-ZENDESK-SELL__CREDS

@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sonar-cloud_config_dev_null
+          id: 11b168e2-9dc7-4972-81f8-6cdf948562ba
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SONAR-CLOUD__CREDS

@@ -38,6 +38,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: apify-dataset_config_dev_null
+          id: 7ec0b62e-9c2d-44d1-bc0f-e9bc1aa50d86
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-APIFY-DATASET__CREDS

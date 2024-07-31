@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: woocommerce_config_dev_null
+          id: 26705957-7051-4c95-bd93-0c031fde9b67
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-WOOCOMMERCE__CREDS

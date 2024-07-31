@@ -47,6 +47,10 @@ data:
   # Low/No Airbyte Cloud usage
   #
   # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: quickbooks_config_dev_null
+  #         id: 211394cc-91d6-4450-9563-fa0be54a6c25
   #   - suite: unitTests
   #   - suite: acceptanceTests
   #     testSecrets:

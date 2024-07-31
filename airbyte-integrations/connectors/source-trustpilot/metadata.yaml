@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: trustpilot_config_dev_null
+          id: 2a99ef5e-0861-4eae-bcaa-be86b80fce95
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
