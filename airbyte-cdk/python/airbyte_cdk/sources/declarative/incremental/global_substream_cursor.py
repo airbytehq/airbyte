@@ -29,7 +29,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     This class can only be used with the lookback window, otherwise child records added during the sync
     to the already processed parent records will be missed.
 
-    This cursor will be used when the `global_parent_cursor` parameter is set for incremental sync.
+    This cursor will be used when the `global_substream_cursor` parameter is set for incremental sync.
     """
 
     def __init__(self, stream_cursor: DeclarativeCursor, partition_router: PartitionRouter):
@@ -88,7 +88,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         self._stream_cursor.observe(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record)
 
-    def close_slice(self, stream_slice: GlobalCursorStreamSlice, *args: Any) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         """
         Close the current stream slice.
 
@@ -100,7 +100,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             stream_slice (GlobalCursorStreamSlice): The stream slice to be closed.
             *args (Any): Additional arguments.
         """
-        if stream_slice.last_slice:
+        if isinstance(stream_slice, GlobalCursorStreamSlice) and stream_slice.last_slice:
             self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
 
     def get_stream_state(self) -> StreamState:

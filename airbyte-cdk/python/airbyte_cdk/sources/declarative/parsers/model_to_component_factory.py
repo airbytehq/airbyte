@@ -689,11 +689,6 @@ class ModelToComponentFactory:
         ):
             stream_slicer_model = model.retriever.partition_router
 
-            # if model.incremental_sync and hasattr(model.incremental_sync, "global_parent_cursor") and model.incremental_sync.global_parent_cursor:
-            #     for parent_stream_config in stream_slicer_model.parent_stream_configs:
-            #         if parent_stream_config.stream.incremental_sync:
-            #             parent_stream_config.stream.incremental_sync.global_parent_cursor = True
-
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
@@ -703,11 +698,9 @@ class ModelToComponentFactory:
 
         if model.incremental_sync and stream_slicer:
             incremental_sync_model = model.incremental_sync
-            if hasattr(incremental_sync_model, "global_parent_cursor") and incremental_sync_model.global_parent_cursor:
-                return GlobalSubstreamCursor(
-                    stream_cursor=self._create_component_from_model(model=incremental_sync_model, config=config),
-                    partition_router=stream_slicer,
-                )
+            if hasattr(incremental_sync_model, "global_substream_cursor") and incremental_sync_model.global_substream_cursor:
+                cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
+                return GlobalSubstreamCursor(stream_cursor=cursor_component, partition_router=stream_slicer)
             else:
                 return PerPartitionCursor(
                     cursor_factory=CursorFactory(
