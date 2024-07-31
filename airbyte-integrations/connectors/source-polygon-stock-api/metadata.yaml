@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: polygon-stock-api_config_dev_null
+          id: 7affa2ff-0b68-428d-bf9a-78fc68d71bd6
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-POLYGON-STOCK-API__CREDS

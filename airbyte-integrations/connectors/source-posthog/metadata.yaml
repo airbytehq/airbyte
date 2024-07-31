@@ -38,6 +38,10 @@ data:
     - cdk:low-code
     - language:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: posthog_config_dev_null
+          id: 6982b1ce-2255-4ea2-a2f6-38fd56a6f5f1
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

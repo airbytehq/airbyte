@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: rki-covid_config_dev_null
+          id: 4f1784b1-f6b3-4bb2-9009-cb8ba2328bab
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

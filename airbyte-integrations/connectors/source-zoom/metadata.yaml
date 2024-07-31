@@ -37,6 +37,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zoom_config_dev_null
+          id: 284c062a-8164-46cb-a8ba-71ecbecaf395
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
