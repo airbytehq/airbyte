@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import shutil
 from pathlib import Path
 from typing import Any
@@ -23,8 +24,8 @@ from ruamel.yaml import YAML  # type: ignore
 
 ## GLOBAL VARIABLES ##
 
-VALID_SOURCE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py"]
-FILES_TO_LEAVE = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml"]
+VALID_SOURCE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py", "spec.json", "spec.yaml"]
+FILES_TO_LEAVE = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml", "secrets"]
 
 
 # Initialize YAML handler with desired output style
@@ -129,6 +130,34 @@ class StripConnector(Step):
         else:
             self._delete_directory_item(file)
 
+    @staticmethod
+    def _check_if_non_inline_spec(path: Path) -> Path | None:
+        """
+        Checks if a non-inline spec file exists and return its path.
+        """
+        spec_file_yaml = path / "spec.yaml"
+        spec_file_json = path / "spec.json"
+
+        if spec_file_yaml.exists():
+            return spec_file_yaml
+        elif spec_file_json.exists():
+            return spec_file_json
+        return None
+
+    def _fetch_spec_data(self, spec_file: Path) -> Any:
+        """
+        Grabs the relevant data from a non-inline spec, to be added to the manifest.
+        """
+        try:
+            with open(spec_file, "r") as file:
+                if spec_file.suffix == ".json":
+                    spec = json.load(file)
+                else:
+                    spec = yaml.load(file)
+                return spec.get("connection_specification") or spec.get("connectionSpecification")
+        except Exception as e:
+            raise ValueError(f"Failed to read data in spec file: {e}")
+
     async def _run(self) -> StepResult:
         connector = self.context.connector
 
@@ -141,7 +170,29 @@ class StripConnector(Step):
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
 
-        ## 2. Delete all non-essential files
+        ## 2. Check for non-inline spec files and add the data to manifest.yaml
+        spec_file = self._check_if_non_inline_spec(connector.python_source_dir_path)
+        if spec_file:
+            self.logger.info(f"Non-inline spec file found. Migrating spec to manifest")
+            try:
+                spec_data = self._fetch_spec_data(spec_file)
+                with open(root_manifest_file, "r") as manifest_file:
+                    manifest_data = yaml.load(manifest_file)
+                    manifest_data.setdefault("spec", {})
+                    manifest_data["spec"]["type"] = "Spec"
+                    manifest_data["spec"]["connection_specification"] = spec_data
+
+                    with open(root_manifest_file, "w") as manifest_file_to_write:
+                        yaml.dump(manifest_data, manifest_file_to_write)
+            except Exception as e:
+                return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to add spec data to manifest.yaml: {e}")
+
+        with open(root_manifest_file, "r") as file_check:
+            manifest_data = yaml.load(file_check)
+            if not manifest_data.get("spec").get("connection_specification"):
+                return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to fetch connector's spec data from manifest.")
+
+        ## 3. Delete all non-essential files
         try:
             for item in connector.code_directory.iterdir():
                 if item.name in FILES_TO_LEAVE:
@@ -155,7 +206,7 @@ class StripConnector(Step):
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete files: {e}")
 
-        ## 3. Verify that only allowed files remain
+        ## 4. Verify that only allowed files remain
         for file in connector.code_directory.iterdir():
             if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
