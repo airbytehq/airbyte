@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import fileinput
 import shutil
 from pathlib import Path
 from typing import List
@@ -63,6 +64,21 @@ def test_community_manifest_only_connector_expected_team(tmp_path, manifest_only
     shutil.copyfile(backup_path, manifest_only_community_connector_path)
 
 
+@pytest.fixture
+def test_certified_manifest_only_connector_expected_team(tmp_path, manifest_only_community_connector_path) -> List:
+    expected_teams = list(required_reviewer_checks.CERTIFIED_MANIFEST_ONLY_CONNECTOR_REVIEWERS)
+    backup_path = tmp_path / "backup_xkcd_metadata"
+    shutil.copyfile(manifest_only_community_connector_path, backup_path)
+    # TODO: replace this test case with an arbitrary change to a certified manifest-only
+    # connector when we have one, instead of replacing the support level as a change
+    with fileinput.FileInput(manifest_only_community_connector_path, inplace=True) as file:
+        for line in file:
+            print(line.replace("community", "certified"), end="")
+
+    yield expected_teams
+    shutil.copyfile(backup_path, manifest_only_community_connector_path)
+
+
 def verify_no_requirements_file_was_generated(captured: str):
     assert captured.out.split("\n")[0].split("=")[-1] == "false"
 
@@ -97,5 +113,9 @@ def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_tracked_change_
     check_review_requirements_file(capsys, not_tracked_change_expected_team)
 
 
-def test_find_changed_manifest_only_connectors(capsys, test_community_manifest_only_connector_expected_team):
+def test_find_reviewers_manifest_only_community_connector(capsys, test_community_manifest_only_connector_expected_team):
     check_review_requirements_file(capsys, test_community_manifest_only_connector_expected_team)
+
+
+def test_find_reviewers_manifest_only_certified_connector(capsys, test_certified_manifest_only_connector_expected_team):
+    check_review_requirements_file(capsys, test_certified_manifest_only_connector_expected_team)
