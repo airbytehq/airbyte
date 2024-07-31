@@ -7,29 +7,14 @@ package io.airbyte.cdk.integrations.destination.s3.avro
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.lang.Exception
 import org.apache.avro.Schema
-import org.apache.avro.SchemaBuilder
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecordBuilder
 import tech.allegro.schema.json2avro.converter.FieldConversionFailureListener
 
 class AvroFieldConversionFailureListener : FieldConversionFailureListener() {
-    val CHANGE_SCHEMA: Schema =
-        SchemaBuilder.builder()
-            .record("change")
-            .fields()
-            .name("field")
-            .type()
-            .stringType()
-            .noDefault()
-            .name("change")
-            .type()
-            .stringType()
-            .noDefault()
-            .name("reason")
-            .type()
-            .stringType()
-            .noDefault()
-            .endRecord()
+    companion object {
+        val CHANGE_SCHEMA: Schema = AvroConstants.AVRO_CHANGES_SCHEMA
+    }
 
     override fun onFieldConversionFailure(
         avroName: String,

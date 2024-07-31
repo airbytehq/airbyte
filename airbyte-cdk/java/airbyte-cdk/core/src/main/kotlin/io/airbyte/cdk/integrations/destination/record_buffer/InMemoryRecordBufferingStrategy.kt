@@ -42,7 +42,8 @@ class InMemoryRecordBufferingStrategy(
     override fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
         message: AirbyteMessage,
-        generationId: Long
+        generationId: Long,
+        syncId: Long
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
