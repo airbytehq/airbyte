@@ -416,6 +416,7 @@ const deployAirbyte = {
       type: "category",
       label: "Integrations",
       items: [
+        "deploying-airbyte/integrations/authentication",
         "deploying-airbyte/integrations/storage",
         "deploying-airbyte/integrations/secrets",
         "deploying-airbyte/integrations/database",
