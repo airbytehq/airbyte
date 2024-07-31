@@ -169,7 +169,16 @@ open class ConnectorExceptionHandler {
         return e
     }
 
-    private fun checkErrorType(e: Throwable?, failureType: FailureType?): Boolean {
+    @VisibleForTesting
+    internal fun checkErrorType(e: Throwable?, failureType: FailureType?): Boolean {
+        if (failureType == FailureType.CONFIG && e is ConfigErrorException) {
+            return true
+        }
+
+        if (failureType == FailureType.TRANSIENT && e is TransientErrorException) {
+            return true
+        }
+
         for (error in connectorErrorDictionary) {
             if (
                 error.failureType == failureType &&
@@ -186,12 +195,12 @@ open class ConnectorExceptionHandler {
      *  stored as part of the error profile in the error dictionary.
      * */
     private fun isRecognizableError(e: Throwable?): Boolean {
-        if (e == null) return false
+        if (e?.message == null) return false
         if (e is TransientErrorException || e is ConfigErrorException) {
             return true
         }
         for (error in connectorErrorDictionary) {
-            if (e.message?.matches(error.regexMatchingPattern.toRegex())!!) return true
+            if (e.message!!.matches(error.regexMatchingPattern.toRegex())) return true
         }
         return false
     }

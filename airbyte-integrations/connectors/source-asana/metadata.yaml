@@ -28,7 +28,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 1.0.9
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-asana
   githubIssueLabel: source-asana
   icon: asana.svg
@@ -45,6 +45,10 @@ data:
     ql: 300
     sl: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: asana_config_dev_null
+          id: 43b16e30-c7a1-4b78-9f43-438e325b0435
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
