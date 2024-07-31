@@ -175,11 +175,12 @@ class Events(HttpStream, CheckpointMixin):
         return f"{self.api_version}/export"
 
     def get_error_handler(self) -> ErrorHandler:
+        # Error status code mapping from Amplitude documentation: https://amplitude.com/docs/apis/analytics/export#status-codes
         error_mapping = DEFAULT_ERROR_MAPPING | {
             400: ErrorResolution(
                 response_action=ResponseAction.FAIL,
                 failure_type=FailureType.config_error,
-                error_message="The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.",
+                error_message="The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB. Provide a shorter 'request_time_range' interval.",
             ),
             403: ErrorResolution(
                 response_action=ResponseAction.FAIL,
@@ -187,12 +188,12 @@ class Events(HttpStream, CheckpointMixin):
                 error_message="Access denied due to lack of permission or invalid API/Secret key or wrong data region.",
             ),
             404: ErrorResolution(
-                response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message="No data collected."
+                response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message="No data available for the time range requested."
             ),
             504: ErrorResolution(
                 response_action=ResponseAction.FAIL,
-                failure_type=FailureType.system_error,
-                error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.",
+                failure_type=FailureType.config_error,
+                error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination.",
             ),
         }
         return HttpStatusErrorHandler(logger=LOGGER, error_mapping=error_mapping)
