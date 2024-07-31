@@ -133,17 +133,11 @@ interface SqlOperations {
     fun isValidData(data: JsonNode?): Boolean
 
     /**
-     * check if there's any row in table {@code rawNamespace.rawName} for which the value of the
-     * _airbyte_generation_id column is different from {@code generationId}
+     * get the value of _airbyte_generation_id for any row in table {@code rawNamespace.rawName}
      *
      * @returns true if the table exists and contains such a row, false otherwise
      */
-    fun isOtherGenerationIdInTable(
-        database: JdbcDatabase,
-        generationId: Long,
-        rawNamespace: String,
-        rawName: String
-    ): Boolean
+    fun getGenerationIdInTable(database: JdbcDatabase, namespace: String, name: String): Long?
 
     /** overwrite the raw table with the temporary raw table */
     fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String)
