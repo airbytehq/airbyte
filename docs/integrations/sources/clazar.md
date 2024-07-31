@@ -112,6 +112,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.2.2 | 2024-07-27 | [42617](https://github.com/airbytehq/airbyte/pull/42617) | Update dependencies |
 | 0.2.1 | 2024-07-20 | [42315](https://github.com/airbytehq/airbyte/pull/42315) | Update dependencies |
 | 0.2.0 | 2024-07-18 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | removed redundant columns from streams, added documentation for analytics |
 | 0.1.4 | 2024-07-13 | [41759](https://github.com/airbytehq/airbyte/pull/41759) | Update dependencies |

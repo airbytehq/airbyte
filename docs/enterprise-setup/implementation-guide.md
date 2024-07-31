@@ -241,6 +241,7 @@ auth:
     oidc:
       domain: ## e.g. company.example
       app-name: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -272,6 +273,7 @@ global:
       oidc:
         domain: ## e.g. company.example
         app-name: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```
@@ -596,7 +598,7 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
       {
         "Effect": "Allow",
         "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME",
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME"
       },
       {
         "Effect": "Allow",
@@ -606,11 +608,11 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             "s3:PutObjectAcl",
             "s3:GetObject",
             "s3:GetObjectAcl",
-            "s3:DeleteObject",
+            "s3:DeleteObject"
           ],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
-      },
-    ],
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
+      }
+    ]
 }
 ```
 
