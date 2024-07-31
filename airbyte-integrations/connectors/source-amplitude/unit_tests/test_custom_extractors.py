@@ -141,9 +141,9 @@ class TestEventsExtractor:
         "error_code, expectation",
         [
             (400, pytest.raises(AirbyteTracedException)),
-            (404, does_not_raise()),
+            (404, does_not_raise()), # does not raise because response action is IGNORE
             (504, pytest.raises(AirbyteTracedException)),
-            (500, does_not_raise()),
+            (500, does_not_raise()), # does not raise because repsonse action is RETRY
         ],
     )
     def test_event_errors_read(self, mocker, requests_mock, error_code, expectation):
