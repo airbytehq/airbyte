@@ -107,7 +107,7 @@ class Events(HttpStream, CheckpointMixin):
         except zipfile.BadZipFile as e:
             self.logger.exception(e)
             self.logger.error(
-                f"Received an invalid zip file in response to URL: {response.request.url}."
+                f"Received an invalid zip file in response to URL: {response.request.url}. "
                 f"The size of the response body is: {len(response.content)}"
             )
             return []
@@ -154,10 +154,13 @@ class Events(HttpStream, CheckpointMixin):
         end = pendulum.parse(stream_slice["end"])
         if start > end:
             yield from []
-        self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
-        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            self.state = self._get_updated_state(self.state, record)
-            yield record
+        try:
+            self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
+            for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+                self.state = self._get_updated_state(self.state, record)
+                yield record
+        except requests.exceptions.HTTPError as e:
+            self.logger.error(f"Error during syncing {self.name} stream - {e}")
 
     def request_params(self, stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = self.base_params
