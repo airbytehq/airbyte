@@ -70,11 +70,15 @@ def get_docker_hub_tags_and_digests(
         response = requests.get(tags_url, headers=headers)
         if response.ok:
             break
-            # This is to handle the case when a connector has not ever been released yet.
+
+        # This is to handle the case when a connector has not ever been released yet.
         if response.status_code == 404:
+            print(f"{tags_url} returned a 404. The connector might not be released yet.")
+            print(response)
             return tags_and_digests
         time.sleep(wait_sec)
 
+    response.raise_for_status()
     json_response = response.json()
     tags_and_digests.update({result["name"]: result.get("digest") for result in json_response.get("results", [])})
     if paginate:
