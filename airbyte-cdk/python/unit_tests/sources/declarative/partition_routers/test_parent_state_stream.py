@@ -829,7 +829,7 @@ SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR: MutableMapping[str, Any] = {
                 "start_datetime": {"datetime": "{{ config.get('start_date')}}"},
                 "start_time_option": {"inject_into": "request_parameter", "field_name": "start_time",
                                       "type": "RequestOption"},
-                "global_parent_cursor": True
+                "global_substream_cursor": True
             },
             "$parameters": {
                 "name": "post_comment_votes",
