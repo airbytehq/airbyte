@@ -111,12 +111,17 @@ class ParquetSerializedBuffer(
 
     @Deprecated("Deprecated in Java")
     @Throws(Exception::class)
-    override fun accept(record: AirbyteRecordMessage, generationId: Long): Long {
+    override fun accept(record: AirbyteRecordMessage, generationId: Long, syncId: Long): Long {
         if (inputStream == null && !isClosed) {
             val startCount: Long = byteCount
             if (useV2FieldNames) {
                 parquetWriter.write(
-                    avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, record)
+                    avroRecordFactory.getAvroRecordV2(
+                        UUID.randomUUID(),
+                        generationId,
+                        syncId,
+                        record
+                    )
                 )
             } else {
                 parquetWriter.write(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))

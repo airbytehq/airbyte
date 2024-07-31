@@ -4,9 +4,10 @@
 package io.airbyte.cdk.integrations.destination.s3.csv
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import java.time.Instant
 import java.util.*
 
 /**
@@ -17,15 +18,17 @@ abstract class BaseSheetGenerator(private val useV2Fields: Boolean = false) : Cs
     override fun getDataRow(
         id: UUID,
         recordMessage: AirbyteRecordMessage,
-        generationId: Long
+        generationId: Long,
+        syncId: Long,
     ): List<Any> {
         val data: MutableList<Any> = LinkedList()
 
         if (useV2Fields) {
             data.add(id)
             data.add(recordMessage.emittedAt)
-            data.add(Instant.now().toEpochMilli())
-            data.add(Jsons.serialize(recordMessage.meta))
+            val meta = MoreMappers.initMapper().valueToTree(recordMessage.meta) as ObjectNode
+            meta.put("sync_id", syncId)
+            data.add(Jsons.serialize(meta))
             data.add(generationId)
         } else {
             data.add(id)

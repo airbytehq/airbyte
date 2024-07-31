@@ -167,13 +167,13 @@ class S3ConsumerFactory {
         // Buffer creation function: yields a file buffer that converts
         // incoming data to the correct format for the destination.
 
-        val generationIds =
+        val generationAndSyncIds =
             catalog.streams.associate { stream ->
                 val descriptor =
                     StreamDescriptor()
                         .withNamespace(stream.stream.namespace)
                         .withName(stream.stream.name)
-                descriptor to stream.generationId
+                descriptor to Pair(stream.generationId, stream.syncId)
             }
 
         val createFunction =
@@ -201,7 +201,7 @@ class S3ConsumerFactory {
                         flushBufferFunction(storageOps, writeConfigs, catalog)
                     )
                 },
-                generationIds
+                generationAndSyncIds
             ),
             catalog,
             // S3 has no concept of default namespace
