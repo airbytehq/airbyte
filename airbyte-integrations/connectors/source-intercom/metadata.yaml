@@ -40,6 +40,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: intercom_config_dev_null
+          id: 09ebd6bb-2756-4cd3-8ad5-7120088cc553
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

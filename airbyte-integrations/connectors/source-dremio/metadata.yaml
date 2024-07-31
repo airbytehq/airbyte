@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: dremio_config_dev_null
+          id: 61228980-e78f-4481-b6d3-d0456a131585
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE_DREMIO_CREDS

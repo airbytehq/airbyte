@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshservice_config_dev_null
+          id: e47f94ef-d605-4a50-92d9-f6c873f2b2d2
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-FRESHSERVICE__CREDS
