@@ -9,11 +9,25 @@ from airbyte_cdk.sources.declarative.partition_routers.partition_router import P
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
-class GlobalParentCursor(DeclarativeCursor):
+class GlobalCursorStreamSlice(StreamSlice):
     """
-    The GlobalParentCursor is designed to track the state of parent streams using a single global cursor.
+    A stream slice that is used to track the state of substreams using a single global cursor.
+    This class have the additional `last_slice` field that is used to indicate if the stream slice is the last.
+    """
+
+    def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any], last_slice: bool = False) -> None:
+        super().__init__(partition=partition, cursor_slice=cursor_slice)
+        self.last_slice = last_slice
+
+
+class GlobalSubstreamCursor(DeclarativeCursor):
+    """
+    The GlobalSubstreamCursor is designed to track the state of substreams using a single global cursor.
     This class is useful for streams that have many partitions, allowing the state to be managed globally
     rather than per partition, which simplifies state management and reduces the size of state messages.
+
+    This class can only be used with the lookback window, otherwise child records added during the sync
+    to the already processed parent records will be missed.
 
     This cursor will be used when the `global_parent_cursor` parameter is set for incremental sync.
     """
@@ -22,15 +36,15 @@ class GlobalParentCursor(DeclarativeCursor):
         self._stream_cursor = stream_cursor
         self._partition_router = partition_router
 
-    def stream_slices(self) -> Iterable[StreamSlice]:
-        def flag_last(generator: Generator[StreamSlice, None, None]) -> Generator[StreamSlice, None, None]:
+    def stream_slices(self) -> Iterable[GlobalCursorStreamSlice]:
+        def flag_last(generator: Generator[StreamSlice, None, None]) -> Generator[GlobalCursorStreamSlice, None, None]:
             previous = None
             for item in generator:
                 if previous is not None:
                     yield previous
                 previous = item
             if previous is not None:
-                yield StreamSlice(partition=previous.partition, cursor_slice=previous.cursor_slice, last_slice=True)
+                yield GlobalCursorStreamSlice(partition=previous.partition, cursor_slice=previous.cursor_slice, last_slice=True)
 
         slices = (
             StreamSlice(partition=partition, cursor_slice=cursor_slice)
@@ -74,7 +88,7 @@ class GlobalParentCursor(DeclarativeCursor):
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         self._stream_cursor.observe(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record)
 
-    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
+    def close_slice(self, stream_slice: GlobalCursorStreamSlice, *args: Any) -> None:
         """
         Close the current stream slice.
 
@@ -83,7 +97,7 @@ class GlobalParentCursor(DeclarativeCursor):
         if the child cursor is earlier than a record from the first parent record.
 
         Args:
-            stream_slice (StreamSlice): The stream slice to be closed.
+            stream_slice (GlobalCursorStreamSlice): The stream slice to be closed.
             *args (Any): Additional arguments.
         """
         if stream_slice.last_slice:

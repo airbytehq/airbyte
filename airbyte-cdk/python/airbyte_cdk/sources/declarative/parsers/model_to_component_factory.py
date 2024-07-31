@@ -35,7 +35,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
-    GlobalParentCursor,
+    GlobalSubstreamCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
 )
@@ -630,12 +630,12 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, GlobalParentCursor, PerPartitionCursor)):
+            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)):
                 raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
-                "is_global_parent_cursor": isinstance(combined_slicers, GlobalParentCursor),
+                "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
             }
         transformations = []
         if model.transformations:
@@ -704,7 +704,7 @@ class ModelToComponentFactory:
         if model.incremental_sync and stream_slicer:
             incremental_sync_model = model.incremental_sync
             if hasattr(incremental_sync_model, "global_parent_cursor") and incremental_sync_model.global_parent_cursor:
-                return GlobalParentCursor(
+                return GlobalSubstreamCursor(
                     stream_cursor=self._create_component_from_model(model=incremental_sync_model, config=config),
                     partition_router=stream_slicer,
                 )
