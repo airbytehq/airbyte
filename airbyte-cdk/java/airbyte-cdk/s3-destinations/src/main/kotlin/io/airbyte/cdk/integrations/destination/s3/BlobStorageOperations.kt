@@ -31,7 +31,7 @@ abstract class BlobStorageOperations protected constructor() {
         recordsData: SerializableBuffer,
         namespace: String?,
         objectPath: String,
-        generationId: Long? = null
+        generationId: Long,
     ): String?
 
     /** Remove files that were just stored in the bucket */

@@ -115,7 +115,7 @@ open class S3StorageOperations(
         recordsData: SerializableBuffer,
         namespace: String?,
         objectPath: String,
-        generationId: Long?
+        generationId: Long,
     ): String {
         val exceptionsThrown: MutableList<Exception> = ArrayList()
         while (exceptionsThrown.size < UPLOAD_RETRY_LIMIT) {
@@ -169,7 +169,7 @@ open class S3StorageOperations(
     private fun loadDataIntoBucket(
         objectPath: String,
         recordsData: SerializableBuffer,
-        generationId: Long?
+        generationId: Long
     ): String {
         val partSize: Long = DEFAULT_PART_SIZE.toLong()
         val bucket: String? = s3Config.bucketName
@@ -195,9 +195,7 @@ open class S3StorageOperations(
         }
         // Note when looking in the S3 object, the metadata is appended with x-amz-meta-
         // and when retrieving, sdk takes care of removing the prefix
-        if (generationId != null) {
-            metadata[GENERATION_ID_USER_META_KEY] = generationId.toString()
-        }
+        metadata[GENERATION_ID_USER_META_KEY] = generationId.toString()
         val uploadManager: StreamTransferManager =
             StreamTransferManagerFactory.create(
                     bucket,
