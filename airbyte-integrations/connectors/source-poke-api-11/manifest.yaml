@@ -1,0 +1,1073 @@
+version: 3.9.6
+
+type: DeclarativeSource
+
+description: This is my description to save to the manifest
+
+check:
+  type: CheckStream
+  stream_names:
+    - pokemon
+
+definitions:
+  streams:
+    pokemon:
+      type: DeclarativeStream
+      name: pokemon
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: pokemon/{{ stream_partition.pokemon_name }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: name
+              partition_field: pokemon_name
+              stream:
+                $ref: '#/definitions/streams/all pokemon'
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/pokemon'
+    all pokemon:
+      type: DeclarativeStream
+      name: all pokemon
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: /pokemon
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 100
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/all pokemon'
+    location:
+      type: DeclarativeStream
+      name: location
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: '#/definitions/base_requester'
+          path: location
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: '#/schemas/location'
+  base_requester:
+    type: HttpRequester
+    url_base: https://pokeapi.co/api/v2/
+
+streams:
+  - $ref: '#/definitions/streams/pokemon'
+  - $ref: '#/definitions/streams/all pokemon'
+  - $ref: '#/definitions/streams/location'
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    pokemon: true
+    all pokemon: true
+    location: true
+  testedStreams:
+    pokemon:
+      hasRecords: true
+      streamHash: c798d0f1a6babaa3ecc72a8ded6cdf4da9de7b37
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    all pokemon:
+      hasRecords: true
+      streamHash: c72ac2e58910d4ee18b3a714ab66934bb1590e49
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    location:
+      hasRecords: true
+      streamHash: a8fad4e5ad4e9d91ad1779b5b1d835886825680e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+
+schemas:
+  pokemon:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      abilities:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            ability:
+              type:
+                - object
+                - 'null'
+              properties:
+                name:
+                  type:
+                    - string
+                    - 'null'
+                url:
+                  type:
+                    - string
+                    - 'null'
+            is_hidden:
+              type:
+                - boolean
+                - 'null'
+            slot:
+              type:
+                - number
+                - 'null'
+      base_experience:
+        type:
+          - number
+          - 'null'
+      cries:
+        type:
+          - object
+          - 'null'
+        properties:
+          latest:
+            type:
+              - string
+              - 'null'
+          legacy:
+            type:
+              - string
+              - 'null'
+      forms:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            name:
+              type:
+                - string
+                - 'null'
+            url:
+              type:
+                - string
+                - 'null'
+      game_indices:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            version:
+              type:
+                - object
+                - 'null'
+              properties:
+                name:
+                  type:
+                    - string
+                    - 'null'
+                url:
+                  type:
+                    - string
+                    - 'null'
+            game_index:
+              type:
+                - number
+                - 'null'
+      height:
+        type:
+          - number
+          - 'null'
+      held_items:
+        type:
+          - array
+          - 'null'
+      id:
+        type:
+          - number
+          - 'null'
+      is_default:
+        type:
+          - boolean
+          - 'null'
+      location_area_encounters:
+        type:
+          - string
+          - 'null'
+      moves:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            move:
+              type:
+                - object
+                - 'null'
+              properties:
+                name:
+                  type:
+                    - string
+                    - 'null'
+                url:
+                  type:
+                    - string
+                    - 'null'
+            version_group_details:
+              type:
+                - array
+                - 'null'
+              items:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  level_learned_at:
+                    type:
+                      - number
+                      - 'null'
+                  move_learn_method:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - 'null'
+                      url:
+                        type:
+                          - string
+                          - 'null'
+                  version_group:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - 'null'
+                      url:
+                        type:
+                          - string
+                          - 'null'
+      name:
+        type:
+          - string
+          - 'null'
+      order:
+        type:
+          - number
+          - 'null'
+      past_abilities:
+        type:
+          - array
+          - 'null'
+      past_types:
+        type:
+          - array
+          - 'null'
+      species:
+        type:
+          - object
+          - 'null'
+        properties:
+          name:
+            type:
+              - string
+              - 'null'
+          url:
+            type:
+              - string
+              - 'null'
+      sprites:
+        type:
+          - object
+          - 'null'
+        properties:
+          back_default:
+            type:
+              - string
+              - 'null'
+          back_female:
+            type:
+              - string
+              - 'null'
+          back_shiny:
+            type:
+              - string
+              - 'null'
+          back_shiny_female:
+            type:
+              - string
+              - 'null'
+          front_default:
+            type:
+              - string
+              - 'null'
+          front_female:
+            type:
+              - string
+              - 'null'
+          front_shiny:
+            type:
+              - string
+              - 'null'
+          front_shiny_female:
+            type:
+              - string
+              - 'null'
+          other:
+            type:
+              - object
+              - 'null'
+            properties:
+              dream_world:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  front_default:
+                    type:
+                      - string
+                      - 'null'
+              home:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  front_default:
+                    type:
+                      - string
+                      - 'null'
+                  front_female:
+                    type:
+                      - string
+                      - 'null'
+                  front_shiny:
+                    type:
+                      - string
+                      - 'null'
+                  front_shiny_female:
+                    type:
+                      - string
+                      - 'null'
+              official-artwork:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  front_default:
+                    type:
+                      - string
+                      - 'null'
+                  front_shiny:
+                    type:
+                      - string
+                      - 'null'
+              showdown:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  back_default:
+                    type:
+                      - string
+                      - 'null'
+                  back_female:
+                    type:
+                      - string
+                      - 'null'
+                  back_shiny:
+                    type:
+                      - string
+                      - 'null'
+                  front_default:
+                    type:
+                      - string
+                      - 'null'
+                  front_female:
+                    type:
+                      - string
+                      - 'null'
+                  front_shiny:
+                    type:
+                      - string
+                      - 'null'
+                  front_shiny_female:
+                    type:
+                      - string
+                      - 'null'
+          versions:
+            type:
+              - object
+              - 'null'
+            properties:
+              generation-i:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  red-blue:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_gray:
+                        type:
+                          - string
+                          - 'null'
+                      back_transparent:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_gray:
+                        type:
+                          - string
+                          - 'null'
+                      front_transparent:
+                        type:
+                          - string
+                          - 'null'
+                  yellow:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_gray:
+                        type:
+                          - string
+                          - 'null'
+                      back_transparent:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_gray:
+                        type:
+                          - string
+                          - 'null'
+                      front_transparent:
+                        type:
+                          - string
+                          - 'null'
+              generation-ii:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  crystal:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny_transparent:
+                        type:
+                          - string
+                          - 'null'
+                      back_transparent:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_transparent:
+                        type:
+                          - string
+                          - 'null'
+                      front_transparent:
+                        type:
+                          - string
+                          - 'null'
+                  gold:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_transparent:
+                        type:
+                          - string
+                          - 'null'
+                  silver:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_transparent:
+                        type:
+                          - string
+                          - 'null'
+              generation-iii:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  emerald:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                  firered-leafgreen:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                  ruby-sapphire:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+              generation-iv:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  diamond-pearl:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_female:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+                  heartgold-soulsilver:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_female:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+                  platinum:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_female:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+              generation-v:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  black-white:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      animated:
+                        type:
+                          - object
+                          - 'null'
+                        properties:
+                          back_default:
+                            type:
+                              - string
+                              - 'null'
+                          back_female:
+                            type:
+                              - string
+                              - 'null'
+                          back_shiny:
+                            type:
+                              - string
+                              - 'null'
+                          back_shiny_female:
+                            type:
+                              - string
+                              - 'null'
+                          front_default:
+                            type:
+                              - string
+                              - 'null'
+                          front_female:
+                            type:
+                              - string
+                              - 'null'
+                          front_shiny:
+                            type:
+                              - string
+                              - 'null'
+                          front_shiny_female:
+                            type:
+                              - string
+                              - 'null'
+                      back_default:
+                        type:
+                          - string
+                          - 'null'
+                      back_female:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      back_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+              generation-vi:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  omegaruby-alphasapphire:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+                  x-y:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+              generation-vii:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  icons:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                  ultra-sun-ultra-moon:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+                      front_female:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny:
+                        type:
+                          - string
+                          - 'null'
+                      front_shiny_female:
+                        type:
+                          - string
+                          - 'null'
+              generation-viii:
+                type:
+                  - object
+                  - 'null'
+                properties:
+                  icons:
+                    type:
+                      - object
+                      - 'null'
+                    properties:
+                      front_default:
+                        type:
+                          - string
+                          - 'null'
+      stats:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            base_stat:
+              type:
+                - number
+                - 'null'
+            effort:
+              type:
+                - number
+                - 'null'
+            stat:
+              type:
+                - object
+                - 'null'
+              properties:
+                name:
+                  type:
+                    - string
+                    - 'null'
+                url:
+                  type:
+                    - string
+                    - 'null'
+      types:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            type:
+              type:
+                - object
+                - 'null'
+              properties:
+                name:
+                  type:
+                    - string
+                    - 'null'
+                url:
+                  type:
+                    - string
+                    - 'null'
+            slot:
+              type:
+                - number
+                - 'null'
+      weight:
+        type:
+          - number
+          - 'null'
+  all pokemon:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - string
+          - 'null'
+      url:
+        type:
+          - string
+          - 'null'
+  location:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - 'null'
+      next:
+        type:
+          - string
+          - 'null'
+      results:
+        type:
+          - array
+          - 'null'
+        items:
+          type:
+            - object
+            - 'null'
+          properties:
+            name:
+              type:
+                - string
+                - 'null'
+            url:
+              type:
+                - string
+                - 'null'
