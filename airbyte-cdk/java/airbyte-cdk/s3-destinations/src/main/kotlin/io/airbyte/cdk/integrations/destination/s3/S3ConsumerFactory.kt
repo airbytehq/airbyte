@@ -20,6 +20,7 @@ import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy
 import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory.Companion.getCreateFunction
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -197,16 +198,6 @@ class S3ConsumerFactory {
         writeConfig: WriteConfig,
         storageOperations: BlobStorageOperations
     ): Boolean {
-        // Fallback to backward-compatible logic in absence of minGenerationId or generationId
-        // missing from platform
-        if ((writeConfig.minimumGenerationId == null || writeConfig.generationId == null)) {
-            LOGGER.info {
-                "Missing information about generation id, minGenerationId: " +
-                    "${writeConfig.minimumGenerationId}, generationId: ${writeConfig.generationId}, " +
-                    "falling back to ${writeConfig.syncMode} backward compatible behavior"
-            }
-            return writeConfig.syncMode == DestinationSyncMode.OVERWRITE
-        }
         return when (writeConfig.minimumGenerationId) {
             // This is an additional safety check, that this really is OVERWRITE
             // mode, this avoids bad things happening like deleting all objects
@@ -231,7 +222,7 @@ class S3ConsumerFactory {
                     )
                 if (currentGenerationId == null) {
                     LOGGER.info {
-                        "Missing generationId from the lastModified object, proceeding with cleanup"
+                        "Missing generationId from the lastModified object, proceeding with cleanup for stream ${writeConfig.streamName}"
                     }
                     return true
                 }
@@ -239,11 +230,11 @@ class S3ConsumerFactory {
                 val hasDataFromCurrentGeneration = currentGenerationId == writeConfig.generationId
                 if (hasDataFromCurrentGeneration) {
                     LOGGER.info {
-                        "Preserving data from previous sync since it matches the current generation ${writeConfig.generationId}"
+                        "Preserving data from previous sync for stream ${writeConfig.streamName} since it matches the current generation ${writeConfig.generationId}"
                     }
                 } else {
                     LOGGER.info {
-                        "No data exists from previous sync for current generation ${writeConfig.generationId}, " +
+                        "No data exists from previous sync for stream ${writeConfig.streamName} from current generation ${writeConfig.generationId}, " +
                             "proceeding to clean up existing data"
                     }
                 }
@@ -276,6 +267,11 @@ class S3ConsumerFactory {
                     stream.destinationSyncMode,
                     "Undefined destination sync mode"
                 )
+                if (stream.generationId == null || stream.minimumGenerationId == null) {
+                    throw ConfigErrorException(
+                        "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7"
+                    )
+                }
                 val abStream = stream.stream
                 val namespace: String? = abStream.namespace
                 val streamName = abStream.name

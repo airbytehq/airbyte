@@ -294,7 +294,7 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
             "Destination's spec.json does not support overwrite sync mode."
         )
 
-        // Run sync with some messages
+        // Run sync with OLD version connector
         val catalogPair =
             getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 42, null, null)
         val config = getConfig()
@@ -303,7 +303,15 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
                 catalogPair.first,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
             )
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        // Old connector doesn't have destinationStats so skip checking that.
+        runSyncAndVerifyStateOutput(
+            config,
+            firstSyncMessages,
+            catalogPair.first,
+            runNormalization = false,
+            "airbyte/destination-s3:0.6.4",
+            verifyIndividualStateAndCounts = false,
+        )
 
         // This simulates first sync after enabling generationId in connector. null -> 1.
         // legend has it that platform always increments to 1 and sends min and gen id as 1.
@@ -485,6 +493,9 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
             )
         dummyCatalog.streams[0].name = dummyCatalogStream
         val configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(dummyCatalog)
+        configuredDummyCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(20).withMinimumGenerationId(20)
+        }
         // update messages to set new dummy stream name
         firstSyncMessages
             .filter { message: AirbyteMessage -> message.record != null }
@@ -572,7 +583,15 @@ protected constructor(protected val outputFormat: FileUploadFormat) :
                 catalogPair.first,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
             )
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        // Old connector doesn't have destinationStats so skip checking that.
+        runSyncAndVerifyStateOutput(
+            config,
+            firstSyncMessages,
+            catalogPair.first,
+            runNormalization = false,
+            "airbyte/destination-s3:0.6.4",
+            verifyIndividualStateAndCounts = false,
+        )
 
         // This simulates first sync after enabling generationId in connector. null -> 0.
         // Apparently we encountered a behavior where for APPEND mode min and genID are not

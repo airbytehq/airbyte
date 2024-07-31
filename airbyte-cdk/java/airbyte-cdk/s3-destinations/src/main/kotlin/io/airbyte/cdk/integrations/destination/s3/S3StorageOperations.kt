@@ -371,16 +371,19 @@ open class S3StorageOperations(
         // of last modified object to retrieve the object metadata header.
         // Note: This logic will fall apart if the path format is changed between syncs
         while (objects.objectSummaries.size > 0) {
-            val localMaximaLastModified: S3ObjectSummary =
+            val matchedObjects =
                 objects.objectSummaries
                     .filter { obj: S3ObjectSummary -> regexFormat.matcher(obj.key).matches() }
                     .sortedWith(descendingComparator)
-                    .first()
-            if (
-                lastModifiedObject == null ||
-                    descendingComparator.compare(lastModifiedObject, localMaximaLastModified) > 0
-            ) {
-                lastModifiedObject = localMaximaLastModified
+            if (matchedObjects.isNotEmpty()) {
+                val localMaximaLastModified: S3ObjectSummary = matchedObjects.first()
+                if (
+                    lastModifiedObject == null ||
+                        descendingComparator.compare(lastModifiedObject, localMaximaLastModified) >
+                            0
+                ) {
+                    lastModifiedObject = localMaximaLastModified
+                }
             }
             if (objects.isTruncated) {
                 objects = s3Client.listNextBatchOfObjects(objects)
