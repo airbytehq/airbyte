@@ -195,7 +195,7 @@ class Events(HttpStream, CheckpointMixin):
             504: ErrorResolution(
                 response_action=ResponseAction.FAIL,
                 failure_type=FailureType.config_error,
-                error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination.",
+                error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export",
             ),
         }
         return HttpStatusErrorHandler(logger=LOGGER, error_mapping=error_mapping)
