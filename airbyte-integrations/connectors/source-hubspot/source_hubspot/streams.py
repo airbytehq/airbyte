@@ -1524,6 +1524,7 @@ class DealPipelines(ClientSideIncrementalStream):
     primary_key = "pipelineId"
     scopes = {"crm.objects.contacts.read"}
 
+
 class DealSplits(CRMSearchStream):
     """Deal splits, API v3"""
 
