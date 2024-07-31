@@ -27,7 +27,6 @@ class RootLevelFlatteningSheetGenerator(
                 mutableListOf(
                     JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-                    JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
                     JavaBaseConstants.COLUMN_NAME_AB_META,
                     JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                 )

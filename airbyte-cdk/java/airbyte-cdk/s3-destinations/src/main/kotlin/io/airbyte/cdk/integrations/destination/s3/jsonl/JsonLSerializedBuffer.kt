@@ -43,12 +43,18 @@ class JsonLSerializedBuffer(
         printWriter = PrintWriter(outputStream, true, StandardCharsets.UTF_8)
     }
 
-    private fun addV2Fields(json: ObjectNode, record: AirbyteRecordMessage, generationId: Long) {
+    private fun addV2Fields(
+        json: ObjectNode,
+        record: AirbyteRecordMessage,
+        generationId: Long,
+        syncId: Long
+    ) {
         json.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, UUID.randomUUID().toString())
         json.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, record.emittedAt)
-        json.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, System.currentTimeMillis())
         json.put(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, generationId)
-        json.replace(JavaBaseConstants.COLUMN_NAME_AB_META, MAPPER.valueToTree(record.meta))
+        val meta = MAPPER.valueToTree<ObjectNode>(record.meta)
+        meta.put("sync_id", syncId)
+        json.replace(JavaBaseConstants.COLUMN_NAME_AB_META, meta)
     }
 
     private fun addV1Fields(json: ObjectNode, record: AirbyteRecordMessage) {
@@ -57,10 +63,10 @@ class JsonLSerializedBuffer(
     }
 
     @Deprecated("Deprecated in Java")
-    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long) {
+    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long, syncId: Long) {
         val json = MAPPER.createObjectNode()
         if (useV2FieldNames) {
-            addV2Fields(json, record, generationId)
+            addV2Fields(json, record, generationId, syncId)
         } else {
             addV1Fields(json, record)
         }

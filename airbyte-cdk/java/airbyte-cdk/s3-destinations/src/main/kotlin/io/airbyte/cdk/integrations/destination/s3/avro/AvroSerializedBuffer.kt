@@ -56,10 +56,10 @@ class AvroSerializedBuffer(
 
     @Deprecated("Deprecated in Java")
     @Throws(IOException::class)
-    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long) {
+    override fun writeRecord(record: AirbyteRecordMessage, generationId: Long, syncId: Long) {
         if (this.useV2FieldNames) {
             dataFileWriter!!.append(
-                avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, record)
+                avroRecordFactory.getAvroRecordV2(UUID.randomUUID(), generationId, syncId, record)
             )
         } else {
             dataFileWriter!!.append(avroRecordFactory.getAvroRecord(UUID.randomUUID(), record))

@@ -18,7 +18,7 @@ import java.util.stream.Stream
 class S3DestinationFlushFunction(
     override val optimalBatchSizeBytes: Long,
     private val strategyProvider: () -> BufferingStrategy,
-    private val generationIds: Map<StreamDescriptor, Long> = emptyMap()
+    private val generationAndSyncIds: Map<StreamDescriptor, Pair<Long, Long>> = emptyMap()
 ) : DestinationFlushFunction {
 
     override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
@@ -47,8 +47,8 @@ class S3DestinationFlushFunction(
                         .withData(data)
                 val completeMessage =
                     AirbyteMessage().withType(AirbyteMessage.Type.RECORD).withRecord(completeRecord)
-                val generationId = generationIds[streamDescriptor] ?: 0
-                strategy.addRecord(nameAndNamespace, completeMessage, generationId)
+                val (generationId, syncId) = generationAndSyncIds[streamDescriptor] ?: Pair(0L, 0L)
+                strategy.addRecord(nameAndNamespace, completeMessage, generationId, syncId)
             }
             strategy.flushSingleStream(nameAndNamespace)
         }
