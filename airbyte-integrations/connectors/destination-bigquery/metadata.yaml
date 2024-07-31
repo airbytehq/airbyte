@@ -98,4 +98,9 @@ data:
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-BIGQUERY_CREDENTIALS_1S1T_GCS_BAD_COPY
+          fileName: credentials-1s1t-gcs-bad-copy-permission.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
