@@ -47,14 +47,15 @@ class SerializedBufferingStrategy
     override fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
         message: AirbyteMessage,
-        generationId: Long
+        generationId: Long,
+        syncId: Long
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
         val buffer = getOrCreateBuffer(stream)
 
         @Suppress("DEPRECATION")
-        val actualMessageSizeInBytes = buffer.accept(message.record, generationId)
+        val actualMessageSizeInBytes = buffer.accept(message.record, generationId, syncId)
         totalBufferSizeInBytes += actualMessageSizeInBytes
         // Flushes buffer when either the buffer was completely filled or only a single stream was
         // filled

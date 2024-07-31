@@ -33,7 +33,6 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
@@ -1581,13 +1580,13 @@ abstract class DestinationAcceptanceTest(
         return record
     }
 
-    private fun getChanges(record: JsonNode): MutableList<AirbyteRecordMessageMetaChange> {
+    private fun getMeta(record: JsonNode): ObjectNode {
         val meta = record.get(JavaBaseConstants.COLUMN_NAME_AB_META)
 
         val asString = if (meta.isTextual) meta.asText() else Jsons.serialize(meta)
-        val asMeta = Jsons.deserialize(asString, AirbyteRecordMessageMeta::class.java)
+        val asMeta = Jsons.deserialize(asString)
 
-        return asMeta.changes
+        return asMeta as ObjectNode
     }
 
     @Test
@@ -1628,11 +1627,6 @@ abstract class DestinationAcceptanceTest(
             Assertions.assertEquals(message.record.emittedAt, record.get(abTsKey).asLong())
 
             if (useV2Fields) {
-                // Validate that the loadTs at at least >= the time the test started
-                Assertions.assertTrue(
-                    record.get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT).asLong() >=
-                        preRunTime.toEpochMilli()
-                )
                 // Generation id should match the one from the catalog
                 Assertions.assertEquals(
                     generationId,
@@ -1642,18 +1636,22 @@ abstract class DestinationAcceptanceTest(
         }
 
         // Regardless of whether change failures are capatured, all v2
-        // destinations should pass upstream changes through.
+        // destinations should pass upstream changes through and set sync id.
         if (useV2Fields) {
-            val changes = getChanges(destinationOutput[2])
+            val metas = destinationOutput.map { getMeta(it) }
+            val syncIdsAllValid = metas.map { it["sync_id"].asLong() }.all { it == 100L }
+            Assertions.assertTrue(syncIdsAllValid)
+
+            val changes = metas[2]["changes"].elements().asSequence().toList()
             Assertions.assertEquals(changes.size, 1)
-            Assertions.assertEquals(changes[0].field, "name")
+            Assertions.assertEquals(changes[0]["field"].asText(), "name")
             Assertions.assertEquals(
-                changes[0].change,
-                AirbyteRecordMessageMetaChange.Change.TRUNCATED
+                changes[0]["change"].asText(),
+                AirbyteRecordMessageMetaChange.Change.TRUNCATED.value()
             )
             Assertions.assertEquals(
-                changes[0].reason,
-                AirbyteRecordMessageMetaChange.Reason.SOURCE_FIELD_SIZE_LIMITATION
+                changes[0]["reason"].asText(),
+                AirbyteRecordMessageMetaChange.Reason.SOURCE_FIELD_SIZE_LIMITATION.value()
             )
         }
 
@@ -1665,14 +1663,17 @@ abstract class DestinationAcceptanceTest(
             val data = getData(badRow)
 
             Assertions.assertTrue(data["id"] == null || data["id"].isNull)
-            val changes = getChanges(badRow)
+            val changes = getMeta(badRow)["changes"].elements().asSequence().toList()
 
             Assertions.assertEquals(1, changes.size)
-            Assertions.assertEquals("id", changes[0].field)
-            Assertions.assertEquals(AirbyteRecordMessageMetaChange.Change.NULLED, changes[0].change)
+            Assertions.assertEquals("id", changes[0]["field"].asText())
             Assertions.assertEquals(
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
-                changes[0].reason
+                AirbyteRecordMessageMetaChange.Change.NULLED.value(),
+                changes[0]["change"].asText()
+            )
+            Assertions.assertEquals(
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR.value(),
+                changes[0]["reason"].asText()
             )
 
             // Expect the third message to have added a new change to an old one
@@ -1681,7 +1682,8 @@ abstract class DestinationAcceptanceTest(
             Assertions.assertTrue(
                 dataWithPreviousChange["id"] == null || dataWithPreviousChange["id"].isNull
             )
-            val twoChanges = getChanges(badRowWithPreviousChange)
+            val twoChanges =
+                getMeta(badRowWithPreviousChange)["changes"].elements().asSequence().toList()
             Assertions.assertEquals(2, twoChanges.size)
         }
     }

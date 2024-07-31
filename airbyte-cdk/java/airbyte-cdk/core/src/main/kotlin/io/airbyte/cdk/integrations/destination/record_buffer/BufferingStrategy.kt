@@ -30,7 +30,8 @@ interface BufferingStrategy : AutoCloseable {
     fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
         message: AirbyteMessage,
-        generationId: Long = 0
+        generationId: Long = 0,
+        syncId: Long = 0
     ): Optional<BufferFlushType>
 
     /** Flush the buffered messages from a single stream */

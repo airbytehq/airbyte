@@ -38,7 +38,8 @@ constructor(
     override fun getDataRow(
         id: UUID,
         recordMessage: AirbyteRecordMessage,
-        generationId: Long
+        generationId: Long,
+        syncId: Long
     ): List<Any> {
         return getDataRow(
             id,
