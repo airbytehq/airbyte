@@ -33,6 +33,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: omnisend_config_dev_null
+          id: 1da4bd92-4fee-4601-9794-011396cc713d
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-OMNISEND__CREDS

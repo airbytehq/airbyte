@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: twilio-taskrouter_config_dev_null
+          id: 7cc6b91e-1169-406d-aa41-14fe80acec4b
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-TWILIO-TASKROUTER__CREDS

@@ -40,6 +40,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: metabase_config_dev_null
+          id: 59057cfd-250a-45b8-a2d5-a0ad74353d27
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: aha_config_dev_null
+          id: 38f3c440-135f-4ca6-9d97-c68104b28cfa
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-AHA__CREDS

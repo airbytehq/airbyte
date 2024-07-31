@@ -283,9 +283,21 @@ class TestSemiIncrementalKlaviyoStream:
 
 
 class TestProfilesStream:
-    def test_request_params(self):
-        stream = get_stream_by_name("profiles", CONFIG)
-        assert stream.retriever.requester.get_request_params() == {"additional-fields[profile]": "predictive_analytics"}
+
+    @pytest.mark.parametrize(
+        "disable_predictive_analytics, expected_additional_fields",
+        [
+            pytest.param(False, {"additional-fields[profile]": "predictive_analytics"}, id="test_config_with_disable_fetching_predictive_analytics"),
+            pytest.param(True, {}, id="test_config_with_disable_fetching_predictive_analytics_turned_on")
+        ]
+    )
+    def test_request_params(self, disable_predictive_analytics, expected_additional_fields):
+        if disable_predictive_analytics:
+            config = {"disable_fetching_predictive_analytics": True} | CONFIG
+        else:
+            config = CONFIG
+        stream = get_stream_by_name("profiles", config)
+        assert stream.retriever.requester.get_request_params() == expected_additional_fields
 
     def test_read_records(self, requests_mock):
         stream = get_stream_by_name("profiles", CONFIG)

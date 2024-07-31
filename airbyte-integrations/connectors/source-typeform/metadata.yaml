@@ -39,6 +39,14 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: typeform_config_oauth_dev_null
+          id: 1522cc4d-04d2-4d44-9152-0854b38e15ee
+        - name: typeform_config_dev_null
+          id: 2b707284-7c35-46da-b1ed-1cb09779a43c
+        - name: typeform_incremental_config_dev_null
+          id: 681b2010-52af-4d44-b2e1-1b5f50581509
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

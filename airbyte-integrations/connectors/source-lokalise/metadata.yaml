@@ -29,6 +29,10 @@ data:
   # Disabling acceptance tests for now
   # No / Low airbyte cloud usage
   # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: lokalise_config_dev_null
+  #         id: 1ff2f125-7634-492c-9289-c512dccd2600
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-LOKALISE__CREDS
