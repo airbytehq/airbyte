@@ -8,10 +8,13 @@ from pathlib import Path
 import jinja2
 import requests
 
-## HELPER FUNCTIONS for migrate_to_manifest_only.py
+## HELPER FUNCTIONS
 
 
 def readme_for_connector(name: str) -> str:
+    """
+    Generate a manifest-only README.md file for a connector using a Jinja2 template.
+    """
     dir_path = Path(__file__).parent / "templates"
     env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=str(dir_path)))
     template = env.get_template("README.md.j2")
@@ -21,6 +24,9 @@ def readme_for_connector(name: str) -> str:
 
 
 def get_latest_base_image(image_name: str) -> str:
+    """
+    Fetch the latest base image from Docker Hub for a given image name.
+    """
     base_url = "https://hub.docker.com/v2/repositories/"
 
     tags_url = f"{base_url}{image_name}/tags/?page_size=2&ordering=last_updated"
@@ -51,6 +57,10 @@ def get_latest_base_image(image_name: str) -> str:
 
 
 def revert_connector_directory(directory):
+    """
+    Revert changes to a connector directory to the state at the last commit.
+    Used as a cleanup step in the manifest-only pipeline.
+    """
     try:
         # Restore the directory to its state at the last commit
         subprocess.run(["git", "restore", directory], check=True)

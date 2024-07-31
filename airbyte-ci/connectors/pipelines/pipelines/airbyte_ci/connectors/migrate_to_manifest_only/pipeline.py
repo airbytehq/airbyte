@@ -39,8 +39,6 @@ yaml.preserve_quotes = True
 class CheckIsManifestMigrationCandidate(Step):
     """
     Pipeline step to check if the connector is a candidate for migration to manifest-only.
-
-    returns: StepResult - SUCCESS if the connector is a valid candidate, SKIPPED if it's not.
     """
 
     context: ConnectorContext
@@ -103,13 +101,16 @@ class CheckIsManifestMigrationCandidate(Step):
 
 class StripConnector(Step):
     """
-    Step to strip a low-code connector to manifest-only files.
+    Pipeline step to strip a low-code connector to manifest-only files.
     """
 
     context: ConnectorContext
     title = "Strip Out Unnecessary Files"
 
     def _delete_directory_item(self, file: Path) -> None:
+        """
+        Deletes the passed file or folder.
+        """
         self.logger.info(f"Deleting {file.name}")
         try:
             if file.is_dir():
@@ -120,6 +121,9 @@ class StripConnector(Step):
             raise ValueError(f"Failed to delete {file.name}: {e}")
 
     def _handle_integration_tests(self, file: Path) -> None:
+        """
+        Preserves any integration tests, deletes other test files.
+        """
         if file.name in {"integration", "integrations"}:
             return
         else:
@@ -161,7 +165,7 @@ class StripConnector(Step):
 
 class UpdateManifestOnlyFiles(Step):
     """
-    Step to update metadata, acceptance-test-config and readme to comply with manifest-only requirements.
+    Pipeline step to update connector's metadata, acceptance-test-config and readme to manifest-only.
     """
 
     context: ConnectorContext
