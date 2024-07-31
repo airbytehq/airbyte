@@ -1,5 +1,27 @@
 # Changelog
 
+## 4.1.0
+Align BackoffStrategy interfaces to take attempt_count as a full-fledge parameter
+
+## 4.0.2
+Add ability to stop stream when retry-after is greater than a duration
+
+## 4.0.1
+Fix case where stream wont have a state attribute and needs to resolve get_updated_state
+
+## 4.0.0
+- General performance enhancement
+- Dropping Python 3.9 support
+
+## 3.9.6
+fix declarative schema refs for Decoder
+
+## 3.9.5
+Fixed: Resolved an issue in HttpClient that prevented correct error messages from being presented.
+
+## 3.9.4
+Adding  text field to declarative manifest schema for general connector description.
+
 ## 3.9.3
 add name property to http_client for convenience
 

@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 2.1.11
+  dockerImageTag: 2.1.12
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -79,6 +79,16 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: linkedin-ads_config_multiple_account_ids_dev_null
+          id: 105e4dcd-6c79-461d-8b2b-9bbf0424d5b7
+        - name: linkedin-ads_config_dev_null
+          id: 3d35a758-f9ba-4b40-9ebd-454fe21f389d
+        - name: linkedin-ads_config_oauth_dev_null
+          id: 42888b02-5f06-4ccd-b86b-2620d7f87b61
+        - name: linkedin-ads_config_token_dev_null
+          id: a9ae94ba-24e6-406a-b02d-b100e6ffacda
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

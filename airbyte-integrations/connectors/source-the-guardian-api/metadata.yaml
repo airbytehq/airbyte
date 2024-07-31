@@ -6,6 +6,10 @@ data:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: the-guardian-api_config_dev_null
+          id: 28833186-4803-4694-926e-1b0c5d534df8
     - suite: acceptanceTests
       testSecrets:
         - fileName: config.json

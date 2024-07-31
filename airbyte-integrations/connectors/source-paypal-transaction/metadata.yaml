@@ -45,6 +45,14 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: paypal-transaction_config_oauth_sandbox_dev_null
+          id: 0706e37d-f17e-43fe-9c44-1a8a1f7c8913
+        - name: paypal-transaction_config_dev_null
+          id: 41268924-7130-45f9-9d08-5b2707b14c65
+        - name: paypal-transaction_config_oauth_dev_null
+          id: 9d998f7d-87ac-46a1-bfb1-2c655b0a9838
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

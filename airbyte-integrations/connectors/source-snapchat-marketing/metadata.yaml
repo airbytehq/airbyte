@@ -66,6 +66,10 @@ data:
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: snapchat-marketing_config_dev_null
+          id: 1aea074b-0b53-49ec-85d3-b1d10ed3c83d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
