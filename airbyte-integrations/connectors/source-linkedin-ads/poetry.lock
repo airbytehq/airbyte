@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "4.0.2"
+version = "4.1.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-4.0.2-py3-none-any.whl", hash = "sha256:fb6e0ac4422ea84714f898112db1233eb7030ecde89461d736a926a9b401a617"},
-    {file = "airbyte_cdk-4.0.2.tar.gz", hash = "sha256:d772ed4385ce0ff7642dd85333427dccf504ca4b38da66f27637f83df9a35f96"},
+    {file = "airbyte_cdk-4.1.0-py3-none-any.whl", hash = "sha256:033f1f8751644d5a680cf93d329edbe57df10f6aab5c593d66084a964e38508d"},
+    {file = "airbyte_cdk-4.1.0.tar.gz", hash = "sha256:15b4544fb9952f097a65aea77f7256b759fb8d9dfd95c6cf6733f8e216af5982"},
 ]
 
 [package.dependencies]
@@ -498,6 +498,20 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "freezegun"
+version = "1.2.2"
+description = "Let your Python tests travel through time"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "freezegun-1.2.2-py3-none-any.whl", hash = "sha256:ea1b963b993cb9ea195adbd893a48d573fda951b0da64f60883d7e988b606c9f"},
+    {file = "freezegun-1.2.2.tar.gz", hash = "sha256:cd22d1ba06941384410cd967d8a99d5ae2442f57dfafeff2fda5de8dc5c05446"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7"
+
+[[package]]
 name = "genson"
 version = "1.2.2"
 description = "GenSON is a powerful, user-friendly JSON Schema generator."
@@ -641,13 +655,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.94"
+version = "0.1.95"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.94-py3-none-any.whl", hash = "sha256:0d01212086d58699f75814117b026784218042f7859877ce08a248a98d84aa8d"},
-    {file = "langsmith-0.1.94.tar.gz", hash = "sha256:e44afcdc9eee6f238f6a87a02bba83111bd5fad376d881ae299834e06d39d712"},
+    {file = "langsmith-0.1.95-py3-none-any.whl", hash = "sha256:7f490af411597f87af7893b0a42519c442d6ca2517483344c4f55ccdc3136dde"},
+    {file = "langsmith-0.1.95.tar.gz", hash = "sha256:2dc987a640939c0eccb41b7acc31216a7c9b38e1deb62079d1ecaed0897eea67"},
 ]
 
 [package.dependencies]
@@ -1471,4 +1485,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "3257aff7899b5c1783d84418a3967101080b501abbf05734a0f4cf09e6e20e23"
+content-hash = "036411fca158a55f4adfc26229c2f0bd1bff450fd0a9abbd099927f25971f543"

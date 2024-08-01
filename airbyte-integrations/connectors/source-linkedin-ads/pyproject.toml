@@ -25,5 +25,6 @@ source-linkedin-ads = "source_linkedin_ads.run:run"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1"
+freezegun = "==1.2.2"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.11.0"

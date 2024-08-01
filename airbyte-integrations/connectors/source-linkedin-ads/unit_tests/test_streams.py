@@ -6,9 +6,8 @@ import json
 import os
 from typing import Any, Mapping
 
-import pytest
+from freezegun import freeze_time
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from conftest import find_stream
 
@@ -37,7 +36,7 @@ def load_json_file(file_name: str) -> Mapping[str, Any]:
     with open(f"{os.path.dirname(__file__)}/{file_name}", "r") as data:
         return json.load(data)
 
-
+@freeze_time("2024-07-29")
 def test_analytics_stream_slices(requests_mock):
     stream = find_stream("ad_member_country_analytics", TEST_CONFIG)
     requests_mock.get("https://api.linkedin.com/rest/adAccounts", json={"elements": [{"id": 1}]})
