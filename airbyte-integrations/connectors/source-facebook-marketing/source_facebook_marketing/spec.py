@@ -12,7 +12,7 @@ from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
-from pydantic import BaseModel, Field, PositiveInt, constr
+from pydantic.v1 import BaseModel, Field, PositiveInt, constr
 
 logger = logging.getLogger("airbyte")
 
@@ -199,10 +199,9 @@ class ConnectorConfig(BaseConfig):
         airbyte_secret=True,
     )
 
-    credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Field(
+    credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication",
         description="Credentials for connecting to the Facebook Marketing API",
-        discriminator="auth_type",
         type="object",
     )
 

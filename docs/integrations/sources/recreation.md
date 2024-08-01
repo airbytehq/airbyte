@@ -60,6 +60,12 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.13 | 2024-07-27 | [42709](https://github.com/airbytehq/airbyte/pull/42709) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42250](https://github.com/airbytehq/airbyte/pull/42250) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41782](https://github.com/airbytehq/airbyte/pull/41782) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41533](https://github.com/airbytehq/airbyte/pull/41533) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41276](https://github.com/airbytehq/airbyte/pull/41276) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40899](https://github.com/airbytehq/airbyte/pull/40899) | Update dependencies |
 | 0.1.7 | 2024-06-25 | [40465](https://github.com/airbytehq/airbyte/pull/40465) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40143](https://github.com/airbytehq/airbyte/pull/40143) | Update dependencies |
 | 0.1.5 | 2024-05-31 | [38733](https://github.com/airbytehq/airbyte/pull/38733) | Make compatible with builder |

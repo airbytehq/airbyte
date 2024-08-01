@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
+import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcTypingDedupingTest
 import io.airbyte.commons.json.Jsons.deserialize
+import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.destination.redshift.RedshiftDestination
 import io.airbyte.integrations.destination.redshift.RedshiftSQLNameTransformer
@@ -24,6 +26,7 @@ import javax.sql.DataSource
 import org.jooq.DSLContext
 import org.jooq.conf.Settings
 import org.jooq.impl.DSL
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
@@ -170,6 +173,9 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
                 .withStreams(
                     List.of(
                         ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
                             .withSyncMode(SyncMode.FULL_REFRESH)
                             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
                             .withStream(
@@ -199,6 +205,144 @@ abstract class AbstractRedshiftTypingDedupingTest : JdbcTypingDedupingTest() {
         (expectedRawRecords[0]["_airbyte_data"] as ObjectNode).put("name", largeString1)
         (expectedFinalRecords[0] as ObjectNode).put("name", largeString1)
         verifySyncResult(expectedRawRecords, expectedFinalRecords, disableFinalTableComparison())
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun testGenerationIdMigrationForAppend() {
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA)
+                            )
+                    )
+                )
+
+        // First sync
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(
+            catalog,
+            messages1,
+            "airbyte/destination-redshift:3.1.1",
+            // Old connector version can't handle TRACE messages; disable the
+            // stream status message
+            streamStatus = null,
+        )
+
+        // Second sync
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog, messages2)
+
+        // The first 5 records in these files were written by the old version,
+        // which does not write _airbyte_generation_id to the raw/final tables,
+        // and does not write sync_id to _airbyte_meta.
+        // So modify the expected records to reflect those differences.
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl")
+        for (i in 0..4) {
+            val record = expectedRawRecords2[i] as ObjectNode
+            record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+            (record.get(JavaBaseConstants.COLUMN_NAME_AB_META) as ObjectNode).remove(
+                JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY
+            )
+        }
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl")
+        for (i in 0..4) {
+            val record = expectedFinalRecords2[i] as ObjectNode
+            record.remove(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+            (record.get(JavaBaseConstants.COLUMN_NAME_AB_META) as ObjectNode).remove(
+                JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY
+            )
+        }
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+
+        // Verify that we didn't trigger a soft reset.
+        // There should be two unique loaded_at values in the raw table.
+        // (only do this if T+D is enabled to begin with; otherwise loaded_at will just be null)
+        if (!disableFinalTableComparison()) {
+            val actualRawRecords2 = dumpRawTableRecords(streamNamespace, streamName)
+            val loadedAtValues =
+                actualRawRecords2
+                    .map { record: JsonNode ->
+                        record.get(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)
+                    }
+                    .toSet()
+            Assertions.assertEquals(
+                2,
+                loadedAtValues.size,
+                "Expected two different values for loaded_at. If there is only 1 value, then we incorrectly triggered a soft reset. If there are more than 2, then something weird happened?"
+            )
+        }
+    }
+
+    @Test
+    fun testGenerationIdMigrationForOverwrite() {
+        // First sync
+        val catalog1 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(41L)
+                            .withGenerationId(42L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(
+            catalog1,
+            messages1,
+            "airbyte/destination-redshift:3.1.1",
+            // Old connector version can't handle TRACE messages; disable the
+            // stream status message
+            streamStatus = null,
+        )
+
+        // Second sync
+        val catalog2 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(43L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(BaseTypingDedupingTest.Companion.SCHEMA),
+                            ),
+                    ),
+                )
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog2, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
     protected fun generateRandomString(totalLength: Int): String {

@@ -35,7 +35,6 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordM
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination.Companion.DISABLE_TYPE_DEDUPE
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination.Companion.RAW_SCHEMA_OVERRIDE
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption
 import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig
 import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig.Companion.fromJson
@@ -61,6 +60,7 @@ import io.airbyte.integrations.destination.redshift.constants.RedshiftDestinatio
 import io.airbyte.integrations.destination.redshift.operation.RedshiftStagingStorageOperation
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDV2Migration
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftGenerationIdMigration
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState
@@ -69,6 +69,7 @@ import io.airbyte.integrations.destination.redshift.util.RedshiftUtil
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -81,7 +82,6 @@ import java.util.concurrent.Executors
 import java.util.function.Consumer
 import javax.sql.DataSource
 import org.apache.commons.lang3.NotImplementedException
-import org.apache.commons.lang3.StringUtils
 import org.jetbrains.annotations.VisibleForTesting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -164,6 +164,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                     getS3StorageOperations(s3Config),
                     sqlGenerator,
                     destinationHandler,
+                    RedshiftSqlGenerator.isDropCascade(config),
                 )
 
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
@@ -184,10 +185,20 @@ class RedshiftDestination : BaseConnector(), Destination {
                                 hasUnprocessedRecords = true,
                                 maxProcessedTimestamp = Optional.empty(),
                             ),
+                        initialTempRawTableStatus =
+                            InitialRawTableStatus(
+                                rawTableExists = false,
+                                hasUnprocessedRecords = true,
+                                maxProcessedTimestamp = Optional.empty(),
+                            ),
                         isSchemaMismatch = true,
                         isFinalTableEmpty = true,
                         destinationState =
-                            RedshiftState(needsSoftReset = false, isAirbyteMetaPresentInRaw = true),
+                            RedshiftState(
+                                needsSoftReset = false,
+                                isAirbyteMetaPresentInRaw = true,
+                                isGenerationIdPresent = true,
+                            ),
                     ),
                     FileUploadFormat.CSV,
                     destinationColumns,
@@ -211,7 +222,7 @@ class RedshiftDestination : BaseConnector(), Destination {
             )
             streamOperation.finalizeTable(
                 streamConfig,
-                StreamSyncSummary(recordsWritten = Optional.of(1)),
+                StreamSyncSummary(recordsWritten = 1, AirbyteStreamStatus.COMPLETE),
             )
 
             // And now that we have a table, simulate the next sync startup.
@@ -280,7 +291,8 @@ class RedshiftDestination : BaseConnector(), Destination {
         )
     }
 
-    private fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    @VisibleForTesting
+    fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
 
@@ -315,14 +327,6 @@ class RedshiftDestination : BaseConnector(), Destination {
         return RedshiftSqlGenerator(namingResolver, config)
     }
 
-    private fun getDestinationHandler(
-        databaseName: String,
-        database: JdbcDatabase,
-        rawTableSchema: String
-    ): JdbcDestinationHandler<RedshiftState> {
-        return RedshiftDestinationHandler(databaseName, database, rawTableSchema)
-    }
-
     private fun getMigrations(
         database: JdbcDatabase,
         databaseName: String,
@@ -336,6 +340,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 sqlGenerator,
             ),
             RedshiftRawTableAirbyteMetaMigration(database, databaseName),
+            RedshiftGenerationIdMigration(database, databaseName)
         )
     }
 
@@ -372,13 +377,7 @@ class RedshiftDestination : BaseConnector(), Destination {
         else NoEncryption()
         val s3Options = RedshiftUtil.findS3Options(config)
         val s3Config: S3DestinationConfig = S3DestinationConfig.getS3DestinationConfig(s3Options)
-
         val defaultNamespace = config["schema"].asText()
-        for (stream in catalog.streams) {
-            if (StringUtils.isEmpty(stream.stream.namespace)) {
-                stream.stream.namespace = defaultNamespace
-            }
-        }
 
         val sqlGenerator = RedshiftSqlGenerator(namingResolver, config)
         val parsedCatalog: ParsedCatalog
@@ -388,10 +387,10 @@ class RedshiftDestination : BaseConnector(), Destination {
         val rawNamespace: String
         if (getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent) {
             rawNamespace = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get()
-            catalogParser = CatalogParser(sqlGenerator, rawNamespace)
+            catalogParser = CatalogParser(sqlGenerator, defaultNamespace, rawNamespace)
         } else {
             rawNamespace = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
-            catalogParser = CatalogParser(sqlGenerator, rawNamespace)
+            catalogParser = CatalogParser(sqlGenerator, defaultNamespace, rawNamespace)
         }
         val redshiftDestinationHandler =
             RedshiftDestinationHandler(databaseName, database, rawNamespace)
@@ -410,6 +409,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 s3StorageOperations,
                 sqlGenerator,
                 redshiftDestinationHandler,
+                RedshiftSqlGenerator.isDropCascade(config),
             )
         val syncOperation =
             DefaultSyncOperation(
@@ -436,8 +436,7 @@ class RedshiftDestination : BaseConnector(), Destination {
             },
             onFlush = DefaultFlush(OPTIMAL_FLUSH_BATCH_SIZE, syncOperation),
             catalog,
-            BufferManager(bufferMemoryLimit),
-            Optional.ofNullable(defaultNamespace),
+            BufferManager(defaultNamespace, bufferMemoryLimit),
             FlushFailure(),
             Executors.newFixedThreadPool(5),
             AirbyteMessageDeserializer(getDataTransformer(parsedCatalog, defaultNamespace)),
@@ -463,7 +462,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 "com.amazon.redshift.ssl.NonValidatingFactory"
             )
 
-        private val destinationColumns = JavaBaseConstants.DestinationColumns.V2_WITH_META
+        private val destinationColumns = JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION
 
         private const val OPTIMAL_FLUSH_BATCH_SIZE: Long = 50 * 1024 * 1024
         private val bufferMemoryLimit: Long = (Runtime.getRuntime().maxMemory() * 0.5).toLong()

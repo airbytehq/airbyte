@@ -79,7 +79,11 @@ class ShopifyBulkTemplates:
 
 @dataclass
 class ShopifyBulkQuery:
-    shop_id: int
+    config: Mapping[str, Any]
+
+    @property
+    def shop_id(self) -> int:
+        return self.config.get("shop_id")
 
     @property
     def tools(self) -> BulkTools:
@@ -111,6 +115,14 @@ class ShopifyBulkQuery:
         The field name by which the records are ASC sorted, if defined.
         """
         return None
+
+    @property
+    def supports_checkpointing(self) -> bool:
+        """
+        The presence of `sort_key = "UPDATED_AT"` for a query instance, usually means,
+        the server-side BULK Job results are fetched and ordered correctly, suitable for checkpointing.
+        """
+        return self.sort_key == "UPDATED_AT"
 
     @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
@@ -2341,6 +2353,18 @@ class ProductImage(ShopifyBulkQuery):
             image["updatedAt"] = self.tools.from_iso8601_to_rfc3339(image, "updatedAt")
         return images
 
+    def _emit_complete_records(self, images: List[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        """
+        Emit records only if they have the primary_key == `id` field,
+        otherwise the record is not fulfilled and should not be emitted (empty record)
+        Reference issue: https://github.com/airbytehq/airbyte/issues/40700
+        """
+        primary_key: str = "id"
+
+        for record in images:
+            if primary_key in record.keys():
+                yield record
+
     def record_process_components(self, record: MutableMapping[str, Any]) -> Iterable[MutableMapping[str, Any]]:
         """
         Defines how to process collected components.
@@ -2351,75 +2375,92 @@ class ProductImage(ShopifyBulkQuery):
         # process record components
         if record_components:
             record["images"] = self._process_component(record_components.get("Image", []))
+
             # add the product_id to each `Image`
             record["images"] = self._add_product_id(record.get("images", []), record.get("id"))
             record["images"] = self._merge_with_media(record_components)
             record.pop("record_components")
+
             # produce images records
-            if len(record.get("images", [])) > 0:
+            images = record.get("images", [])
+            if len(images) > 0:
                 # convert dates from ISO-8601 to RFC-3339
-                record["images"] = self._convert_datetime_to_rfc3339(record.get("images", []))
-                yield from record.get("images", [])
+                record["images"] = self._convert_datetime_to_rfc3339(images)
+
+                yield from self._emit_complete_records(images)
 
 
 class ProductVariant(ShopifyBulkQuery):
     """
     {
         productVariants(
-            query: "updated_at:>='2019-04-13T00:00:00+00:00' AND updated_at:<='2024-04-30T12:16:17.273363+00:00'"
-            sortKey: UPDATED_AT
+            query: "updatedAt:>='2019-04-13T00:00:00+00:00' AND updatedAt:<='2024-04-30T12:16:17.273363+00:00'"
         ) {
             edges {
                 node {
                     __typename
                     id
-                    product {
-                        product_id: id
-                    }
                     title
                     price
                     sku
                     position
                     inventoryPolicy
                     compareAtPrice
-                    fulfillmentService {
-                        fulfillment_service: handle
-                    }
                     inventoryManagement
                     createdAt
                     updatedAt
                     taxable
                     barcode
-                    grams: weight
                     weight
                     weightUnit
-                    inventoryItem {
-                        inventory_item_id: id
-                    }
                     inventoryQuantity
-                    old_inventory_quantity: inventoryQuantity
-                    presentmentPrices {
-                        edges {
-                            node {
-                                __typename
-                                price {
-                                    amount
-                                    currencyCode
-                                }
-                                compareAtPrice {
-                                    amount
-                                    currencyCode
+                    requiresShipping
+                    availableForSale
+                    displayName
+                    taxCode
+                    options: selectedOptions {
+                        name
+                        value
+                        option_value: optionValue {
+                            id
+                            name
+                            has_variants: hasVariants
+                            swatch {
+                                color
+                                image {
+                                    id
                                 }
                             }
                         }
                     }
-                    requiresShipping
+                    grams: weight
                     image {
                         image_id: id
                     }
-                    availableForSale
-                    displayName
-                    taxCode
+                    old_inventory_quantity: inventoryQuantity
+                    product {
+                        product_id: id
+                    }
+                    fulfillmentService {
+                        fulfillment_service: handle
+                    }
+                    inventoryItem {
+                        inventory_item_id: id
+                    }
+                    presentmentPrices {
+                    edges {
+                        node {
+                            __typename
+                            price {
+                                amount
+                                currencyCode
+                            }
+                            compareAtPrice {
+                                amount
+                                currencyCode
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2427,51 +2468,76 @@ class ProductVariant(ShopifyBulkQuery):
     """
 
     query_name = "productVariants"
-    sort_key = "ID"
 
-    prices_fields: List[str] = ["amount", "currencyCode"]
-    presentment_prices_fields: List[Field] = [
-        Field(
-            name="edges",
-            fields=[
-                Field(
-                    name="node",
-                    fields=["__typename", Field(name="price", fields=prices_fields), Field(name="compareAtPrice", fields=prices_fields)],
-                )
-            ],
+    @property
+    def _should_include_presentment_prices(self) -> bool:
+        return self.config.get("job_product_variants_include_pres_prices", True)
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+
+        prices_fields: List[str] = ["amount", "currencyCode"]
+        presentment_prices_fields: List[Field] = [
+            Field(
+                name="edges",
+                fields=[
+                    Field(
+                        name="node",
+                        fields=[
+                            "__typename",
+                            Field(name="price", fields=prices_fields),
+                            Field(name="compareAtPrice", fields=prices_fields),
+                        ],
+                    )
+                ],
+            )
+        ]
+        option_value_fields: List[Field] = [
+            "id",
+            "name",
+            Field(name="hasVariants", alias="has_variants"),
+            Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+        ]
+        option_fields: List[Field] = [
+            "name",
+            "value",
+            Field(name="optionValue", alias="option_value", fields=option_value_fields),
+        ]
+        presentment_prices = (
+            [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
-    ]
 
-    # main query
-    query_nodes: List[Field] = [
-        "__typename",
-        "id",
-        "title",
-        "price",
-        "sku",
-        "position",
-        "inventoryPolicy",
-        "compareAtPrice",
-        "inventoryManagement",
-        "createdAt",
-        "updatedAt",
-        "taxable",
-        "barcode",
-        "weight",
-        "weightUnit",
-        "inventoryQuantity",
-        "requiresShipping",
-        "availableForSale",
-        "displayName",
-        "taxCode",
-        Field(name="weight", alias="grams"),
-        Field(name="image", fields=[Field(name="id", alias="image_id")]),
-        Field(name="inventoryQuantity", alias="old_inventory_quantity"),
-        Field(name="product", fields=[Field(name="id", alias="product_id")]),
-        Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
-        Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
-        Field(name="presentmentPrices", fields=presentment_prices_fields),
-    ]
+        query_nodes: List[Field] = [
+            "__typename",
+            "id",
+            "title",
+            "price",
+            "sku",
+            "position",
+            "inventoryPolicy",
+            "compareAtPrice",
+            "inventoryManagement",
+            "createdAt",
+            "updatedAt",
+            "taxable",
+            "barcode",
+            "weight",
+            "weightUnit",
+            "inventoryQuantity",
+            "requiresShipping",
+            "availableForSale",
+            "displayName",
+            "taxCode",
+            Field(name="selectedOptions", alias="options", fields=option_fields),
+            Field(name="weight", alias="grams"),
+            Field(name="image", fields=[Field(name="id", alias="image_id")]),
+            Field(name="inventoryQuantity", alias="old_inventory_quantity"),
+            Field(name="product", fields=[Field(name="id", alias="product_id")]),
+            Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
+            Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
+        ] + presentment_prices
+
+        return query_nodes
 
     record_composition = {
         "new_record": "ProductVariant",

@@ -17,7 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants
 import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
 import java.sql.Timestamp
-import java.util.*
+import java.util.Optional
 import java.util.stream.Collectors
 import org.jooq.Condition
 import org.jooq.DataType
@@ -146,7 +146,7 @@ open class RedshiftSqlGenerator(
      * @param arrays
      * @return
      */
-    fun arrayConcatStmt(arrays: List<Field<*>?>): Field<*>? {
+    private fun arrayConcatStmt(arrays: List<Field<*>?>): Field<*>? {
         if (arrays.isEmpty()) {
             return DSL.field("ARRAY()") // Return an empty string if the list is empty
         }
@@ -165,7 +165,7 @@ open class RedshiftSqlGenerator(
         return result
     }
 
-    fun toCastingErrorCaseStmt(column: ColumnId, type: AirbyteType): Field<*> {
+    private fun toCastingErrorCaseStmt(column: ColumnId, type: AirbyteType): Field<*> {
         val field: Field<*> =
             DSL.field(DSL.quotedName(JavaBaseConstants.COLUMN_NAME_DATA, column.originalName))
         // Just checks if data is not null but casted data is null. This also accounts for
@@ -260,7 +260,14 @@ open class RedshiftSqlGenerator(
                 "OBJECT",
                 superType,
                 DSL.`val`(AIRBYTE_META_COLUMN_CHANGES_KEY),
-                airbyteMetaChangesArray
+                airbyteMetaChangesArray,
+                DSL.`val`(JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY),
+                DSL.field(
+                    DSL.quotedName(
+                        JavaBaseConstants.COLUMN_NAME_AB_META,
+                        JavaBaseConstants.AIRBYTE_META_SYNC_ID_KEY
+                    )
+                ),
             )
             .`as`(JavaBaseConstants.COLUMN_NAME_AB_META)
     }
@@ -336,7 +343,7 @@ open class RedshiftSqlGenerator(
 
         private const val AIRBYTE_META_COLUMN_CHANGES_KEY = "changes"
 
-        private fun isDropCascade(config: JsonNode): Boolean {
+        fun isDropCascade(config: JsonNode): Boolean {
             val dropCascadeNode = config[RedshiftDestinationConstants.DROP_CASCADE_OPTION]
             return dropCascadeNode != null && dropCascadeNode.asBoolean()
         }

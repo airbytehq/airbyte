@@ -32,6 +32,12 @@ This source can sync data from the [K6 Cloud API](https://developers.k6.io). At 
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.13 | 2024-07-27 | [42789](https://github.com/airbytehq/airbyte/pull/42789) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42249](https://github.com/airbytehq/airbyte/pull/42249) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41871](https://github.com/airbytehq/airbyte/pull/41871) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41462](https://github.com/airbytehq/airbyte/pull/41462) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41324](https://github.com/airbytehq/airbyte/pull/41324) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40875](https://github.com/airbytehq/airbyte/pull/40875) | Update dependencies |
 | 0.1.7 | 2024-06-25 | [40291](https://github.com/airbytehq/airbyte/pull/40291) | Update dependencies |
 | 0.1.6 | 2024-06-21 | [39921](https://github.com/airbytehq/airbyte/pull/39921) | Update dependencies |
 | 0.1.5 | 2024-06-04 | [39044](https://github.com/airbytehq/airbyte/pull/39044) | [autopull] Upgrade base image to v1.2.1 |

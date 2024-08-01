@@ -84,18 +84,25 @@ class RedshiftDestinationHandler(
         execute(sql, logStatements = true)
     }
 
-    fun execute(sql: Sql, logStatements: Boolean) {
+    /**
+     * @param forceCaseSensitiveIdentifier Whether to enable `forceCaseSensitiveIdentifier` on all
+     * transactions. This option is most useful for accessing fields within a `SUPER` value; for
+     * accessing schemas/tables/columns, quoting the identifier is sufficient to force
+     * case-sensitivity, so this option is not necessary.
+     */
+    fun execute(
+        sql: Sql,
+        logStatements: Boolean = true,
+        forceCaseSensitiveIdentifier: Boolean = true
+    ) {
         val transactions = sql.transactions
         val queryId = UUID.randomUUID()
         for (transaction in transactions) {
             val transactionId = UUID.randomUUID()
             if (logStatements) {
-                log.info(
-                    "Executing sql {}-{}: {}",
-                    queryId,
-                    transactionId,
-                    java.lang.String.join("\n", transaction)
-                )
+                log.info {
+                    "Executing sql $queryId-$transactionId: ${transaction.joinToString("\n")}"
+                }
             }
             val startTime = System.currentTimeMillis()
 
@@ -106,14 +113,22 @@ class RedshiftDestinationHandler(
                 // characters, even after
                 // specifying quotes.
                 // see https://github.com/airbytehq/airbyte/issues/33900
-                modifiedStatements.add("SET enable_case_sensitive_identifier to TRUE;\n")
+                if (forceCaseSensitiveIdentifier) {
+                    modifiedStatements.add("SET enable_case_sensitive_identifier to TRUE;\n")
+                }
                 modifiedStatements.addAll(transaction)
-                jdbcDatabase.executeWithinTransaction(
-                    modifiedStatements,
-                    logStatements = logStatements
-                )
+                if (modifiedStatements.size != 1) {
+                    jdbcDatabase.executeWithinTransaction(
+                        modifiedStatements,
+                        logStatements = logStatements
+                    )
+                } else {
+                    // Redshift doesn't allow some statements to run in a transaction at all,
+                    // so handle the single-statement case specially.
+                    jdbcDatabase.execute(modifiedStatements.first())
+                }
             } catch (e: SQLException) {
-                log.error("Sql {}-{} failed", queryId, transactionId, e)
+                log.error(e) { "Sql $queryId-$transactionId failed" }
                 // This is a big hammer for something that should be much more targetted, only when
                 // executing the
                 // DROP TABLE command.
@@ -129,12 +144,9 @@ class RedshiftDestinationHandler(
                 throw e
             }
 
-            log.info(
-                "Sql {}-{} completed in {} ms",
-                queryId,
-                transactionId,
-                System.currentTimeMillis() - startTime
-            )
+            log.info {
+                "Sql $queryId-$transactionId completed in ${System.currentTimeMillis() - startTime} ms"
+            }
         }
     }
 
@@ -156,9 +168,12 @@ class RedshiftDestinationHandler(
         return RedshiftState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("isAirbyteMetaPresentInRaw") &&
-                json["isAirbyteMetaPresentInRaw"].asBoolean()
+                json["isAirbyteMetaPresentInRaw"].asBoolean(),
+            json.hasNonNull("isGenerationIdPresent") && json["isGenerationIdPresent"].asBoolean(),
         )
     }
+
+    fun query(sql: String): List<JsonNode> = jdbcDatabase.queryJsons(sql)
 
     private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
         return when (airbyteProtocolType) {

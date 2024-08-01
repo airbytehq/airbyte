@@ -25,6 +25,8 @@ TODO
 
 | Version | Date       | Pull Request                                              | Subject                                                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------- |
+| 0.1.10 | 2024-07-09 | [41285](https://github.com/airbytehq/airbyte/pull/41285) | Update dependencies |
+| 0.1.9 | 2024-07-06 | [40796](https://github.com/airbytehq/airbyte/pull/40796) | Update dependencies |
 | 0.1.8 | 2024-06-25 | [40409](https://github.com/airbytehq/airbyte/pull/40409) | Update dependencies |
 | 0.1.7 | 2024-06-22 | [40016](https://github.com/airbytehq/airbyte/pull/40016) | Update dependencies |
 | 0.1.6 | 2024-06-06 | [39236](https://github.com/airbytehq/airbyte/pull/39236) | [autopull] Upgrade base image to v1.2.2 |

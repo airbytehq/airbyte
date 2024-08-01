@@ -19,7 +19,6 @@ import io.airbyte.integrations.destination.redshift.manifest.Entry
 import io.airbyte.integrations.destination.redshift.manifest.Manifest
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Instant
 import java.time.ZoneOffset
@@ -36,22 +35,80 @@ class RedshiftStagingStorageOperation(
     private val s3StorageOperations: S3StorageOperations,
     private val sqlGenerator: RedshiftSqlGenerator,
     private val destinationHandler: RedshiftDestinationHandler,
+    private val dropCascade: Boolean,
 ) : StorageOperation<SerializableBuffer> {
     private val connectionId: UUID = UUID.randomUUID()
     private val writeDatetime: ZonedDateTime = Instant.now().atZone(ZoneOffset.UTC)
     private val objectMapper = ObjectMapper()
 
-    override fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
+    override fun prepareStage(streamId: StreamId, suffix: String, replace: Boolean) {
         // create raw table
-        destinationHandler.execute(Sql.of(createRawTableQuery(streamId)))
-        if (destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-            destinationHandler.execute(Sql.of(truncateRawTableQuery(streamId)))
+        destinationHandler.execute(Sql.of(createRawTableQuery(streamId, suffix)))
+        if (replace) {
+            destinationHandler.execute(Sql.of(truncateRawTableQuery(streamId, suffix)))
         }
         // create bucket for staging files
         s3StorageOperations.createBucketIfNotExists()
     }
 
-    override fun writeToStage(streamId: StreamId, data: SerializableBuffer) {
+    override fun overwriteStage(streamId: StreamId, suffix: String) {
+        val cascadeClause = if (dropCascade) "CASCADE" else ""
+        destinationHandler.execute(
+            Sql.transactionally(
+                """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}" $cascadeClause""",
+                """ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}$suffix" RENAME TO "${streamId.rawName}" """
+            )
+        )
+    }
+
+    override fun transferFromTempStage(streamId: StreamId, suffix: String) {
+        destinationHandler.execute(
+            // ALTER TABLE ... APPEND is an efficient way to move records from one table to another.
+            // Instead of naively duplicating the data, it actually moves the underlying data
+            // blocks.
+            // (https://docs.aws.amazon.com/redshift/latest/dg/r_ALTER_TABLE_APPEND.html)
+            // But it can't run inside transactions, so run these statements separately.
+            Sql.separately(
+                // Note for future developers:
+                // ALTER TABLE ... APPEND has some interesting restrictions where both tables need
+                // the exact same structure (clustering, columns, etc.), so if we want to change
+                // those in the future, this might be tricky/annoying?
+                // If we have issues at that point, we can always switch to a simple
+                // `INSERT INTO ... SELECT * FROM ...` query.
+                """
+                ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}"
+                APPEND FROM "${streamId.rawNamespace}"."${streamId.rawName}$suffix"
+                """.trimIndent(),
+                // No need to drop cascade. If the user created a view on top of the temp raw table,
+                // that would be pretty weird, and we should fail loudly.
+                """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}$suffix" """,
+            ),
+            // Skip the case-sensitivity thing - ALTER TABLE ... APPEND can't be run in a
+            // transaction, so we can't run the SET statement.
+            // We're only working with schema/table names, so it's fine to just quote the
+            // identifiers instead of relying on this option.
+            forceCaseSensitiveIdentifier = false
+        )
+    }
+
+    override fun getStageGeneration(streamId: StreamId, suffix: String): Long? {
+        val generation =
+            destinationHandler.query(
+                """SELECT ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID} FROM "${streamId.rawNamespace}"."${streamId.rawName}$suffix" LIMIT 1"""
+            )
+        if (generation.isEmpty()) {
+            return null
+        }
+
+        return generation.first()[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID].asLong()
+    }
+
+    override fun writeToStage(
+        streamConfig: StreamConfig,
+        suffix: String,
+        data: SerializableBuffer
+    ) {
+        val streamId = streamConfig.id
         val objectPath: String = getStagingPath(streamId)
         log.info {
             "Uploading records to for ${streamId.rawNamespace}.${streamId.rawName} to path $objectPath"
@@ -60,13 +117,19 @@ class RedshiftStagingStorageOperation(
             s3StorageOperations.uploadRecordsToBucket(data, streamId.rawNamespace, objectPath)
 
         log.info {
-            "Starting copy to target table from stage: ${streamId.rawName} in destination from stage: $objectPath/$filename."
+            "Starting copy to target table from stage: ${streamId.rawName}$suffix in destination from stage: $objectPath/$filename."
         }
         val manifestContents = createManifest(listOf(filename), objectPath)
         val manifestPath = putManifest(manifestContents, objectPath)
-        executeCopy(manifestPath, destinationHandler, streamId.rawNamespace, streamId.rawName)
+        executeCopy(
+            manifestPath,
+            destinationHandler,
+            streamId.rawNamespace,
+            streamId.rawName,
+            suffix
+        )
         log.info {
-            "Copy to target table ${streamId.rawNamespace}.${streamId.rawName} in destination complete."
+            "Copy to target table ${streamId.rawNamespace}.${streamId.rawName}$suffix in destination complete."
         }
     }
 
@@ -171,6 +234,7 @@ class RedshiftStagingStorageOperation(
         destinationHandler: RedshiftDestinationHandler,
         schemaName: String,
         tableName: String,
+        suffix: String,
     ) {
         val accessKeyId =
             s3Config.s3CredentialConfig!!.s3CredentialsProvider.credentials.awsAccessKeyId
@@ -179,7 +243,7 @@ class RedshiftStagingStorageOperation(
 
         val copyQuery =
             """
-            COPY $schemaName.$tableName FROM '${getFullS3Path(s3Config.bucketName!!, manifestPath)}'
+            COPY $schemaName.$tableName$suffix FROM '${getFullS3Path(s3Config.bucketName!!, manifestPath)}'
             CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'
             CSV GZIP
             REGION '${s3Config.bucketRegion}' TIMEFORMAT 'auto'
@@ -194,24 +258,21 @@ class RedshiftStagingStorageOperation(
     companion object {
         private val nameTransformer = RedshiftSQLNameTransformer()
 
-        private fun createRawTableQuery(streamId: StreamId): String {
+        private fun createRawTableQuery(streamId: StreamId, suffix: String): String {
             return """
-                CREATE TABLE IF NOT EXISTS "${streamId.rawNamespace}"."${streamId.rawName}" (
+                CREATE TABLE IF NOT EXISTS "${streamId.rawNamespace}"."${streamId.rawName}$suffix" (
                     ${JavaBaseConstants.COLUMN_NAME_AB_RAW_ID} VARCHAR(36),
                     ${JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT} TIMESTAMPTZ DEFAULT GETDATE(),
                     ${JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT} TIMESTAMPTZ,
                     ${JavaBaseConstants.COLUMN_NAME_DATA} SUPER NOT NULL,
-                    ${JavaBaseConstants.COLUMN_NAME_AB_META} SUPER NULL
+                    ${JavaBaseConstants.COLUMN_NAME_AB_META} SUPER NULL,
+                    ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID} BIGINT NULL
                 )
             """.trimIndent()
         }
 
-        private fun truncateRawTableQuery(streamId: StreamId): String {
-            return String.format(
-                """TRUNCATE TABLE "%s"."%s";""",
-                streamId.rawNamespace,
-                streamId.rawName
-            )
+        private fun truncateRawTableQuery(streamId: StreamId, suffix: String): String {
+            return """TRUNCATE TABLE "${streamId.rawNamespace}"."${streamId.rawName}$suffix" """
         }
 
         private fun getFullS3Path(s3BucketName: String, s3StagingFile: String): String {

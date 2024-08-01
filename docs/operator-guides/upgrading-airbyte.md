@@ -87,6 +87,16 @@ Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docke
    ./run-ab-platform.sh -b
    ```
 
+## Upgrading with abctl
+
+`abctl` streamlines the way you manage a local installation of Airbyte OSS. 
+
+Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd like to ensure you're running the latest version of Airbyte, you can check the value of the Helm Chart's app version by running `abctl local status`.
+
+:::note
+Occasionally, `abctl` itself will need to be updated. Do that by running `brew update abctl`. This is seperate from upgrading Airbyte and only upgrades the command line tool.
+:::
+
 ### Resetting your Configuration
 
 If you did not start Airbyte from the root of the Airbyte monorepo, you may run into issues where existing orphaned Airbyte configurations will prevent you from upgrading with the automatic process. To fix this, we will need to globally remove these lost Airbyte configurations. You can do this with `docker volume rm $(docker volume ls -q | grep airbyte)`.

@@ -54,6 +54,12 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.2.17 | 2024-07-27 | [42824](https://github.com/airbytehq/airbyte/pull/42824) | Update dependencies |
+| 0.2.16 | 2024-07-20 | [42272](https://github.com/airbytehq/airbyte/pull/42272) | Update dependencies |
+| 0.2.15 | 2024-07-13 | [41889](https://github.com/airbytehq/airbyte/pull/41889) | Update dependencies |
+| 0.2.14 | 2024-07-10 | [41553](https://github.com/airbytehq/airbyte/pull/41553) | Update dependencies |
+| 0.2.13 | 2024-07-09 | [41251](https://github.com/airbytehq/airbyte/pull/41251) | Update dependencies |
+| 0.2.12 | 2024-07-06 | [40957](https://github.com/airbytehq/airbyte/pull/40957) | Update dependencies |
 | 0.2.11 | 2024-06-25 | [40280](https://github.com/airbytehq/airbyte/pull/40280) | Update dependencies |
 | 0.2.10 | 2024-06-22 | [39997](https://github.com/airbytehq/airbyte/pull/39997) | Update dependencies |
 | 0.2.9 | 2024-06-04 | [39047](https://github.com/airbytehq/airbyte/pull/39047) | [autopull] Upgrade base image to v1.2.1 |

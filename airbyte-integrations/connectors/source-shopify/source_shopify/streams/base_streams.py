@@ -13,12 +13,14 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum as pdm
 import requests
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_protocol.models import SyncMode
 from requests.exceptions import RequestException
+from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
-from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery, ShopifyBulkTemplates
-from source_shopify.shopify_graphql.bulk.record import ShopifyBulkRecord
+from source_shopify.shopify_graphql.bulk.query import ShopifyBulkQuery
 from source_shopify.transform import DataTypeEnforcer
 from source_shopify.utils import EagerlyCachedStreamState as stream_state_cache
 from source_shopify.utils import ShopifyNonRetryableErrors
@@ -37,9 +39,6 @@ class ShopifyStream(HttpStream, ABC):
     primary_key = "id"
     order_field = "updated_at"
     filter_field = "updated_at_min"
-
-    raise_on_http_errors = True
-    max_retries = 5
 
     def __init__(self, config: Dict) -> None:
         super().__init__(authenticator=config["authenticator"])
@@ -110,15 +109,10 @@ class ShopifyStream(HttpStream, ABC):
                 record["shop_url"] = self.config["shop"]
                 yield self._transformer.transform(record)
 
-    def should_retry(self, response: requests.Response) -> bool:
+    def get_error_handler(self) -> Optional[ErrorHandler]:
         known_errors = ShopifyNonRetryableErrors(self.name)
-        status = response.status_code
-        if status in known_errors.keys():
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.warning(known_errors.get(status))
-            return False
-        else:
-            return super().should_retry(response)
+        error_mapping = DEFAULT_ERROR_MAPPING | known_errors
+        return HttpStatusErrorHandler(self.logger, max_retries=5, error_mapping=error_mapping)
 
 
 class ShopifyDeletedEventsStream(ShopifyStream):
@@ -183,9 +177,14 @@ class ShopifyDeletedEventsStream(ShopifyStream):
 class IncrementalShopifyStream(ShopifyStream, ABC):
     # Setting the check point interval to the limit of the records output
     state_checkpoint_interval = 250
-    # guarantee for the NestedSubstreams to emit the STATE
-    # when we have the abnormal STATE distance between Parent and Substream
-    filter_by_state_checkpoint = False
+
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        """
+        This filtering flag stands to guarantee for the NestedSubstreams to emit the STATE correctly,
+        when we have the abnormal STATE distance between Parent and Substream
+        """
+        return False
 
     # Setting the default cursor field for all streams
     cursor_field = "updated_at"
@@ -221,15 +220,15 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         if self.filter_by_state_checkpoint:
             # set checkpoint cursor
             if not self._checkpoint_cursor:
-                self._checkpoint_cursor = self.config.get("start_date")
+                self._checkpoint_cursor = self.default_state_comparison_value
             # track checkpoint cursor
-            if record_value >= self._checkpoint_cursor:
+            if str(record_value) >= str(self._checkpoint_cursor):
                 self._checkpoint_cursor = record_value
 
     def should_checkpoint(self, index: int) -> bool:
         return self.filter_by_state_checkpoint and index >= self.state_checkpoint_interval
 
-    # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
+    # Parse the `records` with respect to the `stream_state` for the `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
     def filter_records_newer_than_state(
@@ -638,24 +637,31 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
-        # init BULK Query instance, pass `shop_id` from config
-        self.query = self.bulk_query(shop_id=config.get("shop_id"))
         # define BULK Manager instance
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
-            session=self._session,
+            http_client=self.bulk_http_client,
             base_url=f"{self.url_base}{self.path()}",
-            stream_name=self.name,
-            query=self.query,
+            query=self.bulk_query(config),
             job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
-            job_size=config.get("bulk_window_in_days", 0.0),
+            job_size=config.get("bulk_window_in_days", 30.0),
+            # provide the job checkpoint interval value, default value is 200k lines collected
+            job_checkpoint_interval=config.get("job_checkpoint_interval", 200_000),
         )
 
-        # define Record Producer instance
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        return self.job_manager._supports_checkpointing
+
+    @property
+    def bulk_http_client(self) -> HttpClient:
+        """
+        Returns the instance of the `HttpClient`, with the stream info.
+        """
+        return HttpClient(self.name, self.logger, ShopifyErrorHandler(), session=self._http_client._session)
 
     @cached_property
-    def parent_stream(self) -> object:
+    def parent_stream(self) -> Union[ShopifyStream, IncrementalShopifyStream]:
         """
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
         """
@@ -730,7 +736,18 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
 
     def emit_slice_message(self, slice_start: datetime, slice_end: datetime) -> None:
         slice_size_message = f"Slice size: `P{round(self.job_manager._job_size, 1)}D`"
-        self.logger.info(f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}")
+        slice_message = f"Stream: `{self.name}` requesting BULK Job for period: {slice_start} -- {slice_end}. {slice_size_message}."
+
+        if self.job_manager._supports_checkpointing:
+            checkpointing_message = f" The BULK checkpoint after `{self.job_manager.job_checkpoint_interval}` lines."
+        else:
+            checkpointing_message = f" The BULK checkpointing is not supported."
+
+        self.logger.info(slice_message + checkpointing_message)
+
+    def emit_checkpoint_message(self) -> None:
+        if self.job_manager._job_adjust_slice_from_checkpoint:
+            self.logger.info(f"Stream {self.name}, continue from checkpoint: `{self._checkpoint_cursor}`.")
 
     @stream_state_cache.cache_stream_state
     def stream_slices(self, stream_state: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -744,10 +761,27 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
                 self.emit_slice_message(start, slice_end)
                 yield {"start": start.to_rfc3339_string(), "end": slice_end.to_rfc3339_string()}
                 # increment the end of the slice or reduce the next slice
-                start = self.job_manager.get_adjusted_job_end(start, slice_end)
+                start = self.job_manager.get_adjusted_job_end(start, slice_end, self._checkpoint_cursor)
         else:
             # for the streams that don't support filtering
             yield {}
+
+    def sort_output_asc(self, non_sorted_records: Iterable[Mapping[str, Any]] = None) -> Iterable[Mapping[str, Any]]:
+        """
+        Apply sorting for collected records, to guarantee the `ASC` output.
+        This handles the STATE and CHECKPOINTING correctly, for the `incremental` streams.
+        """
+        if non_sorted_records:
+            if not self.cursor_field:
+                yield from non_sorted_records
+            else:
+                yield from sorted(
+                    non_sorted_records,
+                    key=lambda x: x.get(self.cursor_field) if x.get(self.cursor_field) else self.default_state_comparison_value,
+                )
+        else:
+            # always return an empty iterable, if no records
+            return []
 
     def read_records(
         self,
@@ -758,13 +792,12 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
     ) -> Iterable[StreamData]:
         self.job_manager.create_job(stream_slice, self.filter_field)
         stream_state = stream_state_cache.cached_state.get(self.name, {self.cursor_field: self.default_state_comparison_value})
-
-        filename = self.job_manager.job_check_for_completion()
-        # the `filename` could be `None`, meaning there are no data available for the slice period.
-        if filename:
-            # add `shop_url` field to each record produced
-            records = self.add_shop_url_field(
-                # produce records from saved bulk job result
-                self.record_producer.read_file(filename)
-            )
-            yield from self.filter_records_newer_than_state(stream_state, records)
+        # add `shop_url` field to each record produced
+        records = self.add_shop_url_field(
+            # produce records from saved bulk job result
+            self.job_manager.job_get_results()
+        )
+        # emit records in ASC order
+        yield from self.filter_records_newer_than_state(stream_state, self.sort_output_asc(records))
+        # add log message about the checkpoint value
+        self.emit_checkpoint_message()

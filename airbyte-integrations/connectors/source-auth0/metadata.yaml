@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.auth0.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
-  dockerImageTag: 0.5.6
+  dockerImageTag: 0.5.12
   dockerRepository: airbyte/source-auth0
   documentationUrl: https://docs.airbyte.com/integrations/sources/auth0
   githubIssueLabel: source-auth0
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: auth0_config_dev_null
+          id: 1d14e305-c231-425f-9f99-6c37b7e4f45f
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-AUTH0__CREDS

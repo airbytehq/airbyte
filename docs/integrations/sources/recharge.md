@@ -79,6 +79,15 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.2 | 2024-07-27 | [42723](https://github.com/airbytehq/airbyte/pull/42723) | Update dependencies |
+| 2.3.1 | 2024-07-20 | [42336](https://github.com/airbytehq/airbyte/pull/42336) | Update dependencies |
+| 2.3.0 | 2024-07-17 | [42076](https://github.com/airbytehq/airbyte/pull/42076) | Migrate to CDK v3.7.0 |
+| 2.2.0 | 2024-07-17 | [42075](https://github.com/airbytehq/airbyte/pull/42075) | Migrate to CDK v2.4.0 |
+| 2.1.0 | 2024-07-17 | [42069](https://github.com/airbytehq/airbyte/pull/42069) | Migrate to CDK v1.8.0 |
+| 2.0.6 | 2024-07-13 | [41748](https://github.com/airbytehq/airbyte/pull/41748) | Update dependencies |
+| 2.0.5 | 2024-07-10 | [41475](https://github.com/airbytehq/airbyte/pull/41475) | Update dependencies |
+| 2.0.4 | 2024-07-09 | [41167](https://github.com/airbytehq/airbyte/pull/41167) | Update dependencies |
+| 2.0.3 | 2024-07-06 | [40849](https://github.com/airbytehq/airbyte/pull/40849) | Update dependencies |
 | 2.0.2 | 2024-06-25 | [40387](https://github.com/airbytehq/airbyte/pull/40387) | Update dependencies |
 | 2.0.1 | 2024-06-22 | [40042](https://github.com/airbytehq/airbyte/pull/40042) | Update dependencies |
 | 2.0.0 | 2024-06-14 | [39491](https://github.com/airbytehq/airbyte/pull/39491) | Update primary key for Shop stream from shop, store(object, object) to id(integer) |
