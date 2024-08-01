@@ -27,11 +27,52 @@ The following technologies are required to build Airbyte locally.
 4. `Docker`
 5. `Jq`
 
-You should also follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. In 
-addition to `abctl` you should also install [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries) 
-as well as [Kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
-
 If you are looking to build connectors, you should also follow the installation instructions for [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+
+### Using abctl for Airbyte development
+
+The guides in this document explain how to develop Connectors and the Airbyte Platform with `abctl`. You should 
+follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) instructions to install `abctl`. 
+
+[Kubernetes in Docker](https://kind.sigs.k8s.io/) (`kind`) is used by `abctl` to create a local Kubernetes cluster as a docker container. 
+Once the `kind` cluster has been created, `abctl` then uses [Helm](https://helm.sh/) along with the [Airbyte Chart](https://github.com/airbytehq/airbyte-platform/tree/main/charts)
+to deploy Airbyte. In order to view logs, debug issues, and managed your Airbyte deployment, you should install the 
+[kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries) command line tools, as well as,
+[kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) for interacting with the Kubernetes cluster.
+
+To configure your `kubectl` client so that it can communicate with your `abctl` cluster, run the following:
+
+```shell
+kind export kubeconfig -n airbyte-abctl
+```
+
+You can then view any issues with the pods (deployed containers) by running:
+
+```shell
+kubectl get pods -n airbyte-abctl
+```
+
+Which should output something like:
+
+```shell
+NAME                                                     READY   STATUS      RESTARTS        AGE
+airbyte-abctl-airbyte-bootloader                         0/1     Completed   0               4h20m
+airbyte-abctl-connector-builder-server-55bc78bd-6sxdp    1/1     Running     0               4h20m
+airbyte-abctl-cron-b48bccb78-jnz7b                       1/1     Running     0               4h20m
+airbyte-abctl-pod-sweeper-pod-sweeper-599fd8f56d-kj5t9   1/1     Running     0               4h20m
+airbyte-abctl-server-74465db7fd-gk25q                    1/1     Running     0               4h20m
+airbyte-abctl-temporal-bbb84b56c-jh8x7                   1/1     Running     0               4h33m
+airbyte-abctl-webapp-745c949464-brpjf                    1/1     Running     0               4h20m
+airbyte-abctl-worker-79c895c7dc-ssqvc                    1/1     Running     0               4h20m
+airbyte-db-0                                             1/1     Running     0               4h34m
+airbyte-minio-0                                          1/1     Running     0               4h34m
+```
+
+Viewing logs for a particular pod can be done by running:
+
+```shell
+kubectl logs -n airbyte-abctl airbyte-abctl-server-74465db7fd-gk25q
+```
 
 ## Connector Contributions
 
