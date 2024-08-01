@@ -373,7 +373,7 @@ global:
       workloadOutput: airbyte-bucket
     gcs:
       projectId: <project-id>
-      credentialsPath: /secrets/gcs-log-creds/gcp.json
+      credentialsJson: #Base64 encoded value of the gcp.json file
 ```
 
 </TabItem>
