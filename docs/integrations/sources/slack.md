@@ -171,7 +171,7 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------|
-| 1.4.0 | 2024-08-01 | [42948](https://github.com/airbytehq/airbyte/pull/42948) | Migrate to CDK v4.1.0 |
+| 1.4.0 | 2024-08-01 | [42948](https://github.com/airbytehq/airbyte/pull/42948) | Migrate to CDK v4.2.0 |
 | 1.3.1 | 2024-07-24 | [42485](https://github.com/airbytehq/airbyte/pull/42485) | Fix MRO error for `IncrementalMessageStream` |
 | 1.3.0 | 2024-07-17 | [41994](https://github.com/airbytehq/airbyte/pull/41994) | Migrate to CDK v3.5.1 |
 | 1.2.0 | 2024-07-16 | [41970](https://github.com/airbytehq/airbyte/pull/41970) | Migrate to CDK v2.4.0 |

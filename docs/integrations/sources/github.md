@@ -215,7 +215,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.9.0 | 2024-08-01 | [42948](https://github.com/airbytehq/airbyte/pull/42948) | Migrate to CDK v4.1.0 |
+| 1.9.0 | 2024-08-01 | [42948](https://github.com/airbytehq/airbyte/pull/42948) | Migrate to CDK v4.2.0 |
 | 1.8.1 | 2024-07-20 | [42342](https://github.com/airbytehq/airbyte/pull/42342) | Update dependencies |
 | 1.8.0 | 2024-07-16 | [41677](https://github.com/airbytehq/airbyte/pull/41677) | Update to 3.4.0 CDK |
 | 1.7.13 | 2024-07-13 | [41746](https://github.com/airbytehq/airbyte/pull/41746) | Update dependencies |
