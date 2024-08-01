@@ -311,6 +311,9 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
                 } else {
                     Optional.empty()
                 }
+            log.info {
+                "Executing T+D for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} targeting final table suffix \"$finalTmpTableSuffix\" with timestamp filter $timestampFilter"
+            }
             storageOperation.typeAndDedupe(streamConfig, timestampFilter, finalTmpTableSuffix)
         }
 

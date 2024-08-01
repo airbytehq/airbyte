@@ -23,4 +23,5 @@ dependencies {
     testFixturesImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
     testImplementation "io.mockk:mockk:1.13.11"
+    testImplementation 'io.kotest:kotest-property:5.9.1'
 }
