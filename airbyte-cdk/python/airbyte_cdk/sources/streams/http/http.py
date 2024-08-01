@@ -15,6 +15,7 @@ from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget
 from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
 from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
@@ -49,13 +50,13 @@ class HttpStream(Stream, CheckpointMixin, ABC):
             message_repository=InMemoryMessageRepository(),
         )
 
-        # Stream's with at least one cursor_field is incremental and thus a superior sync than RFR. We also cannot
-        # assume that streams overriding read_records() will call the parent implementation
-        # which
-        if len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+        # There are three conditions that dictate if RFR should automatically be applied to a stream
+        # 1. Streams that explicitly initialize their own cursor should defer to it and not automatically apply RFR
+        # 2. Streams with at least one cursor_field are incremental and thus a superior sync to RFR.
+        # 3. Streams overriding read_records() do not guarantee that they will call the parent implementation which can perform
+        #    per-page checkpointing so RFR is only supported if a stream use the default `HttpStream.read_records()` method
+        if not self.cursor and len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
             self.cursor = ResumableFullRefreshCursor()
-        else:
-            self.cursor = None
 
     @property
     def exit_on_rate_limit(self) -> bool:
@@ -360,11 +361,12 @@ class HttpStream(Stream, CheckpointMixin, ABC):
     def get_cursor(self) -> Optional[Cursor]:
         # I don't love that this is semi-stateful but not sure what else to do. We don't know exactly what type of cursor to
         # instantiate when creating the class. We can make a few assumptions like if there is a cursor_field which implies
-        # incremental, but we don't know until runtime if this is a substream. This makes for a slightly awkward getter that
-        # is stateful because `has_multiple_slices` can be reassigned at runtime after we inspect slices.
-        # This code temporarily gates RFR off for substreams by always removing the RFR cursor if there are multiple slices
-        if self.has_multiple_slices:
-            return None
+        # incremental, but we don't know until runtime if this is a substream. Ideally, a stream should explicitly define
+        # its cursor, but because we're trying to automatically apply RFR we're stuck with this logic where we replace the
+        # cursor at runtime once we detect this is a substream based on self.has_multiple_slices being reassigned
+        if self.has_multiple_slices and isinstance(self.cursor, ResumableFullRefreshCursor):
+            self.cursor = SubstreamResumableFullRefreshCursor()
+            return self.cursor
         else:
             return self.cursor
 
@@ -376,6 +378,8 @@ class HttpStream(Stream, CheckpointMixin, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
+        partition, _, _ = self._extract_slice_fields(stream_slice=stream_slice)
+
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
@@ -386,6 +390,12 @@ class HttpStream(Stream, CheckpointMixin, ABC):
             next_page_token = self.next_page_token(response)
             if not next_page_token:
                 pagination_complete = True
+
+        cursor = self.get_cursor()
+        if cursor and isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            # Substreams checkpoint state by marking an entire parent partition as completed so that on the subsequent attempt
+            # after a failure, completed parents are skipped and the sync can make progress
+            cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
@@ -473,7 +483,14 @@ class HttpSubStream(HttpStream, ABC):
         super().__init__(**kwargs)
         self.parent = parent
         self.has_multiple_slices = True  # Substreams are based on parent records which implies there are multiple slices
-        self.cursor = None  # todo: HttpSubStream does not currently support RFR so this is set to None
+
+        # There are three conditions that dictate if RFR should automatically be applied to a stream
+        # 1. Streams that explicitly initialize their own cursor should defer to it and not automatically apply RFR
+        # 2. Streams with at least one cursor_field are incremental and thus a superior sync to RFR.
+        # 3. Streams overriding read_records() do not guarantee that they will call the parent implementation which can perform
+        #    per-page checkpointing so RFR is only supported if a stream use the default `HttpStream.read_records()` method
+        if not self.cursor and len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+            self.cursor = SubstreamResumableFullRefreshCursor()
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
