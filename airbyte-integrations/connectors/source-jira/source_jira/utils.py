@@ -22,5 +22,5 @@ def read_full_refresh(stream_instance: Stream):
 
 
 def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, Any]):
-    stream_instance.state = stream_state
+    stream_instance.state = stream_state.copy()
     yield from stream_instance.read_only_records(stream_state)
