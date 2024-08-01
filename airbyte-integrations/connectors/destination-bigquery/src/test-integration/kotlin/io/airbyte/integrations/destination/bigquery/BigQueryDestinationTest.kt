@@ -602,8 +602,7 @@ internal class BigQueryDestinationTest {
         protected var nonBillableConfig: JsonNode? = null
         protected var gcsStagingConfig: JsonNode? =
             null // default BigQuery config. Also used for setup/teardown
-        @SuppressFBWarnings
-        protected lateinit var gcsStagingConfigWithBadCopyPermission: JsonNode
+        @SuppressFBWarnings protected lateinit var gcsStagingConfigWithBadCopyPermission: JsonNode
 
         protected var configs: Map<String, JsonNode>? = null
         protected var catalog: ConfiguredAirbyteCatalog? = null

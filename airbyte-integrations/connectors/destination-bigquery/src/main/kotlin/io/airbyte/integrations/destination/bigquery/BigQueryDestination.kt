@@ -135,7 +135,8 @@ class BigQueryDestination : BaseConnector(), Destination {
 
         // TODO: Need to add a step in this method to first check permissions
         //  using testIamPermissions before trying the actual copying of data
-        //  Created issue for tracking: https://github.com/airbytehq/airbyte-internal-issues/issues/8888
+        //  Created issue for tracking:
+        // https://github.com/airbytehq/airbyte-internal-issues/issues/8888
 
         val datasetLocation = BigQueryUtils.getDatasetLocation(config)
         val bigquery = getBigQuery(config)
