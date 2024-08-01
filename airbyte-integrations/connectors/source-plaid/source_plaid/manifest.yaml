@@ -145,6 +145,28 @@ streams:
             type:
               - string
               - "null"
+          counterparties:
+            items:
+              properties:
+                name:
+                  type:
+                    - string
+                entity_id:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                website:
+                  type:
+                    - string
+                    - "null"
+                confidence_level:
+                  type:
+                    - string
+                    - "null"
+            type: array
           date:
             type: string
           datetime:
@@ -152,7 +174,9 @@ streams:
               - string
               - "null"
           iso_currency_code:
-            type: string
+            type:
+              - string
+              - "null"
           location:
             properties:
               address:
@@ -169,11 +193,11 @@ streams:
                   - "null"
               lat:
                 type:
-                  - string
+                  - number
                   - "null"
               lon:
                 type:
-                  - string
+                  - number
                   - "null"
               postal_code:
                 type:
@@ -196,10 +220,13 @@ streams:
               - "null"
           name:
             type: string
-          payment_channel:
+          original_description:
             type:
               - string
               - "null"
+          payment_channel:
+            type:
+              - string
           payment_meta:
             properties:
               by_order_of:
@@ -240,22 +267,27 @@ streams:
           pending:
             type:
               - boolean
-              - "null"
           pending_transaction_id:
             type:
               - string
               - "null"
           personal_finance_category:
-            type:
-              - string
-              - "null"
+            properties:
+              primary:
+                type:
+                  - string
+              detailed:
+                type:
+                  - string
+              confidence_level:
+                type:
+                  - string
+                  - "null"
           transaction_code:
             type:
               - string
               - "null"
           transaction_id:
-            type: string
-          transaction_type:
             type: string
           unofficial_currency_code:
             type:
