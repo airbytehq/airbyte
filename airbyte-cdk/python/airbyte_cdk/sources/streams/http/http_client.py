@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import AirbyteStreamStatus, AirbyteStreamStatusReason, AirbyteStreamStatusReasonType, Level, StreamDescriptor
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
@@ -24,13 +24,40 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
     JsonErrorMessageParser,
     ResponseAction,
 )
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.streams.http.exceptions import (
+    DefaultBackoffException,
+    RateLimitBackoffException,
+    RequestBodyException,
+    UserDefinedBackoffException,
+)
+from airbyte_cdk.sources.streams.http.rate_limiting import (
+    http_client_default_backoff_handler,
+    rate_limit_default_backoff_handler,
+    user_defined_backoff_handler,
+)
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
+from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.auth import AuthBase
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
+
+
+class MessageRepresentationAirbyteTracedErrors(AirbyteTracedException):
+    """
+    Before the migration to the HttpClient in low-code, the exception raised was
+    [ReadException](https://github.com/airbytehq/airbyte/blob/8fdd9818ec16e653ba3dd2b167a74b7c07459861/airbyte-cdk/python/airbyte_cdk/sources/declarative/requesters/http_requester.py#L566).
+    This has been moved to a AirbyteTracedException. The printing on this is questionable (AirbyteTracedException string representation
+    shows the internal_message and not the message). We have already discussed moving the AirbyteTracedException string representation to
+    `message` but the impact is unclear and hard to quantify so we will do it here only for now.
+    """
+
+    def __str__(self) -> str:
+        if self.message:
+            return self.message
+        elif self.internal_message:
+            return self.internal_message
+        return ""
 
 
 class HttpClient:
@@ -50,7 +77,7 @@ class HttpClient:
         backoff_strategy: Optional[Union[BackoffStrategy, List[BackoffStrategy]]] = None,
         error_message_parser: Optional[ErrorMessageParser] = None,
         disable_retries: bool = False,
-        message_respository: Optional[MessageRepository] = None,
+        message_repository: Optional[MessageRepository] = None,
     ):
         self._name = name
         self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
@@ -76,7 +103,7 @@ class HttpClient:
         self._error_message_parser = error_message_parser or JsonErrorMessageParser()
         self._request_attempt_count: Dict[requests.PreparedRequest, int] = {}
         self._disable_retries = disable_retries
-        self._message_repository = message_respository
+        self._message_repository = message_repository
 
     @property
     def cache_filename(self) -> str:
@@ -102,6 +129,13 @@ class HttpClient:
             return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
         else:
             return LimiterSession(api_budget=self._api_budget)
+
+    def clear_cache(self) -> None:
+        """
+        Clear cached requests for current session, can be called any time
+        """
+        if isinstance(self._session, requests_cache.CachedSession):
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     def _dedupe_query_params(self, url: str, params: Optional[Mapping[str, str]]) -> Mapping[str, str]:
         """
@@ -170,6 +204,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
         """
         Sends a request with retry logic.
@@ -187,9 +222,10 @@ class HttpClient:
         max_time = self._max_time
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
+        rate_limit_backoff_handler = rate_limit_default_backoff_handler()
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time)
         # backoff handlers wrap _send, so it will always return a response
-        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
+        response = backoff_handler(rate_limit_backoff_handler(user_backoff_handler))(request, request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
         return response
 
@@ -198,6 +234,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
 
         if request not in self._request_attempt_count:
@@ -222,11 +259,17 @@ class HttpClient:
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
         if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
-            self._logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-            )
+            if request_kwargs.get("stream"):
+                self._logger.debug(
+                    "Receiving response, but not logging it as the response is streamed",
+                    extra={"headers": response.headers, "status": response.status_code},
+                )
+            else:
+                self._logger.debug(
+                    "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+                )
 
-        # Request/repsonse logging for declarative cdk.
+        # Request/response logging for declarative cdk
         if log_formatter is not None and response is not None and self._message_repository is not None:
             formatter = log_formatter
             self._message_repository.log_message(
@@ -234,20 +277,34 @@ class HttpClient:
                 lambda: formatter(response),  # type: ignore # log_formatter is always cast to a callable
             )
 
+        # Emit stream status RUNNING with the reason RATE_LIMITED to log that the rate limit has been reached
+        if error_resolution.response_action == ResponseAction.RATE_LIMITED:
+            # TODO: Update to handle with message repository when concurrent message repository is ready
+            reasons = [AirbyteStreamStatusReason(type=AirbyteStreamStatusReasonType.RATE_LIMITED)]
+            message = stream_status_as_airbyte_message(
+                StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons
+            ).model_dump_json(exclude_unset=True)
+
+            # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
+            # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the
+            # end of the retry decorator behavior. This approach does not allow us to emit messages in the queue before exiting the
+            # backoff retry loop. Adding `\n` to the message and ignore 'end' ensure that few messages are printed at the same time.
+            print(f"{message}\n", end="", flush=True)
+
         if error_resolution.response_action == ResponseAction.FAIL:
-            if response:
+            if response is not None:
                 error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self._error_message_parser.parse_response_error_message(response)}'"
             else:
                 error_message = f"'{request.method}' request to '{request.url}' failed with exception: '{exc}'"
 
-            raise AirbyteTracedException(
+            raise MessageRepresentationAirbyteTracedErrors(
                 internal_message=error_message,
                 message=error_resolution.error_message or error_message,
                 failure_type=error_resolution.failure_type,
             )
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
-            if response:
+            if response is not None:
                 log_message = (
                     f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
                 )
@@ -257,7 +314,7 @@ class HttpClient:
             self._logger.info(error_resolution.error_message or log_message)
 
         # TODO: Consider dynamic retry count depending on subsequent error codes
-        elif error_resolution.response_action == ResponseAction.RETRY:
+        elif error_resolution.response_action == ResponseAction.RETRY or error_resolution.response_action == ResponseAction.RATE_LIMITED:
             user_defined_backoff_time = None
             for backoff_strategy in self._backoff_strategies:
                 backoff_time = backoff_strategy.backoff_time(
@@ -270,6 +327,9 @@ class HttpClient:
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
+
+            retry_endlessly = error_resolution.response_action == ResponseAction.RATE_LIMITED and not exit_on_rate_limit
+
             if user_defined_backoff_time:
                 raise UserDefinedBackoffException(
                     backoff=user_defined_backoff_time,
@@ -277,10 +337,13 @@ class HttpClient:
                     response=(response if response is not None else exc),
                     error_message=error_message,
                 )
-            else:
-                raise DefaultBackoffException(
-                    request=request, response=(response if response is not None else exc), error_message=error_message
-                )
+
+            elif retry_endlessly:
+                raise RateLimitBackoffException(request=request, response=response or exc, error_message=error_message)
+
+            raise DefaultBackoffException(
+                request=request, response=(response if response is not None else exc), error_message=error_message
+            )
 
         elif response:
             try:
@@ -290,6 +353,10 @@ class HttpClient:
                 raise e
 
         return response  # type: ignore # will either return a valid response of type requests.Response or raise an exception
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def send_request(
         self,
@@ -302,6 +369,7 @@ class HttpClient:
         data: Optional[Union[str, Mapping[str, Any]]] = None,
         dedupe_query_params: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
         Prepares and sends request and return request and response objects.
@@ -311,6 +379,8 @@ class HttpClient:
             http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
         )
 
-        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs, log_formatter=log_formatter)
+        response: requests.Response = self._send_with_retry(
+            request=request, request_kwargs=request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit
+        )
 
         return request, response

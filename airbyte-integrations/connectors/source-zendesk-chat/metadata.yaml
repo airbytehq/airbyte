@@ -33,6 +33,14 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-chat_config_oauth_dev_null
+          id: 3801d70c-d197-4bc2-a989-c48888a47fb2
+        - name: zendesk-chat_config_old_dev_null
+          id: 39ac48ce-6b9d-4b1d-9b62-3fd899ae1981
+        - name: zendesk-chat_config_dev_null
+          id: 5f92e2b6-8d51-4517-8c9a-6a1a1b29cebe
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE_ZENDESK_CHAT_CREDS

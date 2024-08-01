@@ -217,6 +217,17 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| 1.5.2 | 2024-07-27 | [42786](https://github.com/airbytehq/airbyte/pull/42786) | Update dependencies |
+| 1.5.1 | 2024-07-20 | [42142](https://github.com/airbytehq/airbyte/pull/42142) | Update dependencies |
+| 1.5.0 | 2024-07-17 | [42073](https://github.com/airbytehq/airbyte/pull/42073) | Migrate to CDK v1.8.0 |
+| 1.4.13 | 2024-07-13 | [41734](https://github.com/airbytehq/airbyte/pull/41734) | Update dependencies |
+| 1.4.12 | 2024-07-10 | [41440](https://github.com/airbytehq/airbyte/pull/41440) | Update dependencies |
+| 1.4.11 | 2024-07-09 | [41164](https://github.com/airbytehq/airbyte/pull/41164) | Update dependencies |
+| 1.4.10 | 2024-07-06 | [40981](https://github.com/airbytehq/airbyte/pull/40981) | Update dependencies |
+| 1.4.9 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 1.4.8 | 2024-06-26 | [40532](https://github.com/airbytehq/airbyte/pull/40532) | Update dependencies |
+| 1.4.7 | 2024-06-25 | [40312](https://github.com/airbytehq/airbyte/pull/40312) | Update dependencies |
+| 1.4.6 | 2024-06-22 | [40077](https://github.com/airbytehq/airbyte/pull/40077) | Update dependencies |
 | 1.4.5 | 2024-06-17 | [39516](https://github.com/airbytehq/airbyte/pull/39516) | Update state handling for incremental streams |
 | 1.4.4 | 2024-06-04 | [39059](https://github.com/airbytehq/airbyte/pull/39059) | [autopull] Upgrade base image to v1.2.1 |
 | 1.4.3 | 2024-05-24 | [38649](https://github.com/airbytehq/airbyte/pull/38649) | Update deprecated auth package |

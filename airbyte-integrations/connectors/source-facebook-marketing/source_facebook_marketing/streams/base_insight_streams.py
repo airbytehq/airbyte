@@ -3,6 +3,7 @@
 #
 
 import logging
+from functools import cache
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
@@ -410,22 +411,32 @@ class AdsInsights(FBMarketingIncrementalStream):
                     schema["properties"].update({object_breakdown_id: breakdowns_properties[object_breakdown_id]})
         return schema
 
+    @cache
     def fields(self, **kwargs) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema"""
+        """
+        List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
+        """
         if self._custom_fields:
             return self._custom_fields
 
         if self._fields:
             return self._fields
-
-        schema = ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        schema = (
+            self.configured_json_schema
+            if self.configured_json_schema and self.configured_json_schema.get("properties")
+            else ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema("ads_insights")
+        )
         self._fields = list(schema.get("properties", {}).keys())
 
+        # Check that no breakdowns are injected from configured catalog schema (review "get_json_schema" doc).
+        removable_keys = list(self.breakdowns if self.breakdowns else [])
         # Having this field in syncs seem to have caused data inaccuracy where fields like `spend` had the wrong values
-        try:
-            self._fields.remove("wish_bid")
-        except ValueError:
-            pass
+        removable_keys.append("wish_bid")
+        for removable_key in removable_keys:
+            try:
+                self._fields.remove(removable_key)
+            except ValueError:
+                pass
 
         return self._fields
 

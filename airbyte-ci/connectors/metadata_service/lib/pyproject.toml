@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "metadata-service"
-version = "0.8.0"
+version = "0.9.0"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
@@ -37,6 +37,7 @@ promote-connector-to-latest = "gsutil  -m rsync -r -d gs://$TARGET_BUCKET/metada
 test = "pytest tests"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]
 

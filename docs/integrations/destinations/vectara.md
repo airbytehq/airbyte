@@ -68,6 +68,15 @@ In addition, in the connector UI you define two set of fields for this connector
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.14 | 2024-07-27 | [42705](https://github.com/airbytehq/airbyte/pull/42705) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42168](https://github.com/airbytehq/airbyte/pull/42168) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41829](https://github.com/airbytehq/airbyte/pull/41829) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41362](https://github.com/airbytehq/airbyte/pull/41362) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41140](https://github.com/airbytehq/airbyte/pull/41140) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40953](https://github.com/airbytehq/airbyte/pull/40953) | Update dependencies |
+| 0.2.8 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.2.7 | 2024-06-25 | [40321](https://github.com/airbytehq/airbyte/pull/40321) | Update dependencies |
+| 0.2.6 | 2024-06-22 | [39973](https://github.com/airbytehq/airbyte/pull/39973) | Update dependencies |
 | 0.2.5 | 2024-06-06 | [39193](https://github.com/airbytehq/airbyte/pull/39193) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.4 | 2024-05-20 | [38432](https://github.com/airbytehq/airbyte/pull/38432) | [autopull] base image + poetry + up_to_date |
 | 0.2.3   | 2024-03-22 | [#37333](https://github.com/airbytehq/airbyte/pull/37333) | Updated CDK & pytest version to fix security vulnerabilities |

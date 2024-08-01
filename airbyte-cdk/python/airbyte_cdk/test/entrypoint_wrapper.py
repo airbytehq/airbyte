@@ -36,14 +36,14 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError as V2ValidationError
 
 
 class EntrypointOutput:
     def __init__(self, messages: List[str], uncaught_exception: Optional[BaseException] = None):
         try:
             self._messages = [self._parse_message(message) for message in messages]
-        except ValidationError as exception:
+        except V2ValidationError as exception:
             raise ValueError("All messages are expected to be AirbyteMessage") from exception
 
         if uncaught_exception:
@@ -53,7 +53,7 @@ class EntrypointOutput:
     def _parse_message(message: str) -> AirbyteMessage:
         try:
             return AirbyteMessage.parse_obj(json.loads(message))
-        except (json.JSONDecodeError, ValidationError):
+        except (json.JSONDecodeError, V2ValidationError):
             # The platform assumes that logs that are not of AirbyteMessage format are log messages
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
 
@@ -179,7 +179,7 @@ def read(
     with tempfile.TemporaryDirectory() as tmp_directory:
         tmp_directory_path = Path(tmp_directory)
         config_file = make_file(tmp_directory_path / "config.json", config)
-        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.json())
+        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.model_dump_json())
         args = [
             "read",
             "--config",
@@ -191,7 +191,9 @@ def read(
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
+                    make_file(
+                        tmp_directory_path / "state.json", f"[{','.join([stream_state.model_dump_json() for stream_state in state])}]"
+                    ),
                 ]
             )
 

@@ -25,10 +25,16 @@ constructor(
     private val defaultNamespace: String,
     private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
 ) {
-    fun parseCatalog(orginalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+    fun parseCatalog(originalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
+        if (originalCatalog.streams.isEmpty()) {
+            throw ConfigErrorException(
+                "The catalog contained no streams. This likely indicates a platform/configuration error."
+            )
+        }
+
         // Don't mutate the original catalog, just operate on a copy of it
         // This is... probably the easiest way we have to deep clone a protocol model object?
-        val catalog = Jsons.clone(orginalCatalog)
+        val catalog = Jsons.clone(originalCatalog)
         catalog.streams.onEach {
             // Overwrite null namespaces
             if (it.stream.namespace.isNullOrEmpty()) {
@@ -129,9 +135,9 @@ constructor(
 
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
-        if (stream.generationId == null) {
+        if (stream.generationId == null || stream.minimumGenerationId == null) {
             throw ConfigErrorException(
-                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.0"
+                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7"
             )
         }
         if (
@@ -169,7 +175,11 @@ constructor(
 
         return StreamConfig(
             sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            stream.destinationSyncMode,
+            when (stream.destinationSyncMode!!) {
+                DestinationSyncMode.APPEND,
+                DestinationSyncMode.OVERWRITE -> ImportType.APPEND
+                DestinationSyncMode.APPEND_DEDUP -> ImportType.DEDUPE
+            },
             primaryKey,
             cursor,
             columns,

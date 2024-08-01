@@ -8,10 +8,10 @@ from typing import Any, Iterable, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpClient
-from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, SSLError
+from requests.exceptions import InvalidURL, JSONDecodeError
 
 from .http_request import ShopifyErrorHandler
-from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyConnectionError, ShopifyWrongShopNameError
+from .utils import ShopifyAccessScopesError, ShopifyBadJsonError, ShopifyWrongShopNameError
 
 SCOPES_MAPPING: Mapping[str, set[str]] = {
     # SCOPE: read_customers
@@ -20,6 +20,7 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "CustomerSavedSearch": ("read_customers",),
     "CustomerAddress": ("read_customers",),
     # SCOPE: read_orders
+    "OrderAgreements": ("read_orders",),
     "Orders": ("read_orders",),
     "CustomerJourneySummary": ("read_orders",),
     "AbandonedCheckouts": ("read_orders",),

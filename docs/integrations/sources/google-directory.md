@@ -70,6 +70,14 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 0.2.10 | 2024-07-27 | [42615](https://github.com/airbytehq/airbyte/pull/42615) | Update dependencies |
+| 0.2.9 | 2024-07-20 | [42191](https://github.com/airbytehq/airbyte/pull/42191) | Update dependencies |
+| 0.2.8 | 2024-07-13 | [41704](https://github.com/airbytehq/airbyte/pull/41704) | Update dependencies |
+| 0.2.7 | 2024-07-10 | [41468](https://github.com/airbytehq/airbyte/pull/41468) | Update dependencies |
+| 0.2.6 | 2024-07-09 | [41233](https://github.com/airbytehq/airbyte/pull/41233) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40948](https://github.com/airbytehq/airbyte/pull/40948) | Update dependencies |
+| 0.2.4 | 2024-06-25 | [40319](https://github.com/airbytehq/airbyte/pull/40319) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [39961](https://github.com/airbytehq/airbyte/pull/39961) | Update dependencies |
 | 0.2.2 | 2024-05-20 | [38449](https://github.com/airbytehq/airbyte/pull/38449) | [autopull] base image + poetry + up_to_date |
 | 0.2.1 | 2023-05-30 | [27236](https://github.com/airbytehq/airbyte/pull/27236) | Autoformat code |
 | 0.2.0 | 2023-05-30 | [26775](https://github.com/airbytehq/airbyte/pull/26775) | Remove `authSpecification` from spec; update stream schemas. |

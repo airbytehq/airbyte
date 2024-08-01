@@ -9,6 +9,7 @@ import json
 import os
 import time
 from abc import ABC, abstractmethod
+from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from textwrap import dedent
@@ -25,6 +26,7 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
+from pipelines.helpers.github import AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
@@ -34,12 +36,13 @@ from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, Ste
 # live_test can't resolve the passed connector container otherwise.
 from slugify import slugify  # type: ignore
 
+GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/master/airbyte-integrations/connectors"
+
 
 class VersionCheck(Step, ABC):
     """A step to validate the connector version was bumped if files were modified"""
 
     context: ConnectorContext
-    GITHUB_URL_PREFIX_FOR_CONNECTORS = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
     failure_message: ClassVar
 
     @property
@@ -48,7 +51,7 @@ class VersionCheck(Step, ABC):
 
     @property
     def github_master_metadata_url(self) -> str:
-        return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
+        return f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
     def master_metadata(self) -> Optional[dict]:
@@ -391,9 +394,7 @@ class IncrementalAcceptanceTests(Step):
         Returns:
             Artifact: The report log of the acceptance tests run on the released image.
         """
-        raw_master_metadata = requests.get(
-            f"https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/{self.context.connector.technical_name}/metadata.yaml"
-        )
+        raw_master_metadata = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
         master_metadata = yaml.safe_load(raw_master_metadata.text)
         master_docker_image_tag = master_metadata["data"]["dockerImageTag"]
         released_image = f'{master_metadata["data"]["dockerRepository"]}:{master_docker_image_tag}'
@@ -443,17 +444,27 @@ class IncrementalAcceptanceTests(Step):
             )
 
 
-class RegressionTests(Step):
-    """A step to run regression tests for a connector."""
+class LiveTestSuite(Enum):
+    ALL = "all"
+    REGRESSION = "regression"
+    VALIDATION = "validation"
+
+
+class LiveTests(Step):
+    """A step to run live tests for a connector."""
 
     context: ConnectorContext
-    title = "Regression tests"
     skipped_exit_code = 5
     accept_extra_params = True
-    regression_tests_artifacts_dir = Path("/tmp/regression_tests_artifacts")
+    local_tests_artifacts_dir = Path("/tmp/live_tests_artifacts")
     working_directory = "/app"
     github_user = "octavia-squidington-iii"
     platform_repo_url = "airbytehq/airbyte-platform-internal"
+    test_suite_to_dir = {
+        LiveTestSuite.ALL: "src/live_tests",
+        LiveTestSuite.REGRESSION: "src/live_tests/regression_tests",
+        LiveTestSuite.VALIDATION: "src/live_tests/validation_tests",
+    }
 
     @property
     def default_params(self) -> STEP_PARAMS:
@@ -468,50 +479,66 @@ class RegressionTests(Step):
             "--durations": ["3"],  # Show the 3 slowest tests in the report
         }
 
-    def regression_tests_command(self) -> List[str]:
+    @property
+    def title(self) -> str:
+        return f"Connector {self.test_suite.title()} Tests"
+
+    def _test_command(self) -> List[str]:
+        """
+        The command used to run the tests
+        """
+        base_command = [
+            "poetry",
+            "run",
+            "pytest",
+            self.test_dir,
+            "--connector-image",
+            self.connector_image,
+        ]
+        return base_command + self._get_command_options()
+
+    def _get_command_options(self) -> List[str]:
+        command_options = []
+        if self.connection_id:
+            command_options += ["--connection-id", self.connection_id]
+        if self.control_version:
+            command_options += ["--control-version", self.control_version]
+        if self.target_version:
+            command_options += ["--target-version", self.target_version]
+        if self.pr_url:
+            command_options += ["--pr-url", self.pr_url]
+        if self.run_id:
+            command_options += ["--run-id", self.run_id]
+        if self.should_read_with_state:
+            command_options += ["--should-read-with-state", self.should_read_with_state]
+        if self.test_evaluation_mode:
+            command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
+        if self.selected_streams:
+            command_options += ["--stream", self.selected_streams]
+        command_options += ["--connection-subset", self.connection_subset]
+        return command_options
+
+    def _run_command_with_proxy(self, command: str) -> List[str]:
         """
         This command:
 
         1. Starts a Google Cloud SQL proxy running on localhost, which is used by the connection-retriever to connect to postgres.
+           This is required for secure access to our internal tools.
         2. Gets the PID of the proxy so it can be killed once done.
-        3. Runs the regression tests.
+        3. Runs the command that was passed in as input.
         4. Kills the proxy, and waits for it to exit.
-        5. Exits with the regression tests' exit code.
+        5. Exits with the command's exit code.
         We need to explicitly kill the proxy in order to allow the GitHub Action to exit.
         An alternative that we can consider is to run the proxy as a separate service.
 
         (See https://docs.dagger.io/manuals/developer/python/328492/services/ and https://cloud.google.com/sql/docs/postgres/sql-proxy#cloud-sql-auth-proxy-docker-image)
         """
         run_proxy = "./cloud-sql-proxy prod-ab-cloud-proj:us-west3:prod-pgsql-replica --credentials-file /tmp/credentials.json"
-        selected_streams = ["--stream", self.selected_streams] if self.selected_streams else []
-        run_pytest = " ".join(
-            [
-                "poetry",
-                "run",
-                "pytest",
-                "src/live_tests/regression_tests",
-                "--connector-image",
-                self.connector_image,
-                "--connection-id",
-                self.connection_id or "",
-                "--control-version",
-                self.control_version or "",
-                "--target-version",
-                self.target_version or "",
-                "--pr-url",
-                self.pr_url or "",
-                "--run-id",
-                self.run_id or "",
-                "--should-read-with-state",
-                str(self.should_read_with_state),
-            ]
-            + selected_streams
-        )
         run_pytest_with_proxy = dedent(
             f"""
         {run_proxy} &
         proxy_pid=$!
-        {run_pytest}
+        {command}
         pytest_exit=$?
         kill $proxy_pid
         wait $proxy_pid
@@ -521,26 +548,39 @@ class RegressionTests(Step):
         return ["bash", "-c", f"'{run_pytest_with_proxy}'"]
 
     def __init__(self, context: ConnectorContext) -> None:
-        """Create a step to run regression tests for a connector.
+        """Create a step to run live tests for a connector.
 
         Args:
             context (ConnectorContext): The current test context, providing a connector object, a dagger client and a repository directory.
         """
         super().__init__(context)
         self.connector_image = context.docker_image.split(":")[0]
-        options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS, {})
+        options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS, {})
 
         self.connection_id = self.context.run_step_options.get_item_or_default(options, "connection-id", None)
         self.pr_url = self.context.run_step_options.get_item_or_default(options, "pr-url", None)
 
         if not self.connection_id and self.pr_url:
-            raise ValueError("`connection-id` and `pr-url` are required to run regression tests.")
+            raise ValueError("`connection-id` and `pr-url` are required to run live tests.")
 
-        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", "latest")
+        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
+        self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
+        self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
-        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", True)
+        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
+        self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
+        self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
         self.run_id = os.getenv("GITHUB_RUN_ID") or str(int(time.time()))
+
+    def _validate_job_can_run(self) -> None:
+        connector_type = self.context.connector.metadata.get("connectorType")
+        connector_subtype = self.context.connector.metadata.get("connectorSubtype")
+        assert connector_type == "source", f"Live tests can only run against source connectors, got `connectorType={connector_type}`."
+        if connector_subtype == "database":
+            assert (
+                self.connection_subset == "sandboxes"
+            ), f"Live tests for database sources may only be run against sandbox connections, got `connection_subset={self.connection_subset}`."
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the regression test suite.
@@ -551,14 +591,23 @@ class RegressionTests(Step):
         Returns:
             StepResult: Failure or success of the regression tests with stdout and stderr.
         """
-        container = await self._build_regression_test_container(await connector_under_test_container.id())
-        container = container.with_(hacks.never_fail_exec(self.regression_tests_command()))
-        regression_tests_artifacts_dir = str(self.regression_tests_artifacts_dir)
-        path_to_report = f"{regression_tests_artifacts_dir}/session_{self.run_id}/report.html"
+        try:
+            self._validate_job_can_run()
+        except AssertionError as exc:
+            return StepResult(
+                step=self,
+                status=StepStatus.FAILURE,
+                exc_info=exc,
+            )
+
+        container = await self._build_test_container(await connector_under_test_container.id())
+        container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
+        tests_artifacts_dir = str(self.local_tests_artifacts_dir)
+        path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
 
         exit_code, stdout, stderr = await get_exec_result(container)
 
-        if "report.html" not in await container.directory(f"{regression_tests_artifacts_dir}/session_{self.run_id}").entries():
+        if "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries():
             main_logger.exception(
                 "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
             )
@@ -577,7 +626,7 @@ class RegressionTests(Step):
             report=regression_test_report,
         )
 
-    async def _build_regression_test_container(self, target_container_id: str) -> Container:
+    async def _build_test_container(self, target_container_id: str) -> Container:
         """Create a container to run regression tests."""
         container = with_poetry(self.context)
         container_requirements = ["apt-get", "install", "-y", "git", "curl", "docker.io"]
@@ -626,13 +675,17 @@ class RegressionTests(Step):
                         "https://github.com/airbytehq/airbyte-platform-internal.git",
                     ]
                 )
+                .with_secret_variable(
+                    "CI_GITHUB_ACCESS_TOKEN",
+                    self.context.dagger_client.set_secret(
+                        "CI_GITHUB_ACCESS_TOKEN", self.context.ci_github_access_token.value if self.context.ci_github_access_token else ""
+                    ),
+                )
                 .with_exec(
                     [
-                        "poetry",
-                        "config",
-                        "http-basic.airbyte-platform-internal-source",
-                        self.github_user,
-                        self.context.ci_github_access_token.value if self.context.ci_github_access_token else "",
+                        "/bin/sh",
+                        "-c",
+                        f"poetry config http-basic.airbyte-platform-internal-source {self.github_user} $CI_GITHUB_ACCESS_TOKEN",
                     ]
                 )
                 # Add GCP credentials from the environment and point google to their location (also required for connection-retriever)
