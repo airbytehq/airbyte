@@ -6,10 +6,10 @@ import json
 import os
 from typing import Any, Mapping
 
-from freezegun import freeze_time
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from conftest import find_stream
+from freezegun import freeze_time
 
 # Test input arguments for the `make_analytics_slices`
 TEST_KEY_VALUE_MAP = {"camp_id": "id"}
