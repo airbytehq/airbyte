@@ -604,7 +604,7 @@ internal class BigQueryDestinationTest {
             null // default BigQuery config. Also used for setup/teardown
 
         @Suppress("NP_NONNULL_RETURN_VIOLATION")
-        @SuppressFBWarnings
+        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
         protected lateinit var gcsStagingConfigWithBadCopyPermission: JsonNode
 
         protected var configs: Map<String, JsonNode>? = null
