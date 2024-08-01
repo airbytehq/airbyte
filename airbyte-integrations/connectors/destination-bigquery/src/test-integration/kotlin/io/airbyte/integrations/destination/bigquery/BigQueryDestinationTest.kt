@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.cloud.bigquery.*
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.Destination
 import io.airbyte.cdk.integrations.base.DestinationConfig
@@ -601,7 +602,8 @@ internal class BigQueryDestinationTest {
         protected var nonBillableConfig: JsonNode? = null
         protected var gcsStagingConfig: JsonNode? =
             null // default BigQuery config. Also used for setup/teardown
-        protected var gcsStagingConfigWithBadCopyPermission: JsonNode? = null
+        @SuppressFBWarnings
+        protected lateinit var gcsStagingConfigWithBadCopyPermission: JsonNode
 
         protected var configs: Map<String, JsonNode>? = null
         protected var catalog: ConfiguredAirbyteCatalog? = null
