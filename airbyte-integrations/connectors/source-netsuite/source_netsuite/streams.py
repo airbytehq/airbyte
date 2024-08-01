@@ -21,6 +21,8 @@ from source_netsuite.constraints import (
     REFERAL_SCHEMA,
     REFERAL_SCHEMA_URL,
     SCHEMA_HEADERS,
+    SUITEQL_PATH,
+    SUITEQL_SCHEMAS,
     USLESS_SCHEMA_ELEMENTS,
 )
 from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
@@ -287,3 +289,85 @@ class CustomIncrementalNetsuiteStream(IncrementalNetsuiteStream):
     @property
     def cursor_field(self) -> str:
         return CUSTOM_INCREMENTAL_CURSOR
+
+
+# Currently only supports full refresh, and does not respect window_in_days
+class SuiteQLNetsuiteStream(HttpStream):
+    def __init__(
+        self,
+        auth: OAuth1,
+        object_name: str,
+        base_url: str,
+        start_datetime: str,
+        window_in_days: int,
+    ):
+
+        self.object_name = object_name
+        self.base_url = base_url
+        date_obj = datetime.strptime(start_datetime, "%Y-%m-%dT%H:%M:%SZ")
+        date_obj.strftime("%-m/%-d/%Y")
+        self.start_datetime = date_obj.strftime("%-m/%-d/%Y")
+        super().__init__(authenticator=auth)
+
+    primary_key = "id"
+
+    @property
+    def name(self) -> str:
+        return self.object_name
+
+    @property
+    def url_base(self) -> str:
+        return self.base_url
+
+    def path(self, **kwargs) -> str:
+        return SUITEQL_PATH
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # We can't (might be possible, but currently unsure) get the schema for SuiteQL, so we have to hardcode it
+        return SUITEQL_SCHEMAS[self.object_name]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        items = response.json().get("items")
+        if len(items) > 0:
+            return {"token": items[-1].get("id")}
+        return None
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+    
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {"Prefer": "transient"}
+    
+    def request_body_json(
+        self,
+        stream_state: Optional[Mapping[str, Any]],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        if next_page_token:
+            id = next_page_token.get("token")
+        else:
+            id = -1
+        return {"q": f"SELECT * FROM transaction where id > {id} and recordtype = 'invoice' and lastmodifieddate >= '{self.start_datetime}' order by id asc"}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
+    ) -> Iterable[Mapping]:    
+        records = response.json().get("items")
+        properties = self.get_json_schema().get("properties")
+        if records:
+            for record in records:
+                res = {}
+                for property, schema in properties.items():
+                    record_value = record.get(property)
+                    if schema.get("format") is not None and schema.get("format") == "date" and record_value is not None:
+                        date_obj = datetime.strptime(record_value, "%m/%d/%Y")
+                        record_value = date_obj.strftime("%Y-%m-%d")
+                    res[property] = record_value
+                yield res
