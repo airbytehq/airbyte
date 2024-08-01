@@ -28,8 +28,8 @@ class JsonSchemaTransformerTest {
         val jsonSchema = MoreMappers.initMapper().readTree(schema)
 
         // Create a JsonSchemaTransformer object
-        val transformer = JsonSchemaTransformer()
-        val transformedSchema = transformer.accept(jsonSchema as ObjectNode)
+        val transformer = JsonSchemaIdentityMapper()
+        val transformedSchema = transformer.mapSchema(jsonSchema as ObjectNode) as ObjectNode
 
         // Assert transformedSchema is equal to jsonSchema, accounting for a little normalization
         transformedSchema.remove("type")
@@ -44,8 +44,8 @@ class JsonSchemaTransformerTest {
         val jsonSchema = MoreMappers.initMapper().readTree(schema)
 
         // Create a JsonSchemaAvroPreprocessor object
-        val transformer = AvroJsonSchemaPreprocessor()
-        val transformedSchema = transformer.accept(jsonSchema as ObjectNode)
+        val transformer = JsonSchemaAvroPreprocessor()
+        val transformedSchema = transformer.mapSchema(jsonSchema as ObjectNode)
 
         // Assert transformedSchema is equal to expectedSchema
         val properties = transformedSchema["properties"]
@@ -81,7 +81,7 @@ class JsonSchemaTransformerTest {
         print("expectedSchemaStr: $expectedSchemaStr")
         val expectedSchema = MoreMappers.initMapper().readTree(expectedSchemaStr) as ObjectNode
 
-        val transformedSchema = ParquetJsonSchemaPreprocessor().accept(inputSchema)
+        val transformedSchema = JsonSchemaParquetPreprocessor().mapSchema(inputSchema)
 
         Assertions.assertEquals(expectedSchema, transformedSchema)
     }

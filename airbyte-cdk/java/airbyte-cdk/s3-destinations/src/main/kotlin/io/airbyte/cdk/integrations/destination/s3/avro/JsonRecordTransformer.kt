@@ -8,7 +8,7 @@ import org.apache.avro.data.Json
 
 open class JsonRecordTransformer(
     private val inputRecordSchema: ObjectNode
-): JsonRecordVisitor() {
+): JsonRecordVisitor(), (JsonNode) -> JsonNode {
     private var recordOut: JsonNode? = null
     private val contextStack: MutableList<Context> = mutableListOf()
 
@@ -218,5 +218,9 @@ open class JsonRecordTransformer(
 
     override fun visitTimeWithoutTimezone(tree: JsonNode?, schema: ObjectNode) {
         add(tree?.deepCopy())
+    }
+
+    override fun invoke(record: JsonNode): JsonNode {
+        return accept(record)
     }
 }

@@ -23,7 +23,7 @@ import tech.allegro.schema.json2avro.converter.JsonAvroConverter
 class AvroRecordFactory(
     private val schema: Schema?,
     private val converter: JsonAvroConverter?,
-    private val recordPreprocessor: JsonRecordTransformer? = null,
+    private val recordPreprocessor: ((JsonNode) -> JsonNode?)? = null
 ) {
 
     companion object {
@@ -81,7 +81,7 @@ class AvroRecordFactory(
 
         // Preprocess the client data to add features not supported by the converter
         val data = recordMessage.data as ObjectNode
-        val preprocessed = recordPreprocessor?.accept(data) ?: data
+        val preprocessed = recordPreprocessor?.invoke(data) ?: data
         jsonRecord.setAll<JsonNode>(preprocessed as ObjectNode)
 
         return converter!!.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema)

@@ -17,8 +17,8 @@ class JsonRecordTransformerTest {
 
         var index = 1
         jsonRecords.elements().forEach { jsonRecord ->
-            val transformer = JsonRecordTransformer(jsonSchema as ObjectNode)
-            val transformedRecord = transformer.accept(jsonRecord as ObjectNode)
+            val transformer = JsonRecordIdentityMapper()
+            val transformedRecord = transformer.mapRecordWithSchema(jsonRecord, jsonSchema as ObjectNode)
 
             // Assert transformedRecord is equal to jsonRecord
             Assertions.assertEquals(jsonRecord, transformedRecord, "Record $index")
@@ -39,32 +39,32 @@ class JsonRecordTransformerTest {
 
         jsonRecords.elements().forEach { jsonRecord ->
 
-            val transformer = AvroJsonRecordPreprocessor(jsonSchema as ObjectNode)
-            val transformedRecord = transformer.accept(jsonRecord as ObjectNode)
+            val transformer = JsonRecordAvroPreprocessor()
+            val transformedRecord = transformer.mapRecordWithSchema(jsonRecord as ObjectNode, jsonSchema as ObjectNode)
             println("here: $transformedRecord")
             Assertions.assertEquals(
                 jsonRecord["object_without_schema"].toString(),
-                transformedRecord["object_without_schema"].asText()
+                transformedRecord?.get("object_without_schema")?.asText()
             )
 
             val objWithSchemaExpected = jsonRecord["object_with_schema"]
-            val objWithSchemaActual = transformedRecord["object_with_schema"]
+            val objWithSchemaActual = transformedRecord?.get("object_with_schema")
             Assertions.assertEquals(
                 objWithSchemaExpected["nested_schemaless_object"].toString(),
-                objWithSchemaActual["nested_schemaless_object"].asText()
+                objWithSchemaActual?.get("nested_schemaless_object")?.asText()
             )
 
             val arrayOfSchemalessExpected =
                 objWithSchemaExpected["nested_array_of_schemaless_objects"].map { it.toString() }
             val arrayOfSchemalessActual =
-                objWithSchemaActual["nested_array_of_schemaless_objects"].map { it.asText() }
+                objWithSchemaActual?.get("nested_array_of_schemaless_objects")?.map { it.asText() }
             Assertions.assertEquals(arrayOfSchemalessExpected, arrayOfSchemalessActual)
 
             val unionSchemalessNumericExpected =
                 objWithSchemaExpected["union_of_schemaless_object_and_number"]
             val unionSchemalessNumericActual =
-                objWithSchemaActual["union_of_schemaless_object_and_number"]
-            if (unionSchemalessNumericActual.isTextual) {
+                objWithSchemaActual?.get("union_of_schemaless_object_and_number")
+            if (unionSchemalessNumericActual?.isTextual == true) {
                 Assertions.assertEquals(
                     unionSchemalessNumericExpected.toString(),
                     unionSchemalessNumericActual.asText()
@@ -75,10 +75,10 @@ class JsonRecordTransformerTest {
             val arrayOfUnionSchemalessIntegralExpected =
                 objWithSchemaExpected["array_of_union_of_schema_object_and_integer"]
             val arrayOfUnionSchemalessIntegralActual =
-                objWithSchemaActual["array_of_union_of_schema_object_and_integer"]
+                objWithSchemaActual?.get("array_of_union_of_schema_object_and_integer")
             arrayOfUnionSchemalessIntegralExpected.forEachIndexed { index, expected ->
-                val actual = arrayOfUnionSchemalessIntegralActual[index]
-                if (actual.isTextual) {
+                val actual = arrayOfUnionSchemalessIntegralActual?.get(index)
+                if (actual?.isTextual == true) {
                     Assertions.assertEquals(expected.toString(), actual.asText())
                     sawArrayUnionElement += 1
                 }
@@ -99,10 +99,10 @@ class JsonRecordTransformerTest {
         val jsonRecordsIn = MoreMappers.initMapper().readTree(recordsIn)
         val expectedJsonRecordsOut = MoreMappers.initMapper().readTree(expectedRecordsOut)
 
-        val transformer = ParquetJsonRecordPreprocessor(jsonSchema as ObjectNode)
+        val transformer = JsonRecordParquetPreprocessor()
         for ((index, jsonRecord) in jsonRecordsIn.withIndex()) {
             println("IN: $jsonRecord")
-            val transformedRecord = transformer.accept(jsonRecord as ObjectNode)
+            val transformedRecord = transformer.mapRecordWithSchema(jsonRecord, jsonSchema as ObjectNode)
             println("OUT: $transformedRecord")
             Assertions.assertEquals(expectedJsonRecordsOut[index], transformedRecord)
         }

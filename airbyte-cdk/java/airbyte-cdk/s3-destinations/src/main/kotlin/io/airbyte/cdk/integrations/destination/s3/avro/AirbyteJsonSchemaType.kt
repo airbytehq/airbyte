@@ -167,17 +167,20 @@ enum class AirbyteJsonSchemaType {
             }
         }
 
-        fun getMatchingValueForType(options: ArrayNode, tree: JsonNode?): ObjectNode {
-            /* Anything could match, so just return whatever. */
-            if (tree == null || tree.isNull) {
-                return options.elements().asSequence().first() as ObjectNode
+        fun getMatchingValueForType(value: JsonNode?, options: ArrayNode): ObjectNode {
+            return getMatchingValueForType(value, options.elements().asSequence().map { it as ObjectNode }.toList())
+        }
+
+        fun getMatchingValueForType(value: JsonNode?, options: Iterable<ObjectNode>): ObjectNode {
+            if (value == null || value.isNull) {
+                return options.first()
             }
 
-            println("HERE: options: $options, tree: $tree")
-            val matching = options.elements().asSequence().filter { option ->
-                println("AJST: ${AirbyteJsonSchemaType.fromJsonSchema(option as ObjectNode)}")
-                println("${tree.isObject}; ${tree.isIntegralNumber}; ${tree.isInt}")
-                val rv = AirbyteJsonSchemaType.fromJsonSchema(option).matchesValue(tree)
+            println("HERE: options: $options, value: $value")
+            val matching = options.filter { option ->
+                println("AJST: ${AirbyteJsonSchemaType.fromJsonSchema(option)}")
+                println("${value.isObject}; ${value.isIntegralNumber}; ${value.isInt}")
+                val rv = AirbyteJsonSchemaType.fromJsonSchema(option).matchesValue(value)
                 println("rv: $rv")
                 rv
             }.toList()
@@ -185,7 +188,7 @@ enum class AirbyteJsonSchemaType {
                 println("matching $matching")
                 throw IllegalArgumentException("Union type does not match exactly one option")
             }
-            return matching.first() as ObjectNode
+            return matching.first()
         }
     }
 }

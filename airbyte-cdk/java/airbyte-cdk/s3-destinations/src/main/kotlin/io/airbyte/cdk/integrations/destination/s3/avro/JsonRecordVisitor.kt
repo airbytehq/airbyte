@@ -59,7 +59,7 @@ abstract class JsonRecordVisitor {
                 visitArrayWithItems(tree, schema)
                 tree?.forEach { item ->
                     visitArrayItemUnionTyped(item, schema["items"] as ArrayNode)
-                    val matching = AirbyteJsonSchemaType.getMatchingValueForType(schema["items"] as ArrayNode, item)
+                    val matching = AirbyteJsonSchemaType.getMatchingValueForType(item, schema["items"] as ArrayNode)
                     visit(item, matching)
                 }
                 visitEndOfArrayWithItems(tree, schema)
@@ -89,14 +89,14 @@ abstract class JsonRecordVisitor {
                     option.put("type", type.asText())
                     options.add(option)
                 }
-                val matching = AirbyteJsonSchemaType.getMatchingValueForType(options, tree)
+                val matching = AirbyteJsonSchemaType.getMatchingValueForType(tree, options)
                 visit(tree, matching)
                 visitEndOfUnion(tree, schema)
             }
 
             AirbyteJsonSchemaType.UNION -> {
                 visitUnion(tree, schema)
-                val matching = AirbyteJsonSchemaType.getMatchingValueForType(schema["oneOf"] as ArrayNode, tree)
+                val matching = AirbyteJsonSchemaType.getMatchingValueForType(tree, schema["oneOf"] as ArrayNode)
                 visit(tree, matching)
                 visitEndOfUnion(tree, schema)
             }

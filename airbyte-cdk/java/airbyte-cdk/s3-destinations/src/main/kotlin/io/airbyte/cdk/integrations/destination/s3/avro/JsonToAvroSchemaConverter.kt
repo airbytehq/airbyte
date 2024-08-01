@@ -42,13 +42,14 @@ class JsonToAvroSchemaConverter {
         namespace: String?,
         useV2FieldNames: Boolean = false,
         addStringToLogicalTypes: Boolean = true,
+        appendExtraProps: Boolean = true
     ): Schema {
         return getAvroSchema(
             jsonSchema,
             streamName,
             namespace,
             appendAirbyteFields = true,
-            appendExtraProps = true,
+            appendExtraProps = appendExtraProps,
             addStringToLogicalTypes = addStringToLogicalTypes,
             isRootNode = true,
             useV2FieldNames = useV2FieldNames,

@@ -1,0 +1,5 @@
+{"type": "RECORD", "record": {"stream": "problematic_types", "emitted_at": 1602637589100, "data": { "schemaless_object": { "uuid": "38F52396-736D-4B23-B5B4-F504D8894B97", "probability": 1.5 }, "schematized_object": { "id": 1, "name": "Joe" }, "combined_type": "string1", "union_type": 10 } } }
+{"type": "RECORD", "record": {"stream": "problematic_types", "emitted_at": 1602637589200, "data": { "schemaless_object": { "address": { "street": "113 Hickey Rd", "zip": "37932" }, "flags": [ true, false, false ] }, "schematized_object": { "id": 2, "name": "Jane" }, "combined_type": 20, "union_type": "string2" } } }
+{"type": "RECORD", "record": {"stream": "problematic_types", "emitted_at": 1602637589300, "data": { "schemaless_object": { "foo": "bar", "scores": { "probability": 0.9, "entropy": 0.5 } }, "schematized_object": { "id": 3, "name": "John" }, "combined_type": 30, "union_type": 40 } } }
+{"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "problematic_types"}, "status": "COMPLETE"}, "emitted_at": 1721428636000}}

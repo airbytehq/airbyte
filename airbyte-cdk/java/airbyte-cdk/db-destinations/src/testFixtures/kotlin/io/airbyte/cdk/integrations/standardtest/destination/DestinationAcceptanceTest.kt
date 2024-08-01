@@ -4,6 +4,7 @@
 package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
@@ -91,7 +92,9 @@ abstract class DestinationAcceptanceTest(
     private val verifyIndividualStateAndCounts: Boolean = false,
     private val useV2Fields: Boolean = false,
     private val supportsChangeCapture: Boolean = false,
-    private val expectNumericTimestamps: Boolean = false
+    private val expectNumericTimestamps: Boolean = false,
+    private val expectSchemalessObjectsCoercedToStrings: Boolean = false,
+    private val expectUnionsPromotedToDisjointRecords: Boolean = false
 ) {
     protected var testSchemas: HashSet<String> = HashSet()
 
@@ -1755,6 +1758,58 @@ abstract class DestinationAcceptanceTest(
                 }
             }
 
+            Assertions.assertEquals(expected, actual)
+        }
+    }
+
+    @Test
+    fun testProblematicTypes() {
+        // Kind of a hack, since we'd prefer to test this not happen on some destinations,
+        // but verifiying that for CSV is painful.
+        Assumptions.assumeTrue(expectSchemalessObjectsCoercedToStrings || expectUnionsPromotedToDisjointRecords)
+
+        val configuredCatalog =
+            Jsons.deserialize(
+                MoreResources.readResource("v0/problematic_types_configured_catalog.json"),
+                ConfiguredAirbyteCatalog::class.java
+            )
+        val config = getConfig()
+        val messages =
+            MoreResources.readResource("v0/problematic_fields_messages.txt")
+                .trim()
+                .lines()
+                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        for (stream in configuredCatalog.streams) {
+            val schema = stream.stream.jsonSchema
+            val actual =
+                retrieveRecordsDataOnly(testEnv, stream.stream.name, getDefaultSchema(config)!! /* ignored */, schema)
+            val expected = messages.filter { it.type == Type.RECORD }.map { it.record.data }
+            expected.forEach { data ->
+                if (expectSchemalessObjectsCoercedToStrings) {
+                    val obj = data["schemaless_object"]
+                    (data as ObjectNode).replace("schemaless_object", JsonNodeFactory.instance.textNode(Jsons.serialize(obj)))
+                }
+                if (expectUnionsPromotedToDisjointRecords) {
+                    listOf("combined_type", "union_type").forEach { key ->
+                        val disjointRecord = MoreMappers.initMapper().createObjectNode()
+                        val unionValue = data[key]
+                        if (unionValue.isTextual) {
+                            disjointRecord.put("_airbyte_type", "string")
+                            disjointRecord.put("string", unionValue.asText())
+                            disjointRecord.replace("integer", JsonNodeFactory.instance.nullNode())
+                        } else if (unionValue.isIntegralNumber) {
+                            disjointRecord.put("_airbyte_type", "integer")
+                            disjointRecord.put("integer", unionValue.asInt())
+                            disjointRecord.replace("string", JsonNodeFactory.instance.nullNode())
+                        } else {
+                            throw IllegalArgumentException("Unexpected union value in test data: $unionValue")
+                        }
+                        (data as ObjectNode).replace(key, disjointRecord)
+                    }
+                }
+            }
             Assertions.assertEquals(expected, actual)
         }
     }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
+import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import java.io.IOException
 import java.io.InputStreamReader
@@ -20,7 +21,10 @@ import org.apache.commons.csv.CSVRecord
 import org.apache.commons.csv.QuoteMode
 
 abstract class S3BaseCsvDestinationAcceptanceTest :
-    S3DestinationAcceptanceTest(FileUploadFormat.CSV, supportsChangeCapture = false) {
+    S3DestinationAcceptanceTest(
+        FileUploadFormat.CSV,
+        supportsChangeCapture = false
+    ) {
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(
@@ -81,7 +85,15 @@ abstract class S3BaseCsvDestinationAcceptanceTest :
                 val entry = iterator.next()
                 val fieldValue = entry.value
                 val typeValue =
-                    if (fieldValue["type"] == null) fieldValue["\$ref"] else fieldValue["type"]
+                    if (fieldValue.has("type")) fieldValue["type"]
+                    else if (fieldValue.has("\$ref")) fieldValue["\$ref"]
+                    else if (fieldValue.has("oneOf")) {
+                        val typeArray = MoreMappers.initMapper().createArrayNode()
+                        fieldValue["oneOf"].forEach { typeArray.add(it["type"]) }
+                        typeArray
+                    } else {
+                        throw IllegalStateException("Field type $fieldValue not recognized.")
+                    }
                 fieldTypes[entry.key] = typeValue.asText()
             }
             return fieldTypes

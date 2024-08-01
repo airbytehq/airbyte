@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination.s3.avro
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
@@ -28,7 +29,7 @@ class AvroSerializedBuffer(
     bufferStorage: BufferStorage,
     codecFactory: CodecFactory,
     schema: Schema,
-    recordPreprocessor: JsonRecordTransformer? = null,
+    recordPreprocessor: ((JsonNode) -> JsonNode?)? = null,
     private val useV2FieldNames: Boolean = false,
 ) : BaseSerializedBuffer(bufferStorage) {
     private val codecFactory: CodecFactory
@@ -107,9 +108,9 @@ class AvroSerializedBuffer(
         ): BufferCreateFunction {
             val codecFactory = config.codecFactory
             return BufferCreateFunction {
+                // Build avro schema
                 stream: AirbyteStreamNameNamespacePair,
                 catalog: ConfiguredAirbyteCatalog ->
-                val schemaConverter = JsonToAvroSchemaConverter()
                 val jsonSchema = catalog.streams
                     .filter { s: ConfiguredAirbyteStream ->
                         s.stream.name == stream.name &&
@@ -124,22 +125,30 @@ class AvroSerializedBuffer(
                     ?: throw RuntimeException(
                         "No such stream ${stream.namespace}.${stream.name}"
                     )
-                val processedSchema = if (useV2FeatureSet) JsonSchemaTransformer().accept(jsonSchema as ObjectNode) else jsonSchema
-                val schema =
-                    schemaConverter.getAvroSchema(
-                        processedSchema,
+                val preprocessedJsonSchema = if (useV2FeatureSet) JsonSchemaAvroPreprocessor().mapSchema(jsonSchema as ObjectNode) else jsonSchema
+                val avroSchema =
+                    JsonToAvroSchemaConverter().getAvroSchema(
+                        preprocessedJsonSchema,
                         stream.name,
                         stream.namespace,
                         useV2FieldNames = useV2FeatureSet,
-                        addStringToLogicalTypes = false
+                        addStringToLogicalTypes = !useV2FeatureSet,
+                        appendExtraProps = !useV2FeatureSet
                     )
-                val recordPreprocessor = if (useV2FeatureSet) JsonRecordTransformer(jsonSchema as ObjectNode) else null
+
+                // Build record processor
+                val recordPreprocessor = if (useV2FeatureSet) {
+                    record: JsonNode ->
+                    JsonRecordAvroPreprocessor().mapRecordWithSchema(record, jsonSchema as ObjectNode)
+                } else null
+
+                // Assemble writable buffer
                 AvroSerializedBuffer(
                     createStorageFunction.call(),
                     codecFactory,
-                    schema,
+                    avroSchema,
                     recordPreprocessor = recordPreprocessor,
-                    useV2FieldNames = useV2FeatureSet
+                    useV2FieldNames = useV2FeatureSet,
                 )
             }
         }

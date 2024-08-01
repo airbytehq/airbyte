@@ -59,13 +59,17 @@ abstract class S3DestinationAcceptanceTest
 protected constructor(
     protected val outputFormat: FileUploadFormat,
     supportsChangeCapture: Boolean = false,
-    expectNumericTimestamps: Boolean = false
+    expectNumericTimestamps: Boolean = false,
+    expectSchemalessObjectsCoercedToStrings: Boolean = false,
+    expectUnionsPromotedToDisjointRecords: Boolean = false
 ) :
     DestinationAcceptanceTest(
         verifyIndividualStateAndCounts = true,
         useV2Fields = true,
         supportsChangeCapture = supportsChangeCapture,
-        expectNumericTimestamps = expectNumericTimestamps
+        expectNumericTimestamps = expectNumericTimestamps,
+        expectSchemalessObjectsCoercedToStrings = expectSchemalessObjectsCoercedToStrings,
+        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
     ) {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
