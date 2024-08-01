@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: survey-sparrow_config_dev_null
+          id: 29c6c6f2-217f-48e7-9a36-b3a235531b63
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SURVEY-SPARROW__CREDS

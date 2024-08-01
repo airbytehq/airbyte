@@ -49,6 +49,10 @@ data:
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: klaviyo_config_dev_null
+          id: 7d2eeae8-62d9-4694-8bfa-46b96375cd2d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

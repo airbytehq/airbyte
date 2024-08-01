@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.1.0
+Align BackoffStrategy interfaces to take attempt_count as a full-fledge parameter
+
 ## 4.0.2
 Add ability to stop stream when retry-after is greater than a duration
 

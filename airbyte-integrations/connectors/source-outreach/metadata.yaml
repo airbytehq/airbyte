@@ -43,6 +43,10 @@ data:
     ql: 200
     sl: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: outreach_config_dev_null
+          id: 0d304968-b31b-4777-be96-62c689f78a46
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -174,6 +174,8 @@ corresponds to that version.
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:------------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.43.6     | 2024-07-30 | [\#42540](https://github.com/airbytehq/airbyte/pull/42540)  | Fix generationId handling for destinations                                                                                                                     |
+| 0.43.6     | 2024-07-30 | [\#42514](https://github.com/airbytehq/airbyte/pull/42514)  | Add tests around generationId handling for destinations.                                                                                                       |
 | 0.43.4      | 2024-07-28 | [\#42839](https://github.com/airbytehq/airbyte/pull/42839) | Fix error translation framework to not rethrow ConfigErrorException and TransientErrorException. |
 | 0.43.3      | 2024-07-22 | [\#42417](https://github.com/airbytehq/airbyte/pull/42417) | Handle null exception message in ConnectorExceptionHandler. |
 | 0.43.2      | 2024-07-22 | [\#42431](https://github.com/airbytehq/airbyte/pull/42431)      | Filter out debezium message change events                                                                                                                      |

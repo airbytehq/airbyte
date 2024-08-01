@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: iterable_config_dev_null
+          id: 4210f42f-47f5-47e1-a96c-e0f11c883c47
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
