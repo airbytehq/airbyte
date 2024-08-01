@@ -3,8 +3,7 @@ data:
   allowedHosts:
     hosts:
       - "*"
-  
-  registries:
+    registries:
     oss:
       enabled: true
     cloud:
@@ -17,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:3.9.2@sha256:aded5b43dfa140f18c55777205bf654690399c3cf0a51aaf26218eba75274eb5
   connectorSubtype: api
   connectorType: source
-  definitionId: afd0e269-866a-4619-93db-052ab1c15977
+  definitionId: 9945a68d-d270-4c08-a01d-442ea7fabe1e
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-pokeapi-contribution-test
   githubIssueLabel: source-pokeapi-contribution-test
