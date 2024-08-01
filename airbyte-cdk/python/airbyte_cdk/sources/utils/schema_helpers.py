@@ -230,27 +230,3 @@ def split_config(config: Mapping[str, Any]) -> Tuple[dict[str, Any], InternalCon
         else:
             main_config[k] = v
     return main_config, InternalConfig.parse_obj(internal_config)
-
-
-def _resolve_dict_entries(entries: dict[str, object]) -> dict[str, object]:
-    """Resolve jsonref.JsonRef entries within a dictionary.
-
-    Args:
-        entries (dict[str, object]): Dictionary with entries to resolve.
-
-    Returns:
-        dict[str, object]: Dictionary with resolved entries.
-    """
-    return {k: resolve_ref_links(v) for k, v in entries.items()}
-
-
-def _resolve_list_items(items: list[object]) -> list[object]:
-    """Resolve jsonref.JsonRef items within a list.
-
-    Args:
-        items (list[object]): List with items to resolve.
-
-    Returns:
-        list[object]: List with resolved items.
-    """
-    return [resolve_ref_links(item) for item in items]
