@@ -12,7 +12,7 @@ from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 class GlobalCursorStreamSlice(StreamSlice):
     """
     A stream slice that is used to track the state of substreams using a single global cursor.
-    This class have the additional `last_slice` field that is used to indicate if the stream slice is the last.
+    This class has the additional `last_slice` field that is used to indicate if the stream slice is the last.
     """
 
     def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any], last_slice: bool = False) -> None:
@@ -26,7 +26,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     This class is useful for streams that have many partitions, allowing the state to be managed globally
     rather than per partition, which simplifies state management and reduces the size of state messages.
 
-    This class can only be used with the lookback window, otherwise child records added during the sync
+    This cursor can only be used with the lookback window; otherwise, child records added during the sync
     to the already processed parent records will be missed.
 
     This cursor will be used when the `global_substream_cursor` parameter is set for incremental sync.
@@ -37,6 +37,9 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         self._partition_router = partition_router
 
     def stream_slices(self) -> Iterable[GlobalCursorStreamSlice]:
+        """
+        Generate stream slices and flag the last slice.
+        """
         def flag_last(generator: Generator[StreamSlice, None, None]) -> Generator[GlobalCursorStreamSlice, None, None]:
             previous = None
             for item in generator:
@@ -59,7 +62,6 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         Set the initial state for the cursors.
 
         This method initializes the state for the global cursor using the provided stream state.
-        If a partition state is provided in the stream state, it will update the corresponding global cursor with this state.
 
         Additionally, it sets the parent state for partition routers that are based on parent streams. If a partition router
         does not have parent streams, this step will be skipped due to the default PartitionRouter implementation.
@@ -97,7 +99,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         if the child cursor is earlier than a record from the first parent record.
 
         Args:
-            stream_slice (GlobalCursorStreamSlice): The stream slice to be closed.
+            stream_slice (StreamSlice): The stream slice to be closed.
             *args (Any): Additional arguments.
         """
         if isinstance(stream_slice, GlobalCursorStreamSlice) and stream_slice.last_slice:
@@ -113,6 +115,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         return state
 
     def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        # stream_slice is ignored as cursor is global
         return self._stream_cursor.get_stream_state()
 
     def get_request_params(

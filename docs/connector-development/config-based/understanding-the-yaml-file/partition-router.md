@@ -146,7 +146,13 @@ retriever:
       - stream: "#/repositories_stream"
         parent_key: "id"
         partition_field: "repository"
+        incremental_dependency: true
 ```
+
+### Usage Guidance
+- **Use 'incremental_dependency'**: When the parent stream should be read incrementally. This option should only be used when the update or addition of a new child record updates the parent cursor so only the new data will be synced. If there is no dependency between the child and parent cursor, child records added to old parent records will be missed.
+
+- **Use 'global_substream_cursor'**: When there are many partitions in the parent stream, and you want to manage the state globally instead of per partition. This simplifies state management and reduces the size of state messages. However, this should only be used with a lookback window to avoid missing records that were added during the sync.
 
 ## Nested streams
 
