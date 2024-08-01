@@ -13,7 +13,7 @@ metadata:
     nginx.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:673574066875:certificate/b5df1f36-173a-471e-aeca-a5de1ea68ade
 spec:
   rules:
-    - host: app-staging.daspire.com
+    - host: airbyte-staging.daspire.com
       http:
         paths:
           - path: /
