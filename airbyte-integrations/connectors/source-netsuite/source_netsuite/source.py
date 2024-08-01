@@ -12,8 +12,8 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests_oauthlib import OAuth1
-from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
-from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream
+from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS, SUITEQL_SCHEMAS
+from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream, SuiteQLNetsuiteStream
 
 
 class SourceNetsuite(AbstractSource):
@@ -47,30 +47,13 @@ class SourceNetsuite(AbstractSource):
         object_types = config.get("object_types")
         base_url = self.base_url(config)
         session = self.get_session(auth)
-        # if record types are specified make sure they are valid
-        if object_types:
-            # ensure there are no duplicate record types as this will break Airbyte
-            duplicates = [k for k, v in Counter(object_types).items() if v > 1]
-            if duplicates:
-                return False, f'Duplicate record type: {", ".join(duplicates)}'
-            # check connectivity to all provided `object_types`
-            for object in object_types:
-                try:
-                    response = session.get(url=base_url + RECORD_PATH + object.lower(), params={"limit": 1})
-                    response.raise_for_status()
-                    return True, None
-                except requests.exceptions.HTTPError as e:
-                    return False, e
-        else:
-            # if `object_types` are not provided, use `Contact` object
-            # there should be at least 1 contact available in every NetSuite account by default.
-            url = base_url + RECORD_PATH + "contact"
-            try:
-                response = session.get(url=url, params={"limit": 1})
-                response.raise_for_status()
-                return True, None
-            except requests.exceptions.HTTPError as e:
-                return False, e
+        url = base_url + RECORD_PATH + "contact"
+        try:
+            response = session.get(url=url, params={"limit": 1})
+            response.raise_for_status()
+            return True, None
+        except requests.exceptions.HTTPError as e:
+            return False, e
 
     def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
         """
@@ -117,7 +100,8 @@ class SourceNetsuite(AbstractSource):
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
         }
-
+        if object_name in SUITEQL_SCHEMAS.keys():
+            return SuiteQLNetsuiteStream(**input_args)
         schema = schemas[object_name]
         schema_props = schema.get("properties")
         if schema_props:
