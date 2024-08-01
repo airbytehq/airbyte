@@ -40,6 +40,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         """
         Generate stream slices and flag the last slice.
         """
+
         def flag_last(generator: Generator[StreamSlice, None, None]) -> Generator[GlobalCursorStreamSlice, None, None]:
             previous = None
             for item in generator:
