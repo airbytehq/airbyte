@@ -16,17 +16,14 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_microsoft_sharepoint"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 msal = "==1.25.0"
 Office365-REST-Python-Client = "==2.5.5"
 smart-open = "==6.4.0"
+airbyte-cdk = "^4"
 
 [tool.poetry.scripts]
 source-microsoft-sharepoint = "source_microsoft_sharepoint.run:run"
-
-[tool.poetry.dependencies.airbyte-cdk]
-extras = [ "file-based",]
-version = "^3"
 
 [tool.poetry.group.dev.dependencies]
 pytest-mock = "^3.6.1"

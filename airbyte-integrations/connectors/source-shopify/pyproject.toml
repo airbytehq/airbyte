@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_shopify"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^3"
+python = "^3.10,<3.12"
+airbyte-cdk = "^4"
 sgqlc = "==16.3"
 graphql-query = "^1"
 

@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_facebook_marketing"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^3.5.0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^4"
 facebook-business = "19.0.0"
 cached-property = "==1.5.2"
 
