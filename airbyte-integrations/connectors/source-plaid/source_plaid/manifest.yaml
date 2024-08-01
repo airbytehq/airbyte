@@ -309,7 +309,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://{{config['plaid_env']}}.plaid.com
-        path: /transactions/get
+        path: /transactions/sync
         http_method: POST
         request_parameters: {}
         request_headers: {}
@@ -317,8 +317,11 @@ streams:
           type: NoAuth
         request_body_json:
           secret: "{{config['api_key']}}"
+          cursor: "{{ next_page_token['next_page_token'] }}"
+          count: 500
           options:
-            offset: "{{ next_page_token['next_page_token'] }}"
+            include_original_description: true
+            days_requested: 730
           client_id: "{{config['client_id']}}"
           access_token: "{{config['access_token']}}"
       record_selector:
