@@ -101,16 +101,6 @@ class AbstractFileBasedStreamReader(ABC):
     @staticmethod
     def get_prefixes_from_globs(globs: List[str]) -> Set[str]:
         """
-        Extract prefixes from a list of glob patterns.
-
-        Parameters
-        ----------
-        globs : List[str]
-            A list of glob patterns.
-
-        Returns
-        -------
-        Set[str]
-            A set of unique non-empty prefixes.
+        Utility method for extracting prefixes from the globs.
         """
         return {prefix for glob in globs if (prefix := glob.split("*", 1)[0])}
