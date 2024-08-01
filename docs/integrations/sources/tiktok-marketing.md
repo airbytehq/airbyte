@@ -126,7 +126,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| 4.3.0 | 2024-08-01 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate to CDK v4.1.0 |
+| 4.3.0 | 2024-08-01 | [42948](https://github.com/airbytehq/airbyte/pull/42948) | Migrate to CDK v4.1.0 |
 | 4.2.1 | 2024-07-20 | [42375](https://github.com/airbytehq/airbyte/pull/42375) | Update dependencies |
 | 4.2.0 | 2024-07-17 | [42005](https://github.com/airbytehq/airbyte/pull/42005) | Migrate to CDK v3.5.3 |
 | 4.1.0 | 2024-07-17 | [42004](https://github.com/airbytehq/airbyte/pull/42004) | Migrate to CDK v2.4.0 |
