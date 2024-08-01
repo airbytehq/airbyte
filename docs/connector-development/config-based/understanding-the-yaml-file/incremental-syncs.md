@@ -70,6 +70,11 @@ DatetimeBasedCursor:
     lookback_window:
       description: How many days before start_datetime to read data for (ISO8601 duration)
       type: string
+    global_substream_cursor:
+      title: Whether to store cursor as one value instead of per partition
+      description: If parent stream have thousands of partitions, it can be more efficient to store cursor as one value instead of per partition. Lookback window should be used to avoid missing records that where added during the sync.
+      type: boolean
+      default: false
     start_time_option:
       description: Request option for start time
       "$ref": "#/definitions/RequestOption"
@@ -165,6 +170,12 @@ incremental_sync:
     field_name: "created[lte]"
     inject_into: "request_parameter"
 ```
+
+### Global Substream Cursor
+
+The GlobalSubstreamCursor is only applicable for substreams. Read more in the [partition routers](./partition-router.md). It is designed to track the state of substreams using a single global cursor. This class is useful for streams that have many partitions, allowing the state to be managed globally rather than per partition, which simplifies state management and reduces the size of state messages.
+
+This cursor can only be used with the lookback window; otherwise, child records added during the sync to the already processed parent records will be missed. This cursor will be used when the `global_substream_cursor` parameter is set for incremental sync.
 
 ## More readings
 
