@@ -460,13 +460,13 @@ files = [
 
 [[package]]
 name = "graphql-query"
-version = "1.3.2"
+version = "1.4.0"
 description = "Complete Domain Specific Language (DSL) for GraphQL query in Python."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "graphql_query-1.3.2-py3-none-any.whl", hash = "sha256:5a2e771c9a78817fa2b9a7186f5fb7f7d6b02b5589bd4e80e5175cf4d4a4882e"},
-    {file = "graphql_query-1.3.2.tar.gz", hash = "sha256:d54e8d9edad1a9b769e3fd6711753aa0cc8ec0609737a2c429051c37ed488c28"},
+    {file = "graphql_query-1.4.0-py3-none-any.whl", hash = "sha256:376ed550a7812425befbefb870daa21ce1696590fcb78c015215a43a5d7e51b7"},
+    {file = "graphql_query-1.4.0.tar.gz", hash = "sha256:1cfe5eeaad8b0ed67ac3d9c4023ee9743851f98c6b2f673c67088cf42ebb57bb"},
 ]
 
 [package.dependencies]
@@ -612,13 +612,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.93"
+version = "0.1.95"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.93-py3-none-any.whl", hash = "sha256:811210b9d5f108f36431bd7b997eb9476a9ecf5a2abd7ddbb606c1cdcf0f43ce"},
-    {file = "langsmith-0.1.93.tar.gz", hash = "sha256:285b6ad3a54f50fa8eb97b5f600acc57d0e37e139dd8cf2111a117d0435ba9b4"},
+    {file = "langsmith-0.1.95-py3-none-any.whl", hash = "sha256:7f490af411597f87af7893b0a42519c442d6ca2517483344c4f55ccdc3136dde"},
+    {file = "langsmith-0.1.95.tar.gz", hash = "sha256:2dc987a640939c0eccb41b7acc31216a7c9b38e1deb62079d1ecaed0897eea67"},
 ]
 
 [package.dependencies]
@@ -964,19 +964,19 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pyjwt"
-version = "2.8.0"
+version = "2.9.0"
 description = "JSON Web Token implementation in Python"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "PyJWT-2.8.0-py3-none-any.whl", hash = "sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320"},
-    {file = "PyJWT-2.8.0.tar.gz", hash = "sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de"},
+    {file = "PyJWT-2.9.0-py3-none-any.whl", hash = "sha256:3b02fb0f44517787776cf48f2ae25d8e14f300e6d7545a4315cee571a415e850"},
+    {file = "pyjwt-2.9.0.tar.gz", hash = "sha256:7e1e5b56cc735432a7369cbfa0efe50fa113ebecdc04ae6922deba8b84582d0c"},
 ]
 
 [package.extras]
 crypto = ["cryptography (>=3.4.0)"]
-dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
-docs = ["sphinx (>=4.5.0,<5.0.0)", "sphinx-rtd-theme", "zope.interface"]
+dev = ["coverage[toml] (==5.0.4)", "cryptography (>=3.4.0)", "pre-commit", "pytest (>=6.0.0,<7.0.0)", "sphinx", "sphinx-rtd-theme", "zope.interface"]
+docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
 tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
 
 [[package]]
@@ -1240,13 +1240,13 @@ fixture = ["fixtures"]
 
 [[package]]
 name = "setuptools"
-version = "71.1.0"
+version = "72.1.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-71.1.0-py3-none-any.whl", hash = "sha256:33874fdc59b3188304b2e7c80d9029097ea31627180896fb549c578ceb8a0855"},
-    {file = "setuptools-71.1.0.tar.gz", hash = "sha256:032d42ee9fb536e33087fb66cac5f840eb9391ed05637b3f2a76a7c8fb477936"},
+    {file = "setuptools-72.1.0-py3-none-any.whl", hash = "sha256:5a03e1860cf56bb6ef48ce186b0e557fdba433237481a9a625176c2831be15d1"},
+    {file = "setuptools-72.1.0.tar.gz", hash = "sha256:8d243eff56d095e5817f796ede6ae32941278f542e0f941867cc05ae52b162ec"},
 ]
 
 [package.extras]
