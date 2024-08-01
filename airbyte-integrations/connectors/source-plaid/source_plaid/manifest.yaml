@@ -301,7 +301,8 @@ streams:
           - transaction_id
           - category
           - date
-          - transaction_type
+          - original_description
+          - payment_channel
         type: object
     retriever:
       type: SimpleRetriever
