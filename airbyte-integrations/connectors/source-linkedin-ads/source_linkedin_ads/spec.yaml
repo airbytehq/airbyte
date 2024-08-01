@@ -57,6 +57,12 @@ connectionSpecification:
       examples:
         - "2021-05-17"
       format: date
+    lookback_window:
+      type: integer
+      title: Lookback Window
+      default: 0
+      minimum: 0
+      description: How far into the past to look for records. (in days)
     account_ids:
       title: Account IDs
       type: array

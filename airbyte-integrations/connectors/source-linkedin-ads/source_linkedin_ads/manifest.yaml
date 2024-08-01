@@ -98,6 +98,7 @@ definitions:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
@@ -155,6 +156,7 @@ definitions:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
@@ -212,6 +214,7 @@ definitions:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
@@ -287,6 +290,7 @@ definitions:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
@@ -344,6 +348,7 @@ definitions:
         cursor_datetime_formats:
           - "%ms"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
@@ -418,6 +423,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -492,6 +498,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -566,6 +573,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -640,6 +648,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -714,6 +723,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -788,6 +798,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -862,6 +873,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -936,6 +948,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -1010,6 +1023,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -1084,6 +1098,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -1158,6 +1173,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
         cursor_granularity: P1D
         step: P200D
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] }}"
@@ -1268,6 +1284,12 @@ spec:
         examples:
           - "2021-05-17"
         format: date
+      lookback_window:
+        type: integer
+        title: Lookback Window
+        default: 0
+        minimum: 0
+        description: How far into the past to look for records. (in days)
       account_ids:
         title: Account IDs
         type: array
