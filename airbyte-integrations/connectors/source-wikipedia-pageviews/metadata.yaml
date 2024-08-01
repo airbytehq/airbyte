@@ -36,6 +36,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: wikipedia-pageviews_config_dev_null
+          id: 4c4d6da5-9b4e-4201-86e2-11504073bede
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-WIKIPEDIA-PAGEVIEWS__CREDS

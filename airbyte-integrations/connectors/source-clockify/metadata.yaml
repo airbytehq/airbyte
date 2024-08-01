@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: clockify_config_dev_null
+          id: 11f79ed9-c1fb-4604-aac8-5bd0b53efbef
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-CLOCKIFY__CREDS

@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: public-apis_config_dev_null
+          id: 365fbda3-5613-493a-8a2e-5a0c220a9fc1
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PUBLIC-APIS__CREDS

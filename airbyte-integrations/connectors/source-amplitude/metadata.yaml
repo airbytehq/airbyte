@@ -40,6 +40,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: amplitude_config_dev_null
+          id: 1dbb29a0-973a-49e5-bae3-546e311fd90a
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

@@ -54,6 +54,10 @@ data:
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: instagram_config_dev_null
+          id: 39208d11-8b6f-4b0c-bee1-cddcb857e5fd
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

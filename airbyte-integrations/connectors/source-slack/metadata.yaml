@@ -49,6 +49,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: slack_config_oauth_dev_null
+          id: 4219c9e8-af56-4eaf-bf7d-b5578d446a74
+        - name: slack_config_dev_null
+          id: b6e9e649-2899-4589-81c4-79df81a7a210
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

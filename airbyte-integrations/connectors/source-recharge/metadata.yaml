@@ -41,6 +41,12 @@ data:
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: recharge_config_dev_null
+          id: 2ef8f5fb-332d-49fc-8576-ea889d1c262d
+        - name: recharge_config_order_modern_api_dev_null
+          id: 414cb0e3-dbfd-4efb-b2af-0b961e689454
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

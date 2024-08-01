@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: whisky-hunter_config_dev_null
+          id: 49d04005-71c9-4c96-8349-bafc629ea7ee
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-WHISKY-HUNTER__CREDS

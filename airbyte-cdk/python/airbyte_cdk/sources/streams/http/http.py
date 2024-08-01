@@ -498,9 +498,11 @@ class HttpStreamAdapterBackoffStrategy(BackoffStrategy):
         self.stream = stream
 
     def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
     ) -> Optional[float]:
-        return self.stream.backoff_time(response_or_exception)  # type: ignore # noqa
+        return self.stream.backoff_time(response_or_exception)  # type: ignore # noqa  # HttpStream.backoff_time has been deprecated
 
 
 @deprecated(version="3.0.0", reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")

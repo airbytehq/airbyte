@@ -335,7 +335,8 @@ With this set up, Airbyte now supports:
 - configuring the maximum number of jobs that can be started at once via ``
 - differentiating between job schedule time & job start time via the Workload API, though this is not exposed to the UI.
 
-This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage.
+This also unlocks future work to turn Workers asynchronous, which allows for more efficient steady-state resource usage. See
+[this blogpost](https://airbyte.com/blog/introducing-workloads-how-airbyte-1-0-orchestrates-data-movement-jobs) for more detailed information.
 
 ## Configuring Jobs & Workers
 
