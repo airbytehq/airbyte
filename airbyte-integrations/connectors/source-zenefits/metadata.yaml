@@ -6,8 +6,7 @@ data:
     hosts:
       - api.zenefits.com
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:3.12.0@sha256:c93b3bac0dc5e761bddc9af01ec0755002ec6f79d3c09c43a6668a72ee28d95f
+    baseImage: docker.io/airbyte/source-declarative-manifest:3.12.0@sha256:c93b3bac0dc5e761bddc9af01ec0755002ec6f79d3c09c43a6668a72ee28d95f
   connectorSubtype: api
   connectorType: source
   definitionId: 8baba53d-2fe3-4e33-bc85-210d0eb62884
