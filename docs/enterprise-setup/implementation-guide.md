@@ -148,7 +148,7 @@ kubectl create secret generic airbyte-config-secrets \
 </TabItem>
 <TabItem value="GCS" label="GCS">
 
-First, create a new file `gcp.json` containing the credentials JSON blob for the service account you are looking to assume.
+First, create a new file `airbyte-config-secrets.json` containing the following details, including the credentials JSON blob for the service account you are looking to assume. CREDENTIALS_JSON_BLOB is the contents of your GCP credentials file — remember to indent it so that each line is at least one YAML indent deep.
 
 
 ```yaml
@@ -162,7 +162,7 @@ stringData:
   license-key: ## e.g. xxxxx.yyyyy.zzzzz
 
   # Database Secrets
-  database-host: ## e.g. database.internla
+  database-host: ## e.g. database.internal
   database-port: ## e.g. 5432
   database-name: ## e.g. airbyte
   database-user: ## e.g. airbyte
@@ -177,10 +177,19 @@ stringData:
   client-secret: ## e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
   # GCP Secrets
-  gcp.json: <CREDENTIALS_JSON_BLOB>
+  gcp.json: >
+    <CREDENTIALS_JSON_BLOB>
 ```
 
-Using `kubectl` to create the secret directly from the `gcp.json` file:
+Using `kubectl` to create the secret directly from the `airbyte-config-secrets.json` file:
+
+```sh
+kubectl create secret generic airbyte-config-secrets \
+  --from-file=airbyte-config-secrets.json
+  --namespace airbyte
+```
+
+Alternatively, you can create the secret directly from the CLI and the gcp.json (GCP credentials) file:
 
 ```sh
 kubectl create secret generic airbyte-config-secrets \
@@ -373,7 +382,7 @@ global:
       workloadOutput: airbyte-bucket
     gcs:
       projectId: <project-id>
-      credentialsPath: /secrets/gcs-log-creds/gcp.json
+      credentialsPath: /secrets/gcp-cred-secrets/gcp.json
 ```
 
 </TabItem>
