@@ -379,16 +379,14 @@ const contributeToAirbyte = {
     "contributing-to-airbyte/issues-and-requests",
     "contributing-to-airbyte/change-cdk-connector",
     "contributing-to-airbyte/submit-new-connector",
+    "contributing-to-airbyte/developing-locally",
     "contributing-to-airbyte/writing-docs",
     {
       type: "category",
       label: "Resources",
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/code-formatting",
         "contributing-to-airbyte/resources/qa-checks",
-        "contributing-to-airbyte/resources/developing-locally",
-        "contributing-to-airbyte/resources/developing-on-docker",
       ],
     },
   ],
