@@ -2,8 +2,6 @@ version: 3.9.6
 
 type: DeclarativeSource
 
-description: This is just a test
-
 check:
   type: CheckStream
   stream_names:
