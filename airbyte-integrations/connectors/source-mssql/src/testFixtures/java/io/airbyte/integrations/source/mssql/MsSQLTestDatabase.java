@@ -44,7 +44,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
 
   public enum BaseImage {
 
-    MSSQL_2022("mcr.microsoft.com/mssql/server:2022-CU13-ubuntu-20.04"),
+    MSSQL_2022("mcr.microsoft.com/mssql/server:latest"),
     ;
 
     public final String reference;
@@ -312,7 +312,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public Stream<String> mssqlCmd(final Stream<String> sql) {
-    return Stream.of("/opt/mssql-tools/bin/sqlcmd",
+    return Stream.of("/opt/mssql-tools18/bin/sqlcmd",
         "-U", getContainer().getUsername(),
         "-P", getContainer().getPassword(),
         "-Q", sql.collect(Collectors.joining("; ")),
