@@ -11,10 +11,10 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic import ValidationError
+from pydantic.error_wrappers import ValidationError
 from requests.exceptions import InvalidURL
 
-from .streams import IssueFields, Issues, PullRequests
+from .streams import IssueComments, IssueFields, Issues, IssueWorklogs, PullRequests
 from .utils import read_full_refresh
 
 
@@ -84,9 +84,11 @@ class SourceJira(YamlDeclarativeSource):
         issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
 
+        streams = [IssueComments(**incremental_args), IssueWorklogs(**incremental_args)]
+
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
                 PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
             )
-        return experimental_streams
+        return streams + experimental_streams
