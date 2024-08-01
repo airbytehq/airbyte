@@ -199,6 +199,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| 1.4.4   | 2024-08-01 | [42549](https://github.com/airbytehq/airbyte/pull/42549) | Centered the connector icon.                                                     |
 | 1.4.3   | 2024-07-22 | [39145](https://github.com/airbytehq/airbyte/pull/39145) | Warn (vs fail) on different \_id types in collection.                                                     |
 | 1.4.2   | 2024-07-01 | [40516](https://github.com/airbytehq/airbyte/pull/40516) | Remove dbz hearbeat.                                                                                      |
 | 1.4.1   | 2024-06-11 | [39530](https://github.com/airbytehq/airbyte/pull/39530) | Adopt new CDK.                                                                                            |
