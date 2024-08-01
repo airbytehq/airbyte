@@ -173,6 +173,14 @@ class JiraStream(HttpStream, ABC):
 
 
 class FullRefreshJiraStream(JiraStream):
+
+    """
+    This is a temporary solution to avoid incorrect state handling.
+    See comments below for more info:
+    https://github.com/airbytehq/airbyte/pull/39558#discussion_r1695592075
+    https://github.com/airbytehq/airbyte/pull/39558#discussion_r1699539669
+    """
+
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         yield from super().read_records(**kwargs)
         self.state = FULL_REFRESH_COMPLETE_STATE
