@@ -64,7 +64,7 @@ class PerPartitionCursor(DeclarativeCursor):
     _KEY = 0
     _VALUE = 1
 
-    def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
+    def __init__(self, cursor_factory: Union[CursorFactory, DeclarativeCursor], partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
         self._cursor_per_partition: MutableMapping[str, DeclarativeCursor] = {}
@@ -188,8 +188,20 @@ class PerPartitionCursor(DeclarativeCursor):
 
         return self._get_state_for_partition(stream_slice.partition)
 
+    def _classify_cursor(self) -> Union[CursorFactory, DeclarativeCursor]:
+        _types = ["CursorFactory", "DeclarativeCursor"]
+        
+        if isinstance(self._cursor_factory, CursorFactory):
+            cursor = self._cursor_factory.create()
+        elif isinstance(self._cursor_factory, DeclarativeCursor):
+            cursor = self._cursor_factory
+        else:
+            raise TypeError(f"The {self._cursor_factory=} is not one of the expected types: {_types}")
+        
+        return cursor
+
     def _create_cursor(self, cursor_state: Any) -> DeclarativeCursor:
-        cursor = self._cursor_factory.create()
+        cursor = self._classify_cursor()
         cursor.set_initial_state(cursor_state)
         return cursor
 

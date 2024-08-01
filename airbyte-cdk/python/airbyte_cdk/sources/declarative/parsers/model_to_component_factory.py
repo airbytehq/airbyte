@@ -35,6 +35,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     DeclarativeCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
+    SubstreamResumableFullRefreshCursor,
 )
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -701,10 +702,19 @@ class ModelToComponentFactory:
             )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
-        elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
-            # To incrementally deliver RFR for low-code we're first implementing this for streams that do not use
-            # nested state like substreams or those using list partition routers
-            return ResumableFullRefreshCursor(parameters={})
+        elif hasattr(model.retriever, "paginator") and model.retriever.paginator:
+            if not stream_slicer:
+                # To incrementally deliver RFR for low-code we're first implementing this for streams that do not use
+                # nested state like substreams or those using list partition routers
+                # For the regular Full-Refresh streams, we use the high lvl `ResumableFullRefreshCursor`
+                return ResumableFullRefreshCursor(parameters={})
+            else:
+                # For the Full-Refresh substreams, we use the nested `ResumableFullRefreshCursor`,
+                # as an instance of `SubstreamResumableFullRefreshCursor`, in order to hide the implementation details.
+                return PerPartitionCursor(
+                    cursor_factory=SubstreamResumableFullRefreshCursor(parameters={}),
+                    partition_router=stream_slicer,
+                )
         elif stream_slicer:
             return stream_slicer
         else:
