@@ -119,7 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
-| 3.2.0   | 2024-07-31 | [42013](https://github.com/airbytehq/airbyte/pull/42013) | Migrate to CDK v4.1.0                |
+| 3.2.0   | 2024-08-01 | [42013](https://github.com/airbytehq/airbyte/pull/42013) | Migrate to CDK v4.1.0                |
 | 3.1.0   | 2024-07-16 | [42012](https://github.com/airbytehq/airbyte/pull/42012) | Migrate to CDK v2.4.0                |
 | 3.0.6   | 2024-06-25 | [40498](https://github.com/airbytehq/airbyte/pull/40498) | Fix Pydantic error - add missing type annotation for `max_cursor_time`                               |
 | 3.0.5   | 2024-06-04 | [38871](https://github.com/airbytehq/airbyte/pull/38871) | Refactor: use `client_side_incremental` feature                                                      |
