@@ -316,7 +316,7 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
         "-U", getContainer().getUsername(),
         "-P", getContainer().getPassword(),
         "-Q", sql.collect(Collectors.joining("; ")),
-        "-b", "-e");
+        "-b", "-e", "-C");
   }
 
   @Override

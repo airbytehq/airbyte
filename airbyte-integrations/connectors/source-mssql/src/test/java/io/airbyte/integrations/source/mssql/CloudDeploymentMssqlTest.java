@@ -25,7 +25,7 @@ public class CloudDeploymentMssqlTest {
 
   private MsSQLTestDatabase createTestDatabase(String... containerFactoryMethods) {
     final var container = new MsSQLContainerFactory().shared(
-        BaseImage.MSSQL_2022.name(), containerFactoryMethods);
+        BaseImage.MSSQL_2022.reference, containerFactoryMethods);
     final var testdb = new MsSQLTestDatabase(container);
     return testdb
         .withConnectionProperty("encrypt", "true")
