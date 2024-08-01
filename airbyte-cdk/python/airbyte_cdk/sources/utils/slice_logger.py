@@ -9,7 +9,6 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
-from airbyte_protocol.models.airbyte_protocol import AirbyteLogMessage, AirbyteMessage, Type as MessageType
 
 
 class SliceLogger(ABC):
