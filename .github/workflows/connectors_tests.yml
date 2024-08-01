@@ -86,8 +86,7 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+            ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
