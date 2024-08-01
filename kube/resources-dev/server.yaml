@@ -150,14 +150,14 @@ spec:
                   key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
             - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
               valueFrom:
-              configMapKeyRef:
-                name: airbyte-env
-                key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
             - name: DASPIRE_URL
               valueFrom:
-              configMapKeyRef:
-                name: airbyte-env
-                key: DASPIRE_URL
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DASPIRE_URL
           ports:
             - containerPort: 8001
           volumeMounts:
