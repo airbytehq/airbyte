@@ -322,7 +322,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 abctl local uninstall --persisted
 ```
 
-- Remove the data on disk
+- Remove the `abctl` data on disk
 
 ```bash
 rm -rf ~/.airbyte/
@@ -332,14 +332,7 @@ rm -rf ~/.airbyte/
 
 ```bash
 ./gradlew clean build
-VERSION=dev docker compose up -V
-```
-
-While not as common as the above steps, you may also get into a position where want to erase all of the data on your local docker server. This is useful if you've been modifying image tags while developing.
-
-```bash
-docker system prune -a
-docker volume prune
+abctl local install --values values.yaml
 ```
 
 If you are working on python connectors, you may also need to reset the `virtualenv` and re-install the connector's dependencies.
