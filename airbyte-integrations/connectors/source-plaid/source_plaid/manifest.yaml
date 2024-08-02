@@ -218,8 +218,6 @@ streams:
             type:
               - string
               - "null"
-          name:
-            type: string
           original_description:
             type:
               - string
