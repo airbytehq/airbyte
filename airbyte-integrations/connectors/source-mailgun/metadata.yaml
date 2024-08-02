@@ -6,11 +6,11 @@ data:
     hosts:
       - https://api.mailgun.net/
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 5b9cb09e-1003-4f9c-983d-5779d1b2cd51
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.15
   dockerRepository: airbyte/source-mailgun
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailgun
   githubIssueLabel: source-mailgun
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mailgun_config_dev_null
+          id: 7b0849fb-fa7c-4d91-bdeb-0bdbe1e17e07
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MAILGUN_CONFIG

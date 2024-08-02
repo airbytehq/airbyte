@@ -58,11 +58,11 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
-METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
 DOCKERFILE_FILE_NAME = "Dockerfile"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
+POETRY_LOCK_FILE_NAME = "poetry.lock"
 
 STRATEGIC_CONNECTOR_THRESHOLDS = {
     "sl": 200,
@@ -207,26 +207,6 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
     return project_dependencies, test_dependencies
 
 
-def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path]:
-    """Recursively retrieve all transitive dependencies of a Gradle project.
-
-    Args:
-        with_test_dependencies: True to include test dependencies.
-
-    Returns:
-        List[Path]: All dependencies of the project.
-    """
-    base_path = Path("airbyte-cdk/java/airbyte-cdk")
-    found: List[Path] = [base_path]
-    for submodule in ["core", "db-sources", "db-destinations"]:
-        found.append(base_path / submodule)
-        project_dependencies, test_dependencies = parse_gradle_dependencies(base_path / Path(submodule) / Path("build.gradle"))
-        found += project_dependencies
-        if with_test_dependencies:
-            found += test_dependencies
-    return list(set(found))
-
-
 def get_all_gradle_dependencies(
     build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
 ) -> List[Path]:
@@ -242,12 +222,6 @@ def get_all_gradle_dependencies(
     if found_dependencies is None:
         found_dependencies = []
     project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
-
-    # Since first party project folders are transitive (compileOnly) in the
-    # CDK, we always need to add them as the project dependencies.
-    project_dependencies += get_local_cdk_gradle_dependencies(False)
-    test_dependencies += get_local_cdk_gradle_dependencies(with_test_dependencies=True)
-
     all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
     for dependency_path in all_dependencies:
         if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
@@ -261,6 +235,7 @@ class ConnectorLanguage(str, Enum):
     PYTHON = "python"
     JAVA = "java"
     LOW_CODE = "low-code"
+    MANIFEST_ONLY = "manifest-only"
 
 
 class ConnectorLanguageError(Exception):
@@ -357,8 +332,19 @@ class Connector:
         return self.code_directory / self.technical_name.replace("-", "_")
 
     @property
-    def manifest_path(self) -> Path:
+    def _manifest_only_path(self) -> Path:
+        return self.code_directory / MANIFEST_FILE_NAME
+
+    @property
+    def _manifest_low_code_path(self) -> Path:
         return self.python_source_dir_path / MANIFEST_FILE_NAME
+
+    @property
+    def manifest_path(self) -> Path:
+        if self._manifest_only_path.is_file():
+            return self._manifest_only_path
+
+        return self._manifest_low_code_path
 
     @property
     def has_dockerfile(self) -> bool:
@@ -385,6 +371,8 @@ class Connector:
 
     @property
     def language(self) -> ConnectorLanguage:
+        if Path(self.code_directory / "manifest.yaml").is_file():
+            return ConnectorLanguage.MANIFEST_ONLY
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
@@ -577,6 +565,29 @@ class Connector:
         return f"{self.connector_type}DefinitionId"
 
     @property
+    def is_enabled_in_any_registry(self) -> bool:
+        """Check if the connector is enabled in the registry.
+
+        Example:
+          - {registries: null} -> false
+          - {registries: {oss: {enabled: false }}} -> false
+          - {registries: {oss: {enabled: true }}} -> true
+          - {registries: {cloud: {enabled: true }}} -> true
+
+        Returns:
+            bool: True if the connector is enabled, False otherwise.
+        """
+        registries = self.metadata.get("registries")
+        if not registries:
+            return False
+
+        for registry in registries.values():
+            if registry.get("enabled"):
+                return True
+
+        return False
+
+    @property
     def is_released(self) -> bool:
         """Pull the the OSS registry and check if it the current definition ID and docker image tag are in the registry.
         If there is a match it means the connector is released.
@@ -648,6 +659,7 @@ class Connector:
     def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
+            dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk")]
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )

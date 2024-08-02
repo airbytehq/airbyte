@@ -90,15 +90,15 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         // If a numeric_array column does not have variable precision AND scale is 0
         // then we know the precision and scale are purposefully chosen
         if (numericArrayColumnPrecisionIsNotVariable(field) && field.scale().orElse(0) == 0) {
-          yield SchemaBuilder.array(OPTIONAL_INT64_SCHEMA);
+          yield SchemaBuilder.array(OPTIONAL_INT64_SCHEMA).optional();
         } else {
-          yield SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
+          yield SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
         }
       }
-      case "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
-      case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
-      case "_BIT" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA);
-      default -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
+      case "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA).optional();
+      case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
+      case "_BIT" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA).optional();
+      default -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA).optional();
     };
     registration.register(arraySchema, x -> convertArray(x, field));
   }

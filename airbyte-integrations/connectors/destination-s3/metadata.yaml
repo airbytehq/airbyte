@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 0.6.2
+  dockerImageTag: 0.6.5
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
@@ -27,6 +27,7 @@ data:
     sl: 300
     ql: 300
   supportLevel: certified
+  supportsRefreshes: true
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
