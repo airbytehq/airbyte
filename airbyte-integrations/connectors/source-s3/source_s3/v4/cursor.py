@@ -75,6 +75,7 @@ class Cursor(DefaultFileBasedCursor):
             if history_keys:
                 datetime.strptime(history_keys[0], Cursor._DATE_FORMAT)
 
+            # verify the format of the last_modified cursor
             last_modified_at_cursor = value.get(DefaultFileBasedCursor.CURSOR_FIELD)
             if not last_modified_at_cursor:
                 return False
