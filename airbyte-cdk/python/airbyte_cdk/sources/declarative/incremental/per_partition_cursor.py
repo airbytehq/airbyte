@@ -170,21 +170,11 @@ class PerPartitionCursor(DeclarativeCursor):
 
         return self._get_state_for_partition(stream_slice.partition)
 
-    def _classify_cursor(self) -> Union[CursorFactory, DeclarativeCursor]:
-        _types = ["CursorFactory", "DeclarativeCursor"]
-
-        if isinstance(self._cursor_factory, CursorFactory):
-            cursor = self._cursor_factory.create()
-        elif isinstance(self._cursor_factory, DeclarativeCursor):
-            cursor = self._cursor_factory
-        else:
-            raise TypeError(f"The {self._cursor_factory=} is not one of the expected types: {_types}")
-
-        return cursor
-
     def _create_cursor(self, cursor_state: Any) -> DeclarativeCursor:
-        cursor = self._classify_cursor()
-        cursor.set_initial_state(cursor_state)
+        if isinstance(self._cursor_factory, DeclarativeCursor):
+            cursor = self._cursor_factory
+        elif isinstance(self._cursor_factory, CursorFactory):
+            cursor = self._cursor_factory.create()
         return cursor
 
     def get_request_params(
