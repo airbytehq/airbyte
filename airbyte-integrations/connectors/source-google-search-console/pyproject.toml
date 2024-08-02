@@ -16,9 +16,9 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_google_search_console"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 google-api-python-client = "==2.105.0"
-airbyte-cdk = "^3"
+airbyte-cdk = "^4"
 google-auth = "==2.23.3"
 
 [tool.poetry.scripts]
