@@ -46,7 +46,7 @@ docker_compose_debug_yaml="docker-compose.debug.yaml"
             temporal_yaml="temporal/dynamicconfig/development.yaml"
 # any string is an array to POSIX shell. Space separates values
 all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags $temporal_yaml"
-# Pinning the version this supports at v0.64.13, as docker compose is being deprecated.
+# Pinning the version this supports at v0.63.13, as docker compose is being deprecated.
 # This has been pinned here as the VERSION variable (found above) is automatically updated as newer versions of Airbyte are released.
 base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v0.63.13/"
 
