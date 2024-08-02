@@ -142,7 +142,7 @@ class StripConnector(Step):
             return spec_file_json
         return None
 
-    def _fetch_spec_data(self, spec_file: Path) -> Any:
+    def _fetch_spec_data(self, spec_file: Path) -> dict:
         """
         Grabs the relevant data from a non-inline spec, to be added to the manifest.
         """
@@ -152,7 +152,9 @@ class StripConnector(Step):
                     spec = json.load(file)
                 else:
                     spec = yaml.load(file)
-                return spec.get("connection_specification") or spec.get("connectionSpecification")
+                documentation_url = spec.get("documentationUrl") or spec.get("documentation_url")
+                connection_specification = spec.get("connection_specification") or spec.get("connectionSpecification")
+                return {"documentation_url": documentation_url, "connection_specification": connection_specification}
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
 
@@ -178,7 +180,9 @@ class StripConnector(Step):
                     manifest_data = yaml.load(manifest_file)
                     manifest_data.setdefault("spec", {})
                     manifest_data["spec"]["type"] = "Spec"
-                    manifest_data["spec"]["connection_specification"] = spec_data
+                    manifest_data["spec"]["documentation_url"] = spec_data.get("documentation_url")
+                    manifest_data["spec"]["connection_specification"] = spec_data.get("connection_specification")
+
 
                     with open(root_manifest_file, "w") as manifest_file_to_write:
                         yaml.dump(manifest_data, manifest_file_to_write)
