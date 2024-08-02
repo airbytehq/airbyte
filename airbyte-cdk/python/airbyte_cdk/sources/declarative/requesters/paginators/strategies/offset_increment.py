@@ -57,7 +57,10 @@ class OffsetIncrement(PaginationStrategy):
         return None
 
     def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
-        decoded_response = next(self.decoder.decode(response))
+        try:
+            decoded_response = next(self.decoder.decode(response))
+        except StopIteration:
+            return None
 
         # Stop paginating when there are fewer records than the page size or the current page has no records
         if (self._page_size and last_page_size < self._page_size.eval(self.config, response=decoded_response)) or last_page_size == 0:
