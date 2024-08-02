@@ -989,7 +989,7 @@ definitions:
           inject_into: request_parameter
         page_token_option:
           type: RequestOption
-          field_name: before
+          field_name: after
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination

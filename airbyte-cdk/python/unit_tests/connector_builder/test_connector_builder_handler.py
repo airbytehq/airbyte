@@ -120,7 +120,7 @@ OAUTH_MANIFEST = {
                 "page_token_option": {"inject_into": "path", "type": "RequestPath"},
                 "pagination_strategy": {
                     "type": "CursorPagination",
-                    "cursor_value": "{{ response._metadata.next }}",
+                    "cursor_value": "{{ response.next }}",
                     "page_size": _page_size,
                 },
             },
@@ -562,6 +562,31 @@ def test_read_returns_error_response(mock_from_exception):
     assert response == expected_message
 
 
+def test_handle_429_response():
+    response = _create_429_page_response({"result": [{"error": "too many requests"}], "_metadata": {"next": "next"}})
+
+    # Add backoff strategy to avoid default endless backoff loop
+    TEST_READ_CONFIG["__injected_declarative_manifest"]['definitions']['retriever']['requester']['error_handler'] = {
+        "backoff_strategies": [
+            {
+                "type": "ConstantBackoffStrategy",
+                "backoff_time_in_seconds": 5
+            }
+        ]
+    }
+
+    config = TEST_READ_CONFIG
+    limits = TestReadLimits()
+    source = create_source(config, limits)
+
+    with patch("requests.Session.send", return_value=response) as mock_send:
+        response = handle_connector_builder_request(
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits
+        )
+
+        mock_send.assert_called_once()
+
+
 @pytest.mark.parametrize(
     "command",
     [
@@ -660,7 +685,6 @@ def test_create_source():
     assert isinstance(source, ManifestDeclarativeSource)
     assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
     assert source._constructor._limit_slices_fetched == limits.max_slices
-    assert source.streams(config={})[0].retriever.requester.max_retries == 0
 
 
 def request_log_message(request: dict) -> AirbyteMessage:
@@ -686,9 +710,23 @@ def _create_response(body, request):
     return response
 
 
+def _create_429_response(body, request):
+    response = requests.Response()
+    response.status_code = 429
+    response._content = bytes(json.dumps(body), "utf-8")
+    response.headers["Content-Type"] = "application/json"
+    response.request = request
+    return response
+
+
 def _create_page_response(response_body):
     request = _create_request()
     return _create_response(response_body, request)
+
+
+def _create_429_page_response(response_body):
+    request = _create_request()
+    return _create_429_response(response_body, request)
 
 
 @patch.object(

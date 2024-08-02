@@ -18,23 +18,19 @@ definitions:
     authenticator: "#/definitions/authenticator"
     http_method: GET
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: "Retry-After"
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes: [429]
-        - type: DefaultErrorHandler # adding this DefaultErrorHandler for 5XX error codes
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: FAIL
-              http_codes: [401, 403]
-              error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes: [429]
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes: [401, 403]
+          failure_type: config_error
+          error_message: Please provide a valid API key and make sure it has permissions to read specified streams.
     request_headers:
       Accept: "application/json"
       Revision: "2023-10-15"
@@ -91,7 +87,7 @@ definitions:
         Accept: "application/json"
         Revision: "2023-02-22"
       request_parameters:
-        "additional-fields[profile]": "predictive_analytics"
+        "additional-fields[profile]": "{{ 'predictive_analytics' if not config['disable_fetching_predictive_analytics'] else '' }}"
 
   # Base streams
   base_stream:
@@ -232,7 +228,7 @@ definitions:
   events_detailed_stream:
     # Docs: https://developers.klaviyo.com/en/reference/get_event
     name: "events_detailed"
-    $ref: "#/definitions/base_semi_incremental_stream"
+    $ref: "#/definitions/base_incremental_stream"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/events_detailed_schema"
@@ -242,29 +238,16 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_klaviyo.components.inclouded_fields_extractor.KlaviyoIncludedFieldExtractor
+          class_name: source_klaviyo.components.included_fields_extractor.KlaviyoIncludedFieldExtractor
           field_path: ["data"]
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
           "include": "metric"
           "fields[metric]": "name"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            parent_key: "id"
-            stream: "#/definitions/events_stream"
-            partition_field: "event_id"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "datetime"
-      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-      cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S.%f%z"
-        - "%Y-%m-%dT%H:%M:%S%z"
-        - "%Y-%m-%d %H:%M:%S%z"
-      start_datetime: "{{ config.get('start_date', '2012-01-01T00:00:00Z') }}"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_klaviyo.components.per_partition_state_migration.PerPartitionToSingleStateMigration
     transformations:
       - type: AddFields
         fields:
@@ -272,7 +255,8 @@ definitions:
             path: ["datetime"]
             value: "{{ record.get('attributes', {}).get('datetime') }}"
     $parameters:
-      path: "events/{{ stream_slice.event_id }}"
+      path: "events"
+      cursor_field: "datetime"
 
   # Schemas
   shared:
@@ -935,17 +919,26 @@ spec:
     type: object
     properties:
       api_key:
+        type: string
         title: "Api Key"
         description: 'Klaviyo API Key. See our <a href="https://docs.airbyte.com/integrations/sources/klaviyo">docs</a> if you need help finding this key.'
         airbyte_secret: true
-        type: string
         order: 0
       start_date:
+        type: string
         title: "Start Date"
         description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated. This field is optional - if not provided, all data will be replicated."
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples: ["2017-01-25T00:00:00Z"]
-        type: "string"
-        format: "date-time"
+        format: date-time
         order: 1
+      disable_fetching_predictive_analytics:
+        type: boolean
+        title: "Disable Fetching Predictive Analytics"
+        description: >-
+          Certain streams like the profiles stream can retrieve predictive analytics data from Klaviyo's
+          API. However, at high volume, this can lead to service availability issues on the API which can
+          be improved by not fetching this field. WARNING: Enabling this setting will stop the 
+          "predictive_analytics" column from being populated in your downstream destination.
+        order: 2
     required: ["api_key"]

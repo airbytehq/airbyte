@@ -14,7 +14,7 @@ from airbyte_cdk.models import ConnectorSpecification, FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class JsonFileLoader:
@@ -187,7 +187,7 @@ class InternalConfig(BaseModel):
     def dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         kwargs["by_alias"] = True
         kwargs["exclude_unset"] = True
-        return super().dict(*args, **kwargs)
+        return super().dict(*args, **kwargs)  # type: ignore[no-any-return]
 
     def is_limit_reached(self, records_counter: int) -> bool:
         """

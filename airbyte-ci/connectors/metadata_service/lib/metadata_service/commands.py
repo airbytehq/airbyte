@@ -36,7 +36,6 @@ def validate(metadata_file_path: pathlib.Path, docs_path: pathlib.Path):
     metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
 
     click.echo(f"Validating {metadata_file_path}...")
-
     metadata, error = validate_and_load(metadata_file_path, PRE_UPLOAD_VALIDATORS, ValidatorOptions(docs_path=str(docs_path)))
     if metadata:
         click.echo(f"{metadata_file_path} is a valid ConnectorMetadataDefinitionV0 YAML file.")
