@@ -33,13 +33,13 @@ def test_validate_docker_image_tag_is_not_decremented(mocker, metadata_definitio
 
 
 @pytest.fixture
-def dynamic_current_version(metadata_definition):
+def current_version(metadata_definition):
     return metadata_definition.data.dockerImageTag
 
 
 @pytest.fixture
-def dynamic_decremented_version(dynamic_current_version):
-    version_info = semver.VersionInfo.parse(dynamic_current_version)
+def decremented_version(current_version):
+    version_info = semver.VersionInfo.parse(current_version)
     if version_info.major > 0:
         patched_version_info = version_info.replace(major=version_info.major - 1)
     elif version_info.minor > 0:
@@ -52,8 +52,8 @@ def dynamic_decremented_version(dynamic_current_version):
 
 
 @pytest.fixture
-def dynamic_incremented_version(dynamic_current_version):
-    version_info = semver.VersionInfo.parse(dynamic_current_version)
+def incremented_version(current_version):
+    version_info = semver.VersionInfo.parse(current_version)
     if version_info.major > 0:
         patched_version_info = version_info.replace(major=version_info.major + 1)
     elif version_info.minor > 0:
@@ -65,10 +65,10 @@ def dynamic_incremented_version(dynamic_current_version):
     return str(patched_version_info)
 
 
-def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, dynamic_decremented_version):
+def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, decremented_version):
     current_version = metadata_definition.data.dockerImageTag
 
-    metadata_definition.data.dockerImageTag = dynamic_decremented_version
+    metadata_definition.data.dockerImageTag = decremented_version
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert not success
     assert error_message == f"The dockerImageTag value can't be decremented: it should be equal to or above {current_version}."
