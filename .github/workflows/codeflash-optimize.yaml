@@ -1,0 +1,52 @@
+name: Codeflash
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  optimize:
+    name: Optimize new code in this PR
+    runs-on: ubuntu-latest
+    env:
+      CODEFLASH_API_KEY: ${{ secrets.CODEFLASH_API_KEY }}
+      CODEFLASH_PR_NUMBER: ${{ github.event.number }}
+    steps:
+      - name: Check if PR is from Codeflash bot
+        id: bot_check
+        working-directory: .
+        run: |
+          echo "Checking if this PR is created by Codeflash bot..."
+          if [ "${{ github.event.pull_request.user.login }}" == "codeflash-ai[bot]" ]; then
+            echo "PR created by Codeflash bot. Skipping optimization."
+            echo "skip_remaining_steps=yes" >> $GITHUB_OUTPUT
+          else
+            echo "skip_remaining_steps=no" >> $GITHUB_OUTPUT
+            echo "It's not. Proceeding with the optimization."
+          fi
+      - uses: actions/checkout@v4
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      # TODO: Replace the following with your project's python installation method
+      - name: Set up Python
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.10
+      # TODO: Replace the following with your project's dependency installation method
+      - name: Install Project Dependencies
+        working-directory: airbyte-cdk/python
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        run: |
+          python -m pip install --upgrade pip
+          poetry install
+          pip install -r requirements.txt
+          pip install codeflash
+      - name: Run Codeflash to optimize code
+        working-directory: airbyte-cdk/python
+        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
+        id: optimize_code
+        run: |
+          codeflash

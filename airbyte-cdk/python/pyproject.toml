@@ -111,3 +111,11 @@ optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
 poe_tasks = ["check-ci"]
 mount_docker_socket = true
+
+[tool.codeflash]                                                                                                                                                               
+# All paths are relative to this pyproject.toml's directory.                                                                                                                   
+module-root = "airbyte_cdk"                                                                                                                                                    
+tests-root = "unit_tests"                                                                                                                                                      
+test-framework = "pytest"                                                                                                                                                      
+ignore-paths = []                                                                      
+pytest-cmd = "/Users/alex/code/airbyte/airbyte-cdk/python/.venv/bin/pytest"
