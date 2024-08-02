@@ -310,6 +310,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `3.6.2`  | 2024-08-02 | [42971](https://github.com/airbytehq/airbyte/pull/42971) | Fix attribute error on check connection                                                                                              |
 | `3.6.1`  | 2024-08-02 | [42960](https://github.com/airbytehq/airbyte/pull/42960) | Update error message for Interval Server Error                                                                                       |
 | `3.6.0`  | 2024-07-31 | [42544](https://github.com/airbytehq/airbyte/pull/42544) | Migrate to CDK v4.0.2                                                                                                                |
 | `3.5.10` | 2024-07-27 | [42714](https://github.com/airbytehq/airbyte/pull/42714) | Update dependencies                                                                                                                  |
