@@ -16,6 +16,7 @@ from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
 
 def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
     """Gets a resource from a package, returning None if it does not exist"""
+    # This is a comment written from a fork
     try:
         return pkgutil.get_data(package, filename)
     except FileNotFoundError:
