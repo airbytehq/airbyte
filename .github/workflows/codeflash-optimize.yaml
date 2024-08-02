@@ -30,11 +30,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       # TODO: Replace the following with your project's python installation method
-      - name: Set up Python
-        if: steps.bot_check.outputs.skip_remaining_steps == 'no'
-        uses: actions/setup-python@v5
+      - name: Install Python
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
       # TODO: Replace the following with your project's dependency installation method
       - name: Install Project Dependencies
         working-directory: airbyte-cdk/python
