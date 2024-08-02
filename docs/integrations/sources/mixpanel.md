@@ -58,6 +58,17 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.1 | 2024-07-27 | [42391](https://github.com/airbytehq/airbyte/pull/42391) | Update dependencies |
+| 3.3.0 | 2024-07-15 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Add engage page size to configuration |
+| 3.2.4 | 2024-07-13 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Update dependencies |
+| 3.2.3 | 2024-07-10 | [41420](https://github.com/airbytehq/airbyte/pull/41420) | Update dependencies |
+| 3.2.2 | 2024-07-09 | [41289](https://github.com/airbytehq/airbyte/pull/41289) | Update dependencies |
+| 3.2.1 | 2024-07-06 | [40806](https://github.com/airbytehq/airbyte/pull/40806) | Update dependencies |
+| 3.2.0 | 2024-06-26 | [40607](https://github.com/airbytehq/airbyte/pull/40607) | Make engage stream really incremental |
+| 3.1.5 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 3.1.4 | 2024-06-25 | [40376](https://github.com/airbytehq/airbyte/pull/40376) | Update dependencies |
+| 3.1.3 | 2024-06-22 | [40138](https://github.com/airbytehq/airbyte/pull/40138) | Update dependencies |
+| 3.1.2 | 2024-06-18 | [38710](https://github.com/airbytehq/airbyte/pull/38710) | Update authenticator CDK package |
 | 3.1.1 | 2024-06-04 | [39006](https://github.com/airbytehq/airbyte/pull/39006) | [autopull] Upgrade base image to v1.2.1 |
 | 3.1.0 | 2024-05-30 | [38757](https://github.com/airbytehq/airbyte/pull/38757) | change format for `start_date` and `end_date` from `date` to `date-time` |
 | 3.0.0 | 2024-05-22 | [38066](https://github.com/airbytehq/airbyte/pull/38066) | Changed key to distinct_id, cohort_id and changed state to per-patition format for `CohortMembers` stream; fixed pagination for `Engage` stream; fixed incorrect client-side filtering for semi-incremental streams when data comes not in chronological order; semi-incremental `Cohorts`, `CohortMembers` and `Engage` streams with client-side filtering extract records since user provided or default (1 year old) start_date |

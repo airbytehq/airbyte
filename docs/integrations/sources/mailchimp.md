@@ -90,7 +90,7 @@ All other streams contain an `id` primary key.
 ## Data type mapping
 
 | Integration Type     | Airbyte Type              | Notes                                                                               |
-| :------------------- | :------------------------ | :---------------------------------------------------------------------------------- |
+|:---------------------|:--------------------------|:------------------------------------------------------------------------------------|
 | `array`              | `array`                   | the type of elements in the array is determined based on the mappings in this table |
 | `string`             | `string`                  |                                                                                     |
 | `float`, `number`    | `number`                  |                                                                                     |
@@ -125,7 +125,16 @@ Now that you have set up the Mailchimp source connector, check out the following
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
-| ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 2.0.13 | 2024-07-27 | [42683](https://github.com/airbytehq/airbyte/pull/42683) | Update dependencies |
+| 2.0.12 | 2024-07-20 | [42381](https://github.com/airbytehq/airbyte/pull/42381) | Update dependencies |
+| 2.0.11 | 2024-07-13 | [41683](https://github.com/airbytehq/airbyte/pull/41683) | Update dependencies |
+| 2.0.10 | 2024-07-10 | [41399](https://github.com/airbytehq/airbyte/pull/41399) | Update dependencies |
+| 2.0.9 | 2024-07-09 | [41152](https://github.com/airbytehq/airbyte/pull/41152) | Update dependencies |
+| 2.0.8 | 2024-07-06 | [40897](https://github.com/airbytehq/airbyte/pull/40897) | Update dependencies |
+| 2.0.7 | 2024-06-25 | [40320](https://github.com/airbytehq/airbyte/pull/40320) | Update dependencies |
+| 2.0.6 | 2024-06-21 | [39937](https://github.com/airbytehq/airbyte/pull/39937) | Update dependencies |
+| 2.0.5 | 2024-06-18 | [38868](https://github.com/airbytehq/airbyte/pull/38868) | Refactor:  use `client_side_incremental` feature |
 | 2.0.4 | 2024-06-06 | [39202](https://github.com/airbytehq/airbyte/pull/39202) | [autopull] Upgrade base image to v1.2.2 |
 | 2.0.3 | 2024-05-02 | [36649](https://github.com/airbytehq/airbyte/pull/36649) | Schema descriptions |
 | 2.0.2 | 2024-04-25 | [37572](https://github.com/airbytehq/airbyte/pull/37572) | Fixed `start_date` format issue for the `email_activity` stream |

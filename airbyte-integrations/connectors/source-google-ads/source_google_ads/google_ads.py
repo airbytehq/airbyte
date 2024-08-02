@@ -20,6 +20,16 @@ from .utils import logger
 API_VERSION = "v15"
 
 
+def on_give_up(details):
+    error = details["exception"]
+    if isinstance(error, InternalServerError):
+        raise AirbyteTracedException(
+            failure_type=FailureType.transient_error,
+            message=f"{error.message} {error.details}",
+            internal_message=f"{error.message} Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later. ",
+        )
+
+
 class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
 
@@ -72,6 +82,7 @@ class GoogleAds:
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
+        on_giveup=on_give_up,
         max_tries=5,
     )
     def send_request(

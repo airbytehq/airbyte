@@ -39,11 +39,7 @@ import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categor
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.postgresql.PGProperty.ADAPTIVE_FETCH;
-import static org.postgresql.PGProperty.ADAPTIVE_FETCH_MAXIMUM;
 import static org.postgresql.PGProperty.CURRENT_SCHEMA;
-import static org.postgresql.PGProperty.DEFAULT_ROW_FETCH_SIZE;
-import static org.postgresql.PGProperty.MAX_RESULT_BUFFER;
 import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -58,6 +54,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -70,6 +67,8 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -159,18 +158,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
       // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
       // https://github.com/airbytehq/airbyte/issues/24796
-      PREPARE_THRESHOLD, "0",
-      DEFAULT_ROW_FETCH_SIZE, "1",
-      ADAPTIVE_FETCH, "true",
-      MAX_RESULT_BUFFER, "10percent",
-      // The implementation of adaptive fetching in the PG JDBC driver is very optimistic in its
-      // predictions. It determines the fetchSize by taking the maxResultBuffer value and dividing
-      // it by the largest row byte size encountered so far. This fails spectacularly when
-      // streaming from a table whose initial rows are smaller than the rest and therefore requires
-      // setting an upper bound on the fetchSize. Consequently, this adaptive fetching scheme is
-      // only useful to us to avoid OOMing when streaming from tables with particularly large rows,
-      // an edge case where we need to read less than 1000 rows at a time.
-      ADAPTIVE_FETCH_MAXIMUM, "1000");
+      PREPARE_THRESHOLD, "0");
 
   private List<String> schemas;
 
@@ -183,7 +171,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   PostgresSource() {
-    super(DRIVER_CLASS, PostgresStreamingQueryConfig::new, new PostgresSourceOperations());
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
@@ -324,16 +312,20 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       catalog.setStreams(streams);
     } else if (isXmin(config)) {
-      // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
-      // from being able to pick their own cursor.
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresCatalogHelper::overrideSyncModes)
-          .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
-          .collect(toList());
-
-      catalog.setStreams(streams);
+      try {
+        JdbcDatabase database = createDatabase(config);
+        Map<String, List<String>> viewsBySchema = PostgresCatalogHelper.getViewsForAllSchemas(database, schemas);
+        // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
+        // from being able to pick their own cursor.
+        final List<AirbyteStream> streams = catalog.getStreams().stream()
+            .map(stream -> PostgresCatalogHelper.overrideSyncModes(stream, viewsBySchema))
+            .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
+            .collect(toList());
+        catalog.setStreams(streams);
+      } catch (SQLException e) {
+        LOGGER.error("Error checking if stream is a view", e);
+      }
     }
-
     return catalog;
   }
 
@@ -568,7 +560,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                                                                          * decorateWithStartedStatus=
                                                                                                                          */ true, /*
                                                                                                                                    * decorateWithCompletedStatus=
-                                                                                                                                   */ true));
+                                                                                                                                   */ true,
+          Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>(xminHandler.getIncrementalIterators(
           new ConfiguredAirbyteCatalog().withStreams(xminStreams.streamsForXminSync()), tableNameToTable, emittedAt));
 
@@ -612,7 +605,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
               tableNameToTable,
-              emittedAt, /* decorateWithStartedStatus= */ true, /* decorateWithCompletedStatus= */ true));
+              emittedAt, /* decorateWithStartedStatus= */ true, /* decorateWithCompletedStatus= */ true, Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterators = new ArrayList<>(super.getIncrementalIterators(database,
           new ConfiguredAirbyteCatalog().withStreams(
               cursorBasedStreamsCategorised.remainingStreams()
@@ -700,8 +693,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   public static void main(final String[] args) throws Exception {
     final Source source = PostgresSource.sshWrappedSource(new PostgresSource());
+    final PostgresSourceExceptionHandler exceptionHandler = new PostgresSourceExceptionHandler();
     LOGGER.info("starting source: {}", PostgresSource.class);
-    new IntegrationRunner(source).run(args);
+    new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
 
@@ -860,6 +854,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         ctidStateManager.setFileNodeHandler(fileNodeHandler);
       }
     }
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), ctidStateManager);
   }
 
   @Override

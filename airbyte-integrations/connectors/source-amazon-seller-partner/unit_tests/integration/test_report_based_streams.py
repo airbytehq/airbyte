@@ -338,8 +338,8 @@ class TestFullRefresh:
             "This is most likely due to insufficient permissions on the credentials in use. "
             "Try to grant required permissions/scopes or re-authenticate."
         )
-        assert_message_in_log_output(message_on_access_forbidden, output)
-        assert len(output.records) == 0
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
@@ -393,7 +393,7 @@ class TestFullRefresh:
         if stream_name == "GET_VENDOR_TRAFFIC_REPORT":
             config_end_date = VENDOR_TRAFFIC_REPORT_CONFIG_END_DATE
         assert (
-            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{config_end_date}. This will be read during the next sync. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
+            f"Failed to retrieve the report '{stream_name}' for period {CONFIG_START_DATE}-{config_end_date}. This will be read during the next sync. Report ID: 6789087632. Error: {{'errorDetails': 'Error in report request: This report type requires the reportPeriod, distributorView, sellingProgram reportOption to be specified. Please review the document for this report type on GitHub, provide a value for this reportOption in your request, and try again.'}}"
         ) in output.errors[-1].trace.error.message
 
     @pytest.mark.parametrize(
@@ -440,8 +440,39 @@ class TestFullRefresh:
         message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
 
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message_on_backoff_exception, output)
-        assert len(output.records) == 0
+
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        assert message_on_backoff_exception in output.errors[0].trace.error.message
+
+    @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
+    @HttpMocker()
+    def test_given_http_error_not_support_account_id_of_type_vendor_when_read_then_no_records_and_error_logged(
+            self, stream_name: str, data_format: str, http_mocker: HttpMocker
+    ):
+        mock_auth(http_mocker)
+        response_body = {
+            "errors": [
+                {"code": "InvalidInput",
+                 "message": "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.",
+                 "details": ""}
+            ]
+        }
+        http_mocker.post(
+            _create_report_request(stream_name).build(),
+            response_with_status(status_code=HTTPStatus.BAD_REQUEST, body=response_body),
+        )
+
+        warning_message = (
+            "The endpoint https://sellingpartnerapi-na.amazon.com/reports/2021-06-30/reports returned 400: "
+            "Report type 301 does not support account ID of type class com.amazon.partner.account.id.VendorGroupId.."
+            " This is most likely due to account type (Vendor) on the credentials in use."
+            " Try to re-authenticate with Seller account type and sync again."
+        )
+
+        output = self._read(stream_name, config())
+
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert warning_message in output.errors[0].trace.error.message
 
 
 @freezegun.freeze_time(NOW.isoformat())
@@ -746,8 +777,8 @@ class TestVendorSalesReportsFullRefresh:
             "This is most likely due to insufficient permissions on the credentials in use. "
             "Try to grant required permissions/scopes or re-authenticate."
         )
-        assert_message_in_log_output(message_on_access_forbidden, output)
-        assert len(output.records) == 0
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
 
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
@@ -821,5 +852,6 @@ class TestVendorSalesReportsFullRefresh:
         message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
 
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message_on_backoff_exception, output)
-        assert len(output.records) == 0
+
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        assert message_on_backoff_exception in output.errors[0].trace.error.message
