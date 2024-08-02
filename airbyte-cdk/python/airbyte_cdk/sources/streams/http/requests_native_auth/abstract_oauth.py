@@ -4,6 +4,7 @@
 
 import logging
 from abc import abstractmethod
+from json import JSONDecodeError
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
@@ -97,7 +98,7 @@ class AbstractOauth2Authenticator(AuthBase):
             return False
         try:
             exception_content = response.json()
-        except ValueError:  # JSONDecodeError falls under ValueError
+        except JSONDecodeError:  # JSONDecodeError falls under ValueError
             return False
         status_code = response.status_code
         error_key_value = exception_content.get(self._refresh_token_error_key)
