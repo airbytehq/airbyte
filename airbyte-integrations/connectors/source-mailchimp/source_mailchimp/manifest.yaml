@@ -103,6 +103,292 @@ definitions:
       data_field: "automations"
       cursor_field: "create_time"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        title: Automations
+        additionalProperties: true
+        properties:
+          create_time:
+            airbyte-type: timestamp_with_timezone
+            description: The timestamp when the automation was created
+            format: date-time
+            type:
+              - "null"
+              - string
+          emails_sent:
+            description: The number of emails sent as part of the automation
+            type:
+              - "null"
+              - number
+          id:
+            description: The unique identifier for the automation
+            type:
+              - "null"
+              - string
+          recipients:
+            description: Details about the recipients of the automation
+            properties:
+              list_id:
+                description: The ID of the recipient list
+                type:
+                  - "null"
+                  - string
+              list_is_active:
+                description: Indicates if the recipient list is active
+                type:
+                  - "null"
+                  - boolean
+              list_name:
+                description: The name of the recipient list
+                type:
+                  - "null"
+                  - string
+              segment_opts:
+                description: Options related to segmenting recipients
+                properties:
+                  conditions:
+                    description: Conditions for segmenting recipients
+                    items:
+                      additionalProperties: true
+                      type:
+                        - "null"
+                        - object
+                    type:
+                      - "null"
+                      - array
+                  match:
+                    description: Matching criteria for segmenting recipients
+                    type:
+                      - "null"
+                      - string
+                  saved_segment_id:
+                    description: The ID of the saved segment
+                    type:
+                      - "null"
+                      - number
+                type:
+                  - "null"
+                  - object
+              store_id:
+                description: The ID of the store associated with recipients
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          report_summary:
+            description: Summary of the report generated for the automation
+            properties:
+              click_rate:
+                description: The click-through rate for the automation
+                type:
+                  - "null"
+                  - number
+              clicks:
+                description: The total number of clicks generated
+                type:
+                  - "null"
+                  - number
+              open_rate:
+                description: The open rate for the automation
+                type:
+                  - "null"
+                  - number
+              opens:
+                description: The total number of opens generated
+                type:
+                  - "null"
+                  - number
+              subscriber_clicks:
+                description: Number of clicks per subscriber
+                type:
+                  - "null"
+                  - number
+              unique_opens:
+                description: Number of unique opens recorded
+                type:
+                  - "null"
+                  - number
+            type:
+              - "null"
+              - object
+          settings:
+            description: Settings related to the automation
+            properties:
+              authenticate:
+                description: Indicates if authentication is set
+                type:
+                  - "null"
+                  - boolean
+              auto_footer:
+                description: Automatically add footer to emails
+                type:
+                  - "null"
+                  - boolean
+              from_name:
+                description: Sender's name
+                type:
+                  - "null"
+                  - string
+              inline_css:
+                description: Include inline CSS in emails
+                type:
+                  - "null"
+                  - boolean
+              reply_to:
+                description: Email address for replies
+                type:
+                  - "null"
+                  - string
+              title:
+                description: Title of the automation
+                type:
+                  - "null"
+                  - string
+              to_name:
+                description: Recipient's name field
+                type:
+                  - "null"
+                  - string
+              use_conversation:
+                description: Enable conversation tracking
+                type:
+                  - "null"
+                  - boolean
+            type:
+              - "null"
+              - object
+          start_time:
+            airbyte_type: timestamp_with_timezone
+            description: The timestamp when the automation started
+            format: date-time
+            type:
+              - "null"
+              - string
+          status:
+            description: Current status of the automation
+            type:
+              - "null"
+              - string
+          tracking:
+            description: Tracking settings for the automation
+            properties:
+              capsule:
+                description: Notes related to capsule tracking
+                properties:
+                  notes:
+                    description: Additional notes for capsule tracking
+                    type:
+                      - "null"
+                      - boolean
+                type:
+                  - "null"
+                  - object
+              clicktale:
+                description: Clicktale tracking status
+                type:
+                  - "null"
+                  - string
+              ecomm360:
+                description: Ecommerce tracking status
+                type:
+                  - "null"
+                  - boolean
+              goal_tracking:
+                description: Goal tracking setup status
+                type:
+                  - "null"
+                  - boolean
+              google_analytics:
+                description: Google Analytics tracking status
+                type:
+                  - "null"
+                  - string
+              html_clicks:
+                description: HTML click tracking status
+                type:
+                  - "null"
+                  - boolean
+              opens:
+                description: Open tracking status
+                type:
+                  - "null"
+                  - boolean
+              salesforce:
+                description: Salesforce tracking details
+                properties:
+                  campaign:
+                    description: Salesforce campaign tracking status
+                    type:
+                      - "null"
+                      - boolean
+                  notes:
+                    description: Additional notes for Salesforce tracking
+                    type:
+                      - "null"
+                      - boolean
+                type:
+                  - "null"
+                  - object
+              text_clicks:
+                description: Text click tracking status
+                type:
+                  - "null"
+                  - boolean
+            type:
+              - "null"
+              - object
+          trigger_settings:
+            description: Settings related to the triggers of the automation
+            properties:
+              runtime:
+                description: Runtime settings for the automation
+                properties:
+                  days:
+                    description: Days of the week for triggering the automation
+                    items:
+                      type:
+                        - "null"
+                        - string
+                    type:
+                      - "null"
+                      - array
+                  hours:
+                    description: Hourly trigger settings
+                    properties:
+                      type:
+                        description: Type of hourly triggering
+                        type:
+                          - "null"
+                          - string
+                    type:
+                      - "null"
+                      - object
+                type:
+                  - "null"
+                  - object
+              workflow_emails_count:
+                description: Number of emails in the workflow
+                type:
+                  - "null"
+                  - number
+              workflow_title:
+                description: Title of the workflow
+                type:
+                  - "null"
+                  - string
+              workflow_type:
+                description: Type of workflow
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
   campaigns_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
@@ -112,6 +398,2400 @@ definitions:
       path: "/campaigns"
       data_field: "campaigns"
       cursor_field: "create_time"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        title: Campaign
+        description: A summary of an individual campaign's settings and content.
+        properties:
+          ab_split_opts:
+            description: "[A/B Testing](https://mailchimp.com/help/about-ab-testing-campaigns/) options for a campaign."
+            properties:
+              from_name_a:
+                description: For campaigns split on 'From Name', the name for Group A.
+                title: From Name Group A
+                type:
+                  - "null"
+                  - string
+              from_name_b:
+                description: For campaigns split on 'From Name', the name for Group B.
+                title: From Name Group B
+                type:
+                  - "null"
+                  - string
+              pick_winner:
+                description:
+                  How we should evaluate a winner. Based on 'opens', 'clicks',
+                  or 'manual'.
+                enum:
+                  - opens
+                  - clicks
+                  - manual
+                title: Pick Winner
+                type:
+                  - "null"
+                  - string
+              reply_email_a:
+                description:
+                  For campaigns split on 'From Name', the reply-to address for
+                  Group A.
+                title: Reply Email Group A
+                type:
+                  - "null"
+                  - string
+              reply_email_b:
+                description:
+                  For campaigns split on 'From Name', the reply-to address for
+                  Group B.
+                title: Reply Email Group B
+                type:
+                  - "null"
+                  - string
+              send_time_a:
+                airbyte_type: timestamp_with_timezone
+                description: The send time for Group A.
+                format: date-time
+                title: Send Time Group A
+                type:
+                  - "null"
+                  - string
+              send_time_b:
+                airbyte_type: timestamp_with_timezone
+                description: The send time for Group B.
+                format: date-time
+                title: Send Time Group B
+                type:
+                  - "null"
+                  - string
+              send_time_winner:
+                description: The send time for the winning version.
+                title: Send Time Winner
+                type:
+                  - "null"
+                  - string
+              split_size:
+                description:
+                  The size of the split groups. Campaigns split based on 'schedule'
+                  are forced to have a 50/50 split. Valid split integers are between 1-50.
+                maximum: 50
+                minimum: 1
+                title: Split Size
+                type: integer
+              split_test:
+                description: The type of AB split to run.
+                enum:
+                  - subject
+                  - from_name
+                  - schedule
+                title: Split Test
+                type:
+                  - "null"
+                  - string
+              subject_a:
+                description:
+                  For campaigns split on 'Subject Line', the subject line for Group
+                  A.
+                title: Subject Line Group A
+                type:
+                  - "null"
+                  - string
+              subject_b:
+                description:
+                  For campaigns split on 'Subject Line', the subject line for Group
+                  B.
+                title: Subject Line Group B
+                type:
+                  - "null"
+                  - string
+              wait_time:
+                description:
+                  The amount of time to wait before picking a winner. This cannot
+                  be changed after a campaign is sent.
+                title: Wait Time
+                type: integer
+              wait_units:
+                description:
+                  How unit of time for measuring the winner ('hours' or 'days').
+                  This cannot be changed after a campaign is sent.
+                enum:
+                  - hours
+                  - days
+                title: Wait Time
+                type:
+                  - "null"
+                  - string
+            readOnly: true
+            title: A/B Testing Options
+            type: object
+          archive_url:
+            description: The link to the campaign's archive version in ISO 8601 format.
+            readOnly: true
+            title: Archive URL
+            type:
+              - "null"
+              - string
+          content_type:
+            description: How the campaign's content is put together.
+            enum:
+              - template
+              - html
+              - url
+              - multichannel
+            title: Content Type
+            type:
+              - "null"
+              - string
+          create_time:
+            airbyte_type: timestamp_with_timezone
+            description: The date and time the campaign was created in ISO 8601 format.
+            format: date-time
+            readOnly: true
+            title: Create Time
+            type: string
+          delivery_status:
+            description: Updates on campaigns in the process of sending.
+            properties:
+              can_cancel:
+                description: Whether a campaign send can be canceled.
+                readOnly: true
+                title: Campaign Cancelable
+                type: boolean
+              emails_canceled:
+                description: The total number of emails canceled for this campaign.
+                readOnly: true
+                title: Emails Canceled
+                type: integer
+              emails_sent:
+                description:
+                  The total number of emails confirmed sent for this campaign so
+                  far.
+                readOnly: true
+                title: Emails Sent
+                type: integer
+              enabled:
+                description:
+                  Whether Campaign Delivery Status is enabled for this account
+                  and campaign.
+                readOnly: true
+                title: Delivery Status Enabled
+                type: boolean
+              status:
+                description: The current state of a campaign delivery.
+                enum:
+                  - delivering
+                  - delivered
+                  - canceling
+                  - canceled
+                readOnly: true
+                title: Campaign Delivery Status
+                type:
+                  - "null"
+                  - string
+            title: Campaign Delivery Status
+            type: object
+          emails_sent:
+            description: The total number of emails sent for this campaign.
+            readOnly: true
+            title: Emails Sent
+            type: integer
+          id:
+            description: A string that uniquely identifies this campaign.
+            readOnly: true
+            title: Campaign ID
+            type: string
+          long_archive_url:
+            description: The original link to the campaign's archive version.
+            readOnly: true
+            title: Long Archive URL
+            type:
+              - "null"
+              - string
+          needs_block_refresh:
+            description:
+              Determines if the campaign needs its blocks refreshed by opening
+              the web-based campaign editor. Deprecated and will always return false.
+            readOnly: true
+            title: Needs Block Refresh
+            type: boolean
+          parent_campaign_id:
+            description:
+              If this campaign is the child of another campaign, this identifies
+              the parent campaign. For Example, for RSS or Automation children.
+            readOnly: true
+            title: Parent Campaign ID
+            type:
+              - "null"
+              - string
+          recipients:
+            description: List settings for the campaign.
+            properties:
+              list_id:
+                description: The unique list id.
+                title: List ID
+                type:
+                  - "null"
+                  - string
+              list_is_active:
+                description: The status of the list used, namely if it's deleted or disabled.
+                readOnly: true
+                title: List Status
+                type: boolean
+              list_name:
+                description: The name of the list.
+                readOnly: true
+                title: List Name
+                type:
+                  - "null"
+                  - string
+              recipient_count:
+                description:
+                  Count of the recipients on the associated list. Formatted as
+                  an integer.
+                readOnly: true
+                title: Recipient Count
+                type: integer
+              segment_opts:
+                description:
+                  An object representing all segmentation options. This object
+                  should contain a `saved_segment_id` to use an existing segment, or you can
+                  create a new segment by including both `match` and `conditions` options.
+                properties:
+                  conditions:
+                    description:
+                      Segment match conditions. There are multiple possible types,
+                      see the [condition types documentation](https://mailchimp.com/developer/marketing/docs/alternative-schemas/#segment-condition-schemas).
+                    items:
+                      oneOf:
+                        - description: Segment by interaction with a specific campaign.
+                          properties:
+                            condition_type:
+                              enum:
+                                - Aim
+                              type: string
+                              x-value: Aim
+                            field:
+                              description: Segment by interaction with a specific campaign.
+                              enum:
+                                - aim
+                              example: aim
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: "The status of the member with regard to their campaign interaction. One of the following: opened, clicked, was sent, didn't open, didn't click, or was not sent."
+                              enum:
+                                - open
+                                - click
+                                - sent
+                                - noopen
+                                - noclick
+                                - nosent
+                              example: open
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description:
+                                Either the web id value for a specific campaign or
+                                'any' to account for subscribers who have/have not interacted
+                                with any campaigns.
+                              example: any
+                              title: Segment Data
+                              type: string
+                          title: Aim Segment
+                          type: object
+                        - description: Segment by interaction with an Automation workflow.
+                          properties:
+                            condition_type:
+                              enum:
+                                - Automation
+                              type: string
+                              x-value: Automation
+                            field:
+                              description: Segment by interaction with an Automation workflow.
+                              enum:
+                                - automation
+                              example: automation
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: "The status of the member with regard to the automation workflow. One of the following: has started the workflow, has completed the workflow, has not started the workflow, or has not completed the workflow."
+                              enum:
+                                - started
+                                - completed
+                                - not_started
+                                - not_completed
+                              example: started
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description:
+                                The web id for the automation workflow to segment
+                                against.
+                              example: "2135217"
+                              title: Segment Data
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Automation Segment
+                          type: object
+                        - description: Segment by poll activity.
+                          properties:
+                            condition_type:
+                              enum:
+                                - CampaignPoll
+                              type: string
+                              x-value: CampaignPoll
+                            field:
+                              description: Segment by poll activity.
+                              enum:
+                                - poll
+                              example: poll
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members have/have not interacted with a specific
+                                poll in a Mailchimp email.
+                              enum:
+                                - member
+                                - notmember
+                              example: member
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The id for the poll.
+                              example: 409
+                              title: Segment Operator
+                              type: number
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Poll Activity Segment
+                          type: object
+                        - description: Segment by interaction with a campaign via Conversations.
+                          properties:
+                            condition_type:
+                              enum:
+                                - Conversation
+                              type: string
+                              x-value: Conversation
+                            field:
+                              description: Segment by interaction with a campaign via Conversations.
+                              enum:
+                                - conversation
+                              example: conversation
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: "The status of a member's interaction with a conversation. One of the following: has replied or has not replied."
+                              enum:
+                                - member
+                                - notmember
+                              example: member
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description:
+                                The web id value for a specific campaign or 'any'
+                                to account for subscribers who have/have not interacted with
+                                any campaigns.
+                              example: any
+                              title: Segment Data
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Conversation Segment
+                          type: object
+                        - description: Segment by a specific date field.
+                          properties:
+                            condition_type:
+                              enum:
+                                - Date
+                              type: string
+                              x-value: Date
+                            extra:
+                              description: When segmenting on 'date' or 'campaign', the date for the segment formatted as YYYY-MM-DD or the web id for the campaign.
+                              example: "2015-01-30"
+                              title: Segment Extra Value
+                              type: string
+                            field:
+                              description: "The type of date field to segment on: The opt-in time for a signup, the date the subscriber was last updated, or the date of their last ecomm purchase."
+                              enum:
+                                - timestamp_opt
+                                - info_changed
+                                - ecomm_date
+                              example: timestamp_opt
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: "When the event took place:  Before, after, is a specific date, is not a specific date, is blank, or is not blank."
+                              enum:
+                                - greater
+                                - less
+                                - is
+                                - not
+                                - blank
+                                - blank_not
+                                - within
+                                - notwithin
+                              example: greater
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: "What type of data to segment on: a specific date, a specific campaign, or the last campaign sent."
+                              example: date
+                              title: Segment Data
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Date Segment
+                          type: object
+                        - description: Segment by use of a particular email client.
+                          properties:
+                            condition_type:
+                              enum:
+                                - EmailClient
+                              type: string
+                              x-value: EmailClient
+                            field:
+                              description: Segment by use of a particular email client.
+                              enum:
+                                - email_client
+                              example: email_client
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: The operation to determine whether we select clients that match the value, or clients that do not match the value.
+                              enum:
+                                - client_is
+                                - client_not
+                              example: client_is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The name of the email client.
+                              example: Gmail
+                              title: Segment Data
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Email Client Segment
+                          type: object
+                        - description: Segment by language.
+                          properties:
+                            condition_type:
+                              enum:
+                                - Language
+                              type: string
+                              x-value: Language
+                            field:
+                              description: Segmenting based off of a subscriber's language.
+                              enum:
+                                - language
+                              example: language
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's language is or is not set to
+                                a specific language.
+                              enum:
+                                - is
+                                - not
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: A two-letter language identifier.
+                              example: en
+                              title: Segment Data
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Language Segment
+                          type: object
+                        - description: Segment by member rating.
+                          properties:
+                            condition_type:
+                              enum:
+                                - MemberRating
+                              type: string
+                              x-value: MemberRating
+                            field:
+                              description: Segment by member rating.
+                              enum:
+                                - rating
+                              example: rating
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who have have a rating that is/not exactly
+                                a given number or members who have a rating greater/less than
+                                a given number.
+                              enum:
+                                - is
+                                - not
+                                - greater
+                                - less
+                              example: greater
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The star rating number to segment against.
+                              example: 4
+                              title: Segment Operator
+                              type: number
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Member Rating Segment
+                          type: object
+                        - description: Segment by signup source.
+                          properties:
+                            condition_type:
+                              enum:
+                                - SignupSource
+                              title: Type
+                              type: string
+                              x-value: SignupSource
+                            field:
+                              enum:
+                                - source
+                              example: source
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's signup source was/was not a
+                                particular value.
+                              enum:
+                                - source_is
+                                - source_not
+                              example: source_is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The signup source.
+                              example: List Import
+                              title: Segment Data
+                              type: string
+                          required:
+                            - field
+                            - condition_type
+                            - op
+                          title: Signup Source Segment
+                          type: object
+                        - description: Segment by interaction with a SurveyMonkey survey.
+                          properties:
+                            condition_type:
+                              enum:
+                                - SurveyMonkey
+                              type: string
+                              x-value: SurveyMonkey
+                            field:
+                              description: Segment by interaction with a SurveyMonkey survey.
+                              enum:
+                                - survey_monkey
+                              example: survey_monkey
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: "The status of the member with regard to the survey. One of the following: has started the survey, has completed the survey, has not started the survey, or has not completed the survey."
+                              enum:
+                                - started
+                                - completed
+                                - not_started
+                                - not_completed
+                              example: started
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The unique ID of the SurveyMonkey survey.
+                              example: "32179586"
+                              title: Survey ID
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: SurveyMonkey Segment
+                          type: object
+                        - description: Segment by VIP status.
+                          properties:
+                            condition_type:
+                              enum:
+                                - VIP
+                              type: string
+                              x-value: VIP
+                            field:
+                              description: Segment by VIP status.
+                              enum:
+                                - gmonkey
+                              example: gmonkey
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Whether the member is or is not marked as VIP.
+                              enum:
+                                - member
+                                - notmember
+                              example: member
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: VIP Segment
+                          type: object
+                        - description: Segment by an interest group merge field.
+                          properties:
+                            condition_type:
+                              enum:
+                                - Interests
+                              type: string
+                              x-value: Interests
+                            field:
+                              description:
+                                Segmenting based on interest group information. This
+                                should start with 'interests-' followed by the grouping id.
+                                Ex. 'interests-123'.
+                              example: interests-123
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member is a part of one, all, or none
+                                of the groups.
+                              enum:
+                                - interestcontains
+                                - interestcontainsall
+                                - interestnotcontains
+                              example: interestcontains
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description:
+                                An array containing strings, each representing a
+                                group id.
+                              items:
+                                example:
+                                  - "44401"
+                                  - "44405"
+                                  - "44409"
+                                type: string
+                              title: Segment Value
+                              type: array
+                          title: Interests Segment
+                          type: object
+                        - description: Segment by purchases in specific items or categories.
+                          properties:
+                            condition_type:
+                              enum:
+                                - EcommCategory
+                              type: string
+                              x-value: EcommCategory
+                            field:
+                              description: Segment by purchases in specific items or categories.
+                              enum:
+                                - ecomm_cat
+                                - ecomm_prod
+                              example: ecomm_cat
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                A member who has purchased from a category/specific
+                                item that is/is not a specific name, where the category/item
+                                name contains/doesn't contain a specific phrase or string, or
+                                a category/item name that starts/ends with a string.
+                              enum:
+                                - is
+                                - not
+                                - contains
+                                - notcontain
+                                - starts
+                                - ends
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The ecommerce category/item information.
+                              example: Product
+                              title: Segment Data
+                              type: string
+                          title: Ecommerce Category Segment
+                          type: object
+                        - description:
+                            Segment by average spent total, number of orders, total
+                            number of products purchased, or average number of products per
+                            order.
+                          properties:
+                            condition_type:
+                              enum:
+                                - EcommNumber
+                              type: string
+                              x-value: EcommNumber
+                            field:
+                              description:
+                                Segment by average spent total, number of orders,
+                                total number of products purchased, or average number of products
+                                per order.
+                              enum:
+                                - ecomm_spent_avg
+                                - ecomm_orders
+                                - ecomm_prod_all
+                                - ecomm_avg_ord
+                              example: ecomm_orders
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who have spent exactly, have not spent exactly,
+                                spent more, or spent less than the segment value.
+                              enum:
+                                - is
+                                - not
+                                - greater
+                                - less
+                              example: greater
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description:
+                                Members who have spent exactly, have not spent exactly,
+                                spent more, or spent less than this amount.
+                              example: 42
+                              title: Segment Operator
+                              type: number
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Ecommerce Number Segment
+                          type: object
+                        - description: Segment by whether someone has purchased anything.
+                          properties:
+                            condition_type:
+                              enum:
+                                - EcommPurchased
+                              type: string
+                              x-value: EcommPurchased
+                            field:
+                              description: Segment by whether someone has purchased anything.
+                              enum:
+                                - ecomm_purchased
+                              example: ecomm_purchased
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who have have ('member') or have not ('notmember')
+                                purchased.
+                              enum:
+                                - member
+                                - notmember
+                              example: member
+                              title: Segment Operator
+                              type: string
+                          title: Ecommerce Purchased Segment
+                          type: object
+                        - description:
+                            Segment by amount spent on a single order or across all
+                            orders.
+                          properties:
+                            condition_type:
+                              enum:
+                                - EcommSpent
+                              type: string
+                              x-value: EcommSpent
+                            field:
+                              description:
+                                Segment by amount spent on a single order or across
+                                all orders.
+                              enum:
+                                - ecomm_spent_one
+                                - ecomm_spent_all
+                              example: ecomm_spent_one
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who have spent 'more' or 'less' than then
+                                specified value.
+                              enum:
+                                - greater
+                                - less
+                              example: greater
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The total amount a member spent.
+                              example: 42
+                              title: Segment Data
+                              type: integer
+                          title: Ecommerce Spent Segment
+                          type: object
+                        - description: Segment by purchases from a specific store.
+                          properties:
+                            condition_type:
+                              enum:
+                                - EcommStore
+                              type: string
+                              x-value: EcommStore
+                            field:
+                              description: Segment by purchases from a specific store.
+                              enum:
+                                - ecomm_store
+                              example: ecomm_store
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who have or have not purchased from a specific
+                                store.
+                              enum:
+                                - is
+                                - not
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The store id to segment against.
+                              example: "289"
+                              title: Segment Operator
+                              type: string
+                          title: Ecommerce Purchased Store Segment
+                          type: object
+                        - description: Segment by Goal activity.
+                          properties:
+                            condition_type:
+                              enum:
+                                - GoalActivity
+                              type: string
+                              x-value: GoalActivity
+                            field:
+                              description: Segment by Goal activity.
+                              enum:
+                                - goal
+                              example: goal
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the website URL is/not exactly, contains/doesn't
+                                contain, starts with/ends with a string.
+                              enum:
+                                - is
+                                - goal_not
+                                - contains
+                                - goal_notcontain
+                                - starts
+                                - ends
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The URL to check Goal activity against.
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Goal Activity Segment
+                          type: object
+                        - description: Segment by most recent interaction with a website.
+                          properties:
+                            condition_type:
+                              enum:
+                                - GoalTimestamp
+                              type: string
+                              x-value: GoalTimestamp
+                            field:
+                              description: Segment by most recent interaction with a website.
+                              enum:
+                                - goal_last_visited
+                              example: goal_last_visited
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the website activity happened after, before,
+                                or at a given timestamp.
+                              enum:
+                                - greater
+                                - less
+                                - is
+                              example: greater
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The date to check Goal activity against.
+                              example: "2015-07-20 19:45:21"
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Goal Timestamp Segment
+                          type: object
+                        - description: Segment by similar subscribers.
+                          properties:
+                            condition_type:
+                              enum:
+                                - FuzzySegment
+                              type: string
+                              x-value: FuzzySegment
+                            field:
+                              description: Segment by similar subscribers.
+                              enum:
+                                - fuzzy_segment
+                              example: fuzzy_segment
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who are/are not apart of a 'similar subscribers'
+                                segment.
+                              enum:
+                                - fuzzy_is
+                                - fuzzy_not
+                              example: fuzzy_is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The id for the 'similar subscribers' segment.
+                              example: 48433
+                              title: Segment Operator
+                              type: number
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Similar Subscribers Segment Member Segment
+                          type: object
+                        - description: Segment by a given static segment.
+                          properties:
+                            condition_type:
+                              enum:
+                                - StaticSegment
+                              type: string
+                              x-value: StaticSegment
+                            field:
+                              description: Segment by a given static segment.
+                              enum:
+                                - static_segment
+                              example: static_segment
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Members who are/are not apart of a static segment.
+                              enum:
+                                - static_is
+                                - static_not
+                              example: static_is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The id for the static segment.
+                              example: 48433
+                              title: Segment Operator
+                              type: number
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Static Segment Member Segment
+                          type: object
+                        - description: Segment by a specific country or US state.
+                          properties:
+                            condition_type:
+                              enum:
+                                - IPGeoCountryState
+                              type: string
+                              x-value: IPGeoCountryState
+                            field:
+                              description:
+                                Segmenting subscribers who are within a specific
+                                location.
+                              enum:
+                                - ipgeo
+                              example: ipgeo
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Segment members who are within a specific country
+                                or US state.
+                              enum:
+                                - ipgeocountry
+                                - ipgeonotcountry
+                                - ipgeostate
+                                - ipgeonotstate
+                              example: ipgeocountry
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The two-letter country code or US state abbreviation.
+                              example: US
+                              title: Segment Data
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Location-Based Segment
+                          type: object
+                        - description: Segment by a specific geographic region.
+                          properties:
+                            addr:
+                              description: The address of the target location.
+                              example: Atlanta, GA, USA
+                              title: Segment Location Address
+                              type: string
+                            condition_type:
+                              enum:
+                                - IPGeoIn
+                              type: string
+                              x-value: IPGeoIn
+                            field:
+                              description:
+                                Segmenting subscribers who are within a specific
+                                location.
+                              enum:
+                                - ipgeo
+                              example: ipgeo
+                              title: Segment Field
+                              type: string
+                            lat:
+                              description: The latitude of the target location.
+                              example: "33.7489954"
+                              title: Segment Location Latitude
+                              type: string
+                            lng:
+                              description: The longitude of the target location.
+                              example: "-84.3879824"
+                              title: Segment Location Longitude
+                              type: string
+                            op:
+                              description:
+                                Segment members who are within a specific geographic
+                                region.
+                              enum:
+                                - ipgeoin
+                                - ipgeonotin
+                              example: ipgeoin
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The radius of the target location.
+                              example: 42
+                              title: Segment Data
+                              type: integer
+                          required:
+                            - field
+                            - op
+                            - value
+                            - addr
+                            - lat
+                            - lng
+                          title: Geolocation Segment
+                          type: object
+                        - description: Segment by a specific US ZIP code.
+                          properties:
+                            condition_type:
+                              enum:
+                                - IPGeoInZip
+                              type: string
+                              x-value: IPGeoInZip
+                            extra:
+                              description: The zip code to segment against.
+                              example: 30318
+                              title: Extra Data
+                              type: integer
+                            field:
+                              description:
+                                Segmenting subscribers who are within a specific
+                                location.
+                              enum:
+                                - ipgeo
+                              example: ipgeo
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Segment members who are within a specific US zip
+                                code.
+                              enum:
+                                - ipgeoinzip
+                              example: ipgeoinzip
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The radius of the target location.
+                              example: 25
+                              title: Segment Data
+                              type: integer
+                          required:
+                            - field
+                            - op
+                            - value
+                            - extra
+                          title: US Zip Code Segment
+                          type: object
+                        - description: Segment members whose location information is unknown.
+                          properties:
+                            condition_type:
+                              enum:
+                                - IPGeoUnknown
+                              type: string
+                              x-value: IPGeoUnknown
+                            field:
+                              description:
+                                Segmenting subscribers who are within a specific
+                                location.
+                              enum:
+                                - ipgeo
+                              example: ipgeo
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Segment members for which location information is
+                                unknown.
+                              enum:
+                                - ipgeounknown
+                              example: ipgeounknown
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: Unknown Location-Based Segment
+                          type: object
+                        - description: Segment by a specific US ZIP code.
+                          properties:
+                            condition_type:
+                              enum:
+                                - IPGeoZip
+                              type: string
+                              x-value: IPGeoZip
+                            field:
+                              description:
+                                Segmenting subscribers who are within a specific
+                                location.
+                              enum:
+                                - ipgeo
+                              example: ipgeo
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Segment members who are/are not within a specific
+                                US zip code.
+                              enum:
+                                - ipgeoiszip
+                                - ipgeonotzip
+                              example: ipgeonotzip
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The 5-digit zip code.
+                              example: 30318
+                              title: Segment Data
+                              type: integer
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Zip Code Location-Based Segment
+                          type: object
+                        - description: Segment by age ranges in Social Profiles data.
+                          properties:
+                            condition_type:
+                              enum:
+                                - SocialAge
+                              type: string
+                              x-value: SocialAge
+                            field:
+                              description: Segment by age ranges in Social Profiles data.
+                              enum:
+                                - social_age
+                              example: social_age
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Members who are/not the exact criteria listed.
+                              enum:
+                                - is
+                                - not
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The age range to segment.
+                              enum:
+                                - 18-24
+                                - 25-34
+                                - 35-54
+                                - 55+
+                              example: 35-54
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Social Profiles Age Segment
+                          type: object
+                        - description: Segment by listed gender in Social Profiles data.
+                          properties:
+                            condition_type:
+                              enum:
+                                - SocialGender
+                              type: string
+                              x-value: SocialGender
+                            field:
+                              description: Segment by listed gender in Social Profiles data.
+                              enum:
+                                - social_gender
+                              example: social_gender
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Members who are/not the exact criteria listed.
+                              enum:
+                                - is
+                                - not
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The Social Profiles gender to segment.
+                              enum:
+                                - male
+                                - female
+                              example: female
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Social Profiles Gender Segment
+                          type: object
+                        - description: Segment by influence rating in Social Profiles data.
+                          properties:
+                            condition_type:
+                              enum:
+                                - SocialInfluence
+                              type: string
+                              x-value: SocialInfluence
+                            field:
+                              description: Segment by influence rating in Social Profiles data.
+                              enum:
+                                - social_influence
+                              example: social_influence
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who have a rating that is/not or greater/less
+                                than the rating provided.
+                              enum:
+                                - is
+                                - not
+                                - greater
+                                - less
+                              example: greater
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The Social Profiles influence rating to segment.
+                              example: 2
+                              title: Segment Operator
+                              type: number
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Social Profiles Influence Segment
+                          type: object
+                        - description: Segment by social network in Social Profiles data.
+                          properties:
+                            condition_type:
+                              enum:
+                                - SocialNetworkMember
+                              type: string
+                              x-value: SocialNetworkMember
+                            field:
+                              description: Segment by social network in Social Profiles data.
+                              enum:
+                                - social_network
+                              example: social_network
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Members who are/not on a given social network.
+                              enum:
+                                - member
+                                - notmember
+                              example: member
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The social network to segment against.
+                              enum:
+                                - twitter
+                                - facebook
+                                - linkedin
+                                - flickr
+                                - foursquare
+                                - lastfm
+                                - myspace
+                                - quora
+                                - vimeo
+                                - yelp
+                                - youtube
+                              example: twitter
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Social Profiles Social Network Segment
+                          type: object
+                        - description: Segment by social network in Social Profiles data.
+                          properties:
+                            condition_type:
+                              enum:
+                                - SocialNetworkFollow
+                              type: string
+                              x-value: SocialNetworkFollow
+                            field:
+                              description: Segment by social network in Social Profiles data.
+                              enum:
+                                - social_network
+                              example: social_network
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Members who are/not following a linked account on
+                                a given social network.
+                              enum:
+                                - follow
+                                - notfollow
+                              example: follow
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The social network to segment against.
+                              enum:
+                                - twitter_follow
+                              example: twitter_follow
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Social Profiles Social Network Follow Segment
+                          type: object
+                        - description: Segment by an address-type merge field.
+                          properties:
+                            condition_type:
+                              enum:
+                                - AddressMerge
+                              type: string
+                              x-value: AddressMerge
+                            field:
+                              description: An address-type merge field to segment.
+                              example: MMERGE3
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's address merge field contains/does
+                                not contain a value or is/is not blank.
+                              enum:
+                                - contains
+                                - notcontain
+                                - blank
+                                - blank_not
+                              example: contains
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The value to segment a text merge field with.
+                              example: Atlanta
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: Address Merge Field Segment
+                          type: object
+                        - description:
+                            Segment by an address-type merge field within a given
+                            distance.
+                          properties:
+                            condition_type:
+                              enum:
+                                - ZipMerge
+                              type: string
+                              x-value: ZipMerge
+                            extra:
+                              description: The city or the zip being used to segment against.
+                              example: "30318"
+                              title: Segment Extra
+                              type: string
+                            field:
+                              description: An address or zip-type merge field to segment.
+                              example: MMERGE2
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's address merge field is within
+                                a given distance from a city or zip.
+                              enum:
+                                - geoin
+                              example: geoin
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The distance from the city/zip.
+                              example: "25"
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                            - extra
+                          title: Address/Zip Merge Field Segment
+                          type: object
+                        - description: Segment by a contact's birthday.
+                          properties:
+                            condition_type:
+                              enum:
+                                - BirthdayMerge
+                              type: string
+                              x-value: BirthdayMerge
+                            field:
+                              description: A date merge field to segment.
+                              example: MMERGE4
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's birthday merge information is/is
+                                not a certain date or is/is not blank.
+                              enum:
+                                - is
+                                - not
+                                - blank
+                                - blank_not
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: A date to segment against (mm/dd).
+                              example: 01/30
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: Birthday Merge Field Segment
+                          type: object
+                        - description: Segment by a given date merge field.
+                          properties:
+                            condition_type:
+                              enum:
+                                - DateMerge
+                              type: string
+                              x-value: DateMerge
+                            field:
+                              description: A date merge field to segment.
+                              example: MMERGE5
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's merge information is/is not,
+                                is greater/less than a value or is/is not blank.
+                              enum:
+                                - is
+                                - not
+                                - less
+                                - blank
+                                - blank_not
+                                - greater
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: A date to segment against.
+                              example: 01/30/2015
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: Date Merge Field Segment
+                          type: object
+                        - description: An individual segment condition
+                          properties:
+                            condition_type:
+                              enum:
+                                - SelectMerge
+                              type: string
+                              x-value: SelectMerge
+                            field:
+                              description: A merge field to segment.
+                              example: MMERGE6
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's merge information is/is not
+                                a value or is/is not blank.
+                              enum:
+                                - is
+                                - not
+                                - blank
+                                - blank_not
+                                - notcontain
+                                - contains
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The value to segment a text merge field with.
+                              example: Second Choice
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: Dropdown/Radio Merge Field Segment
+                          type: object
+                        - description: Segment by a given text or number merge field.
+                          properties:
+                            condition_type:
+                              enum:
+                                - TextMerge
+                              type: string
+                              x-value: TextMerge
+                            field:
+                              description: A text or number merge field to segment.
+                              example: MMERGE7
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the member's merge information is/is not,
+                                contains/does not contain, starts/ends with, or is greater/less
+                                than a value
+                              enum:
+                                - is
+                                - not
+                                - contains
+                                - notcontain
+                                - starts
+                                - ends
+                                - greater
+                                - less
+                                - blank
+                                - blank_not
+                              example: contains
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description:
+                                The value to segment a text or number merge field
+                                with.
+                              example: Freddie's Jokes
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: Text or Number Merge Field Segment
+                          type: object
+                        - description: Segment by email address.
+                          properties:
+                            condition_type:
+                              enum:
+                                - EmailAddress
+                              type: string
+                              x-value: EmailAddress
+                            field:
+                              description: Segmenting based off of a subscriber's email address.
+                              enum:
+                                - merge0
+                                - EMAIL
+                              example: EMAIL
+                              title: Segment Field
+                              type: string
+                            op:
+                              description:
+                                Whether the email address is/not exactly, contains/doesn't
+                                contain, starts/ends with a string.
+                              enum:
+                                - is
+                                - not
+                                - contains
+                                - notcontain
+                                - starts
+                                - ends
+                                - greater
+                                - less
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The value to compare the email against.
+                              example: urist.mcvankab@freddiesjokes.com
+                              title: Segment Value
+                              type: string
+                          required:
+                            - field
+                            - op
+                          title: Email Segment
+                          type: object
+                        - description: Segment by predicted gender.
+                          properties:
+                            condition_type:
+                              enum:
+                                - PredictedGender
+                              type: string
+                              x-value: PredictedGender
+                            field:
+                              description: Segment by predicted gender.
+                              enum:
+                                - predicted_gender
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Members who are/not the exact criteria listed.
+                              enum:
+                                - is
+                                - not
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The predicted gender to segment.
+                              enum:
+                                - male
+                                - female
+                              example: female
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Predicted Gender Segment
+                          type: object
+                        - description: Segment by predicted age.
+                          properties:
+                            condition_type:
+                              enum:
+                                - PredictedAge
+                              type: string
+                              x-value: PredictedAge
+                            field:
+                              description: Segment by predicted age.
+                              enum:
+                                - predicted_age_range
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Members who are/not the exact criteria listed.
+                              enum:
+                                - is
+                              example: is
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: The predicted age to segment.
+                              enum:
+                                - 18-24
+                                - 25-34
+                                - 35-44
+                                - 45-54
+                                - 55-64
+                                - 65+
+                              example: female
+                              title: Segment Operator
+                              type: string
+                          required:
+                            - field
+                            - op
+                            - value
+                          title: Predicted Age Segment
+                          type: object
+                        - description: Segment by when people subscribed.
+                          properties:
+                            condition_type:
+                              enum:
+                                - NewSubscribers
+                              type: string
+                              x-value: NewSubscribers
+                            field:
+                              description: Segment by when people subscribed.
+                              enum:
+                                - timestamp_opt
+                              title: Segment Field
+                              type: string
+                            op:
+                              description: Whe the event took place, namely within a time frame.
+                              enum:
+                                - date_within
+                              title: Segment Operator
+                              type: string
+                            value:
+                              description: "What type of data to segment on: a specific date, a specific campaign, or the last campaign sent."
+                              title: Segment Data
+                              type: string
+                          title: New Subscribers Prebuilt Segment
+                          type: object
+                      x-discriminator:
+                        propertyName: condition_type
+                    title: Segment Type
+                    type: array
+                  match:
+                    description: Segment match type.
+                    enum:
+                      - any
+                      - all
+                    title: Match Type
+                    type: string
+                  prebuilt_segment_id:
+                    description:
+                      The prebuilt segment id, if a prebuilt segment has been designated
+                      for this campaign.
+                    example: subscribers-female
+                    title: Prebuilt Segment Id
+                    type: string
+                  saved_segment_id:
+                    description: The id for an existing saved segment.
+                    title: Saved Segment ID
+                    type: integer
+                title: Segment Options
+                type: object
+              segment_text:
+                description:
+                  A description of the [segment](https://mailchimp.com/help/create-and-send-to-a-segment/)
+                  used for the campaign. Formatted as a string marked up with HTML.
+                readOnly: true
+                title: Segment Text
+                type:
+                  - "null"
+                  - string
+            title: List
+            type: object
+          report_summary:
+            description: For sent campaigns, a summary of opens, clicks, and e-commerce data.
+            properties:
+              click_rate:
+                description:
+                  The number of unique clicks divided by the total number of successful
+                  deliveries.
+                readOnly: true
+                title: Click Rate
+                type: number
+              clicks:
+                description: The total number of clicks for an campaign.
+                readOnly: true
+                title: Total Clicks
+                type: integer
+              ecommerce:
+                description: E-Commerce stats for a campaign.
+                properties:
+                  total_orders:
+                    description: The total orders for a campaign.
+                    readOnly: true
+                    title: Total Orders
+                    type: integer
+                  total_revenue:
+                    description:
+                      The total revenue for a campaign. Calculated as the sum of
+                      all order totals minus shipping and tax totals.
+                    readOnly: true
+                    title: Total Revenue
+                    type: number
+                  total_spent:
+                    description:
+                      The total spent for a campaign. Calculated as the sum of
+                      all order totals with no deductions.
+                    readOnly: true
+                    title: Total Spent
+                    type: number
+                title: E-Commerce Report
+                type: object
+              open_rate:
+                description:
+                  The number of unique opens divided by the total number of successful
+                  deliveries.
+                readOnly: true
+                title: Open Rate
+                type: number
+              opens:
+                description: The total number of opens for a campaign.
+                readOnly: true
+                title: Automation Opens
+                type: integer
+              subscriber_clicks:
+                description: The number of unique clicks.
+                readOnly: true
+                title: Unique Subscriber Clicks
+                type: integer
+              unique_opens:
+                description: The number of unique opens.
+                readOnly: true
+                title: Unique Opens
+                type: integer
+            title: Campaign Report Summary
+            type: object
+          resendable:
+            description: Determines if the campaign qualifies to be resent to non-openers.
+            readOnly: true
+            title: Resendable
+            type: boolean
+          rss_opts:
+            description: "[RSS](https://mailchimp.com/help/share-your-blog-posts-with-mailchimp/) options for a campaign."
+            properties:
+              constrain_rss_img:
+                description:
+                  Whether to add CSS to images in the RSS feed to constrain their
+                  width in campaigns.
+                title: Constrain RSS Images
+                type: boolean
+              feed_url:
+                description: The URL for the RSS feed.
+                format: uri
+                title: Feed URL
+                type:
+                  - "null"
+                  - string
+              frequency:
+                description: The frequency of the RSS Campaign.
+                enum:
+                  - daily
+                  - weekly
+                  - monthly
+                title: Frequency
+                type:
+                  - "null"
+                  - string
+              last_sent:
+                airbyte_type: timestamp_with_timezone
+                description: The date the campaign was last sent.
+                format: date-time
+                readOnly: true
+                title: Last Sent
+                type:
+                  - "null"
+                  - string
+              schedule:
+                description: The schedule for sending the RSS Campaign.
+                properties:
+                  daily_send:
+                    description: The days of the week to send a daily RSS Campaign.
+                    properties:
+                      friday:
+                        description: Sends the daily RSS Campaign on Fridays.
+                        title: Friday
+                        type: boolean
+                      monday:
+                        description: Sends the daily RSS Campaign on Mondays.
+                        title: Monday
+                        type: boolean
+                      saturday:
+                        description: Sends the daily RSS Campaign on Saturdays.
+                        title: Saturday
+                        type: boolean
+                      sunday:
+                        description: Sends the daily RSS Campaign on Sundays.
+                        title: Sunday
+                        type: boolean
+                      thursday:
+                        description: Sends the daily RSS Campaign on Thursdays.
+                        title: Thursday
+                        type: boolean
+                      tuesday:
+                        description: Sends the daily RSS Campaign on Tuesdays.
+                        title: tuesday
+                        type: boolean
+                      wednesday:
+                        description: Sends the daily RSS Campaign on Wednesdays.
+                        title: Monday
+                        type: boolean
+                    title: Daily Sending Days
+                    type: object
+                  hour:
+                    description:
+                      The hour to send the campaign in local time. Acceptable hours
+                      are 0-23. For example, '4' would be 4am in [your account's default time
+                      zone](https://mailchimp.com/help/set-account-defaults/).
+                    maximum: 23
+                    minimum: 0
+                    title: Sending Hour
+                    type: integer
+                  monthly_send_date:
+                    description:
+                      The day of the month to send a monthly RSS Campaign. Acceptable
+                      days are 0-31, where '0' is always the last day of a month. Months with
+                      fewer than the selected number of days will not have an RSS campaign
+                      sent out that day. For example, RSS Campaigns set to send on the 30th
+                      will not go out in February.
+                    maximum: 31
+                    minimum: 0
+                    title: Monthly Sending Day
+                    type: number
+                  weekly_send_day:
+                    description: The day of the week to send a weekly RSS Campaign.
+                    enum:
+                      - sunday
+                      - monday
+                      - tuesday
+                      - wednesday
+                      - thursday
+                      - friday
+                      - saturday
+                    title: Weekly Sending Day
+                    type:
+                      - "null"
+                      - string
+                title: Sending Schedule
+                type: object
+            title: RSS Options
+            type: object
+          send_time:
+            airbyte_type: timestamp_with_timezone
+            description: The date and time a campaign was sent.
+            format: date-time
+            readOnly: true
+            title: Send Time
+            type:
+              - "null"
+              - string
+          settings:
+            description:
+              The settings for your campaign, including subject, from name, reply-to
+              address, and more.
+            properties:
+              authenticate:
+                description:
+                  Whether Mailchimp [authenticated](https://mailchimp.com/help/about-email-authentication/)
+                  the campaign. Defaults to `true`.
+                title: Authentication
+                type: boolean
+              auto_fb_post:
+                description:
+                  An array of [Facebook](https://mailchimp.com/help/connect-or-disconnect-the-facebook-integration/)
+                  page ids to auto-post to.
+                items:
+                  type:
+                    - "null"
+                    - string
+                title: Auto Post to Facebook
+                type: array
+              auto_footer:
+                description:
+                  Automatically append Mailchimp's [default footer](https://mailchimp.com/help/about-campaign-footers/)
+                  to the campaign.
+                title: Auto-Footer
+                type: boolean
+              auto_tweet:
+                description:
+                  Automatically tweet a link to the [campaign archive](https://mailchimp.com/help/about-email-campaign-archives-and-pages/)
+                  page when the campaign is sent.
+                title: Auto-Tweet
+                type: boolean
+              drag_and_drop:
+                description: Whether the campaign uses the drag-and-drop editor.
+                readOnly: true
+                title: Drag And Drop Campaign
+                type: boolean
+              fb_comments:
+                description:
+                  Allows Facebook comments on the campaign (also force-enables
+                  the Campaign Archive toolbar). Defaults to `true`.
+                title: Facebook Comments
+                type: boolean
+              folder_id:
+                description: If the campaign is listed in a folder, the id for that folder.
+                title: Folder ID
+                type:
+                  - "null"
+                  - string
+              from_name:
+                description: The 'from' name on the campaign (not an email address).
+                title: From Name
+                type:
+                  - "null"
+                  - string
+              inline_css:
+                description: Automatically inline the CSS included with the campaign content.
+                title: Inline CSS
+                type: boolean
+              preview_text:
+                description: The preview text for the campaign.
+                title: Campaign Preview Text
+                type:
+                  - "null"
+                  - string
+              reply_to:
+                description: The reply-to email address for the campaign.
+                title: Reply To Address
+                type:
+                  - "null"
+                  - string
+              subject_line:
+                description: The subject line for the campaign.
+                title: Campaign Subject Line
+                type:
+                  - "null"
+                  - string
+              template_id:
+                description: The id for the template used in this campaign.
+                readOnly: false
+                title: Template ID
+                type: integer
+              timewarp:
+                description: Send this campaign using [Timewarp](https://mailchimp.com/help/use-timewarp/).
+                readOnly: true
+                title: Timewarp Send
+                type: boolean
+              title:
+                description: The title of the campaign.
+                title: Campaign Title
+                type:
+                  - "null"
+                  - string
+              to_name:
+                description:
+                  The campaign's custom 'To' name. Typically the first name [merge
+                  field](https://mailchimp.com/help/getting-started-with-merge-tags/).
+                title: To Name
+                type:
+                  - "null"
+                  - string
+              use_conversation:
+                description: Use Mailchimp Conversation feature to manage out-of-office replies.
+                title: Conversation
+                type: boolean
+            title: Campaign Settings
+            type: object
+          social_card:
+            description:
+              The preview for the campaign, rendered by social networks like Facebook
+              and Twitter. [Learn more](https://mailchimp.com/help/enable-and-customize-social-cards/).
+            properties:
+              description:
+                description: A short summary of the campaign to display.
+                title: Campaign Description
+                type:
+                  - "null"
+                  - string
+              image_url:
+                description: The url for the header image for the card.
+                title: Image URL
+                type:
+                  - "null"
+                  - string
+              title:
+                description: The title for the card. Typically the subject line of the campaign.
+                title: Title
+                type:
+                  - "null"
+                  - string
+            title: Campaign Social Card
+            type: object
+          status:
+            description: The current status of the campaign.
+            enum:
+              - save
+              - paused
+              - schedule
+              - sending
+              - sent
+              - canceled
+              - canceling
+              - archived
+            readOnly: true
+            title: Campaign Status
+            type: string
+          tracking:
+            description: The tracking options for a campaign.
+            properties:
+              capsule:
+                description:
+                  Capsule tracking options for a campaign. Must be using Mailchimp's
+                  built-in Capsule integration.
+                properties:
+                  notes:
+                    description:
+                      Update contact notes for a campaign based on subscriber email
+                      addresses.
+                    title: Capsule Note
+                    type: boolean
+                title: Capsule CRM Tracking
+                type: object
+              clicktale:
+                description:
+                  The custom slug for [ClickTale](https://mailchimp.com/help/additional-tracking-options-for-campaigns/)
+                  tracking (max of 50 bytes).
+                title: ClickTale Analytics Tracking
+                type:
+                  - "null"
+                  - string
+              ecomm360:
+                description:
+                  Whether to enable [eCommerce360](https://mailchimp.com/help/connect-your-online-store-to-mailchimp/)
+                  tracking.
+                title: E-commerce Tracking
+                type: boolean
+              goal_tracking:
+                description:
+                  Whether to enable [Goal](https://mailchimp.com/help/about-connected-sites/)
+                  tracking.
+                title: Mailchimp Goal Tracking
+                type: boolean
+              google_analytics:
+                description:
+                  The custom slug for [Google Analytics](https://mailchimp.com/help/integrate-google-analytics-with-mailchimp/)
+                  tracking (max of 50 bytes).
+                title: Google Analytics Tracking
+                type:
+                  - "null"
+                  - string
+              html_clicks:
+                description:
+                  Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/)
+                  in the HTML version of the campaign. Defaults to `true`. Cannot be set to
+                  false for variate campaigns.
+                title: HTML Click Tracking
+                type: boolean
+              opens:
+                description:
+                  Whether to [track opens](https://mailchimp.com/help/about-open-tracking/).
+                  Defaults to `true`. Cannot be set to false for variate campaigns.
+                title: Opens
+                type: boolean
+              salesforce:
+                description:
+                  Salesforce tracking options for a campaign. Must be using Mailchimp's
+                  built-in [Salesforce integration](https://mailchimp.com/help/integrate-salesforce-with-mailchimp/).
+                properties:
+                  campaign:
+                    description: Create a campaign in a connected Salesforce account.
+                    title: Salesforce Campaign
+                    type: boolean
+                  notes:
+                    description:
+                      Update contact notes for a campaign based on subscriber email
+                      addresses.
+                    title: Salesforce Note
+                    type: boolean
+                title: Salesforce CRM Tracking
+                type: object
+              text_clicks:
+                description:
+                  Whether to [track clicks](https://mailchimp.com/help/enable-and-view-click-tracking/)
+                  in the plain-text version of the campaign. Defaults to `true`. Cannot be
+                  set to false for variate campaigns.
+                title: Plain-Text Click Tracking
+                type: boolean
+            title: Campaign Tracking Options
+            type: object
+          type:
+            description:
+              There are four types of [campaigns](https://mailchimp.com/help/getting-started-with-campaigns/)
+              you can create in Mailchimp. A/B Split campaigns have been deprecated and variate
+              campaigns should be used instead.
+            enum:
+              - automation-email
+              - regular
+              - plaintext
+              - absplit
+              - rss
+              - variate
+            title: Campaign Type
+            type: string
+          variate_settings:
+            description: The settings specific to A/B test campaigns.
+            properties:
+              combinations:
+                description: Combinations of possible variables used to build emails.
+                items:
+                  properties:
+                    content_description:
+                      description: The index of `variate_settings.contents` used.
+                      title: Content Description
+                      type: integer
+                    from_name:
+                      description: The index of `variate_settings.from_names` used.
+                      title: From Name
+                      type: integer
+                    id:
+                      description: Unique ID for the combination.
+                      title: ID
+                      type:
+                        - "null"
+                        - string
+                    recipients:
+                      description: The number of recipients for this combination.
+                      title: Recipients
+                      type: integer
+                    reply_to:
+                      description: The index of `variate_settings.reply_to_addresses` used.
+                      title: Reply To
+                      type: integer
+                    send_time:
+                      description: The index of `variate_settings.send_times` used.
+                      title: Send Time
+                      type: integer
+                    subject_line:
+                      description: The index of `variate_settings.subject_lines` used.
+                      title: Subject Line
+                      type: integer
+                  type: object
+                readOnly: true
+                title: Combinations
+                type: array
+              contents:
+                description:
+                  Descriptions of possible email contents. To set campaign contents,
+                  make a PUT request to /campaigns/{campaign_id}/content with the field 'variate_contents'.
+                items:
+                  type:
+                    - "null"
+                    - string
+                readOnly: true
+                title: Content Descriptions
+                type: array
+              from_names:
+                description:
+                  The possible from names. The number of from_names provided must
+                  match the number of reply_to_addresses. If no from_names are provided, settings.from_name
+                  will be used.
+                items:
+                  type:
+                    - "null"
+                    - string
+                title: From Names
+                type: array
+              reply_to_addresses:
+                description:
+                  The possible reply-to addresses. The number of reply_to_addresses
+                  provided must match the number of from_names. If no reply_to_addresses are
+                  provided, settings.reply_to will be used.
+                items:
+                  type:
+                    - "null"
+                    - string
+                title: Reply To Addresses
+                type: array
+              send_times:
+                description:
+                  The possible send times to test. The times provided should be
+                  in the format YYYY-MM-DD HH:MM:SS. If send_times are provided to test, the
+                  test_size will be set to 100% and winner_criteria will be ignored.
+                items:
+                  airbyte_type: timestamp_with_timezone
+                  format: date-time
+                  type:
+                    - "null"
+                    - string
+                title: Send Times
+                type: array
+              subject_lines:
+                description:
+                  The possible subject lines to test. If no subject lines are provided,
+                  settings.subject_line will be used.
+                items:
+                  type:
+                    - "null"
+                    - string
+                title: Subject Lines
+                type: array
+              test_size:
+                description:
+                  The percentage of recipients to send the test combinations to,
+                  must be a value between 10 and 100.
+                title: Test Size
+                type: integer
+              wait_time:
+                description:
+                  The number of minutes to wait before choosing the winning campaign.
+                  The value of wait_time must be greater than 0 and in whole hours, specified
+                  in minutes.
+                title: Wait Time
+                type: integer
+              winner_criteria:
+                description:
+                  The combination that performs the best. This may be determined
+                  automatically by click rate, open rate, or total revenue -- or you may choose
+                  manually based on the reporting data you find the most valuable. For Multivariate
+                  Campaigns testing send_time, winner_criteria is ignored. For Multivariate
+                  Campaigns with 'manual' as the winner_criteria, the winner must be chosen
+                  in the Mailchimp web application.
+                enum:
+                  - opens
+                  - clicks
+                  - manual
+                  - total_revenue
+                title: Winning Criteria
+                type:
+                  - "null"
+                  - string
+              winning_campaign_id:
+                description:
+                  ID of the campaign that was sent to the remaining recipients
+                  based on the winning combination.
+                readOnly: true
+                title: Winning Campaign ID
+                type:
+                  - "null"
+                  - string
+              winning_combination_id:
+                description: ID for the winning combination.
+                readOnly: true
+                title: Winning Combination ID
+                type:
+                  - "null"
+                  - string
+            title: A/B Test Options
+            type: object
+          web_id:
+            description:
+              The ID used in the Mailchimp web application. View this campaign
+              in your Mailchimp account at `https://{dc}.admin.mailchimp.com/campaigns/show/?id={web_id}`.
+            readOnly: true
+            title: Campaign Web ID
+            type: integer
 
   list_members_stream:
     type: DeclarativeStream
@@ -133,6 +2813,289 @@ definitions:
       data_field: "members"
       cursor_field: "last_changed"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          consents_to_one_to_one_messaging:
+            description: Indicates if the member has consented to receive one-to-one messaging
+            type:
+              - "null"
+              - boolean
+          contact_id:
+            description: The unique identifier for the contact associated with the member
+            type:
+              - "null"
+              - string
+          email_address:
+            description: The email address of the member
+            type:
+              - "null"
+              - string
+          email_client:
+            description: The email client used by the member
+            type:
+              - "null"
+              - string
+          email_type:
+            description: The type of email address (e.g., html, text)
+            type:
+              - "null"
+              - string
+          full_name:
+            description: The full name of the member
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier for the member
+            type:
+              - "null"
+              - string
+          interests:
+            additionalProperties: true
+            description: Interests or preferences of the member
+            type:
+              - "null"
+              - object
+          ip_opt:
+            description: The IP address where the member opted in
+            type:
+              - "null"
+              - string
+          ip_signup:
+            description: The IP address where the member signed up
+            type:
+              - "null"
+              - string
+          language:
+            description: The preferred language of the member
+            type:
+              - "null"
+              - string
+          last_changed:
+            airbyte_type: timestamp_with_timezone
+            description: The date and time when the member was last changed
+            format: date-time
+            type:
+              - "null"
+              - string
+          last_note:
+            description: The last note added for the member
+            properties:
+              created_at:
+                airbyte_type: timestamp_with_timezone
+                description: The timestamp when the note was created
+                format: date-time
+                type:
+                  - "null"
+                  - string
+              created_by:
+                description: The user who created the note
+                type:
+                  - "null"
+                  - string
+              note:
+                description: The content of the note
+                type:
+                  - "null"
+                  - string
+              note_id:
+                description: The unique identifier for the note
+                type:
+                  - "null"
+                  - integer
+            type:
+              - "null"
+              - object
+          list_id:
+            description: The unique identifier for the list to which the member belongs
+            type:
+              - "null"
+              - string
+          location:
+            description: Geographical location information of the member
+            properties:
+              country_code:
+                description: The two-letter country code of the member's location
+                type:
+                  - "null"
+                  - string
+              dstoff:
+                description: Daylight saving time offset in seconds
+                type:
+                  - "null"
+                  - integer
+              gmtoff:
+                description: GMT offset in seconds
+                type:
+                  - "null"
+                  - integer
+              latitude:
+                description: The latitude of the member's location
+                type:
+                  - "null"
+                  - number
+              longitude:
+                description: The longitude of the member's location
+                type:
+                  - "null"
+                  - number
+              region:
+                description: The region or area of the member's location
+                type:
+                  - "null"
+                  - string
+              timezone:
+                description: The timezone of the member's location
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          marketing_permissions:
+            description: Marketing permissions granted by the member
+            properties:
+              enabled:
+                description: Indicates if marketing permissions are enabled
+                type:
+                  - "null"
+                  - boolean
+              marketing_permission_id:
+                description: The unique identifier for the marketing permission
+                type:
+                  - "null"
+                  - string
+              text:
+                description: The text of the marketing permission
+                type:
+                  - "null"
+                  - string
+            type:
+              - "null"
+              - object
+          member_rating:
+            description: The rating score assigned to the member
+            type:
+              - "null"
+              - integer
+          merge_fields:
+            additionalProperties: true
+            description: Merge fields data for the member
+            type:
+              - "null"
+              - object
+          source:
+            description: The source from which the member was added
+            type:
+              - "null"
+              - string
+          stats:
+            description: Statistics related to the member's email activities
+            properties:
+              avg_click_rate:
+                description: Average click rate of the member
+                type:
+                  - "null"
+                  - number
+              avg_open_rate:
+                description: Average open rate of the member
+                type:
+                  - "null"
+                  - number
+              ecommerce_data:
+                description: E-commerce data of the member
+                properties:
+                  currency_code:
+                    description: The currency code used for transactions
+                    type:
+                      - "null"
+                      - string
+                  number_of_orders:
+                    description: Total number of orders placed by the member
+                    type:
+                      - "null"
+                      - number
+                  total_revenue:
+                    description: Total revenue generated by the member
+                    type:
+                      - "null"
+                      - number
+                type:
+                  - "null"
+                  - object
+            type:
+              - "null"
+              - object
+          status:
+            description: The subscription status of the member
+            type:
+              - "null"
+              - string
+          tags:
+            description: Tags associated with the member
+            items:
+              properties:
+                id:
+                  description: The unique identifier for the tag
+                  type:
+                    - "null"
+                    - integer
+                name:
+                  description: The name of the tag
+                  type:
+                    - "null"
+                    - string
+              type:
+                - "null"
+                - object
+            type:
+              - "null"
+              - array
+          tags_count:
+            description: The count of tags associated with the member
+            type:
+              - "null"
+              - integer
+          timestamp_opt:
+            airbyte_type: timestamp_with_timezone
+            description: The timestamp when the member opted in
+            format: date-time
+            type:
+              - "null"
+              - string
+          timestamp_signup:
+            airbyte_type: timestamp_with_timezone
+            description: The timestamp when the member signed up
+            format: date-time
+            type:
+              - "null"
+              - string
+          unique_email_id:
+            description: The unique email identifier for the member
+            type:
+              - "null"
+              - string
+          unsubscribe_reason:
+            description: Reason provided by the member for unsubscribing
+            type:
+              - "null"
+              - string
+          vip:
+            description: Indicates if the member is a VIP
+            type:
+              - "null"
+              - boolean
+          web_id:
+            description: The unique identifier for the member on the web
+            type:
+              - "null"
+              - integer
+
   lists_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
@@ -142,6 +3105,349 @@ definitions:
       path: "lists"
       data_field: "lists"
       cursor_field: "date_created"
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        title: Subscriber List
+        description: Information about a specific list.
+        properties:
+          beamer_address:
+            description: The list's Email Beamer address.
+            readOnly: true
+            title: Beamer Address
+            type:
+              - "null"
+              - string
+          campaign_defaults:
+            description: Default values for campaigns created for this list.
+            properties:
+              from_email:
+                description: The default from email for campaigns sent to this list.
+                title: Sender's Email Address
+                type:
+                  - "null"
+                  - string
+              from_name:
+                description: The default from name for campaigns sent to this list.
+                title: Sender's Name
+                type:
+                  - "null"
+                  - string
+              language:
+                description: The default language for this list's forms.
+                title: Language
+                type:
+                  - "null"
+                  - string
+              subject:
+                description: The default subject line for campaigns sent to this list.
+                title: Subject
+                type:
+                  - "null"
+                  - string
+            title: Campaign Defaults
+            type: object
+          contact:
+            description:
+              Contact information displayed in campaign footers to comply with
+              international spam laws.
+            properties:
+              address1:
+                description: The street address for the list contact.
+                title: Address
+                type:
+                  - "null"
+                  - string
+              address2:
+                description: The street address line 2 for the list contact.
+                title: Address
+                type:
+                  - "null"
+                  - string
+              city:
+                description: The city for the list contact.
+                title: City
+                type:
+                  - "null"
+                  - string
+              company:
+                description: The company name for the list.
+                title: Company Name
+                type:
+                  - "null"
+                  - string
+              country:
+                description: A two-character ISO3166 country code. Defaults to US if invalid.
+                title: Country Code
+                type:
+                  - "null"
+                  - string
+              phone:
+                description: The phone number for the list contact.
+                title: Phone Number
+                type:
+                  - "null"
+                  - string
+              state:
+                description: The state for the list contact.
+                title: State
+                type:
+                  - "null"
+                  - string
+              zip:
+                description: The postal or zip code for the list contact.
+                title: Postal Code
+                type:
+                  - "null"
+                  - string
+            title: List Contact
+            type: object
+          date_created:
+            airbyte_type: timestamp_with_timezone
+            description: The date and time that this list was created in ISO 8601 format.
+            format: date-time
+            readOnly: true
+            title: Creation Date
+            type: string
+          double_optin:
+            default: false
+            description:
+              Whether or not to require the subscriber to confirm subscription
+              via email.
+            title: Double Opt In
+            type: boolean
+          email_type_option:
+            description:
+              Whether the list supports multiple formats for emails. When set to
+              `true`, subscribers can choose whether they want to receive HTML or plain-text
+              emails. When set to `false`, subscribers will receive HTML emails, with a plain-text
+              alternative backup.
+            title: Email Type Option
+            type: boolean
+          has_welcome:
+            default: false
+            description: Whether or not this list has a welcome automation connected.
+            example: false
+            title: Has Welcome
+            type: boolean
+          id:
+            description: A string that uniquely identifies this list.
+            readOnly: true
+            title: List ID
+            type: string
+          list_rating:
+            description: An auto-generated activity score for the list (0-5).
+            readOnly: true
+            title: List Rating
+            type: integer
+          marketing_permissions:
+            default: false
+            description: Whether or not the list has marketing permissions (eg. GDPR) enabled.
+            title: Marketing Permissions
+            type: boolean
+          modules:
+            description: Any list-specific modules installed for this list.
+            items:
+              type:
+                - "null"
+                - string
+            readOnly: true
+            title: Modules
+            type: array
+          name:
+            description: The name of the list.
+            title: List Name
+            type:
+              - "null"
+              - string
+          notify_on_subscribe:
+            default: false
+            description: The email address to send subscribe notifications to.
+            title: Notify on Subscribe
+            type:
+              - "null"
+              - string
+          notify_on_unsubscribe:
+            default: false
+            description: The email address to send unsubscribe notifications to.
+            title: Notify on Unsubscribe
+            type:
+              - "null"
+              - string
+          permission_reminder:
+            description: The permission reminder for the list.
+            title: Permission Reminder
+            type:
+              - "null"
+              - string
+          stats:
+            description: Stats for the list. Many of these are cached for at least five minutes.
+            properties:
+              avg_sub_rate:
+                description:
+                  The average number of subscriptions per month for the list (not
+                  returned if we haven't calculated it yet).
+                readOnly: true
+                title: Average Subscription Rate
+                type: number
+              avg_unsub_rate:
+                description:
+                  The average number of unsubscriptions per month for the list
+                  (not returned if we haven't calculated it yet).
+                readOnly: true
+                title: Average Unsubscription Rate
+                type: number
+              campaign_count:
+                description: The number of campaigns in any status that use this list.
+                readOnly: true
+                title: Campaign Count
+                type: integer
+              campaign_last_sent:
+                airbyte_type: timestamp_with_timezone
+                description:
+                  The date and time the last campaign was sent to this list in
+                  ISO 8601 format. This is updated when a campaign is sent to 10 or more recipients.
+                format: date-time
+                readOnly: true
+                title: Campaign Last Sent
+                type:
+                  - "null"
+                  - string
+              cleaned_count:
+                description: The number of members cleaned from the list.
+                readOnly: true
+                title: Cleaned Count
+                type: integer
+              cleaned_count_since_send:
+                description:
+                  The number of members cleaned from the list since the last campaign
+                  was sent.
+                readOnly: true
+                title: Cleaned Count Since Send
+                type: integer
+              click_rate:
+                description:
+                  The average click rate (a percentage represented as a number
+                  between 0 and 100) per campaign for the list (not returned if we haven't
+                  calculated it yet).
+                readOnly: true
+                title: Click Rate
+                type: number
+              last_sub_date:
+                airbyte_type: timestamp_with_timezone
+                description:
+                  The date and time of the last time someone subscribed to this
+                  list in ISO 8601 format.
+                format: date-time
+                readOnly: true
+                title: Date of Last List Subscribe
+                type:
+                  - "null"
+                  - string
+              last_unsub_date:
+                airbyte_type: timestamp_with_timezone
+                description:
+                  The date and time of the last time someone unsubscribed from
+                  this list in ISO 8601 format.
+                format: date-time
+                readOnly: true
+                title: Date of Last List Unsubscribe
+                type:
+                  - "null"
+                  - string
+              member_count:
+                description: The number of active members in the list.
+                readOnly: true
+                title: Member Count
+                type: integer
+              member_count_since_send:
+                description:
+                  The number of active members in the list since the last campaign
+                  was sent.
+                readOnly: true
+                title: Member Count Since Send
+                type: integer
+              merge_field_count:
+                description: The number of merge vars for this list (not EMAIL, which is required).
+                readOnly: true
+                title: Merge Var Count
+                type: integer
+              open_rate:
+                description:
+                  The average open rate (a percentage represented as a number between
+                  0 and 100) per campaign for the list (not returned if we haven't calculated
+                  it yet).
+                readOnly: true
+                title: Open Rate
+                type: number
+              target_sub_rate:
+                description:
+                  The target number of subscriptions per month for the list to
+                  keep it growing (not returned if we haven't calculated it yet).
+                readOnly: true
+                title: Average Subscription Rate
+                type: number
+              total_contacts:
+                description:
+                  The number of contacts in the list, including subscribed, unsubscribed,
+                  pending, cleaned, deleted, transactional, and those that need to be reconfirmed.
+                readOnly: true
+                title: Total Contacts
+                type: integer
+              unsubscribe_count:
+                description: The number of members who have unsubscribed from the list.
+                readOnly: true
+                title: Unsubscribe Count
+                type: integer
+              unsubscribe_count_since_send:
+                description:
+                  The number of members who have unsubscribed since the last campaign
+                  was sent.
+                readOnly: true
+                title: Unsubscribe Count Since Send
+                type: integer
+            readOnly: true
+            title: Statistics
+            type: object
+          subscribe_url_long:
+            description: The full version of this list's subscribe form (host will vary).
+            readOnly: true
+            title: Subscribe URL Long
+            type:
+              - "null"
+              - string
+          subscribe_url_short:
+            description: Our EepURL shortened version of this list's subscribe form.
+            readOnly: true
+            title: Subscribe URL Short
+            type:
+              - "null"
+              - string
+          use_archive_bar:
+            default: false
+            description:
+              Whether campaigns for this list use the Archive Bar in archives by
+              default.
+            title: Use Archive Bar
+            type: boolean
+          visibility:
+            description: Whether this list is public or private.
+            enum:
+              - pub
+              - prv
+            title: Visibility
+            type:
+              - "null"
+              - string
+          web_id:
+            description:
+              The ID used in the Mailchimp web application. View this list in your
+              Mailchimp account at `https://{dc}.admin.mailchimp.com/lists/members/?id={web_id}`.
+            readOnly: true
+            title: List Web ID
+            type: integer
 
   tags_stream:
     type: DeclarativeStream
@@ -165,6 +3471,27 @@ definitions:
       path: "lists/{{ stream_slice.id }}/tag-search"
       data_field: "tags"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the tag.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the tag.
+            type:
+              - "null"
+              - string
+          list_id:
+            description: Identifier of the list to which the tag belongs.
+            type:
+              - "null"
+              - string
   interest_categories_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -187,6 +3514,41 @@ definitions:
       path: "lists/{{ stream_slice.id }}/interest-categories"
       data_field: "categories"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          list_id:
+            description: The ID of the list to which this interest category belongs.
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier for the interest category.
+            type:
+              - "null"
+              - string
+          title:
+            description: The title or name of the interest category.
+            type:
+              - "null"
+              - string
+          display_order:
+            description:
+              The order in which this interest category should be displayed
+              in the UI.
+            type:
+              - "null"
+              - integer
+          type:
+            description:
+              The type of interest category, e.g., 'checkboxes', 'hidden',
+              'dropdown'.
+            type:
+              - "null"
+              - string
   interests_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -201,9 +3563,51 @@ definitions:
     $parameters:
       name: "interests"
       primary_key: "id"
-      path: "lists/{{ stream_slice.parent_slice.id }}/interest-categories/{{ stream_slice.id }}/interests"
+      path:
+        "lists/{{ stream_slice.parent_slice.id }}/interest-categories/{{ stream_slice.id
+        }}/interests"
       data_field: "interests"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          category_id:
+            description:
+              Unique identifier for the category to which this interest
+              belongs.
+            type:
+              - "null"
+              - string
+          list_id:
+            description: Unique identifier for the list associated with this interest.
+            type:
+              - "null"
+              - string
+          id:
+            description: Unique identifier for this specific interest.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name or label of the interest.
+            type:
+              - "null"
+              - string
+          subscriber_count:
+            description: Number of subscribers who have selected this interest.
+            type:
+              - "null"
+              - string
+          display_order:
+            description:
+              Numeric value representing the display order of this interest
+              within its category.
+            type:
+              - "null"
+              - integer
   reports_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
@@ -214,6 +3618,549 @@ definitions:
       data_field: "reports"
       cursor_field: "send_time"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        title: Campaign Reports
+        description: A list of reports containing campaigns marked as Sent.
+        properties:
+          id:
+            description: A string that uniquely identifies this campaign.
+            type: string
+            title: Campaign ID
+          campaign_title:
+            description: The title of the campaign.
+            type:
+              - "null"
+              - string
+            title: Campaign Title
+            readOnly: true
+          type:
+            description:
+              The type of campaign (regular, plain-text, ab_split, rss,
+              automation, variate, or auto).
+            type:
+              - "null"
+              - string
+            title: Campaign Type
+          list_id:
+            description: The unique list id.
+            type: string
+            title: List ID
+            readOnly: true
+          list_is_active:
+            description: The status of the list used, namely if it's deleted or disabled.
+            type: boolean
+            title: List Status
+            readOnly: true
+          list_name:
+            description: The name of the list.
+            type:
+              - "null"
+              - string
+            title: List Name
+            readOnly: true
+          subject_line:
+            description: The subject line for the campaign.
+            type:
+              - "null"
+              - string
+            title: Campaign Subject Line
+            readOnly: true
+          preview_text:
+            description: The preview text for the campaign.
+            type:
+              - "null"
+              - string
+            title: Campaign Preview Text
+          emails_sent:
+            description: The total number of emails sent for this campaign.
+            type: integer
+            title: Emails Sent
+          abuse_reports:
+            description: The number of abuse reports generated for this campaign.
+            type: integer
+            title: Abuse Reports
+          unsubscribed:
+            description: The total number of unsubscribed members for this campaign.
+            type: integer
+            title: Unsubscribe Count
+            readOnly: true
+          send_time:
+            description: The date and time a campaign was sent in ISO 8601 format.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+            title: Send Time
+            readOnly: true
+          rss_last_send:
+            description:
+              For RSS campaigns, the date and time of the last send in
+              ISO 8601 format.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+            title: RSS Last Send
+            readOnly: true
+          bounces:
+            description: An object describing the bounce summary for the campaign.
+            type: object
+            title: Bounces
+            properties:
+              hard_bounces:
+                description: The total number of hard bounced email addresses.
+                type: integer
+                title: Hard Bounces
+              soft_bounces:
+                description: The total number of soft bounced email addresses.
+                type: integer
+                title: Soft Bounces
+              syntax_errors:
+                description:
+                  The total number of addresses that were syntax-related
+                  bounces.
+                type: integer
+                title: Syntax Errors
+          forwards:
+            description:
+              An object describing the forwards and forward activity for
+              the campaign.
+            type: object
+            title: Forwards
+            properties:
+              forwards_count:
+                description: How many times the campaign has been forwarded.
+                type: integer
+                title: Total Forwards
+              forwards_opens:
+                description: How many times the forwarded campaign has been opened.
+                type: integer
+                title: Forward Opens
+          opens:
+            description: An object describing the open activity for the campaign.
+            type: object
+            title: Opens
+            properties:
+              opens_total:
+                description: The total number of opens for a campaign.
+                type: integer
+                title: Total Opens
+              unique_opens:
+                description: The total number of unique opens.
+                type: integer
+                title: Unique Opens
+              open_rate:
+                description:
+                  The number of unique opens divided by the total number
+                  of successful deliveries.
+                type: number
+                title: Open Rate
+              last_open:
+                description:
+                  The date and time of the last recorded open in ISO 8601
+                  format.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+                airbyte_type: timestamp_with_timezone
+                title: Last Open
+          clicks:
+            description: An object describing the click activity for the campaign.
+            type: object
+            title: Clicks
+            properties:
+              clicks_total:
+                description: The total number of clicks for the campaign.
+                type: integer
+                title: Total Clicks
+              unique_clicks:
+                description:
+                  The total number of unique clicks for links across a
+                  campaign.
+                type: integer
+                title: Unique Clicks
+              unique_subscriber_clicks:
+                description: The total number of subscribers who clicked on a campaign.
+                type: integer
+                title: Unique Subscriber Clicks
+              click_rate:
+                description:
+                  The number of unique clicks divided by the total number
+                  of successful deliveries.
+                type: number
+                title: Click Rate
+              last_click:
+                description:
+                  The date and time of the last recorded click for the
+                  campaign in ISO 8601 format.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+                airbyte_type: timestamp_with_timezone
+                title: Last Click
+          facebook_likes:
+            description: An object describing campaign engagement on Facebook.
+            type: object
+            title: Facebook Likes
+            properties:
+              recipient_likes:
+                description: The number of recipients who liked the campaign on Facebook.
+                type: integer
+                title: Recipient Likes
+              unique_likes:
+                description: The number of unique likes.
+                type: integer
+                title: Unique Likes
+              facebook_likes:
+                description: The number of Facebook likes for the campaign.
+                type: integer
+                title: Facebook Likes
+          industry_stats:
+            description: The average campaign statistics for your industry.
+            type: object
+            title: Industry Stats
+            properties:
+              type:
+                description: "The type of business industry associated with your account. For example: retail, education, etc."
+                type:
+                  - "null"
+                  - string
+                title: Industry Type
+              open_rate:
+                description: The industry open rate.
+                type: number
+                title: Open Rate
+              click_rate:
+                description: The industry click rate.
+                type: number
+                title: Click Rate
+              bounce_rate:
+                description: The industry bounce rate.
+                type: number
+                title: Bounce Rate
+              unopen_rate:
+                description: The industry unopened rate.
+                type: number
+                title: Unopened Rate
+              unsub_rate:
+                description: The industry unsubscribe rate.
+                type: number
+                title: Unsubscribe Rate
+              abuse_rate:
+                description: The industry abuse rate.
+                type: number
+                title: Abuse Rate
+          list_stats:
+            description:
+              The average campaign statistics for your list. This won't
+              be present if we haven't calculated it yet for this list.
+            type: object
+            title: List Stats
+            properties:
+              sub_rate:
+                description:
+                  The average number of subscriptions per month for the
+                  list.
+                type: number
+                title: Average Subscription Rate
+                readOnly: true
+              unsub_rate:
+                description:
+                  The average number of unsubscriptions per month for the
+                  list.
+                type: number
+                title: Average Unsubscription Rate
+                readOnly: true
+              open_rate:
+                description:
+                  The average open rate (a percentage represented as a
+                  number between 0 and 100) per campaign for the list.
+                type: number
+                title: Open Rate
+                readOnly: true
+              click_rate:
+                description:
+                  The average click rate (a percentage represented as a
+                  number between 0 and 100) per campaign for the list.
+                type: number
+                title: Click Rate
+                readOnly: true
+          ab_split:
+            description:
+              General stats about different groups of an A/B Split campaign.
+              Does not return information about Multivariate Campaigns.
+            type: object
+            title: A/B Split Stats
+            properties:
+              a:
+                description: Stats for Campaign A.
+                type: object
+                title: Campaign A
+                properties:
+                  bounces:
+                    description: Bounces for Campaign A.
+                    type: integer
+                    title: Bounces
+                  abuse_reports:
+                    description: Abuse reports for Campaign A.
+                    type: integer
+                    title: Abuse Reports
+                  unsubs:
+                    description: Unsubscribes for Campaign A.
+                    type: integer
+                    title: Unsubscribes
+                  recipient_clicks:
+                    description: Recipient Clicks for Campaign A.
+                    type: integer
+                    title: Recipient Clicks
+                  forwards:
+                    description: Forwards for Campaign A.
+                    type: integer
+                    title: Forwards
+                  forwards_opens:
+                    description: Opens from forwards for Campaign A.
+                    type: integer
+                    title: Forward Opens
+                  opens:
+                    description: Opens for Campaign A.
+                    type: integer
+                    title: Opens
+                  last_open:
+                    description: The last open for Campaign A.
+                    type:
+                      - "null"
+                      - string
+                    title: Last Open
+                    format: date-time
+                    airbyte_type: timestamp_with_timezone
+                  unique_opens:
+                    description: Unique opens for Campaign A.
+                    type: integer
+                    title: Unique Opens
+              b:
+                description: Stats for Campaign B.
+                type: object
+                title: Campaign B
+                properties:
+                  bounces:
+                    description: Bounces for Campaign B.
+                    type: integer
+                    title: Bounces
+                  abuse_reports:
+                    description: Abuse reports for Campaign B.
+                    type: integer
+                    title: Abuse Reports
+                  unsubs:
+                    description: Unsubscribes for Campaign B.
+                    type: integer
+                    title: Unsubscribes
+                  recipient_clicks:
+                    description: Recipients clicks for Campaign B.
+                    type: integer
+                    title: Recipient Clicks
+                  forwards:
+                    description: Forwards for Campaign B.
+                    type: integer
+                    title: Forwards
+                  forwards_opens:
+                    description: Opens for forwards from Campaign B.
+                    type: integer
+                    title: Forward Opens
+                  opens:
+                    description: Opens for Campaign B.
+                    type: integer
+                    title: Opens
+                  last_open:
+                    description: The last open for Campaign B.
+                    type:
+                      - "null"
+                      - string
+                    title: Last Open
+                    format: date-time
+                    airbyte_type: timestamp_with_timezone
+                  unique_opens:
+                    description: Unique opens for Campaign B.
+                    type: integer
+                    title: Unique Opens
+          timewarp:
+            description:
+              An hourly breakdown of sends, opens, and clicks if a campaign
+              is sent using timewarp.
+            type: array
+            title: Timewarp Stats
+            items:
+              type: object
+              properties:
+                gmt_offset:
+                  description:
+                    For campaigns sent with timewarp, the time zone group
+                    the member is part of.
+                  type: integer
+                  title: GMT Offset
+                opens:
+                  description: The number of opens.
+                  type: integer
+                  title: Opens
+                last_open:
+                  description: The date and time of the last open in ISO 8601 format.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
+                  title: Last Open
+                unique_opens:
+                  description: The number of unique opens.
+                  type: integer
+                  title: Unique Opens
+                clicks:
+                  description: The number of clicks.
+                  type: integer
+                  title: Clicks
+                last_click:
+                  description: The date and time of the last click in ISO 8601 format.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
+                  title: Last Click
+                unique_clicks:
+                  description: The number of unique clicks.
+                  type: integer
+                  title: Unique Clicks
+                bounces:
+                  description: The number of bounces.
+                  type: integer
+                  title: Bounces
+          timeseries:
+            description:
+              An hourly breakdown of the performance of the campaign over
+              the first 24 hours.
+            type: array
+            title: Timeseries
+            items:
+              type: object
+              properties:
+                timestamp:
+                  description: The date and time for the series in ISO 8601 format.
+                  type:
+                    - "null"
+                    - string
+                  format: date-time
+                  airbyte_type: timestamp_with_timezone
+                  title: Timestamp
+                emails_sent:
+                  description: The number of emails sent in the timeseries.
+                  type: integer
+                  title: Emails Sent
+                unique_opens:
+                  description: The number of unique opens in the timeseries.
+                  type: integer
+                  title: Unique Opens
+                recipients_clicks:
+                  description: The number of clicks in the timeseries.
+                  type: integer
+                  title: Recipient Clicks
+          share_report:
+            description: The url and password for the VIP report.
+            type: object
+            title: Share Report
+            properties:
+              share_url:
+                description: The URL for the VIP report.
+                type:
+                  - "null"
+                  - string
+                title: Report URL
+                readOnly: true
+              share_password:
+                description: If password protected, the password for the VIP report.
+                type:
+                  - "null"
+                  - string
+                title: Report Password
+                readOnly: true
+          ecommerce:
+            description: E-Commerce stats for a campaign.
+            type: object
+            title: E-Commerce Report
+            properties:
+              total_orders:
+                description: The total orders for a campaign.
+                type: integer
+                title: Total Orders
+                readOnly: true
+              total_spent:
+                description:
+                  The total spent for a campaign. Calculated as the sum
+                  of all order totals with no deductions.
+                type: number
+                title: Total Spent
+                readOnly: true
+              total_revenue:
+                description:
+                  The total revenue for a campaign. Calculated as the sum
+                  of all order totals minus shipping and tax totals.
+                type: number
+                title: Total Revenue
+                readOnly: true
+              currency_code:
+                description: The currency code used for the campaign.
+                type:
+                  - "null"
+                  - string
+                title: Three letter currency code for this user
+                readOnly: true
+                example: USD
+          delivery_status:
+            description: Updates on campaigns in the process of sending.
+            type: object
+            title: Campaign Delivery Status
+            properties:
+              enabled:
+                description:
+                  Whether Campaign Delivery Status is enabled for this
+                  account and campaign.
+                type: boolean
+                title: Delivery Status Enabled
+                readOnly: true
+              can_cancel:
+                description: Whether a campaign send can be canceled.
+                type: boolean
+                title: Campaign Cancelable
+                readOnly: true
+              status:
+                description: The current state of a campaign delivery.
+                type:
+                  - "null"
+                  - string
+                title: Campaign Delivery Status
+                enum:
+                  - delivering
+                  - delivered
+                  - canceling
+                  - canceled
+                readOnly: true
+              emails_sent:
+                description:
+                  The total number of emails confirmed sent for this campaign
+                  so far.
+                type: integer
+                title: Emails Sent
+                readOnly: true
+              emails_canceled:
+                description: The total number of emails canceled for this campaign.
+                type: integer
+                title: Emails Canceled
+                readOnly: true
   segments_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_incremental_stream"
@@ -234,6 +4181,90 @@ definitions:
       data_field: "segments"
       cursor_field: "updated_at"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: Unique identifier for the segment
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the segment
+            type:
+              - "null"
+              - string
+          member_count:
+            description: Total number of members in the segment
+            type:
+              - "null"
+              - integer
+          type:
+            description: Type of segment (static, dynamic)
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The date and time when the segment was created
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            description: The date and time when the segment was last updated
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          options:
+            description: The available options for segment data
+            type:
+              - "null"
+              - object
+            properties:
+              match:
+                description: Type of match applied for multiple conditions (all, any)
+                type:
+                  - "null"
+                  - string
+              conditions:
+                description: Conditions set for segment filtering
+                type:
+                  - "null"
+                  - array
+                items:
+                  description: Specific conditions to filter segments
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  properties:
+                    condition_type:
+                      description: Type of condition applied
+                      type:
+                        - "null"
+                        - string
+                    field:
+                      description: Field to which the condition is applied
+                      type:
+                        - "null"
+                        - string
+                    op:
+                      description: Operator used in the condition
+                      type:
+                        - "null"
+                        - string
+          list_id:
+            description: ID of the list to which the segment belongs
+            type:
+              - "null"
+              - string
   segment_members_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -247,9 +4278,6 @@ definitions:
             partition_field: id
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_mailchimp.components.MailChimpRecordFilter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
@@ -261,6 +4289,7 @@ definitions:
         datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       lookback_window: PT0.1S
+      is_client_side_incremental: true
     transformations:
       - type: AddFields
         fields:
@@ -276,6 +4305,195 @@ definitions:
       data_field: "members"
       cursor_field: "last_changed"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            description: The unique identifier of the segment member.
+            type:
+              - "null"
+              - string
+          email_address:
+            description: The email address of the segment member.
+            type:
+              - "null"
+              - string
+          unique_email_id:
+            description: The unique identifier related to the email address.
+            type:
+              - "null"
+              - string
+          email_type:
+            description: The type of email the segment member receives.
+            type:
+              - "null"
+              - string
+          status:
+            description: The subscription status of the segment member.
+            type:
+              - "null"
+              - string
+          merge_fields:
+            description: Additional information merged with the segment member data.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          interests:
+            description: Interests or preferences of the segment member.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          stats:
+            description:
+              Statistics related to the email engagement of the segment
+              member.
+            type:
+              - "null"
+              - object
+            properties:
+              avg_open_rate:
+                description: The average open rate of the segment member.
+                type:
+                  - "null"
+                  - number
+              avg_click_rate:
+                description: The average click-through rate of the segment member.
+                type:
+                  - "null"
+                  - number
+          ip_signup:
+            description: The IP address where the segment member signed up.
+            type:
+              - "null"
+              - string
+          timestamp_signup:
+            description: The date and time when the segment member signed up.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          ip_opt:
+            description: The IP address where the segment member opted in.
+            type:
+              - "null"
+              - string
+          timestamp_opt:
+            description: The date and time when the segment member opted in.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          member_rating:
+            description: The rating assigned to the segment member.
+            type:
+              - "null"
+              - integer
+          last_changed:
+            description:
+              The date and time when the segment member record was last
+              updated.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          language:
+            description: The preferred language of the segment member.
+            type:
+              - "null"
+              - string
+          vip:
+            description: Flag indicating if the segment member is a VIP.
+            type:
+              - "null"
+              - boolean
+          email_client:
+            description: The client used by the segment member to access their email.
+            type:
+              - "null"
+              - string
+          location:
+            description: Geographical location information of the segment member.
+            type:
+              - "null"
+              - object
+            properties:
+              latitude:
+                description: The latitude coordinate of the location.
+                type:
+                  - "null"
+                  - number
+              longitude:
+                description: The longitude coordinate of the location.
+                type:
+                  - "null"
+                  - number
+              gmtoff:
+                description: The GMT offset of the location.
+                type:
+                  - "null"
+                  - integer
+              dstoff:
+                description: The Daylight Saving Time offset of the location.
+                type:
+                  - "null"
+                  - integer
+              country_code:
+                description: The country code of the location.
+                type:
+                  - "null"
+                  - string
+              timezone:
+                description: The timezone of the location.
+                type:
+                  - "null"
+                  - string
+          last_note:
+            description: The last note added for the segment member.
+            type:
+              - "null"
+              - object
+            properties:
+              note_id:
+                description: The unique identifier of the note.
+                type:
+                  - "null"
+                  - integer
+              created_at:
+                description: The date and time when the note was created.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+                airbyte_type: timestamp_with_timezone
+              created_by:
+                description: The user who created the note.
+                type:
+                  - "null"
+                  - string
+              note:
+                description: The content of the note.
+                type:
+                  - "null"
+                  - string
+          list_id:
+            description: The identifier of the list to which the segment member belongs.
+            type:
+              - "null"
+              - string
+          segment_id:
+            description: The identifier of the segment the member belongs to.
+            type:
+              - "null"
+              - integer
   unsubscribes_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -289,9 +4507,6 @@ definitions:
             partition_field: id
       record_selector:
         $ref: "#/definitions/retriever/record_selector"
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_mailchimp.components.MailChimpRecordFilter
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_datetime_formats:
@@ -303,6 +4518,7 @@ definitions:
         datetime: "{{ config.get('start_date', '1970-01-01T00:00:00.0Z') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       lookback_window: PT0.1S
+      is_client_side_incremental: true
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
     $parameters:
@@ -312,6 +4528,61 @@ definitions:
       data_field: "unsubscribes"
       cursor_field: "timestamp"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          email_id:
+            description: The unique ID of the unsubscribed email.
+            type:
+              - "null"
+              - string
+          email_address:
+            description: The email address of the subscriber who unsubscribed.
+            type:
+              - "null"
+              - string
+          merge_fields:
+            description: Additional information about the subscriber.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          vip:
+            description: Indicates whether the subscriber was a VIP.
+            type:
+              - "null"
+              - boolean
+          timestamp:
+            description: The date and time when the subscriber unsubscribed.
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          reason:
+            description: The reason provided by the subscriber for unsubscribing.
+            type:
+              - "null"
+              - string
+          campaign_id:
+            description: The ID of the campaign associated with the unsubscribe.
+            type:
+              - "null"
+              - string
+          list_id:
+            description: The ID of the list from which the subscriber unsubscribed.
+            type:
+              - "null"
+              - string
+          list_is_active:
+            description: Indicates whether the list is active or inactive.
+            type:
+              - "null"
+              - boolean
   email_activity_stream:
     type: DeclarativeStream
     $ref: "#/definitions/base_stream"
@@ -354,6 +4625,74 @@ definitions:
       data_field: "emails"
       cursor_field: "timestamp"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        title: Email Activity
+        description: A list of member's subscriber activity in a specific campaign.
+        properties:
+          campaign_id:
+            description: The unique id for the campaign.
+            type: string
+            title: The unique id for the campaign.
+          list_id:
+            description: The unique id for the list.
+            type: string
+            title: The unique id for the list.
+          list_is_active:
+            description: The status of the list used, namely if it's deleted or disabled.
+            type: boolean
+            title: The status of the list used.
+          email_id:
+            description:
+              The MD5 hash of the lowercase version of the list member's
+              email address.
+            type: string
+            title: email MD5 hash.
+          email_address:
+            description: Email address for a subscriber.
+            type: string
+            title: Email address for a subscriber.
+          action:
+            description: "One of the following actions: 'open', 'click', or 'bounce'"
+            type:
+              - string
+              - "null"
+            title: action
+            enum:
+              - open
+              - click
+              - bounce
+          type:
+            description: "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
+            type:
+              - string
+              - "null"
+            title: Type
+            enum:
+              - hard
+              - soft
+          timestamp:
+            description: The date and time recorded for the action in ISO 8601 format.
+            type:
+              - string
+              - "null"
+            title: Action date and time
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          url:
+            description: If the action is a 'click', the URL on which the member clicked.
+            type:
+              - string
+              - "null"
+            title: Click url
+          ip:
+            description: The IP address recorded for the action.
+            type:
+              - string
+              - "null"
+            title: Action ip address
 streams:
   - "#/definitions/automations_stream"
   - "#/definitions/campaigns_stream"

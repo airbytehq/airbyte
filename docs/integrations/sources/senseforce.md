@@ -87,10 +87,18 @@ Senseforce utilizes an undocumented rate limit which - under normal use - should
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
-|  0.1.4  | 2024-06-15 | [39462](https://github.com/airbytehq/airbyte/pull/39462) | Make compatible with builder                   |
-|  0.1.3  | 2024-06-04 | [39073](https://github.com/airbytehq/airbyte/pull/39073) | [autopull] Upgrade base image to v1.2.1        |
-|  0.1.2  | 2024-05-20 | [38431](https://github.com/airbytehq/airbyte/pull/38431) | [autopull] base image + poetry + up_to_date    |
-|  0.1.1  | 2023-02-13 | [22892](https://github.com/airbytehq/airbyte/pull/22892) | Specified date formatting in specification     |
+| 0.1.12 | 2024-07-27 | [42763](https://github.com/airbytehq/airbyte/pull/42763) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42247](https://github.com/airbytehq/airbyte/pull/42247) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41792](https://github.com/airbytehq/airbyte/pull/41792) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41402](https://github.com/airbytehq/airbyte/pull/41402) | Update dependencies |
+| 0.1.8 | 2024-07-09 | [41242](https://github.com/airbytehq/airbyte/pull/41242) | Update dependencies |
+| 0.1.7 | 2024-07-06 | [40914](https://github.com/airbytehq/airbyte/pull/40914) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40380](https://github.com/airbytehq/airbyte/pull/40380) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40190](https://github.com/airbytehq/airbyte/pull/40190) | Update dependencies |
+| 0.1.4 | 2024-06-15 | [39462](https://github.com/airbytehq/airbyte/pull/39462) | Make compatible with builder |
+| 0.1.3 | 2024-06-04 | [39073](https://github.com/airbytehq/airbyte/pull/39073) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.2 | 2024-05-20 | [38431](https://github.com/airbytehq/airbyte/pull/38431) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2023-02-13 | [22892](https://github.com/airbytehq/airbyte/pull/22892) | Specified date formatting in specification |
 |  0.1.0  | 2022-10-26 | [#18775](https://github.com/airbytehq/airbyte/pull/18775) | 🎉 New Source: Mailjet SMS API [low-code CDK] |
 
 </details>

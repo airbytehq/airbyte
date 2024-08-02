@@ -24,3 +24,4 @@ from .SecretStore import *
 from .SourceFileInfo import *
 from .SuggestedStreams import *
 from .SupportLevel import *
+from .TestConnections import *

@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
-from pydantic import BaseModel, Field, validator
+from pydantic.v1 import BaseModel, Field, validator
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
@@ -63,6 +63,12 @@ class FileBasedStreamConfig(BaseModel):
         title="Schemaless",
         description="When enabled, syncs will not validate or structure records against the stream's schema.",
         default=False,
+    )
+    recent_n_files_to_read_for_schema_discovery: Optional[int] = Field(
+        title="Files To Read For Schema Discover",
+        description="The number of resent files which will be used to discover the schema for this stream.",
+        default=None,
+        gt=0,
     )
 
     @validator("input_schema", pre=True)

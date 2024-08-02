@@ -112,40 +112,41 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Supported streams
 
-- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2023-07/resources/abandoned-checkouts#top)
-- [Articles](https://shopify.dev/api/admin-rest/2023-07/resources/article)
-- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2023-10/resources/transactions)
-- [Blogs](https://shopify.dev/api/admin-rest/2023-07/resources/blog)
-- [Collects](https://shopify.dev/api/admin-rest/2023-07/resources/collect#top)
-- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/Collection)
-- [Countries](https://shopify.dev/docs/api/admin-rest/2023-07/resources/country)
-- [Custom Collections](https://shopify.dev/api/admin-rest/2023-07/resources/customcollection#top)
-- [Customers](https://shopify.dev/api/admin-rest/2023-07/resources/customer#top)
-- [Customer Address](https://shopify.dev/docs/api/admin-rest/2023-07/resources/customer-address)
-- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2023-07/resources/customersavedsearch)
-- [Draft Orders](https://shopify.dev/api/admin-rest/2023-07/resources/draftorder#top)
-- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/unions/DiscountCode)
-- [Disputes](https://shopify.dev/docs/api/admin-rest/2023-07/resources/dispute)
-- [Fulfillments](https://shopify.dev/api/admin-rest/2023-07/resources/fulfillment)
-- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/FulfillmentOrder)
-- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/InventoryItem)
-- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/InventoryLevel)
-- [Locations](https://shopify.dev/api/admin-rest/2023-07/resources/location)
-- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/Metafield)
-- [Orders](https://shopify.dev/api/admin-rest/2023-07/resources/order#top)
-- [Order Refunds](https://shopify.dev/api/admin-rest/2023-07/resources/refund#top)
-- [Order Risks](https://shopify.dev/api/admin-rest/2023-07/resources/order-risk#top)
-- [Pages](https://shopify.dev/api/admin-rest/2023-07/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2023-07/resources/pricerule#top)
-- [Products](https://shopify.dev/api/admin-rest/2023-07/resources/product#top)
-- [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
-- [Product Images](https://shopify.dev/api/admin-rest/2023-07/resources/product-image)
-- [Product Variants](https://shopify.dev/api/admin-rest/2023-07/resources/product-variant)
-- [Shop](https://shopify.dev/api/admin-rest/2023-07/resources/shop)
-- [Smart Collections](https://shopify.dev/api/admin-rest/2023-07/resources/smartcollection)
-- [Transactions](https://shopify.dev/api/admin-rest/2023-07/resources/transaction#top)
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2023-07/objects/OrderTransaction)
-- [Tender Transactions](https://shopify.dev/api/admin-rest/2023-07/resources/tendertransaction)
+- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2024-04/resources/abandoned-checkouts#top)
+- [Articles](https://shopify.dev/api/admin-rest/2024-04/resources/article)
+- [Balance Transactions](https://shopify.dev/docs/api/admin-rest/2024-04/resources/transactions)
+- [Blogs](https://shopify.dev/api/admin-rest/2024-04/resources/blog)
+- [Collects](https://shopify.dev/api/admin-rest/2024-04/resources/collect#top)
+- [Collections (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Collection)
+- [Countries](https://shopify.dev/docs/api/admin-rest/2024-04/resources/country)
+- [Custom Collections](https://shopify.dev/api/admin-rest/2024-04/resources/customcollection#top)
+- [Customers](https://shopify.dev/api/admin-rest/2024-04/resources/customer#top)
+- [Customer Journey Summary (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/customerjourneysummary)
+- [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Customer#field-customer-addresses)
+- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2024-04/resources/customersavedsearch)
+- [Draft Orders](https://shopify.dev/api/admin-rest/2024-04/resources/draftorder#top)
+- [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/unions/DiscountCode)
+- [Disputes](https://shopify.dev/docs/api/admin-rest/2024-04/resources/dispute)
+- [Fulfillments](https://shopify.dev/api/admin-rest/2024-04/resources/fulfillment)
+- [Fulfillment Orders (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/FulfillmentOrder)
+- [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryItem)
+- [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/InventoryLevel)
+- [Locations](https://shopify.dev/api/admin-rest/2024-04/resources/location)
+- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Metafield)
+- [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderAgreement)
+- [Orders](https://shopify.dev/api/admin-rest/2024-04/resources/order#top)
+- [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
+- [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
+- [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
+- [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
+- [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
+- [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
+- [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
+- [Shop](https://shopify.dev/api/admin-rest/2024-04/resources/shop)
+- [Smart Collections](https://shopify.dev/api/admin-rest/2024-04/resources/smartcollection)
+- [Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/transaction#top)
+- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
+- [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
 ## Capturing deleted records
 
@@ -153,12 +154,12 @@ The connector captures deletions for records in the `Articles`, `Blogs`, `Custom
 
 When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
 
-Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2023-07/resources/event).
+Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--------------- | :----------- |
+|:-----------------|:-------------|
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -168,7 +169,7 @@ Check the following Shopify documentation for more information about [retrieving
 ## Features
 
 | Feature                   | Supported?\(Yes/No\) |
-| :------------------------ | :------------------- |
+|:--------------------------|:---------------------|
 | Full Refresh Sync         | Yes                  |
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
@@ -210,7 +211,24 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-| :------ |:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.16 | 2024-07-21 | [42095](https://github.com/airbytehq/airbyte/pull/42095) | Added the `Checkpointing` for the `BULK` streams, fixed the `store` redirection |
+| 2.4.15 | 2024-07-27 | [42806](https://github.com/airbytehq/airbyte/pull/42806) | Update dependencies |
+| 2.4.14 | 2024-07-20 | [42150](https://github.com/airbytehq/airbyte/pull/42150) | Update dependencies |
+| 2.4.13 | 2024-07-13 | [41809](https://github.com/airbytehq/airbyte/pull/41809) | Update dependencies |
+| 2.4.12 | 2024-07-10 | [41103](https://github.com/airbytehq/airbyte/pull/41103) | Update dependencies |
+| 2.4.11 | 2024-07-09 | [41068](https://github.com/airbytehq/airbyte/pull/41068) | Added `options` field to `Product Variants` stream |
+| 2.4.10 | 2024-07-09 | [41042](https://github.com/airbytehq/airbyte/pull/41042) | Use latest `CDK`: 3.0.0 |
+| 2.4.9 | 2024-07-06 | [40768](https://github.com/airbytehq/airbyte/pull/40768) | Update dependencies |
+| 2.4.8 | 2024-07-03 | [40707](https://github.com/airbytehq/airbyte/pull/40707) | Fixed the bug when `product_images` stream emitted records with no `primary_key` |
+| 2.4.7 | 2024-06-27 | [40593](https://github.com/airbytehq/airbyte/pull/40593) | Use latest `CDK` version possible |
+| 2.4.6 | 2024-06-26 | [40526](https://github.com/airbytehq/airbyte/pull/40526) | Made `BULK Job termination threshold` limit adjustable from `input configuration`, increased the default value to `1 hour`. |
+| 2.4.5 | 2024-06-25 | [40484](https://github.com/airbytehq/airbyte/pull/40484) | Update dependencies |
+| 2.4.4 | 2024-06-19 | [39594](https://github.com/airbytehq/airbyte/pull/39594) | Extended the `Discount Codes`, `Fulfillment Orders`, `Inventory Items`, `Inventory Levels`, `Products`, `Product Variants` and `Transactions` stream schemas |
+| 2.4.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
+| 2.4.1 | 2024-06-20 | [39651](https://github.com/airbytehq/airbyte/pull/39651) | Update dependencies |
+| 2.4.0 | 2024-06-17 | [39527](https://github.com/airbytehq/airbyte/pull/39527) | Added new stream `Order Agreements` |
+| 2.3.0 | 2024-06-14 | [39487](https://github.com/airbytehq/airbyte/pull/39487) | Added new stream `Customer Journey Summary` |
 | 2.2.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
 | 2.2.2 | 2024-06-04 | [39019](https://github.com/airbytehq/airbyte/pull/39019) | [autopull] Upgrade base image to v1.2.1 |
 | 2.2.1 | 2024-05-30 | [38769](https://github.com/airbytehq/airbyte/pull/38769) | Have products stream return all the tags comma separated |

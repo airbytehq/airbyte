@@ -39,7 +39,9 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
         if not isinstance(self.min_wait, InterpolatedString):
             self.min_wait = InterpolatedString.create(str(self.min_wait), parameters=parameters)
 
-    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
+    def backoff_time(
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int
+    ) -> Optional[float]:
         now = time.time()
         header = self.header.eval(self.config)  # type: ignore # header is always cast to an interpolated string
         if self.regex:
@@ -47,7 +49,9 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
             regex = re.compile(evaled_regex)
         else:
             regex = None
-        wait_until = get_numeric_value_from_header(response, header, regex)
+        wait_until = None
+        if isinstance(response_or_exception, requests.Response):
+            wait_until = get_numeric_value_from_header(response_or_exception, header, regex)
         min_wait = self.min_wait.eval(self.config)  # type: ignore # header is always cast to an interpolated string
         if wait_until is None or not wait_until:
             return float(min_wait) if min_wait else None
