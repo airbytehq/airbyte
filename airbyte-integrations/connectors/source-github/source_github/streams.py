@@ -13,6 +13,7 @@ from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
@@ -56,6 +57,9 @@ class GithubStreamABC(HttpStream, ABC):
         self.access_token_type = access_token_type
         self.api_url = api_url
         self.state = {}
+
+        if self.cursor_field or len(self.cursor_field) == 0:
+            self.cursor = SubstreamResumableFullRefreshCursor()
 
     @property
     def url_base(self) -> str:
