@@ -172,14 +172,14 @@ class PerPartitionCursor(DeclarativeCursor):
 
     def _classify_cursor(self) -> Union[CursorFactory, DeclarativeCursor]:
         _types = ["CursorFactory", "DeclarativeCursor"]
-        
+
         if isinstance(self._cursor_factory, CursorFactory):
             cursor = self._cursor_factory.create()
         elif isinstance(self._cursor_factory, DeclarativeCursor):
             cursor = self._cursor_factory
         else:
             raise TypeError(f"The {self._cursor_factory=} is not one of the expected types: {_types}")
-        
+
         return cursor
 
     def _create_cursor(self, cursor_state: Any) -> DeclarativeCursor:

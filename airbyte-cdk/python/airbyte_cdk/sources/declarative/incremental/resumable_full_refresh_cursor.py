@@ -99,10 +99,9 @@ class ResumableFullRefreshCursor(DeclarativeCursor):
 
 @dataclass
 class SubstreamResumableFullRefreshCursor(ResumableFullRefreshCursor):
-            
     def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         """
-        Once the current slice has finished syncing (paginator returns None), 
+        Once the current slice has finished syncing (paginator returns None),
         we assume that the records are processed and emitted already,
         thus we have to set the cursor to ` __ab_full_refresh_sync_complete: true `,
         otherwise there is a risk of Inf. Loop processing the same slice.
