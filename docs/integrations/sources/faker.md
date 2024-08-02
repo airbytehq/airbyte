@@ -103,29 +103,28 @@ None!
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
-|:--------| :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 6.2.6   | 2024-07-27 | [42682](https://github.com/airbytehq/airbyte/pull/42682) | Update dependencies |
-| 6.2.5   | 2024-07-27 | [42682](https://github.com/airbytehq/airbyte/pull/42682) | Update dependencies |
-| 6.2.4   | 2024-07-20 | [42367](https://github.com/airbytehq/airbyte/pull/42367) | Update dependencies |
-| 6.2.3   | 2024-07-13 | [41848](https://github.com/airbytehq/airbyte/pull/41848) | Update dependencies |
-| 6.2.2   | 2024-07-10 | [41467](https://github.com/airbytehq/airbyte/pull/41467) | Update dependencies |
-| 6.2.1   | 2024-07-09 | [41180](https://github.com/airbytehq/airbyte/pull/41180) | Update dependencies |
-| 6.2.0   | 2024-07-07 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update CDK to 2.0. |
-| 6.1.6   | 2024-07-06 | [40956](https://github.com/airbytehq/airbyte/pull/40956) | Update dependencies |
-| 6.1.5   | 2024-06-25 | [40426](https://github.com/airbytehq/airbyte/pull/40426) | Update dependencies |
-| 6.1.4   | 2024-06-21 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update dependencies |
-| 6.1.3   | 2024-06-04 | [39029](https://github.com/airbytehq/airbyte/pull/39029) | [autopull] Upgrade base image to v1.2.1 |
-| 6.1.2   | 2024-06-03 | [38831](https://github.com/airbytehq/airbyte/pull/38831) | Bump CDK to allow and prefer versions `1.x` |
-| 6.1.1   | 2024-05-20 | [38256](https://github.com/airbytehq/airbyte/pull/38256) | Replace AirbyteLogger with logging.Logger |
-| 6.1.0   | 2024-04-08 | [36898](https://github.com/airbytehq/airbyte/pull/36898) | Update car prices and years |
-| 6.0.3   | 2024-03-15 | [36167](https://github.com/airbytehq/airbyte/pull/36167) | Make 'count' an optional config parameter. |
-| 6.0.2   | 2024-02-12 | [35174](https://github.com/airbytehq/airbyte/pull/35174) | Manage dependencies with Poetry. |
-| 6.0.1   | 2024-02-12 | [35172](https://github.com/airbytehq/airbyte/pull/35172) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 6.0.0   | 2024-01-30 | [34644](https://github.com/airbytehq/airbyte/pull/34644) | Declare 'id' columns as primary keys. |
-| 5.0.2   | 2024-01-17 | [34344](https://github.com/airbytehq/airbyte/pull/34344) | Ensure unique state messages |
-| 5.0.1   | 2023-01-08 | [34033](https://github.com/airbytehq/airbyte/pull/34033) | Add standard entrypoints for usage with AirbyteLib |
-| 5.0.0   | 2023-08-08 | [29213](https://github.com/airbytehq/airbyte/pull/29213) | Change all `*id` fields and `products.year` to be integer |
-| 4.0.0   | 2023-07-19 | [28485](https://github.com/airbytehq/airbyte/pull/28485) | Bump to test publication |
+| :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.5 | 2024-07-27 | [42682](https://github.com/airbytehq/airbyte/pull/42682) | Update dependencies |
+| 6.2.4 | 2024-07-20 | [42367](https://github.com/airbytehq/airbyte/pull/42367) | Update dependencies |
+| 6.2.3 | 2024-07-13 | [41848](https://github.com/airbytehq/airbyte/pull/41848) | Update dependencies |
+| 6.2.2 | 2024-07-10 | [41467](https://github.com/airbytehq/airbyte/pull/41467) | Update dependencies |
+| 6.2.1 | 2024-07-09 | [41180](https://github.com/airbytehq/airbyte/pull/41180) | Update dependencies |
+| 6.2.0 | 2024-07-07 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update CDK to 2.0. |
+| 6.1.6 | 2024-07-06 | [40956](https://github.com/airbytehq/airbyte/pull/40956) | Update dependencies |
+| 6.1.5 | 2024-06-25 | [40426](https://github.com/airbytehq/airbyte/pull/40426) | Update dependencies |
+| 6.1.4 | 2024-06-21 | [39935](https://github.com/airbytehq/airbyte/pull/39935) | Update dependencies |
+| 6.1.3 | 2024-06-04 | [39029](https://github.com/airbytehq/airbyte/pull/39029) | [autopull] Upgrade base image to v1.2.1 |
+| 6.1.2 | 2024-06-03 | [38831](https://github.com/airbytehq/airbyte/pull/38831) | Bump CDK to allow and prefer versions `1.x` |
+| 6.1.1 | 2024-05-20 | [38256](https://github.com/airbytehq/airbyte/pull/38256) | Replace AirbyteLogger with logging.Logger |
+| 6.1.0 | 2024-04-08 | [36898](https://github.com/airbytehq/airbyte/pull/36898) | Update car prices and years |
+| 6.0.3 | 2024-03-15 | [36167](https://github.com/airbytehq/airbyte/pull/36167) | Make 'count' an optional config parameter. |
+| 6.0.2 | 2024-02-12 | [35174](https://github.com/airbytehq/airbyte/pull/35174) | Manage dependencies with Poetry. |
+| 6.0.1 | 2024-02-12 | [35172](https://github.com/airbytehq/airbyte/pull/35172) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 6.0.0 | 2024-01-30 | [34644](https://github.com/airbytehq/airbyte/pull/34644) | Declare 'id' columns as primary keys. |
+| 5.0.2 | 2024-01-17 | [34344](https://github.com/airbytehq/airbyte/pull/34344) | Ensure unique state messages |
+| 5.0.1 | 2023-01-08 | [34033](https://github.com/airbytehq/airbyte/pull/34033) | Add standard entrypoints for usage with AirbyteLib |
+| 5.0.0 | 2023-08-08 | [29213](https://github.com/airbytehq/airbyte/pull/29213) | Change all `*id` fields and `products.year` to be integer |
+| 4.0.0 | 2023-07-19 | [28485](https://github.com/airbytehq/airbyte/pull/28485) | Bump to test publication |
 | 3.0.2   | 2023-07-07 | [27807](https://github.com/airbytehq/airbyte/pull/28060)                                                              | Bump to test publication                                                                                        |
 | 3.0.1   | 2023-06-28 | [27807](https://github.com/airbytehq/airbyte/pull/27807)                                                              | Fix bug with purchase stream updated_at                                                                         |
 | 3.0.0   | 2023-06-23 | [27684](https://github.com/airbytehq/airbyte/pull/27684)                                                              | Stream cursor is now `updated_at` & remove `records_per_sync` option                                            |
