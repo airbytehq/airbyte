@@ -143,7 +143,7 @@ class ShopifyDeletedEventsStream(ShopifyStream):
             yield {
                 "id": event["subject_id"],
                 self.cursor_field: event["created_at"],
-                "updated_at": event["created_at"],
+                "deleted_at": event["created_at"],
                 "deleted_message": event["message"],
                 "deleted_description": event["description"],
                 "shop_url": event["shop_url"],
@@ -570,7 +570,10 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
         yield from self.filter_records_newer_than_state(cached_state, self.produce_records(stream_slice.get(self.nested_entity, [])))
 
 
-class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
+class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream): 
+    
+    _stream_state: MutableMapping[str, Any] = {}
+           
     @property
     @abstractmethod
     def deleted_events_api_name(self) -> str:
@@ -607,13 +610,13 @@ class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
         """
         We extend the stream state with `deleted` property to store the `destroyed` records STATE separetely from the Stream State.
         """
-        state = super().get_updated_state(current_stream_state, latest_record)
+        self._stream_state = super().get_updated_state(self._stream_state, latest_record)       
         # add `deleted` property to each stream supports `deleted events`,
         # to provide the `Incremental` sync mode, for the `Incremental Delete` records.
         last_deleted_record_value = latest_record.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
         current_deleted_state_value = current_stream_state.get(self.deleted_cursor_field) or self.default_deleted_state_comparison_value
-        state["deleted"] = {self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)}
-        return state
+        self._stream_state["deleted"] = {self.deleted_cursor_field: max(last_deleted_record_value, current_deleted_state_value)}
+        return self._stream_state
 
     def read_records(
         self,
