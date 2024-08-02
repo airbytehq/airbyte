@@ -124,6 +124,17 @@ The output SQS message would contain:
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.15 | 2024-07-27 | [42795](https://github.com/airbytehq/airbyte/pull/42795) | Update dependencies |
+| 0.1.14 | 2024-07-20 | [42165](https://github.com/airbytehq/airbyte/pull/42165) | Update dependencies |
+| 0.1.13 | 2024-07-13 | [41733](https://github.com/airbytehq/airbyte/pull/41733) | Update dependencies |
+| 0.1.12 | 2024-07-10 | [41439](https://github.com/airbytehq/airbyte/pull/41439) | Update dependencies |
+| 0.1.11 | 2024-07-09 | [41237](https://github.com/airbytehq/airbyte/pull/41237) | Update dependencies |
+| 0.1.10 | 2024-07-06 | [40960](https://github.com/airbytehq/airbyte/pull/40960) | Update dependencies |
+| 0.1.9 | 2024-06-29 | [40622](https://github.com/airbytehq/airbyte/pull/40622) | Update dependencies |
+| 0.1.8 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.1.7 | 2024-06-26 | [40536](https://github.com/airbytehq/airbyte/pull/40536) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40461](https://github.com/airbytehq/airbyte/pull/40461) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40075](https://github.com/airbytehq/airbyte/pull/40075) | Update dependencies |
 | 0.1.4 | 2024-06-04 | [39070](https://github.com/airbytehq/airbyte/pull/39070) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-21 | [38493](https://github.com/airbytehq/airbyte/pull/38493) | [autopull] base image + poetry + up_to_date |
 | 0.1.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector              |

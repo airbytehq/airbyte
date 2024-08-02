@@ -4,9 +4,12 @@
 
 import json
 import re
+from logging import Logger
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+from uuid import uuid4
 
+import dagger
 import pytest
 from airbyte_protocol.models import (
     AirbyteMessage,
@@ -19,7 +22,7 @@ from airbyte_protocol.models import (
     Type,
 )
 from connector_acceptance_test import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import ClientContainerConfig, Config, EmptyStreamConfiguration, IncrementalConfig
 from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, incremental_only_catalog
 from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 from deepdiff import DeepDiff
@@ -99,6 +102,10 @@ def is_per_stream_state(message: AirbyteMessage) -> bool:
     return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.STREAM
 
 
+def is_global_state(message: AirbyteMessage) -> bool:
+    return message.state and isinstance(message.state, AirbyteStateMessage) and message.state.type == AirbyteStateType.GLOBAL
+
+
 def construct_latest_state_from_messages(messages: List[AirbyteMessage]) -> Dict[str, Mapping[str, Any]]:
     """
     Because connectors that have migrated to per-stream state only emit state messages with the new state value for a single
@@ -126,12 +133,16 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
 
 
 @pytest.mark.default_timeout(TWENTY_MINUTES)
+@pytest.mark.usefixtures("final_teardown")
 class TestIncremental(BaseTest):
     async def test_two_sequential_reads(
         self,
         connector_config: SecretDict,
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
         docker_runner: ConnectorRunner,
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
+        detailed_logger: Logger,
     ):
         """
         This test makes two calls to the read method and verifies that the records returned are different.
@@ -154,8 +165,7 @@ class TestIncremental(BaseTest):
 
         # For legacy state format, the final state message contains the final state of all streams. For per-stream state format,
         # the complete final state of streams must be assembled by going through all prior state messages received
-        is_per_stream = is_per_stream_state(states_1[-1])
-        if is_per_stream:
+        if is_per_stream_state(states_1[-1]):
             latest_state = construct_latest_state_from_messages(states_1)
             state_input = []
             for stream_name, stream_state in latest_state.items():
@@ -168,10 +178,19 @@ class TestIncremental(BaseTest):
                         "stream": {"stream_descriptor": stream_descriptor, "stream_state": stream_state},
                     }
                 )
+        elif is_global_state(states_1[-1]):
+            # TODO: DB sources to fill out this case
+            state_input = states_1[-1].state.data
         else:
             state_input = states_1[-1].state.data
 
         # READ #2
+        if client_container and client_container_config.between_syncs_command:
+            detailed_logger.info(
+                await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
+                .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
+                .stdout()
+            )
 
         output_2 = await docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
         records_2 = filter_output(output_2, type_=Type.RECORD)
@@ -182,7 +201,14 @@ class TestIncremental(BaseTest):
         ), f"Records should change between reads but did not.\n\n records_1: {records_1} \n\n state: {state_input} \n\n records_2: {records_2} \n\n diff: {diff}"
 
     async def test_read_sequential_slices(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, docker_runner: ConnectorRunner
+        self,
+        inputs: IncrementalConfig,
+        connector_config,
+        configured_catalog_for_incremental,
+        docker_runner: ConnectorRunner,
+        client_container: Optional[dagger.Container],
+        client_container_config: Optional[ClientContainerConfig],
+        detailed_logger: Logger,
     ):
         """
         Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
@@ -262,6 +288,11 @@ class TestIncremental(BaseTest):
         ), f"The sync should produce no records when run with the state with abnormally large values {records[0].record.stream}"
         assert states, "The sync should produce at least one STATE message"
 
+        if states and is_global_state(states[0]):
+            # TODO: DB sources to fill out this case. Also, can we assume all states will be global if the first one is?
+            pass
+
+        # TODO: else:
         cursor_fields_per_stream = {
             stream.stream.name: self._get_cursor_field(stream)
             for stream in configured_catalog.streams
@@ -351,6 +382,9 @@ class TestIncremental(BaseTest):
                 stream_name_to_per_stream_state[per_stream.stream_descriptor.name] = (
                     per_stream.stream_state.dict() if per_stream.stream_state else {}
                 )
+        elif current_state and current_state.type == AirbyteStateType.GLOBAL:
+            # TODO: DB Sources to fill in this case
+            pass
         state_input = [
             {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name}, "stream_state": stream_state}}
             for stream_name, stream_state in stream_name_to_per_stream_state.items()
@@ -367,7 +401,8 @@ class TestIncremental(BaseTest):
 
             if isinstance(current_node, dict):
                 for key, value in current_node.items():
-                    if key == cursor_field:
+                    # DB sources use a hardcoded field `cursor` to denote cursor value.
+                    if key == cursor_field or ("cursor_field" in current_node and key == "cursor"):
                         values.append(value)
                     nodes_to_visit.append(value)
             elif isinstance(current_node, list):

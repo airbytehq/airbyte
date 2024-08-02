@@ -9,20 +9,16 @@ Our docs are written in [Markdown](https://guides.github.com/features/mastering-
 
 ## Finding good first issues
 
-The Docs team maintains a list of [#good-first-issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors.
+Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../community/code-of-conduct.md).
+
+The Docs team maintains a list of [good first issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors.
 
 - If you're new to technical writing, start with the smaller issues (fixing typos, broken links, spelling and grammar, and so on). You can [edit the files directly on GitHub](#editing-directly-on-github).
 - If you're an experienced technical writer or a developer interested in technical writing, comment on an issue that interests you to discuss it with the Docs team. Once we decide on the approach and the tasks involved, [edit the files and open a Pull Request](#editing-on-your-local-machine) for the Docs team to review.
 
-## Contributing to Airbyte docs
-
-Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../community/code-of-conduct.md).
-
 :::tip
 If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. Even if you're familiar with the basics, you may be interested in Airbyte's [custom markdown extensions for connector docs](#custom-markdown-extensions-for-connector-docs).
 :::
-
-You can contribute to Airbyte docs in two ways:
 
 ### Editing directly on GitHub
 
@@ -59,8 +55,6 @@ To make complex changes or edit multiple files, edit the files on your local mac
    git clone https://github.com/{YOUR_USERNAME}/airbyte.git
    cd airbyte
    ```
-
-   While cloning on Windows, you might encounter errors about long filenames. Refer to the instructions [here](../deploying-airbyte/quickstart#handling-long-filename-error) to correct it.
 
 3. Create a feature branch from which to make changes:
 
@@ -111,7 +105,7 @@ Airbyte's markdown documentation—particularly connector-specific documentation
 Please familiarize yourself with all the tools available to you when writing documentation for a connector, so that you can provide appropriately tailored information to your readers in whichever context they see it.
 
 :::note
-As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/resources/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
+As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
 :::
 
 #### Select between mutually-exclusive content options with `<Tabs>`

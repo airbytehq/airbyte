@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from collections import defaultdict
 from datetime import datetime
 from itertools import chain
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from destination_databend.client import DatabendClient
 
@@ -128,7 +128,7 @@ class DatabendSQLWriter(DatabendWriter):
         self._flush()
 
 
-def create_databend_wirter(client: DatabendClient, logger: AirbyteLogger) -> DatabendWriter:
+def create_databend_wirter(client: DatabendClient, logger: logging.Logger) -> DatabendWriter:
     logger.info("Using the SQL writing strategy")
     writer = DatabendSQLWriter(client)
     return writer

@@ -82,7 +82,18 @@ The Iterable source connector supports the following [sync modes](https://docs.a
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.2 | 2024-07-27 | [42653](https://github.com/airbytehq/airbyte/pull/42653) | Update dependencies |
+| 0.6.1 | 2024-07-23 | [42449](https://github.com/airbytehq/airbyte/pull/42449) | Fix OOM errors; bum CDK version |
+| 0.6.0 | 2024-07-22 | [41983](https://github.com/airbytehq/airbyte/pull/41983) | Fix OOM errors; update CDK to v3 |
+| 0.5.11 | 2024-07-20 | [42228](https://github.com/airbytehq/airbyte/pull/42228) | Update dependencies |
+| 0.5.10 | 2024-07-13 | [41684](https://github.com/airbytehq/airbyte/pull/41684) | Update dependencies |
+| 0.5.9 | 2024-07-10 | [41401](https://github.com/airbytehq/airbyte/pull/41401) | Update dependencies |
+| 0.5.8 | 2024-07-09 | [41293](https://github.com/airbytehq/airbyte/pull/41293) | Update dependencies |
+| 0.5.7 | 2024-07-06 | [40811](https://github.com/airbytehq/airbyte/pull/40811) | Update dependencies |
+| 0.5.6 | 2024-06-25 | [40362](https://github.com/airbytehq/airbyte/pull/40362) | Update dependencies |
+| 0.5.5 | 2024-06-22 | [40080](https://github.com/airbytehq/airbyte/pull/40080) | Update dependencies |
+| 0.5.4 | 2024-06-17 | [39382](https://github.com/airbytehq/airbyte/pull/39382) | Refactor state handling for Python incremental streams |
 | 0.5.3 | 2024-06-05 | [39142](https://github.com/airbytehq/airbyte/pull/39142) | Updated the `CDK` version to `0.89.0` to fix OOM |
 | 0.5.2 | 2024-06-04 | [39077](https://github.com/airbytehq/airbyte/pull/39077) | [autopull] Upgrade base image to v1.2.1 |
 | 0.5.1 | 2024-04-24 | [36645](https://github.com/airbytehq/airbyte/pull/36645) | Schema descriptions and CDK 0.80.0 |

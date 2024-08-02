@@ -90,9 +90,11 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
         schema_normalization=TypeTransformer(TransformConfig.NoTransform),
     )
 
-    actual_records = list(record_selector.select_records(
-        response=response, records_schema=schema, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-    ))
+    actual_records = list(
+        record_selector.select_records(
+            response=response, records_schema=schema, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
+    )
     assert actual_records == [Record(data, stream_slice) for data in expected_data]
 
     calls = []
@@ -149,13 +151,15 @@ def test_schema_normalization(test_name, schema, schema_transformation, body, ex
         schema_normalization=TypeTransformer(schema_transformation),
     )
 
-    actual_records = list(record_selector.select_records(
-        response=response,
-        stream_state=stream_state,
-        stream_slice=stream_slice,
-        next_page_token=next_page_token,
-        records_schema=schema,
-    ))
+    actual_records = list(
+        record_selector.select_records(
+            response=response,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+            records_schema=schema,
+        )
+    )
 
     assert actual_records == [Record(data, stream_slice) for data in expected_data]
 

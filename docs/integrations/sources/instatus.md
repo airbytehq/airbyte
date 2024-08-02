@@ -67,6 +67,14 @@ The Instatus source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------- |
+| 0.1.10 | 2024-07-27 | [42724](https://github.com/airbytehq/airbyte/pull/42724) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42208](https://github.com/airbytehq/airbyte/pull/42208) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41779](https://github.com/airbytehq/airbyte/pull/41779) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41549](https://github.com/airbytehq/airbyte/pull/41549) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [41115](https://github.com/airbytehq/airbyte/pull/41115) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [40872](https://github.com/airbytehq/airbyte/pull/40872) | Update dependencies |
+| 0.1.4 | 2024-06-25 | [40425](https://github.com/airbytehq/airbyte/pull/40425) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40179](https://github.com/airbytehq/airbyte/pull/40179) | Update dependencies |
 | 0.1.2 | 2024-06-06 | [39167](https://github.com/airbytehq/airbyte/pull/39167) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-21 | [38506](https://github.com/airbytehq/airbyte/pull/38506) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2023-04-01 | [21008](https://github.com/airbytehq/airbyte/pull/21008) | Initial (alpha) release |
