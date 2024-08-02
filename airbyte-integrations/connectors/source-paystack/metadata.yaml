@@ -5,12 +5,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
-  dockerImageTag: 0.1.4
+  dockerImageTag: 1.0.8
   dockerRepository: airbyte/source-paystack
   githubIssueLabel: source-paystack
   icon: paystack.svg
   license: MIT
   name: Paystack
+  releaseDate: 2021-10-20
+  releases:
+    breakingChanges:
+      1.0.0:
+        upgradeDeadline: "2024-07-30"
+        message: The refunds schema has been changed it's 'type' in schema['properties']['fully_deducted'] to integer
   remoteRegistries:
     pypi:
       enabled: true
@@ -24,12 +30,16 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/paystack
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 300
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: paystack_config_dev_null
+          id: 53f674d1-d9f9-4fc1-99c1-0d64844948dc
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
@@ -39,5 +49,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

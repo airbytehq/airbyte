@@ -54,6 +54,13 @@ You can now use the Airbyte Firebolt source.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 2.0.10 | 2024-07-20 | [42159](https://github.com/airbytehq/airbyte/pull/42159) | Update dependencies |
+| 2.0.9 | 2024-07-13 | [41744](https://github.com/airbytehq/airbyte/pull/41744) | Update dependencies |
+| 2.0.8 | 2024-07-10 | [41575](https://github.com/airbytehq/airbyte/pull/41575) | Update dependencies |
+| 2.0.7 | 2024-07-09 | [41151](https://github.com/airbytehq/airbyte/pull/41151) | Update dependencies |
+| 2.0.6 | 2024-07-06 | [40979](https://github.com/airbytehq/airbyte/pull/40979) | Update dependencies |
+| 2.0.5 | 2024-06-25 | [40438](https://github.com/airbytehq/airbyte/pull/40438) | Update dependencies |
+| 2.0.4 | 2024-06-22 | [40199](https://github.com/airbytehq/airbyte/pull/40199) | Update dependencies |
 | 2.0.3 | 2024-06-06 | [39183](https://github.com/airbytehq/airbyte/pull/39183) | [autopull] Upgrade base image to v1.2.2 |
 | 2.0.2 | 2024-06-03 | [38892](https://github.com/airbytehq/airbyte/pull/38892) | Replace AirbyteLogger with logging.Logger |
 | 2.0.1 | 2024-06-03 | [38892](https://github.com/airbytehq/airbyte/pull/38892) | Replace AirbyteLogger with logging.Logger |

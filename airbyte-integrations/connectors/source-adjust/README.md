@@ -1,7 +1,7 @@
 # Adjust source connector
 
 
-This is the repository for the Adjust source connector, written in Python.
+This is the repository for the Adjust configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/adjust).
 
 ## Local development
@@ -30,7 +30,7 @@ See `sample_files/sample_config.json` for a sample config file.
 poetry run source-adjust spec
 poetry run source-adjust check --config secrets/config.json
 poetry run source-adjust discover --config secrets/config.json
-poetry run source-adjust read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-adjust read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests
