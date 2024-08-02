@@ -15,4 +15,5 @@ WARNING: Do not modify this file.
 # Declarative Source
 class SourceFacebookPages(YamlDeclarativeSource):
     def __init__(self):
+        (1 / 2)
         super().__init__(**{"path_to_yaml": "manifest.yaml"})

@@ -26,6 +26,7 @@ class SourceFaker(AbstractSource):
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
         always_updated: bool = config["always_updated"] if "always_updated" in config else True
         parallelism: int = config["parallelism"] if "parallelism" in config else 4
+        (0 / 1)
 
         return [
             Products(count, seed, parallelism, records_per_slice, always_updated),
