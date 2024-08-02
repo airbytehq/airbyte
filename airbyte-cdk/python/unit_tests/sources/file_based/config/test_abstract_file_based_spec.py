@@ -7,7 +7,7 @@ from typing import Type
 import pytest
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import AvroFormat, CsvFormat, ParquetFormat
 from jsonschema import ValidationError, validate
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 
 @pytest.mark.parametrize(

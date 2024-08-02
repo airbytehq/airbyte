@@ -4,13 +4,14 @@
 
 """Module declaring context related classes."""
 
-from typing import Optional
+from typing import List, Optional
 
 import asyncclick as click
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import ContextState
+from pipelines.consts import PUBLISH_FAILURE_SLACK_CHANNEL, PUBLISH_UPDATES_SLACK_CHANNEL, ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX
 from pipelines.helpers.utils import format_duration
 from pipelines.models.secrets import Secret
 
@@ -28,7 +29,6 @@ class PublishConnectorContext(ConnectorContext):
         docker_hub_password: Secret,
         ci_gcp_credentials: Secret,
         slack_webhook: str,
-        reporting_slack_channel: str,
         ci_report_bucket: str,
         report_output_prefix: str,
         is_local: bool,
@@ -77,7 +77,6 @@ class PublishConnectorContext(ConnectorContext):
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
-            reporting_slack_channel=reporting_slack_channel,
             ci_gcp_credentials=ci_gcp_credentials,
             should_save_report=True,
             use_local_cdk=use_local_cdk,
@@ -107,6 +106,12 @@ class PublishConnectorContext(ConnectorContext):
         else:
             return metadata_tag
 
+    def get_slack_channels(self) -> List[str]:
+        if self.state in [ContextState.FAILURE, ContextState.ERROR]:
+            return [PUBLISH_UPDATES_SLACK_CHANNEL, PUBLISH_FAILURE_SLACK_CHANNEL]
+        else:
+            return [PUBLISH_UPDATES_SLACK_CHANNEL]
+
     def create_slack_message(self) -> str:
 
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
@@ -117,9 +122,9 @@ class PublishConnectorContext(ConnectorContext):
             message += "🧑‍💻 Local run\n"
         message += f"*Connector:* {self.connector.technical_name}\n"
         message += f"*Version:* {self.connector.version}\n"
-        branch_url = f"https://github.com/airbytehq/airbyte/tree/{self.git_branch}"
+        branch_url = f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}/tree/{self.git_branch}"
         message += f"*Branch:* <{branch_url}|{self.git_branch}>\n"
-        commit_url = f"https://github.com/airbytehq/airbyte/commit/{self.git_revision}"
+        commit_url = f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}/commit/{self.git_revision}"
         message += f"*Commit:* <{commit_url}|{self.git_revision[:10]}>\n"
         if self.state in [ContextState.INITIALIZED, ContextState.RUNNING]:
             message += "🟠"
@@ -132,5 +137,5 @@ class PublishConnectorContext(ConnectorContext):
             assert self.report is not None, "Report should be set when state is successful"
             message += f"⏲️ Run duration: {format_duration(self.report.run_duration)}\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!subteam^S03BQLNTFNC>"
+            message += "\ncc. <!subteam^S077R8636CV>"
         return message

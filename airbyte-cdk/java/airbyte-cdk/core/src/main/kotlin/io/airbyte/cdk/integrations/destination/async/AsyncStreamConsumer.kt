@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
+import io.airbyte.commons.exceptions.TransientErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
@@ -102,9 +103,15 @@ constructor(
          * do it without touching buffer manager.
          */
         val partialAirbyteMessage =
-            airbyteMessageDeserializer.deserializeAirbyteMessage(
-                message,
-            )
+            try {
+                airbyteMessageDeserializer.deserializeAirbyteMessage(
+                    message,
+                )
+            } catch (e: AirbyteMessageDeserializer.UnrecognizedAirbyteMessageTypeException) {
+                logger.warn { "Ignoring unrecognized message type: ${e.message}" }
+                return
+            }
+
         when (partialAirbyteMessage.type) {
             AirbyteMessage.Type.RECORD -> {
                 validateRecord(partialAirbyteMessage)
@@ -162,17 +169,25 @@ constructor(
 
         bufferManager.close()
 
+        val unsuccessfulStreams = ArrayList<StreamDescriptor>()
         val streamSyncSummaries =
             streamNames.associate { streamDescriptor ->
-                // If we didn't receive a stream status message, assume success.
-                // Platform won't send us any stream status messages yet (since we're not declaring
-                // supportsRefresh in metadata), so we will always hit this case.
+                // If we didn't receive a stream status message, assume failure.
+                // This is possible if e.g. the orchestrator crashes before sending us the message.
                 val terminalStatusFromSource =
-                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.COMPLETE
-                StreamDescriptorUtils.withDefaultNamespace(
-                    streamDescriptor,
-                    bufferManager.defaultNamespace,
-                ) to
+                    terminalStatusesFromSource[streamDescriptor] ?: AirbyteStreamStatus.INCOMPLETE
+                if (terminalStatusFromSource == AirbyteStreamStatus.INCOMPLETE) {
+                    unsuccessfulStreams.add(streamDescriptor)
+                }
+
+                if (bufferManager.defaultNamespace == null) {
+                    streamDescriptor
+                } else {
+                    StreamDescriptorUtils.withDefaultNamespace(
+                        streamDescriptor,
+                        bufferManager.defaultNamespace,
+                    )
+                } to
                     StreamSyncSummary(
                         getRecordCounter(streamDescriptor).get(),
                         terminalStatusFromSource,
@@ -183,6 +198,26 @@ constructor(
         // as this throws an exception, we need to be after all other close functions.
         propagateFlushWorkerExceptionIfPresent()
         logger.info { "${AsyncStreamConsumer::class.java} closed" }
+
+        // In principle, platform should detect this.
+        // However, as a backstop, the destination should still do this check.
+        // This handles e.g. platform bugs where we don't receive a stream status message.
+        // In this case, it would be misleading to mark the sync as successful, because e.g. we
+        // maybe didn't commit a truncate.
+        if (unsuccessfulStreams.isNotEmpty()) {
+            val unsuccessfulStreamsString =
+                unsuccessfulStreams.joinToString(", ") { "${it.namespace}.${it.name}" }
+            val internalMessageString =
+                "Some streams either received an INCOMPLETE stream status, or did not receive a stream status at all: $unsuccessfulStreamsString"
+            logger.info { internalMessageString }
+            // Throw as a "transient" error. This will tell platform to retry the sync,
+            // but won't trigger any alerting.
+            throw TransientErrorException(
+                displayMessage =
+                    "Some streams were unsuccessful due to a source error. See logs for details.",
+                internalMessage = internalMessageString,
+            )
+        }
     }
 
     private fun getRecordCounter(streamDescriptor: StreamDescriptor): AtomicLong {

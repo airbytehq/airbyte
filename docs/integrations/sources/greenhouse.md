@@ -74,6 +74,14 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.12 | 2024-07-27 | [42816](https://github.com/airbytehq/airbyte/pull/42816) | Update dependencies |
+| 0.5.11 | 2024-07-20 | [42240](https://github.com/airbytehq/airbyte/pull/42240) | Update dependencies |
+| 0.5.10 | 2024-07-13 | [41787](https://github.com/airbytehq/airbyte/pull/41787) | Update dependencies |
+| 0.5.9 | 2024-07-10 | [41215](https://github.com/airbytehq/airbyte/pull/41215) | Update dependencies |
+| 0.5.8 | 2024-07-10 | [39601](https://github.com/airbytehq/airbyte/pull/39601) | Move spec to manifest, fix readme |
+| 0.5.7 | 2024-07-06 | [40882](https://github.com/airbytehq/airbyte/pull/40882) | Update dependencies |
+| 0.5.6 | 2024-06-25 | [40451](https://github.com/airbytehq/airbyte/pull/40451) | Update dependencies |
+| 0.5.5 | 2024-06-22 | [39968](https://github.com/airbytehq/airbyte/pull/39968) | Update dependencies |
 | 0.5.4 | 2024-06-06 | [39247](https://github.com/airbytehq/airbyte/pull/39247) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.3 | 2024-04-19 | [36640](https://github.com/airbytehq/airbyte/pull/36640) | Updating to 0.80.0 CDK |
 | 0.5.2 | 2024-04-12 | [36640](https://github.com/airbytehq/airbyte/pull/36640) | schema descriptions |

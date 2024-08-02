@@ -39,6 +39,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: lever-hiring_config_dev_null
+          id: 68039a49-202d-4889-9e00-55ecd86488f4
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

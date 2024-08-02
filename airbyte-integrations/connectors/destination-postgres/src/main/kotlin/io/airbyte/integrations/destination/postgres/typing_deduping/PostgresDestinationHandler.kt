@@ -5,10 +5,13 @@ package io.airbyte.integrations.destination.postgres.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
+import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.Array
+import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
@@ -17,13 +20,15 @@ import org.jooq.SQLDialect
 class PostgresDestinationHandler(
     databaseName: String?,
     jdbcDatabase: JdbcDatabase,
-    rawTableSchema: String
+    rawTableSchema: String,
+    sqlOperations: SqlOperations,
 ) :
     JdbcDestinationHandler<PostgresState>(
         databaseName,
         jdbcDatabase,
         rawTableSchema,
-        SQLDialect.POSTGRES
+        SQLDialect.POSTGRES,
+        sqlOperations = sqlOperations,
     ) {
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
         // This is mostly identical to the postgres implementation, but swaps jsonb to super
@@ -43,7 +48,9 @@ class PostgresDestinationHandler(
         return PostgresState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("isAirbyteMetaPresentInRaw") &&
-                json["isAirbyteMetaPresentInRaw"].asBoolean()
+                json["isAirbyteMetaPresentInRaw"].asBoolean(),
+            json.hasNonNull("isAirbyteGenerationIdPresent") &&
+                json["isAirbyteGenerationIdPresent"].asBoolean()
         )
     }
 
@@ -63,6 +70,25 @@ class PostgresDestinationHandler(
             AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> "time"
             AirbyteProtocolType.DATE -> "date"
             AirbyteProtocolType.UNKNOWN -> "jsonb"
+        }
+    }
+
+    override fun execute(sql: Sql) {
+        try {
+            super.execute(sql)
+        } catch (e: Exception) {
+            // executing the
+            // DROP TABLE command.
+            if (
+                e.message!!.contains("ERROR: cannot drop table") &&
+                    e.message!!.contains("because other objects depend on it")
+            ) {
+                throw ConfigErrorException(
+                    "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
+                    e
+                )
+            }
+            throw e
         }
     }
 }

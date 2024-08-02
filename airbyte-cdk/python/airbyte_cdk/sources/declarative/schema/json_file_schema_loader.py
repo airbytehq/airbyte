@@ -18,7 +18,7 @@ def _default_file_path() -> str:
     # Schema files are always in "source_<connector_name>/schemas/<stream_name>.json
     # The connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
     for k in sys.modules:
-        if "source_" in k:
+        if "source_" in k and "airbyte_cdk" not in k:
             # example: ['source_exchange_rates', 'source_exchange_rates.source']
             module = k.split(".")[0]
             return f"./{module}/schemas/{{{{parameters['name']}}}}.json"

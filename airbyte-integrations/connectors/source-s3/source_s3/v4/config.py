@@ -7,7 +7,8 @@ from typing import Any, Dict, Optional
 import dpath.util
 from airbyte_cdk import is_cloud_environment
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import AnyUrl, Field, ValidationError, root_validator
+from pydantic.v1 import AnyUrl, Field, root_validator
+from pydantic.v1.error_wrappers import ValidationError
 
 
 class Config(AbstractFileBasedSpec):
