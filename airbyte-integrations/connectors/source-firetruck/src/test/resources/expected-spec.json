@@ -1,300 +1,333 @@
 {
-  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/firetruck",
-  "connectionSpecification" : {
-    "$schema" : "http://json-schema.org/draft-07/schema#",
-    "title" : "Oracle Source Spec",
-    "type" : "object",
-    "additionalProperties" : true,
-    "properties" : {
-      "host" : {
-        "type" : "string",
-        "description" : "Hostname of the database.",
-        "title" : "Host",
-        "order" : 1
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/firetruck",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Oracle Source Spec",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "type": "string",
+        "description": "Hostname of the database.",
+        "title": "Host",
+        "order": 1
       },
-      "port" : {
-        "type" : "integer",
-        "default" : 1521,
-        "description" : "Port of the database.\nOracle Corporations recommends the following port numbers:\n1521 - Default listening port for client connections to the listener. \n2484 - Recommended and officially registered listening port for client connections to the listener using TCP/IP with SSL.",
-        "title" : "Port",
-        "order" : 2,
-        "minimum" : 0,
-        "maximum" : 65536
+      "port": {
+        "type": "integer",
+        "default": 1521,
+        "description": "Port of the database.\nOracle Corporations recommends the following port numbers:\n1521 - Default listening port for client connections to the listener. \n2484 - Recommended and officially registered listening port for client connections to the listener using TCP/IP with SSL.",
+        "title": "Port",
+        "order": 2,
+        "minimum": 0,
+        "maximum": 65536
       },
-      "connection_data" : {
-        "oneOf" : [ {
-          "title" : "Service name",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Use service name.",
-          "properties" : {
-            "connection_type" : {
-              "type" : "string",
-              "enum" : [ "service_name" ],
-              "default" : "service_name"
+      "connection_data": {
+        "oneOf": [
+          {
+            "title": "Service name",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Use service name.",
+            "properties": {
+              "connection_type": {
+                "type": "string",
+                "enum": ["service_name"],
+                "default": "service_name"
+              },
+              "service_name": {
+                "type": "string",
+                "title": "Service name"
+              }
             },
-            "service_name" : {
-              "type" : "string",
-              "title" : "Service name"
-            }
+            "required": ["connection_type", "service_name"]
           },
-          "required" : [ "connection_type", "service_name" ]
-        }, {
-          "title" : "System ID (SID)",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Use Oracle System Identifier.",
-          "properties" : {
-            "connection_type" : {
-              "type" : "string",
-              "enum" : [ "sid" ],
-              "default" : "sid"
+          {
+            "title": "System ID (SID)",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Use Oracle System Identifier.",
+            "properties": {
+              "connection_type": {
+                "type": "string",
+                "enum": ["sid"],
+                "default": "sid"
+              },
+              "sid": {
+                "type": "string",
+                "title": "System ID (SID)"
+              }
             },
-            "sid" : {
-              "type" : "string",
-              "title" : "System ID (SID)"
-            }
-          },
-          "required" : [ "connection_type", "sid" ]
-        } ],
-        "description" : "The scheme by which to establish a database connection.",
-        "title" : "Connect by",
-        "order" : 3,
-        "type" : "object"
+            "required": ["connection_type", "sid"]
+          }
+        ],
+        "description": "The scheme by which to establish a database connection.",
+        "title": "Connect by",
+        "order": 3,
+        "type": "object"
       },
-      "username" : {
-        "type" : "string",
-        "description" : "The username which is used to access the database.",
-        "title" : "User",
-        "order" : 4
+      "username": {
+        "type": "string",
+        "description": "The username which is used to access the database.",
+        "title": "User",
+        "order": 4
       },
-      "password" : {
-        "type" : "string",
-        "description" : "The password associated with the username.",
-        "title" : "Password",
-        "order" : 5,
-        "always_show" : true,
-        "airbyte_secret" : true
+      "password": {
+        "type": "string",
+        "description": "The password associated with the username.",
+        "title": "Password",
+        "order": 5,
+        "always_show": true,
+        "airbyte_secret": true
       },
-      "schemas" : {
-        "type" : "array",
-        "items" : {
-          "type" : "string"
+      "schemas": {
+        "type": "array",
+        "items": {
+          "type": "string"
         },
-        "description" : "The list of schemas to sync from. Defaults to user. Case sensitive.",
-        "title" : "Schemas",
-        "order" : 6,
-        "always_show" : true,
-        "uniqueItems" : true
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "title": "Schemas",
+        "order": 6,
+        "always_show": true,
+        "uniqueItems": true
       },
-      "jdbc_url_params" : {
-        "type" : "string",
-        "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
-        "title" : "JDBC URL Params",
-        "order" : 7
+      "jdbc_url_params": {
+        "type": "string",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "order": 7
       },
-      "encryption" : {
-        "oneOf" : [ {
-          "title" : "Unencrypted",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Data transfer will not be encrypted.",
-          "properties" : {
-            "encryption_method" : {
-              "type" : "string",
-              "enum" : [ "unencrypted" ],
-              "default" : "unencrypted"
-            }
-          },
-          "required" : [ "encryption_method" ]
-        }, {
-          "title" : "Native Network Encryption (NNE)",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
-          "properties" : {
-            "encryption_method" : {
-              "type" : "string",
-              "enum" : [ "client_nne" ],
-              "default" : "client_nne"
+      "encryption": {
+        "oneOf": [
+          {
+            "title": "Unencrypted",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Data transfer will not be encrypted.",
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "enum": ["unencrypted"],
+                "default": "unencrypted"
+              }
             },
-            "encryption_algorithm" : {
-              "type" : "string",
-              "default" : "AES256",
-              "description" : "This parameter defines what encryption algorithm is used.",
-              "title" : "Encryption Algorithm",
-              "enum" : [ "AES256", "RC4_56", "3DES168" ]
-            }
+            "required": ["encryption_method"]
           },
-          "required" : [ "encryption_method", "encryption_algorithm" ]
-        }, {
-          "title" : "TLS Encrypted (verify certificate)",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Verify and use the certificate provided by the server.",
-          "properties" : {
-            "encryption_method" : {
-              "type" : "string",
-              "enum" : [ "encrypted_verify_certificate" ],
-              "default" : "encrypted_verify_certificate"
+          {
+            "title": "Native Network Encryption (NNE)",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "enum": ["client_nne"],
+                "default": "client_nne"
+              },
+              "encryption_algorithm": {
+                "type": "string",
+                "default": "AES256",
+                "description": "This parameter defines what encryption algorithm is used.",
+                "title": "Encryption Algorithm",
+                "enum": ["AES256", "RC4_56", "3DES168"]
+              }
             },
-            "ssl_certificate" : {
-              "type" : "string",
-              "description" : "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations.",
-              "title" : "SSL PEM File",
-              "airbyte_secret" : true,
-              "multiline" : true
-            }
+            "required": ["encryption_method", "encryption_algorithm"]
           },
-          "required" : [ "encryption_method", "ssl_certificate" ]
-        } ],
-        "description" : "The encryption method with is used when communicating with the database.",
-        "title" : "Encryption",
-        "order" : 8,
-        "type" : "object"
+          {
+            "title": "TLS Encrypted (verify certificate)",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Verify and use the certificate provided by the server.",
+            "properties": {
+              "encryption_method": {
+                "type": "string",
+                "enum": ["encrypted_verify_certificate"],
+                "default": "encrypted_verify_certificate"
+              },
+              "ssl_certificate": {
+                "type": "string",
+                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations.",
+                "title": "SSL PEM File",
+                "airbyte_secret": true,
+                "multiline": true
+              }
+            },
+            "required": ["encryption_method", "ssl_certificate"]
+          }
+        ],
+        "description": "The encryption method with is used when communicating with the database.",
+        "title": "Encryption",
+        "order": 8,
+        "type": "object"
       },
-      "tunnel_method" : {
-        "oneOf" : [ {
-          "title" : "No Tunnel",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "No ssh tunnel needed to connect to database",
-          "properties" : {
-            "tunnel_method" : {
-              "type" : "string",
-              "enum" : [ "NO_TUNNEL" ],
-              "default" : "NO_TUNNEL"
-            }
+      "tunnel_method": {
+        "oneOf": [
+          {
+            "title": "No Tunnel",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "No ssh tunnel needed to connect to database",
+            "properties": {
+              "tunnel_method": {
+                "type": "string",
+                "enum": ["NO_TUNNEL"],
+                "default": "NO_TUNNEL"
+              }
+            },
+            "required": ["tunnel_method"]
           },
-          "required" : [ "tunnel_method" ]
-        }, {
-          "title" : "SSH Key Authentication",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Connect through a jump server tunnel host using username and ssh key",
-          "properties" : {
-            "tunnel_method" : {
-              "type" : "string",
-              "enum" : [ "SSH_KEY_AUTH" ],
-              "default" : "SSH_KEY_AUTH"
+          {
+            "title": "SSH Key Authentication",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Connect through a jump server tunnel host using username and ssh key",
+            "properties": {
+              "tunnel_method": {
+                "type": "string",
+                "enum": ["SSH_KEY_AUTH"],
+                "default": "SSH_KEY_AUTH"
+              },
+              "tunnel_host": {
+                "type": "string",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "title": "SSH Tunnel Jump Server Host",
+                "order": 1
+              },
+              "tunnel_port": {
+                "type": "integer",
+                "default": 22,
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "title": "SSH Connection Port",
+                "order": 2,
+                "minimum": 0,
+                "maximum": 65536
+              },
+              "tunnel_user": {
+                "type": "string",
+                "description": "OS-level username for logging into the jump server host",
+                "title": "SSH Login Username",
+                "order": 3
+              },
+              "ssh_key": {
+                "type": "string",
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "title": "SSH Private Key",
+                "order": 4,
+                "multiline": true,
+                "airbyte_secret": true
+              }
             },
-            "tunnel_host" : {
-              "type" : "string",
-              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
-              "title" : "SSH Tunnel Jump Server Host",
-              "order" : 1
-            },
-            "tunnel_port" : {
-              "type" : "integer",
-              "default" : 22,
-              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
-              "title" : "SSH Connection Port",
-              "order" : 2,
-              "minimum" : 0,
-              "maximum" : 65536
-            },
-            "tunnel_user" : {
-              "type" : "string",
-              "description" : "OS-level username for logging into the jump server host",
-              "title" : "SSH Login Username",
-              "order" : 3
-            },
-            "ssh_key" : {
-              "type" : "string",
-              "description" : "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
-              "title" : "SSH Private Key",
-              "order" : 4,
-              "multiline" : true,
-              "airbyte_secret" : true
-            }
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "ssh_key"
+            ]
           },
-          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "ssh_key" ]
-        }, {
-          "title" : "Password Authentication",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Connect through a jump server tunnel host using username and password authentication",
-          "properties" : {
-            "tunnel_method" : {
-              "type" : "string",
-              "enum" : [ "SSH_PASSWORD_AUTH" ],
-              "default" : "SSH_PASSWORD_AUTH"
+          {
+            "title": "Password Authentication",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Connect through a jump server tunnel host using username and password authentication",
+            "properties": {
+              "tunnel_method": {
+                "type": "string",
+                "enum": ["SSH_PASSWORD_AUTH"],
+                "default": "SSH_PASSWORD_AUTH"
+              },
+              "tunnel_host": {
+                "type": "string",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "title": "SSH Tunnel Jump Server Host",
+                "order": 1
+              },
+              "tunnel_port": {
+                "type": "integer",
+                "default": 22,
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "title": "SSH Connection Port",
+                "order": 2,
+                "minimum": 0,
+                "maximum": 65536
+              },
+              "tunnel_user": {
+                "type": "string",
+                "description": "OS-level username for logging into the jump server host",
+                "title": "SSH Login Username",
+                "order": 3
+              },
+              "tunnel_user_password": {
+                "type": "string",
+                "description": "OS-level password for logging into the jump server host",
+                "title": "Password",
+                "order": 4,
+                "airbyte_secret": true
+              }
             },
-            "tunnel_host" : {
-              "type" : "string",
-              "description" : "Hostname of the jump server host that allows inbound ssh tunnel.",
-              "title" : "SSH Tunnel Jump Server Host",
-              "order" : 1
-            },
-            "tunnel_port" : {
-              "type" : "integer",
-              "default" : 22,
-              "description" : "Port on the proxy/jump server that accepts inbound ssh connections.",
-              "title" : "SSH Connection Port",
-              "order" : 2,
-              "minimum" : 0,
-              "maximum" : 65536
-            },
-            "tunnel_user" : {
-              "type" : "string",
-              "description" : "OS-level username for logging into the jump server host",
-              "title" : "SSH Login Username",
-              "order" : 3
-            },
-            "tunnel_user_password" : {
-              "type" : "string",
-              "description" : "OS-level password for logging into the jump server host",
-              "title" : "Password",
-              "order" : 4,
-              "airbyte_secret" : true
-            }
-          },
-          "required" : [ "tunnel_method", "tunnel_host", "tunnel_port", "tunnel_user", "tunnel_user_password" ]
-        } ],
-        "description" : "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
-        "title" : "SSH Tunnel Method",
-        "order" : 9,
-        "type" : "object"
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "tunnel_user_password"
+            ]
+          }
+        ],
+        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "title": "SSH Tunnel Method",
+        "order": 9,
+        "type": "object"
       },
-      "cursor" : {
-        "oneOf" : [ {
-          "title" : "Scan Changes with User Defined Cursor",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
-          "properties" : {
-            "cursor_method" : {
-              "type" : "string",
-              "enum" : [ "user_defined" ],
-              "default" : "user_defined"
-            }
-          },
-          "required" : [ "cursor_method" ]
-        } ],
-        "description" : "Configures how data is extracted from the database.",
-        "title" : "Update Method",
-        "order" : 10,
-        "display_type" : "radio",
-        "type" : "object"
+      "cursor": {
+        "oneOf": [
+          {
+            "title": "Scan Changes with User Defined Cursor",
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+            "properties": {
+              "cursor_method": {
+                "type": "string",
+                "enum": ["user_defined"],
+                "default": "user_defined"
+              }
+            },
+            "required": ["cursor_method"]
+          }
+        ],
+        "description": "Configures how data is extracted from the database.",
+        "title": "Update Method",
+        "order": 10,
+        "display_type": "radio",
+        "type": "object"
       },
-      "checkpoint_target_interval_seconds" : {
-        "type" : "integer",
-        "default" : 300,
-        "description" : "How often (in seconds) a stream should checkpoint, when possible.",
-        "title" : "Checkpoint Target Time Interval",
-        "order" : 11
+      "checkpoint_target_interval_seconds": {
+        "type": "integer",
+        "default": 300,
+        "description": "How often (in seconds) a stream should checkpoint, when possible.",
+        "title": "Checkpoint Target Time Interval",
+        "order": 11
       },
-      "concurrency" : {
-        "type" : "integer",
-        "default" : 1,
-        "description" : "Maximum number of concurrent queries to the database.",
-        "title" : "Concurrency",
-        "order" : 12
+      "concurrency": {
+        "type": "integer",
+        "default": 1,
+        "description": "Maximum number of concurrent queries to the database.",
+        "title": "Concurrency",
+        "order": 12
       }
     },
-    "required" : [ "host", "port", "connection_data", "username", "encryption", "tunnel_method", "cursor" ]
+    "required": [
+      "host",
+      "port",
+      "connection_data",
+      "username",
+      "encryption",
+      "tunnel_method",
+      "cursor"
+    ]
   },
-  "supportsNormalization" : false,
-  "supportsDBT" : false,
-  "supported_destination_sync_modes" : [ ]
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": []
 }

@@ -9,7 +9,6 @@ import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import org.bouncycastle.util.io.pem.PemReader
 import java.io.File
 import java.io.FileOutputStream
 import java.io.StringReader
@@ -21,6 +20,7 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.time.Duration
 import java.util.UUID
+import org.bouncycastle.util.io.pem.PemReader
 
 private val log = KotlinLogging.logger {}
 
@@ -45,7 +45,9 @@ data class OracleSourceConfiguration(
 @Singleton
 class OracleSourceConfigurationFactory :
     SourceConfigurationFactory<OracleSourceConfigurationJsonObject, OracleSourceConfiguration> {
-    override fun makeWithoutExceptionHandling(pojo: OracleSourceConfigurationJsonObject): OracleSourceConfiguration {
+    override fun makeWithoutExceptionHandling(
+        pojo: OracleSourceConfigurationJsonObject,
+    ): OracleSourceConfiguration {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port
         val sshTunnel: SshTunnelMethodConfiguration = pojo.getTunnelMethodValue()

@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.sql.Connection
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DynamicContainer
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.OracleContainer
-import java.sql.Connection
 
 private val log = KotlinLogging.logger {}
 
@@ -156,9 +156,7 @@ class OracleSourceDatatypeIntegrationTest {
         Assertions.assertNotNull(actualRead)
 
         fun sortedRecordData(data: List<JsonNode>): JsonNode =
-            Jsons.createArrayNode().apply {
-                addAll(data.sortedBy { it.toString() })
-            }
+            Jsons.createArrayNode().apply { addAll(data.sortedBy { it.toString() }) }
 
         val actualRecords: List<AirbyteRecordMessage> = actualRead?.records() ?: listOf()
         val actual: JsonNode = sortedRecordData(actualRecords.mapNotNull { it.data })
@@ -167,8 +165,9 @@ class OracleSourceDatatypeIntegrationTest {
 
         val testCase: TestCase =
             testCases.find { it.streamNamesToRecordData.keys.contains(streamName) }!!
-        if (streamName == testCase.varrayTableName.uppercase() &&
-            testCase.airbyteType == LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
+        if (
+            streamName == testCase.varrayTableName.uppercase() &&
+                testCase.airbyteType == LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
         ) {
             // Annoying edge case.
             return
@@ -179,7 +178,8 @@ class OracleSourceDatatypeIntegrationTest {
     companion object {
         lateinit var dbContainer: OracleContainer
 
-        fun config(): OracleSourceConfigurationJsonObject = OracleContainerFactory.config(dbContainer)
+        fun config(): OracleSourceConfigurationJsonObject =
+            OracleContainerFactory.config(dbContainer)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(OracleSourceConfigurationFactory().make(config()))

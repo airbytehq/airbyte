@@ -16,13 +16,12 @@ object OracleContainerFactory {
         val osArch: String? = System.getProperty("os.arch")
         val osName: String? = System.getProperty("os.name")
         if (osArch == "aarch64" && osName?.contains("Mac") == true) {
-            log.warn {
-                "USE COLIMA WHEN RUNNING ON APPLE SILICON, or Oracle container will die."
-            }
+            log.warn { "USE COLIMA WHEN RUNNING ON APPLE SILICON, or Oracle container will die." }
         }
     }
 
-    sealed interface OracleContainerModifier : TestContainerFactory.ContainerModifier<OracleContainer>
+    sealed interface OracleContainerModifier :
+        TestContainerFactory.ContainerModifier<OracleContainer>
 
     data object WithNetwork : OracleContainerModifier {
         override fun modify(container: OracleContainer) {
@@ -34,7 +33,8 @@ object OracleContainerFactory {
         imageName: String,
         vararg modifiers: OracleContainerModifier,
     ): OracleContainer {
-        val dockerImageName = DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
+        val dockerImageName =
+            DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
         return TestContainerFactory.exclusive(dockerImageName, *modifiers)
     }
 
@@ -42,7 +42,8 @@ object OracleContainerFactory {
         imageName: String,
         vararg modifiers: OracleContainerModifier,
     ): OracleContainer {
-        val dockerImageName = DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
+        val dockerImageName =
+            DockerImageName.parse(imageName).asCompatibleSubstituteFor(COMPATIBLE_NAME)
         return TestContainerFactory.shared(dockerImageName, *modifiers)
     }
 

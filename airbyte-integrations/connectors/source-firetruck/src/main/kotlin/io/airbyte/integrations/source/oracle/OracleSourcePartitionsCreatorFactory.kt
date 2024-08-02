@@ -31,12 +31,16 @@ class OracleSourcePartitionsCreatorFactory(
                 StreamPartitionsCreator(
                     ctx,
                     opaqueStateValue.streamPartitionsCreatorInput(ctx),
-                    StreamPartitionsCreator.Parameters(preferParallelized = false),
-                    StreamPartitionReader.Parameters(
-                        preferResumable = true,
-                    ),
+                    creatorParameters,
+                    readerParameters,
                 )
             }
         }
     }
+
+    val creatorParameters = StreamPartitionsCreator.Parameters(preferParallelized = true)
+    val readerParameters =
+        StreamPartitionReader.Parameters(
+            preferResumable = !creatorParameters.preferParallelized,
+        )
 }

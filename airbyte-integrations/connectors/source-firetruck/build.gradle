@@ -21,7 +21,7 @@ tasks.named('check').configure {
 }
 
 dependencies {
-    def vCDK2 = '0.32'
+    def vCDK2 = '0.36'
     def vMicronaut = '4.3.13'
 
     implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.23')
@@ -45,4 +45,3 @@ dependencies {
     testImplementation "io.airbyte.cdk2:source-test-fixtures:${vCDK2}"
     testImplementation 'org.testcontainers:oracle-xe'
 }
-

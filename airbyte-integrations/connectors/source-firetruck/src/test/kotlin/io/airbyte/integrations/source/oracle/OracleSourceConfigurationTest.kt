@@ -11,10 +11,10 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
 class OracleSourceConfigurationTest {

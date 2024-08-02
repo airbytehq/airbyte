@@ -13,7 +13,9 @@ import java.time.Duration
 @Primary
 class OracleSourceTestConfigurationFactory :
     SourceConfigurationFactory<OracleSourceConfigurationJsonObject, OracleSourceConfiguration> {
-    override fun makeWithoutExceptionHandling(pojo: OracleSourceConfigurationJsonObject): OracleSourceConfiguration =
+    override fun makeWithoutExceptionHandling(
+        pojo: OracleSourceConfigurationJsonObject,
+    ): OracleSourceConfiguration =
         OracleSourceConfigurationFactory()
             .makeWithoutExceptionHandling(pojo)
             .copy(maxConcurrency = 1, checkpointTargetInterval = Duration.ofSeconds(3))

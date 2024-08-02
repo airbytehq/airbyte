@@ -32,39 +32,39 @@ class OracleSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectLimit0() {
         SelectQuerySpec(
-            SelectColumns(
-                listOf(
-                    Field("k", IntFieldType),
-                    Field("v", StringFieldType),
+                SelectColumns(
+                    listOf(
+                        Field("k", IntFieldType),
+                        Field("v", StringFieldType),
+                    ),
                 ),
-            ),
-            From("TBL", "SC"),
-            limit = Limit(0),
-        )
+                From("TBL", "SC"),
+                limit = Limit(0),
+            )
             .assertSqlEquals("""SELECT "k", "v" FROM "SC"."TBL" WHERE ROWNUM < 1""")
     }
 
     @Test
     fun testSelectMaxCursor() {
         SelectQuerySpec(
-            SelectColumnMaxValue(Field("ts", OffsetDateTimeFieldType)),
-            From("TBL", "SC"),
-        )
+                SelectColumnMaxValue(Field("ts", OffsetDateTimeFieldType)),
+                From("TBL", "SC"),
+            )
             .assertSqlEquals("""SELECT MAX("ts") FROM "SC"."TBL"""")
     }
 
     @Test
     fun testSelectSample() {
         SelectQuerySpec(
-            SelectColumns(
-                listOf(
-                    Field("k", IntFieldType),
-                    Field("v", StringFieldType),
+                SelectColumns(
+                    listOf(
+                        Field("k", IntFieldType),
+                        Field("v", StringFieldType),
+                    ),
                 ),
-            ),
-            FromSample("TBL", "SC", 3, 1000),
-            orderBy = OrderBy(listOf(Field("k", IntFieldType))),
-        )
+                FromSample("TBL", "SC", 3, 1000),
+                orderBy = OrderBy(listOf(Field("k", IntFieldType))),
+            )
             .assertSqlEquals(
                 """SELECT "k", "v" FROM (SELECT * FROM (""" +
                     """SELECT * FROM "SC"."TBL" SAMPLE(12.500) ORDER BY dbms_random.value""" +
@@ -75,14 +75,14 @@ class OracleSourceSelectQueryGeneratorTest {
     @Test
     fun testSelectForNonResumableInitialSync() {
         SelectQuerySpec(
-            SelectColumns(
-                listOf(
-                    Field("k", IntFieldType),
-                    Field("v", StringFieldType),
+                SelectColumns(
+                    listOf(
+                        Field("k", IntFieldType),
+                        Field("v", StringFieldType),
+                    ),
                 ),
-            ),
-            From("TBL", "SC"),
-        )
+                From("TBL", "SC"),
+            )
             .assertSqlEquals("""SELECT "k", "v" FROM "SC"."TBL"""")
     }
 
@@ -95,20 +95,20 @@ class OracleSourceSelectQueryGeneratorTest {
         val k3 = Field("k3", IntFieldType)
         val v3 = Jsons.numberNode(30)
         SelectQuerySpec(
-            SelectColumns(listOf(k1, k2, k3, Field("msg", StringFieldType))),
-            From("TBL", "SC"),
-            Where(
-                Or(
-                    listOf(
-                        And(listOf(Greater(k1, v1))),
-                        And(listOf(Equal(k1, v1), Greater(k2, v2))),
-                        And(listOf(Equal(k1, v1), Equal(k2, v2), Greater(k3, v3))),
+                SelectColumns(listOf(k1, k2, k3, Field("msg", StringFieldType))),
+                From("TBL", "SC"),
+                Where(
+                    Or(
+                        listOf(
+                            And(listOf(Greater(k1, v1))),
+                            And(listOf(Equal(k1, v1), Greater(k2, v2))),
+                            And(listOf(Equal(k1, v1), Equal(k2, v2), Greater(k3, v3))),
+                        ),
                     ),
                 ),
-            ),
-            OrderBy(listOf(k1, k2, k3)),
-            Limit(1000),
-        )
+                OrderBy(listOf(k1, k2, k3)),
+                Limit(1000),
+            )
             .assertSqlEquals(
                 """SELECT "k1", "k2", "k3", "msg" FROM """ +
                     """(SELECT "k1", "k2", "k3", "msg" FROM "SC"."TBL" WHERE ("k1" > ?) OR """ +
@@ -132,16 +132,17 @@ class OracleSourceSelectQueryGeneratorTest {
         val lb = Jsons.numberNode(0.5)
         val ub = Jsons.numberNode(0.5)
         SelectQuerySpec(
-            SelectColumns(listOf(Field("msg", StringFieldType), c)),
-            From("TBL", "SC"),
-            Where(And(listOf(Greater(c, lb), LesserOrEqual(c, ub)))),
-            OrderBy(listOf(c)),
-            Limit(1000),
-        )
+                SelectColumns(listOf(Field("msg", StringFieldType), c)),
+                From("TBL", "SC"),
+                Where(And(listOf(Greater(c, lb), LesserOrEqual(c, ub)))),
+                OrderBy(listOf(c)),
+                Limit(1000),
+            )
             .assertSqlEquals(
                 """SELECT "msg", "c" FROM """ +
-                    """(SELECT "msg", "c" FROM "SC"."TBL" WHERE ("c" > ?) AND ("c" <= ?) ORDER BY "c") """ +
-                    "WHERE ROWNUM <= ?",
+                    """(SELECT "msg", "c" FROM "SC"."TBL" """ +
+                    """WHERE ("c" > ?) AND ("c" <= ?) ORDER BY "c"""" +
+                    ") WHERE ROWNUM <= ?",
                 lb to DoubleFieldType,
                 ub to DoubleFieldType,
                 Jsons.numberNode(1000L) to LongFieldType,
@@ -152,7 +153,12 @@ class OracleSourceSelectQueryGeneratorTest {
         sql: String,
         vararg bindings: Pair<JsonNode, LosslessJdbcFieldType<*, *>>,
     ) {
-        val expected = SelectQuery(sql, select.columns, bindings.map { SelectQuery.Binding(it.first, it.second) })
+        val expected =
+            SelectQuery(
+                sql,
+                select.columns,
+                bindings.map { SelectQuery.Binding(it.first, it.second) },
+            )
         val actual: SelectQuery = OracleSourceOperations().generate(this.optimize())
         Assertions.assertEquals(expected, actual)
     }

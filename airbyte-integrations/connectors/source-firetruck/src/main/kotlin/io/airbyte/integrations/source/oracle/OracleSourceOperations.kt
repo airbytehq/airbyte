@@ -32,6 +32,7 @@ import io.airbyte.cdk.source.select.From
 import io.airbyte.cdk.source.select.FromNode
 import io.airbyte.cdk.source.select.FromSample
 import io.airbyte.cdk.source.select.Greater
+import io.airbyte.cdk.source.select.Lesser
 import io.airbyte.cdk.source.select.LesserOrEqual
 import io.airbyte.cdk.source.select.Limit
 import io.airbyte.cdk.source.select.LimitNode
@@ -94,35 +95,29 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             "BINARY_DOUBLE" -> DoubleFieldType
             "FLOAT",
             "DOUBLE PRECISION",
-            "REAL",
-            -> BigDecimalFieldType
+            "REAL", -> BigDecimalFieldType
             "NUMBER",
             "NUMERIC",
             "DECIMAL",
-            "DEC",
-            -> if (notInteger) BigDecimalFieldType else BigIntegerFieldType
+            "DEC", -> if (notInteger) BigDecimalFieldType else BigIntegerFieldType
             "INTEGER",
             "INT",
-            "SMALLINT",
-            -> BigIntegerFieldType
+            "SMALLINT", -> BigIntegerFieldType
             "BOOLEAN",
-            "BOOL",
-            -> BooleanFieldType
+            "BOOL", -> BooleanFieldType
             "CHAR",
             "VARCHAR2",
             "VARCHAR",
             "CHARACTER",
             "CHARACTER VARYING",
-            "CHAR VARYING",
-            -> StringFieldType
+            "CHAR VARYING", -> StringFieldType
             "NCHAR",
             "NVARCHAR2",
             "NCHAR VARYING",
             "NATIONAL CHARACTER VARYING",
             "NATIONAL CHARACTER",
             "NATIONAL CHAR VARYING",
-            "NATIONAL CHAR",
-            -> NStringFieldType
+            "NATIONAL CHAR", -> NStringFieldType
             "BLOB" -> BinaryStreamFieldType
             "CLOB" -> ClobFieldType
             "NCLOB" -> NClobFieldType
@@ -131,20 +126,16 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             "INTERVALDS",
             "INTERVAL DAY TO SECOND",
             "INTERVALYM",
-            "INTERVAL YEAR TO MONTH",
-            -> StringFieldType
+            "INTERVAL YEAR TO MONTH", -> StringFieldType
             "JSON" -> JsonStringFieldType
             "LONG",
             "LONG RAW",
-            "RAW",
-            -> BinaryStreamFieldType
+            "RAW", -> BinaryStreamFieldType
             "TIMESTAMP",
             "TIMESTAMP WITH LOCAL TIME ZONE",
-            "TIMESTAMP WITH LOCAL TZ",
-            -> LocalDateTimeFieldType
+            "TIMESTAMP WITH LOCAL TZ", -> LocalDateTimeFieldType
             "TIMESTAMP WITH TIME ZONE",
-            "TIMESTAMP WITH TZ",
-            -> OffsetDateTimeFieldType
+            "TIMESTAMP WITH TZ", -> OffsetDateTimeFieldType
             else -> PokemonFieldType
         }
 
@@ -178,12 +169,16 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
 
     fun FromNode.sql(): String =
         when (this) {
-            NoFrom ->
-                "FROM DUAL"
+            NoFrom -> "FROM DUAL"
             is From ->
                 if (this.namespace == null) "FROM \"$name\"" else "FROM \"$namespace\".\"$name\""
             is FromSample -> {
-                val sample: String = if (sampleRateInv == 1L) "" else " SAMPLE(${sampleRatePercentage.toPlainString()})"
+                val sample: String =
+                    if (sampleRateInv == 1L) {
+                        ""
+                    } else {
+                        " SAMPLE(${sampleRatePercentage.toPlainString()})"
+                    }
                 val innerFrom: String = From(name, namespace).sql() + sample
                 val inner = "SELECT * $innerFrom ORDER BY dbms_random.value"
                 "FROM (SELECT * FROM ($inner) WHERE ROWNUM <= $sampleSize)"
@@ -203,6 +198,7 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             is Equal -> "${column.sql()} = ?"
             is Greater -> "${column.sql()} > ?"
             is LesserOrEqual -> "${column.sql()} <= ?"
+            is Lesser -> "${column.sql()} < ?"
         }
 
     fun OrderByNode.sql(): String =
@@ -231,8 +227,8 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
 
     fun LimitNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
-            NoLimit, Limit(0) -> listOf()
-            is Limit ->
-                listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
+            NoLimit,
+            Limit(0) -> listOf()
+            is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
         }
 }

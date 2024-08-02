@@ -16,11 +16,11 @@ import io.airbyte.cdk.source.select.SelectQueryGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
-import oracle.jdbc.OracleArray
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 import java.sql.Types
+import oracle.jdbc.OracleArray
 
 private val log = KotlinLogging.logger {}
 
@@ -35,13 +35,16 @@ private val log = KotlinLogging.logger {}
  *
  * We cache the results of these UDT-related queries as they are not column-specific.
  */
-class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQuerier by base {
+class OracleSourceMetadataQuerier(
+    val base: JdbcMetadataQuerier,
+) : MetadataQuerier by base {
     override fun fields(
         streamName: String,
         streamNamespace: String?,
     ): List<Field> {
         val table: TableName = base.findTableName(streamName, streamNamespace) ?: return listOf()
-        return base.columnMetadata(table)
+        return base
+            .columnMetadata(table)
             .map { c: JdbcMetadataQuerier.ColumnMetadata ->
                 val udt: UserDefinedType? =
                     when (c.type) {
@@ -156,8 +159,7 @@ class OracleSourceMetadataQuerier(val base: JdbcMetadataQuerier) : MetadataQueri
                             klazz = null,
                             typeCode =
                                 when (row.scale) {
-                                    null ->
-                                        systemTypeMap[row.elemTypeName]?.typeCode
+                                    null -> systemTypeMap[row.elemTypeName]?.typeCode
                                             ?: Types.JAVA_OBJECT
                                     else -> Types.NUMERIC
                                 },
@@ -232,7 +234,13 @@ WHERE OWNER IS NOT NULL AND TYPE_NAME IS NOT NULL
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: OracleSourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
-            val base = JdbcMetadataQuerier(config, selectQueryGenerator, fieldTypeMapper, jdbcConnectionFactory)
+            val base =
+                JdbcMetadataQuerier(
+                    config,
+                    selectQueryGenerator,
+                    fieldTypeMapper,
+                    jdbcConnectionFactory,
+                )
             return OracleSourceMetadataQuerier(base)
         }
     }

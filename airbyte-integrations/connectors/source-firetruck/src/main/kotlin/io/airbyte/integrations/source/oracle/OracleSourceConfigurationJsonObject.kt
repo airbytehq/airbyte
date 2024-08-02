@@ -86,7 +86,8 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonSchemaTitle("Connect by")
     @JsonPropertyDescription("The scheme by which to establish a database connection.")
     @JsonSchemaInject(json = """{"order":3}""")
-    fun getConnectionDataValue(): ConnectionData = connectionDataJson ?: connectionData.asConnectionData()
+    fun getConnectionDataValue(): ConnectionData =
+        connectionDataJson ?: connectionData.asConnectionData()
 
     @JsonProperty("username")
     @JsonSchemaTitle("User")
@@ -130,7 +131,9 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 
     @JsonGetter("encryption")
     @JsonSchemaTitle("Encryption")
-    @JsonPropertyDescription("The encryption method with is used when communicating with the database.")
+    @JsonPropertyDescription(
+        "The encryption method with is used when communicating with the database.",
+    )
     @JsonSchemaInject(json = """{"order":8}""")
     fun getEncryptionValue(): Encryption = encryptionJson ?: encryption.asEncryption()
 
@@ -152,7 +155,8 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
             "and if so, which kind of authentication to use.",
     )
     @JsonSchemaInject(json = """{"order":9}""")
-    fun getTunnelMethodValue(): SshTunnelMethodConfiguration = tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
+    fun getTunnelMethodValue(): SshTunnelMethodConfiguration =
+        tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "cursor")
@@ -169,7 +173,8 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
     @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
-    fun getCursorConfigurationValue(): CursorConfiguration = cursorJson ?: cursor.asCursorConfiguration()
+    fun getCursorConfigurationValue(): CursorConfiguration =
+        cursorJson ?: cursor.asCursorConfiguration()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
@@ -187,10 +192,7 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 
-    @JsonAnyGetter
-    fun getAdditionalProperties(): Map<String, Any> {
-        return additionalPropertiesMap
-    }
+    @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap
 
     @JsonAnySetter
     fun setAdditionalProperty(
@@ -213,17 +215,13 @@ sealed interface ConnectionData
 @JsonSchemaTitle("Service name")
 @JsonSchemaDescription("Use service name.")
 class ServiceName : ConnectionData {
-    @JsonProperty("service_name")
-    @JsonSchemaTitle("Service name")
-    lateinit var serviceName: String
+    @JsonProperty("service_name") @JsonSchemaTitle("Service name") lateinit var serviceName: String
 }
 
 @JsonSchemaTitle("System ID (SID)")
 @JsonSchemaDescription("Use Oracle System Identifier.")
 class Sid : ConnectionData {
-    @JsonProperty("sid")
-    @JsonSchemaTitle("System ID (SID)")
-    lateinit var sid: String
+    @JsonProperty("sid") @JsonSchemaTitle("System ID (SID)") lateinit var sid: String
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.connection_data")
@@ -258,8 +256,8 @@ data object Unencrypted : Encryption
 @JsonSchemaTitle("Native Network Encryption (NNE)")
 @JsonSchemaDescription(
     "The native network encryption gives you the ability to encrypt database " +
-        "connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need " +
-        "to open and listen on different ports.",
+        "connections, without the configuration overhead of TCP/IP and SSL/TLS " +
+        "and without the need to open and listen on different ports.",
 )
 class EncryptionAlgorithm : Encryption {
     @JsonProperty("encryption_algorithm", required = true)
@@ -305,7 +303,7 @@ class MicronautPropertiesFriendlyEncryption {
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "user_defined"),
     // TODO: add CDC support
-)
+    )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
 sealed interface CursorConfiguration
@@ -322,9 +320,9 @@ data object UserDefinedCursor : CursorConfiguration
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
-        "Incrementally reads new inserts, updates, and deletes using Oracle's " +
-        "<a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\">" +
-        "change data capture feature</a>. This must be enabled on your database.",
+        "Incrementally reads new inserts, updates, and deletes using Oracle's <a href=" +
+        "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
+        "> change data capture feature</a>. This must be enabled on your database.",
 )
 data object CdcCursor : CursorConfiguration
 
