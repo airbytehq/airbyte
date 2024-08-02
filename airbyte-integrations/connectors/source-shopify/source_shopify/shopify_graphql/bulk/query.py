@@ -203,7 +203,7 @@ class MetafieldType(Enum):
     ORDERS = "orders"
     DRAFT_ORDERS = "draftOrders"
     PRODUCTS = "products"
-    PRODUCT_IMAGES = ["products", "images"]
+    PRODUCT_IMAGES = "products"
     PRODUCT_VARIANTS = "productVariants"
     COLLECTIONS = "collections"
     LOCATIONS = "locations"
@@ -491,25 +491,30 @@ class MetafieldProduct(Metafield):
 class MetafieldProductImage(Metafield):
     """
     {
-        products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+        products(query: "updated_at:>='2023-01-08T00:00:00+00:00' AND updated_at:<='2024-08-02T15:12:41.689153+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
-                    images{
-                        edges{
-                            node{
+                    media {
+                        edges {
+                            node {
+                                __typename
                                 id
-                                metafields {
-                                    edges {
-                                        node {
-                                            id
-                                            namespace
-                                            value
-                                            key
-                                            description
-                                            createdAt
-                                            updatedAt
-                                            type
+                                ... on MediaImage {
+                                    metafields {
+                                        edges {
+                                            node {
+                                                __typename
+                                                id
+                                                namespace
+                                                value
+                                                key
+                                                description
+                                                createdAt
+                                                updatedAt
+                                                type
+                                            }
                                         }
                                     }
                                 }
@@ -521,6 +526,30 @@ class MetafieldProductImage(Metafield):
         }
     }
     """
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        """
+        This is the overide for the default `query_nodes` method, 
+        because the usual way of retrieving the metafields for product images` was suddently deprecated,
+        for `2024-10`, but the changes are reflected in the `2024-04` as well, starting: `2024-08-01T00:06:44`
+        
+        CAT Test (FAILED): https://storage.cloud.google.com/airbyte-ci-reports-multi/airbyte-ci/connectors/test/nightly_builds/master/1722470804/269f22e245fc60c872ec96c6eba20cb7bf72b4d4/source-shopify/2.4.16/output.html
+        
+        More info here:
+        https://shopify.dev/docs/api/release-notes/2024-04#productimage-value-removed
+        """
+        # define metafield node
+        metafield_node = self.get_edge_node("metafields", self.metafield_fields)
+        media_fields: List[Field] = [
+            "__typename",
+            "id",
+            InlineFragment(type="MediaImage", fields=[metafield_node]),
+        ]
+        # define media node
+        media_node = self.get_edge_node("media", media_fields)
+        fields: List[Field] = ["__typename", "id", media_node]
+        return fields
 
     type = MetafieldType.PRODUCT_IMAGES
 
