@@ -10,7 +10,7 @@ from metadata_service.validators import metadata_validator
 
 
 @pytest.fixture
-def source_faker_metadata_definition():
+def metadata_definition():
     metadata_file_url = (
         "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/source-faker/metadata.yaml"
     )
@@ -21,14 +21,25 @@ def source_faker_metadata_definition():
     return ConnectorMetadataDefinitionV0.parse_obj(metadata_yaml_dict)
 
 
-@pytest.fixture
-def current_version(source_faker_metadata_definition):
-    return source_faker_metadata_definition.data.dockerImageTag
+@pytest.mark.parametrize(
+    "latest_version, current_version,should_pass_validation",
+    [("1.0.0", "0.1.0", False), ("1.0.0", "1.0.0", True), ("1.0.0", "1.1.0", True)],
+)
+def test_validate_docker_image_tag_is_not_decremented(mocker, metadata_definition, latest_version, current_version, should_pass_validation):
+    mocker.patch.object(metadata_validator, "get_latest_version_on_dockerhub", return_value=latest_version)
+    metadata_definition.data.dockerImageTag = current_version
+    passed_validation, _ = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
+    assert passed_validation == should_pass_validation
 
 
 @pytest.fixture
-def decremented_version(current_version):
-    version_info = semver.VersionInfo.parse(current_version)
+def dynamic_current_version(metadata_definition):
+    return metadata_definition.data.dockerImageTag
+
+
+@pytest.fixture
+def dynamic_decremented_version(dynamic_current_version):
+    version_info = semver.VersionInfo.parse(dynamic_current_version)
     if version_info.major > 0:
         patched_version_info = version_info.replace(major=version_info.major - 1)
     elif version_info.minor > 0:
@@ -41,8 +52,8 @@ def decremented_version(current_version):
 
 
 @pytest.fixture
-def incremented_version(current_version):
-    version_info = semver.VersionInfo.parse(current_version)
+def dynamic_incremented_version(dynamic_current_version):
+    version_info = semver.VersionInfo.parse(dynamic_current_version)
     if version_info.major > 0:
         patched_version_info = version_info.replace(major=version_info.major + 1)
     elif version_info.minor > 0:
@@ -54,31 +65,31 @@ def incremented_version(current_version):
     return str(patched_version_info)
 
 
-def test_validation_fail_on_docker_image_tag_decrement(source_faker_metadata_definition, decremented_version):
-    current_version = source_faker_metadata_definition.data.dockerImageTag
+def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, dynamic_decremented_version):
+    current_version = metadata_definition.data.dockerImageTag
 
-    source_faker_metadata_definition.data.dockerImageTag = decremented_version
-    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(source_faker_metadata_definition, None)
+    metadata_definition.data.dockerImageTag = dynamic_decremented_version
+    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert not success
     assert error_message == f"The dockerImageTag value can't be decremented: it should be equal to or above {current_version}."
 
 
-def test_validation_pass_on_docker_image_tag_increment(source_faker_metadata_definition, incremented_version):
-    source_faker_metadata_definition.data.dockerImageTag = incremented_version
-    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(source_faker_metadata_definition, None)
+def test_validation_pass_on_docker_image_tag_increment(metadata_definition, incremented_version):
+    metadata_definition.data.dockerImageTag = incremented_version
+    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert success
     assert error_message is None
 
 
-def test_validation_pass_on_same_docker_image_tag(source_faker_metadata_definition):
-    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(source_faker_metadata_definition, None)
+def test_validation_pass_on_same_docker_image_tag(metadata_definition):
+    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert success
     assert error_message is None
 
 
-def test_validation_pass_on_docker_image_no_latest(capsys, source_faker_metadata_definition):
-    source_faker_metadata_definition.data.dockerRepository = "airbyte/unreleased"
-    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(source_faker_metadata_definition, None)
+def test_validation_pass_on_docker_image_no_latest(capsys, metadata_definition):
+    metadata_definition.data.dockerRepository = "airbyte/unreleased"
+    success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     captured = capsys.readouterr()
     assert (
         "https://registry.hub.docker.com/v2/repositories/airbyte/unreleased/tags returned a 404. The connector might not be released yet."
