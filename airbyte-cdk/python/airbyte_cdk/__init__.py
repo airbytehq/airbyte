@@ -59,6 +59,8 @@ from .sources.message import InMemoryMessageRepository, MessageRepository
 from .sources.source import TState
 from .sources.streams.availability_strategy import AvailabilityStrategy
 from .sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate, CachedLimiterSession, LimiterSession
+from .sources.streams.checkpoint import Cursor as LegacyCursor
+from .sources.streams.checkpoint import ResumableFullRefreshCursor
 from .sources.streams.concurrent.adapters import StreamFacade
 from .sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from .sources.streams.concurrent.cursor import Cursor
@@ -85,6 +87,10 @@ __all__ = [
     # Availability strategy
     "AvailabilityStrategy",
     "HttpAvailabilityStrategy",
+
+    # Checkpoint
+    "LegacyCursor",
+    "ResumableFullRefreshCursor",
 
     # Concurrent
     "ConcurrentCursor",

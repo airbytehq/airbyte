@@ -56,6 +56,9 @@ Select start date
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.12 | 2024-07-27 | [42707](https://github.com/airbytehq/airbyte/pull/42707) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42377](https://github.com/airbytehq/airbyte/pull/42377) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41824](https://github.com/airbytehq/airbyte/pull/41824) | Update dependencies |
 | 0.1.9 | 2024-07-10 | [41472](https://github.com/airbytehq/airbyte/pull/41472) | Update dependencies |
 | 0.1.8 | 2024-07-09 | [41134](https://github.com/airbytehq/airbyte/pull/41134) | Update dependencies |
 | 0.1.7 | 2024-07-06 | [40927](https://github.com/airbytehq/airbyte/pull/40927) | Update dependencies |

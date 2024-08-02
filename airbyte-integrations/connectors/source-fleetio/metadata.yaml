@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 13a7652d-1d94-4033-931a-613d22d3cbb3
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-fleetio
   githubIssueLabel: source-fleetio
   icon: icon.svg
