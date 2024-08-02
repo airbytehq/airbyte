@@ -17,19 +17,25 @@ class GlobalCursorStreamSlice(StreamSlice):
 
     def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any], last_slice: bool = False) -> None:
         super().__init__(partition=partition, cursor_slice=cursor_slice)
-        self.last_slice = last_slice
+        self._last_slice = last_slice
+
+    @property
+    def last_slice(self) -> bool:
+        return self._last_slice
 
 
 class GlobalSubstreamCursor(DeclarativeCursor):
     """
     The GlobalSubstreamCursor is designed to track the state of substreams using a single global cursor.
-    This class is useful for streams that have many partitions, allowing the state to be managed globally
-    rather than per partition, which simplifies state management and reduces the size of state messages.
+    This class is beneficial for streams with many partitions, as it allows the state to be managed globally
+    instead of per partition, simplifying state management and reducing the size of state messages.
 
-    This cursor can only be used with the lookback window; otherwise, child records added during the sync
-    to the already processed parent records will be missed.
+    This cursor is activated by setting the `global_substream_cursor` parameter for incremental sync.
 
-    This cursor will be used when the `global_substream_cursor` parameter is set for incremental sync.
+    Warnings:
+    - This cursor must be used with a lookback window. Without it, child records added during the sync to already processed parent records will be missed.
+    - The global cursor is updated only at the end of the sync. If the sync ends prematurely (e.g., due to an exception), the state will not be updated.
+    - When using the `incremental_dependency` option, the sync will progress through parent records, preventing the sync from getting infinitely stuck. However, it is crucial to understand the requirements for both the `global_substream_cursor` and `incremental_dependency` options to avoid data loss.
     """
 
     def __init__(self, stream_cursor: DeclarativeCursor, partition_router: PartitionRouter):
@@ -103,8 +109,11 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             stream_slice (StreamSlice): The stream slice to be closed.
             *args (Any): Additional arguments.
         """
-        if isinstance(stream_slice, GlobalCursorStreamSlice) and stream_slice.last_slice:
-            self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
+        if isinstance(stream_slice, GlobalCursorStreamSlice):
+            if stream_slice.last_slice:
+                self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
+        else:
+            raise ValueError(f"Stream slice must be a GlobalCursorStreamSlice, got {type(stream_slice)}")
 
     def get_stream_state(self) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
