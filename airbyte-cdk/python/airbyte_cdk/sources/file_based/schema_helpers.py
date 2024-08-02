@@ -147,6 +147,9 @@ def _choose_wider_type(key: str, t1: Mapping[str, Any], t2: Mapping[str, Any]) -
 
 def is_equal_or_narrower_type(value: Any, expected_type: str) -> bool:
     if isinstance(value, list):
+        # We do not compare lists directly; the individual items are compared.
+        # If we hit this condition, it means that the expected type is not
+        # compatible with the inferred type.
         return False
 
     inferred_type = ComparableType(get_inferred_type(value))
