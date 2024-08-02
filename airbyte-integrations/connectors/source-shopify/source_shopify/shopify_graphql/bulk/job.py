@@ -215,6 +215,9 @@ class ShopifyBulkManager:
 
     def _job_canceled(self) -> bool:
         return self._job_state == ShopifyBulkJobStatus.CANCELED.value
+    
+    def _job_failed(self) -> bool:
+        return self._job_state == ShopifyBulkJobStatus.FAILED.value
 
     def _job_cancel(self) -> None:
         _, canceled_response = self.http_client.send_request(
@@ -255,7 +258,9 @@ class ShopifyBulkManager:
     def _job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
         parsed_response = response.json().get("data", {}).get("node", {}) if response else None
         # get `complete` or `partial` result from collected Bulk Job results
-        job_result_url = parsed_response.get("url", parsed_response.get("partialDataUrl")) if parsed_response else None
+        full_result_url = parsed_response.get("url") if parsed_response else None
+        partial_result_url = parsed_response.get("partialDataUrl") if parsed_response else None
+        job_result_url = full_result_url if full_result_url else partial_result_url
         if job_result_url:
             # save to local file using chunks to avoid OOM
             filename = self._tools.filename_from_url(job_result_url)
@@ -326,13 +331,13 @@ class ShopifyBulkManager:
         self._job_result_filename = self._job_get_result(response)
 
     def _on_failed_job(self, response: requests.Response) -> AirbyteTracedException:
-        if not self._job_any_lines_collected:
+        if not self._supports_checkpointing:
             raise ShopifyBulkExceptions.BulkJobFailed(
                 f"The BULK Job: `{self._job_id}` exited with {self._job_state}, details: {response.text}",
             )
         else:
             # when the Bulk Job fails, usually there is a `partialDataUrl` available,
-            # we leverage the checkpointing in this case
+            # we leverage the checkpointing in this case.
             self._job_get_checkpointed_result(response)
 
     def _on_timeout_job(self, **kwargs) -> AirbyteTracedException:
@@ -433,6 +438,8 @@ class ShopifyBulkManager:
     def _job_check_state(self) -> None:
         while not self._job_completed():
             if self._job_canceled():
+                break
+            elif self._job_failed():
                 break
             else:
                 self._job_track_running()
