@@ -60,7 +60,8 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- Change the default password by following the instructions [here](../deploying-airbyte/integrations/authentication)
+- By default, Airbyte generates a secure password during a deploy (either via Helm or `abctl`). To change the default 
+password by following the instructions [here](../deploying-airbyte/integrations/authentication)
 
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
