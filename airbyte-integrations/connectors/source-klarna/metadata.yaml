@@ -36,6 +36,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: klarna_config_dev_null
+          id: 0d630411-a503-46d1-8f8b-a106e4e90eab
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-KLARNA__CREDS

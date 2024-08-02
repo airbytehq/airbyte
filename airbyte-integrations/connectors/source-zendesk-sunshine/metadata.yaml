@@ -33,6 +33,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-sunshine_config_oauth_dev_null
+          id: 3bf2af38-8489-4938-8d5e-2245fa0e22ee
+        - name: zendesk-sunshine_config_api_token_dev_null
+          id: 4320214d-cda0-4859-a4f0-dc123c1b8523
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-ZENDESK-SUNSHINE_API_TOKEN__CREDS

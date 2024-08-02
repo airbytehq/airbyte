@@ -379,16 +379,14 @@ const contributeToAirbyte = {
     "contributing-to-airbyte/issues-and-requests",
     "contributing-to-airbyte/change-cdk-connector",
     "contributing-to-airbyte/submit-new-connector",
+    "contributing-to-airbyte/developing-locally",
     "contributing-to-airbyte/writing-docs",
     {
       type: "category",
       label: "Resources",
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/code-formatting",
         "contributing-to-airbyte/resources/qa-checks",
-        "contributing-to-airbyte/resources/developing-locally",
-        "contributing-to-airbyte/resources/developing-on-docker",
       ],
     },
   ],
@@ -416,6 +414,7 @@ const deployAirbyte = {
       type: "category",
       label: "Integrations",
       items: [
+        "deploying-airbyte/integrations/authentication",
         "deploying-airbyte/integrations/storage",
         "deploying-airbyte/integrations/secrets",
         "deploying-airbyte/integrations/database",
@@ -689,6 +688,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/july_2024",
         "release_notes/june_2024",
         "release_notes/may_2024",
         "release_notes/april_2024",

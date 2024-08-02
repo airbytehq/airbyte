@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: getlago_config_dev_null
+          id: 65a3d708-199d-4f8c-adb1-8e6fee5134a4
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GETLAGO__CREDS

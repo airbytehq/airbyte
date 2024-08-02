@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: orbit_config_dev_null
+          id: 478f6e39-f483-4896-915a-e4cc4ab12916
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE_ORBIT__CREDS

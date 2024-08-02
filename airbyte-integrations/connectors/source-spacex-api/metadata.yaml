@@ -36,6 +36,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: spacex-api_config_dev_null
+          id: 644824f1-d1d8-4790-9157-b626cc498127
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SPACEX-API__CREDS

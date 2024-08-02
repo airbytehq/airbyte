@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pendo_config_dev_null
+          id: 8964641e-f0cf-42a2-a1f1-20226b198cf4
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PENDO__CREDS

@@ -38,6 +38,12 @@ data:
     - cdk:low-code
     - language:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pipedrive_old_config_dev_null
+          id: 7bd5c95e-ead8-42a7-8c5a-6cfd50b1f0e0
+        - name: pipedrive_config_dev_null
+          id: 8278c55c-e9e9-4403-a001-b47aaac3535f
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

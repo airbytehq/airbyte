@@ -36,6 +36,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: coinmarketcap_config_dev_null
+          id: 61df0386-edca-48a4-b589-7228c0d6a081
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-COINMARKETCAP__CREDS
