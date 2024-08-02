@@ -69,22 +69,6 @@ class GoogleSearchConsole(HttpStream, ABC):
             for record in records:
                 yield record
 
-    # def should_retry(self, response: requests.Response) -> bool:
-    #     response_json = response.json()
-    #     if "error" in response_json:
-    #         error = response_json.get("error", {})
-    #         # handle the `HTTP-403` - insufficient permissions
-    #         if error.get("code", 0) == 403:
-    #             self.logger.error(f"Stream {self.name}. {error.get('message')}. Skipping.")
-    #             setattr(self, "raise_on_http_errors", False)
-    #             return False
-    #         # handle the `HTTP-400` - Bad query params with `aggregationType`
-    #         if error.get("code", 0) == 400:
-    #             self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
-    #             self.aggregation_type = QueryAggregationType.auto
-    #             setattr(self, "raise_on_http_errors", False)
-    #     return super().should_retry(response)
-
     def get_error_handler(self) -> ErrorHandler:
 
         return HttpStatusErrorHandler(
