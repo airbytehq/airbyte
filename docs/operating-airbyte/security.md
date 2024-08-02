@@ -60,7 +60,7 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- Change the default password by following the instructions [here](deploying-airbyte/integrations/authentication)
+- Change the default password by following the instructions [here](../deploying-airbyte/integrations/authentication)
 
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
