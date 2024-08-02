@@ -4,7 +4,6 @@ on:
   pull_request:
     types:
       - opened
-      - pull_request_review
       - ready_for_review
       - reopened
       - synchronize
@@ -34,7 +33,8 @@ jobs:
           request-reviews: true
           fail: true
           requirements: |
-            - paths: unmatched
+            - paths:
+                - "airbyte-integrations/connectors/source-**"
+                - "airbyte-integrations/connectors/destination-**"
               teams:
-                - connector-extensibility
-                - gl-python
+                - dev-marketplace-contributions

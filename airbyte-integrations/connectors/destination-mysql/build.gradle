@@ -16,6 +16,8 @@ java {
     }
 }
 
+compileKotlin.compilerOptions.allWarningsAsErrors = false
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {

@@ -39,6 +39,14 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.15 | 2024-07-27 | [42614](https://github.com/airbytehq/airbyte/pull/42614) | Update dependencies |
+| 0.1.14 | 2024-07-20 | [42149](https://github.com/airbytehq/airbyte/pull/42149) | Update dependencies |
+| 0.1.13 | 2024-07-13 | [41794](https://github.com/airbytehq/airbyte/pull/41794) | Update dependencies |
+| 0.1.12 | 2024-07-10 | [41408](https://github.com/airbytehq/airbyte/pull/41408) | Update dependencies |
+| 0.1.11 | 2024-07-09 | [41110](https://github.com/airbytehq/airbyte/pull/41110) | Update dependencies |
+| 0.1.10 | 2024-07-06 | [40890](https://github.com/airbytehq/airbyte/pull/40890) | Update dependencies |
+| 0.1.9 | 2024-06-26 | [40374](https://github.com/airbytehq/airbyte/pull/40374) | Update dependencies |
+| 0.1.8 | 2024-06-22 | [40175](https://github.com/airbytehq/airbyte/pull/40175) | Update dependencies |
 | 0.1.7 | 2024-06-06 | [39226](https://github.com/airbytehq/airbyte/pull/39226) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.6 | 2024-05-28 | [38596](https://github.com/airbytehq/airbyte/pull/38596) | Make connector compatible with builder |
 | 0.1.5 | 2024-04-19 | [37169](https://github.com/airbytehq/airbyte/pull/37169) | Updating to 0.80.0 CDK |

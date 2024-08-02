@@ -64,6 +64,14 @@ The Pendo source connector supports the following [sync modes](https://docs.airb
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.14 | 2024-07-27 | [42791](https://github.com/airbytehq/airbyte/pull/42791) | Update dependencies |
+| 0.1.13 | 2024-07-20 | [42236](https://github.com/airbytehq/airbyte/pull/42236) | Update dependencies |
+| 0.1.12 | 2024-07-13 | [41769](https://github.com/airbytehq/airbyte/pull/41769) | Update dependencies |
+| 0.1.11 | 2024-07-10 | [41421](https://github.com/airbytehq/airbyte/pull/41421) | Update dependencies |
+| 0.1.10 | 2024-07-09 | [41094](https://github.com/airbytehq/airbyte/pull/41094) | Update dependencies |
+| 0.1.9 | 2024-07-06 | [40984](https://github.com/airbytehq/airbyte/pull/40984) | Update dependencies |
+| 0.1.8 | 2024-06-25 | [40343](https://github.com/airbytehq/airbyte/pull/40343) | Update dependencies |
+| 0.1.7 | 2024-06-22 | [40105](https://github.com/airbytehq/airbyte/pull/40105) | Update dependencies |
 | 0.1.6 | 2024-06-04 | [39069](https://github.com/airbytehq/airbyte/pull/39069) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.5 | 2024-05-20 | [38226](https://github.com/airbytehq/airbyte/pull/38226) | Make connector compatible with the builder |
 | 0.1.4 | 2024-04-19 | [37220](https://github.com/airbytehq/airbyte/pull/37220) | Updating to 0.80.0 CDK |

@@ -48,6 +48,14 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 
 | Version | Date       | Pull Request                                               | Subject                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.14 | 2024-07-27 | [42656](https://github.com/airbytehq/airbyte/pull/42656) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42352](https://github.com/airbytehq/airbyte/pull/42352) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41775](https://github.com/airbytehq/airbyte/pull/41775) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41576](https://github.com/airbytehq/airbyte/pull/41576) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41149](https://github.com/airbytehq/airbyte/pull/41149) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40857](https://github.com/airbytehq/airbyte/pull/40857) | Update dependencies |
+| 0.2.8 | 2024-06-25 | [40300](https://github.com/airbytehq/airbyte/pull/40300) | Update dependencies |
+| 0.2.7 | 2024-06-21 | [39922](https://github.com/airbytehq/airbyte/pull/39922) | Update dependencies |
 | 0.2.6 | 2024-06-04 | [39028](https://github.com/airbytehq/airbyte/pull/39028) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.5 | 2024-05-14 | [38141](https://github.com/airbytehq/airbyte/pull/38141) | Make connector compatable with builder |
 | 0.2.4 | 2024-04-19 | [37208](https://github.com/airbytehq/airbyte/pull/37208) | Updating to 0.80.0 CDK |

@@ -39,6 +39,14 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.10 | 2024-07-27 | [42738](https://github.com/airbytehq/airbyte/pull/42738) | Update dependencies |
+| 0.2.9 | 2024-07-20 | [42180](https://github.com/airbytehq/airbyte/pull/42180) | Update dependencies |
+| 0.2.8 | 2024-07-13 | [41762](https://github.com/airbytehq/airbyte/pull/41762) | Update dependencies |
+| 0.2.7 | 2024-07-10 | [41446](https://github.com/airbytehq/airbyte/pull/41446) | Update dependencies |
+| 0.2.6 | 2024-07-09 | [41131](https://github.com/airbytehq/airbyte/pull/41131) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40938](https://github.com/airbytehq/airbyte/pull/40938) | Update dependencies |
+| 0.2.4 | 2024-06-25 | [40405](https://github.com/airbytehq/airbyte/pull/40405) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [40037](https://github.com/airbytehq/airbyte/pull/40037) | Update dependencies |
 | 0.2.2 | 2024-06-04 | [39048](https://github.com/airbytehq/airbyte/pull/39048) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.1 | 2024-05-30 | [38136](https://github.com/airbytehq/airbyte/pull/38136) | Make connector compatable with builder |
 | 0.2.0 | 2023-10-02 | [30969](https://github.com/airbytehq/airbyte/pull/30969) | Migrated to Low code |
