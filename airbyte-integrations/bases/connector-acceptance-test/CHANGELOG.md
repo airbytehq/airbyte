@@ -1,5 +1,33 @@
 # Changelog
 
+## 3.9.0
+
+Add support for using `manifest.yaml` as a spec input.
+
+## 3.8.6
+
+Allow a final teardown command to be run after all tests.
+
+## 3.8.5
+
+Update CAT tests for discover to deduplicate on namespace and stream name pair.
+
+## 3.8.4
+
+Only export /integration-tests directory back to host (for use by DB sources).
+
+## 3.8.3
+
+Add handling for global state messages (for use by DB sources).
+
+## 3.8.2
+
+Allow tests to access the setup/teardown container.
+
+## 3.8.1
+
+Provide the ability for users to perform setup/teardown by building and running a container before each test.
+
 ## 3.8.0
 
 Add `TestDiscovery.test_primary_keys_data_type`, which validates that primary keys are not of type `array` or `object` in discovered catalog.

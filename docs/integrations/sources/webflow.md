@@ -41,6 +41,15 @@ If you are interested in learning more about the Webflow API and implementation 
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.1.14 | 2024-07-27 | [42646](https://github.com/airbytehq/airbyte/pull/42646) | Update dependencies |
+| 0.1.13 | 2024-07-20 | [42297](https://github.com/airbytehq/airbyte/pull/42297) | Update dependencies |
+| 0.1.12 | 2024-07-13 | [41690](https://github.com/airbytehq/airbyte/pull/41690) | Update dependencies |
+| 0.1.11 | 2024-07-10 | [41482](https://github.com/airbytehq/airbyte/pull/41482) | Update dependencies |
+| 0.1.10 | 2024-07-09 | [41280](https://github.com/airbytehq/airbyte/pull/41280) | Update dependencies |
+| 0.1.9 | 2024-07-06 | [40996](https://github.com/airbytehq/airbyte/pull/40996) | Update dependencies |
+| 0.1.8 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 0.1.7 | 2024-06-25 | [40259](https://github.com/airbytehq/airbyte/pull/40259) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [40009](https://github.com/airbytehq/airbyte/pull/40009) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39151](https://github.com/airbytehq/airbyte/pull/39151) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-05-21 | [38498](https://github.com/airbytehq/airbyte/pull/38498) | [autopull] base image + poetry + up_to_date |
 | 0.1.3 | 2022-12-11 | [33315](https://github.com/airbytehq/airbyte/pull/33315) | Updates CDK to latest version and adds additional properties to schema |

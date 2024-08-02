@@ -42,7 +42,6 @@ from .sources.declarative.partition_routers.substream_partition_router import Pa
 from .sources.declarative.requesters import Requester, HttpRequester
 
 from .sources.declarative.requesters.error_handlers import BackoffStrategy
-from .sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from .sources.declarative.requesters.paginators import DefaultPaginator, PaginationStrategy
 from .sources.declarative.requesters.paginators.strategies import OffsetIncrement, CursorPaginationStrategy, PageIncrement, StopConditionPaginationStrategyDecorator
 
@@ -60,6 +59,8 @@ from .sources.message import InMemoryMessageRepository, MessageRepository
 from .sources.source import TState
 from .sources.streams.availability_strategy import AvailabilityStrategy
 from .sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate, CachedLimiterSession, LimiterSession
+from .sources.streams.checkpoint import Cursor as LegacyCursor
+from .sources.streams.checkpoint import ResumableFullRefreshCursor
 from .sources.streams.concurrent.adapters import StreamFacade
 from .sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from .sources.streams.concurrent.cursor import Cursor
@@ -86,6 +87,10 @@ __all__ = [
     # Availability strategy
     "AvailabilityStrategy",
     "HttpAvailabilityStrategy",
+
+    # Checkpoint
+    "LegacyCursor",
+    "ResumableFullRefreshCursor",
 
     # Concurrent
     "ConcurrentCursor",
@@ -121,7 +126,7 @@ __all__ = [
     "BearerAuthenticator",
     "CartesianProductStreamSlicer",
     "CursorPaginationStrategy",
-    "DatetimeBasedCursor"
+    "DatetimeBasedCursor",
     "DeclarativeAuthenticator",
     "DeclarativeOauth2Authenticator",
     "DeclarativeSingleUseRefreshTokenOauth2Authenticator",
@@ -179,7 +184,7 @@ __all__ = [
     "HttpSubStream",
     "LimiterSession",
     "MovingWindowCallRatePolicy",
-    "MultipleTokenAuthenticator"
+    "MultipleTokenAuthenticator",
     "Oauth2Authenticator",
     "Rate",
     "SingleUseRefreshTokenOauth2Authenticator",
@@ -192,7 +197,11 @@ __all__ = [
 
     # Protocol classes
     "AirbyteStream",
-    "AirbyteConnectionStatus", "AirbyteMessage", "ConfiguredAirbyteCatalog", "Status", "Type",
+    "AirbyteConnectionStatus",
+    "AirbyteMessage",
+    "ConfiguredAirbyteCatalog",
+    "Status",
+    "Type",
     "OrchestratorType",
     "ConfiguredAirbyteStream",
     "DestinationSyncMode",
