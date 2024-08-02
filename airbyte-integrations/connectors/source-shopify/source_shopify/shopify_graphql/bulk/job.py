@@ -215,7 +215,7 @@ class ShopifyBulkManager:
 
     def _job_canceled(self) -> bool:
         return self._job_state == ShopifyBulkJobStatus.CANCELED.value
-    
+
     def _job_failed(self) -> bool:
         return self._job_state == ShopifyBulkJobStatus.FAILED.value
 
