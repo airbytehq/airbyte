@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import uuid
 from .log import LOG_LEVEL_DEFAULT
 import logging
 import requests
@@ -17,6 +18,9 @@ ALLOWED_COLUMN_TYPES = [
     "dateTime",
     "json",
 ]
+
+# TODO: to optimize batch size for variable number and size of columns, we could estimate row byte size based on the first row and choose a batch size based on that.
+BATCH_SIZE = 500
 
 class Column(dict):
     """
@@ -109,7 +113,8 @@ class GlideBigTableFactory:
 
 class GlideBigTableRestStrategy(GlideBigTableBase):
     def reset(self):
-        self.stash_id = None
+        self.columns = None
+        self.stash_id = str(uuid.uuid4())
         self.stash_serial = 0
 
     def __init__(self):
@@ -124,23 +129,9 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
             raise ValueError("columns must be provided")
         self.reset()
         self.columns = columns
-        # Create stash we can stash records into for later
-        r = requests.post(
-            self.url(f"stashes"),
-            headers=self.headers(),
-        )
-        try:
-            r.raise_for_status()
-        except Exception as e:
-            raise Exception(f"failed to create stash. Response was '{r.text}'") from e  # nopep8
-
-        result = r.json()
-        self.stash_id = result["data"]["stashID"]
-        self.stash_serial = 0
-        logger.info(f"Created stash for records with id '{self.stash_id}'")
 
     def raise_if_set_schema_not_called(self):
-        if self.stash_id is None:
+        if self.columns is None:
             raise ValueError(
                 "set_schema must be called before add_rows or commit")
 
@@ -162,8 +153,6 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
 
     def add_rows(self, rows: Iterator[BigTableRow]) -> None:
         self.raise_if_set_schema_not_called()
-        # TODO: to optimize batch size for variable number and size of columns, we could estimate row byte size based on the first row and choose a batch size based on that.
-        BATCH_SIZE = 500
         batch = []
         for i in range(0, len(rows), BATCH_SIZE):
             batch = rows[i:i + min(BATCH_SIZE, len(rows) - i)]

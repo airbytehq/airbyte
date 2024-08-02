@@ -91,8 +91,7 @@ class DestinationGlide(Destination):
             if configured_stream.destination_sync_mode != DestinationSyncMode.overwrite:
                 raise Exception(f'Only destination sync mode overwrite is supported, but received "{configured_stream.destination_sync_mode}".')  # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
-            glide = create_table_client_for_stream(
-                configured_stream.stream.name)
+            glide = create_table_client_for_stream(configured_stream.stream.name)
             # upsert the GBT with schema to set_schema for dumping the data into it
             columns = []
             properties = configured_stream.stream.json_schema["properties"]
