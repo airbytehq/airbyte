@@ -9,33 +9,35 @@ from dagger import Directory
 from ruamel.yaml import YAML  # type: ignore
 
 
-def read_yaml(file_path: Path) -> dict:
+def read_yaml(file_path: Path | str) -> dict:
     yaml = YAML()
     yaml.preserve_quotes = True
     return yaml.load(file_path)
 
 
-async def read_dagger_yaml(dir: Directory, file_path: Path) -> dict:
+async def read_yaml_from_directory(directory: Directory, file_path: str | Path) -> dict:
     yaml = YAML()
     yaml.preserve_quotes = True
-    contents = await dir.file(str(file_path)).contents()
+    if str(file_path) not in await directory.entries():
+        raise FileNotFoundError(f"File {file_path} not found in directory {directory}")
+    contents = await directory.file(str(file_path)).contents()
     return yaml.load(contents)
 
 
-def write_dagger_yaml(dir: Directory, input: dict | List, file_path: Path) -> Directory:
-    data = copy.deepcopy(input)
+async def write_yaml_to_directory(directory: Directory, yaml_input: dict | List, file_path: str | Path) -> Directory:
+    data = copy.deepcopy(yaml_input)
     yaml = YAML()
     buffer = io.BytesIO()
     yaml.dump(data, buffer)
     new_content = buffer.getvalue().decode("utf-8")
-    dir = dir.with_new_file(str(file_path), contents=new_content)
-    return dir
+    directory = await directory.with_new_file(str(file_path), contents=new_content)
+    return directory
 
 
-def write_yaml(input: dict | List, file_path: Path) -> None:
+def write_yaml(input: dict | List, file_path: str | Path) -> None:
     data = copy.deepcopy(input)
     yaml = YAML()
     buffer = io.BytesIO()
     yaml.dump(data, buffer)
-    with file_path.open("w") as file:
+    with open(file_path, "w") as file:
         file.write(buffer.getvalue().decode("utf-8"))

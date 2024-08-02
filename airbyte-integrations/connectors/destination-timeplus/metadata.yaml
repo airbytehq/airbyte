@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: f70a8ece-351e-4790-b37b-cb790bcd6d54
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/destination-timeplus
   githubIssueLabel: destination-timeplus
   icon: timeplus.svg
@@ -35,5 +35,5 @@ data:
     #         type: GSM
     #         alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"
