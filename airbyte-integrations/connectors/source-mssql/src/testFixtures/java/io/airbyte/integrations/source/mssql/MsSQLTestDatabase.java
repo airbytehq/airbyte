@@ -312,11 +312,11 @@ public class MsSQLTestDatabase extends TestDatabase<MSSQLServerContainer<?>, MsS
   }
 
   public Stream<String> mssqlCmd(final Stream<String> sql) {
-    return Stream.of("/opt/mssql-tools/bin/sqlcmd",
+    return Stream.of("/opt/mssql-tools18/bin/sqlcmd",
         "-U", getContainer().getUsername(),
         "-P", getContainer().getPassword(),
         "-Q", sql.collect(Collectors.joining("; ")),
-        "-b", "-e");
+        "-b", "-e", "-C");
   }
 
   @Override

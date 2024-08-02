@@ -4,10 +4,10 @@
 
 
 import json
+import logging
 import socket
 from typing import Any, Generator, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
@@ -45,7 +45,7 @@ class SourceGoogleSheets(Source):
     Spreadsheets API Reference: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets
     """
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         try:
             client = GoogleSheetsClient(self.get_credentials(config))
@@ -110,7 +110,7 @@ class SourceGoogleSheets(Source):
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         client = GoogleSheetsClient(self.get_credentials(config))
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
@@ -143,10 +143,17 @@ class SourceGoogleSheets(Source):
                     failure_type=FailureType.config_error,
                 ) from err
             raise Exception(f"Could not discover the schema of your spreadsheet. {error_description}. {err.reason}.")
+        except google_exceptions.GoogleAuthError as err:
+            message = "Access to the spreadsheet expired or was revoked. Re-authenticate to restore access."
+            raise AirbyteTracedException(
+                message=message,
+                internal_message=message,
+                failure_type=FailureType.config_error,
+            ) from err
 
     def _read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
@@ -227,7 +234,7 @@ class SourceGoogleSheets(Source):
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
@@ -245,7 +252,11 @@ class SourceGoogleSheets(Source):
                     failure_type=FailureType.config_error,
                 ) from e
             if e.status_code == status_codes.TOO_MANY_REQUESTS:
-                logger.info(f"Stopped syncing process due to rate limits. {error_description}")
+                raise AirbyteTracedException(
+                    message=f"Stopped syncing process due to rate limits. {error_description}",
+                    internal_message=error_description,
+                    failure_type=FailureType.transient_error,
+                ) from e
             else:
                 logger.info(f"{e.status_code}: {e.reason}. {error_description}")
         finally:

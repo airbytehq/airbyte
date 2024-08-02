@@ -14,7 +14,9 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 4.4.2
+          # removed useless `enum` from `payment_intent`,
+          # making the source crash because of api side changes (more or less values are returned).
+          disable_for_version: 5.4.5
   basic_read:
     tests:
       - config_path: "secrets/config.json"
