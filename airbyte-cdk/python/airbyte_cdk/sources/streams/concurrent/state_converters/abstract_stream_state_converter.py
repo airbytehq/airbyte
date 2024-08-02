@@ -144,4 +144,5 @@ class AbstractStreamStateConverter(ABC):
 
     @property
     @abstractmethod
-    def zero_value(self) -> Any: ...
+    def zero_value(self) -> Any:
+        ...
