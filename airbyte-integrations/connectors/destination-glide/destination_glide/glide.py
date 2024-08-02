@@ -46,6 +46,14 @@ class Column(dict):
 
 
 class GlideBigTableBase(ABC):
+    """
+    An API client for interacting with a Glide Big Table. The intention is to
+    create a new table or update an existing table including the table's schema
+    and the table's rows.
+
+    The protocol is to call `init`, `set_schema`, `add_rows` one or more times, and `commit` in that order.
+    """
+
     def headers(self) -> Dict[str, str]:
         return {
             "Content-Type": "application/json",
@@ -54,14 +62,6 @@ class GlideBigTableBase(ABC):
 
     def url(self, path: str) -> str:
         return f"{self.api_host}/{self.api_path_root + '/' if self.api_path_root != '' else ''}{path}"
-
-    """
-    An API client for interacting with a Glide Big Table. The intention is to
-    create a new table or update an existing table including the table's schema
-    and the table's rows.
-
-    The protocol is to call `init`, `set_schema`, `add_rows` one or more times, and `commit` in that order.
-    """
 
     def init(self, api_key, table_name, api_host="https://api.glideapps.com", api_path_root=""):
         """
