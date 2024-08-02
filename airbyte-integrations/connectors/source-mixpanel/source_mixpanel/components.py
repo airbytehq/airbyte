@@ -102,6 +102,22 @@ class FunnelsHttpRequester(MixpanelHttpRequester):
         return params
 
 
+class EngagesHttpRequester(MixpanelHttpRequester):
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        if "start_time" in stream_slice:
+            params["where"] = f'properties["$last_seen"] >= "{stream_slice["start_time"]}"'
+        elif "start_date" in self.config:
+            params["where"] = f'properties["$last_seen"] >= "{self.config["start_date"]}"'
+        return params
+
+
 class CohortMembersSubstreamPartitionRouter(SubstreamPartitionRouter):
     def get_request_body_json(
         self,
@@ -275,7 +291,7 @@ class EngagePaginationStrategy(PageIncrement):
         if total:
             self._total = total
 
-        if self._total and page_number is not None and self._total > self.page_size * (page_number + 1):
+        if self._total and page_number is not None and self._total > self._page_size * (page_number + 1):
             return {"session_id": decoded_response.get("session_id"), "page": page_number + 1}
         else:
             self._total = None
