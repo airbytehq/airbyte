@@ -18,7 +18,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /applications.list
+          path: /application.list
           http_method: POST
           request_body_json:
             createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
