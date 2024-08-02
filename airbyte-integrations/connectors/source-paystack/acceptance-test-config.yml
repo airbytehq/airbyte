@@ -19,6 +19,8 @@ acceptance_tests:
         empty_streams:
           - name: disputes
             bypass_reason: "unable to seed, this stream requires third party system"
+          - name: refunds
+            bypass_reason: "unable to seed, this stream requires third party system"
           - name: settlements
             bypass_reason: "unable to seed, this stream requires third party system"
         expect_records:

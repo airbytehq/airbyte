@@ -15,7 +15,7 @@ from pipelines import hacks
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
-from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, IncrementalAcceptanceTests, RegressionTests
+from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, IncrementalAcceptanceTests, LiveTests
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
@@ -287,8 +287,8 @@ def get_test_steps(context: ConnectorTestContext) -> STEP_TREE:
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.CONNECTOR_REGRESSION_TESTS,
-                step=RegressionTests(context),
+                id=CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS,
+                step=LiveTests(context),
                 args=lambda results: {"connector_under_test_container": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
             ),

@@ -5,7 +5,7 @@
 from typing import List, Union
 
 from airbyte_cdk.sources.config import BaseConfig
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class InnerClass(BaseModel):

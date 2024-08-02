@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging as Logger
 import re
 import urllib.parse as urlparse
 from abc import ABC
@@ -10,7 +11,6 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -223,8 +223,8 @@ class Issues(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._project_ids = []
-        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.issue_fields_stream = IssueFields(authenticator=self._session.auth, domain=self._domain, projects=self._projects)
+        self.projects_stream = Projects(authenticator=self._session.auth, domain=self._domain, projects=self._projects)
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -340,7 +340,7 @@ class IssueWorklogs(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            authenticator=self.authenticator,
+            authenticator=self._session.auth,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,
@@ -370,7 +370,7 @@ class IssueComments(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            authenticator=self.authenticator,
+            authenticator=self._session.auth,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,

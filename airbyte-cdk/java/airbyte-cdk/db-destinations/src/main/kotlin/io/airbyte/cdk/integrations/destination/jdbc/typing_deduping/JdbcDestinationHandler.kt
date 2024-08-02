@@ -7,12 +7,15 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil.getResultsOrLogAndThrowFirst
 import io.airbyte.commons.concurrency.CompletableFutures
 import io.airbyte.commons.exceptions.SQLRuntimeException
 import io.airbyte.commons.json.Jsons
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
@@ -50,7 +53,9 @@ abstract class JdbcDestinationHandler<DestinationState>(
     protected val catalogName: String?,
     protected val jdbcDatabase: JdbcDatabase,
     protected val rawTableNamespace: String,
-    private val dialect: SQLDialect
+    private val dialect: SQLDialect,
+    private val columns: DestinationColumns = DestinationColumns.V2_WITH_GENERATION,
+    private val sqlOperations: SqlOperations,
 ) : DestinationHandler<DestinationState> {
     protected val dslContext: DSLContext
         get() = DSL.using(dialect)
@@ -62,8 +67,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
         return findExistingTable(jdbcDatabase, catalogName, id.finalNamespace, id.finalName)
     }
 
-    protected open fun getTableFromMetadata(dbmetadata: DatabaseMetaData, id: StreamId): ResultSet =
-        dbmetadata.getTables(catalogName, id.rawNamespace, id.rawName, null)
+    protected open fun getRawTableFromMetadata(
+        dbmetadata: DatabaseMetaData,
+        id: StreamId,
+        suffix: String
+    ): ResultSet = dbmetadata.getTables(catalogName, id.rawNamespace, id.rawName + suffix, null)
 
     @Throws(Exception::class)
     private fun isFinalTableEmpty(id: StreamId): Boolean {
@@ -81,14 +89,14 @@ abstract class JdbcDestinationHandler<DestinationState>(
     }
 
     @Throws(Exception::class)
-    private fun getInitialRawTableState(id: StreamId): InitialRawTableStatus {
+    private fun getInitialRawTableState(id: StreamId, suffix: String): InitialRawTableStatus {
         val tableExists =
             jdbcDatabase.executeMetadataQuery { dbmetadata: DatabaseMetaData ->
                 LOGGER.info {
                     "Retrieving table from Db metadata: $catalogName ${id.rawNamespace} ${id.rawName}"
                 }
                 try {
-                    getTableFromMetadata(dbmetadata, id).use { table ->
+                    getRawTableFromMetadata(dbmetadata, id, suffix).use { table ->
                         return@executeMetadataQuery table.next()
                     }
                 } catch (e: SQLException) {
@@ -102,13 +110,14 @@ abstract class JdbcDestinationHandler<DestinationState>(
             // should not filter raw records by timestamp.
             return InitialRawTableStatus(false, false, Optional.empty())
         }
+
         jdbcDatabase
             .unsafeQuery(
                 { conn: Connection ->
                     conn.prepareStatement(
                         dslContext
                             .select(field("MIN(_airbyte_extracted_at)").`as`("min_timestamp"))
-                            .from(DSL.name(id.rawNamespace, id.rawName))
+                            .from(DSL.name(id.rawNamespace, id.rawName + suffix))
                             .where(DSL.condition("_airbyte_loaded_at IS NULL"))
                             .sql
                     )
@@ -135,7 +144,7 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     conn.prepareStatement(
                         dslContext
                             .select(field("MAX(_airbyte_extracted_at)").`as`("min_timestamp"))
-                            .from(DSL.name(id.rawNamespace, id.rawName))
+                            .from(DSL.name(id.rawNamespace, id.rawName + suffix))
                             .sql
                     )
                 },
@@ -315,7 +324,8 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     isSchemaMismatch = false
                     isFinalTableEmpty = true
                 }
-                val initialRawTableState = getInitialRawTableState(streamConfig.id)
+                val initialRawTableState =
+                    getInitialRawTableState(streamConfig.id, AbstractStreamOperation.NO_SUFFIX)
                 val destinationState =
                     destinationStates.getOrDefault(
                         streamConfig.id.asPair(),
@@ -325,9 +335,25 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     streamConfig,
                     finalTableDefinition.isPresent,
                     initialRawTableState,
+                    getInitialRawTableState(
+                        streamConfig.id,
+                        AbstractStreamOperation.TMP_TABLE_SUFFIX
+                    ),
                     isSchemaMismatch,
                     isFinalTableEmpty,
-                    destinationState
+                    destinationState,
+                    finalTableGenerationId =
+                        sqlOperations.getGenerationIdInTable(
+                            jdbcDatabase,
+                            streamConfig.id.rawNamespace,
+                            streamConfig.id.rawName
+                        ),
+                    finalTempTableGenerationId =
+                        sqlOperations.getGenerationIdInTable(
+                            jdbcDatabase,
+                            streamConfig.id.rawNamespace,
+                            streamConfig.id.rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX
+                        ),
                 )
             } catch (e: Exception) {
                 throw RuntimeException(e)
@@ -359,6 +385,14 @@ abstract class JdbcDestinationHandler<DestinationState>(
             )
     }
 
+    protected open fun isAirbyteGenerationColumnMatch(existingTable: TableDefinition): Boolean {
+        return toJdbcTypeName(AirbyteProtocolType.INTEGER)
+            .equals(
+                existingTable.columns.getValue(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID).type,
+                ignoreCase = true,
+            )
+    }
+
     open protected fun existingSchemaMatchesStreamConfig(
         stream: StreamConfig?,
         existingTable: TableDefinition
@@ -371,7 +405,11 @@ abstract class JdbcDestinationHandler<DestinationState>(
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
                 ) && isAirbyteExtractedAtColumnMatch(existingTable)) ||
                 !(existingTable.columns.containsKey(JavaBaseConstants.COLUMN_NAME_AB_META) &&
-                    isAirbyteMetaColumnMatch(existingTable))
+                    isAirbyteMetaColumnMatch(existingTable)) ||
+                (columns == DestinationColumns.V2_WITH_GENERATION &&
+                    !(existingTable.columns.containsKey(
+                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
+                    ) && isAirbyteGenerationColumnMatch(existingTable)))
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
             // soft-reset

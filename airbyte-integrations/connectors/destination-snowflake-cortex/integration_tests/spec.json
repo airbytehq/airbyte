@@ -332,7 +332,7 @@
           },
           "warehouse": {
             "title": "Warehouse",
-            "description": "Enter the name of the warehouse that you want to sync data into",
+            "description": "Enter the name of the warehouse that you want to use as a compute cluster",
             "order": 3,
             "examples": ["AIRBYTE_WAREHOUSE"],
             "type": "string"
