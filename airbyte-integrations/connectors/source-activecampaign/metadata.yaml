@@ -9,7 +9,7 @@ data:
       enabled: false
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-activecampaign
   connectorSubtype: api
   connectorType: source
