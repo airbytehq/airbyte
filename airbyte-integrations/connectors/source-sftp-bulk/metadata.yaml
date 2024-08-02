@@ -34,6 +34,10 @@ data:
     - language:python
     - cdk:python-file-based
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sftp-bulk_config_dev_null
+          id: 35b9a87f-e585-45b7-b7f8-617e9ff47cc5
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

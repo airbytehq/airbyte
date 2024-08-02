@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: k6-cloud_config_dev_null
+          id: a4ec2de6-7cf9-40d4-b47b-0c5af67cd96f
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-K6-CLOUD__CREDS

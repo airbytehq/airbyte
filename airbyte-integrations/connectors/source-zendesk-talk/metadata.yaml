@@ -40,6 +40,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-talk_config_dev_null
+          id: 22e00a6c-7c05-4a2a-bbbe-2b74dd788b7b
+        - name: zendesk-talk_config_old_dev_null
+          id: 7bfa51b9-6c79-43fa-8b5b-291d979dd710
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
