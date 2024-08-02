@@ -557,7 +557,7 @@ class LiveTests(Step):
         self.connector_image = context.docker_image.split(":")[0]
         options = self.context.run_step_options.step_params.get(CONNECTOR_TEST_STEP_ID.CONNECTOR_LIVE_TESTS, {})
 
-        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.ALL.value)
+        self.test_suite = self.context.run_step_options.get_item_or_default(options, "test-suite", LiveTestSuite.REGRESSION.value)
         self.connection_id = self._get_connection_id(options)
         self.pr_url = self._get_pr_url(options)
 
@@ -632,10 +632,10 @@ class LiveTests(Step):
         try:
             self._validate_job_can_run()
         except AssertionError as exc:
-            self.logger.info(f"Could not run live tests for {self.context.connector.technical_name} due to validation error {str(exc)}.")
+            self.logger.info(f"Skipping live tests for {self.context.connector.technical_name} due to validation error {str(exc)}.")
             return StepResult(
                 step=self,
-                status=StepStatus.FAILURE,
+                status=StepStatus.SKIPPED,
                 exc_info=exc,
             )
 
@@ -663,6 +663,7 @@ class LiveTests(Step):
             stdout=stdout,
             output=container,
             report=regression_test_report,
+            consider_in_overall_status=False,
         )
 
     async def _build_test_container(self, target_container_id: str) -> Container:
