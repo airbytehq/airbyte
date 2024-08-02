@@ -216,7 +216,7 @@ global:
     affinity: {}
 ```
 
-GCS Logging information is below but you can try to use `External Minio` as well but it was not
+Amazon S3 Logging information is below but you can try to use `External Minio` as well but it was not
 tested yet. Feel free to run tests and update the documentation.
 
 Add extra env variables to the following blocks:

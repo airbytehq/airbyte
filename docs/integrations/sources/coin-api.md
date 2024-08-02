@@ -53,6 +53,14 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                              | Subject                                                                                     |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
+| 0.2.14 | 2024-07-27 | [42599](https://github.com/airbytehq/airbyte/pull/42599) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42238](https://github.com/airbytehq/airbyte/pull/42238) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41763](https://github.com/airbytehq/airbyte/pull/41763) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41488](https://github.com/airbytehq/airbyte/pull/41488) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41206](https://github.com/airbytehq/airbyte/pull/41206) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40976](https://github.com/airbytehq/airbyte/pull/40976) | Update dependencies |
+| 0.2.8 | 2024-06-26 | [40315](https://github.com/airbytehq/airbyte/pull/40315) | Update dependencies |
+| 0.2.7 | 2024-06-22 | [40062](https://github.com/airbytehq/airbyte/pull/40062) | Update dependencies |
 | 0.2.6 | 2024-06-06 | [39257](https://github.com/airbytehq/airbyte/pull/39257) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.5 | 2024-05-21 | [38139](https://github.com/airbytehq/airbyte/pull/38139) | Make connector compatable with builder                 ` |
 | 0.2.4 | 2024-04-19 | [37138](https://github.com/airbytehq/airbyte/pull/37138) | Updating to 0.80.0 CDK |

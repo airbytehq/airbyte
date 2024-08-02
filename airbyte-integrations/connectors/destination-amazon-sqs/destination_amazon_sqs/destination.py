@@ -1,14 +1,14 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import logging
 from typing import Any, Iterable, Mapping
 from uuid import uuid4
 
 import boto3
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 from botocore.exceptions import ClientError
@@ -124,7 +124,7 @@ class DestinationAmazonSqs(Destination):
             if message.type == Type.STATE:
                 yield message
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             # Required propeties
             queue_url = config["queue_url"]

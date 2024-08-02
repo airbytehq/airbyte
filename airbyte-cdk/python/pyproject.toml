@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "1.4.0"
+version = "4.3.0"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -23,8 +23,8 @@ classifiers = [
 keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-airbyte-protocol-models = ">=0.9.0, <1.0"
+python = "^3.10"
+airbyte-protocol-models-pdv2 = "^0.12.2"
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
@@ -35,7 +35,7 @@ Jinja2 = "~3.1.2"
 jsonref = "~0.2"
 jsonschema = "~3.2.0"
 pendulum = "<3.0.0"
-pydantic = "^1.10.8"
+pydantic = "^2.7"
 pyrate-limiter = "~3.1.0"
 python-dateutil = "*"
 PyYAML = "^6.0.1"
@@ -64,13 +64,13 @@ cryptography = "^42.0.5"
 pytz = "2024.1"
 
 [tool.poetry.group.dev.dependencies]
-datamodel_code_generator = "0.11.19"
 freezegun = "*"
 mypy = "*"
 pandas = "2.0.3"
 poethepoet = "^0.24.2"
 pyproject-flake8 = "^6.1.0"
-pytest = "6.2.5"
+pytest = "^7"
+pytest-memray = "^1.6.0"
 pytest-cov = "*"
 pytest-httpserver = "*"
 pytest-mock = "*"
@@ -81,9 +81,15 @@ file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfmi
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 
+[tool.ruff]
+# Setting python version to at least 3.10 avoids `from __future__ import annotations`.
+target-version = "py310"
+# This is consistent with airbytehq/airbyte root pyproject.toml Black rule defined.
+line-length = 140
+
 [tool.poe.tasks]
 # Build tasks
-assemble = {cmd = "bin/generate-component-manifest-files.sh", help = "Generate component manifest files."}
+assemble = {cmd = "bin/generate-component-manifest-dagger.sh", help = "Generate component manifest files."}
 build-package = {cmd = "poetry build", help = "Build the python package: source and wheels archives."}
 build = {sequence = ["assemble", "build-package"], help = "Run all tasks to build the package."}
 
@@ -92,14 +98,16 @@ lint =  {cmd = "pflake8 --config ../../pyproject.toml ./", help = "Lint with fla
 type-check = {cmd = "bin/run-mypy-on-modified-files.sh", help = "Type check modified files with mypy."}
 unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cdk --cov-report=term --cov-config ../../pyproject.toml", help = "Run unit tests and create a coverage report."}
 # TODO: find a version of the modified mypy check that works both locally and in CI.
-check-local = {sequence = ["lint", "type-check", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
-check-ci = {sequence = ["lint", "unit-test-with-cov"], help = "Lint and run unit tests. Does not include type-checking."}
+check-lockfile = {cmd = "poetry check", help = "Check the poetry lock file."}
+check-local = {sequence = ["lint", "type-check", "check-lockfile", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
+check-ci = {sequence = ["check-lockfile", "build", "lint", "unit-test-with-cov"], help = "Build the package, lint and run unit tests. Does not include type-checking."}
 
 # Build and check
 pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
 
 [tool.airbyte_ci]
+python_versions = ["3.10", "3.11"]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
-poe_tasks = ["build", "check-ci"]
+poe_tasks = ["check-ci"]
 mount_docker_socket = true

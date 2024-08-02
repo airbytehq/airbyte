@@ -8,7 +8,7 @@ The job history displays information about synced data, such as the amount of da
 
 ![Job History](./assets/connection-job-history.png)
 
-To review the sync history, click a connection in the list to view its sync history. Sync History displays the sync status or [clear](/operator-guides/clear) status. The sync status is defined as:
+To review the sync history, click a connection in the list and navigate to the "Job History" tab to view its sync history. The page displays recent syncs and their statuses. The sync status is defined as:
 
 | Status              | Description                                                       |
 | ------------------- | ----------------------------------------------------------------- |
@@ -17,6 +17,8 @@ To review the sync history, click a connection in the list to view its sync hist
 | Failed              | None of the data has been loaded to the destination               |
 | Cancelled           | The sync was cancelled manually before finishing                  |
 | Running             | The sync is currently running                                     |
+
+If you have recently run a [refresh](/operator-guides/refreshes) or [clear](/operator-guides/clear), you will also see this noted on the Job History page and their corresponding status.
 
 ## Sync summary
 
@@ -29,11 +31,9 @@ Each sync shows the time the sync was initiated and additional metadata. This in
 | x loaded records               | Number of records the destination confirmed it received.      |
 | xh xm xs                       | Total time (hours, minutes, seconds) for the sync to complete |
 
-:::note
+While most syncs only contain a single attempt, a sync can sometimes fail. In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. You can read more about our retry approach [here](../../understanding-airbyte/jobs.md#retry-rules). 
 
-In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. The latest rules can be read about [here](../../understanding-airbyte/jobs.md#retry-rules).
-
-:::
+Airbyte summarizes metrics in the sync summary across all the attempts in the sync. As a result, you may observe that the number of records extracted is higher than the number of records loaded if an attempt fails during the extraction process. A successful sync status means that all the records from the source have been successfully written to the destination.
 
 :::info
 

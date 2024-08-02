@@ -22,6 +22,6 @@ class KlaviyoDatetimeBasedCursor(DatetimeBasedCursor):
         if not stream_slice:
             return {}
 
-        field = self._cursor_field.eval(self.config)
+        field = self.cursor_field.eval(self.config)
         value = stream_slice.get(self._partition_field_start.eval(self.config))
         return {"filter": f"greater-than({field},{value})", "sort": field}
