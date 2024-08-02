@@ -10,7 +10,6 @@ import com.google.cloud.bigquery.FormatOptions
 import com.google.cloud.bigquery.Job
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
-import com.google.cloud.bigquery.TableId
 import io.airbyte.cdk.integrations.destination.gcs.GcsDestinationConfig
 import io.airbyte.cdk.integrations.destination.gcs.GcsNameTransformer
 import io.airbyte.cdk.integrations.destination.gcs.GcsStorageOperations
@@ -21,7 +20,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import org.joda.time.DateTime
@@ -46,9 +44,10 @@ class BigQueryGcsStorageOperation(
     ) {
     private val connectionId = UUID.randomUUID()
     private val syncDateTime = DateTime.now(DateTimeZone.UTC)
-    override fun prepareStage(streamId: StreamId, destinationSyncMode: DestinationSyncMode) {
-        super.prepareStage(streamId, destinationSyncMode)
+    override fun prepareStage(streamId: StreamId, suffix: String, replace: Boolean) {
+        super.prepareStage(streamId, suffix, replace)
         // prepare staging bucket
+        // TODO should this also use the suffix?
         log.info { "Creating bucket ${gcsConfig.bucketName}" }
         gcsStorageOperations.createBucketIfNotExists()
     }
@@ -61,21 +60,29 @@ class BigQueryGcsStorageOperation(
         gcsStorageOperations.dropBucketObject(stagingRootPath)
     }
 
-    override fun writeToStage(streamConfig: StreamConfig, data: SerializableBuffer) {
-        val stagedFileName: String = uploadRecordsToStage(streamConfig.id, data)
-        copyIntoTableFromStage(streamConfig.id, stagedFileName)
+    override fun writeToStage(
+        streamConfig: StreamConfig,
+        suffix: String,
+        data: SerializableBuffer
+    ) {
+        val stagedFileName: String = uploadRecordsToStage(streamConfig.id, suffix, data)
+        copyIntoTableFromStage(streamConfig.id, suffix, stagedFileName)
     }
 
-    private fun uploadRecordsToStage(streamId: StreamId, buffer: SerializableBuffer): String {
+    private fun uploadRecordsToStage(
+        streamId: StreamId,
+        suffix: String,
+        buffer: SerializableBuffer
+    ): String {
         val objectPath: String = stagingFullPath(streamId)
         log.info {
-            "Uploading records to for ${streamId.rawNamespace}.${streamId.rawName} to path $objectPath"
+            "Uploading records to for ${streamId.rawNamespace}.${streamId.rawName}$suffix to path $objectPath"
         }
         return gcsStorageOperations.uploadRecordsToBucket(buffer, streamId.rawNamespace, objectPath)
     }
 
-    private fun copyIntoTableFromStage(streamId: StreamId, stagedFileName: String) {
-        val tableId = TableId.of(streamId.rawNamespace, streamId.rawName)
+    private fun copyIntoTableFromStage(streamId: StreamId, suffix: String, stagedFileName: String) {
+        val tableId = tableId(streamId, suffix)
         val stagingPath = stagingFullPath(streamId)
         val fullFilePath = "gs://${gcsConfig.bucketName}/$stagingPath$stagedFileName"
         log.info { "Uploading records from file $fullFilePath to target Table $tableId" }

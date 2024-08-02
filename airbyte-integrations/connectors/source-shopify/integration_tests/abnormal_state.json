@@ -14,6 +14,17 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "updated_at": "2027-07-11T13:07:45-07:00"
+      },
+      "stream_descriptor": {
+        "name": "customer_journey_summary"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "deleted": {
           "deleted_at": "2027-07-11T13:07:45-07:00"
         },
@@ -21,6 +32,17 @@
       },
       "stream_descriptor": {
         "name": "orders"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2027-07-11T13:07:45-07:00"
+      },
+      "stream_descriptor": {
+        "name": "order_agreements"
       }
     }
   },

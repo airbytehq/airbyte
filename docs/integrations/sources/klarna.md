@@ -62,7 +62,15 @@ Connector will handle an issue with rate limiting as Klarna returns 429 status c
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.2.6 | 2024-06-07 | [38709](https://github.com/airbytehq/airbyte/pull/38709) | Updating US endpoints                                                           |
+| 0.2.14 | 2024-07-27 | [42818](https://github.com/airbytehq/airbyte/pull/42818) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42276](https://github.com/airbytehq/airbyte/pull/42276) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41874](https://github.com/airbytehq/airbyte/pull/41874) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41483](https://github.com/airbytehq/airbyte/pull/41483) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41267](https://github.com/airbytehq/airbyte/pull/41267) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40819](https://github.com/airbytehq/airbyte/pull/40819) | Update dependencies |
+| 0.2.8 | 2024-06-25 | [40504](https://github.com/airbytehq/airbyte/pull/40504) | Update dependencies |
+| 0.2.7 | 2024-06-22 | [40151](https://github.com/airbytehq/airbyte/pull/40151) | Update dependencies |
+| 0.2.6 | 2024-06-07 | [38709](https://github.com/airbytehq/airbyte/pull/38709) | Updating US endpoints |
 | 0.2.5 | 2024-06-04 | [39045](https://github.com/airbytehq/airbyte/pull/39045) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.4 | 2024-04-19 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Updating to 0.80.0 CDK |
 | 0.2.3 | 2024-04-18 | [37182](https://github.com/airbytehq/airbyte/pull/37182) | Manage dependencies with Poetry. |
