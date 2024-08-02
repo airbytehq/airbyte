@@ -98,8 +98,8 @@ class CursorBasedCheckpointReader(CheckpointReader):
 
     def next(self) -> Optional[Mapping[str, Any]]:
         try:
-            self.current_slice = self._find_next_slice()
-            return self.current_slice
+            self._current_slice = self._find_next_slice()
+            return self._current_slice
         except StopIteration:
             self._finished_sync = True
             return None
@@ -120,57 +120,22 @@ class CursorBasedCheckpointReader(CheckpointReader):
 
     def _find_next_slice(self) -> StreamSlice:
         """
-        _find_next_slice() returns the next slice of data should be synced for the current stream according to its cursor.
-        This function supports iterating over a stream's slices across two dimensions. The first dimension is the stream's
-        partitions like parent records for a substream. The inner dimension iterates over the cursor value like a date
-        range for incremental streams or a pagination checkpoint for resumable full refresh.
-
-        The basic algorithm for iterating through a stream's slices is:
-        1. The first time next() is invoked we get the first partition
-        2. If the current partition is already complete as a result of a previous sync attempt, continue iterating until
-           we find an un-synced partition.
-        2. For streams whose cursor value is determined dynamically using stream state
-            1. Get the state for the current partition
-            2. If the current partition's state is complete, continue iterating over partitions
-            3. If the current partition's state is still in progress, emit the next cursor value
-            4. If the current partition is complete as delineated by the sentinel value, get the next incomplete partition
-        3. When stream has processed all partitions, the iterator will raise a StopIteration exception signaling there are no more
-           slices left for extracting more records.
+        Returns the next slice of data to be synced for the current stream according to its cursor.
         """
-
         if self._read_state_from_cursor:
-            if self.current_slice is None:
-                # current_slice is None represents the first time we are iterating over a stream's slices. The first slice to
-                # sync not been assigned yet and must first be read from the iterator
-                next_slice = self.read_and_convert_slice()
-                state_for_slice = self._cursor.select_state(next_slice)
-                if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
-                    # Skip every slice that already has the terminal complete value indicating that a previous attempt
-                    # successfully synced the slice
-                    has_more = True
-                    while has_more:
-                        next_slice = self.read_and_convert_slice()
-                        state_for_slice = self._cursor.select_state(next_slice)
-                        has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
-                return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
+            if self._current_slice is None:
+                # First time iterating over slices.
+                return self._read_next_valid_slice()
             else:
-                state_for_slice = self._cursor.select_state(self.current_slice)
+                state_for_slice = self._cursor.select_state(self._current_slice)
                 if state_for_slice == FULL_REFRESH_COMPLETE_STATE:
-                    # If the current slice is is complete, move to the next slice and skip the next slices that already
-                    # have the terminal complete value indicating that a previous attempt was successfully read.
-                    # Dummy initialization for mypy since we'll iterate at least once to get the next slice
-                    next_candidate_slice = StreamSlice(cursor_slice={}, partition={})
-                    has_more = True
-                    while has_more:
-                        next_candidate_slice = self.read_and_convert_slice()
-                        state_for_slice = self._cursor.select_state(next_candidate_slice)
-                        has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
-                    return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
-                # The reader continues to process the current partition if it's state is still in progress
-                return StreamSlice(cursor_slice=state_for_slice or {}, partition=self.current_slice.partition)
+                    # Current slice is complete, find the next valid one.
+                    return self._read_next_valid_slice()
+
+                # Continue processing the current partition if its state is still in progress.
+                return StreamSlice(cursor_slice=state_for_slice or {}, partition=self._current_slice.partition)
         else:
-            # Unlike RFR cursors that iterate dynamically according to how stream state is updated, most cursors operate
-            # on a fixed set of slices determined before reading records. They just iterate to the next slice
+            # Fixed set of slices.
             return self.read_and_convert_slice()
 
     @property
@@ -188,6 +153,16 @@ class CursorBasedCheckpointReader(CheckpointReader):
                 f"{self.current_slice} should be of type StreamSlice. This is likely a bug in the CDK, please contact Airbyte support"
             )
         return next_slice
+
+    def _read_next_valid_slice(self) -> StreamSlice:
+        """
+        Helper method to read the next valid slice, skipping completed slices.
+        """
+        while True:
+            next_slice = self.read_and_convert_slice()
+            state_for_slice = self._cursor.select_state(next_slice)
+            if state_for_slice != FULL_REFRESH_COMPLETE_STATE:
+                return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_slice.partition)
 
 
 class LegacyCursorBasedCheckpointReader(CursorBasedCheckpointReader):
