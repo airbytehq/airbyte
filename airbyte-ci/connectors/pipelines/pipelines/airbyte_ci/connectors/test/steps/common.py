@@ -26,7 +26,7 @@ from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 from pipelines.consts import INTERNAL_TOOL_PATHS, CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.python.poetry import with_poetry
-from pipelines.helpers.github import AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX
+from pipelines.helpers.github import AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX, AIRBYTE_GITHUB_REPO_URL
 from pipelines.helpers.utils import METADATA_FILE_NAME, get_exec_result
 from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
@@ -612,6 +612,9 @@ class LiveTests(Step):
                     connection_id_is_valid = True
                     break
             assert connection_id_is_valid, f"Connection ID {self.connection_id} is not a valid sandbox connection ID."
+
+        if self.context.git_repo_url != AIRBYTE_GITHUB_REPO_URL:
+            assert self.connection_subset == "sandboxes", f"Regression tests on forks must use a sandbox connection. fork={self.context.git_repo_url}"
 
     def _get_connection_from_test_connections(self) -> Optional[str]:
         for test_suite in self.context.connector.metadata.get("connectorTestSuitesOptions", []):
