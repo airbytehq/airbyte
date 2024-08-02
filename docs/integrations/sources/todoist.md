@@ -46,7 +46,15 @@ List of available streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.2.5 | 2024-06-05 | [38819](https://github.com/airbytehq/airbyte/pull/38819) | Make compatible with the builder                             |
+| 0.2.13 | 2024-07-27 | [42760](https://github.com/airbytehq/airbyte/pull/42760) | Update dependencies |
+| 0.2.12 | 2024-07-20 | [42201](https://github.com/airbytehq/airbyte/pull/42201) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41915](https://github.com/airbytehq/airbyte/pull/41915) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41367](https://github.com/airbytehq/airbyte/pull/41367) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41121](https://github.com/airbytehq/airbyte/pull/41121) | Update dependencies |
+| 0.2.8 | 2024-07-06 | [40939](https://github.com/airbytehq/airbyte/pull/40939) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40351](https://github.com/airbytehq/airbyte/pull/40351) | Update dependencies |
+| 0.2.6 | 2024-06-22 | [40028](https://github.com/airbytehq/airbyte/pull/40028) | Update dependencies |
+| 0.2.5 | 2024-06-05 | [38819](https://github.com/airbytehq/airbyte/pull/38819) | Make compatible with the builder |
 | 0.2.4 | 2024-06-04 | [38936](https://github.com/airbytehq/airbyte/pull/38936) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.3 | 2024-05-21 | [38524](https://github.com/airbytehq/airbyte/pull/38524) | [autopull] base image + poetry + up_to_date |
 | 0.2.2 | 2024-04-19 | [37272](https://github.com/airbytehq/airbyte/pull/37272) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |

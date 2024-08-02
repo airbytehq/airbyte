@@ -19,7 +19,7 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
     for slice in slices:
         records = stream_instance.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=stream_state)
         for record in records:
-            stream_state = stream_instance.get_updated_state(stream_state, record)
+            stream_state = stream_instance._get_updated_state(stream_state, record)
             res.append(record)
     return res
 

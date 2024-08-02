@@ -116,6 +116,16 @@ This error may indicate that you are connecting with a `0.10.x` DuckDB client (a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.4.11 | 2024-07-27 | [42753](https://github.com/airbytehq/airbyte/pull/42753) | Update dependencies |
+| 0.4.10 | 2024-07-20 | [42233](https://github.com/airbytehq/airbyte/pull/42233) | Update dependencies |
+| 0.4.9 | 2024-07-13 | [41882](https://github.com/airbytehq/airbyte/pull/41882) | Update dependencies |
+| 0.4.8 | 2024-07-10 | [41521](https://github.com/airbytehq/airbyte/pull/41521) | Update dependencies |
+| 0.4.7 | 2024-07-09 | [41253](https://github.com/airbytehq/airbyte/pull/41253) | Update dependencies |
+| 0.4.6 | 2024-07-06 | [41014](https://github.com/airbytehq/airbyte/pull/41014) | Update dependencies |
+| 0.4.5 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.4.4 | 2024-06-25 | [40354](https://github.com/airbytehq/airbyte/pull/40354) | Update dependencies |
+| 0.4.3 | 2024-06-23 | [40224](https://github.com/airbytehq/airbyte/pull/40224) | Update dependencies |
+| 0.4.2 | 2024-06-21 | [39947](https://github.com/airbytehq/airbyte/pull/39947) | Update dependencies |
 | 0.4.1 | 2024-06-04 | [38959](https://github.com/airbytehq/airbyte/pull/38959) | [autopull] Upgrade base image to v1.2.1 |
 | 0.4.0   | 2024-05-30 | [#37515](https://github.com/airbytehq/airbyte/pull/37515) | Upgrade DuckDB engine version to [`v0.10.3`](https://github.com/duckdb/duckdb/releases/tag/v0.10.2).                                                                                                                                                                                                                                                                                                                                              |
 | 0.3.6   | 2024-05-21 | [#38486](https://github.com/airbytehq/airbyte/pull/38486)  | [autopull] base image + poetry + up_to_date                                                                                                                                                                                                                                                                                                                                                            |

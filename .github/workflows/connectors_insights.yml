@@ -4,7 +4,9 @@ on:
   schedule:
     - cron: "0 0,12 * * *" # Run every 12 hours UTC
   workflow_dispatch:
-
+    inputs:
+      rewrite:
+        default: false
 jobs:
   connectors_insights:
     name: Connectors Insights generation
@@ -13,6 +15,11 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
+      - name: Docker login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Get Dagger Engine Image
         uses: ./.github/actions/get-dagger-engine-image
         with:
@@ -46,4 +53,4 @@ jobs:
         run: echo "GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcp-sa-key.json" >> $GITHUB_ENV
       - name: Run connectors insights
         run: |
-          poetry -C airbyte-ci/connectors/connectors_insights run connectors-insights generate --gcs-uri=gs://prod-airbyte-cloud-connector-metadata-service/connector_insights --connector-directory airbyte-integrations/connectors/ --concurrency 10
+          poetry -C airbyte-ci/connectors/connectors_insights run connectors-insights generate --gcs-uri=gs://prod-airbyte-cloud-connector-metadata-service/connector_insights --connector-directory airbyte-integrations/connectors/ --concurrency 10 ${{ inputs.rewrite == 'true' && '--rewrite' || ''}}

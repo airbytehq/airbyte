@@ -7,7 +7,6 @@ from functools import reduce
 from typing import TYPE_CHECKING, Any, Callable, List, Mapping, Optional, Tuple
 
 import pytest
-from airbyte_cdk.sources.file_based.schema_helpers import conforms_to_schema
 from airbyte_protocol.models import (
     AirbyteStateMessage,
     AirbyteStateStats,
@@ -16,6 +15,7 @@ from airbyte_protocol.models import (
     AirbyteStreamStatusTraceMessage,
     ConfiguredAirbyteCatalog,
 )
+from live_tests.commons.json_schema_helper import conforms_to_schema
 from live_tests.commons.models import ExecutionResult
 from live_tests.utils import fail_test_on_failing_execution_results, get_test_logger
 

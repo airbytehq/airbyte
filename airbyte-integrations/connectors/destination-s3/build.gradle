@@ -4,9 +4,9 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.35.5'
+    cdkVersionRequired = '0.44.0'
     features = ['db-destinations', 's3-destinations']
-    useLocalCdk = false
+    useLocalCdk = true // TODO: Version CDK, bump required version, and set this to false
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -27,11 +27,13 @@ dependencies {
     implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+        exclude group: 'org.apache.zookeeper'
     }
     implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+        exclude group: 'org.apache.zookeeper'
     }
     implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}

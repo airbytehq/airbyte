@@ -219,7 +219,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalDedupStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 COLUMNS,
@@ -230,7 +230,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         incrementalAppendStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 primaryKey,
                 Optional.of(cursor),
                 COLUMNS,
@@ -242,7 +242,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         cdcIncrementalDedupStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 cdcColumns,
@@ -253,7 +253,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         cdcIncrementalAppendStream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 primaryKey,
                 Optional.of(cursor),
                 cdcColumns,
@@ -358,7 +358,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 incrementalDedupStream.primaryKey,
                 incrementalDedupStream.cursor,
                 incrementalDedupStream.columns,
@@ -583,14 +583,22 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
     fun minTimestampBehavesCorrectly() {
         // When the raw table doesn't exist, there are no unprocessed records and no timestamp
         Assertions.assertEquals(
-            InitialRawTableStatus(false, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = false,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
         // When the raw table is empty, there are still no unprocessed records and no timestamp
         createRawTable(streamId)
         Assertions.assertEquals(
-            InitialRawTableStatus(true, false, Optional.empty()),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty()
+            ),
             getInitialRawTableState(incrementalAppendStream)
         )
 
@@ -643,7 +651,11 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
 
         Assertions.assertEquals(
             getInitialRawTableState(incrementalAppendStream),
-            InitialRawTableStatus(true, false, Optional.of(Instant.parse("2023-01-02T00:00:00Z"))),
+            InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.of(Instant.parse("2023-01-02T00:00:00Z"))
+            ),
             "When all raw records have non-null loaded_at, we should recognize that there are no unprocessed records, and the min timestamp should be equal to the latest extracted_at"
         )
 
@@ -968,7 +980,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.empty(),
                 COLUMNS,
@@ -1380,7 +1392,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 primaryKey,
                 Optional.of(cursor),
                 linkedMapOf(
@@ -1455,7 +1467,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
             val stream =
                 StreamConfig(
                     modifiedStreamId,
-                    DestinationSyncMode.APPEND_DEDUP,
+                    ImportType.DEDUPE,
                     java.util.List.of(columnId),
                     Optional.of(columnId),
                     linkedMapOf(columnId to AirbyteProtocolType.STRING),
@@ -1490,7 +1502,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 linkedMapOf(
@@ -1540,7 +1552,7 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
         val stream =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList<ColumnId>(),
                 Optional.empty(),
                 LinkedHashMap(),
@@ -1802,6 +1814,9 @@ abstract class BaseSqlGeneratorIntegrationTest<DestinationState : MinimumDestina
                                                 )
                                             )
                                     )
+                                    .withSyncId(42)
+                                    .withGenerationId(43)
+                                    .withMinimumGenerationId(0)
                                     .withSyncMode(SyncMode.INCREMENTAL)
                                     .withDestinationSyncMode(DestinationSyncMode.APPEND)
                             )

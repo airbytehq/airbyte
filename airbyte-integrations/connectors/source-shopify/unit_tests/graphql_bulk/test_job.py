@@ -3,6 +3,8 @@
 #
 
 
+from os import remove
+
 import pytest
 import requests
 from airbyte_protocol.models import SyncMode
@@ -25,6 +27,52 @@ from source_shopify.streams.streams import (
 
 _ANY_SLICE = {}
 _ANY_FILTER_FIELD = "any_filter_field"
+
+
+def test_job_manager_default_values(auth_config) -> None:
+    stream = Products(auth_config)
+    
+    # 10Mb chunk size to save the file
+    assert stream.job_manager._retrieve_chunk_size == 10485760 # 1024 * 1024 * 10
+    assert stream.job_manager._job_max_retries == 6
+    assert stream.job_manager._job_backoff_time == 5
+    # running job logger constrain, every 100-ish message will be printed
+    assert stream.job_manager._log_job_msg_frequency == 100
+    assert stream.job_manager._log_job_msg_count == 0
+    # attempt counter
+    assert stream.job_manager._concurrent_attempt == 0
+    # sleep time per creation attempt
+    assert stream.job_manager._concurrent_interval == 30
+    # max attempts for job creation
+    assert stream.job_manager._concurrent_max_retry == 120
+    # currents: _job_id, _job_state, _job_created_at, _job_self_canceled
+    assert not stream.job_manager._job_id
+    # this string is based on ShopifyBulkJobStatus
+    assert not stream.job_manager._job_state 
+    # completed and saved Bulk Job result filename
+    assert not stream.job_manager._job_result_filename
+    # date-time when the Bulk Job was created on the server
+    assert not stream.job_manager._job_created_at
+    # indicated whether or not we manually force-cancel the current job
+    assert not stream.job_manager._job_self_canceled
+    # time between job status checks
+    assert stream.job_manager. _job_check_interval == 3
+    # 0.1 ~= P2H, default value, lower boundary for slice size
+    assert stream.job_manager._job_size_min == 0.1
+    # last running job object count
+    assert stream.job_manager._job_last_rec_count == 0
+    # how many records should be collected before we use the checkpoining
+    assert stream.job_manager._job_checkpoint_interval == 200000
+    # the flag to adjust the next slice from the checkpointed cursor vaue
+    assert not stream.job_manager._job_adjust_slice_from_checkpoint
+    # expand slice factor
+    assert stream.job_manager._job_size_expand_factor == 2
+    # reduce slice factor
+    assert stream.job_manager._job_size_reduce_factor == 2
+    # whether or not the slicer should revert the previous start value
+    assert not stream.job_manager._job_should_revert_slice
+    # 2 sec is set as default value to cover the case with the empty-fast-completed jobs
+    assert stream.job_manager._job_last_elapsed_time == 2.0
 
 
 def test_get_errors_from_response_invalid_response(auth_config) -> None:
@@ -141,14 +189,15 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
     job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
     if error_type:
         with pytest.raises(error_type) as error:
-            stream.job_manager.job_check_for_completion()
+            list(stream.job_manager.job_get_results())
         assert expected in repr(error.value)
     else:
         if job_result_url:
             # mocking the nested request call to retrieve the data from result URL
             requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
-        result = stream.job_manager.job_check_for_completion()
-        assert expected == result
+        mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.read_file", return_value=[])
+        stream.job_manager._job_check_state()
+        assert expected == stream.job_manager._job_result_filename    
 
     
 @pytest.mark.parametrize(
@@ -237,13 +286,64 @@ def test_job_check_with_running_scenario(request, requests_mock, job_response, a
     assert stream.job_manager._job_state == expected
 
 
+@pytest.mark.parametrize(
+    "running_job_response, canceled_job_response, expected",
+    [
+        (
+            "bulk_job_running_with_object_count_and_url_response", 
+            "bulk_job_canceled_with_object_count_and_url_response", 
+            "bulk-123456789.jsonl",
+        ),
+        (
+            "bulk_job_running_with_object_count_no_url_response", 
+            "bulk_job_canceled_with_object_count_no_url_response", 
+            None,
+        ),
+    ],
+    ids=[
+        "self-canceled with url",
+        "self-canceled with no url",
+    ],
+)
+def test_job_running_with_canceled_scenario(mocker, request, requests_mock, running_job_response, canceled_job_response, auth_config, expected) -> None:
+    stream = MetafieldOrders(auth_config)
+    # modify the sleep time for the test
+    stream.job_manager._job_check_interval = 0
+    # get job_id from FIXTURE
+    job_id = request.getfixturevalue(running_job_response).get("data", {}).get("node", {}).get("id")
+    # mocking the response for STATUS CHECKS
+    requests_mock.post(
+        stream.job_manager.base_url, 
+        [
+            {"json": request.getfixturevalue(running_job_response)},
+            {"json": request.getfixturevalue(canceled_job_response)},
+        ],
+    )
+    job_result_url = request.getfixturevalue(canceled_job_response).get("data", {}).get("node", {}).get("url")
+    # test the state of the job isn't assigned
+    assert stream.job_manager._job_state == None
+    
+    stream.job_manager._job_id = job_id
+    stream.job_manager._job_checkpoint_interval = 5
+    # faking self-canceled job
+    stream.job_manager._job_self_canceled = True
+    # mocking the nested request call to retrieve the data from result URL
+    requests_mock.get(job_result_url, json=request.getfixturevalue(canceled_job_response))
+    mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.read_file", return_value=[])
+    stream.job_manager._job_check_state()
+    assert stream.job_manager._job_result_filename == expected
+    # clean up
+    if expected:
+        remove(expected)
+
+
 def test_job_read_file_invalid_filename(mocker, auth_config) -> None:
     stream = MetafieldOrders(auth_config)
     expected = "An error occured while producing records from BULK Job result"
     # patching the method to get the filename
     mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.produce_records", side_effect=Exception)
     with pytest.raises(ShopifyBulkExceptions.BulkRecordProduceError) as error:
-        list(stream.record_producer.read_file("test.jsonl"))
+        list(stream.job_manager.record_producer.read_file("test.jsonl"))
 
     assert expected in repr(error.value)
 
@@ -332,7 +432,7 @@ def test_stream_slices(
         auth_config["start_date"] = "2020-01-01"
 
     stream = stream(auth_config)
-    stream.job_manager.job_size = 1000
+    stream.job_manager._job_size = 1000
     test_result = list(stream.stream_slices(stream_state=stream_state))
     assert test_result[0].get("start") == expected_start
 
@@ -340,7 +440,7 @@ def test_stream_slices(
 @pytest.mark.parametrize(
     "stream, json_content_example, last_job_elapsed_time, previous_slice_size, adjusted_slice_size",
     [
-        (CustomerAddress, "customer_address_jsonl_content_example", 10, 4, 5.5),
+        (CustomerAddress, "customer_address_jsonl_content_example", 20, 4, 5.5),
     ],
     ids=[
         "Expand Slice Size",
@@ -368,13 +468,12 @@ def test_expand_stream_slices_job_size(
 
     # for the sake of simplicity we fake some parts to simulate the `current_job_time_elapsed`
     # fake current slice interval value
-    stream.job_manager.job_size = previous_slice_size
+    stream.job_manager._job_size = previous_slice_size
     # fake `last job elapsed time` 
     if last_job_elapsed_time:
         stream.job_manager._job_last_elapsed_time = last_job_elapsed_time
-    # parsing result from completed job
 
     first_slice = next(stream.stream_slices())
     list(stream.read_records(SyncMode.incremental, stream_slice=first_slice))
     # check the next slice
-    assert stream.job_manager.job_size == adjusted_slice_size
+    assert stream.job_manager._job_size == adjusted_slice_size

@@ -6,7 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_captain_data import SourceCaptainData
+
+from .source import SourceCaptainData
 
 
 def run():
