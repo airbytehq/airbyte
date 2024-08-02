@@ -4,26 +4,14 @@ connector_image: airbyte/source-snowflake:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "secrets/config.json"
+      - spec_path: "manifest.yaml"
   connection:
-    tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-  #  discovery:
-  #    tests:
-  #      - config_path: "secrets/config.json"
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+  discovery:
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
+  incremental:
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-#  incremental:
-#    tests:
-#      - config_path: "secrets/config.json"
-#        configured_catalog_path: "integration_tests/configured_catalog_inc.json"
+    bypass_reason: "This is a builder contribution, and we do not have secrets at this time"

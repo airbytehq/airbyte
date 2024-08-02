@@ -1,0 +1,100 @@
+version: 3.9.6
+
+type: DeclarativeSource
+
+description: ""
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "*"
+              - address
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.street[0] == 'E' }}"
+          schema_normalization: Default
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+  base_requester:
+    type: HttpRequester
+    url_base: https://jsonplaceholder.typicode.com
+
+streams:
+  - $ref: "#/definitions/streams/users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    users: false
+  testedStreams:
+    users:
+      hasRecords: true
+      streamHash: 839470487285573fed04d8a07b1b38f55b491fe9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+
+schemas:
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      city:
+        type:
+          - string
+          - "null"
+      geo:
+        type:
+          - object
+          - "null"
+        properties:
+          lat:
+            type:
+              - number
+              - "null"
+          lng:
+            type:
+              - string
+              - "null"
+      street:
+        type:
+          - string
+          - "null"
+      suite:
+        type:
+          - string
+          - "null"
+      zipcode:
+        type:
+          - string
+          - "null"

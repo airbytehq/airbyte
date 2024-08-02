@@ -1,50 +1,32 @@
-# Snowflake Source
+# RecordSelectingNormalizer
+This directory contains the manifest-only connector for `source-snowflake`.
 
-## Documentation
 
-- [User Documentation](https://docs.airbyte.io/integrations/sources/snowflake)
+## Usage
 
-## Community Contributor
+- You can use this connector as any other connector in Airbyte Marketplace.
+- You can load this connector in `pyairbyte` usinng `get_source`!
+- You can open this connector in Connector Builder, edit it, and publish to your workspaces.
 
-1. Look at the integration documentation to see how to create a warehouse/database/schema/user/role for Airbyte to sync into.
-1. Create a file at `secrets/config.json` with the following format:
+Please refer to the manifest-only connector documentation for more details.
 
-```
-{
-  "host": "ACCOUNT.REGION.PROVIDER.snowflakecomputing.com",
-  "role": "AIRBYTE_ROLE",
-  "warehouse": "AIRBYTE_WAREHOUSE",
-  "database": "AIRBYTE_DATABASE",
-  "schema": "AIRBYTE_SCHEMA",
-  "credentials": {
-    "auth_type": "username/password",
-    "username": "AIRBYTE_USER",
-    "password": "SOMEPASSWORD"
-  }
-}
-```
+## Local Development
+We recommend you use the Connector Builder to edit this connector.
 
-3. Create a file at `secrets/config_auth.json` with the following format:
+But, if you want to develop this connector locally, you can use the following steps.
 
-```
-{
-  "host": "ACCOUNT.REGION.PROVIDER.snowflakecomputing.com",
-  "role": "AIRBYTE_ROLE",
-  "warehouse": "AIRBYTE_WAREHOUSE",
-  "database": "AIRBYTE_DATABASE",
-  "schema": "AIRBYTE_SCHEMA",
-  "credentials": {
-    "auth_type": "OAuth",
-    "client_id": "client_id",
-    "client_secret": "client_secret",
-    "refresh_token": "refresh_token"
-  }
-}
+### Environment Setup
+You will need `airbyte-ci` installed. You can find the documentation [here](airbyte-ci).
+
+### Build
+This will create a dev image (`source-snowflake:dev`) that you can use to test the connector locally.
+```bash
+airbyte-ci connectors --name=source-snowflake build
 ```
 
-## For Airbyte employees
+### Test
+This will run the acceptance tests for the connector.
+```bash
+airbyte-ci connectors --name=source-snowflake test
+```
 
-To be able to run integration tests locally:
-
-1. Put the contents of the `Source snowflake test creds (secrets/config.json)` secret on Lastpass into `secrets/config.json`.
-1. Put the contents of the `SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS (secrets/config_auth.json)` secret on Lastpass into `secrets/config_auth.json`.

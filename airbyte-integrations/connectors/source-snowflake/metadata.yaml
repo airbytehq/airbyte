@@ -1,53 +1,36 @@
+metadataSpecVersion: "1.0"
 data:
-  ab_internal:
-    ql: 200
-    sl: 100
   allowedHosts:
     hosts:
-      - ${host}
-  connectorSubtype: database
-  connectorType: source
-  definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 0.3.3
-  dockerRepository: airbyte/source-snowflake
-  documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
-  githubIssueLabel: source-snowflake
-  icon: snowflake.svg
-  license: ELv2
-  name: Snowflake
-  registries:
-    cloud:
-      enabled: true
+      - "*"
+    registries:
     oss:
       enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-snowflake
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:3.13.0@sha256:f58d1d327f32997012fec7991e2580cb4fb605db91455c4525a57b3e98ed81c7
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7bb003d3-6768-439e-b179-c11d7fd5dac8
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-snowflake
+  githubIssueLabel: source-snowflake
+  icon: icon.svg
+  license: MIT
+  name: RecordSelectingNormalizer
+  releaseDate: 2024-08-02
   releaseStage: alpha
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake.md
   tags:
-    - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: integrationTests
-      testSecrets:
-        - name: SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS
-          fileName: config_auth.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-SNOWFLAKE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS
-          fileName: config_auth.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-SNOWFLAKE__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-metadataSpecVersion: "1.0"
+    - language:manifest-only
+    - cdk:low-code
+
+  ab_internal:
+    ql: 100
+    sl: 100
