@@ -241,6 +241,7 @@ auth:
     oidc:
       domain: ## e.g. company.example
       app-name: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -272,6 +273,7 @@ global:
       oidc:
         domain: ## e.g. company.example
         app-name: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```

@@ -37,6 +37,10 @@ data:
         message: "Use new firebolt-sdk version."
         upgradeDeadline: "2024-06-01"
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: firebolt_config_dev_null
+          id: 63d919ce-b4ff-48d9-9cae-6665b5f56644
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
