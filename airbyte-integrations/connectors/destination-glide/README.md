@@ -5,37 +5,48 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ## Development
 
-The active todo list is at [./todo.md].
-The gist of the Glide-specific code is in `/destination_glide/destination.py` and `/destination_glide/glide.py`.
+The active todo list is at `./todo.md`.
 
-### Prerequisites
+The gist of the Glide-specific code is in `destination_glide/destination.py` and `destination_glide/glide.py`.
 
-- Python (`^3.9`, tested recently with `3.12.3`)
-- Poetry (`^1.7`, tested recently with `1.8.3_1`)
+### Setup
 
-I used homebrew for installing these prerequisites on macOS.
+1. Ensure you have the following prerequisites installed:
 
-### Unit Tests
+    - Python (`^3.9`, tested recently with `3.12.3`)
+    - Poetry (`^1.7`, tested recently with `1.8.3_1`)
 
-The unit tests for that code are in `/destination-glide/unit_tests`. To run them run:
+    You can use homebrew to install these on macOS.
+
+2. Once you have the above, run:
+
+```
+poetry install
+```
+
+### Running the Tests
+
+Create the file `secrets/config.json`. It must confirm to the configuration specification in `destination_glide/spec.json`, which also specifies the configuration UI within the Airbyte product itself for configuring the destination.
+
+It should be something like:
+
+```json
+{
+  "api_host": "https://api.staging.glideapps.com",
+  "api_path_root": "",
+  "api_key": "decafbad-1234-1234-1234-decafbad"
+}
+```
+
+#### Unit Tests
+
+The unit tests for that code are in `destination-glide/unit_tests`. To run them run:
 
 ```sh
 ./scripts/test-unit.sh
 ```
 
-### Integration Tests
-
-The destination has a configuration in `/secrets/config.json`. That file must confirm to the configuration specification in `/destination_glide/spec.json`. It should be something like:
-
-```json
-{
-  "api_host": "http://localhost:5005",
-  "api_path_root": "api",
-  "api_key": "decafbad-1234-1234-1234-decafbad"
-}
-```
-
-The spec also specifies the configuration UI within the Airbyte product itself for configuring the destination.
+#### Integration Tests
 
 There are a set of simple integration tests that Airbyte provides that can be triggered with the following scripts:
 
