@@ -414,7 +414,7 @@ avro_all_types_scenario = (
                     "col_date": "2022-05-29",
                     "col_time_millis": "06:00:00.456000",
                     "col_time_micros": "12:00:00.456789",
-                    "col_timestamp_millis": "2022-05-29T00:00:00.456000+00:00",
+                    "col_timestamp_millis": "2022-05-29T00:00:00.456+00:00",
                     "col_timestamp_micros": "2022-05-30T00:00:00.456789+00:00",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.avro",

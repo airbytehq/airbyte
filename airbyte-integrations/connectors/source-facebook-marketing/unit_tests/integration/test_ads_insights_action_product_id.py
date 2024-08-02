@@ -6,7 +6,7 @@
 import json
 from datetime import datetime, timedelta
 from http import HTTPStatus
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 from unittest import TestCase
 
 import freezegun
@@ -35,23 +35,7 @@ _STREAM_NAME = "ads_insights_action_product_id"
 _CURSOR_FIELD = "date_start"
 _REPORT_RUN_ID = "1571860060019548"
 _JOB_ID = "1049937379601625"
-
-
-def _update_api_throttle_limit_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
-    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
-
-
-def _job_start_request(
-    account_id: Optional[str] = ACCOUNT_ID, since: Optional[datetime] = None, until: Optional[datetime] = None
-) -> RequestBuilder:
-    since = since.strftime(DATE_FORMAT) if since else START_DATE[:10]
-    until = until.strftime(DATE_FORMAT) if until else END_DATE[:10]
-    body = {
-        "level": "ad",
-        "action_breakdowns": [],
-        "action_report_time": "mixed",
-        "breakdowns": ["product_id"],
-        "fields": [
+_JOB_START_FIELDS = [
             "account_currency",
             "account_id",
             "account_name",
@@ -153,7 +137,25 @@ def _job_start_request(
             "video_time_watched_actions",
             "website_ctr",
             "website_purchase_roas",
-        ],
+        ]
+
+
+def _update_api_throttle_limit_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:
+    return RequestBuilder.get_insights_endpoint(access_token=ACCESS_TOKEN, account_id=account_id)
+
+
+def _job_start_request(
+    account_id: Optional[str] = ACCOUNT_ID, since: Optional[datetime] = None, until: Optional[datetime] = None, fields: Optional[List[str]] = None
+) -> RequestBuilder:
+    since = since.strftime(DATE_FORMAT) if since else START_DATE[:10]
+    until = until.strftime(DATE_FORMAT) if until else END_DATE[:10]
+    body_fields = _JOB_START_FIELDS if not fields else fields
+    body = {
+        "level": "ad",
+        "action_breakdowns": [],
+        "action_report_time": "mixed",
+        "breakdowns": ["product_id"],
+        "fields": body_fields,
         "time_increment": 1,
         "action_attribution_windows": ["1d_click", "7d_click", "28d_click", "1d_view", "7d_view", "28d_view"],
         "filtering": [
@@ -242,12 +244,13 @@ def _ads_insights_action_product_id_record() -> RecordBuilder:
 @freezegun.freeze_time(NOW.isoformat())
 class TestFullRefresh(TestCase):
     @staticmethod
-    def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
+    def _read(config_: ConfigBuilder, expecting_exception: bool = False, json_schema: Optional[Dict[str, any]] = None) -> EntrypointOutput:
         return read_output(
             config_builder=config_,
             stream_name=_STREAM_NAME,
             sync_mode=SyncMode.full_refresh,
             expecting_exception=expecting_exception,
+            json_schema=json_schema
         )
 
     @HttpMocker()
@@ -277,6 +280,33 @@ class TestFullRefresh(TestCase):
         )
 
         output = self._read(config().with_account_ids([client_side_account_id]).with_start_date(start_date).with_end_date(end_date))
+        assert len(output.records) == 1
+
+    @HttpMocker()
+    def test_request_fields_from_json_schema_in_configured_catalog(self, http_mocker: HttpMocker) -> None:
+        """
+        The purpose of this test is to check that the request fields are the same provided in json_request_schema inside configured catalog
+        """
+        configured_json_schema = find_template(f"{_STREAM_NAME}_reduced_configured_schema_fields", __file__)
+        job_body_fields = [field for field in configured_json_schema["properties"]]
+        http_mocker.get(
+            get_account_request().build(),
+            get_account_response(),
+        )
+        http_mocker.get(
+            _update_api_throttle_limit_request().build(),
+            _update_api_throttle_limit_response(),
+        )
+        http_mocker.post(
+            _job_start_request(fields=job_body_fields).build(),
+            _job_start_response(_REPORT_RUN_ID),
+        )
+        http_mocker.post(_job_status_request(_REPORT_RUN_ID).build(), _job_status_response(_JOB_ID))
+        http_mocker.get(
+            _get_insights_request(_JOB_ID).build(),
+            _insights_response().with_record(_ads_insights_action_product_id_record()).build(),
+        )
+        output = self._read(config(), json_schema=configured_json_schema)
         assert len(output.records) == 1
 
     @HttpMocker()
@@ -404,7 +434,7 @@ class TestFullRefresh(TestCase):
 class TestIncremental(TestCase):
     @staticmethod
     def _read(
-        config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
+        config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False, json_schema: Optional[Dict[str, any]] = None
     ) -> EntrypointOutput:
         return read_output(
             config_builder=config_,
@@ -412,6 +442,7 @@ class TestIncremental(TestCase):
             sync_mode=SyncMode.incremental,
             state=state,
             expecting_exception=expecting_exception,
+            json_schema=json_schema
         )
 
     @HttpMocker()

@@ -8,7 +8,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
-from airbyte_cdk.test.entrypoint_wrapper import discover, read
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import (
     AirbyteAnalyticsTraceMessage,
@@ -130,6 +130,16 @@ def _create_tmp_file_validation(entrypoint, expected_config, expected_catalog: O
 class EntrypointWrapperDiscoverTest(TestCase):
     def setUp(self) -> None:
         self._a_source = _a_mocked_source()
+
+    @staticmethod
+    def test_init_validation_error():
+        invalid_message = '{"type": "INVALID_TYPE"}'
+        entrypoint_output = EntrypointOutput([invalid_message])
+        messages = entrypoint_output._messages
+        assert len(messages) == 1
+        assert messages[0].type == Type.LOG
+        assert messages[0].log.level == Level.INFO
+        assert messages[0].log.message == invalid_message
 
     @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
     def test_when_discover_then_ensure_parameters(self, entrypoint):

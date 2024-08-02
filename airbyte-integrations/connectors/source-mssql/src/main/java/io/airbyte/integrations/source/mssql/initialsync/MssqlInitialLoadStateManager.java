@@ -24,6 +24,7 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
   public static final String STATE_TYPE_KEY = "state_type";
   public static final String ORDERED_COL_STATE_TYPE = "ordered_column";
   protected Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOrderedColLoadStatus;
+  protected Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
 
   private OrderedColumnLoadStatus ocStatus;
 
@@ -61,7 +62,9 @@ public abstract class MssqlInitialLoadStateManager implements SourceStateMessage
    * @param pair pair
    * @return load status
    */
-  public abstract OrderedColumnInfo getOrderedColumnInfo(final AirbyteStreamNameNamespacePair pair);
+  public OrderedColumnInfo getOrderedColumnInfo(final AirbyteStreamNameNamespacePair pair) {
+    return pairToOrderedColInfo.get(pair);
+  }
 
   static Map<AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> initPairToOrderedColumnLoadStatusMap(
                                                                                                            final Map<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair, OrderedColumnLoadStatus> pairToOcStatus) {

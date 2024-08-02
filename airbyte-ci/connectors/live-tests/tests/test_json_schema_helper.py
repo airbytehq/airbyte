@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Any, Iterable, List, Text, Tuple, Union
+from typing import Any, Iterable, List, Mapping, Text, Tuple, Union
 
 import pendulum
 import pytest
@@ -16,7 +16,13 @@ from airbyte_protocol.models import (
     SyncMode,
     Type,
 )
-from live_tests.commons.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
+from live_tests.commons.json_schema_helper import (
+    ComparableType,
+    JsonSchemaHelper,
+    conforms_to_schema,
+    get_expected_schema_structure,
+    get_object_structure,
+)
 from pydantic import BaseModel
 
 
@@ -280,3 +286,194 @@ def test_find_and_get_nodes(keys: List[Text], num_paths: int, last_value: Any):
         for path in variant_paths:
             values_at_nodes.append(schema_helper.get_node(path))
         assert last_value in values_at_nodes
+
+
+COMPLETE_CONFORMING_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+
+NONCONFORMING_EXTRA_COLUMN_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+    "column_x": "extra",
+}
+
+CONFORMING_WITH_MISSING_COLUMN_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+}
+
+CONFORMING_WITH_NARROWER_TYPE_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": True,
+    "number_field": True,
+    "string_field": True,
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+NONCONFORMING_WIDER_TYPE_RECORD = {
+    "null_field": "not None",
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+NONCONFORMING_NON_OBJECT_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+    "object_field": "not an object",
+}
+
+NONCONFORMING_NON_ARRAY_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": "not an array",
+    "object_field": {"col": "val"},
+}
+
+CONFORMING_MIXED_TYPE_NARROWER_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+NONCONFORMING_MIXED_TYPE_WIDER_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+CONFORMING_MIXED_TYPE_WITHIN_TYPE_RANGE_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "val1",
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+NONCONFORMING_INVALID_ARRAY_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": ["this should not be an array"],
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+NONCONFORMING_TOO_WIDE_ARRAY_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "okay",
+    "array_field": ["val1", "val2"],
+    "object_field": {"col": "val"},
+}
+
+
+CONFORMING_NARROWER_ARRAY_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": "okay",
+    "array_field": [1, 2],
+    "object_field": {"col": "val"},
+}
+
+
+NONCONFORMING_INVALID_OBJECT_RECORD = {
+    "null_field": None,
+    "boolean_field": True,
+    "integer_field": 1,
+    "number_field": 1.5,
+    "string_field": {"this": "should not be an object"},
+    "array_field": [1.1, 2.2],
+    "object_field": {"col": "val"},
+}
+
+
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "null_field": {"type": "null"},
+        "boolean_field": {"type": "boolean"},
+        "integer_field": {"type": "integer"},
+        "number_field": {"type": "number"},
+        "string_field": {"type": "string"},
+        "array_field": {
+            "type": "array",
+            "items": {
+                "type": "number",
+            },
+        },
+        "object_field": {"type": "object"},
+    },
+}
+
+
+@pytest.mark.parametrize(
+    "record,schema,expected_result",
+    [
+        pytest.param(COMPLETE_CONFORMING_RECORD, SCHEMA, True, id="record-conforms"),
+        pytest.param(NONCONFORMING_EXTRA_COLUMN_RECORD, SCHEMA, False, id="nonconforming-extra-column"),
+        pytest.param(CONFORMING_WITH_MISSING_COLUMN_RECORD, SCHEMA, True, id="record-conforms-with-missing-column"),
+        pytest.param(CONFORMING_WITH_NARROWER_TYPE_RECORD, SCHEMA, True, id="record-conforms-with-narrower-type"),
+        pytest.param(NONCONFORMING_WIDER_TYPE_RECORD, SCHEMA, False, id="nonconforming-wider-type"),
+        pytest.param(NONCONFORMING_NON_OBJECT_RECORD, SCHEMA, False, id="nonconforming-string-is-not-an-object"),
+        pytest.param(NONCONFORMING_NON_ARRAY_RECORD, SCHEMA, False, id="nonconforming-string-is-not-an-array"),
+        pytest.param(NONCONFORMING_TOO_WIDE_ARRAY_RECORD, SCHEMA, False, id="nonconforming-array-values-too-wide"),
+        pytest.param(CONFORMING_NARROWER_ARRAY_RECORD, SCHEMA, True, id="conforming-array-values-narrower-than-schema"),
+        pytest.param(NONCONFORMING_INVALID_ARRAY_RECORD, SCHEMA, False, id="nonconforming-array-is-not-a-string"),
+        pytest.param(NONCONFORMING_INVALID_OBJECT_RECORD, SCHEMA, False, id="nonconforming-object-is-not-a-string"),
+    ],
+)
+def test_conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any], expected_result: bool) -> None:
+    assert conforms_to_schema(record, schema) == expected_result
+
+
+def test_comparable_types() -> None:
+    assert ComparableType.OBJECT > ComparableType.STRING
+    assert ComparableType.STRING > ComparableType.NUMBER
+    assert ComparableType.NUMBER > ComparableType.INTEGER
+    assert ComparableType.INTEGER > ComparableType.BOOLEAN
+    assert ComparableType["OBJECT"] == ComparableType.OBJECT
