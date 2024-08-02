@@ -25,6 +25,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
+import io.airbyte.integrations.destination.snowflake.caching.CacheManager
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import java.sql.Connection
 import java.sql.DatabaseMetaData
@@ -58,6 +59,9 @@ class SnowflakeDestinationHandler(
     private fun getFinalTableRowCount(
         streamIds: List<StreamId>
     ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
+
+        LOGGER.info("Entering getFinalTableRowCount");
+
         val tableRowCounts = LinkedHashMap<String, LinkedHashMap<String, Int>>()
         // convert list stream to array
         val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
@@ -71,8 +75,15 @@ class SnowflakeDestinationHandler(
             |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
             |""".trimMargin()
         val bindValues = arrayOf(databaseName) + namespaces + names
-        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
-        for (result in results) {
+
+        //val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
+            + "\n bindValues=" + bindValues)
+
+        val results: List<JsonNode> = CacheManager.queryJsons(database, query, bindValues)
+
+            for (result in results) {
             val tableSchema = result["TABLE_SCHEMA"].asText()
             val tableName = result["TABLE_NAME"].asText()
             val rowCount = result["ROW_COUNT"].asInt()
@@ -377,6 +388,9 @@ class SnowflakeDestinationHandler(
         val destinationStates = super.getAllDestinationStates()
 
         val streamIds = streamConfigs.map(StreamConfig::id).toList()
+
+        LOGGER.info("Entering gatherInitialState(...)");
+
         val existingTables = findExistingTables(database, databaseName, streamIds)
         val tableRowCounts = getFinalTableRowCount(streamIds)
         return streamConfigs
@@ -484,7 +498,10 @@ class SnowflakeDestinationHandler(
     }
 
     fun query(sql: String): List<JsonNode> {
-        return database.queryJsons(sql)
+        //return database.queryJsons(sql)
+
+        LOGGER.info("Inside query method: Calling CacheManager.queryJsons for sql=" + sql)
+        return CacheManager.queryJsons(database, sql, arrayOf())
     }
 
     companion object {
@@ -501,6 +518,9 @@ class SnowflakeDestinationHandler(
             databaseName: String,
             streamIds: List<StreamId>
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
+
+            println("Entering findExistingTables(...)");
+
             val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
             // convert list stream to array
             val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
@@ -517,7 +537,14 @@ class SnowflakeDestinationHandler(
 
             val bindValues =
                 arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
-            val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+            //val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
+                + "\n bindValues=" + bindValues)
+
+            val results: List<JsonNode> = CacheManager.queryJsons(database, query, bindValues)
+
             for (result in results) {
                 val tableSchema = result["TABLE_SCHEMA"].asText()
                 val tableName = result["TABLE_NAME"].asText()
