@@ -32,7 +32,7 @@ def log_selected_connectors(selected_connectors_with_modified_files: List[Connec
         main_logger.info("No connectors to run.")
 
 
-def get_base_connector_and_variants(connector: Connector):
+def get_base_connector_and_variants(connector: Connector) -> Set[Connector]:
     base_connector_path = connector.relative_connector_path.replace("-strict-encrypt", "")
     base_connector = Connector(base_connector_path)
     strict_encrypt_connector_path = f"{base_connector.relative_connector_path}-strict-encrypt"
