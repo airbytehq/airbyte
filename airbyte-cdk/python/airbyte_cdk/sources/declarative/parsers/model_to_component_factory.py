@@ -630,7 +630,8 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)):
+            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)
+            if combined_slicers and not isinstance(combined_slicers, supported_slicers):
                 raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
