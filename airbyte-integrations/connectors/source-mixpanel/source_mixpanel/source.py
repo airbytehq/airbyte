@@ -72,7 +72,17 @@ class SourceMixpanel(YamlDeclarativeSource):
 
     @adapt_validate_if_testing
     def _validate_and_transform(self, config: MutableMapping[str, Any]):
-        project_timezone, start_date, end_date, attribution_window, select_properties_by_default, region, date_window_size, project_id = (
+        (
+            project_timezone,
+            start_date,
+            end_date,
+            attribution_window,
+            select_properties_by_default,
+            region,
+            date_window_size,
+            project_id,
+            page_size,
+        ) = (
             config.get("project_timezone", "US/Pacific"),
             config.get("start_date"),
             config.get("end_date"),
@@ -81,6 +91,7 @@ class SourceMixpanel(YamlDeclarativeSource):
             config.get("region", "US"),
             config.get("date_window_size", 30),
             config.get("credentials", dict()).get("project_id"),
+            config.get("page_size", 1000),
         )
         try:
             project_timezone = pendulum.timezone(project_timezone)
@@ -113,5 +124,6 @@ class SourceMixpanel(YamlDeclarativeSource):
         config["region"] = region
         config["date_window_size"] = date_window_size
         config["project_id"] = project_id
+        config["page_size"] = page_size
 
         return config

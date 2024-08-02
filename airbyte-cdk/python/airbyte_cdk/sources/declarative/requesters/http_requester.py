@@ -4,12 +4,13 @@
 
 import logging
 import os
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urljoin
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
+from airbyte_cdk.sources.declarative.decoders import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -53,6 +54,9 @@ class HttpRequester(Requester):
     disable_retries: bool = False
     message_repository: MessageRepository = NoopMessageRepository()
     use_cache: bool = False
+    _exit_on_rate_limit: bool = False
+    stream_response: bool = False
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
@@ -67,7 +71,6 @@ class HttpRequester(Requester):
         self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self._parameters = parameters
-        self.decoder = JsonDecoder(parameters={})
 
         if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
             backoff_strategies = self.error_handler.backoff_strategies
@@ -84,6 +87,14 @@ class HttpRequester(Requester):
             disable_retries=self.disable_retries,
             message_repository=self.message_repository,
         )
+
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        return self._exit_on_rate_limit
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self._exit_on_rate_limit = value
 
     def get_authenticator(self) -> DeclarativeAuthenticator:
         return self._authenticator
@@ -297,13 +308,14 @@ class HttpRequester(Requester):
                 self.get_url_base(),
                 path or self.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             ),
-            request_kwargs={},
+            request_kwargs={"stream": self.stream_response},
             headers=self._request_headers(stream_state, stream_slice, next_page_token, request_headers),
             params=self._request_params(stream_state, stream_slice, next_page_token, request_params),
             json=self._request_body_json(stream_state, stream_slice, next_page_token, request_body_json),
             data=self._request_body_data(stream_state, stream_slice, next_page_token, request_body_data),
             dedupe_query_params=True,
             log_formatter=log_formatter,
+            exit_on_rate_limit=self._exit_on_rate_limit,
         )
 
         return response
