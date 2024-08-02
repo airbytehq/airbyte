@@ -60,13 +60,8 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- _Only for docker compose deployments:_ Change the default username and password in your environment's `.env` file:
-  ```
-  	# Proxy Configuration
-  	# Set to empty values, e.g. "" to disable basic auth
-  	BASIC_AUTH_USERNAME=your_new_username_here
-  	BASIC_AUTH_PASSWORD=your_new_password_here
-  ```
+- Change the default password by following the instructions [here](deploying-airbyte/integrations/authentication)
+
 - If you deployed Airbyte on a cloud provider:
   - GCP: use the [Identity-Aware proxy](https://cloud.google.com/iap) service
   - AWS: use the [AWS Systems Manager Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html) service
