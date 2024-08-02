@@ -267,6 +267,14 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.3.0   | 2024-07-22 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
+| 2.2.1   | 2024-07-22 | [\#42423](https://github.com/airbytehq/airbyte/pull/42423) | no-op. Bumping to a clean image                                                                                 |
+| 2.2.0   | 2024-07-22 | [\#42423](https://github.com/airbytehq/airbyte/pull/42423) | Revert refreshes support                                                                                 |
+| 2.1.1   | 2024-07-22 | [\#42415](https://github.com/airbytehq/airbyte/pull/42415) | fixing PostgresSqlOperations.isOtherGenerationIdInTable to close the streams coming from JdbcDatabase.unsafeQuery |
+| 2.1.0   | 2024-07-22 | [\#41954](https://github.com/airbytehq/airbyte/pull/41954) | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version.                                                          |
+| 2.0.15  | 2024-06-26 | [\#40554](https://github.com/airbytehq/airbyte/pull/40554) | Convert all strict-encrypt prod code to kotlin.                                                          |
+| 2.0.14  | 2024-06-26 | [\#40563](https://github.com/airbytehq/airbyte/pull/40563) | Convert all test code to kotlin.                                                          |
+| 2.0.13  | 2024-06-13 | [\#40159](https://github.com/airbytehq/airbyte/pull/40159) | Config error on drop failure when cascade is disabled                                                    |
 | 2.0.12  | 2024-06-12 | [\#39388](https://github.com/airbytehq/airbyte/pull/39388) | Sources auto-conversion to Kotlin                                                                        |
 | 2.0.11  | 2024-06-10 | [\#39372](https://github.com/airbytehq/airbyte/pull/39372) | Fixed function already exists error                                                                      |
 | 2.0.10  | 2024-05-07 | [\#37660](https://github.com/airbytehq/airbyte/pull/37660) | Adopt CDK 0.33.2                                                                                         |

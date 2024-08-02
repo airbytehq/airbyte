@@ -5,6 +5,7 @@
 import json
 import operator
 from contextlib import nullcontext as does_not_raise
+from logging import Logger
 from pathlib import Path
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
@@ -186,6 +187,9 @@ async def test_incremental_two_sequential_reads(
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
             docker_runner=docker_runner_mock,
+            client_container=None,
+            client_container_config=None,
+            detailed_logger=Logger("test"),
         )
 
 
@@ -399,6 +403,9 @@ async def test_per_stream_read_with_multiple_states(mocker, first_records, subse
             configured_catalog_for_incremental=catalog,
             docker_runner=docker_runner_mock,
             inputs=inputs,
+            client_container=None,
+            client_container_config=None,
+            detailed_logger=Logger("test"),
         )
 
 
@@ -493,6 +500,9 @@ async def test_config_skip_test(mocker):
                 ]
             ),
             docker_runner=docker_runner_mock,
+            client_container=None,
+            client_container_config=None,
+            detailed_logger=Logger("test"),
         )
 
     # This is guaranteed to fail when the test gets executed

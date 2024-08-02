@@ -58,6 +58,14 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.2.10 | 2024-07-27 | [42773](https://github.com/airbytehq/airbyte/pull/42773) | Update dependencies |
+| 0.2.9 | 2024-07-20 | [42192](https://github.com/airbytehq/airbyte/pull/42192) | Update dependencies |
+| 0.2.8 | 2024-07-13 | [41883](https://github.com/airbytehq/airbyte/pull/41883) | Update dependencies |
+| 0.2.7 | 2024-07-10 | [41540](https://github.com/airbytehq/airbyte/pull/41540) | Update dependencies |
+| 0.2.6 | 2024-07-09 | [41256](https://github.com/airbytehq/airbyte/pull/41256) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40997](https://github.com/airbytehq/airbyte/pull/40997) | Update dependencies |
+| 0.2.4 | 2024-06-25 | [40334](https://github.com/airbytehq/airbyte/pull/40334) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [40113](https://github.com/airbytehq/airbyte/pull/40113) | Update dependencies |
 | 0.2.2 | 2024-06-06 | [39251](https://github.com/airbytehq/airbyte/pull/39251) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.1 | 2024-05-21 | [38528](https://github.com/airbytehq/airbyte/pull/38528) | [autopull] base image + poetry + up_to_date |
 | 0.2.0 | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code |

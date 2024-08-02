@@ -52,7 +52,16 @@ The Recruitee source connector supports the following [sync modes](https://docs.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject               |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+|:--------|:-----------| :------------------------------------------------------- | :-------------------- |
+| 0.1.11 | 2024-07-27 | [42605](https://github.com/airbytehq/airbyte/pull/42605) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42268](https://github.com/airbytehq/airbyte/pull/42268) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41930](https://github.com/airbytehq/airbyte/pull/41930) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41388](https://github.com/airbytehq/airbyte/pull/41388) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41265](https://github.com/airbytehq/airbyte/pull/41265) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40792](https://github.com/airbytehq/airbyte/pull/40792) | Update dependencies |
+| 0.1.5 | 2024-06-28 | [38744](https://github.com/airbytehq/airbyte/pull/38744) | Make connector compatible with Builder |
+| 0.1.4 | 2024-06-25 | [40455](https://github.com/airbytehq/airbyte/pull/40455) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40044](https://github.com/airbytehq/airbyte/pull/40044) | Update dependencies |
 | 0.1.2 | 2024-06-06 | [39282](https://github.com/airbytehq/airbyte/pull/39282) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-20 | [38452](https://github.com/airbytehq/airbyte/pull/38452) | [autopull] base image + poetry + up_to_date |
 | 0.1.0 | 2022-10-30 | [18671](https://github.com/airbytehq/airbyte/pull/18671) | New Source: Recruitee |
