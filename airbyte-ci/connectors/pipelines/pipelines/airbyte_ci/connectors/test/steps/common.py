@@ -621,6 +621,7 @@ class LiveTests(Step):
                     connection_name = option["name"]
                     self.logger.info(f"Using connection name={connection_name}; id={connection_id}")
                     return connection_id
+        return None
 
     async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the regression test suite.
