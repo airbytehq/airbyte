@@ -220,7 +220,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         """
         Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
         """
-        version_parts = version.split(".")  # avoid regex for a simple split
+        version_parts = version.split(".")
         if len(version_parts) != 3 or any(not part.isdigit() for part in version_parts):
             raise ValidationError(f"The {version_type} version {version} specified is not a valid version format (ex. 1.2.3)")
         return int(version_parts[0]), int(version_parts[1]), int(version_parts[2])
