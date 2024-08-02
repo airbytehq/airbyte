@@ -63,7 +63,8 @@ class CursorField:
 class Cursor(ABC):
     @property
     @abstractmethod
-    def state(self) -> MutableMapping[str, Any]: ...
+    def state(self) -> MutableMapping[str, Any]:
+        ...
 
     @abstractmethod
     def observe(self, record: Record) -> None:
