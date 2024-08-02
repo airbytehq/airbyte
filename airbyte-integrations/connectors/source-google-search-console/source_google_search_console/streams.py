@@ -70,7 +70,6 @@ class GoogleSearchConsole(HttpStream, ABC):
                 yield record
 
     def get_error_handler(self) -> ErrorHandler:
-
         return HttpStatusErrorHandler(
             logger=self.logger,
             error_mapping=DEFAULT_ERROR_MAPPING,
