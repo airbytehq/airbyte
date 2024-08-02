@@ -15,6 +15,7 @@ DEFAULT_COUNT = 1_000
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        1/1
         if type(config["count"]) == int or type(config["count"]) == float:
             return True, None
         else:
