@@ -591,9 +591,6 @@ class LiveTests(Step):
         return pull_request
 
     def _validate_job_can_run(self) -> None:
-        assert self.connection_id, "`connection-id` is required to run live tests."
-        assert self.pr_url, "`pr_url` is required to run live tests."
-
         connector_type = self.context.connector.metadata.get("connectorType")
         connector_subtype = self.context.connector.metadata.get("connectorSubtype")
         assert connector_type == "source", f"Live tests can only run against source connectors, got `connectorType={connector_type}`."
@@ -601,6 +598,9 @@ class LiveTests(Step):
             assert (
                 self.connection_subset == "sandboxes"
             ), f"Live tests for database sources may only be run against sandbox connections, got `connection_subset={self.connection_subset}`."
+
+        assert self.connection_id, "`connection-id` is required to run live tests."
+        assert self.pr_url, "`pr_url` is required to run live tests."
 
         if self.context.is_pr:
             connection_id_is_valid = False
