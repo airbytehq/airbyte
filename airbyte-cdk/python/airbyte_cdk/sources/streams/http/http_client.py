@@ -248,10 +248,3 @@ class HttpClient:
         response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs)
 
         return request, response
-
-    def _initialize_session(self, use_cache: bool) -> Union[requests.Session, requests_cache.CachedSession]:
-        session = requests_cache.CachedSession() if use_cache else requests.Session()
-        session.mount(
-            "https://", requests.adapters.HTTPAdapter(pool_connections=MAX_CONNECTION_POOL_SIZE, pool_maxsize=MAX_CONNECTION_POOL_SIZE)
-        )
-        return session
