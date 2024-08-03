@@ -8,13 +8,12 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
-from typing_extensions import Mapping
-
 from connectors_insights.hacks import get_ci_on_master_report
 from connectors_insights.models import ConnectorInsights
 from connectors_insights.pylint import get_pylint_output
 from connectors_insights.result_backends import FileToPersist, ResultBackend
 from connectors_insights.sbom import get_json_sbom
+from typing_extensions import Mapping
 
 if TYPE_CHECKING:
     from typing import Dict, List, Tuple
