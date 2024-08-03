@@ -2,6 +2,11 @@
 
 # Source {{source_name | title}}
 
+{% if manifest.get('description') -%}
+## Description
+{{ manifest.get('description') }}
+{% endif -%}
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -10,8 +15,6 @@
 | `{{ property }}` | `{{ details.type }}` | {{details.get('title')}}. {{ details.get('description', '') | replace('\n', ' ') }} | {% if 'default' in details %}{{ details.default }}{% endif %} |
 {% endfor %}
 
-## Description
-TODO: { custom description people can make in the builder }
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
