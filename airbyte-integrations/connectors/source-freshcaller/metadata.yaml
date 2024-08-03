@@ -6,6 +6,10 @@ data:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshcaller_config_dev_null
+          id: e972eb0c-574a-4360-b6dd-50d638be0a64
     - suite: acceptanceTests
       testSecrets:
         - fileName: config.json
@@ -15,7 +19,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
-  dockerImageTag: 0.4.4
+  dockerImageTag: 0.4.5
   dockerRepository: airbyte/source-freshcaller
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshcaller
   githubIssueLabel: source-freshcaller

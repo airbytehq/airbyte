@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   dockerRepository: airbyte/source-webflow
   githubIssueLabel: source-webflow
   icon: webflow.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: webflow_config_dev_null
+          id: 6ddee540-ff2c-4c62-a4ef-d118c074ffee
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

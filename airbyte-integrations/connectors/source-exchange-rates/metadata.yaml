@@ -34,6 +34,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: exchange-rates_config_dev_null
+          id: 3c8bf30c-26b8-4dfe-af1b-95bc28606fc8
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-EXCHANGE-RATES__CREDS
