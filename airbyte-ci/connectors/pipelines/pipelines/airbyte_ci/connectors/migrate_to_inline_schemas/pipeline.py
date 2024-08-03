@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, List
 
 from connector_ops.utils import ConnectorLanguage  # type: ignore
-
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
@@ -154,9 +153,7 @@ class InlineSchemas(Step):
 
         json_streams = _parse_json_streams(python_path)
         if len(json_streams) == 0:
-            return StepResult(
-                step=self, status=StepStatus.SKIPPED, stderr="No JSON streams found."
-            )
+            return StepResult(step=self, status=StepStatus.SKIPPED, stderr="No JSON streams found.")
 
         data = read_yaml(manifest_path)
         if "streams" not in data:
@@ -199,10 +196,7 @@ class InlineSchemas(Step):
             if not stream_name:
                 logger.info(f"    !! Stream name not found: {stream}")
                 continue
-            if (
-                yaml_stream.get("schema_loader")
-                and yaml_stream["schema_loader"].get("type") == "InlineSchemaLoader"
-            ):
+            if yaml_stream.get("schema_loader") and yaml_stream["schema_loader"].get("type") == "InlineSchemaLoader":
                 continue
 
             yaml_stream["schema_loader"] = {}
@@ -293,24 +287,18 @@ def _update_json_loaders(
             continue
         else:
             # direct pointer to a file. update.
-            file_path = Path(
-                os.path.abspath(os.path.join(connector_path, loader.file_path))
-            )
+            file_path = Path(os.path.abspath(os.path.join(connector_path, loader.file_path)))
             if not file_path.is_file():
                 logger.info(f"    JsonFileSchemaLoader not found: {file_path}")
                 continue
             schema_loader = _load_reference(data, loader.ref)
             if not schema_loader:
-                logger.info(
-                    f"    JsonFileSchemaLoader reference not found: {loader.ref}"
-                )
+                logger.info(f"    JsonFileSchemaLoader reference not found: {loader.ref}")
                 continue
             _update_inline_schema(schema_loader, streams, file_path.stem)
 
 
-def _update_inline_schema(
-    schema_loader: dict, json_streams: dict[str, JsonStream], file_name: str
-) -> None:
+def _update_inline_schema(schema_loader: dict, json_streams: dict[str, JsonStream], file_name: str) -> None:
     logger = main_logger
     if file_name not in json_streams:
         logger.info(f"    Stream {file_name} not found in JSON schemas.")
@@ -324,9 +312,7 @@ def _update_inline_schema(
     json_streams.pop(file_name)
 
 
-def _remove_reference(
-    parent: Any, key: str | int | None, loader: JsonLoaderNode, path: List[str]
-) -> bool:  # noqa: ANN401
+def _remove_reference(parent: Any, key: str | int | None, loader: JsonLoaderNode, path: List[str]) -> bool:  # noqa: ANN401
     logger = main_logger
     if key is None:
         data = parent
@@ -414,9 +400,7 @@ def _parse_json_streams(python_path: Path) -> dict[str, JsonStream]:
     return streams
 
 
-async def run_connector_migrate_to_inline_schemas_pipeline(
-    context: ConnectorContext, semaphore: "Semaphore"
-) -> Report:
+async def run_connector_migrate_to_inline_schemas_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
     restore_original_state = RestoreInlineState(context)
 
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
@@ -452,6 +436,4 @@ async def run_connector_migrate_to_inline_schemas_pipeline(
         ]
     )
 
-    return await run_connector_steps(
-        context, semaphore, steps_to_run, restore_original_state=restore_original_state
-    )
+    return await run_connector_steps(context, semaphore, steps_to_run, restore_original_state=restore_original_state)

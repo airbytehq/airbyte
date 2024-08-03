@@ -32,6 +32,4 @@ def verify_formatters() -> None:
     try:
         subprocess.run(["npx", "--version"], check=True)
     except subprocess.CalledProcessError:
-        raise Exception(
-            "npx is required to format files. Please install Node.js and npm."
-        )
+        raise Exception("npx is required to format files. Please install Node.js and npm.")
