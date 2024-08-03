@@ -26,7 +26,7 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-zenefits
   supportLevel: community
   tags:
