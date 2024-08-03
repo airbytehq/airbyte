@@ -58,7 +58,7 @@ class GithubStreamABC(HttpStream, ABC):
         self.api_url = api_url
         self.state = {}
 
-        if self.cursor_field or len(self.cursor_field) == 0:
+        if not self.cursor_field or len(self.cursor_field) == 0:
             self.cursor = SubstreamResumableFullRefreshCursor()
 
     @property
