@@ -204,7 +204,11 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         dpath.new(self._connector_config, self._refresh_token_config_path, new_refresh_token)
 
     def get_token_expiry_date(self) -> pendulum.DateTime:
-        expiry_date = dpath.get(self._connector_config, self._token_expiry_date_config_path, default="")
+        expiry_date = self._connector_config
+        for part in self._token_expiry_date_config_path:
+            expiry_date = expiry_date.get(part, "")
+            if not expiry_date:
+                break
         return pendulum.now().subtract(days=1) if expiry_date == "" else pendulum.parse(expiry_date)
 
     def set_token_expiry_date(self, new_token_expiry_date):
@@ -212,7 +216,8 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     def token_has_expired(self) -> bool:
         """Returns True if the token is expired"""
-        return pendulum.now("UTC") > self.get_token_expiry_date()
+        now_utc = pendulum.now("UTC")
+        return now_utc > self.get_token_expiry_date()
 
     @staticmethod
     def get_new_token_expiry_date(access_token_expires_in: str, token_expiry_date_format: str = None) -> pendulum.DateTime:
@@ -256,3 +261,17 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
         """
         return self.__message_repository
+
+    def get_client_id(self) -> str:
+        return self._client_id
+
+    def get_client_secret(self) -> str:
+        return self._client_secret
+
+    def get_refresh_token(self) -> str:
+        refresh_token = self._connector_config
+        for part in self._refresh_token_config_path:
+            refresh_token = refresh_token.get(part, "")
+            if not refresh_token:
+                break
+        return refresh_token
