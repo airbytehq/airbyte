@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 561d7787-b45e-4f3b-af58-0163c3ba9d5a
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.13
   dockerRepository: airbyte/source-openweather
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   githubIssueLabel: source-openweather
@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: openweather_config_dev_null
+          id: 6e4f9fb3-3b83-4967-adcd-860a57242a9d
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-OPENWEATHER_CREDS

@@ -128,11 +128,6 @@ class AbstractSource(Source, ABC):
                         )
 
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-                    stream_is_available, reason = stream_instance.check_availability(logger, self)
-                    if not stream_is_available:
-                        logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
-                        yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                        continue
                     logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
                     yield from self._read_stream(
@@ -256,10 +251,11 @@ class AbstractSource(Source, ABC):
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
-        if isinstance(record_data_or_message, AirbyteMessage):
-            return record_data_or_message
-        else:
-            return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
+        match record_data_or_message:
+            case AirbyteMessage():
+                return record_data_or_message
+            case _:
+                return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
 
     @property
     def message_repository(self) -> Union[None, MessageRepository]:

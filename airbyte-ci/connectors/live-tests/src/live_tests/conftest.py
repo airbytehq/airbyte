@@ -14,7 +14,7 @@ import dagger
 import pytest
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification  # type: ignore
 from connection_retriever.audit_logging import get_user_email  # type: ignore
-from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError  # type: ignore
+from connection_retriever.retrieval import ConnectionNotFoundError, NotPermittedError, get_current_docker_image_tag  # type: ignore
 from live_tests import stash_keys
 from live_tests.commons.connection_objects_retrieval import ConnectionObject, get_connection_objects
 from live_tests.commons.connector_runner import ConnectorRunner, Proxy
@@ -23,6 +23,7 @@ from live_tests.commons.models import (
     ActorType,
     Command,
     ConnectionObjects,
+    ConnectionSubset,
     ConnectorUnderTest,
     ExecutionInputs,
     ExecutionResult,
@@ -90,6 +91,12 @@ def pytest_addoption(parser: Parser) -> None:
         default=TestEvaluationMode.STRICT.value,
         help='If "diagnostic" mode is selected, all tests will pass as long as there is no exception; warnings will be logged. In "strict" mode, tests may fail.',
     )
+    parser.addoption(
+        "--connection-subset",
+        choices=[c.value for c in ConnectionSubset],
+        default=ConnectionSubset.SANDBOXES.value,
+        help="Whether to select from sandbox accounts only.",
+    )
 
 
 def pytest_configure(config: Config) -> None:
@@ -127,6 +134,8 @@ def pytest_configure(config: Config) -> None:
     config.stash[stash_keys.AUTO_SELECT_CONNECTION] = _connection_id == "auto"
     config.stash[stash_keys.CONNECTOR_IMAGE] = get_option_or_fail(config, "--connector-image")
     config.stash[stash_keys.TARGET_VERSION] = get_option_or_fail(config, "--target-version")
+    config.stash[stash_keys.CONTROL_VERSION] = get_control_version(config)
+    config.stash[stash_keys.CONNECTION_SUBSET] = ConnectionSubset(get_option_or_fail(config, "--connection-subset"))
     custom_source_config_path = config.getoption("--config-path")
     custom_configured_catalog_path = config.getoption("--catalog-path")
     custom_state_path = config.getoption("--state-path")
@@ -161,8 +170,10 @@ def pytest_configure(config: Config) -> None:
             retrieval_reason,
             fail_if_missing_objects=False,
             connector_image=config.stash[stash_keys.CONNECTOR_IMAGE],
+            connector_version=config.stash[stash_keys.CONTROL_VERSION],
             auto_select_connection=config.stash[stash_keys.AUTO_SELECT_CONNECTION],
             selected_streams=config.stash[stash_keys.SELECTED_STREAMS],
+            connection_subset=config.stash[stash_keys.CONNECTION_SUBSET],
         )
         config.stash[stash_keys.IS_PERMITTED_BOOL] = True
     except (ConnectionNotFoundError, NotPermittedError) as exc:
@@ -171,10 +182,10 @@ def pytest_configure(config: Config) -> None:
 
     config.stash[stash_keys.CONNECTION_ID] = config.stash[stash_keys.CONNECTION_OBJECTS].connection_id  # type: ignore
 
-    if source_docker_image := config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image:
-        config.stash[stash_keys.CONTROL_VERSION] = source_docker_image.split(":")[-1]
-    else:
-        config.stash[stash_keys.CONTROL_VERSION] = "latest"
+    if config.stash[stash_keys.CONTROL_VERSION] != config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image.split(":")[-1]:
+        raise ValueError(
+            f"The control version fetched by the connection retriever ({config.stash[stash_keys.CONNECTION_OBJECTS].source_docker_image}) does not match the control version passed by live tests ({config.stash[stash_keys.CONTROL_VERSION]})"
+        )
 
     if config.stash[stash_keys.CONTROL_VERSION] == config.stash[stash_keys.TARGET_VERSION]:
         pytest.exit(f"Control and target versions are the same: {control_version}. Please provide different versions.")
@@ -268,6 +279,14 @@ def get_option_or_fail(config: pytest.Config, option: str) -> str:
     if option_value := config.getoption(option):
         return option_value
     pytest.fail(f"Missing required option: {option}")
+
+
+def get_control_version(config: pytest.Config) -> str:
+    if control_version := config.getoption("--control-version"):
+        return control_version
+    if connector_docker_repository := config.getoption("--connector-image"):
+        return get_current_docker_image_tag(connector_docker_repository)
+    raise ValueError("The control version can't be determined, please pass a --control-version or a --connector-image")
 
 
 def prompt_for_confirmation(user_email: str) -> None:

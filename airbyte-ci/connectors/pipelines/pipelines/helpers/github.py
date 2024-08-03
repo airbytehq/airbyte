@@ -220,3 +220,10 @@ def create_or_update_github_pull_request(
         logger.info(f"Added label {label} to pull request")
 
     return pull_request
+
+
+def is_automerge_pull_request(pull_request: Optional[github_sdk.PullRequest.PullRequest]) -> bool:
+    labels = [label.name for label in pull_request.get_labels()] if pull_request else []
+    if labels and "auto-merge" in labels:
+        return True
+    return False
