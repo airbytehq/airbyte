@@ -87,6 +87,15 @@ inputs:
     description: "Whether the PR is from a fork"
     required: false
     default: "false"
+  max_attempts:
+    description: "Number of attempts at running the airbyte-ci command"
+    required: false
+    default: 1
+  retry_wait_seconds:
+    description: "Number of seconds to wait between retry attempts"
+    required: false
+    default: 60
+
 runs:
   using: "composite"
   steps:
@@ -109,7 +118,7 @@ runs:
         is_fork: ${{ inputs.is_fork }}
     - name: Run airbyte-ci
       id: run-airbyte-ci
-      shell: bash
+      uses: nick-fields/retry@v3
       env:
         CI: "True"
         CI_GIT_USER: ${{ github.repository_owner }}
@@ -140,8 +149,14 @@ runs:
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
-      run: |
-        airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+      with:
+        shell: bash
+        max_attempts: ${{ inputs.max_attempts }}
+        retry_wait_seconds: ${{ inputs.retry_wait_seconds }}
+        # 360mn > 6 hours: it's the GitHub runner max job duration
+        timeout_minutes: 360
+        command: |
+          airbyte-ci --disable-update-check --disable-dagger-run --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
     - name: Stop Engine
       id: stop-engine
       if: always()

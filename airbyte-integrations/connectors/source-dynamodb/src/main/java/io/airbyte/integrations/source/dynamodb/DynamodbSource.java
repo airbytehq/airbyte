@@ -146,14 +146,15 @@ public class DynamodbSource extends BaseConnector implements Source {
 
     // cursor type will be retrieved from the json schema to save time on db schema crawling reading
     // large amount of items
-    final String cursorType = properties.get(cursorField).get("type").asText();
+    final String cursorType = properties.get(cursorField).get("type").toString();
+    LOGGER.info("cursor type: {}", cursorType);
 
     final var messageStream = cursorInfo.map(cursor -> {
 
       final var filterType = switch (cursorType) {
-        case "string" -> DynamodbOperations.FilterAttribute.FilterType.S;
-        case "integer" -> DynamodbOperations.FilterAttribute.FilterType.N;
-        case "number" -> {
+        case "\"string\"", "[\"null\",\"string\"]" -> DynamodbOperations.FilterAttribute.FilterType.S;
+        case "\"integer\"", "[\"null\",\"integer\"]" -> DynamodbOperations.FilterAttribute.FilterType.N;
+        case "\"number\"", "[\"null\",\"number\"]" -> {
           final JsonNode airbyteType = properties.get(cursorField).get("airbyte_type");
           if (airbyteType != null && airbyteType.asText().equals("integer")) {
             yield DynamodbOperations.FilterAttribute.FilterType.N;
@@ -177,6 +178,13 @@ public class DynamodbSource extends BaseConnector implements Source {
         .stream()
         .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
+    final String primitiveType = switch (cursorType) {
+      case "\"string\"", "[\"null\",\"string\"]" -> "string";
+      case "\"integer\"", "[\"null\",\"integer\"]" -> "integer";
+      case "\"number\"", "[\"null\",\"number\"]" -> "number";
+      default -> throw new UnsupportedOperationException("Unsupported attribute type for filtering");
+    };
+    LOGGER.info("cursor primitive: {}", primitiveType);
     // wrap stream in state emission iterator
     return AutoCloseableIterators.fromIterator(
         new StateDecoratingIterator(
@@ -187,7 +195,7 @@ public class DynamodbSource extends BaseConnector implements Source {
             streamPair,
             cursorField,
             cursorInfo.map(CursorInfo::getCursor).orElse(null),
-            JsonSchemaPrimitive.valueOf(cursorType.toUpperCase()),
+            JsonSchemaPrimitive.valueOf(primitiveType.toUpperCase()),
             // emit state after full stream has been processed
             0));
   }

@@ -15,6 +15,8 @@ constructor(
     val pathFormat: String,
     val fullOutputPath: String,
     val syncMode: DestinationSyncMode,
+    val generationId: Long,
+    val minimumGenerationId: Long,
     val storedFiles: MutableList<String> = arrayListOf(),
 ) {
 
