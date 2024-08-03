@@ -75,7 +75,7 @@ class URLFile:
         self._file = None
         self.args = {
             "mode": "rb" if binary else "r",
-            "encoding": encoding,
+            "encoding": None if binary else encoding,
         }
 
     def __enter__(self):
@@ -452,7 +452,7 @@ class Client:
         logger.info("Temp dir content: " + str(os.listdir(tmp_dir.name)))
         final_file: str = os.path.join(tmp_dir.name, os.listdir(tmp_dir.name)[0])
         logger.info("Pick up first file: " + final_file)
-        fp_tmp = open(final_file, "r")
+        fp_tmp = open(final_file, "rb")
         return fp_tmp
 
     def _cache_stream(self, fp):

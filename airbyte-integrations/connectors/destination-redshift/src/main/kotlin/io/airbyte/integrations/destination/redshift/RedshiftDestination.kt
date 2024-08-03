@@ -164,6 +164,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                     getS3StorageOperations(s3Config),
                     sqlGenerator,
                     destinationHandler,
+                    RedshiftSqlGenerator.isDropCascade(config),
                 )
 
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
@@ -179,6 +180,12 @@ class RedshiftDestination : BaseConnector(), Destination {
                         streamConfig = streamConfig,
                         isFinalTablePresent = false,
                         initialRawTableStatus =
+                            InitialRawTableStatus(
+                                rawTableExists = false,
+                                hasUnprocessedRecords = true,
+                                maxProcessedTimestamp = Optional.empty(),
+                            ),
+                        initialTempRawTableStatus =
                             InitialRawTableStatus(
                                 rawTableExists = false,
                                 hasUnprocessedRecords = true,
@@ -284,7 +291,8 @@ class RedshiftDestination : BaseConnector(), Destination {
         )
     }
 
-    private fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    @VisibleForTesting
+    fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
 
@@ -401,6 +409,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 s3StorageOperations,
                 sqlGenerator,
                 redshiftDestinationHandler,
+                RedshiftSqlGenerator.isDropCascade(config),
             )
         val syncOperation =
             DefaultSyncOperation(
