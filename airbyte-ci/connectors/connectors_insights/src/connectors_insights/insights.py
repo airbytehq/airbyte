@@ -26,10 +26,13 @@ if TYPE_CHECKING:
 def get_manifest_inferred_insights(connector: Connector) -> dict:
     manifest = connector.manifest_path.read_text()
 
+    schemas_directory = connector.code_path / connector.technical_name.replace("-", "_") / "schemas"
+
     return {
         "manifest_uses_parameters": manifest.find("$parameters") != -1,
         "manifest_uses_custom_components": manifest.find("class_name:") != -1,
         "manifest_custom_component_classes": re.findall(r"class_name: (.+)", manifest),
+        "has_json_schemas": schemas_directory.is_dir() and any(schemas_directory.iterdir()),
     }
 
 
