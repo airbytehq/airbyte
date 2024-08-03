@@ -6,16 +6,9 @@ package io.airbyte.integrations.base.destination.operation
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
-import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
-import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.mockk.checkUnnecessaryStub
 import io.mockk.clearMocks
 import io.mockk.confirmVerified
@@ -71,7 +64,7 @@ class AbstractStreamOperationTest {
         private val streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 listOf(),
                 Optional.empty(),
                 columns,
@@ -496,10 +489,10 @@ class AbstractStreamOperationTest {
         @MethodSource(
             "io.airbyte.integrations.base.destination.operation.AbstractStreamOperationTest#nonOverwriteStreamConfigs"
         )
-        fun emptyDestination(streamConfig: StreamConfig) {
+        fun emptyDestination(streamConfigParam: StreamConfig) {
             val initialState =
-                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>> {
-                    every { this@mockk.streamConfig } returns streamConfig
+                mockk<DestinationInitialStatus<MinimumDestinationState.Impl>>(relaxed = true) {
+                    every { streamConfig } returns streamConfigParam
                     every { initialTempRawTableStatus.rawTableExists } returns false
                     every { initialRawTableStatus.maxProcessedTimestamp } returns Optional.empty()
                     every { isFinalTablePresent } returns false
@@ -512,20 +505,20 @@ class AbstractStreamOperationTest {
 
             verifySequence {
                 storageOperation.prepareStage(streamId, "")
-                storageOperation.createFinalTable(streamConfig, "", false)
+                storageOperation.createFinalTable(streamConfigParam, "", false)
             }
             confirmVerified(storageOperation)
 
             clearMocks(storageOperation)
             streamOperations.finalizeTable(
-                streamConfig,
+                streamConfigParam,
                 StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
             )
 
             verifySequence {
                 storageOperation.cleanupStage(streamId)
                 storageOperation.typeAndDedupe(
-                    streamConfig,
+                    streamConfigParam,
                     Optional.empty(),
                     "",
                 )
@@ -809,7 +802,7 @@ class AbstractStreamOperationTest {
         private val appendStreamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 listOf(),
                 Optional.empty(),
                 columns,
@@ -820,7 +813,7 @@ class AbstractStreamOperationTest {
         private val dedupStreamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 listOf(pk1, pk2),
                 Optional.of(cursor),
                 columns,

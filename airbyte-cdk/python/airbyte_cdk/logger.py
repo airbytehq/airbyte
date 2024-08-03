@@ -60,7 +60,7 @@ class AirbyteLogFormatter(logging.Formatter):
             message = super().format(record)
             message = filter_secrets(message)
             log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
-            return log_message.json(exclude_unset=True)  # type: ignore
+            return log_message.model_dump_json(exclude_unset=True)  # type: ignore
 
     @staticmethod
     def extract_extra_args_from_record(record: logging.LogRecord) -> Mapping[str, Any]:

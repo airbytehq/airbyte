@@ -179,7 +179,7 @@ def read(
     with tempfile.TemporaryDirectory() as tmp_directory:
         tmp_directory_path = Path(tmp_directory)
         config_file = make_file(tmp_directory_path / "config.json", config)
-        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.json())
+        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.model_dump_json())
         args = [
             "read",
             "--config",
@@ -191,7 +191,9 @@ def read(
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
+                    make_file(
+                        tmp_directory_path / "state.json", f"[{','.join([stream_state.model_dump_json() for stream_state in state])}]"
+                    ),
                 ]
             )
 
