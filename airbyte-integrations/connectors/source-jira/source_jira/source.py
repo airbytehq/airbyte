@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from requests.exceptions import InvalidURL
 
 from .streams import IssueComments, IssueFields, Issues, IssueWorklogs, PullRequests
@@ -47,8 +47,8 @@ class SourceJira(YamlDeclarativeSource):
             return False, "This API Token does not have permission to read any of the resources."
         except ValidationError as e:
             return False, e
-        except (ReadException, InvalidURL) as e:
-            if isinstance(e, InvalidURL) or "404" in str(e):
+        except (AirbyteTracedException, ReadException, InvalidURL) as e:
+            if isinstance(e, InvalidURL) or "404" in str(e) or (isinstance(e, AirbyteTracedException) and "Not found" in e.message):
                 raise AirbyteTracedException(
                     message="Config validation error: please check that your domain is valid and does not include protocol (e.g: https://).",
                     internal_message=str(e),

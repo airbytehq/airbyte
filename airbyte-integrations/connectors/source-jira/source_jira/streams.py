@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 import logging as Logger
 import re
 import urllib.parse as urlparse
 from abc import ABC
+from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl
 
@@ -13,8 +14,12 @@ import pendulum
 import requests
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import CheckpointMixin, Stream
+from airbyte_cdk.sources.streams.checkpoint.checkpoint_reader import FULL_REFRESH_COMPLETE_STATE
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.exceptions import HTTPError
 from source_jira.type_transfromer import DateTimeTransformer
@@ -22,6 +27,36 @@ from source_jira.type_transfromer import DateTimeTransformer
 from .utils import read_full_refresh, read_incremental, safe_max
 
 API_VERSION = 3
+
+
+class JiraErrorHandler(HttpStatusErrorHandler):
+    def __init__(
+        self,
+        stream_name: str,
+        ignore_status_codes: List[int],
+        logger: logging.Logger,
+        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
+        max_retries: int = 5,
+        max_time: timedelta = timedelta(seconds=600),
+    ) -> None:
+        super().__init__(logger, error_mapping, max_retries, max_time)
+        self.stream_name = stream_name
+        self.ignore_status_codes = ignore_status_codes
+
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
+        # override default error mapping
+        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code in self.ignore_status_codes:
+            error_message = f"Errors: {response_or_exception.json().get('errorMessages')}"
+
+            if response_or_exception.status_code == requests.codes.BAD_REQUEST:
+                error_message = f"The user doesn't have permission to the project. Please grant the user to the project. {error_message}"
+
+            return ErrorResolution(
+                error_message=f"Stream `{self.stream_name}`. An error occurred, details: {error_message}",
+                response_action=ResponseAction.IGNORE,
+            )
+
+        return super().interpret_response(response_or_exception)
 
 
 class JiraAvailabilityStrategy(HttpAvailabilityStrategy):
@@ -137,6 +172,20 @@ class JiraStream(HttpStream, ABC):
             self.logger.warning(f"Stream `{self.name}`. An error occurred, details: {errors}. Skipping for now. {custom_error}")
 
 
+class FullRefreshJiraStream(JiraStream):
+
+    """
+    This is a temporary solution to avoid incorrect state handling.
+    See comments below for more info:
+    https://github.com/airbytehq/airbyte/pull/39558#discussion_r1695592075
+    https://github.com/airbytehq/airbyte/pull/39558#discussion_r1699539669
+    """
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        yield from super().read_records(**kwargs)
+        self.state = FULL_REFRESH_COMPLETE_STATE
+
+
 class StartDateJiraStream(JiraStream, ABC):
     def __init__(
         self,
@@ -223,8 +272,11 @@ class Issues(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._project_ids = []
-        self.issue_fields_stream = IssueFields(authenticator=self._session.auth, domain=self._domain, projects=self._projects)
-        self.projects_stream = Projects(authenticator=self._session.auth, domain=self._domain, projects=self._projects)
+        self.issue_fields_stream = IssueFields(authenticator=self._http_client._session.auth, domain=self._domain, projects=self._projects)
+        self.projects_stream = Projects(authenticator=self._http_client._session.auth, domain=self._domain, projects=self._projects)
+
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return JiraErrorHandler(logger=self.logger, stream_name=self.name, ignore_status_codes=self.skip_http_status_codes)
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -281,7 +333,7 @@ class Issues(IncrementalJiraStream):
         return ""
 
 
-class IssueFields(JiraStream):
+class IssueFields(FullRefreshJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get
 
@@ -301,7 +353,7 @@ class IssueFields(JiraStream):
         return results
 
 
-class Projects(JiraStream):
+class Projects(FullRefreshJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
 
@@ -340,7 +392,7 @@ class IssueWorklogs(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            authenticator=self._session.auth,
+            authenticator=self._http_client._session.auth,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,
@@ -370,7 +422,7 @@ class IssueComments(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            authenticator=self._session.auth,
+            authenticator=self._http_client._session.auth,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,
