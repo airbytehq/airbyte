@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "4.3.0"
+version = "4.3.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-4.3.0-py3-none-any.whl", hash = "sha256:004816eddc73f13f6b2dbd2e24af4eb952c320c903363de8962dd48029811a0b"},
-    {file = "airbyte_cdk-4.3.0.tar.gz", hash = "sha256:3f6481ec4f1690b10c2414a77f892d089e337ae739893ae6b207d43e1c52de61"},
+    {file = "airbyte_cdk-4.3.1-py3-none-any.whl", hash = "sha256:79494af6c49505f02521da520f775a7669e5d7437d3016fdf017ebad05fd00e4"},
+    {file = "airbyte_cdk-4.3.1.tar.gz", hash = "sha256:ce5c172f60cd5f7cd06e3f0cec4a062d4d69c1c6baa516dcdcd1586275ac3ab1"},
 ]
 
 [package.dependencies]
@@ -107,13 +107,13 @@ files = [
 
 [[package]]
 name = "bracex"
-version = "2.4"
+version = "2.5"
 description = "Bash style brace expander."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "bracex-2.4-py3-none-any.whl", hash = "sha256:efdc71eff95eaff5e0f8cfebe7d01adf2c8637c8c92edaf63ef348c241a82418"},
-    {file = "bracex-2.4.tar.gz", hash = "sha256:a27eaf1df42cf561fed58b7a8f3fdf129d1ea16a81e1fadd1d17989bc6384beb"},
+    {file = "bracex-2.5-py3-none-any.whl", hash = "sha256:d2fcf4b606a82ac325471affe1706dd9bbaa3536c91ef86a31f6b766f3dad1d0"},
+    {file = "bracex-2.5.tar.gz", hash = "sha256:0725da5045e8d37ea9592ab3614d8b561e22c3c5fde3964699be672e072ab611"},
 ]
 
 [[package]]
