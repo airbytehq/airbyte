@@ -39,6 +39,9 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.11 | 2024-07-27 | [42672](https://github.com/airbytehq/airbyte/pull/42672) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42280](https://github.com/airbytehq/airbyte/pull/42280) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41887](https://github.com/airbytehq/airbyte/pull/41887) | Update dependencies |
 | 0.1.8 | 2024-07-10 | [41566](https://github.com/airbytehq/airbyte/pull/41566) | Update dependencies |
 | 0.1.7 | 2024-07-09 | [41241](https://github.com/airbytehq/airbyte/pull/41241) | Update dependencies |
 | 0.1.6 | 2024-07-06 | [40876](https://github.com/airbytehq/airbyte/pull/40876) | Update dependencies |

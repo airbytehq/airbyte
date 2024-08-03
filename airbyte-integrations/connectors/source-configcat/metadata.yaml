@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4fd7565c-8b99-439b-80d0-2d965e1d958c
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/source-configcat
   githubIssueLabel: source-configcat
   icon: configcat.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: configcat_config_dev_null
+          id: 052842b9-3f40-422e-ac8c-7c7a6c47770b
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-CONFIGCAT__CREDS
