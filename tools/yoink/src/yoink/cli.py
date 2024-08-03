@@ -32,9 +32,7 @@ def hoard(connectors_dir: str, docs_dir: str, csv_file: str, yeet: bool = False)
 
     for manifest in manifests:
         click.echo(f"✔︎ Initializing a connector for {manifest.name} in {connectors_dir}/{manifest.dir_name}")
-        write_connector_to_disk(
-            connectors_dir=Path(connectors_dir) / "connectors", docs_dir=Path(docs_dir), connector=manifest, yeet=yeet
-        )
+        write_connector_to_disk(connectors_dir=Path(connectors_dir) / "connectors", docs_dir=Path(docs_dir), connector=manifest, yeet=yeet)
 
 
 @cli.command(help="Generate metadata for a given manifest file.")
