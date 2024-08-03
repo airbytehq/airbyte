@@ -24,28 +24,23 @@ class DateTimeStreamStateConverter(AbstractStreamStateConverter):
 
     @property
     @abstractmethod
-    def _zero_value(self) -> Any:
-        ...
+    def _zero_value(self) -> Any: ...
 
     @property
     def zero_value(self) -> datetime:
         return self.parse_timestamp(self._zero_value)
 
-    @classmethod
-    def get_end_provider(cls) -> Callable[[], datetime]:
+    def get_end_provider():
         return lambda: datetime.now(timezone.utc)
 
     @abstractmethod
-    def increment(self, timestamp: datetime) -> datetime:
-        ...
+    def increment(self, timestamp: datetime) -> datetime: ...
 
     @abstractmethod
-    def parse_timestamp(self, timestamp: Any) -> datetime:
-        ...
+    def parse_timestamp(self, timestamp: Any) -> datetime: ...
 
     @abstractmethod
-    def output_format(self, timestamp: datetime) -> Any:
-        ...
+    def output_format(self, timestamp: datetime) -> Any: ...
 
     def parse_value(self, value: Any) -> Any:
         """
