@@ -34,6 +34,9 @@ class ConnectorInsights(BaseModel):
     deprecated_classes_in_use: list[str] | None
     deprecated_modules_in_use: list[str] | None
     forbidden_method_names_in_use: list[str] | None
+    manifest_uses_parameters: StrictBool
+    manifest_uses_custom_components: StrictBool
+    manifest_custom_component_classes: list[str] | None
 
     class Config:
         json_encoders = {dict: lambda v: json.dumps(v, default=pydantic_encoder)}
