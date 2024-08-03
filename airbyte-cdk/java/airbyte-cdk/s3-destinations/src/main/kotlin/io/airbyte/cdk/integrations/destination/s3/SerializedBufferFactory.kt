@@ -58,7 +58,7 @@ class SerializedBufferFactory {
                     }
                     return AvroSerializedBuffer.createFunction(
                         formatConfig as UploadAvroFormatConfig,
-                        createStorageFunctionWithExtension,
+                        createStorageFunctionWithExtension
                     )
                 }
                 FileUploadFormat.CSV -> {
@@ -69,7 +69,7 @@ class SerializedBufferFactory {
                     }
                     return CsvSerializedBuffer.createFunction(
                         formatConfig as UploadCsvFormatConfig,
-                        createStorageFunctionWithExtension,
+                        createStorageFunctionWithExtension
                     )
                 }
                 FileUploadFormat.JSONL -> {

@@ -16,6 +16,7 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
         return testContainer!!
             .configBuilder()
             .with("schema", "public")
+            .with(PostgresDestination.DROP_CASCADE_OPTION, true)
             .withDatabase()
             .withResolvedHostAndPort()
             .withCredentials()

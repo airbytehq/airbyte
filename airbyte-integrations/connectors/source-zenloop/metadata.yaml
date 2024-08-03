@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.23
   dockerRepository: airbyte/source-zenloop
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   githubIssueLabel: source-zenloop
@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zenloop_config_dev_null
+          id: a01d7d51-5f99-46b1-9efb-b988ea042735
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-ZENLOOP__CREDS

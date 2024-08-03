@@ -32,6 +32,9 @@ You need a n8n instance or use cloud version
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.10 | 2024-07-27 | [42590](https://github.com/airbytehq/airbyte/pull/42590) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42248](https://github.com/airbytehq/airbyte/pull/42248) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41738](https://github.com/airbytehq/airbyte/pull/41738) | Update dependencies |
 | 0.1.7 | 2024-07-10 | [41427](https://github.com/airbytehq/airbyte/pull/41427) | Update dependencies |
 | 0.1.6 | 2024-07-09 | [41191](https://github.com/airbytehq/airbyte/pull/41191) | Update dependencies |
 | 0.1.5 | 2024-07-06 | [40861](https://github.com/airbytehq/airbyte/pull/40861) | Update dependencies |
