@@ -242,7 +242,7 @@ class RemoveUnusedJsonSchamas(Step):
 
         if schemas_path.exists():
             logger.info(f"    Removing schemnas dir: {schemas_path}")
-            schemas_path.unlink()
+            shutil.rmtree(schemas_path)
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
@@ -438,12 +438,17 @@ async def run_connector_migrate_to_inline_schemas_pipeline(
                 id=CONNECTOR_TEST_STEP_ID.INLINE_MIGRATION,
                 step=InlineSchemas(context),
                 depends_on=[CONNECTOR_TEST_STEP_ID.INLINE_CANDIDATE],
-            ),
+            )
+        ]
+    )
+
+    steps_to_run.append(
+        [
             StepToRun(
                 id=CONNECTOR_TEST_STEP_ID.INLINE_CLEANUP,
                 step=RemoveUnusedJsonSchamas(context),
                 depends_on=[CONNECTOR_TEST_STEP_ID.INLINE_MIGRATION],
-            ),
+            )
         ]
     )
 
