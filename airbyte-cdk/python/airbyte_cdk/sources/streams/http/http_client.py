@@ -24,8 +24,17 @@ from airbyte_cdk.sources.streams.http.error_handlers import (
     JsonErrorMessageParser,
     ResponseAction,
 )
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.rate_limiting import http_client_default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.sources.streams.http.exceptions import (
+    DefaultBackoffException,
+    RateLimitBackoffException,
+    RequestBodyException,
+    UserDefinedBackoffException,
+)
+from airbyte_cdk.sources.streams.http.rate_limiting import (
+    http_client_default_backoff_handler,
+    rate_limit_default_backoff_handler,
+    user_defined_backoff_handler,
+)
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -195,6 +204,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
         """
         Sends a request with retry logic.
@@ -212,9 +222,10 @@ class HttpClient:
         max_time = self._max_time
 
         user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
+        rate_limit_backoff_handler = rate_limit_default_backoff_handler()
         backoff_handler = http_client_default_backoff_handler(max_tries=max_tries, max_time=max_time)
         # backoff handlers wrap _send, so it will always return a response
-        response = backoff_handler(user_backoff_handler)(request, request_kwargs, log_formatter=log_formatter)  # type: ignore # mypy can't infer that backoff_handler wraps _send
+        response = backoff_handler(rate_limit_backoff_handler(user_backoff_handler))(request, request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit)  # type: ignore # mypy can't infer that backoff_handler wraps _send
 
         return response
 
@@ -223,6 +234,7 @@ class HttpClient:
         request: requests.PreparedRequest,
         request_kwargs: Mapping[str, Any],
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> requests.Response:
 
         if request not in self._request_attempt_count:
@@ -247,9 +259,15 @@ class HttpClient:
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
         if self._logger.isEnabledFor(logging.DEBUG) and response is not None:
-            self._logger.debug(
-                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
-            )
+            if request_kwargs.get("stream"):
+                self._logger.debug(
+                    "Receiving response, but not logging it as the response is streamed",
+                    extra={"headers": response.headers, "status": response.status_code},
+                )
+            else:
+                self._logger.debug(
+                    "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+                )
 
         # Request/response logging for declarative cdk
         if log_formatter is not None and response is not None and self._message_repository is not None:
@@ -263,9 +281,9 @@ class HttpClient:
         if error_resolution.response_action == ResponseAction.RATE_LIMITED:
             # TODO: Update to handle with message repository when concurrent message repository is ready
             reasons = [AirbyteStreamStatusReason(type=AirbyteStreamStatusReasonType.RATE_LIMITED)]
-            message = stream_status_as_airbyte_message(StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons).json(
-                exclude_unset=True
-            )
+            message = stream_status_as_airbyte_message(
+                StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons
+            ).model_dump_json(exclude_unset=True)
 
             # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
             # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the
@@ -274,7 +292,7 @@ class HttpClient:
             print(f"{message}\n", end="", flush=True)
 
         if error_resolution.response_action == ResponseAction.FAIL:
-            if response:
+            if response is not None:
                 error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self._error_message_parser.parse_response_error_message(response)}'"
             else:
                 error_message = f"'{request.method}' request to '{request.url}' failed with exception: '{exc}'"
@@ -286,7 +304,7 @@ class HttpClient:
             )
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
-            if response:
+            if response is not None:
                 log_message = (
                     f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
                 )
@@ -309,6 +327,9 @@ class HttpClient:
                 error_resolution.error_message
                 or f"Request to {request.url} failed with failure type {error_resolution.failure_type}, response action {error_resolution.response_action}."
             )
+
+            retry_endlessly = error_resolution.response_action == ResponseAction.RATE_LIMITED and not exit_on_rate_limit
+
             if user_defined_backoff_time:
                 raise UserDefinedBackoffException(
                     backoff=user_defined_backoff_time,
@@ -316,10 +337,13 @@ class HttpClient:
                     response=(response if response is not None else exc),
                     error_message=error_message,
                 )
-            else:
-                raise DefaultBackoffException(
-                    request=request, response=(response if response is not None else exc), error_message=error_message
-                )
+
+            elif retry_endlessly:
+                raise RateLimitBackoffException(request=request, response=response or exc, error_message=error_message)
+
+            raise DefaultBackoffException(
+                request=request, response=(response if response is not None else exc), error_message=error_message
+            )
 
         elif response:
             try:
@@ -329,6 +353,10 @@ class HttpClient:
                 raise e
 
         return response  # type: ignore # will either return a valid response of type requests.Response or raise an exception
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def send_request(
         self,
@@ -341,6 +369,7 @@ class HttpClient:
         data: Optional[Union[str, Mapping[str, Any]]] = None,
         dedupe_query_params: bool = False,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+        exit_on_rate_limit: Optional[bool] = False,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         """
         Prepares and sends request and return request and response objects.
@@ -350,6 +379,8 @@ class HttpClient:
             http_method=http_method, url=url, dedupe_query_params=dedupe_query_params, headers=headers, params=params, json=json, data=data
         )
 
-        response: requests.Response = self._send_with_retry(request=request, request_kwargs=request_kwargs, log_formatter=log_formatter)
+        response: requests.Response = self._send_with_retry(
+            request=request, request_kwargs=request_kwargs, log_formatter=log_formatter, exit_on_rate_limit=exit_on_rate_limit
+        )
 
         return request, response

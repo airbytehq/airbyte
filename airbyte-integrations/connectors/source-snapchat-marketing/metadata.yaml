@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.2.0
   dockerRepository: airbyte/source-snapchat-marketing
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg
@@ -29,9 +29,9 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          The source Snapchat Marketing connector is being migrated from the Python CDK to our declarative low-code CDK. 
-          Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, 
-          added incremental functionality to organizations. After updating, please reset your source before resuming syncs. 
+          The source Snapchat Marketing connector is being migrated from the Python CDK to our declarative low-code CDK.
+          Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally,
+          added incremental functionality to organizations. After updating, please reset your source before resuming syncs.
           For more information, see our migration documentation for source Snapchat Marketing.
         upgradeDeadline: "2024-07-16"
         scopedImpact:
@@ -66,6 +66,10 @@ data:
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: snapchat-marketing_config_dev_null
+          id: 1aea074b-0b53-49ec-85d3-b1d10ed3c83d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
