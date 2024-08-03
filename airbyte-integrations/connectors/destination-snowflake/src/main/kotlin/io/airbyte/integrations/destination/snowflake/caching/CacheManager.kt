@@ -19,6 +19,12 @@ object CacheManager {
             + "\nquery=" + query
             + "\n\nparameters=" + parameters)
 
+        if(cache.size > 0) {
+            LOGGER.info("Inside CacheManager: Cache contains existing entries: cache.size()=" + cache.size)
+        } else {
+            LOGGER.info("Inside CacheManager: Cache is empty: cache.size()=" + cache.size)
+        }
+        
         // Replace the placeholders with the actual values
         var updatedQuery = query
         parameters.forEach { value ->
@@ -29,7 +35,8 @@ object CacheManager {
         LOGGER.info("updatedQuery=" + updatedQuery)
 
         if( ! updatedQuery.contains("information_schema")) {
-            return database.queryJsons(updatedQuery)
+            //return database.queryJsons(updatedQuery)
+            return database.queryJsons(query, *parameters)
         }
 
         val cachedResult = CacheManager.getFromCache(updatedQuery)
@@ -45,10 +52,13 @@ object CacheManager {
 
         try {
 
-            resultSet = database.queryJsons(updatedQuery)
+            //resultSet = database.queryJsons(updatedQuery)
+
+            resultSet = database.queryJsons(query, *parameters)
 
             // Cache the result
-            CacheManager.putInCache(query, resultSet)
+            putInCache(query, resultSet)
+
         } catch (e: Exception) {
             e.printStackTrace()
         }

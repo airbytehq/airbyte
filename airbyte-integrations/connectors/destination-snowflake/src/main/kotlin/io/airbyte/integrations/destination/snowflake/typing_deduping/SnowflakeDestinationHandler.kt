@@ -538,7 +538,7 @@ class SnowflakeDestinationHandler(
             val bindValues =
                 arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
 
-            //val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+           // val results: List<JsonNode> = database.queryJsons(query, *bindValues)
 
             LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
                 + "\n bindValues=" + bindValues)
