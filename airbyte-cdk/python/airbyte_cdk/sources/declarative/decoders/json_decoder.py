@@ -29,7 +29,10 @@ class JsonDecoder(Decoder):
             body_json = response.json()
             if not isinstance(body_json, list):
                 body_json = [body_json]
-            yield from body_json
+            if len(body_json) == 0:
+                yield {}
+            else:
+                yield from body_json
         except requests.exceptions.JSONDecodeError:
             logger.warning(f"Response cannot be parsed into json: {response.status_code=}, {response.text=}")
             yield {}
