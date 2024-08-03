@@ -163,7 +163,6 @@ class CsvParser(FileTypeParser):
             if config_format.inference_type != InferenceType.NONE
             else _DisabledTypeInferrer()
         )
-        )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         read_bytes = 0
         for row in data_generator:
