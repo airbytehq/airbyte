@@ -71,6 +71,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| 1.1.4 | 2024-08-03 | [43232](https://github.com/airbytehq/airbyte/pull/43232) | Update dependencies |
 | 1.1.3 | 2024-07-27 | [42769](https://github.com/airbytehq/airbyte/pull/42769) | Update dependencies |
 | 1.1.2 | 2024-07-20 | [42151](https://github.com/airbytehq/airbyte/pull/42151) | Update dependencies |
 | 1.1.1 | 2024-07-13 | [41823](https://github.com/airbytehq/airbyte/pull/41823) | Update dependencies |
