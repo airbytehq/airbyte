@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.3.1
+resumable full refresh: fix issue when live traffic regression tests pass state to connector
+
 ## 4.3.0
 Add PrintBuffer to emit records in batches
 
