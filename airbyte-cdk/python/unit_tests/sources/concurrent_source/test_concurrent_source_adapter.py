@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     SyncMode,
+    TraceType,
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
@@ -73,9 +74,11 @@ def test_concurrent_source_adapter(as_stream_status, remove_stack_trace):
     unavailable_stream = _mock_stream("s3", [{"data": 3}], False)
     concurrent_stream.name = "s2"
     logger = Mock()
-    adapter = _MockSource(concurrent_source, {regular_stream: False, concurrent_stream: True, unavailable_stream: False}, logger)
-
-    messages = list(adapter.read(logger, {}, _configured_catalog([regular_stream, concurrent_stream, unavailable_stream])))
+    adapter = _MockSource(concurrent_source, {regular_stream: False, concurrent_stream: True}, logger)
+    with pytest.raises(AirbyteTracedException):
+        messages = []
+        for message in adapter.read(logger, {}, _configured_catalog([regular_stream, concurrent_stream, unavailable_stream])):
+            messages.append(message)
 
     records = [m for m in messages if m.type == MessageType.RECORD]
 
@@ -93,7 +96,7 @@ def test_concurrent_source_adapter(as_stream_status, remove_stack_trace):
 
     assert records == expected_records
 
-    unavailable_stream_trace_messages = [m for m in messages if m.type == MessageType.TRACE and m.trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE]
+    unavailable_stream_trace_messages = [m for m in messages if m.type == MessageType.TRACE and m.trace.type == TraceType.STREAM_STATUS and m.trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE]
     expected_status = [as_stream_status("s3", AirbyteStreamStatus.INCOMPLETE)]
 
     assert len(unavailable_stream_trace_messages) == 1

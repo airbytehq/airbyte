@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshdesk_config_dev_null
+          id: 5232fac1-675b-4138-abd7-f0ff04a40a8c
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
