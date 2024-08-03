@@ -34,6 +34,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: linkedin-pages_config_dev_null
+          id: 4460fd33-21fe-46de-83ee-b886aaf38803
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-LINKEDIN-PAGES__CREDS

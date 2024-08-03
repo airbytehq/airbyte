@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: us-census_config_dev_null
+          id: b313e43c-2807-4105-b662-10ed1c830743
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

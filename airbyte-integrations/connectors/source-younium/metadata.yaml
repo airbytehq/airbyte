@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: younium_config_dev_null
+          id: bcc0a350-b9df-478f-8c08-1cd996b05026
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-YOUNIUM__CREDS

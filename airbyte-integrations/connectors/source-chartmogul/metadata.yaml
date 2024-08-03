@@ -41,6 +41,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: chartmogul_config_dev_null
+          id: 07daa31c-b7d0-4d3e-81c6-e6b7786a5c29
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-CHARTMOGUL__CREDS

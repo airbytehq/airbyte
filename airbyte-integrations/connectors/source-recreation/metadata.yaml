@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: recreation_config_dev_null
+          id: 0d2e5a57-e433-4e4c-8961-88a0521e1cae
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-RECREATION__CREDS

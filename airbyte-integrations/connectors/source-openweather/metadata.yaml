@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: openweather_config_dev_null
+          id: 6e4f9fb3-3b83-4967-adcd-860a57242a9d
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-OPENWEATHER_CREDS

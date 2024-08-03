@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-webfonts_config_dev_null
+          id: 63a92515-377b-46fe-b5a7-99b4e02c1b6f
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GOOGLE-WEBFONTS__CREDS
