@@ -79,7 +79,8 @@ def write_connector_to_disk(connectors_dir: Path, docs_dir: Path, connector: Con
         return False
 
     # Prepare required items: metadata, README, and the docs file.
-    metadata = metadata_for_connector(connector, version="0.1.0", base_image="airbyte/source-declarative-manifest")
+    base_image = get_latest_base_image("airbyte/source-declarative-manifest")
+    metadata = metadata_for_connector(connector, version="0.1.0", base_image=base_image)
     readme = readme_for_connector(connector.name)
     docs_file = docs_file_for_connector(connector, metadata)
     docs_file_name = f"{connector.name}.md"

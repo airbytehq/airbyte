@@ -16,7 +16,7 @@ data:
   githubIssueLabel: source-{{source_name}}
   icon: {{source_name}}.svg
   license: MIT
-  maxSecondsBetweenMessages: 60
+  maxSecondsBetweenMessages: 300
   name: {{ source_name | capitalize }}
   remoteRegistries:
     pypi:
@@ -29,10 +29,7 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:python
   connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
 metadataSpecVersion: "1.0"
