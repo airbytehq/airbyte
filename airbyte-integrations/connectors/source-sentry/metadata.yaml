@@ -37,6 +37,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sentry_config_dev_null
+          id: 54bf1bc8-404c-4e4c-b253-7d8b4c4ffacb
+        - name: sentry_config_limited_scopes_dev_null
+          id: aa4573bd-4681-4906-9877-d6afe4060a28
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

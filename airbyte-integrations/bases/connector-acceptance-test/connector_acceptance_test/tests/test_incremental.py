@@ -133,6 +133,7 @@ def naive_diff_records(records_1: List[AirbyteMessage], records_2: List[AirbyteM
 
 
 @pytest.mark.default_timeout(TWENTY_MINUTES)
+@pytest.mark.usefixtures("final_teardown")
 class TestIncremental(BaseTest):
     async def test_two_sequential_reads(
         self,
@@ -251,13 +252,6 @@ class TestIncremental(BaseTest):
                 state_input, mutating_stream_name_to_per_stream_state = self.get_next_state_input(
                     state_message, mutating_stream_name_to_per_stream_state
                 )
-
-                if client_container and client_container_config.between_syncs_command:
-                    detailed_logger.info(
-                        await client_container.with_env_variable("CACHEBUSTER", str(uuid4()))
-                        .with_exec(client_container_config.between_syncs_command, skip_entrypoint=True)
-                        .stdout()
-                    )
 
                 output_N = await docker_runner.call_read_with_state(
                     connector_config, configured_catalog_for_incremental_per_stream, state=state_input
@@ -407,7 +401,8 @@ class TestIncremental(BaseTest):
 
             if isinstance(current_node, dict):
                 for key, value in current_node.items():
-                    if key == cursor_field:
+                    # DB sources use a hardcoded field `cursor` to denote cursor value.
+                    if key == cursor_field or ("cursor_field" in current_node and key == "cursor"):
                         values.append(value)
                     nodes_to_visit.append(value)
             elif isinstance(current_node, list):

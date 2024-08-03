@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.10
   dockerRepository: airbyte/source-zendesk-sell
   githubIssueLabel: source-zendesk-sell
   icon: zendesk.svg
@@ -30,6 +30,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-sell_config_dev_null
+          id: 0f954007-88f7-494e-a8a0-8a12fb659200
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-ZENDESK-SELL__CREDS
