@@ -166,6 +166,7 @@ class CsvSerializedBufferTest {
         expectedData: String
     ) {
         val outputFile = buffer.file
+        val defaultNamespace = ""
         (CsvSerializedBuffer.createFunction(config) { buffer }
                 .apply(
                     streamPair,

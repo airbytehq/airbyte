@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7f0c5e2-4815-48c4-90cf-f47124209835
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/source-omnisend
   githubIssueLabel: source-omnisend
   icon: omnisend.svg
@@ -33,6 +33,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: omnisend_config_dev_null
+          id: 1da4bd92-4fee-4601-9794-011396cc713d
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-OMNISEND__CREDS

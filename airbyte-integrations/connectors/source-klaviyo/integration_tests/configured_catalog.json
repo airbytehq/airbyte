@@ -62,6 +62,21 @@
     },
     {
       "stream": {
+        "name": "events_detailed",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["datetime"],
+        "source_defined_primary_key": [["id"]],
+        "namespace": null
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["datetime"],
+      "destination_sync_mode": "append",
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
         "name": "global_exclusions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -78,21 +93,6 @@
     {
       "stream": {
         "name": "lists",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated"],
-        "source_defined_primary_key": [["id"]],
-        "namespace": null
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["updated"],
-      "destination_sync_mode": "append",
-      "primary_key": [["id"]]
-    },
-    {
-      "stream": {
-        "name": "lists_detailed",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
