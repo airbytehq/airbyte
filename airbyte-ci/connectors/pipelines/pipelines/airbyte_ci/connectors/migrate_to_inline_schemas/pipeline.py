@@ -210,7 +210,7 @@ class InlineSchemas(Step):
             _update_inline_schema(schema_loader, json_streams, stream_name)
 
         write_yaml(data, manifest_path)
-        await format_prettier([manifest_path])
+        await format_prettier([manifest_path], logger=logger)
 
         for json_stream in json_streams.values():
             logger.info(f"     !! JSON schema not found: {json_stream.name}")
