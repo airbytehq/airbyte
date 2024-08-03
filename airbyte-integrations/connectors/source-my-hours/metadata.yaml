@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 722ba4bf-06ec-45a4-8dd5-72e4a5cf3903
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.8
   dockerRepository: airbyte/source-my-hours
   githubIssueLabel: source-my-hours
   icon: my-hours.svg
@@ -36,6 +36,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: my-hours_config_dev_null
+          id: 617930a1-8717-49cc-890d-99da6e745bf9
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-MY-HOURS_CREDS

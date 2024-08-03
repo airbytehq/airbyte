@@ -207,7 +207,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
       initialLoadStateManager =
           new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
-              initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
+              initPairToPrimaryKeyInfoMap(database, catalog, tableNameToTable, getQuoteString()));
     }
   }
 

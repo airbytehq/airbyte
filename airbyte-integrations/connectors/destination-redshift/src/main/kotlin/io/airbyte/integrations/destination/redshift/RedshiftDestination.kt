@@ -164,6 +164,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                     getS3StorageOperations(s3Config),
                     sqlGenerator,
                     destinationHandler,
+                    RedshiftSqlGenerator.isDropCascade(config),
                 )
 
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
@@ -408,6 +409,7 @@ class RedshiftDestination : BaseConnector(), Destination {
                 s3StorageOperations,
                 sqlGenerator,
                 redshiftDestinationHandler,
+                RedshiftSqlGenerator.isDropCascade(config),
             )
         val syncOperation =
             DefaultSyncOperation(

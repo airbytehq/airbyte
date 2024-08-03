@@ -1,5 +1,48 @@
 # Changelog
 
+## 4.3.1
+resumable full refresh: fix issue when live traffic regression tests pass state to connector
+
+## 4.3.0
+Add PrintBuffer to emit records in batches
+
+## 4.2.0
+Resumable full refresh: Add SubstreamResumableFullRefreshCursor to Python CDK to allow connectors to allow checkpointing on parent records
+
+## 4.1.0
+Align BackoffStrategy interfaces to take attempt_count as a full-fledge parameter
+
+## 4.0.2
+Add ability to stop stream when retry-after is greater than a duration
+
+## 4.0.1
+Fix case where stream wont have a state attribute and needs to resolve get_updated_state
+
+## 4.0.0
+- General performance enhancement
+- Dropping Python 3.9 support
+
+## 3.9.6
+fix declarative schema refs for Decoder
+
+## 3.9.5
+Fixed: Resolved an issue in HttpClient that prevented correct error messages from being presented.
+
+## 3.9.4
+Adding  text field to declarative manifest schema for general connector description.
+
+## 3.9.3
+add name property to http_client for convenience
+
+## 3.9.2
+low-code: fix record selector factory when using custom components
+
+## 3.9.1
+ fix OOM on predicate for streamable responses
+
+## 3.9.0
+low code: add new Decoders: JsonlDecoder, IterableDecoder
+
 ## 3.8.2
 low-code: fix overwrite for default backoff strategy
 

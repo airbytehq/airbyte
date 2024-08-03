@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 1.0.9
+  dockerImageTag: 1.0.11
   releases:
     breakingChanges:
       1.0.0:
@@ -38,6 +38,16 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sendgrid_python_config_dev_null
+          id: 06851e4b-cd7f-4ee9-bf0a-a405050fd9b2
+        - name: sendgrid_config_dev_null
+          id: 0a1b625d-23c5-4bf1-bfd6-d2d517aa9765
+        - name: sendgrid_lowcode_config_dev_null
+          id: 312c3f32-7411-447d-b35b-37c07218d8f9
+        - name: sendgrid_old_config_dev_null
+          id: 5f1f419f-2477-4528-b348-d9900ec86c61
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

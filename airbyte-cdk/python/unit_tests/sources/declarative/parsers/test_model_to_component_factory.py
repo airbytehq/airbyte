@@ -1043,7 +1043,10 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     selector_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["selector"], {})
 
     selector = factory.create_component(
-        model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config
+        model_type=RecordSelectorModel, component_definition=selector_manifest,
+        decoder=None,
+        transformations=[],
+        config=input_config
     )
 
     assert isinstance(selector, RecordSelector)
@@ -1123,7 +1126,10 @@ requester:
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+        model_type=HttpRequesterModel,
+        component_definition=requester_manifest, config=input_config,
+        name=name,
+        decoder=None,
     )
 
     assert isinstance(selector, HttpRequester)
@@ -1173,7 +1179,8 @@ requester:
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name,
+        decoder=None
     )
 
     assert isinstance(selector, HttpRequester)
@@ -1221,7 +1228,7 @@ requester:
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name, decoder=None
     )
 
     assert isinstance(selector.authenticator, ApiKeyAuthenticator)
@@ -1258,7 +1265,7 @@ requester:
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
     http_requester = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name"
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name", decoder=JsonDecoder(parameters={})
     )
     requests_mock.get(
         "https://api.sendgrid.com/v3/marketing/lists", status_code=401
@@ -1446,7 +1453,8 @@ def test_create_default_paginator():
     paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
-        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io",
+        decoder=JsonDecoder(parameters={})
     )
 
     assert isinstance(paginator, DefaultPaginator)
@@ -1470,10 +1478,10 @@ def test_create_default_paginator():
             {
                 "type": "CustomErrorHandler",
                 "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
-                "subcomponent_field_with_hint": {"type": "DpathExtractor", "field_path": []},
+                "subcomponent_field_with_hint": {"type": "DpathExtractor", "field_path": [], "decoder": {"type": "JsonDecoder"}},
             },
             "subcomponent_field_with_hint",
-            DpathExtractor(field_path=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
+            DpathExtractor(field_path=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, decoder=JsonDecoder(parameters={}), parameters={}),
             None,
             id="test_create_custom_component_with_subcomponent_that_must_be_parsed",
         ),
@@ -1555,7 +1563,7 @@ def test_create_default_paginator():
                 ),
                 url_base="https://physical_100.com",
                 config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]},
-                parameters={},
+                parameters={"decoder": {"type": "JsonDecoder"}},
             ),
             None,
             id="test_create_custom_component_with_subcomponent_that_uses_parameters",
@@ -2131,7 +2139,7 @@ def test_create_offset_increment():
     )
     expected_strategy = OffsetIncrement(page_size=10, inject_on_first_request=True, parameters={}, config=input_config)
 
-    strategy = factory.create_offset_increment(model, input_config)
+    strategy = factory.create_offset_increment(model, input_config, decoder=JsonDecoder(parameters={}))
 
     assert strategy.page_size == expected_strategy.page_size
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request

@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b4375641-e270-41d3-9c20-4f9cecad87a8
-  dockerImageTag: 1.0.7
+  dockerImageTag: 1.0.8
   dockerRepository: airbyte/source-appfollow
   githubIssueLabel: source-appfollow
   icon: appfollow.svg
@@ -36,6 +36,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: appfollow_config_dev_null
+          id: 32cc5e26-77ce-4ddd-91e3-1fbcc653d4bf
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-APPFOLLOW__CREDS

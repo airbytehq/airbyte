@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
-  dockerImageTag: 1.0.7
+  dockerImageTag: 1.0.9
   dockerRepository: airbyte/source-facebook-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   githubIssueLabel: source-facebook-pages
@@ -41,6 +41,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: facebook-pages_config_dev_null
+          id: 4446147a-669a-472b-bda8-6ee069eb3099
     - suite: unitTests
     # Disable acceptance tests for now
     # No/Low cloud usage

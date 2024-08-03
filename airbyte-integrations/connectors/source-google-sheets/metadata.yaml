@@ -10,7 +10,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerImageTag: 0.5.11
+  dockerImageTag: 0.7.0
   dockerRepository: airbyte/source-google-sheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   githubIssueLabel: source-google-sheets
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-sheets_service_config_dev_null
+          id: 758d197a-864f-45d3-9d5d-0a52fd9c0a22
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

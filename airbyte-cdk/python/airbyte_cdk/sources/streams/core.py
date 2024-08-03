@@ -1,15 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 import inspect
 import itertools
 import logging
-import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from functools import lru_cache
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from functools import cached_property, lru_cache
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
@@ -31,10 +30,6 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSch
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated import deprecated
-
-if typing.TYPE_CHECKING:
-    from airbyte_cdk.sources import Source
-    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
@@ -130,7 +125,7 @@ class Stream(ABC):
 
     has_multiple_slices = False
 
-    @property
+    @cached_property
     def name(self) -> str:
         """
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
@@ -178,6 +173,7 @@ class Stream(ABC):
 
         next_slice = checkpoint_reader.next()
         record_counter = 0
+        stream_state_tracker = copy.deepcopy(stream_state)
         while next_slice is not None:
             if slice_logger.should_log_slice_message(logger):
                 yield slice_logger.create_slice_log_message(next_slice)
@@ -204,7 +200,8 @@ class Stream(ABC):
                     if self.cursor_field:
                         # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
                         # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
-                        self._observe_state(checkpoint_reader, self.get_updated_state(stream_state, record_data))
+                        stream_state_tracker = self.get_updated_state(stream_state_tracker, record_data)
+                        self._observe_state(checkpoint_reader, stream_state_tracker)
                     record_counter += 1
 
                     checkpoint_interval = self.state_checkpoint_interval
@@ -366,30 +363,6 @@ class Stream(ABC):
         """Exit on rate limit setter, accept bool value."""
         self._exit_on_rate_limit = value
 
-    @deprecated(version="3.7.0")
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Checks whether this stream is available.
-
-        :param logger: source logger
-        :param source: (optional) source
-        :return: A tuple of (boolean, str). If boolean is true, then this stream
-          is available, and no str is required. Otherwise, this stream is unavailable
-          for some reason and the str should describe what went wrong and how to
-          resolve the unavailability, if possible.
-        """
-        if self.availability_strategy:
-            return self.availability_strategy.check_availability(self, logger, source)
-        return True, None
-
-    @property
-    @deprecated(version="3.7.0")
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        """
-        :return: The AvailabilityStrategy used to check whether this stream is available.
-        """
-        return None
-
     @property
     @abstractmethod
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -425,7 +398,7 @@ class Stream(ABC):
         """
         return None
 
-    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.")
+    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.", action="ignore")
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
     ) -> MutableMapping[str, Any]:
