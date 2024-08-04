@@ -124,7 +124,7 @@ definitions:
           $ref: "#/schemas/location_lookup"
   base_requester:
     type: HttpRequester
-    url_base: http://api.weatherstack.com/
+    url_base: https://api.weatherstack.com/
 
 streams:
   - $ref: "#/definitions/streams/current_weather"
@@ -193,362 +193,198 @@ schemas:
   current_weather:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    properties: {
-      "request": {
-        "type": ["null", "object"],
-        "properties": {
-          "type": {
-            "type": "string"
+    properties:
+      {
+        "request":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "type": { "type": "string" },
+                "query": { "type": "string" },
+                "language": { "type": "string" },
+                "unit": { "type": "string" },
+              },
           },
-          "query": {
-            "type": "string"
+        "location":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "name": { "type": "string" },
+                "country": { "type": "string" },
+                "region": { "type": "string" },
+                "lat": { "type": "string" },
+                "lon": { "type": "string" },
+                "timezone_id": { "type": "string" },
+                "localtime": { "type": "string" },
+                "localtime_epoch": { "type": "number" },
+                "utc_offset": { "type": "string" },
+              },
           },
-          "language": {
-            "type": "string"
+        "current":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "observation_time": { "type": "string" },
+                "temperature": { "type": "number" },
+                "weather_code": { "type": "number" },
+                "weather_icons": { "type": "array" },
+                "weather_descriptions": { "type": "array" },
+                "wind_speed": { "type": "number" },
+                "wind_degree": { "type": "number" },
+                "wind_dir": { "type": "string" },
+                "pressure": { "type": "number" },
+                "precip": { "type": "number" },
+                "humidity": { "type": "number" },
+                "cloudcover": { "type": "number" },
+                "feelslike": { "type": "number" },
+                "uv_index": { "type": "number" },
+                "visibility": { "type": "number" },
+              },
           },
-          "unit": {
-            "type": "string"
-          }
-        }
-      },
-      "location": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "country": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "lat": {
-            "type": "string"
-          },
-          "lon": {
-            "type": "string"
-          },
-          "timezone_id": {
-            "type": "string"
-          },
-          "localtime": {
-            "type": "string"
-          },
-          "localtime_epoch": {
-            "type": "number"
-          },
-          "utc_offset": {
-            "type": "string"
-          }
-        }
-      },
-      "current": {
-        "type": ["null", "object"],
-        "properties": {
-          "observation_time": {
-            "type": "string"
-          },
-          "temperature": {
-            "type": "number"
-          },
-          "weather_code": {
-            "type": "number"
-          },
-          "weather_icons": {
-            "type": "array"
-          },
-          "weather_descriptions": {
-            "type": "array"
-          },
-          "wind_speed": {
-            "type": "number"
-          },
-          "wind_degree": {
-            "type": "number"
-          },
-          "wind_dir": {
-            "type": "string"
-          },
-          "pressure": {
-            "type": "number"
-          },
-          "precip": {
-            "type": "number"
-          },
-          "humidity": {
-            "type": "number"
-          },
-          "cloudcover": {
-            "type": "number"
-          },
-          "feelslike": {
-            "type": "number"
-          },
-          "uv_index": {
-            "type": "number"
-          },
-          "visibility": {
-            "type": "number"
-          }
-        }
       }
-    }
   forecast:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    properties: {
-      "request": {
-        "type": ["null", "object"],
-        "properties": {
-          "type": {
-            "type": "string"
+    properties:
+      {
+        "request":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "type": { "type": "string" },
+                "query": { "type": "string" },
+                "language": { "type": "string" },
+                "unit": { "type": "string" },
+              },
           },
-          "query": {
-            "type": "string"
+        "location":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "name": { "type": "string" },
+                "country": { "type": "string" },
+                "region": { "type": "string" },
+                "lat": { "type": "string" },
+                "lon": { "type": "string" },
+                "timezone_id": { "type": "string" },
+                "localtime": { "type": "string" },
+                "localtime_epoch": { "type": "number" },
+                "utc_offset": { "type": "string" },
+              },
           },
-          "language": {
-            "type": "string"
+        "current":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "observation_time": { "type": "string" },
+                "temperature": { "type": "number" },
+                "weather_code": { "type": "number" },
+                "weather_icons": { "type": "array" },
+                "weather_descriptions": { "type": "array" },
+                "wind_speed": { "type": "number" },
+                "wind_degree": { "type": "number" },
+                "wind_dir": { "type": "string" },
+                "pressure": { "type": "number" },
+                "precip": { "type": "number" },
+                "humidity": { "type": "number" },
+                "cloudcover": { "type": "number" },
+                "feelslike": { "type": "number" },
+                "uv_index": { "type": "number" },
+                "visibility": { "type": "number" },
+              },
           },
-          "unit": {
-            "type": "string"
-          }
-        }
-      },
-      "location": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "country": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "lat": {
-            "type": "string"
-          },
-          "lon": {
-            "type": "string"
-          },
-          "timezone_id": {
-            "type": "string"
-          },
-          "localtime": {
-            "type": "string"
-          },
-          "localtime_epoch": {
-            "type": "number"
-          },
-          "utc_offset": {
-            "type": "string"
-          }
-        }
-      },
-      "current": {
-        "type": ["null", "object"],
-        "properties": {
-          "observation_time": {
-            "type": "string"
-          },
-          "temperature": {
-            "type": "number"
-          },
-          "weather_code": {
-            "type": "number"
-          },
-          "weather_icons": {
-            "type": "array"
-          },
-          "weather_descriptions": {
-            "type": "array"
-          },
-          "wind_speed": {
-            "type": "number"
-          },
-          "wind_degree": {
-            "type": "number"
-          },
-          "wind_dir": {
-            "type": "string"
-          },
-          "pressure": {
-            "type": "number"
-          },
-          "precip": {
-            "type": "number"
-          },
-          "humidity": {
-            "type": "number"
-          },
-          "cloudcover": {
-            "type": "number"
-          },
-          "feelslike": {
-            "type": "number"
-          },
-          "uv_index": {
-            "type": "number"
-          },
-          "visibility": {
-            "type": "number"
-          }
-        }
-      },
-      "forecast": {
-        "type": ["null", "object"]
+        "forecast": { "type": ["null", "object"] },
       }
-    }
   historical:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {
-      "request": {
-        "type": ["null", "object"],
-        "properties": {
-          "type": {
-            "type": "string"
+    properties:
+      {
+        "request":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "type": { "type": "string" },
+                "query": { "type": "string" },
+                "language": { "type": "string" },
+                "unit": { "type": "string" },
+              },
           },
-          "query": {
-            "type": "string"
+        "location":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "name": { "type": "string" },
+                "country": { "type": "string" },
+                "region": { "type": "string" },
+                "lat": { "type": "string" },
+                "lon": { "type": "string" },
+                "timezone_id": { "type": "string" },
+                "localtime": { "type": "string" },
+                "localtime_epoch": { "type": "number" },
+                "utc_offset": { "type": "string" },
+              },
           },
-          "language": {
-            "type": "string"
+        "current":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "observation_time": { "type": "string" },
+                "temperature": { "type": "number" },
+                "weather_code": { "type": "number" },
+                "weather_icons": { "type": "array" },
+                "weather_descriptions": { "type": "array" },
+                "wind_speed": { "type": "number" },
+                "wind_degree": { "type": "number" },
+                "wind_dir": { "type": "string" },
+                "pressure": { "type": "number" },
+                "precip": { "type": "number" },
+                "humidity": { "type": "number" },
+                "cloudcover": { "type": "number" },
+                "feelslike": { "type": "number" },
+                "uv_index": { "type": "number" },
+                "visibility": { "type": "number" },
+              },
           },
-          "unit": {
-            "type": "string"
-          }
-        }
-      },
-      "location": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "country": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "lat": {
-            "type": "string"
-          },
-          "lon": {
-            "type": "string"
-          },
-          "timezone_id": {
-            "type": "string"
-          },
-          "localtime": {
-            "type": "string"
-          },
-          "localtime_epoch": {
-            "type": "number"
-          },
-          "utc_offset": {
-            "type": "string"
-          }
-        }
-      },
-      "current": {
-        "type": ["null", "object"],
-        "properties": {
-          "observation_time": {
-            "type": "string"
-          },
-          "temperature": {
-            "type": "number"
-          },
-          "weather_code": {
-            "type": "number"
-          },
-          "weather_icons": {
-            "type": "array"
-          },
-          "weather_descriptions": {
-            "type": "array"
-          },
-          "wind_speed": {
-            "type": "number"
-          },
-          "wind_degree": {
-            "type": "number"
-          },
-          "wind_dir": {
-            "type": "string"
-          },
-          "pressure": {
-            "type": "number"
-          },
-          "precip": {
-            "type": "number"
-          },
-          "humidity": {
-            "type": "number"
-          },
-          "cloudcover": {
-            "type": "number"
-          },
-          "feelslike": {
-            "type": "number"
-          },
-          "uv_index": {
-            "type": "number"
-          },
-          "visibility": {
-            "type": "number"
-          }
-        }
-      },
-      "historical": {
-        "type": ["null", "object"]
+        "historical": { "type": ["null", "object"] },
       }
-    }
   location_lookup:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties: {
-      "request": {
-        "type": ["null", "object"],
-        "properties": {
-          "query": {
-            "type": "string"
+    properties:
+      {
+        "request":
+          {
+            "type": ["null", "object"],
+            "properties":
+              {
+                "query": { "type": "string" },
+                "results": { "type": "number" },
+              },
           },
-          "results": {
-            "type": "number"
-          }
-        }
-      },
-      "results": {
-        "type": ["null", "array"],
-        "properties": {
-          "name": {
-            "type": "string"
+        "results":
+          {
+            "type": ["null", "array"],
+            "properties":
+              {
+                "name": { "type": "string" },
+                "country": { "type": "string" },
+                "region": { "type": "string" },
+                "lon": { "type": "string" },
+                "lat": { "type": "string" },
+                "timezone_id": { "type": "string" },
+                "utc_offset": { "type": "string" },
+              },
           },
-          "country": {
-            "type": "string"
-          },
-          "region": {
-            "type": "string"
-          },
-          "lon": {
-            "type": "string"
-          },
-          "lat": {
-            "type": "string"
-          },
-          "timezone_id": {
-            "type": "string"
-          },
-          "utc_offset": {
-            "type": "string"
-          }
-        }
       }
-    }
