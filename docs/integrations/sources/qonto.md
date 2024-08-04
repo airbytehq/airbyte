@@ -10,6 +10,7 @@ The Airbyte Source for [Qonto](https://qonto.com)
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.12 | 2024-08-03 | [43159](https://github.com/airbytehq/airbyte/pull/43159) | Update dependencies |
 | 0.2.11 | 2024-07-27 | [42622](https://github.com/airbytehq/airbyte/pull/42622) | Update dependencies |
 | 0.2.10 | 2024-07-20 | [42147](https://github.com/airbytehq/airbyte/pull/42147) | Update dependencies |
 | 0.2.9 | 2024-07-13 | [41884](https://github.com/airbytehq/airbyte/pull/41884) | Update dependencies |
