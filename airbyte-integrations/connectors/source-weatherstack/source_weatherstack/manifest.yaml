@@ -142,14 +142,6 @@ spec:
       - query
       - historical_date
     properties:
-      is_paid_account:
-        type: boolean
-        description: >-
-          Toggle if you're using a <a
-          href="https://weatherstack.com/product">Paid subscription</a>
-        order: 0
-        title: Is Paid Account
-        default: false
       access_key:
         type: string
         description: >-
