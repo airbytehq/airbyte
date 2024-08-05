@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
-  dockerImageTag: 0.5.10
+  dockerImageTag: 0.5.13
   dockerRepository: airbyte/source-auth0
   documentationUrl: https://docs.airbyte.com/integrations/sources/auth0
   githubIssueLabel: source-auth0
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: auth0_config_dev_null
+          id: 1d14e305-c231-425f-9f99-6c37b7e4f45f
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-AUTH0__CREDS

@@ -128,11 +128,6 @@ class AbstractSource(Source, ABC):
                         )
 
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-                    stream_is_available, reason = stream_instance.check_availability(logger, self)
-                    if not stream_is_available:
-                        logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
-                        yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
-                        continue
                     logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.STARTED)
                     yield from self._read_stream(
@@ -219,6 +214,13 @@ class AbstractSource(Source, ABC):
         stream_name = configured_stream.stream.name
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
+        # This is a hack. Existing full refresh streams that are converted into resumable full refresh need to discard
+        # the state because the terminal state for a full refresh sync is not compatible with substream resumable full
+        # refresh state. This is only required when running live traffic regression testing since the platform normally
+        # handles whether to pass state
+        if stream_state == {"__ab_no_cursor_state_message": True}:
+            stream_state = {}
+
         if "state" in dir(stream_instance):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")
@@ -256,10 +258,11 @@ class AbstractSource(Source, ABC):
         """
         Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
         """
-        if isinstance(record_data_or_message, AirbyteMessage):
-            return record_data_or_message
-        else:
-            return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
+        match record_data_or_message:
+            case AirbyteMessage():
+                return record_data_or_message
+            case _:
+                return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
 
     @property
     def message_repository(self) -> Union[None, MessageRepository]:

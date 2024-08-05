@@ -1,4 +1,4 @@
-# Google Ads
+# Goldcast
 
 This page contains the setup guide and reference information for the Goldcast source connector.
 
@@ -25,7 +25,7 @@ A simple access token is all that is needed to access Goldcast API. This token i
 
 #### For Airbyte Cloud:
 
-To set up Google Ads as a source in Airbyte Cloud:
+To set up Goldcast as a source in Airbyte Cloud:
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
@@ -62,7 +62,7 @@ Incremental modes are not supported as the Goldcast API does not contain a curso
 
 ## Supported Streams
 
-The Google Ads source connector can sync the following tables. It can also sync custom queries using GAQL.
+The Goldcast source connector can sync the following tables. It can also sync custom queries using GAQL.
 
 ### Main Tables
 
@@ -74,7 +74,7 @@ Link to Goldcast API documentation [here](https://customapi.goldcast.io/swagger-
 
 - [event_members](https://customapi.goldcast.io/swagger-ui/#/Event%20members/List%20event%20members)
 
-This is a child stream of the events stream representing users associated to events. 
+This is a child stream of the events stream representing users associated to events.
 
 - [webinars](https://customapi.goldcast.io/swagger-ui/#/Webinars/Retrieve%20webinars)
 
@@ -96,6 +96,9 @@ This is a child stream of the events stream indicating webinars that belong to t
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.6 | 2024-08-03 | [43284](https://github.com/airbytehq/airbyte/pull/43284) | Update dependencies |
+| 0.1.5 | 2024-07-27 | [42616](https://github.com/airbytehq/airbyte/pull/42616) | Update dependencies |
+| 0.1.4 | 2024-07-20 | [42237](https://github.com/airbytehq/airbyte/pull/42237) | Update dependencies |
 | 0.1.3 | 2024-07-13 | [41806](https://github.com/airbytehq/airbyte/pull/41806) | Update dependencies |
 | 0.1.2 | 2024-07-10 | [41406](https://github.com/airbytehq/airbyte/pull/41406) | Update dependencies |
 | 0.1.1 | 2024-07-09 | [41263](https://github.com/airbytehq/airbyte/pull/41263) | Update dependencies |

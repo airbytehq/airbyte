@@ -79,6 +79,9 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.15 | 2024-08-03 | [43134](https://github.com/airbytehq/airbyte/pull/43134) | Update dependencies |
+| 0.1.14 | 2024-07-27 | [42594](https://github.com/airbytehq/airbyte/pull/42594) | Update dependencies |
+| 0.1.13 | 2024-07-20 | [42243](https://github.com/airbytehq/airbyte/pull/42243) | Update dependencies |
 | 0.1.12 | 2024-07-13 | [41901](https://github.com/airbytehq/airbyte/pull/41901) | Update dependencies |
 | 0.1.11 | 2024-07-10 | [41598](https://github.com/airbytehq/airbyte/pull/41598) | Update dependencies |
 | 0.1.10 | 2024-07-09 | [41194](https://github.com/airbytehq/airbyte/pull/41194) | Update dependencies |
