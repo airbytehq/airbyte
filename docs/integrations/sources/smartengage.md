@@ -31,6 +31,13 @@ This source can sync data from the [SmartEngage API](https://smartengage.com/doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.14 | 2024-08-03 | [43294](https://github.com/airbytehq/airbyte/pull/43294) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42690](https://github.com/airbytehq/airbyte/pull/42690) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42194](https://github.com/airbytehq/airbyte/pull/42194) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41703](https://github.com/airbytehq/airbyte/pull/41703) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41411](https://github.com/airbytehq/airbyte/pull/41411) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41252](https://github.com/airbytehq/airbyte/pull/41252) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40950](https://github.com/airbytehq/airbyte/pull/40950) | Update dependencies |
 | 0.1.7 | 2024-06-25 | [40432](https://github.com/airbytehq/airbyte/pull/40432) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40103](https://github.com/airbytehq/airbyte/pull/40103) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39155](https://github.com/airbytehq/airbyte/pull/39155) | [autopull] Upgrade base image to v1.2.2 |

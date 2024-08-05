@@ -103,6 +103,13 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.6.14 | 2024-08-03 | [43110](https://github.com/airbytehq/airbyte/pull/43110) | Update dependencies |
+| 1.6.13 | 2024-07-27 | [42638](https://github.com/airbytehq/airbyte/pull/42638) | Update dependencies |
+| 1.6.12 | 2024-07-20 | [42226](https://github.com/airbytehq/airbyte/pull/42226) | Update dependencies |
+| 1.6.11 | 2024-07-13 | [41913](https://github.com/airbytehq/airbyte/pull/41913) | Update dependencies |
+| 1.6.10 | 2024-07-10 | [41502](https://github.com/airbytehq/airbyte/pull/41502) | Update dependencies |
+| 1.6.9 | 2024-07-09 | [41124](https://github.com/airbytehq/airbyte/pull/41124) | Update dependencies |
+| 1.6.8 | 2024-07-06 | [40989](https://github.com/airbytehq/airbyte/pull/40989) | Update dependencies |
 | 1.6.7 | 2024-06-25 | [40313](https://github.com/airbytehq/airbyte/pull/40313) | Update dependencies |
 | 1.6.6 | 2024-06-22 | [40027](https://github.com/airbytehq/airbyte/pull/40027) | Update dependencies |
 | 1.6.5 | 2024-06-06 | [39206](https://github.com/airbytehq/airbyte/pull/39206) | [autopull] Upgrade base image to v1.2.2 |

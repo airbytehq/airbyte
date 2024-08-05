@@ -40,6 +40,13 @@ Rate Limiting is based on the API Key tier subscription, get more info [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.1.14 | 2024-08-03 | [43263](https://github.com/airbytehq/airbyte/pull/43263) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42634](https://github.com/airbytehq/airbyte/pull/42634) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42340](https://github.com/airbytehq/airbyte/pull/42340) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41832](https://github.com/airbytehq/airbyte/pull/41832) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41461](https://github.com/airbytehq/airbyte/pull/41461) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41179](https://github.com/airbytehq/airbyte/pull/41179) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40892](https://github.com/airbytehq/airbyte/pull/40892) | Update dependencies |
 | 0.1.7 | 2024-06-25 | [40281](https://github.com/airbytehq/airbyte/pull/40281) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40196](https://github.com/airbytehq/airbyte/pull/40196) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39188](https://github.com/airbytehq/airbyte/pull/39188) | [autopull] Upgrade base image to v1.2.2 |

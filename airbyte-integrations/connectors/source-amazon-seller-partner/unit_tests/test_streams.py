@@ -10,6 +10,7 @@ import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from source_amazon_seller_partner.streams import (
     IncrementalReportsAmazonSPStream,
     ReportProcessingStatus,
@@ -207,7 +208,7 @@ class TestReportsAmazonSPStream:
             records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
         assert records[0] == {"some_key": "some_value", "dataEndTime": "2022-10-03"}
 
-    def test_read_records_retrieve_forbidden(self, report_init_kwargs, mocker, requests_mock, caplog):
+    def test_read_records_retrieve_forbidden(self, report_init_kwargs, mocker, requests_mock):
         mocker.patch("time.sleep", lambda x: None)
         requests_mock.register_uri(
             "POST",
@@ -226,12 +227,39 @@ class TestReportsAmazonSPStream:
         )
 
         stream = SomeReportStream(**report_init_kwargs)
-        assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == []
-        assert (
-            "The endpoint https://test.url/reports/2021-06-30/reports returned 403: Forbidden. "
-            "This is most likely due to insufficient permissions on the credentials in use. "
-            "Try to grant required permissions/scopes or re-authenticate."
-        ) in caplog.messages[-1]
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        assert exception.value.failure_type == FailureType.config_error
+
+    def test_given_429_when_read_records_then_raise_transient_error(self, report_init_kwargs, mocker, requests_mock):
+        mocker.patch("time.sleep", lambda x: None)
+        requests_mock.register_uri(
+            "POST",
+            "https://api.amazon.com/auth/o2/token",
+            status_code=200,
+            json={"access_token": "access_token", "expires_in": "3600"},
+        )
+
+        requests_mock.register_uri(
+            "POST",
+            "https://test.url/reports/2021-06-30/reports",
+            status_code=429,
+            json={
+                "errors": [
+                    {
+                        "code": "QuotaExceeded",
+                        "message": "You exceeded your quota for the requested resource.",
+                        "details": ""
+                    }
+                ]
+            },
+            reason="Forbidden",
+        )
+
+        stream = SomeReportStream(**report_init_kwargs)
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        assert exception.value.failure_type == FailureType.transient_error
 
 
 class TestVendorFulfillment:

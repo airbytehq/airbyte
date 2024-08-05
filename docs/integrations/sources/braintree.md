@@ -72,14 +72,22 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
-| 0.3.1   | 2024-07-02 | [40693](https://github.com/airbytehq/airbyte/pull/40693) | Corrects subscription stream fields                  |
-| 0.2.1   | 2023-11-08 | [31489](https://github.com/airbytehq/airbyte/pull/31489) | Fix transaction stream custom fields                 |
-| 0.2.0   | 2023-07-17 | [29200](https://github.com/airbytehq/airbyte/pull/29200) | Migrate connector to low-code framework              |
-| 0.1.5   | 2023-05-24 | [26340](https://github.com/airbytehq/airbyte/pull/26340) | Fix error in `check_connection` in integration tests |
-| 0.1.4   | 2023-03-13 | [23548](https://github.com/airbytehq/airbyte/pull/23548) | Update braintree python library version to 4.18.1    |
-| 0.1.3   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications    |
-| 0.1.2   | 2021-12-22 | [9042](https://github.com/airbytehq/airbyte/pull/9042)   | Fix `$ref` in schema and spec                        |
-| 0.1.1   | 2021-10-27 | [7432](https://github.com/airbytehq/airbyte/pull/7432)   | Dispute model should accept multiple Evidences       |
-| 0.1.0   | 2021-08-17 | [5362](https://github.com/airbytehq/airbyte/pull/5362)   | Initial version                                      |
+| 0.3.9 | 2024-08-03 | [43225](https://github.com/airbytehq/airbyte/pull/43225) | Update dependencies |
+| 0.3.8 | 2024-07-29 | [42848](https://github.com/airbytehq/airbyte/pull/42848) | Corrects pagination issues |
+| 0.3.7 | 2024-07-27 | [42796](https://github.com/airbytehq/airbyte/pull/42796) | Update dependencies |
+| 0.3.6 | 2024-07-20 | [42372](https://github.com/airbytehq/airbyte/pull/42372) | Update dependencies |
+| 0.3.5 | 2024-07-18 | [42096](https://github.com/airbytehq/airbyte/pull/42096) | Adds pagination to get more than 50 records per sync |
+| 0.3.4 | 2024-07-13 | [41340](https://github.com/airbytehq/airbyte/pull/41340) | Update dependencies |
+| 0.3.3 | 2024-07-09 | [41312](https://github.com/airbytehq/airbyte/pull/41312) | Update dependencies |
+| 0.3.2 | 2024-07-06 | [40863](https://github.com/airbytehq/airbyte/pull/40863) | Update dependencies |
+| 0.3.1 | 2024-07-02 | [40693](https://github.com/airbytehq/airbyte/pull/40693) | Corrects subscription stream fields |
+| 0.2.1 | 2023-11-08 | [31489](https://github.com/airbytehq/airbyte/pull/31489) | Fix transaction stream custom fields |
+| 0.2.0 | 2023-07-17 | [29200](https://github.com/airbytehq/airbyte/pull/29200) | Migrate connector to low-code framework |
+| 0.1.5 | 2023-05-24 | [26340](https://github.com/airbytehq/airbyte/pull/26340) | Fix error in `check_connection` in integration tests |
+| 0.1.4 | 2023-03-13 | [23548](https://github.com/airbytehq/airbyte/pull/23548) | Update braintree python library version to 4.18.1 |
+| 0.1.3 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
+| 0.1.2 | 2021-12-22 | [9042](https://github.com/airbytehq/airbyte/pull/9042) | Fix `$ref` in schema and spec |
+| 0.1.1 | 2021-10-27 | [7432](https://github.com/airbytehq/airbyte/pull/7432) | Dispute model should accept multiple Evidences |
+| 0.1.0 | 2021-08-17 | [5362](https://github.com/airbytehq/airbyte/pull/5362) | Initial version |
 
 </details>

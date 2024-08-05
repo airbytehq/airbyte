@@ -39,6 +39,13 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.12 | 2024-08-03 | [43177](https://github.com/airbytehq/airbyte/pull/43177) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42672](https://github.com/airbytehq/airbyte/pull/42672) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42280](https://github.com/airbytehq/airbyte/pull/42280) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41887](https://github.com/airbytehq/airbyte/pull/41887) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41566](https://github.com/airbytehq/airbyte/pull/41566) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41241](https://github.com/airbytehq/airbyte/pull/41241) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40876](https://github.com/airbytehq/airbyte/pull/40876) | Update dependencies |
 | 0.1.5 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
 | 0.1.4 | 2024-06-25 | [40414](https://github.com/airbytehq/airbyte/pull/40414) | Update dependencies |
 | 0.1.3 | 2024-06-22 | [40086](https://github.com/airbytehq/airbyte/pull/40086) | Update dependencies |

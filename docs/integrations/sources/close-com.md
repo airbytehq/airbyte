@@ -109,6 +109,14 @@ The Close.com connector is subject to rate limits. For more information on this 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
+| 0.5.12 | 2024-08-03 | [43296](https://github.com/airbytehq/airbyte/pull/43296) | Update dependencies |
+| 0.5.11 | 2024-07-27 | [42639](https://github.com/airbytehq/airbyte/pull/42639) | Update dependencies |
+| 0.5.10 | 2024-07-20 | [42318](https://github.com/airbytehq/airbyte/pull/42318) | Update dependencies |
+| 0.5.9 | 2024-07-13 | [41896](https://github.com/airbytehq/airbyte/pull/41896) | Update dependencies |
+| 0.5.8 | 2024-07-10 | [40515](https://github.com/airbytehq/airbyte/pull/40515) | Add support for array type custom fields |
+| 0.5.7 | 2024-07-10 | [41374](https://github.com/airbytehq/airbyte/pull/41374) | Update dependencies |
+| 0.5.6 | 2024-07-09 | [41313](https://github.com/airbytehq/airbyte/pull/41313) | Update dependencies |
+| 0.5.5 | 2024-07-06 | [40994](https://github.com/airbytehq/airbyte/pull/40994) | Update dependencies |
 | 0.5.4 | 2024-06-25 | [40350](https://github.com/airbytehq/airbyte/pull/40350) | Update dependencies |
 | 0.5.3 | 2024-06-22 | [40043](https://github.com/airbytehq/airbyte/pull/40043) | Update dependencies |
 | 0.5.2 | 2024-06-15 | [39477](https://github.com/airbytehq/airbyte/pull/39477) | Format source, delete requirements.txt |

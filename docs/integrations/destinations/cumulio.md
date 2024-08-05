@@ -161,6 +161,13 @@ data less frequently** rather than _smaller amounts of data more frequently_!
 
 | Version | Date       | Pull Request                                              | Subject                                             |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.12 | 2024-08-03 | [43178](https://github.com/airbytehq/airbyte/pull/43178) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42780](https://github.com/airbytehq/airbyte/pull/42780) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42281](https://github.com/airbytehq/airbyte/pull/42281) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41711](https://github.com/airbytehq/airbyte/pull/41711) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41341](https://github.com/airbytehq/airbyte/pull/41341) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41104](https://github.com/airbytehq/airbyte/pull/41104) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40763](https://github.com/airbytehq/airbyte/pull/40763) | Update dependencies |
 | 0.1.5 | 2024-06-26 | [40507](https://github.com/airbytehq/airbyte/pull/40507) | Update dependencies |
 | 0.1.4 | 2024-06-21 | [39930](https://github.com/airbytehq/airbyte/pull/39930) | Update dependencies |
 | 0.1.3 | 2024-06-06 | [39292](https://github.com/airbytehq/airbyte/pull/39292) | [autopull] Upgrade base image to v1.2.2 |

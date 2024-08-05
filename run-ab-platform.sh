@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION=0.63.4
+VERSION=0.63.14
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -10,7 +10,7 @@ readonly scriptVersion="$VERSION"
 # text color escape codes (please note \033 == \e but OSX doesn't respect the \e)
 blue_text='\033[94m'
 red_text='\033[31m'
-default_text='\033[39m'
+default_text='\033[0m'
 
 # set -x/xtrace uses a Sony PS4 for more info
 PS4="$blue_text""${0}:${LINENO}: ""$default_text"
@@ -46,8 +46,9 @@ docker_compose_debug_yaml="docker-compose.debug.yaml"
             temporal_yaml="temporal/dynamicconfig/development.yaml"
 # any string is an array to POSIX shell. Space separates values
 all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags $temporal_yaml"
-
-base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
+# Pinning the version this supports at v0.63.13, as docker compose is being deprecated.
+# This has been pinned here as the VERSION variable (found above) is automatically updated as newer versions of Airbyte are released.
+base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v0.63.13/"
 
 # event states are used for telemetry data
 readonly eventStateStarted="started"
@@ -351,6 +352,17 @@ if test $(tput cols) -ge 64; then
   echo -e "\033[0m"
   sleep 1
 fi
+
+deprecation_text='\033[1;91m'
+echo -e "$deprecation_text"
+echo -e "*** Deprecated Warning!"
+echo -e "* This script, and docker compose support, have both been deprecated."
+echo -e "*"
+echo -e "* For additional information please visit the following:"
+echo -e "* https://docs.airbyte.com/using-airbyte/getting-started/oss-quickstart"
+echo -e "$default_text"
+
+sleep 2
 
 ########## Dependency Check ##########
 if ! docker compose version >/dev/null 2>/dev/null; then

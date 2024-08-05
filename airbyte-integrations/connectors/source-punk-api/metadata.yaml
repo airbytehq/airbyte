@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dbe9b7ae-7b46-4e44-a507-02a343cf7230
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-punk-api
   githubIssueLabel: source-punk-api
   icon: punkapi.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: archived
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: punk-api_config_dev_null
+          id: 061efb1b-1c03-4d1e-b31a-aebcc85e3ecd
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PUNK-API__CREDS

@@ -13,6 +13,7 @@ from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_protocol.models.airbyte_protocol import AirbyteLogMessage, Level
 from destination_pinecone.config import ConfigModel
 from destination_pinecone.indexer import PineconeIndexer
 
@@ -41,7 +42,8 @@ class DestinationPinecone(Destination):
             )
             yield from writer.write(configured_catalog, input_messages)
         except Exception as e:
-            yield AirbyteMessage(type="LOG", log=AirbyteLogger(level="ERROR", message=str(e)))
+            log_message = AirbyteLogMessage(level=Level.ERROR, message=str(e))
+            yield AirbyteMessage(type="LOG", message=log_message)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:

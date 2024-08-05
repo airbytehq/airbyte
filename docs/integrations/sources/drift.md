@@ -56,6 +56,13 @@ The Drift connector should not run into Drift API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.15 | 2024-08-03 | [43119](https://github.com/airbytehq/airbyte/pull/43119) | Update dependencies |
+| 0.3.14 | 2024-07-27 | [42624](https://github.com/airbytehq/airbyte/pull/42624) | Update dependencies |
+| 0.3.13 | 2024-07-20 | [42188](https://github.com/airbytehq/airbyte/pull/42188) | Update dependencies |
+| 0.3.12 | 2024-07-13 | [41771](https://github.com/airbytehq/airbyte/pull/41771) | Update dependencies |
+| 0.3.11 | 2024-07-10 | [41347](https://github.com/airbytehq/airbyte/pull/41347) | Update dependencies |
+| 0.3.10 | 2024-07-09 | [41300](https://github.com/airbytehq/airbyte/pull/41300) | Update dependencies |
+| 0.3.9 | 2024-07-06 | [40889](https://github.com/airbytehq/airbyte/pull/40889) | Update dependencies |
 | 0.3.8 | 2024-06-25 | [40299](https://github.com/airbytehq/airbyte/pull/40299) | Update dependencies |
 | 0.3.7 | 2024-06-22 | [39976](https://github.com/airbytehq/airbyte/pull/39976) | Update dependencies |
 | 0.3.6 | 2024-06-04 | [39007](https://github.com/airbytehq/airbyte/pull/39007) | [autopull] Upgrade base image to v1.2.1 |

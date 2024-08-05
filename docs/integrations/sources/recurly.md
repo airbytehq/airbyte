@@ -66,6 +66,13 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.1.1 | 2024-08-03 | [43144](https://github.com/airbytehq/airbyte/pull/43144) | Update dependencies |
+| 1.1.0 | 2024-07-24 | [40729](https://github.com/airbytehq/airbyte/pull/40729) | Migrate connector to low code |
+| 1.0.12 | 2024-07-20 | [42206](https://github.com/airbytehq/airbyte/pull/42206) | Update dependencies |
+| 1.0.11 | 2024-07-13 | [41836](https://github.com/airbytehq/airbyte/pull/41836) | Update dependencies |
+| 1.0.10 | 2024-07-10 | [41500](https://github.com/airbytehq/airbyte/pull/41500) | Update dependencies |
+| 1.0.9 | 2024-07-09 | [41174](https://github.com/airbytehq/airbyte/pull/41174) | Update dependencies |
+| 1.0.8 | 2024-07-06 | [40820](https://github.com/airbytehq/airbyte/pull/40820) | Update dependencies |
 | 1.0.7 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 1.0.6 | 2024-06-25 | [40474](https://github.com/airbytehq/airbyte/pull/40474) | Update dependencies |
 | 1.0.5 | 2024-06-22 | [40012](https://github.com/airbytehq/airbyte/pull/40012) | Update dependencies |

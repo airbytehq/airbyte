@@ -39,6 +39,12 @@ Gridly support version control, by default the `grid id` is the same to the `bra
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.12 | 2024-08-03 | [42662](https://github.com/airbytehq/airbyte/pull/42662) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42173](https://github.com/airbytehq/airbyte/pull/42173) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41768](https://github.com/airbytehq/airbyte/pull/41768) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41376](https://github.com/airbytehq/airbyte/pull/41376) | Update dependencies |
+| 0.1.8 | 2024-07-09 | [41163](https://github.com/airbytehq/airbyte/pull/41163) | Update dependencies |
+| 0.1.7 | 2024-07-06 | [40908](https://github.com/airbytehq/airbyte/pull/40908) | Update dependencies |
 | 0.1.6 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
 | 0.1.5 | 2024-06-25 | [40495](https://github.com/airbytehq/airbyte/pull/40495) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [39982](https://github.com/airbytehq/airbyte/pull/39982) | Update dependencies |

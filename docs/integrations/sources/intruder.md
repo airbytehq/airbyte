@@ -35,6 +35,13 @@ Intruder.io APIs are under rate limits for the number of API calls allowed per A
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.1.12 | 2024-08-03 | [43241](https://github.com/airbytehq/airbyte/pull/43241) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42711](https://github.com/airbytehq/airbyte/pull/42711) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42141](https://github.com/airbytehq/airbyte/pull/42141) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41822](https://github.com/airbytehq/airbyte/pull/41822) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41363](https://github.com/airbytehq/airbyte/pull/41363) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41248](https://github.com/airbytehq/airbyte/pull/41248) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40895](https://github.com/airbytehq/airbyte/pull/40895) | Update dependencies |
 | 0.1.5 | 2024-06-25 | [40358](https://github.com/airbytehq/airbyte/pull/40358) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [39962](https://github.com/airbytehq/airbyte/pull/39962) | Update dependencies |
 | 0.1.3 | 2024-06-15 | [39112](https://github.com/airbytehq/airbyte/pull/39112) | Make compatible with builder |

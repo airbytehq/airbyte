@@ -338,8 +338,8 @@ class TestFullRefresh:
             "This is most likely due to insufficient permissions on the credentials in use. "
             "Try to grant required permissions/scopes or re-authenticate."
         )
-        assert_message_in_log_output(message_on_access_forbidden, output)
-        assert len(output.records) == 0
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
@@ -440,8 +440,9 @@ class TestFullRefresh:
         message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
 
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message_on_backoff_exception, output)
-        assert len(output.records) == 0
+
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        assert message_on_backoff_exception in output.errors[0].trace.error.message
 
     @pytest.mark.parametrize(("stream_name", "data_format"), STREAMS)
     @HttpMocker()
@@ -469,8 +470,9 @@ class TestFullRefresh:
         )
 
         output = self._read(stream_name, config())
-        assert_message_in_log_output(warning_message, output)
-        assert len(output.records) == 0
+
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert warning_message in output.errors[0].trace.error.message
 
 
 @freezegun.freeze_time(NOW.isoformat())
@@ -775,8 +777,8 @@ class TestVendorSalesReportsFullRefresh:
             "This is most likely due to insufficient permissions on the credentials in use. "
             "Try to grant required permissions/scopes or re-authenticate."
         )
-        assert_message_in_log_output(message_on_access_forbidden, output)
-        assert len(output.records) == 0
+        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert message_on_access_forbidden in output.errors[0].trace.error.message
 
     @pytest.mark.parametrize("selling_program", selling_program)
     @HttpMocker()
@@ -850,5 +852,6 @@ class TestVendorSalesReportsFullRefresh:
         message_on_backoff_exception = f"The report for stream '{stream_name}' was cancelled due to several failed retry attempts."
 
         output = self._read(stream_name, config())
-        assert_message_in_log_output(message_on_backoff_exception, output)
-        assert len(output.records) == 0
+
+        assert output.errors[0].trace.error.failure_type == FailureType.system_error
+        assert message_on_backoff_exception in output.errors[0].trace.error.message

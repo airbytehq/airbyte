@@ -34,6 +34,13 @@ Sendinblue APIs are under rate limits for the number of API calls allowed per AP
 
 | Version | Date       | Pull Request                                              | Subject                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------ |
+| 0.1.10 | 2024-08-03 | [43253](https://github.com/airbytehq/airbyte/pull/43253) | Update dependencies |
+| 0.1.9 | 2024-07-27 | [42740](https://github.com/airbytehq/airbyte/pull/42740) | Update dependencies |
+| 0.1.8 | 2024-07-20 | [42145](https://github.com/airbytehq/airbyte/pull/42145) | Update dependencies |
+| 0.1.7 | 2024-07-13 | [41807](https://github.com/airbytehq/airbyte/pull/41807) | Update dependencies |
+| 0.1.6 | 2024-07-10 | [41513](https://github.com/airbytehq/airbyte/pull/41513) | Update dependencies |
+| 0.1.5 | 2024-07-09 | [41305](https://github.com/airbytehq/airbyte/pull/41305) | Update dependencies |
+| 0.1.4 | 2024-07-06 | [40853](https://github.com/airbytehq/airbyte/pull/40853) | Update dependencies |
 | 0.1.3 | 2024-06-29 | [40625](https://github.com/airbytehq/airbyte/pull/40625) | Update dependencies |
 | 0.1.2 | 2024-06-27 | [38346](https://github.com/airbytehq/airbyte/pull/38346) | Make comptability with builder |
 | 0.1.1 | 2022-08-31 | [30022](https://github.com/airbytehq/airbyte/pull/30022) | ✨ Source SendInBlue: Add incremental sync to contacts stream |
