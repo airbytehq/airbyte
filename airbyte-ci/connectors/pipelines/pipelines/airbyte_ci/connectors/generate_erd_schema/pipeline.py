@@ -34,6 +34,8 @@ if TYPE_CHECKING:
 import google.generativeai as genai
 import dpath
 
+
+# TODO: how to pass secret in dagger?
 API_KEY = "API_KEY"
 genai.configure(api_key=API_KEY)
 
