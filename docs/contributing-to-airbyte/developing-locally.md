@@ -22,7 +22,7 @@ Manually switching between different language versions can be difficult. We reco
 The following technologies are required to build Airbyte locally.
 
 1. [`Java 21`](https://jdk.java.net/archive/)
-2. `Node 20.`
+2. `Node 20`
 3. `Python 3.10`
 4. `Docker`
 5. `Jq`
