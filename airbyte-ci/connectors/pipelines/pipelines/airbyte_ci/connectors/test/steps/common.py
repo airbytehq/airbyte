@@ -666,7 +666,7 @@ class LiveTests(Step):
             stdout=stdout,
             output=container,
             report=regression_test_report,
-            consider_in_overall_status=False,
+            consider_in_overall_status=False if self.context.is_pr else True,
         )
 
     async def _build_test_container(self, target_container_id: str) -> Container:
