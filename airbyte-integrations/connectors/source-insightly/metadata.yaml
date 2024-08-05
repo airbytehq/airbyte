@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.15
   dockerRepository: airbyte/source-insightly
   documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
   githubIssueLabel: source-insightly
@@ -20,7 +20,7 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerImageTag: 0.2.13
+      dockerImageTag: 0.2.15
     oss:
       enabled: true
   releaseStage: alpha
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: insightly_config_dev_null
+          id: 2badde48-2f9c-406e-8fcf-0ef722d177cd
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-INSIGHTLY__CREDS

@@ -52,18 +52,15 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     driverClass: String,
     private val optimalBatchSizeBytes: Long,
     protected open val namingResolver: NamingConventionTransformer,
-    protected val sqlOperations: SqlOperations,
 ) : JdbcConnector(driverClass), Destination {
 
     constructor(
         driverClass: String,
         namingResolver: NamingConventionTransformer,
-        sqlOperations: SqlOperations,
     ) : this(
         driverClass,
         JdbcBufferedConsumerFactory.DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
         namingResolver,
-        sqlOperations
     )
     protected open val configSchemaKey: String = "schema"
 
@@ -79,6 +76,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val dataSource = getDataSource(config)
+        val sqlOperations = getSqlOperations(config)
 
         try {
             val database = getDatabase(dataSource)
@@ -189,7 +187,10 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     protected abstract fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator
 
+    protected abstract fun getSqlOperations(config: JsonNode): SqlOperations
+
     protected abstract fun getDestinationHandler(
+        config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
         rawTableSchema: String
@@ -287,7 +288,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         return JdbcBufferedConsumerFactory.createAsync(
             outputRecordCollector,
             database,
-            sqlOperations,
+            getSqlOperations(config),
             namingResolver,
             config,
             catalog,
@@ -310,6 +311,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val migrator = getV1V2Migrator(database, databaseName)
         val destinationHandler: DestinationHandler<DestinationState> =
             getDestinationHandler(
+                config,
                 databaseName,
                 database,
                 getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)

@@ -226,6 +226,7 @@ const ConnectorMetadataCallout = ({
   isCloud,
   isOss,
   isPypiPublished,
+  isEnterprise,
   supportLevel,
   github_url,
   dockerImageTag,
@@ -240,17 +241,29 @@ const ConnectorMetadataCallout = ({
     <dl className={styles.connectorMetadata}>
       <MetadataStat label="Availability">
         <div className={styles.availability}>
-          <Chip className={isCloud ? styles.available : styles.unavailable}>
-            <EnabledIcon isEnabled={isCloud} /> Airbyte Cloud
-          </Chip>
-          <Chip className={isOss ? styles.available : styles.unavailable}>
-            <EnabledIcon isEnabled={isOss} /> Airbyte OSS
-          </Chip>
-          <Chip
-            className={isPypiPublished ? styles.available : styles.unavailable}
-          >
-            <EnabledIcon isEnabled={isPypiPublished} /> PyAirbyte
-          </Chip>
+          {isEnterprise ? (
+            <>
+              <Chip className={styles.available}>
+                <EnabledIcon isEnabled={true} /> Enterprise License
+              </Chip>
+            </>
+          ) : (
+            <>
+              <Chip className={isCloud ? styles.available : styles.unavailable}>
+                <EnabledIcon isEnabled={isCloud} /> Airbyte Cloud
+              </Chip>
+              <Chip className={isOss ? styles.available : styles.unavailable}>
+                <EnabledIcon isEnabled={isOss} /> Airbyte OSS
+              </Chip>
+              <Chip
+                className={
+                  isPypiPublished ? styles.available : styles.unavailable
+                }
+              >
+                <EnabledIcon isEnabled={isPypiPublished} /> PyAirbyte
+              </Chip>
+            </>
+          )}
         </div>
       </MetadataStat>
       <MetadataStat label="Support Level">
@@ -313,6 +326,7 @@ export const HeaderDecoration = ({
   isOss: isOssString,
   isCloud: isCloudString,
   isPypiPublished: isPypiPublishedString,
+  isEnterprise: isEnterpriseString,
   dockerImageTag,
   supportLevel,
   iconUrl,
@@ -329,6 +343,7 @@ export const HeaderDecoration = ({
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
   const isPypiPublished = boolStringToBool(isPypiPublishedString);
+  const isEnterprise = boolStringToBool(isEnterpriseString);
   const isLatestCDK = boolStringToBool(isLatestCDKString);
   const isArchived = supportLevel?.toUpperCase() === "ARCHIVED";
 
@@ -344,6 +359,7 @@ export const HeaderDecoration = ({
         isCloud={isCloud}
         isOss={isOss}
         isPypiPublished={isPypiPublished}
+        isEnterprise={isEnterprise}
         supportLevel={supportLevel}
         github_url={github_url}
         dockerImageTag={dockerImageTag}

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-secoda
   githubIssueLabel: source-secoda
   icon: secoda.svg
@@ -30,6 +30,10 @@ data:
   # They are not passing
   # No Airbyte Cloud usage
   # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: secoda_config_dev_null
+  #         id: 431ebdb2-24a3-4c09-a1f0-b841a5422eca
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-SECODA__CREDS

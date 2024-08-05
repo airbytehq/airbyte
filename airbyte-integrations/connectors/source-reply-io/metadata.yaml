@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-reply-io
   githubIssueLabel: source-reply-io
   icon: reply-io.svg

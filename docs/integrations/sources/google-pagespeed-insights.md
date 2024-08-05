@@ -55,6 +55,8 @@ If the connector is used with an API key, Google allows for 25.000 queries per d
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.16 | 2024-08-03 | [43130](https://github.com/airbytehq/airbyte/pull/43130) | Update dependencies |
+| 0.1.15 | 2024-07-27 | [42770](https://github.com/airbytehq/airbyte/pull/42770) | Update dependencies |
 | 0.1.14 | 2024-07-20 | [42319](https://github.com/airbytehq/airbyte/pull/42319) | Update dependencies |
 | 0.1.13 | 2024-07-13 | [41706](https://github.com/airbytehq/airbyte/pull/41706) | Update dependencies |
 | 0.1.12 | 2024-07-10 | [41591](https://github.com/airbytehq/airbyte/pull/41591) | Update dependencies |

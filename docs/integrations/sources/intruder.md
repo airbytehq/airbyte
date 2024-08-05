@@ -35,6 +35,8 @@ Intruder.io APIs are under rate limits for the number of API calls allowed per A
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.1.12 | 2024-08-03 | [43241](https://github.com/airbytehq/airbyte/pull/43241) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42711](https://github.com/airbytehq/airbyte/pull/42711) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42141](https://github.com/airbytehq/airbyte/pull/42141) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41822](https://github.com/airbytehq/airbyte/pull/41822) | Update dependencies |
 | 0.1.8 | 2024-07-10 | [41363](https://github.com/airbytehq/airbyte/pull/41363) | Update dependencies |

@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
-  dockerImageTag: 1.0.6
+  dockerImageTag: 1.0.9
   dockerRepository: airbyte/source-paystack
   githubIssueLabel: source-paystack
   icon: paystack.svg
@@ -36,6 +36,10 @@ data:
     ql: 300
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: paystack_config_dev_null
+          id: 53f674d1-d9f9-4fc1-99c1-0d64844948dc
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

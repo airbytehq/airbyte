@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: marketo_config_dev_null
+          id: 4df9fc18-4d29-44c5-aa52-c74d8066d0bd
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
