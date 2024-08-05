@@ -291,7 +291,7 @@ class EngagePaginationStrategy(PageIncrement):
         if total:
             self._total = total
 
-        if self._total and page_number is not None and self._total > self.page_size * (page_number + 1):
+        if self._total and page_number is not None and self._total > self._page_size * (page_number + 1):
             return {"session_id": decoded_response.get("session_id"), "page": page_number + 1}
         else:
             self._total = None

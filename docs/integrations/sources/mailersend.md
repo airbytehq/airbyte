@@ -28,6 +28,9 @@ MailerSend has a default [rate limit](https://developers.mailersend.com/general.
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
+| 0.1.11 | 2024-08-03 | [43086](https://github.com/airbytehq/airbyte/pull/43086) | Update dependencies |
+| 0.1.10 | 2024-07-27 | [42700](https://github.com/airbytehq/airbyte/pull/42700) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42273](https://github.com/airbytehq/airbyte/pull/42273) | Update dependencies |
 | 0.1.8 | 2024-07-13 | [41696](https://github.com/airbytehq/airbyte/pull/41696) | Update dependencies |
 | 0.1.7 | 2024-07-10 | [41557](https://github.com/airbytehq/airbyte/pull/41557) | Update dependencies |
 | 0.1.6 | 2024-07-09 | [41322](https://github.com/airbytehq/airbyte/pull/41322) | Update dependencies |

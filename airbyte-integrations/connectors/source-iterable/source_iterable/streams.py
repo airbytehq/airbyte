@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
-from requests import HTTPError, codes
+from requests import HTTPError
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
 from source_iterable.utils import dateutil_parse
@@ -106,7 +106,7 @@ class IterableStream(HttpStream, ABC):
             if self._slice_retry < 3:
                 return True
             return False
-        return super().should_retry(response)
+        return response.status_code == 429 or 500 <= response.status_code < 600
 
     def read_records(
         self,
