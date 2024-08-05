@@ -371,13 +371,19 @@ class _JsonTypeInferrer(_TypeInferrer):
         self._values.add(value)
 
     def infer(self) -> str:
-        types_by_value = {value: self._infer_type(value) for value in self._values}
-        types_excluding_null_values = [types for types in types_by_value.values() if self._NULL_TYPE not in types]
-        if not types_excluding_null_values:
+        types = set()
+        for value in self._values:
+            inferred_types = self._infer_type(value)
+            if self._NULL_TYPE not in inferred_types:
+                if not types:
+                    types = inferred_types
+                else:
+                    types &= inferred_types
+
+        if not types:
             # this is highly unusual but we will consider the column as a string
             return self._STRING_TYPE
 
-        types = set.intersection(*types_excluding_null_values)
         if self._BOOLEAN_TYPE in types:
             return self._BOOLEAN_TYPE
         elif self._INTEGER_TYPE in types:
