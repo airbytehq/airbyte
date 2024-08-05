@@ -161,7 +161,7 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
     def create_table_from_stash(self) -> None:
         logger.info(f"Creating new table for table name '{self.table_name}'...") # nopep8
         r = requests.post(
-            self.url(f"tables"),
+            self.url(f"tables?onSchemaError=dropColumns"),
             headers=self.headers(),
             json={
                 "name": self.table_name,
@@ -183,7 +183,7 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
     def overwrite_table_from_stash(self, table_id) -> None:
         # overwrite the specified table's schema and rows with the stash:
         r = requests.put(
-            self.url(f"tables/{table_id}"),
+            self.url(f"tables/{table_id}?onSchemaError=dropColumns"),
             headers=self.headers(),
             json={
                 "schema": {
