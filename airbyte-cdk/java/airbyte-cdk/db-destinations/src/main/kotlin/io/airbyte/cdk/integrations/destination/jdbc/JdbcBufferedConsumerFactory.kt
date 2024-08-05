@@ -105,17 +105,16 @@ object JdbcBufferedConsumerFactory {
         return parsedCatalog.streams.map {
             val rawSuffix: String =
                 if (
-                    it.minimumGenerationId == it.generationId &&
-                        sqlOperations.isOtherGenerationIdInTable(
+                    it.minimumGenerationId == 0L ||
+                        sqlOperations.getGenerationIdInTable(
                             database,
-                            it.generationId,
                             it.id.rawNamespace,
                             it.id.rawName
-                        )
+                        ) == it.generationId
                 ) {
-                    AbstractStreamOperation.TMP_TABLE_SUFFIX
-                } else {
                     AbstractStreamOperation.NO_SUFFIX
+                } else {
+                    AbstractStreamOperation.TMP_TABLE_SUFFIX
                 }
             parsedStreamToWriteConfig(namingResolver, rawSuffix).apply(it)
         }
@@ -192,14 +191,14 @@ object JdbcBufferedConsumerFactory {
                     dstTableName + writeConfig.rawTableSuffix
                 )
                 when (writeConfig.minimumGenerationId) {
+                    0L -> {}
                     writeConfig.generationId ->
                         if (
-                            sqlOperations.isOtherGenerationIdInTable(
+                            sqlOperations.getGenerationIdInTable(
                                 database,
-                                writeConfig.generationId,
                                 schemaName,
                                 dstTableName + writeConfig.rawTableSuffix
-                            )
+                            ) != writeConfig.generationId
                         ) {
                             queryList.add(
                                 sqlOperations.truncateTableQuery(
@@ -209,7 +208,6 @@ object JdbcBufferedConsumerFactory {
                                 )
                             )
                         }
-                    0L -> {}
                     else ->
                         throw IllegalStateException(
                             "Invalid minimumGenerationId ${writeConfig.minimumGenerationId} for stream ${writeConfig.streamName}. generationId=${writeConfig.generationId}"
@@ -279,13 +277,12 @@ object JdbcBufferedConsumerFactory {
             try {
                 catalog.streams.forEach {
                     if (
-                        it.minimumGenerationId == it.generationId &&
-                            sqlOperations.isOtherGenerationIdInTable(
+                        it.minimumGenerationId != 0L &&
+                            sqlOperations.getGenerationIdInTable(
                                 database,
-                                it.generationId,
                                 it.id.rawNamespace,
                                 it.id.rawName
-                            ) &&
+                            ) != it.generationId &&
                             streamSyncSummaries
                                 .getValue(it.id.asStreamDescriptor())
                                 .terminalStatus ==
@@ -295,7 +292,7 @@ object JdbcBufferedConsumerFactory {
                     }
                 }
                 typerDeduper.typeAndDedupe(streamSyncSummaries)
-                typerDeduper.commitFinalTables()
+                typerDeduper.commitFinalTables(streamSyncSummaries)
                 typerDeduper.cleanup()
             } catch (e: Exception) {
                 throw RuntimeException(e)

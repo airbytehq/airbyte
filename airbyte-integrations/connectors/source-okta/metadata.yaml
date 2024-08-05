@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
-  dockerImageTag: 0.2.7
+  dockerImageTag: 0.2.9
   dockerRepository: airbyte/source-okta
   githubIssueLabel: source-okta
   icon: icon.svg
@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: okta_config_dev_null
+          id: 64578038-37df-4bc4-9181-b202a3cc20b9
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

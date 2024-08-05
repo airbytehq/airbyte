@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e65f84c0-7598-458a-bfac-f770c381ff5d
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-whisky-hunter
   githubIssueLabel: source-whisky-hunter
   icon: whiskyhunter.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: whisky-hunter_config_dev_null
+          id: 49d04005-71c9-4c96-8349-bafc629ea7ee
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-WHISKY-HUNTER__CREDS

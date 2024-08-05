@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 60c24725-00ae-490c-991d-55b78c3197e0
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.15
   dockerRepository: airbyte/source-klarna
   documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
   githubIssueLabel: source-klarna
@@ -36,6 +36,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: klarna_config_dev_null
+          id: 0d630411-a503-46d1-8f8b-a106e4e90eab
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-KLARNA__CREDS

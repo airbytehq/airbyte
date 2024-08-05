@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.10
   dockerRepository: airbyte/source-dixa
   githubIssueLabel: source-dixa
   icon: dixa.svg
