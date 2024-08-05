@@ -171,6 +171,13 @@ class DebeziumRecordIterator<T>(
             }
 
             val changeEventWithMetadata = ChangeEventWithMetadata(next)
+
+            // #41647: discard event type with op code 'm'
+            if (!isEventTypeHandled(changeEventWithMetadata)) {
+                LOGGER.info { "WAL event type not handled: $next" }
+                continue
+            }
+
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
 
             if (isEventLogged) {
@@ -255,16 +262,8 @@ class DebeziumRecordIterator<T>(
     private fun heartbeatPosNotChanging(): Boolean {
         if (this.tsLastHeartbeat == null) {
             return false
-        } else if (!isTest() && receivedFirstRecord) {
-            // Closing debezium due to heartbeat position not changing only exists as an escape
-            // hatch
-            // for testing setups. In production, we rely on the platform heartbeats to kill the
-            // sync
-            // ONLY if we haven't received a record from Debezium. If a record has not been received
-            // from Debezium and the heartbeat isn't changing, the sync should be shut down due to
-            // heartbeat position not changing.
-            return false
         }
+
         val timeElapsedSinceLastHeartbeatTs =
             Duration.between(this.tsLastHeartbeat, LocalDateTime.now())
         return timeElapsedSinceLastHeartbeatTs.compareTo(firstRecordWaitTime) > 0
@@ -286,10 +285,6 @@ class DebeziumRecordIterator<T>(
         if (!hasSnapshotFinished) {
             throw RuntimeException("Closing down debezium engine but snapshot has not finished")
         }
-    }
-
-    private fun isTest(): Boolean {
-        return config.has("is_test") && config["is_test"].asBoolean()
     }
 
     /**
@@ -337,5 +332,18 @@ class DebeziumRecordIterator<T>(
     companion object {
         val pollLogMaxTimeInterval: Duration = Duration.ofSeconds(5)
         const val POLL_LOG_MAX_CALLS_INTERVAL = 1_000
+
+        /**
+         * We are not interested in message events. According to debezium
+         * [documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-create-events)
+         * , possible operation code are: c: create, u: update, d: delete, r: read (applies to only
+         * snapshots) t: truncate, m: message
+         */
+        fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
+            event.eventValueAsJson()["op"]?.asText()?.let {
+                return it in listOf("c", "u", "d", "r", "t")
+            }
+                ?: return false
+        }
     }
 }

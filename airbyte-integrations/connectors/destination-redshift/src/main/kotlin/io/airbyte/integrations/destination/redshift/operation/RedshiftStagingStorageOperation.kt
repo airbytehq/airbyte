@@ -35,6 +35,7 @@ class RedshiftStagingStorageOperation(
     private val s3StorageOperations: S3StorageOperations,
     private val sqlGenerator: RedshiftSqlGenerator,
     private val destinationHandler: RedshiftDestinationHandler,
+    private val dropCascade: Boolean,
 ) : StorageOperation<SerializableBuffer> {
     private val connectionId: UUID = UUID.randomUUID()
     private val writeDatetime: ZonedDateTime = Instant.now().atZone(ZoneOffset.UTC)
@@ -51,9 +52,10 @@ class RedshiftStagingStorageOperation(
     }
 
     override fun overwriteStage(streamId: StreamId, suffix: String) {
+        val cascadeClause = if (dropCascade) "CASCADE" else ""
         destinationHandler.execute(
             Sql.transactionally(
-                """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}" """,
+                """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}" $cascadeClause""",
                 """ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}$suffix" RENAME TO "${streamId.rawName}" """
             )
         )
@@ -77,6 +79,8 @@ class RedshiftStagingStorageOperation(
                 ALTER TABLE "${streamId.rawNamespace}"."${streamId.rawName}"
                 APPEND FROM "${streamId.rawNamespace}"."${streamId.rawName}$suffix"
                 """.trimIndent(),
+                // No need to drop cascade. If the user created a view on top of the temp raw table,
+                // that would be pretty weird, and we should fail loudly.
                 """DROP TABLE IF EXISTS "${streamId.rawNamespace}"."${streamId.rawName}$suffix" """,
             ),
             // Skip the case-sensitivity thing - ALTER TABLE ... APPEND can't be run in a

@@ -10,8 +10,8 @@ from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 class Cursor(ABC):
     """
-    Cursors are components that allow for incremental syncs. They keep track of what data has been consumed and slices the requests based on
-    that information.
+    Cursors are components that allow for checkpointing the current state of a sync. They keep track of what data has been consumed
+    and allows for syncs to be resumed from a specific point based on that information.
     """
 
     @abstractmethod

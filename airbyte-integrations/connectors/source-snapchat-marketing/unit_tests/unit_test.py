@@ -8,7 +8,7 @@ import logging
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 from conftest import find_stream
 from source_snapchat_marketing.source import SourceSnapchatMarketing
 
@@ -44,7 +44,8 @@ def test_should_retry_403_error(requests_mock):
         "GET", "https://adsapi.snapchat.com/v1/me/organizations", [{"status_code": 403, "json": {"organizations": []}}]
     )
     stream = find_stream("organizations", config_mock)
-    with pytest.raises(DefaultBackoffException):
+
+    with pytest.raises(UserDefinedBackoffException):
         list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
 

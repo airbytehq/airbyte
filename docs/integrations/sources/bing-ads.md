@@ -258,6 +258,10 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.7.1 | 2024-08-03 | [43245](https://github.com/airbytehq/airbyte/pull/43245) | Update dependencies |
+| 2.7.0 | 2024-07-31 | [42548](https://github.com/airbytehq/airbyte/pull/42548) | Migrate to CDK v4.1.0 |
+| 2.6.12 | 2024-07-27 | [42812](https://github.com/airbytehq/airbyte/pull/42812) | Update dependencies |
+| 2.6.11 | 2024-07-20 | [42360](https://github.com/airbytehq/airbyte/pull/42360) | Update dependencies |
 | 2.6.10 | 2024-07-13 | [41875](https://github.com/airbytehq/airbyte/pull/41875) | Update dependencies |
 | 2.6.9 | 2024-07-10 | [41383](https://github.com/airbytehq/airbyte/pull/41383) | Update dependencies |
 | 2.6.8 | 2024-07-09 | [41314](https://github.com/airbytehq/airbyte/pull/41314) | Update dependencies |

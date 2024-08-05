@@ -9,7 +9,7 @@ import TabItem from '@theme/TabItem';
 
 The Airbyte platform is a sophisticated data integration platform that enables you to handle large amounts of data movement.
 To quickly deploy Airbyte on your local machine you can visit the [Quickstart](../using-airbyte/getting-started/oss-quickstart) guide.
-If setting up an Airbyte server does not fit your usecase needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../using-airbyte/pyairbyte/getting-started) documentation useful. 
+If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../using-airbyte/pyairbyte/getting-started) documentation useful. 
 
 :::tip
 Enterprise Customers should follow the steps outlined in our docs on [Airbyte Self-Managed Enterprise](../enterprise-setup/README.md) and the associated [implementation guide](../enterprise-setup/implementation-guide.md).
@@ -27,11 +27,17 @@ Helm is a Kubernetes package manager for automating deployment and management of
 
 The [Infrastructure](infrastructure/aws) section describes the Airbyte's recommended cloud infrastructure to set up for each supported platform. Keep in mind that these guides are meant to assist you, but you are not required to follow them. Airbyte is designed to be as flexible as possible in order to fit into your existing infrastructure.
 
-## Adding the Helm Repository
+## Installation Guide
 
-Charts are stored in `helm-repo`. As a result, you do not need to clone the repo each time you need to deploy the chart.
+This installation guide walks through how to deploy Airbyte into _any_ kubernetes cluster. It will run through how to deploy a default version of Airbyte. It will, as an optional step, describe you how you can customize that deployment for your cloud provider and integrations (e.g. ingresses, external databases, external loggers, etc).
 
-To add remote helm repo:
+This guide assumes that you already have a running kubernetes cluster. If you're trying out Airbyte on your local machine, we recommend using [Docker Desktop](https://www.docker.com/products/docker-desktop/) and enabling the kubernetes extension. We've also tested it with kind, k3s, and colima. If you are installing onto a single vm in a cloud provider (e.g. EC2 or GCE), make sure you've installed kubernetes on that machine. This guide also works for multi-node setups (e.g. EKS and GKE).
+
+### 1. Add the Helm Repository
+
+The deployment will use a Helm chart which is a package for Kubernetes applications, acting like a blueprint or template that defines the resources needed to deploy an application on a Kubernetes cluster. Charts are stored in `helm-repo`.
+
+To add a remote helm repo:
 1. Run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`. In this example, `airbyte` is being used to represent the name of the repository that will be indexed locally.
 
 2. After adding the repo, perform the repo indexing process by running `helm repo update`.
@@ -63,58 +69,18 @@ airbyte/workload-launcher          	0.290.0      	0.63.6     	Helm chart to depl
 ```
 
 
-## Creating a Namespace for Airbyte
+### 2. Create a Namespace for Airbyte
 
 While it is not strictly necessary to isolate the Airbyte installation into its own namespace, it is good practice and recommended as a part of the installation.
 This documentation assumes that you chose the name `airbyte` for the namespace, but you may choose a different name if required.
 
-To create a namespace run the following
+To create a namespace run the following:
 
 ```sh
 kubectl create namespace airbyte
 ```
 
-
-## Preconfiguring Kubernetes Secrets
-
-Deploying Airbyte requires specifying a number of sensitive values. These can be API keys, usernames and passwords, etc.
-In order to protect these sensitive values, the Helm Chart assumes that these values are pre-configured and stored in a Kubernetes Secret *before* the Helm installation begins. Each [integration](#integrations)  will provide the Secret values that are required for the specific integration.
-
-While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
-
-<Tabs>
-<TabItem value="yaml" label="Creating Secrets with YAML" default>
-
-You can apply your yaml to the cluster with `kubectl apply -f secrets.yaml -n airbyte` to create the secrets.
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: airbyte-config-secrets
-type: Opaque
-stringData:
-  # Examples
-  key-1: "value-1"
-  key-2: "value-2"
-```
-</TabItem>
-
-<TabItem value="cli" label="Creating secrets with kubectl">
-
-You can also use `kubectl` to create the secret directly from the CLI:
-
-```sh
-kubectl create secret generic airbyte-config-secrets \
-  --from-literal=key-1='value-1' \
-  --from-literal=key2='value-2' \
-  --namespace airbyte
-```
-
-</TabItem>
-</Tabs>
-
-## Creating a values.yaml override file
+### 3. Create a values.yaml override file
 
 To configure your installation of Airbyte, you will need to override specific parts of the Helm Chart. To do this you should create a new file called `values.yaml` somewhere that is accessible during the installation process. 
 The documentation has been created to "build up" a values.yaml, so there is no need to copy the whole of the Chart values.yaml. You only need to provide the specific overrides.
@@ -124,37 +90,29 @@ Each [Integration](#integrations) will provide a section of the specific values 
 ```yaml
 global:
   airbyteUrl: https://airbyte.company.example
-  storage:
-    type: "S3"
-    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
-      log: airbyte-bucket
-      state: airbyte-bucket
-      workloadOutput: airbyte-bucket
-    s3:
-      region: "us-east-1"
-      authenticationType: "instanceProfile"
-
-    secretsManager:
-      type: awsSecretManager
-      awsSecretManager:
-        region: "us-east-1"
-        authenticationType: "instanceProfile"
 ```
 
+### 4. (optional for customized installations only) Customize your deployment
 
-## Integrations
+The Airbyte platform is built to integrate with your existing cloud infrastructure. You can configure various components of the platform to suit your needs. This includes an object stores, such as S3 or GCS for storing logs and state, a database for externalizing state, and a secrets manager for keep your secrets secure.
 
-The Airbyte platform is built to integrate with your existing cloud infrastructure. You can configure various components of the platform to suit your needs. This includes an object store, such as S3 or GCS for storing logs and state, a database for externalizing state, and a secrets manager for keep your secrets secure. 
+Each of these integrations will require you to create a secret upfront. For instructions on how to do that check out [Creating a Secret](./creating-secrets.md)
 
 Each of these integrations can be configured to suit your specific needs and is described in the [Integration](#integrations) section. Each of these integrations has its own section where you'll find an explanation for why it's useful to configure the integration. There, you'll also find details about how to configure the integration.
+
+Before you can configure this stuff in a cloud provider, you need to set up your policies:
+* [AWS Policies](./infrastructure/aws.md#policies)
+* [Azure Policies](./infrastructure/azure.md#policies)
+* [GCP Policies](./infrastructure/gcp.md#policies)
+
+After your policies are set up, here's a list of customizations.
 
 - [State and Logging Storage](./integrations/storage)
 - [Secret Management](./integrations/secrets)
 - [External Database](./integrations/database)
 - [Ingress](./integrations/ingress)
 
-
-## Installing Airbyte
+### 5. Installing Airbyte
 
 After you have applied your Secret values to the Cluster and you have filled out a values.yaml file appropriately for your specific configuration, you can begin a Helm Install. To do this, make sure that you have the [Helm Client](https://helm.sh/docs/intro/install/) installed and on your path.
 Then you can run:
@@ -162,27 +120,28 @@ Then you can run:
 ```sh
 helm install \
 airbyte \
-airbyte/airbyte
+airbyte/airbyte \
 --namespace airbyte \
---values ./values.yaml \
+--values ./values.yaml
 ```
 
 After the installation has completed, you can configure your [Ingress](./integrations/ingress) by following the directions for your specific Ingress provider.
 
-<!--
-##TODO
+### 6. Set up port forward for UI access
 
-## Tools 
+Helm install with spit out instructions for how to set up the port forward. Go ahead and run that command. It should look something like this:
 
-### Required Tools
+```bash
+export POD_NAME=$(kubectl get pods --namespace airbyte -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace airbyte $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace airbyte port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
 
-Helm
+You can now access the UI in your browser at: http://127.0.0.1:8080.
 
-Kubectl
+If you'd like to set up a more permanent ingress checkout our ingress customization. For a deployment to a local machine we recommend using [nginx](./integrations/ingress.md) as an easy-to-setup option.
 
-### Optional Tools
-
-K9s
-
-Stern -->
-
+:::note
+As part of maintainging your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 
+:::
