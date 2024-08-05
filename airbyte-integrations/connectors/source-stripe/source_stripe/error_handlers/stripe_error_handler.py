@@ -7,7 +7,6 @@ from typing import Optional, Union
 
 import requests
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
@@ -20,32 +19,8 @@ STRIPE_ERROR_CODES = {
     "oauth_not_supported": "Please use a different authentication method.",
 }
 
-
-def _visit_docs_message(logger: logging.Logger, source: ConcurrentSourceAdapter) -> str:
-    """
-    Creates a message indicating where to look in the documentation for
-    more information on a given source by checking the spec of that source
-    (if provided) for a 'documentationUrl'.
-    :param logger: source logger
-    :param source: optional (source)
-    :return: A message telling the user where to go to learn more about the source.
-    """
-
-    try:
-        connector_spec = source.spec(logger)
-        docs_url = connector_spec.documentationUrl
-        if docs_url:
-            return f"Please visit {docs_url} to learn more. "
-        else:
-            return "Please visit the connector's documentation to learn more. "
-
-    except FileNotFoundError:  # If we are unit testing without implementing spec() method in source
-        if source:
-            docs_url = f"https://docs.airbyte.com/integrations/sources/{source.name}"
-        else:
-            docs_url = "https://docs.airbyte.com/integrations/sources/test"
-
-        return f"Please visit {docs_url} to learn more."
+DOCS_URL = f"https://docs.airbyte.com/integrations/sources/stripe"
+DOCUMENTATION_MESSAGE = f"Please visit {DOCS_URL} to learn more. "
 
 
 class StripeErrorHandler(HttpStatusErrorHandler):
@@ -56,12 +31,7 @@ class StripeErrorHandler(HttpStatusErrorHandler):
             error_code = parsed_error.get("error", {}).get("code")
             error_message = STRIPE_ERROR_CODES.get(error_code, parsed_error.get("error", {}).get("message"))
             if error_message:
-                # todo can I just ifnore the doc message for now?
-                # doc_ref = self._visit_docs_message(self._logger, source)
-                reason = (
-                    f"The endpoint {response_or_exception.url} returned {status_code}: {response_or_exception.reason}. {error_message}."
-                )
-                # reason = f"The endpoint {response_or_exception.url} returned {status_code}: {response_or_exception.reason}. {error_message}. {doc_ref} "
+                reason = f"The endpoint {response_or_exception.url} returned {status_code}: {response_or_exception.reason}. {error_message}.  {DOCUMENTATION_MESSAGE} "
                 response_error_message = HttpStream.parse_response_error_message(response_or_exception)
                 if response_error_message:
                     reason += response_error_message
