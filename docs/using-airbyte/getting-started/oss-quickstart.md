@@ -22,7 +22,7 @@ If you've already set up an Airbyte instance using Docker Compose and want to mo
 
 For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/deploying-airbyte.md). 
 
-On a local deployment, Airbyte's default behavior is to store connector secrets in your configured database. These secrets are stored in plain text and are not encrypted. Refer to the [Secret Management documentation](../deploying-airbyte/integrations/secrets.md) to set up an external secrets manager.
+On a local deployment, Airbyte's default behavior is to store connector secrets in your configured database. These secrets are stored in plain text and are not encrypted. Refer to the [Secret Management documentation](../../deploying-airbyte/integrations/secrets.md) to set up an external secrets manager.
 :::
 
 If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../pyairbyte/getting-started.mdx) documentation useful.
