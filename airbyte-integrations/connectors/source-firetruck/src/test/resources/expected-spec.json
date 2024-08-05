@@ -315,6 +315,14 @@
         "description": "Maximum number of concurrent queries to the database.",
         "title": "Concurrency",
         "order": 12
+      },
+      "check_privileges": {
+        "type": "boolean",
+        "default": true,
+        "description": "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
+        "title": "Check Table and Column Access Privileges",
+        "order": 13,
+        "display_type": "check"
       }
     },
     "required": [

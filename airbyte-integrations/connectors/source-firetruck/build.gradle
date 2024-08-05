@@ -21,7 +21,7 @@ tasks.named('check').configure {
 }
 
 dependencies {
-    def vCDK2 = '0.36'
+    def vCDK2 = '0.39'
     def vMicronaut = '4.3.13'
 
     implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.23')

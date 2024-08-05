@@ -190,6 +190,19 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
+    @JsonProperty("check_privileges")
+    @JsonSchemaTitle("Check Table and Column Access Privileges")
+    @JsonSchemaInject(json = """{"order":13,"display_type":"check"}""")
+    @JsonSchemaDefault("true")
+    @JsonPropertyDescription(
+        "When this feature is enabled, during schema discovery the connector " +
+            "will query each table or view individually to check access privileges " +
+            "and inaccessible tables, views, or columns therein will be removed. " +
+            "In large schemas, this might cause schema discovery to take too long, " +
+            "in which case it might be advisable to disable this feature.",
+    )
+    var checkPrivileges: Boolean? = true
+
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 
     @JsonAnyGetter fun getAdditionalProperties(): Map<String, Any> = additionalPropertiesMap

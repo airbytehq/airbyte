@@ -20,7 +20,6 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 import java.sql.Types
-import oracle.jdbc.OracleArray
 
 private val log = KotlinLogging.logger {}
 
@@ -69,7 +68,6 @@ class OracleSourceMetadataQuerier(
                 catalog = null,
                 schema = row.owner,
                 typeName = row.typeName,
-                klazz = null,
                 typeCode = systemTypeMap[row.typeName]?.typeCode ?: Types.JAVA_OBJECT,
                 remarks = null,
                 baseTypeCode = null,
@@ -140,7 +138,6 @@ class OracleSourceMetadataQuerier(
                     catalog = null,
                     schema = row.owner,
                     typeName = row.typeName,
-                    klazz = OracleArray::class.java,
                     elementType = elementType,
                 )
             val parentRow: AllCollTypesRow =
@@ -156,15 +153,12 @@ class OracleSourceMetadataQuerier(
                     otherUDTsByFQName["${row.elemTypeOwner}.${row.elemTypeName}"]
                         ?: SystemType(
                             typeName = row.elemTypeName!!,
-                            klazz = null,
                             typeCode =
                                 when (row.scale) {
                                     null -> systemTypeMap[row.elemTypeName]?.typeCode
                                             ?: Types.JAVA_OBJECT
                                     else -> Types.NUMERIC
                                 },
-                            signed = null,
-                            displaySize = row.displaySize,
                             precision = row.precision,
                             scale = row.scale,
                         )

@@ -38,6 +38,7 @@ data class OracleSourceConfiguration(
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
+    override val checkPrivileges: Boolean,
 ) : JdbcSourceConfiguration {
     override val global = cursorConfiguration is CdcCursor
 }
@@ -140,6 +141,7 @@ class OracleSourceConfigurationFactory :
             cursorConfiguration = pojo.getCursorConfigurationValue(),
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
+            checkPrivileges = pojo.checkPrivileges ?: true,
         )
     }
 }
