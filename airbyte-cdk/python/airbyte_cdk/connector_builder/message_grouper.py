@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
 
+import orjson
 from airbyte_cdk.connector_builder.models import (
     AuxiliaryRequest,
     HttpRequest,
@@ -35,7 +35,6 @@ from airbyte_protocol.models.airbyte_protocol import (
     TraceType,
 )
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
-import orjson
 
 
 class MessageGrouper:
@@ -311,7 +310,7 @@ class MessageGrouper:
         # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
         # protocol change is worked on.
         try:
-            json_object: JsonType = json.loads(log_message.message)
+            json_object: JsonType = orjson.loads(log_message.message)
             return json_object
         except JSONDecodeError:
             return None

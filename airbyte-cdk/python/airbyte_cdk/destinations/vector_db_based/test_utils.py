@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import unittest
 from typing import Any, Dict
 
+import orjson
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -50,4 +50,4 @@ class BaseIntegrationTest(unittest.TestCase):
 
     def setUp(self) -> None:
         with open("secrets/config.json", "r") as f:
-            self.config = json.loads(f.read())
+            self.config = orjson.loads(f.read())
