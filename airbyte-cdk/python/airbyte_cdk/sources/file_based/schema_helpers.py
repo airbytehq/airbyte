@@ -157,7 +157,8 @@ def is_equal_or_narrower_type(value: Any, expected_type: str) -> bool:
     if inferred_type is None:
         return False
 
-    return inferred_type <= ComparableType(get_comparable_type(expected_type))
+    # Direct comparison without recreating ComparableType
+    return inferred_type <= get_comparable_type(expected_type)
 
 
 def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
@@ -166,38 +167,32 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
 
     The record conforms to the supplied schema iff:
     - All columns in the record are in the schema.
-    - For every column in the record, that column's type is equal to or narrower than the same column's
-      type in the schema.
+    - For every column in the record, that column's type is equal to or narrower than the same column's type in the schema.
     """
     schema_properties = schema.get("properties", {})
-    schema_columns = set(schema_properties.keys())
-    record_columns = set(record.keys())
+    schema_columns = schema_properties.keys()
 
-    if not record_columns.issubset(schema_columns):
+    if not record.keys() <= schema_columns:
         return False
 
-    for column in record_columns:
-        value = record[column]
-        if value is None:
-            continue
-
-        definition = schema_properties.get(column)
-        if not definition:
-            return False
-
+    for column, definition in schema_properties.items():
         expected_type = definition.get("type")
+        value = record.get(column)
 
-        if isinstance(expected_type, list):
-            if not any(is_equal_or_narrower_type(value, e) for e in expected_type):
+        if value is not None:
+            if isinstance(expected_type, list):
+                if not any(is_equal_or_narrower_type(value, e) for e in expected_type):
+                    return False
+            elif expected_type == "object":
+                if not isinstance(value, dict):
+                    return False
+            elif expected_type == "array":
+                if not (
+                    isinstance(value, list) and all(is_equal_or_narrower_type(v, definition.get("items", {}).get("type")) for v in value)
+                ):
+                    return False
+            elif not is_equal_or_narrower_type(value, expected_type):
                 return False
-        elif expected_type == "object":
-            if not isinstance(value, dict):
-                return False
-        elif expected_type == "array":
-            if not (isinstance(value, list) and all(is_equal_or_narrower_type(v, definition.get("items", {}).get("type")) for v in value)):
-                return False
-        elif not is_equal_or_narrower_type(value, expected_type):
-            return False
 
     return True
 
