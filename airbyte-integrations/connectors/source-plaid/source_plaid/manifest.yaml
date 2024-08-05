@@ -145,6 +145,28 @@ streams:
             type:
               - string
               - "null"
+          counterparties:
+            items:
+              properties:
+                name:
+                  type:
+                    - string
+                entity_id:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                website:
+                  type:
+                    - string
+                    - "null"
+                confidence_level:
+                  type:
+                    - string
+                    - "null"
+            type: array
           date:
             type: string
           datetime:
@@ -152,7 +174,9 @@ streams:
               - string
               - "null"
           iso_currency_code:
-            type: string
+            type:
+              - string
+              - "null"
           location:
             properties:
               address:
@@ -169,11 +193,11 @@ streams:
                   - "null"
               lat:
                 type:
-                  - string
+                  - number
                   - "null"
               lon:
                 type:
-                  - string
+                  - number
                   - "null"
               postal_code:
                 type:
@@ -194,12 +218,13 @@ streams:
             type:
               - string
               - "null"
-          name:
-            type: string
-          payment_channel:
+          original_description:
             type:
               - string
               - "null"
+          payment_channel:
+            type:
+              - string
           payment_meta:
             properties:
               by_order_of:
@@ -240,22 +265,30 @@ streams:
           pending:
             type:
               - boolean
-              - "null"
           pending_transaction_id:
             type:
               - string
               - "null"
           personal_finance_category:
+            properties:
+              primary:
+                type:
+                  - string
+              detailed:
+                type:
+                  - string
+              confidence_level:
+                type:
+                  - string
+                  - "null"
             type:
-              - string
+              - object
               - "null"
           transaction_code:
             type:
               - string
               - "null"
           transaction_id:
-            type: string
-          transaction_type:
             type: string
           unofficial_currency_code:
             type:
@@ -269,14 +302,15 @@ streams:
           - transaction_id
           - category
           - date
-          - transaction_type
+          - original_description
+          - payment_channel
         type: object
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
         url_base: https://{{config['plaid_env']}}.plaid.com
-        path: /transactions/get
+        path: /transactions/sync
         http_method: POST
         request_parameters: {}
         request_headers: {}
@@ -284,8 +318,11 @@ streams:
           type: NoAuth
         request_body_json:
           secret: "{{config['api_key']}}"
+          cursor: "{{ next_page_token['next_page_token'] }}"
+          count: 500
           options:
-            offset: "{{ next_page_token['next_page_token'] }}"
+            include_original_description: true
+            days_requested: 730
           client_id: "{{config['client_id']}}"
           access_token: "{{config['access_token']}}"
       record_selector:

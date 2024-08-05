@@ -43,37 +43,50 @@
             "account_id",
             "amount",
             "iso_currency_code",
-            "name",
             "transaction_id",
             "category",
             "date",
-            "transaction_type"
+            "original_description",
+            "payment_channel"
           ],
           "properties": {
             "account_id": { "type": "string" },
             "amount": { "type": "number" },
             "category": { "type": "array", "items": { "type": "string" } },
             "category_id": { "type": ["string", "null"] },
+            "counterparties": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "entity_id": { "type": ["string", "null"] },
+                  "type": { "type": "string" },
+                  "reference_number": { "type": ["string", "null"] },
+                  "website": { "type": ["string", "null"] },
+                  "confidence_level": { "type": ["string", "null"] }
+                }
+              }
+            },
             "date": { "type": "string" },
             "iso_currency_code": { "type": "string" },
-            "name": { "type": "string" },
-            "payment_channel": { "type": ["string", "null"] },
-            "pending": { "type": ["boolean", "null"] },
+            "payment_channel": { "type": "string" },
+            "pending": { "type": "boolean" },
             "transaction_id": { "type": "string" },
-            "transaction_type": { "type": "string" },
             "location": {
               "type": ["object", "null"],
               "properties": {
                 "address": { "type": ["string", "null"] },
                 "city": { "type": ["string", "null"] },
                 "country": { "type": ["string", "null"] },
-                "lat": { "type": ["string", "null"] },
-                "lon": { "type": ["string", "null"] },
+                "lat": { "type": ["number", "null"] },
+                "lon": { "type": ["number", "null"] },
                 "postal_code": { "type": ["string", "null"] },
                 "region": { "type": ["string", "null"] },
                 "store_number": { "type": ["string", "null"] }
               }
             },
+            "original_description": { "type": ["string", "null"] },
             "payment_meta": {
               "type": ["object", "null"],
               "properties": {
@@ -94,9 +107,16 @@
             "datetime": { "type": ["string", "null"] },
             "merchant_name": { "type": ["string", "null"] },
             "pending_transaction_id": { "type": ["string", "null"] },
-            "personal_finance_category": { "type": ["string", "null"] },
-            "transaction_code": { "type": ["string", "null"] },
-            "unofficial_currency_code": { "type": ["string", "null"] }
+            "personal_finance_category": {
+              "type": ["object", "null"],
+              "properties": {
+                "primary": { "type": "string" },
+                "detailed": { "type": "string" },
+                "confidence_level": { "type": ["string", "null"] }
+              },
+              "transaction_code": { "type": ["string", "null"] },
+              "unofficial_currency_code": { "type": ["string", "null"] }
+            }
           }
         }
       },
