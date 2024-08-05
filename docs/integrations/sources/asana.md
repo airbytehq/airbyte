@@ -106,6 +106,11 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.2.1 | 2024-08-03 | [43079](https://github.com/airbytehq/airbyte/pull/43079) | Update dependencies |
+| 1.2.0 | 2024-07-27 | [42856](https://github.com/airbytehq/airbyte/pull/42856) | Add task & target data to stories compact stream |
+| 1.1.1 | 2024-07-27 | [42801](https://github.com/airbytehq/airbyte/pull/42801) | Update dependencies |
+| 1.1.0 | 2024-07-24 | [42488](https://github.com/airbytehq/airbyte/pull/42488) | Add task data to stories stream |
+| 1.0.9 | 2024-07-20 | [42144](https://github.com/airbytehq/airbyte/pull/42144) | Update dependencies |
 | 1.0.8 | 2024-07-13 | [41839](https://github.com/airbytehq/airbyte/pull/41839) | Update dependencies |
 | 1.0.7 | 2024-07-10 | [41573](https://github.com/airbytehq/airbyte/pull/41573) | Update dependencies |
 | 1.0.6 | 2024-07-09 | [41142](https://github.com/airbytehq/airbyte/pull/41142) | Update dependencies |

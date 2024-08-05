@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
-  dockerImageTag: 0.3.9
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-younium
   githubIssueLabel: source-younium
   icon: younium.svg
@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: younium_config_dev_null
+          id: bcc0a350-b9df-478f-8c08-1cd996b05026
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-YOUNIUM__CREDS

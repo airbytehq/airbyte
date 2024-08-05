@@ -151,6 +151,9 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.4.13 | 2024-08-03 | [43236](https://github.com/airbytehq/airbyte/pull/43236) | Update dependencies |
+| 0.4.12 | 2024-07-27 | [42693](https://github.com/airbytehq/airbyte/pull/42693) | Update dependencies |
+| 0.4.11 | 2024-07-20 | [42312](https://github.com/airbytehq/airbyte/pull/42312) | Update dependencies |
 | 0.4.10 | 2024-07-13 | [41865](https://github.com/airbytehq/airbyte/pull/41865) | Update dependencies |
 | 0.4.9 | 2024-07-10 | [41430](https://github.com/airbytehq/airbyte/pull/41430) | Update dependencies |
 | 0.4.8 | 2024-07-09 | [41148](https://github.com/airbytehq/airbyte/pull/41148) | Update dependencies |

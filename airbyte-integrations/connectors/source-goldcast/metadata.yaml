@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-goldcast
   githubIssueLabel: source-goldcast
   icon: goldcast.svg

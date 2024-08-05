@@ -58,6 +58,9 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.2 | 2024-08-03 | [43182](https://github.com/airbytehq/airbyte/pull/43182) | Update dependencies |
+| 3.3.1 | 2024-07-27 | [42391](https://github.com/airbytehq/airbyte/pull/42391) | Update dependencies |
+| 3.3.0 | 2024-07-15 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Add engage page size to configuration |
 | 3.2.4 | 2024-07-13 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Update dependencies |
 | 3.2.3 | 2024-07-10 | [41420](https://github.com/airbytehq/airbyte/pull/41420) | Update dependencies |
 | 3.2.2 | 2024-07-09 | [41289](https://github.com/airbytehq/airbyte/pull/41289) | Update dependencies |

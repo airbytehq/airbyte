@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.11
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pokeapi_config_dev_null
+          id: 5a290dcf-b2cf-4768-ac2d-a1aaca90c186
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-POKEAPI__CREDS

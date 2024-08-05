@@ -1,7 +1,7 @@
 # Trustpilot source connector
 
 
-This is the repository for the Trustpilot source connector, written in Python.
+This is the repository for the Trustpilot configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/trustpilot).
 
 ## Local development
@@ -20,12 +20,13 @@ poetry install --with dev
 
 ### Create credentials
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/trustpilot)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_trustpilot/spec.yaml` file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_trustpilot/spec.yaml` file or spec in the `manifest.yaml`.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
+
 ```
 poetry run source-trustpilot spec
 poetry run source-trustpilot check --config secrets/config.json
