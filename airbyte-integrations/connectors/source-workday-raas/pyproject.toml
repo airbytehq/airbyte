@@ -16,7 +16,7 @@ packages = [ { include = "source_workday_raas" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "3.9.6"
 
 [tool.poetry.scripts]
 source-workday-raas = "source_workday_raas.run:run"
