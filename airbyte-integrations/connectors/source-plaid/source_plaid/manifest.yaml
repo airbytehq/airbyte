@@ -281,6 +281,9 @@ streams:
                 type:
                   - string
                   - "null"
+            type:
+              - object
+              - "null"
           transaction_code:
             type:
               - string

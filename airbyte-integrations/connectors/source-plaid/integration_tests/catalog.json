@@ -107,7 +107,7 @@
             "merchant_name": { "type": ["string", "null"] },
             "pending_transaction_id": { "type": ["string", "null"] },
             "personal_finance_category": {
-              "type": "object",
+              "type": ["object", "null"],
               "properties": {
                 "primary": { "type": "string" },
                 "detailed": { "type": "string" },
