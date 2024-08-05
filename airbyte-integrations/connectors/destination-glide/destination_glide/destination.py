@@ -135,7 +135,8 @@ class DestinationGlide(Destination):
             glide.commit()
             logger.info(f"Committed stream '{stream_name}' to Glide.")
 
-        pass
+        # see https://stackoverflow.com/a/36863998
+        yield from ()
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

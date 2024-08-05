@@ -125,7 +125,7 @@ class GlideBigTableRestStrategy(GlideBigTableBase):
         rows = self.buffer
         if len(rows) == 0:
             return
-        self.buffer.clear()
+        self.buffer = []
 
         path = f"stashes/{self.stash_id}/{self.stash_serial}"
         logger.debug(f"Flushing {len(rows)} rows to {path} ...")

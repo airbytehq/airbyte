@@ -117,18 +117,16 @@ class TestDestinationGlide(unittest.TestCase):
 
         # invoke the generator to get the results:
         result = list(generator)
-        self.assertEqual(1, len(result))
+        self.assertEqual(0, len(result))
 
-        # ensure it called set_schema, multiple add_rows, followed by commit:
+        # ensure it called init, multiple add_rows, followed by commit:
         self.assertEqual(4, len(mock_bigtable.mock_calls))
         # NOTE: the call objects in Mock.mock_calls, are three-tuples of (name, positional args, keyword args).
         CALL_METHOD_NAME_INDEX = 0
         self.assertEqual(
             "init", mock_bigtable.mock_calls[0][CALL_METHOD_NAME_INDEX])
         self.assertEqual(
-            "set_schema", mock_bigtable.mock_calls[1][CALL_METHOD_NAME_INDEX])
-        self.assertEqual(
-            "add_rows", mock_bigtable.mock_calls[2][CALL_METHOD_NAME_INDEX])
+            "add_row", mock_bigtable.mock_calls[2][CALL_METHOD_NAME_INDEX])
         self.assertEqual(
             "commit", mock_bigtable.mock_calls[3][CALL_METHOD_NAME_INDEX])
 
@@ -163,18 +161,16 @@ class TestDestinationGlide(unittest.TestCase):
 
         # invoke the generator to get the results:
         result = list(generator)
-        # we had two state records so we expect them to be yielded:
-        self.assertEqual(2, len(result))
+        # we had two state records but we don't want to yield them
+        self.assertEqual(0, len(result))
 
         # ensure it called add_rows multiple times:
-        self.assertGreaterEqual(mock_bigtable.add_rows.call_count, 2)
+        self.assertGreaterEqual(mock_bigtable.add_row.call_count, 2)
         # NOTE: the call objects in Mock.mock_calls, are three-tuples of (name, positional args, keyword args).
         CALL_METHOD_NAME_INDEX = 0
         self.assertEqual(
             "init", mock_bigtable.mock_calls[0][CALL_METHOD_NAME_INDEX])
-        self.assertEqual(
-            "set_schema", mock_bigtable.mock_calls[1][CALL_METHOD_NAME_INDEX])
-        mock_bigtable.add_rows.assert_called()
+        mock_bigtable.add_row.assert_called()
         self.assertEqual(
             "commit", mock_bigtable.mock_calls[mock_bigtable.call_count - 1][CALL_METHOD_NAME_INDEX])
 
@@ -250,14 +246,13 @@ class TestDestinationGlide(unittest.TestCase):
             ]
         )
 
-        # expecting only to return the state message:
+        # expecting not to return the state message:
         result = list(generator)
-        assert len(result) == 1
+        assert len(result) == 0
 
-        mock_bigtable.set_schema.assert_called_once()
-        mock_bigtable.add_rows.assert_called_once()
+        mock_bigtable.add_row.assert_called()
         # get the columns we passed into teh API and verify the type defaulted to string:
-        schema_calls = mock_bigtable.set_schema.call_args[0][0]
+        schema_calls = mock_bigtable.init.call_args[0][2]
         null_column = [col for col in schema_calls if col.id()
                        == "obj_null_col"][0]
         self.assertEqual(null_column.type(), "string")
