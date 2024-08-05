@@ -148,6 +148,7 @@ def validate_environment(is_local: bool) -> None:
         "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
         "migrate-to-inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
         "migrate-to-logging-logger": "pipelines.airbyte_ci.connectors.migrate_to_logging_logger.commands.migrate_to_logging_logger",
+        "generate-erd-schema": "pipelines.airbyte_ci.connectors.generate_erd_schema.commands.generate_erd_schema",
         "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up-to-date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
         "pull-request": "pipelines.airbyte_ci.connectors.pull_request.commands.pull_request",

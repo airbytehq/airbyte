@@ -36,6 +36,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     INLINE_MIGRATION = "migration_to_inline_schemas.migration"
     AIRBYTE_LOGGER_CANDIDATE = "migration_to_logging_logger.candidate"
     AIRBYTE_LOGGER_MIGRATION = "migration_to_logging_logger.migration"
+    AIRBYTE_ERD_GENERATE = "generate_erd_schema.generate"
     PULL_REQUEST_CREATE = "pull_request.create"
     PULL_REQUEST_UPDATE = "pull_request.update"
 
