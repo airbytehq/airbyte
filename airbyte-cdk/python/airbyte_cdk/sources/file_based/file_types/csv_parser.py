@@ -385,32 +385,27 @@ class _JsonTypeInferrer(_TypeInferrer):
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
-        inferred_types = set()
+        inferred_types = {self._STRING_TYPE}
 
         if value in self._null_values:
             inferred_types.add(self._NULL_TYPE)
         if self._is_boolean(value):
             inferred_types.add(self._BOOLEAN_TYPE)
+            return inferred_types  # Early return, avoiding unnecessary checks
         if self._is_integer(value):
-            inferred_types.add(self._INTEGER_TYPE)
-            inferred_types.add(self._NUMBER_TYPE)
+            inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})
         elif self._is_number(value):
             inferred_types.add(self._NUMBER_TYPE)
 
-        inferred_types.add(self._STRING_TYPE)
         return inferred_types
 
     def _is_boolean(self, value: str) -> bool:
-        try:
-            _value_to_bool(value, self._boolean_trues, self._boolean_falses)
-            return True
-        except ValueError:
-            return False
+        return value in self._boolean_trues or value in self._boolean_falses
 
     @staticmethod
     def _is_integer(value: str) -> bool:
         try:
-            _value_to_python_type(value, int)
+            int(value)
             return True
         except ValueError:
             return False
@@ -418,7 +413,7 @@ class _JsonTypeInferrer(_TypeInferrer):
     @staticmethod
     def _is_number(value: str) -> bool:
         try:
-            _value_to_python_type(value, float)
+            float(value)
             return True
         except ValueError:
             return False
