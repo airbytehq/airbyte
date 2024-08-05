@@ -265,11 +265,10 @@ class CsvParser(FileTypeParser):
         output = {}
         for prop, prop_type in property_types.items():
             if isinstance(prop_type, list):
-                prop_type_distinct = set(prop_type)
-                prop_type_distinct.remove("null")
+                prop_type_distinct = {ptype for ptype in prop_type if ptype != "null"}
                 if len(prop_type_distinct) != 1:
                     raise ValueError(f"Could not get non nullable type from {prop_type}")
-                output[prop] = next(iter(prop_type_distinct))
+                output[prop] = prop_type_distinct.pop()
             else:
                 output[prop] = prop_type
         return output
