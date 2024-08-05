@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 import certifi
-from connectors_canary_testing import logger
+from snoop import logger
 from mitmproxy import http, io  # type: ignore
 from mitmproxy.addons import default_addons, script
 from mitmproxy.master import Master
@@ -46,12 +46,13 @@ class MitmProxy:
     @property
     def mitm_command(self):
         default_command = [
-            "mitmdump",
+            "/root/.local/share/pipx/venvs/snoop/bin/mitmdump",
             f"--listen-host={self.proxy_host}",
             f"--listen-port={self.proxy_port}",
             "--set",
             f"hardump={str(self.har_dump_path)}",
             "--save-stream-file",
+            
             self.session_path,
         ]
         if self.replay_session_path is not None:

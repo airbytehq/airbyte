@@ -1,13 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-import base64
 import hashlib
-import json
+import os
 
-from connectors_canary_testing import GCS_CREDS
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from google.cloud import storage
-from google.oauth2 import service_account
+import yaml
 
 
 def sort_dict_keys(d: dict) -> dict:
@@ -47,8 +42,6 @@ def hash_dict_values(d):
 
     return recurse_dict(d)
 
-
-def get_gcs_client():
-    gcs_raw_creds = json.loads(base64.b64decode(GCS_CREDS).decode("utf8"))
-    credentials = service_account.Credentials.from_service_account_info(gcs_raw_creds)
-    return storage.Client(credentials=credentials, project=gcs_raw_creds["project_id"])
+def get_connector_metadata() -> dict:
+    with open(os.environ["PATH_TO_METADATA"], "r") as metadata_file:
+        return yaml.safe_load(metadata_file)

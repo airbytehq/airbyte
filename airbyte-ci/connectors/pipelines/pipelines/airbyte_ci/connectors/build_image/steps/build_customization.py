@@ -13,7 +13,7 @@ from dagger import Container
 BUILD_CUSTOMIZATION_MODULE_NAME = "build_customization"
 BUILD_CUSTOMIZATION_SPEC_NAME = f"{BUILD_CUSTOMIZATION_MODULE_NAME}.py"
 DEFAULT_MAIN_FILE_NAME = "main.py"
-
+ENTRYPOINT_SCRIPT_URL = "https://github.com/airbytehq/airbyte/blob/647e861b37829842f92dbd903ec13a8b22b8329a/airbyte-ci/connectors/snoop/bin/install_and_run.sh#L3"
 
 def get_build_customization_module(connector: Connector) -> Optional[ModuleType]:
     """Import the build_customization.py file from the connector directory if it exists.
@@ -56,13 +56,15 @@ def get_main_file_name(connector: Connector) -> str:
 
 
 def get_entrypoint(connector: Connector) -> List[str]:
-    return ["connectors-blue-green", "entrypoint"]
+    main_file_name = get_main_file_name(connector)
+    return ["python", f"/airbyte/integration_code/{main_file_name}"]
 
 
 def apply_airbyte_entrypoint(connector_container: Container, connector: Connector) -> Container:
-    entrypoint = get_entrypoint(connector)
+    
+    snoop_entrypoint = ["/root/.local/bin/snoop"]
 
-    return connector_container.with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint)).with_entrypoint(entrypoint)
+    return connector_container.with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(get_entrypoint(connector))).with_entrypoint(snoop_entrypoint)
 
 
 async def pre_install_hooks(connector: Connector, base_container: Container, logger: Logger) -> Container:

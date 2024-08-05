@@ -9,8 +9,8 @@ class TestDataIntegrity:
     def test_all_pks_are_produced_in_target_version(self, control_and_target_artifacts_per_sessions) -> None:
         # TODO iterating on session results could be factorized into parametrized tests
         for control_artifacts, target_artifacts in control_and_target_artifacts_per_sessions:
-            for control_stream, control_pks in control_artifacts.pks_per_streams.items():
-                target_pks = target_artifacts.pks_per_streams[control_stream]
+            for control_stream, control_pks in control_artifacts.primary_keys_per_stream.items():
+                target_pks = target_artifacts.primary_keys_per_stream[control_stream]
                 missing_pks = set(control_pks) - set(target_pks)
                 assert not missing_pks, f"Missing {len(missing_pks)} primary keys in target version on stream {control_stream}"
 

@@ -10,7 +10,7 @@ def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
     logger.setLevel(level)
 
     # Create handlers
-    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler = logging.FileHandler("/tmp/snoop.log")
     console_handler.setLevel(level)
 
     # Create formatters and add it to handlers

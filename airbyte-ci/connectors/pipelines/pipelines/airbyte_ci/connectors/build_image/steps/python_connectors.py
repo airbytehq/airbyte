@@ -4,6 +4,7 @@
 
 
 from typing import Any
+import os
 
 from connector_ops.utils import METADATA_FILE_NAME
 from dagger import Container, Platform
@@ -74,7 +75,10 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         # The snake case name of the connector corresponds to the python package name of the connector
         # We want to mount it to the container under PATH_TO_INTEGRATION_CODE/connector_snake_case_name
         connector_snake_case_name = self.context.connector.technical_name.replace("-", "_")
-
+        
+        # TODO pass it as a build option
+        local_path_to_snoop_credentials = os.environ.get("SNOOP_CREDENTIALS_PATH")
+        
         base_connector_container = (
             # copy python dependencies from builder to connector container
             customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
@@ -83,17 +87,24 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             # Copying metadata and setting env vars allow to make the container aware of which connector it has
             .with_file(METADATA_FILE_NAME, (await self.context.get_connector_dir(include=[METADATA_FILE_NAME])).file(METADATA_FILE_NAME))
             .with_env_variable("PATH_TO_METADATA", f"{self.PATH_TO_INTEGRATION_CODE}/{METADATA_FILE_NAME}")
-            # TODO: add uv to the base image?
-            .with_exec(["pip", "install", "uv"], skip_entrypoint=True)
-            .with_directory(
-                "/connectors_canary_testing", await self.context.get_repo_dir("airbyte-ci/connectors/connectors_canary_testing")
-            )
-            .with_exec(["uv", "pip", "install", "--system", "/connectors_canary_testing", "pip_system_certs"])
+            # TODO: add curl, uv and pip_system_certs to the base image?
+            .with_exec(["pip", "install", "pipx", "pip_system_certs", "mitmproxy"])
+
+            .with_directory("/snoop", (await self.context.get_repo_dir(subdir="airbyte-ci/connectors/snoop")))
+            .with_exec(["pipx", "install", "/snoop", "--force"])
             .with_directory(
                 connector_snake_case_name,
                 (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
             )
         )
+
+        if local_path_to_snoop_credentials:
+            snoop_credentials_file = self.dagger_client.host().file(local_path_to_snoop_credentials)
+            base_connector_container = (
+                base_connector_container
+                .with_file("/snoop/snoop_credentials.json", snoop_credentials_file)
+                .with_env_variable("GOOGLE_APPLICATION_CREDENTIALS", "/snoop/snoop_credentials.json")
+            )
 
         connector_container = build_customization.apply_airbyte_entrypoint(base_connector_container, self.context.connector)
         customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
