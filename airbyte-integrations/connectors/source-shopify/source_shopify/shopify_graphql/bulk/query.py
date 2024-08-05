@@ -534,8 +534,6 @@ class MetafieldProductImage(Metafield):
         because the usual way of retrieving the metafields for product images` was suddently deprecated,
         for `2024-10`, but the changes are reflected in the `2024-04` as well, starting: `2024-08-01T00:06:44`
 
-        CAT Test (FAILED): https://storage.cloud.google.com/airbyte-ci-reports-multi/airbyte-ci/connectors/test/nightly_builds/master/1722470804/269f22e245fc60c872ec96c6eba20cb7bf72b4d4/source-shopify/2.4.16/output.html
-
         More info here:
         https://shopify.dev/docs/api/release-notes/2024-04#productimage-value-removed
         """

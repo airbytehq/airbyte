@@ -570,8 +570,9 @@ class IncrementalShopifyNestedStream(IncrementalShopifyStream):
 
 
 class IncrementalShopifyStreamWithDeletedEvents(IncrementalShopifyStream):
-
-    _stream_state: MutableMapping[str, Any] = {}
+    def __init__(self, config: Dict) -> None:
+        self._stream_state: MutableMapping[str, Any] = {}
+        super().__init__(config)
 
     @property
     @abstractmethod
