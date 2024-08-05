@@ -108,7 +108,11 @@ def test_bad_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCa
     client = ConvexClient(config, {})
     with pytest.raises(Exception) as e:
         client.delete([])
-    assert "Request to `/api/streaming_import/clear_tables` failed with status code 400: error message" in str(e.value)
+
+    assert (
+        "Request to `http://deployment_url.convex.cloud/api/streaming_import/clear_tables` failed with status code 400: error message"
+        in str(e.value)
+    )
 
 
 @responses.activate
