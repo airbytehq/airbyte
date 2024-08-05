@@ -110,19 +110,15 @@ class Cursor(DefaultFileBasedCursor):
 
         for date_str, filenames in legacy_state.get("history", {}).items():
             datetime_obj = Cursor._get_adjusted_date_timestamp(cursor_datetime, datetime.strptime(date_str, Cursor._DATE_FORMAT))
+            datetime_formatted = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
 
             for filename in filenames:
                 if filename in converted_history:
-                    if datetime_obj > datetime.strptime(
-                        converted_history[filename],
-                        DefaultFileBasedCursor.DATE_TIME_FORMAT,
-                    ):
-                        converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
-                    else:
-                        # If the file was already synced with a later timestamp, ignore
-                        pass
+                    current_dt = datetime.strptime(converted_history[filename], DefaultFileBasedCursor.DATE_TIME_FORMAT)
+                    if datetime_obj > current_dt:
+                        converted_history[filename] = datetime_formatted
                 else:
-                    converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
+                    converted_history[filename] = datetime_formatted
 
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
@@ -136,7 +132,6 @@ class Cursor(DefaultFileBasedCursor):
             # This is okay because the v4 cursor is kept for posterity but is not actually used in the v4 code. If we
             # start to use the cursor we may need to revisit this logic.
             cursor = cursor_datetime
-            converted_history = {}
         v3_migration_start_datetime = cursor_datetime - Cursor._V4_MIGRATION_BUFFER
         return {
             "history": converted_history,
