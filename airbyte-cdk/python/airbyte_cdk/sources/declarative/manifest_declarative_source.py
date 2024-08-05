@@ -5,7 +5,6 @@
 import json
 import logging
 import pkgutil
-import re
 from copy import deepcopy
 from importlib import metadata
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -220,10 +219,10 @@ class ManifestDeclarativeSource(DeclarativeSource):
         """
         Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
         """
-        version_parts = re.split(r"\.", version)
-        if len(version_parts) != 3 or not all([part.isdigit() for part in version_parts]):
+        version_parts = version.split(".")
+        if len(version_parts) != 3 or any(not part.isdigit() for part in version_parts):
             raise ValidationError(f"The {version_type} version {version} specified is not a valid version format (ex. 1.2.3)")
-        return tuple(int(part) for part in version_parts)  # type: ignore # We already verified there were 3 parts and they are all digits
+        return int(version_parts[0]), int(version_parts[1]), int(version_parts[2])
 
     def _stream_configs(self, manifest: Mapping[str, Any]) -> List[Dict[str, Any]]:
         # This has a warning flag for static, but after we finish part 4 we'll replace manifest with self._source_config
