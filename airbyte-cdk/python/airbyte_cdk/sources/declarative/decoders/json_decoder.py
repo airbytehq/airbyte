@@ -25,6 +25,9 @@ class JsonDecoder(Decoder):
         return False
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
+        """
+        Given the response is an empty string or an emtpy list, the function will return a generator with an empty mapping.
+        """
         try:
             body_json = response.json()
             if not isinstance(body_json, list):
