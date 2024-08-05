@@ -20,7 +20,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
-  dockerImageTag: 1.0.15
+  dockerImageTag: 1.0.16
   dockerRepository: airbyte/source-linkedin-pages
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
   githubIssueLabel: source-linkedin-pages
@@ -34,6 +34,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: linkedin-pages_config_dev_null
+          id: 4460fd33-21fe-46de-83ee-b886aaf38803
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-LINKEDIN-PAGES__CREDS

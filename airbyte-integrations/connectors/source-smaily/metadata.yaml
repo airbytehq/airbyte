@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-smaily
   githubIssueLabel: source-smaily
   icon: smaily.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: smaily_config_dev_null
+          id: 13d7f046-ccb7-4f8a-bcbb-9a19da21a4da
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SMAILY__CREDS

@@ -162,7 +162,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes                       |
-| :--------------- | :----------- | :-------------------------- |
+|:-----------------|:-------------|:----------------------------|
 | `number`         | `number`     | float number                |
 | `integer`        | `integer`    | whole number                |
 | `date`           | `string`     | FORMAT YYYY-MM-DD           |
@@ -176,8 +176,10 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| Version  | Date       | Pull Request                                             | Subject                                                                                                         |
+|:---------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 3.0.1 | 2024-08-03 | [43087](https://github.com/airbytehq/airbyte/pull/43087) | Update dependencies |
+| 3.0.0 | 2024-06-18 | [38314](https://github.com/airbytehq/airbyte/pull/38314) | Migrate to low-code |
 | 2.1.12 | 2024-07-27 | [42728](https://github.com/airbytehq/airbyte/pull/42728) | Update dependencies |
 | 2.1.11 | 2024-07-20 | [42291](https://github.com/airbytehq/airbyte/pull/42291) | Update dependencies |
 | 2.1.10 | 2024-07-13 | [41710](https://github.com/airbytehq/airbyte/pull/41710) | Update dependencies |
@@ -186,7 +188,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 2.1.7 | 2024-07-06 | [40868](https://github.com/airbytehq/airbyte/pull/40868) | Update dependencies |
 | 2.1.6 | 2024-06-25 | [40331](https://github.com/airbytehq/airbyte/pull/40331) | Update dependencies |
 | 2.1.5 | 2024-06-22 | [39998](https://github.com/airbytehq/airbyte/pull/39998) | Update dependencies |
-| 2.1.4 | 2024-06-16 | [0](https://github.com/airbytehq/airbyte/pull/0) | Fix README commands, change spec from json to yaml, fix schema states to object |
+| 2.1.4 | 2024-06-16 | [39442](https://github.com/airbytehq/airbyte/pull/39442) | Fix README commands, change spec from json to yaml, fix schema states to object |
 | 2.1.3 | 2024-06-06 | [39240](https://github.com/airbytehq/airbyte/pull/39240) | [autopull] Upgrade base image to v1.2.2 |
 | 2.1.2 | 2024-05-07 | [36648](https://github.com/airbytehq/airbyte/pull/36648) | Schema descriptions |
 | 2.1.1 | 2024-05-07 | [38013](https://github.com/airbytehq/airbyte/pull/38013) | Fix an issue where the `Accounts` stream did not correctly handle provided account IDs |
