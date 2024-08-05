@@ -16,10 +16,10 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_stripe"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 stripe = "==2.56.0"
 pendulum = "==2.1.2"
-airbyte-cdk = "^2"
+airbyte-cdk = "^4"
 
 [tool.poetry.scripts]
 source-stripe = "source_stripe.run:run"
