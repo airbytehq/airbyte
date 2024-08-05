@@ -399,7 +399,6 @@ class _JsonTypeInferrer(_TypeInferrer):
             inferred_types.add(self._NULL_TYPE)
         if self._is_boolean(value):
             inferred_types.add(self._BOOLEAN_TYPE)
-            return inferred_types  # Early return, avoiding unnecessary checks
         if self._is_integer(value):
             inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})
         elif self._is_number(value):
