@@ -12,6 +12,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Type
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.connector_builder.main import handle_request
 
 
 class SourceLocalYaml(YamlDeclarativeSource):
@@ -40,7 +41,11 @@ def _is_local_manifest_command(args: List[str]) -> bool:
 
 
 def handle_command(args: List[str]) -> None:
-    if _is_local_manifest_command(args):
+    if args[0] == "connector_builder":
+        # TODO update connector builder code to take actual args
+        args[0] = "read"
+        print(handle_request(args))
+    elif _is_local_manifest_command(args):
         handle_local_manifest_command(args)
     else:
         handle_remote_manifest_command(args)
