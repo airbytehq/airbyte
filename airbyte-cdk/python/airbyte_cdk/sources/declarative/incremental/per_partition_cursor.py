@@ -153,7 +153,7 @@ class PerPartitionCursor(DeclarativeCursor):
 
     @staticmethod
     def _is_new_state(stream_state: Mapping[str, Any]) -> bool:
-        return not bool(stream_state)
+        return not stream_state
 
     def _to_partition_key(self, partition: Mapping[str, Any]) -> str:
         return self._partition_serializer.to_partition_key(partition)
