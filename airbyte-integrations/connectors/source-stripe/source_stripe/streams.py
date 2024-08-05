@@ -16,8 +16,8 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_stripe.error_handlers import StripeErrorHandler, ParentIncrementalStripeSubStreamErrorHandler
-from source_stripe.error_mappings import STRIPE_ERROR_MAPPING, PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
+from source_stripe.error_handlers import ParentIncrementalStripeSubStreamErrorHandler, StripeErrorHandler
+from source_stripe.error_mappings import PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING, STRIPE_ERROR_MAPPING
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
@@ -513,7 +513,6 @@ class CustomerBalanceTransactions(StripeStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"customers/{stream_slice['id']}/balance_transactions"
 
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -554,7 +553,6 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
     def path(self, **kwargs) -> str:
         return "setup_attempts"
 
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -593,7 +591,6 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
     def __init__(self, *args, **kwargs):
         parent = StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **kwargs)
         super().__init__(*args, parent=parent, **kwargs)
-
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"accounts/{stream_slice['parent']['id']}/persons"
@@ -667,7 +664,6 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
     ):
         super().__init__(*args, **kwargs)
         self._sub_items_attr = sub_items_attr
-
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
@@ -807,4 +803,6 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
         return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        return ParentIncrementalStripeSubStreamErrorHandler(logger=self.logger, error_mapping=PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING)
+        return ParentIncrementalStripeSubStreamErrorHandler(
+            logger=self.logger, error_mapping=PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
+        )

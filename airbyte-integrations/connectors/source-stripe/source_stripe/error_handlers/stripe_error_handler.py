@@ -2,16 +2,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Optional, Union
 
-import logging
 import requests
-from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
-
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
+from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 
 STRIPE_ERROR_CODES = {
     "more_permissions_required": "This is most likely due to insufficient permissions on the credentials in use. "
@@ -59,18 +58,13 @@ class StripeErrorHandler(HttpStatusErrorHandler):
             if error_message:
                 # todo can I just ifnore the doc message for now?
                 # doc_ref = self._visit_docs_message(self._logger, source)
-                reason = f"The endpoint {response_or_exception.url} returned {status_code}: {response_or_exception.reason}. {error_message}."
+                reason = (
+                    f"The endpoint {response_or_exception.url} returned {status_code}: {response_or_exception.reason}. {error_message}."
+                )
                 # reason = f"The endpoint {response_or_exception.url} returned {status_code}: {response_or_exception.reason}. {error_message}. {doc_ref} "
                 response_error_message = HttpStream.parse_response_error_message(response_or_exception)
                 if response_error_message:
                     reason += response_error_message
 
-                return ErrorResolution(
-                    response_action=ResponseAction.IGNORE,
-                    failure_type=FailureType.config_error,
-                    error_message=reason
-                )
+                return ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message=reason)
         return super().interpret_response(response_or_exception)
-
-
-
