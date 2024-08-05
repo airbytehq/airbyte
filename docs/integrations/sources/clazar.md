@@ -110,17 +110,18 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.2.3   | 2024-07-29 | [42851](https://github.com/airbytehq/airbyte/pull/42851) | Updated schema of Analytics AWS opportunities table                       |
-| 0.2.2   | 2024-07-27 | [42617](https://github.com/airbytehq/airbyte/pull/42617) | Update dependencies                                                       |
-| 0.2.1   | 2024-07-20 | [42315](https://github.com/airbytehq/airbyte/pull/42315) | Update dependencies                                                       |
-| 0.2.0   | 2024-07-18 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | removed redundant columns from streams, added documentation for analytics |
-| 0.1.4   | 2024-07-13 | [41759](https://github.com/airbytehq/airbyte/pull/41759) | Update dependencies                                                       |
-| 0.1.3   | 2024-07-10 | [41351](https://github.com/airbytehq/airbyte/pull/41351) | Update dependencies                                                       |
-| 0.1.2   | 2024-07-09 | [41123](https://github.com/airbytehq/airbyte/pull/41123) | Update dependencies                                                       |
-| 0.1.1   | 2024-07-06 | [40922](https://github.com/airbytehq/airbyte/pull/40922) | Update dependencies                                                       |
-| 0.1.0   | 2024-07-02 | [40562](https://github.com/airbytehq/airbyte/pull/40562) | New Source: Clazar                                                        |
+| Version | Date       | Pull Request                                             | Subject                                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.2.4   | 2024-08-05 | [42851](https://github.com/airbytehq/airbyte/pull/42851) | Updated schema of Analytics AWS opportunities table                        |
+| 0.2.3   | 2024-08-03 | [43155](https://github.com/airbytehq/airbyte/pull/43155) | Update dependencies                                                        |
+| 0.2.2   | 2024-07-27 | [42617](https://github.com/airbytehq/airbyte/pull/42617) | Update dependencies                                                        |
+| 0.2.1   | 2024-07-20 | [42315](https://github.com/airbytehq/airbyte/pull/42315) | Update dependencies                                                        |
+| 0.2.0   | 2024-07-18 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | removed redundant columns from streams, added documentation for analytics  |
+| 0.1.4   | 2024-07-13 | [41759](https://github.com/airbytehq/airbyte/pull/41759) | Update dependencies                                                        |
+| 0.1.3   | 2024-07-10 | [41351](https://github.com/airbytehq/airbyte/pull/41351) | Update dependencies                                                        |
+| 0.1.2   | 2024-07-09 | [41123](https://github.com/airbytehq/airbyte/pull/41123) | Update dependencies                                                        |
+| 0.1.1   | 2024-07-06 | [40922](https://github.com/airbytehq/airbyte/pull/40922) | Update dependencies                                                        |
+| 0.1.0   | 2024-07-02 | [40562](https://github.com/airbytehq/airbyte/pull/40562) | New Source: Clazar                                                         |
 
 </details>
 
