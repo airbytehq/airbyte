@@ -93,11 +93,11 @@ class SourceFilesAbstractSpec(BaseModel):
         """
         objects_to_check = schema["properties"]["format"]["oneOf"]
         for object in objects_to_check:
-            for key in object["properties"]:
-                property = object["properties"][key]
-                if "allOf" in property and "enum" in property["allOf"][0]:
-                    property["enum"] = property["allOf"][0]["enum"]
-                    property.pop("allOf")
+            for property in object["properties"].values():
+                allOf = property.get("allOf")
+                if allOf and "enum" in allOf[0]:
+                    property["enum"] = allOf[0]["enum"]
+                    del property["allOf"]
         return schema
 
     @staticmethod
