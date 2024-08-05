@@ -59,17 +59,18 @@ class IncrementalCheckpointReader(CheckpointReader):
         self._has_slices = False
 
     def next(self) -> Optional[Mapping[str, Any]]:
-        try:
-            next_slice = next(self._stream_slices)
-            self._has_slices = True
-            return next_slice
-        except StopIteration:
-            # This is used to avoid sending a duplicate state message at the end of a sync since the stream has already
-            # emitted state at the end of each slice. If we want to avoid this extra complexity, we can also just accept
-            # that every sync emits a final duplicate state
-            if self._has_slices:
-                self._state = None
+        if self._has_slices:
+            # Directly try to get the next slice without handling StopIteration here
+            next_slice = next(self._stream_slices, None)
+            if next_slice is not None:
+                return next_slice
+            self._state = None
             return None
+
+        # Handling the very first call to next()
+        next_slice = next(self._stream_slices, None)
+        self._has_slices = True
+        return next_slice
 
     def observe(self, new_state: Mapping[str, Any]) -> None:
         self._state = new_state
