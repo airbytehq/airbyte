@@ -169,7 +169,7 @@ class StripConnector(Step):
             return StepResult(
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
-        
+
         ## 2. Update the version in manifest.yaml
         try:
             with open(root_manifest_file, "r") as manifest_file:
@@ -193,7 +193,6 @@ class StripConnector(Step):
                     manifest_data["spec"]["type"] = "Spec"
                     manifest_data["spec"]["documentation_url"] = spec_data.get("documentation_url")
                     manifest_data["spec"]["connection_specification"] = spec_data.get("connection_specification")
-
 
                     with open(root_manifest_file, "w") as manifest_file_to_write:
                         yaml.dump(manifest_data, manifest_file_to_write)

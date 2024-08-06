@@ -5,13 +5,11 @@
 import subprocess
 from pathlib import Path
 
-import logging
 import jinja2
 import requests
 
 ## HELPER FUNCTIONS
 
-logger = logging.getLogger("tags")
 
 def readme_for_connector(name: str) -> str:
     """
@@ -45,7 +43,7 @@ def get_latest_base_image(image_name: str) -> str:
         if "dev" not in tag["name"] and "latest" not in tag["name"]:
             latest_tag = tag["name"]
             break
-    
+
     if not latest_tag:
         raise ValueError("No valid tags found for the image")
 
