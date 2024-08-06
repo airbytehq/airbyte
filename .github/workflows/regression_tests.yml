@@ -48,6 +48,7 @@ jobs:
       - name: Check PAT rate limits
         uses: Wandalen/wretry.action@master
         with:
+          attempt_limit: 3
           command: |
             ./tools/bin/find_non_rate_limited_PAT \
               ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
