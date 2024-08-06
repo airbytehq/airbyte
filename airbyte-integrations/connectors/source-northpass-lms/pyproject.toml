@@ -17,8 +17,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_northpass_lms"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = ">=3.10,<3.12"
+airbyte-cdk = "^4.3.0"
 
 [tool.poetry.scripts]
 source-northpass-lms = "source_northpass_lms.run:run"

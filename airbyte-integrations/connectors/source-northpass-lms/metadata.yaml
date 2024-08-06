@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - api.northpass.com/v2
+      - api.northpass.com
   registries:
     oss:
       enabled: true
@@ -22,7 +22,7 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-northpass-lms
   githubIssueLabel: source-northpass-lms
-  icon: northpass-lms.svg
+  icon: icon.svg
   license: MIT
   name: Northpass LMS
   releaseDate: 08-06-2024
