@@ -5,7 +5,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "type_name"
         },
         "string": {
           "type": "string"
@@ -19,7 +19,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "type_name"
         },
         "integer": {
           "type": "integer"
@@ -43,7 +43,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "type_name"
         },
         "array": {
           "type": "array",
@@ -70,13 +70,10 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "type_name"
         },
         "string": {
           "type": "string"
-        },
-        "array": {
-          "type": "array"
         }
       }
     },
@@ -84,7 +81,7 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "type_name"
         },
         "string": {
           "type": "string"
@@ -99,7 +96,7 @@
               "type": "object",
               "properties": {
                 "type": {
-                  "type": "string"
+                  "type": "type_name"
                 },
                 "string": {
                   "type": "string"
@@ -114,7 +111,7 @@
                       "type": "object",
                       "properties": {
                         "type": {
-                          "type": "string"
+                          "type": "type_name"
                         },
                         "string": {
                           "type": "string"

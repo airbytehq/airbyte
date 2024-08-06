@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.record_buffer.BaseSerializedBuffer
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferStorage
+import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaUnionMerger
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
@@ -29,7 +30,7 @@ class AvroSerializedBuffer(
     bufferStorage: BufferStorage,
     codecFactory: CodecFactory,
     schema: Schema,
-    recordPreprocessor: ((JsonNode) -> JsonNode?)? = null,
+    recordPreprocessor: ((JsonNode) -> JsonNode?) = { it },
     private val useV2FieldNames: Boolean = false,
 ) : BaseSerializedBuffer(bufferStorage) {
     private val codecFactory: CodecFactory
@@ -126,10 +127,11 @@ class AvroSerializedBuffer(
                         ?: throw RuntimeException(
                             "No such stream ${stream.namespace}.${stream.name}"
                         )
+                val mergedSchema = JsonSchemaUnionMerger().mapSchema(jsonSchema as ObjectNode)
                 val preprocessedJsonSchema =
-                    if (useV2FeatureSet)
-                        JsonSchemaAvroPreprocessor().mapSchema(jsonSchema as ObjectNode)
-                    else jsonSchema
+                    if (useV2FeatureSet) {
+                        JsonSchemaAvroPreprocessor().mapSchema(mergedSchema)
+                    } else jsonSchema
                 val avroSchema =
                     JsonToAvroSchemaConverter()
                         .getAvroSchema(
@@ -145,10 +147,9 @@ class AvroSerializedBuffer(
                 val recordPreprocessor =
                     if (useV2FeatureSet)
                         { record: JsonNode ->
-                            JsonRecordAvroPreprocessor()
-                                .mapRecordWithSchema(record, jsonSchema as ObjectNode)
+                            JsonRecordAvroPreprocessor().mapRecordWithSchema(record, mergedSchema)
                         }
-                    else null
+                    else { record: JsonNode -> record }
 
                 // Assemble writable buffer
                 AvroSerializedBuffer(
