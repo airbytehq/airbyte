@@ -86,13 +86,13 @@ files = [
 
 [[package]]
 name = "attrs"
-version = "24.1.0"
+version = "24.2.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "attrs-24.1.0-py3-none-any.whl", hash = "sha256:377b47448cb61fea38533f671fba0d0f8a96fd58facd4dc518e3dac9dbea0905"},
-    {file = "attrs-24.1.0.tar.gz", hash = "sha256:adbdec84af72d38be7628e353a09b6a6790d15cd71819f6e9d7b0faa8a125745"},
+    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
+    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
 ]
 
 [package.extras]
@@ -846,13 +846,13 @@ six = "*"
 
 [[package]]
 name = "langsmith"
-version = "0.1.97"
+version = "0.1.98"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.97-py3-none-any.whl", hash = "sha256:5543d5fc6fe239ab4c92155002a9529ca5caab4ddabf5743c1dfab719471bc05"},
-    {file = "langsmith-0.1.97.tar.gz", hash = "sha256:5831f2ea69faa43c168440fb74631da5981b27a051480def7b310b09b6a06980"},
+    {file = "langsmith-0.1.98-py3-none-any.whl", hash = "sha256:f79e8a128652bbcee4606d10acb6236973b5cd7dde76e3741186d3b97b5698e9"},
+    {file = "langsmith-0.1.98.tar.gz", hash = "sha256:e07678219a0502e8f26d35294e72127a39d25e32fafd091af5a7bb661e9a6bd1"},
 ]
 
 [package.dependencies]
