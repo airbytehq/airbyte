@@ -154,11 +154,14 @@ jobs:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v2.0
+        uses: Wandalen/wretry.action@master
         with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
-          python_version: "3.10"
-          package_directory: "airbyte-cdk/python"
+          attempt_limit: 3
+          action: JRubics/poetry-publish@v2.0
+          with: |
+            pypi_token: ${{ secrets.PYPI_TOKEN }}
+            python_version: "3.10"
+            package_directory: "airbyte-cdk/python"
       - name: Post failure to Slack channel dev-connectors-extensibility
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
@@ -299,15 +302,18 @@ jobs:
           repository: airbytehq/airbyte-platform-internal
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
-        run: |
-          PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/Dockerfile
-          sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" cloud/airbyte-connector-builder-server-wrapped/Dockerfile
-          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/requirements.in
-          echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
-          cd oss/airbyte-connector-builder-server
-          pip install pip-tools
-          pip-compile --upgrade
+        uses: Wandalen/wretry.action@master
+        with:
+          attempt_limit: 3
+          command: |
+            PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
+            sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/Dockerfile
+            sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" cloud/airbyte-connector-builder-server-wrapped/Dockerfile
+            sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-builder-server/requirements.in
+            echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
+            cd oss/airbyte-connector-builder-server
+            pip install pip-tools
+            pip-compile --upgrade
       - name: Create Pull Request
         id: create-pull-request
         uses: peter-evans/create-pull-request@v6
