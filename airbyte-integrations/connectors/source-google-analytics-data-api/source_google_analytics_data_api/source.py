@@ -103,7 +103,7 @@ class GoogleAnalyticsDataApiBackoffStrategy(BackoffStrategy):
 class GoogleAnalyticsDatApiErrorHandler(HttpStatusErrorHandler):
     @GoogleAnalyticsQuotaHandler.handle_quota()
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        if response_or_exception.status_code == requests.codes.too_many_requests:
+        if not isinstance(response_or_exception, Exception) and response_or_exception.status_code == requests.codes.too_many_requests:
             return ErrorResolution(
                 response_action=GoogleAnalyticsQuotaHandler.response_action,
                 failure_type=FailureType.transient_error,
