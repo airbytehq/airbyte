@@ -251,13 +251,17 @@ class UpdateManifestOnlyFiles(Step):
                 metadata = yaml.load(file)
                 if metadata and "data" in metadata:
                     # Update the metadata tab
-                    tags = metadata.get("data").get("tags")
+                    tags = metadata.get("data", {}).get("tags")
                     if tags:
                         # Remove any existing language tags and append the manifest-only tag
                         for tag in tags:
                             if "language:" in tag:
                                 tags.remove(tag)
                         tags.append("language:manifest-only")
+
+                    pypi_package = metadata.get("data", {}).get("remoteRegistries", {}).get("pypi")
+                    if pypi_package and pypi_package.get("enabled") == True:
+                        pypi_package["enabled"] = False
 
                     # Update the base image
                     latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
