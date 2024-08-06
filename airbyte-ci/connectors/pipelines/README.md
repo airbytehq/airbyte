@@ -773,6 +773,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.25.5  | [#42584](https://github.com/airbytehq/airbyte/pull/42584) | Mount connector directory to metadata validation                                                                                         |
 | 4.25.4  | [#42463](https://github.com/airbytehq/airbyte/pull/42463) | Add validation before live test runs                                                                                         |
 | 4.25.3  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Ugrade-cdk: Update to work with Python connectors using poetry                                                               |
 | 4.25.2  | [#42077](https://github.com/airbytehq/airbyte/pull/42077)  | Live/regression tests: add status check for regression test runs                                                             |

@@ -30,9 +30,8 @@ class MetadataValidation(SimpleDockerStep):
             title=f"Validate metadata for {context.connector.technical_name}",
             context=context,
             paths_to_mount=[
-                MountPath(context.connector.metadata_file_path),
+                MountPath(context.connector.code_directory),
                 MountPath(DOCS_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
@@ -80,9 +79,7 @@ class MetadataUpload(SimpleDockerStep):
             context=context,
             paths_to_mount=[
                 MountPath(GIT_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector.metadata_file_path),
-                MountPath(DOCS_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector.icon_path, optional=True),
+                MountPath(context.connector),
             ],
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
