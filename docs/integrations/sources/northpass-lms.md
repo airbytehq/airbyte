@@ -81,5 +81,5 @@ Link to Northpass LMS API documentation [here](https://developers.northpass.com/
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0 | 2024-08-06 | [](https://github.com/airbytehq/airbyte/pull/) | New Source: Northpass LMS|
+| 0.1.0 | 2024-08-06 | [43319](https://github.com/airbytehq/airbyte/pull/43319) | New Source: Northpass LMS|
 </details>
