@@ -1,6 +1,6 @@
 # SFTP Bulk
 
-This page contains the setup guide and reference information for the SFTP Bulk source connector. 
+This page contains the setup guide and reference information for the SFTP Bulk source connector.
 
 The SFTP Bulk connector offers several features that are not available in the standard SFTP source connector:
 
