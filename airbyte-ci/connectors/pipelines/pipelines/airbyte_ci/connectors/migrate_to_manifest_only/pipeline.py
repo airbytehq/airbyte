@@ -143,18 +143,24 @@ class StripConnector(Step):
         Grabs the relevant data from a non-inline spec, to be added to the manifest.
         """
         try:
+            if spec_file.suffix == ".json":
+            with open(spec_file, "r") as file:
             with open(spec_file, "r") as file:
                 if spec_file.suffix == ".json":
+                with open(spec_file, "r") as file:
+                if spec_file.suffix == ".json":
                     spec = json.load(file)
-                else:
-                    spec = yaml.load(file)
-                documentation_url = spec.get("documentationUrl") or spec.get("documentation_url")
-                connection_specification = spec.get("connection_specification") or spec.get("connectionSpecification")
-                return {"documentation_url": documentation_url, "connection_specification": connection_specification}
+            else:
+                spec = read_yaml(spec_file)
+
+            documentation_url = spec.get("documentationUrl") or spec.get("documentation_url")
+            connection_specification = spec.get("connection_specification") or spec.get("connectionSpecification")
+            return {"documentation_url": documentation_url, "connection_specification": connection_specification}
+        
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
 
-    def remove_parameters(self, d):
+    def remove_parameters(self, d: Any) -> Any:
         if isinstance(d, dict):
             return {k: self.remove_parameters(v) for k, v in d.items() if k != "$parameters"}
         elif isinstance(d, list):
@@ -285,7 +291,7 @@ class UpdateManifestOnlyFiles(Step):
 
                 # Update the base image
                 latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
-                connector_base_image = metadata.get("data").get("connectorBuildOptions")
+                connector_base_image = metadata.get("data", {}).get("connectorBuildOptions")
                 connector_base_image["baseImage"] = latest_base_image
 
                 # Write the changes to metadata.yaml
