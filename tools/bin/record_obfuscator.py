@@ -35,10 +35,11 @@ if __name__ == "__main__":
         try:
             data = json.loads(line)
         except Exception as exc:
-            print(f"{line}\n")
+            # We don't expect invalid json so if we see it, it will go to stderr
+            print(line, file=sys.stderr)
         else:
             if data.get("type") == "RECORD":
                 record_data = data["record"].get("data", {})
                 obfuscated_record = {k: obfuscate(v) for k, v in record_data.items()}
                 data["record"]["data"] = obfuscated_record
-            print(f"{json.dumps(data)}")
+            print(json.dumps(data))
