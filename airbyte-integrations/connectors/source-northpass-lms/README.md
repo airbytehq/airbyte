@@ -37,14 +37,6 @@ poetry run source-northpass-lms discover --config secrets/config.json
 poetry run source-northpass-lms read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-### Running tests
-
-To run tests locally, from the connector directory run:
-
-```
-poetry run pytest tests
-```
-
 ### Building the docker image
 
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
