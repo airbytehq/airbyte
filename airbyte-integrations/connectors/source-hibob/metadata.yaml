@@ -22,7 +22,7 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-hibob
   githubIssueLabel: source-hibob
-  icon: hibob.svg
+  icon: icon.svg
   license: MIT
   name: Hibob
   releaseDate: 08-06-2024

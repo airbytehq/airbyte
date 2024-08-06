@@ -3,11 +3,7 @@
 #
 
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_hibob import SourceHibob
+from source_hibob.run import run
 
 if __name__ == "__main__":
-    source = SourceHibob()
-    launch(source, sys.argv[1:])
+    run()

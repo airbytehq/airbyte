@@ -15,8 +15,8 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "source_hibob" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = ">=3.10,<3.12"
+airbyte-cdk = "^4.3.0"
 
 [tool.poetry.scripts]
 source-hibob = "source_hibob.run:run"

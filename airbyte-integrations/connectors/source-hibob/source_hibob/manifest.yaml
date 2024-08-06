@@ -10,8 +10,8 @@ definitions:
     http_method: "GET"
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"password\"] }}"
-      username: "{{ config[\"username\"] }}"
+      password: "{{ config['password'] }}"
+      username: "{{ config['username'] }}"
   
   paginator:
     type: DefaultPaginator
@@ -26,7 +26,7 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       page_size: 200
-      cursor_value: "{{ response.get(\"next_cursor\", {}) }}"
+      cursor_value: "{{ response.get('next_cursor', {}) }}"
 
   payroll_stream:
     type: DeclarativeStream

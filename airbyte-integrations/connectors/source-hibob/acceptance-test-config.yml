@@ -4,7 +4,7 @@ connector_image: airbyte/source-hibob:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_hibob/spec.yaml"
+      - spec_path: "source_hibob/manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
