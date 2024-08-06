@@ -222,7 +222,7 @@ class FullRefreshTest(TestCase):
             _reviews_request().with_any_query_params().build(),
             a_response_with_status(500),
         )
-        with patch.object(HttpStatusErrorHandler, "max_retries", new=1):
+        with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
             output = self._read(_config(), expecting_exception=True)
             assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 

@@ -25,16 +25,18 @@ DOCUMENTATION_MESSAGE = f"Please visit {DOCS_URL} to learn more. "
 
 class StripeErrorHandler(HttpStatusErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        status_code = response_or_exception.status_code
-        if status_code in (requests.codes.bad_request, requests.codes.forbidden):
+        if not isinstance(response_or_exception, Exception) and response_or_exception.status_code in (
+            requests.codes.bad_request,
+            requests.codes.forbidden,
+        ):
             parsed_error = response_or_exception.json()
             error_code = parsed_error.get("error", {}).get("code")
             error_message = STRIPE_ERROR_CODES.get(error_code, parsed_error.get("error", {}).get("message"))
             if error_message:
-                reason = f"The endpoint {response_or_exception.url} returned {status_code}: {response_or_exception.reason}. {error_message}.  {DOCUMENTATION_MESSAGE} "
+                reason = f"The endpoint {response_or_exception.url} returned {response_or_exception.status_code}: {response_or_exception.reason}. {error_message}.  {DOCUMENTATION_MESSAGE} "
                 response_error_message = HttpStream.parse_response_error_message(response_or_exception)
                 if response_error_message:
                     reason += response_error_message
 
-                return ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message=reason)
+                return ErrorResolution(response_action=ResponseAction.IGNORE, error_message=reason)
         return super().interpret_response(response_or_exception)

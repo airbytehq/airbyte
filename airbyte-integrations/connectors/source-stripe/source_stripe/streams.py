@@ -11,13 +11,15 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 
 import pendulum
 import requests
+from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.error_handlers import ParentIncrementalStripeSubStreamErrorHandler, StripeErrorHandler
-from source_stripe.error_mappings import PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING, STRIPE_ERROR_MAPPING
+from source_stripe.error_mappings import PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
@@ -93,7 +95,7 @@ class StripeStream(HttpStream, ABC):
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        return StripeErrorHandler(logger=self.logger, error_mapping=STRIPE_ERROR_MAPPING)
+        return StripeErrorHandler(logger=self.logger)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -122,6 +124,9 @@ class StripeStream(HttpStream, ABC):
         if callable(self._extra_request_params):
             return self._extra_request_params(self, *args, **kwargs)
         return self._extra_request_params or {}
+
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return ExponentialBackoffStrategy(config={}, parameters={}, factor=1)
 
     @property
     def record_extractor(self) -> IRecordExtractor:

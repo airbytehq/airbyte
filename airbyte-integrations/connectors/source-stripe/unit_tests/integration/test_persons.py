@@ -408,16 +408,21 @@ class PersonsTest(TestCase):
     def test_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _create_accounts_request().with_limit(100).build(),
-            a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
+            _create_response().with_record(record=_create_record("accounts")).build(),
         )
 
-        with patch.object(HttpStatusErrorHandler, "max_retries", new=1):
+        http_mocker.get(
+            _create_persons_request().with_limit(100).build(),
+                a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
+        )
+
+        with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
             source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
             actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
             # first error is the actual error, second is to break the Python app with code != 0
             assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
-            assert "Too many requests" in actual_messages.errors[0].trace.error.internal_message
+            assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.internal_message
 
     @HttpMocker()
     def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
@@ -432,7 +437,7 @@ class PersonsTest(TestCase):
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
-        with patch.object(HttpStatusErrorHandler, "max_retries", new=1):
+        with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
             actual_messages = read(
                 source,
                 config=_CONFIG,
@@ -494,7 +499,7 @@ class PersonsTest(TestCase):
             a_response_with_status(500)
         )
 
-        with patch.object(HttpStatusErrorHandler, "max_retries", new=1):
+        with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
             source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
             actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
