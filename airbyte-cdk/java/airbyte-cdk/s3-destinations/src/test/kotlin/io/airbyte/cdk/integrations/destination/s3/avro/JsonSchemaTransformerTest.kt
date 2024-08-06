@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.s3.avro
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaIdentityMapper
+import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaUnionMerger
 import io.airbyte.cdk.integrations.destination.s3.parquet.JsonSchemaParquetPreprocessor
 import io.airbyte.commons.jackson.MoreMappers
 import org.junit.jupiter.api.Assertions
@@ -108,5 +109,17 @@ class JsonSchemaTransformerTest {
             JsonSchemaParquetPreprocessor().mapSchema(avroTransformed as ObjectNode)
 
         Assertions.assertEquals(expectedSchema, transformedSchema)
+    }
+
+    @Test
+    fun testUnionsOfObjects() {
+        val inputSchemaStr = javaClass.getResource("/avro/object_unions_schema_in.json")?.readText()
+        val inputSchema = MoreMappers.initMapper().readTree(inputSchemaStr) as ObjectNode
+        val outputSchemaStr =
+            javaClass.getResource("/avro/object_unions_schema_out.json")?.readText()
+        val outputSchema = MoreMappers.initMapper().readTree(outputSchemaStr) as ObjectNode
+
+        val transformedSchema = JsonSchemaUnionMerger().mapSchema(inputSchema)
+        Assertions.assertEquals(outputSchema, transformedSchema)
     }
 }
