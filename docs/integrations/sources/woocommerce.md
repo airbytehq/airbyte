@@ -97,13 +97,34 @@ Useful links:
 | `object`         | `object`     |       |
 | `boolean`        | `boolean`    |       |
 
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about WooCommerce connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+The WooCommerce API allows to
+set [custom rate limits](https://developer.woocommerce.com/2022/11/22/store-api-now-supports-rate-limiting/) to protect
+your store. If you set a custom rate limit,
+specify it in seconds in the `maxSecondsBetweenMessages` field in the `metadata.yaml` file. This value should be the
+maximum number of seconds between API calls.
+</details>
+
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.3.1 | 2024-08-03 | [43054](https://github.com/airbytehq/airbyte/pull/43054) | Update dependencies |
+| 0.3.0 | 2024-07-26 | [42551](https://github.com/airbytehq/airbyte/pull/42551) | Make builder compatible |
+| 0.2.13 | 2024-07-27 | [42637](https://github.com/airbytehq/airbyte/pull/42637) | Update dependencies |
 | 0.2.12 | 2024-07-20 | [42157](https://github.com/airbytehq/airbyte/pull/42157) | Update dependencies |
 | 0.2.11 | 2024-07-13 | [41731](https://github.com/airbytehq/airbyte/pull/41731) | Update dependencies |
 | 0.2.10 | 2024-07-10 | [41581](https://github.com/airbytehq/airbyte/pull/41581) | Update dependencies |

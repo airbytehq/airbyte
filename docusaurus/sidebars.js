@@ -4,11 +4,11 @@ const {
   parseMarkdownContentTitle,
   parseFrontMatter,
 } = require("@docusaurus/utils");
-const { type } = require("os");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
 const destinationDocs = `${connectorsDocsRoot}/destinations`;
+const enterpriseConnectorDocs = `${connectorsDocsRoot}/enterprise-connectors`;
 
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
@@ -79,6 +79,14 @@ function getDestinationConnectors() {
     "s3",
     "postgres",
   ]);
+}
+
+function getEnterpriseConnectors() {
+  return getFilenamesInDir(
+    "integrations/enterprise-connectors/",
+    enterpriseConnectorDocs,
+    ["readme"]
+  );
 }
 
 const sourcePostgres = {
@@ -295,7 +303,6 @@ const buildAConnector = {
                 "connector-development/tutorials/custom-python-connector/concurrency",
               ],
             },
-            
           ],
         },
       ],
@@ -372,16 +379,14 @@ const contributeToAirbyte = {
     "contributing-to-airbyte/issues-and-requests",
     "contributing-to-airbyte/change-cdk-connector",
     "contributing-to-airbyte/submit-new-connector",
+    "contributing-to-airbyte/developing-locally",
     "contributing-to-airbyte/writing-docs",
     {
       type: "category",
       label: "Resources",
       items: [
         "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/code-formatting",
         "contributing-to-airbyte/resources/qa-checks",
-        "contributing-to-airbyte/resources/developing-locally",
-        "contributing-to-airbyte/resources/developing-on-docker",
       ],
     },
   ],
@@ -400,7 +405,7 @@ const deployAirbyte = {
       label: "Infrastructure",
       items: [
         "deploying-airbyte/infrastructure/aws",
-        // "deploying-airbyte/infrastructure/gcp",
+        "deploying-airbyte/infrastructure/gcp",
         // "deploying-airbyte/infrastructure/azure",
       ],
     },
@@ -409,6 +414,7 @@ const deployAirbyte = {
       type: "category",
       label: "Integrations",
       items: [
+        "deploying-airbyte/integrations/authentication",
         "deploying-airbyte/integrations/storage",
         "deploying-airbyte/integrations/secrets",
         "deploying-airbyte/integrations/database",
@@ -435,7 +441,7 @@ const connectionConfigurations = {
   items: [
     "using-airbyte/core-concepts/sync-schedules",
     "using-airbyte/core-concepts/namespaces",
-    { 
+    {
       type: "doc",
       id: "using-airbyte/schema-change-management",
     },
@@ -453,8 +459,8 @@ const connectionConfigurations = {
         "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
       ],
     },
-    ],
-    };
+  ],
+};
 
 const understandingAirbyte = {
   type: "category",
@@ -482,11 +488,11 @@ module.exports = {
     sectionHeader("Getting Started"),
     {
       type: "doc",
-        id: "using-airbyte/getting-started/readme",
+      id: "using-airbyte/getting-started/readme",
     },
     {
-        type: "doc",
-        id: "using-airbyte/core-concepts/readme",
+      type: "doc",
+      id: "using-airbyte/core-concepts/readme",
     },
     {
       type: "doc",
@@ -508,7 +514,7 @@ module.exports = {
     "integrations/connector-support-levels",
     sectionHeader("Using Airbyte"),
     connectionConfigurations,
-    { 
+    {
       type: "doc",
       id: "using-airbyte/core-concepts/typing-deduping",
     },
@@ -543,6 +549,17 @@ module.exports = {
         "enterprise-setup/api-access-config",
         "enterprise-setup/scaling-airbyte",
         "enterprise-setup/upgrading-from-community",
+        {
+          type: "category",
+          label: "Enterprise Connectors",
+          link: {
+            type: "doc",
+            id: "integrations/enterprise-connectors/README",
+          },
+          items: [...getEnterpriseConnectors()].sort((itemA, itemB) =>
+            itemA.label.localeCompare(itemB.label)
+          ),
+        },
       ],
     },
     "operator-guides/upgrading-airbyte",
@@ -564,7 +581,7 @@ module.exports = {
         "operator-guides/telemetry",
       ],
     },
-    
+
     {
       type: "category",
       label: "Access Management",
@@ -590,11 +607,9 @@ module.exports = {
             type: "doc",
             id: "access-management/rbac",
           },
-          items: [
-            {type: "doc", id: "access-management/role-mapping"},
-          ],
+          items: [{ type: "doc", id: "access-management/role-mapping" }],
         },
-      ]
+      ],
     },
     {
       type: "category",
@@ -673,6 +688,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/july_2024",
         "release_notes/june_2024",
         "release_notes/may_2024",
         "release_notes/april_2024",
@@ -704,7 +720,7 @@ module.exports = {
 
 // Any temporarily archived content should be added here with a comment
 // to indicate when it was archived and why.
-// You can still view docs that are not linked to in the sidebar. 
+// You can still view docs that are not linked to in the sidebar.
 
 // Java Destination template is not currently available for use
 // "connector-development/tutorials/building-a-java-destination",

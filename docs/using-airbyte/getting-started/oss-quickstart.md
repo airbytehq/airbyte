@@ -31,7 +31,13 @@ If setting up an Airbyte server does not fit your use case needs (i.e. you're us
 
 ## 1: Install `abctl`
 
-Follow the instructions for your operating system:
+The easiest method for installing `abctl` for Mac and Linux users is to use the following command:
+
+```shell
+curl -LsfS https://get.airbyte.com | bash -
+```
+
+If you would rather install `abctl` yourself, follow the instructions for your operating system:
 
 <Tabs
 defaultValue="abctl-mac">
@@ -154,26 +160,29 @@ abctl local install
 
 Your browser may open automatically to the Airbyte Application. If not, access it by visiting [http://localhost:8000](http://localhost:8000).
 
-When prompted for a username and password, enter the following default values: 
-- username: `airbyte`
-- password: `password`
+You will be asked to enter your email address and an organization name. Your email address will be used to authenticate
+to your instance of Airbyte. You will also need a password, which is randomly generated as part of the install command.
+To get your password run:
 
-To set your own username and password, use command line flags or variables. For example, to set the username and password to foo and bar respectively, you can run the following command:
-
-```bash
-abctl local install --username foo --password bar
+```shell
+abctl local credentials
 ```
 
-Or, if setting these values from environment variables, you'd export the following: 
+Which should output something similar to:
 
+```shell
+{
+  "password": "password",
+  "client-id": "client_id",
+  "client-secret": "client_secret"
+}
 ```
-export ABCTL_LOCAL_INSTALL_PASSWORD=foo
-export ABCTL_LOCAL_INSTALL_USERNAME=bar
-```
 
-After supplying a username and password, you'll see the Airbyte workspace. Using this interface, you can set up and manage all your connections and move data with ease! 
+Use the value in the password field to authenticate to your new Airbyte instance. If you wish to configure 
+authentication follow the documentation on the [Authentication Integration](../../deploying-airbyte/integrations/authentication) 
+page.
 
-As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost8000](http://localhost8000). 
+As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost:8000](http://localhost:8000). 
 
 If you quit Docker Desktop and want to return to your local Airbyte workspace, just start Docker Desktop again. Once Docker finishes restarting, you'll be able to access Airbyte's local installation as normal. 
 

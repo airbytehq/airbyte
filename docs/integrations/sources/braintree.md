@@ -72,6 +72,9 @@ The Braintree connector should not run into Braintree API limitations under norm
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 0.3.9 | 2024-08-03 | [43225](https://github.com/airbytehq/airbyte/pull/43225) | Update dependencies |
+| 0.3.8 | 2024-07-29 | [42848](https://github.com/airbytehq/airbyte/pull/42848) | Corrects pagination issues |
+| 0.3.7 | 2024-07-27 | [42796](https://github.com/airbytehq/airbyte/pull/42796) | Update dependencies |
 | 0.3.6 | 2024-07-20 | [42372](https://github.com/airbytehq/airbyte/pull/42372) | Update dependencies |
 | 0.3.5 | 2024-07-18 | [42096](https://github.com/airbytehq/airbyte/pull/42096) | Adds pagination to get more than 50 records per sync |
 | 0.3.4 | 2024-07-13 | [41340](https://github.com/airbytehq/airbyte/pull/41340) | Update dependencies |

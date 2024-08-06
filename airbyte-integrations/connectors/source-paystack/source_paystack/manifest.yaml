@@ -1344,6 +1344,10 @@ schemas:
         type:
           - "null"
           - string
+      reference:
+        type:
+          - "null"
+          - string
       recipient:
         type:
           - "null"

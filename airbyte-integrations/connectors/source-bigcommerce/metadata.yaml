@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 59c5501b-9f95-411e-9269-7143c939adbd
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.11
   dockerRepository: airbyte/source-bigcommerce
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
   githubIssueLabel: source-bigcommerce
@@ -35,6 +35,10 @@ data:
   # This connector is not enabled for OSS/Cloud
   #
   # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: bigcommerce_config_dev_null
+  #         id: 793cbddc-1b3c-4f53-ab22-c8ae9b03978b
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-BIGCOMMERCE__CREDS
