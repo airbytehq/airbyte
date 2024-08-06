@@ -1,7 +1,6 @@
 version: "0.29.0"
 
 definitions:
-
   requester:
     type: HttpRequester
     url_base: >-
@@ -12,7 +11,7 @@ definitions:
       type: BasicHttpAuthenticator
       password: "{{ config['password'] }}"
       username: "{{ config['username'] }}"
-  
+
   paginator:
     type: DefaultPaginator
     page_token_option:
@@ -50,7 +49,7 @@ definitions:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/payroll"
-  
+
   profiles_stream:
     type: DeclarativeStream
     name: "profiles"
@@ -1186,4 +1185,3 @@ schemas:
           - string
           - "null"
     additionalProperties: true
-
