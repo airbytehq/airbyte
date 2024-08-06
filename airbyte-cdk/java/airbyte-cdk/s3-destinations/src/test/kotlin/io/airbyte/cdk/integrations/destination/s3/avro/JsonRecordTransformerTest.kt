@@ -138,6 +138,14 @@ class JsonRecordTransformerTest {
         objNode.put("type", "string")
         objNode.replace("string", strNode)
 
+        val arrayNode =
+            (jsonExpectedOut[1] as ObjectNode)["union_of_schemaless_object_and_array"] as ObjectNode
+        val oldArray = arrayNode.remove("array")
+        val newArray = MoreMappers.initMapper().writeValueAsString(oldArray)
+        val arrayStrNode = JsonNodeFactory.instance.textNode(newArray)
+        arrayNode.put("type", "string")
+        arrayNode.replace("string", arrayStrNode)
+
         val avroRecordTransformer = JsonRecordAvroPreprocessor()
         val avroSchemaOut = JsonSchemaAvroPreprocessor().mapSchema(jsonSchema as ObjectNode)
         val parquetRecordTransformer =

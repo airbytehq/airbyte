@@ -15,6 +15,7 @@ import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonRecordAvroPreprocessor
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaAvroPreprocessor
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonToAvroSchemaConverter
+import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaUnionMerger
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -80,17 +81,17 @@ class ParquetSerializedBuffer(
         // Build a pipeline of initial -> avro ready -> parquet ready
         val (finalJsonSchema, jsonRecordPreprocessor) =
             if (useV2FeatureSet) {
-                val avroJsonSchema =
-                    JsonSchemaAvroPreprocessor().mapSchema(initialSchema as ObjectNode)
+                val mergedSchema = JsonSchemaUnionMerger().mapSchema(initialSchema as ObjectNode)
+                val avroJsonSchema = JsonSchemaAvroPreprocessor().mapSchema(mergedSchema)
                 val finalJsonSchema = JsonSchemaParquetPreprocessor().mapSchema(avroJsonSchema)
                 val preprocessor = { record: JsonNode ->
                     val avroJsonRecord =
-                        JsonRecordAvroPreprocessor().mapRecordWithSchema(record, initialSchema)
+                        JsonRecordAvroPreprocessor().mapRecordWithSchema(record, mergedSchema)
                     JsonRecordParquetPreprocessor()
                         .mapRecordWithSchema(avroJsonRecord, avroJsonSchema)
                 }
                 Pair(finalJsonSchema, preprocessor)
-            } else Pair(initialSchema, null)
+            } else Pair(initialSchema as ObjectNode) { record -> record }
 
         // Build the actual avro schema from the preprocessed json schema
         val schema: Schema =

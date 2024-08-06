@@ -362,7 +362,7 @@ class BufferedStreamConsumerTest {
         // The first two records that we push will not trigger any flushes, but the third record
         // _will_
         // trigger a flush
-        Mockito.`when`(strategy.addRecord(any(), any(), eq(0)))
+        Mockito.`when`(strategy.addRecord(any(), any(), eq(0), eq(0)))
             .thenReturn(
                 Optional.empty(),
                 Optional.empty(),
@@ -464,7 +464,7 @@ class BufferedStreamConsumerTest {
         // The first two records that we push will not trigger any flushes, but the third record
         // _will_
         // trigger a flush
-        Mockito.`when`(strategy.addRecord(any(), any(), eq(0)))
+        Mockito.`when`(strategy.addRecord(any(), any(), eq(0), eq(0)))
             .thenReturn(
                 Optional.empty(),
                 Optional.empty(),

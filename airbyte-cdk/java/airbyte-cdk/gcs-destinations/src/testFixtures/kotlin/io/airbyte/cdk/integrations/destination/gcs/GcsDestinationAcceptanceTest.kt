@@ -45,10 +45,7 @@ private val LOGGER = KotlinLogging.logger {}
  * * Get the format config from [.getFormatConfig]
  */
 abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUploadFormat) :
-    DestinationAcceptanceTest(
-        expectSchemalessObjectsCoercedToStrings = expectSchemalessObjectsCoercedToStrings,
-        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
-    ) {
+    DestinationAcceptanceTest() {
     protected var configJson: JsonNode? = null
     // Not a big fan of those mocks(). Here to make spotbugs happy
     protected var config: GcsDestinationConfig = mock()

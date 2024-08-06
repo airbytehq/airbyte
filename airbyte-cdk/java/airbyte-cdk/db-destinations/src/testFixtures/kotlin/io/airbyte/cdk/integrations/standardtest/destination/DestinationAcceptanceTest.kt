@@ -4,7 +4,6 @@
 package io.airbyte.cdk.integrations.standardtest.destination
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
@@ -1819,125 +1818,52 @@ abstract class DestinationAcceptanceTest(
             expectSchemalessObjectsCoercedToStrings || expectUnionsPromotedToDisjointRecords
         )
 
+        // Run the sync
         val configuredCatalog =
             Jsons.deserialize(
                 MoreResources.readResource("v0/problematic_types_configured_catalog.json"),
                 ConfiguredAirbyteCatalog::class.java
             )
         val config = getConfig()
-        val messages =
-            MoreResources.readResource("v0/problematic_fields_messages.txt").trim().lines().map {
+        val messagesIn =
+            MoreResources.readResource("v0/problematic_types_messages_in.txt").trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
-        for (stream in configuredCatalog.streams) {
-            val schema = stream.stream.jsonSchema
-            val actual =
-                retrieveRecordsDataOnly(
-                    testEnv,
-                    stream.stream.name,
-                    getDefaultSchema(config)!! /* ignored */,
-                    schema
-                )
-            val expected = messages.filter { it.type == Type.RECORD }.map { it.record.data }
-            expected.forEach { data ->
-                if (expectSchemalessObjectsCoercedToStrings) {
-                    val obj = (data as ObjectNode)["schemaless_object"]
-                    if (!(obj == null || obj.isNull)) {
-                        data.replace(
-                            "schemaless_object",
-                            JsonNodeFactory.instance.textNode(Jsons.serialize(obj))
-                        )
-                    }
+        runSyncAndVerifyStateOutput(config, messagesIn, configuredCatalog, false)
 
-                    val arrayObj = data["schemaless_array"]
-                    if (!(arrayObj == null || arrayObj.isNull)) {
-                        data.replace(
-                            "schemaless_array",
-                            JsonNodeFactory.instance.textNode(Jsons.serialize(arrayObj))
-                        )
-                    } else {
-                        data.replace("schemaless_array", JsonNodeFactory.instance.nullNode())
-                    }
-
-                    val mixedArrayObj = data["mixed_array_integer_and_schemaless_object"]
-                    val newMixedArrayObj = MoreMappers.initMapper().createArrayNode()
-                    if (!(mixedArrayObj == null || mixedArrayObj.isNull)) {
-                        mixedArrayObj.forEach { item ->
-                            if (item == null || item.isNull) {
-                                newMixedArrayObj.add(JsonNodeFactory.instance.nullNode())
-                            } else if (item.isIntegralNumber) {
-                                newMixedArrayObj.add(item)
-                            } else /* is schemaless object */ {
-                                newMixedArrayObj.add(
-                                    JsonNodeFactory.instance.textNode(Jsons.serialize(item))
-                                )
-                            }
-                        }
-                        data.replace("mixed_array_integer_and_schemaless_object", newMixedArrayObj)
-                    } else {
-                        data.replace(
-                            "mixed_array_integer_and_schemaless_object",
-                            JsonNodeFactory.instance.nullNode()
-                        )
-                    }
-
-                    val unionArrayObj = data["array_of_union_integer_and_schemaless_array"]
-                    val newUnionArrayObj = MoreMappers.initMapper().createArrayNode()
-                    if (!(unionArrayObj == null || unionArrayObj.isNull)) {
-                        unionArrayObj.forEach { item ->
-                            if (item == null || item.isNull) {
-                                newUnionArrayObj.add(JsonNodeFactory.instance.nullNode())
-                            } else if (item.isIntegralNumber) {
-                                newUnionArrayObj.add(item)
-                            } else /* is schemaless array */ {
-                                newUnionArrayObj.add(
-                                    JsonNodeFactory.instance.textNode(Jsons.serialize(item))
-                                )
-                            }
-                        }
-                        data.replace(
-                            "array_of_union_integer_and_schemaless_array",
-                            newUnionArrayObj
-                        )
-                    } else {
-                        data.replace(
-                            "array_of_union_integer_and_schemaless_array",
-                            JsonNodeFactory.instance.nullNode()
-                        )
-                    }
-                }
-                if (expectUnionsPromotedToDisjointRecords) {
-                    listOf("combined_type", "union_type").forEach { key ->
-                        val disjointRecord = MoreMappers.initMapper().createObjectNode()
-                        val unionValue = data[key]
-                        if (!(unionValue == null || unionValue.isNull)) {
-                            if (unionValue.isTextual) {
-                                disjointRecord.put("type", "string")
-                                disjointRecord.put("string", unionValue.asText())
-                                disjointRecord.replace(
-                                    "integer",
-                                    JsonNodeFactory.instance.nullNode()
-                                )
-                            } else if (unionValue.isIntegralNumber) {
-                                disjointRecord.put("type", "integer")
-                                disjointRecord.put("integer", unionValue.asInt())
-                                disjointRecord.replace(
-                                    "string",
-                                    JsonNodeFactory.instance.nullNode()
-                                )
-                            } else {
-                                throw IllegalArgumentException(
-                                    "Unexpected union value in test data: $unionValue"
-                                )
-                            }
-                            (data as ObjectNode).replace(key, disjointRecord)
-                        }
-                    }
-                }
+        // Collect destination data, using the correct transformed schema
+        val destinationSchemaStr =
+            if (!expectUnionsPromotedToDisjointRecords) {
+                MoreResources.readResource("v0/problematic_types_coerced_schemaless_schema.json")
+            } else {
+                MoreResources.readResource("v0/problematic_types_disjoint_union_schema.json")
             }
-            Assertions.assertEquals(expected, actual)
+        val destinationSchema = Jsons.deserialize(destinationSchemaStr, JsonNode::class.java)
+        val actual =
+            retrieveRecordsDataOnly(
+                testEnv,
+                "problematic_types",
+                getDefaultSchema(config)!!,
+                destinationSchema
+            )
+
+        // Validate data
+        val expectedMessages =
+            if (!expectUnionsPromotedToDisjointRecords) {
+                    MoreResources.readResource(
+                        "v0/problematic_types_coerced_schemaless_messages_out.txt"
+                    )
+                } else { // expectSchemalessObjectsCoercedToStrings
+                    MoreResources.readResource(
+                        "v0/problematic_types_disjoint_union_messages_out.txt"
+                    )
+                }
+                .trim()
+                .lines()
+                .map { Jsons.deserialize(it, JsonNode::class.java) }
+        actual.forEachIndexed { i, record: JsonNode ->
+            Assertions.assertEquals(expectedMessages[i], record, "Record $i")
         }
     }
 
