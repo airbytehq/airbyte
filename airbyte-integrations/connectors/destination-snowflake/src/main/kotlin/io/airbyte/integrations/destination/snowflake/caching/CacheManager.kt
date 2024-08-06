@@ -9,16 +9,19 @@ import org.slf4j.LoggerFactory
 
 object CacheManager {
 
-    private val cache = ConcurrentHashMap<String, CacheEntry>()
+    private const val ENABLE_METADATA_CACHE = false
+
     private const val CACHE_DURATION_MILLIS = 60 * 60 * 1000 // 1 hour
-    private const val ENABLE_METADATA_CACHE = true
+
+    private val cache = ConcurrentHashMap<String, CacheEntry>()
 
     private var numberOfMetadataQueriesSentToDatabase = 0;
     private var numberOfMetadataQueriesServedFromCache = 0;
 
     fun queryJsons(database: JdbcDatabase,
                    query: String,
-                   parameters: Array<String>): List<JsonNode> {
+                   //parameters: Array<String>): List<JsonNode> {
+                   vararg parameters: String):  List<JsonNode> {
 
         LOGGER.info("Entering CacheManager.queryJsons with: "
             + "\n ENABLE_METADATA_CACHE=" + ENABLE_METADATA_CACHE
@@ -86,7 +89,7 @@ object CacheManager {
         return resultSet
     }
 
-    fun getFromCache(query: String): List<JsonNode>? {
+    private fun getFromCache(query: String): List<JsonNode>? {
         val currentTime = System.currentTimeMillis()
         val cacheEntry = cache[query]
 
@@ -99,7 +102,7 @@ object CacheManager {
         return null
     }
 
-    fun putInCache(query: String, resultSet: List<JsonNode>) {
+    private fun putInCache(query: String, resultSet: List<JsonNode>) {
         cache[query] = CacheEntry(resultSet, System.currentTimeMillis())
     }
 

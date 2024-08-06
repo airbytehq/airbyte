@@ -74,16 +74,24 @@ class SnowflakeDestinationHandler(
             |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
             |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
             |""".trimMargin()
-        val bindValues = arrayOf(databaseName) + namespaces + names
 
-        //val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+        //Dedupe the lists to make the snowflake IN clause more efficient
+        val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
+        val deduplicatedNames = names.toSet().toTypedArray()
 
-        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
-            + "\n bindValues=" + bindValues)
+        val bindValues = arrayOf(databaseName) + deduplicatedNamespaces + deduplicatedNames
 
-        val results: List<JsonNode> = CacheManager.queryJsons(database, query, bindValues)
+        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
 
-            for (result in results) {
+//        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
+//            + "\n bindValues=" + bindValues)
+//
+//        //val results: List<JsonNode> = CacheManager.queryJsons(database, query, databaseName, namespaces, names)
+//
+//        val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
+
+
+        for (result in results) {
             val tableSchema = result["TABLE_SCHEMA"].asText()
             val tableName = result["TABLE_NAME"].asText()
             val rowCount = result["ROW_COUNT"].asInt()
@@ -509,7 +517,7 @@ class SnowflakeDestinationHandler(
         //return database.queryJsons(sql)
 
         LOGGER.info("Inside query method: Calling CacheManager.queryJsons for sql=" + sql)
-        return CacheManager.queryJsons(database, sql, arrayOf())
+        return CacheManager.queryJsons(database, sql, "")
     }
 
     companion object {
@@ -543,15 +551,21 @@ class SnowflakeDestinationHandler(
                 |ORDER BY table_schema, table_name, ordinal_position; 
                 |""".trimMargin()
 
-            val bindValues =
-                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
+            //Dedupe the lists to make the snowflake IN clause more efficient
+            val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
+            val deduplicatedNames = names.toSet().toTypedArray()
 
-           // val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+            val bindValues = arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
 
-            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
-                + "\n bindValues=" + bindValues)
+//            val bindValues =
+//                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
 
-            val results: List<JsonNode> = CacheManager.queryJsons(database, query, bindValues)
+           val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+//            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
+//                + "\n bindValues=" + bindValues)
+//
+//            val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
 
             for (result in results) {
                 val tableSchema = result["TABLE_SCHEMA"].asText()
