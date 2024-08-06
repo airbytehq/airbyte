@@ -1287,8 +1287,11 @@ class TestBasicRead(BaseTest):
         assert set(f"{x.stream.namespace}-{x.stream.name}" for x in configured_catalog.streams) == set(
             stream_statuses
         ), "All stream must emit status"
-
+        print("======debugging tests messages===========")
+        print(f"all statuses: {stream_statuses}")
         for stream_name, status_list in stream_statuses.items():
+            print(f"stream-name: {stream_name}")
+            print(f"status_list: {status_list}")
             assert len(status_list) >= 2, f"Stream `{stream_name}` should contain at least : `STARTED` and `COMPLETE`"
             assert status_list[0] == AirbyteStreamStatus.STARTED
             assert status_list[-1] == AirbyteStreamStatus.COMPLETE
