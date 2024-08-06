@@ -15,6 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.core import StreamData
 
 
 # Basic full refresh stream
@@ -98,14 +99,6 @@ class MgramsevaStream(HttpStream, ABC):
         """
         return map(lambda x: {"data": x, "id": x["id"]}, response.json()[self.response_key])
 
-    # def base_schema(self) -> dict:
-    #     """Base schema for all streams"""
-    #     return {
-    #         "$schema": "http://json-schema.org/draft-07/schema#",
-    #         "type": "object",
-    #         "properties": {"id": {"type": "string"}, "data": {"type": "object"}},
-    #     }
-
 
 class MgramsevaDemands(MgramsevaStream):
     """object for consumer demands"""
@@ -124,27 +117,32 @@ class MgramsevaDemands(MgramsevaStream):
 class MgramsevaBills(MgramsevaStream):
     """object for consumer bills"""
 
-    @property
-    def name(self) -> str:
-        return f"Bill_{self.consumer_code.replace('/', '_')}"
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """override"""
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {"id": {"type": "string"}, "data": {"type": "object"}},
-        }
-
-    def __init__(self, headers: dict, request_info: dict, user_request: dict, consumer_code: str, **kwargs):
+    def __init__(self, headers: dict, request_info: dict, user_request: dict, consumer_codes: list, **kwargs):
         """specify endpoint for bills and call super"""
-        self.consumer_code = consumer_code
-        params = {
+        self.headers = headers
+        self.request_info = request_info
+        self.user_request = user_request
+        self.consumer_codes = consumer_codes
+        self.params = {
             "tenantId": "br.testing",
-            "consumerCode": consumer_code,
             "businessService": "WS",
         }
-        super().__init__("billing-service/bill/v2/_fetchbill", headers, request_info, user_request, params, "Bill", **kwargs)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        """override"""
+        for consumer_code in self.consumer_codes:
+            params = self.params.copy()
+            params["consumerCode"] = consumer_code
+            consumer_code_stream = MgramsevaStream(
+                "billing-service/bill/v2/_fetchbill", self.headers, self.request_info, self.user_request, params, "Bill"
+            )
+            yield from consumer_code_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
 class MgramsevaTenantExpenses(MgramsevaStream):
@@ -276,8 +274,8 @@ class SourceMgramseva(AbstractSource):
         # and now we need bills for each consumer
         consumer_codes = set()
         for demand in demand_stream.read_records(SyncMode.full_refresh):
-            if demand["data"]["consumerCode"] not in consumer_codes:
-                consumer_codes.add(demand["data"]["consumerCode"])
-                streams.append(MgramsevaBills(self.headers, self.request_info, self.user_request, demand["data"]["consumerCode"]))
+            consumer_codes.add(demand["data"]["consumerCode"])
+
+        streams.append(MgramsevaBills(self.headers, self.request_info, self.user_request, list(consumer_codes)))
 
         return streams
