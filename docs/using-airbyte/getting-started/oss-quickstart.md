@@ -21,6 +21,8 @@ If you've already set up an Airbyte instance using Docker Compose and want to mo
 **When you're ready to put an Airbyte instance into production, you'll want to review our guides on deployment.**
 
 For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/deploying-airbyte.md). 
+
+On a local deployment, Airbyte's default behavior is to store connector secrets in your configured database. These secrets are stored in plain text and are not encrypted. Refer to the [Secret Management documentation](../../deploying-airbyte/integrations/secrets.md) to set up an external secrets manager.
 :::
 
 If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../pyairbyte/getting-started.mdx) documentation useful.
@@ -31,7 +33,13 @@ If setting up an Airbyte server does not fit your use case needs (i.e. you're us
 
 ## 1: Install `abctl`
 
-Follow the instructions for your operating system:
+The easiest method for installing `abctl` for Mac and Linux users is to use the following command:
+
+```shell
+curl -LsfS https://get.airbyte.com | bash -
+```
+
+If you would rather install `abctl` yourself, follow the instructions for your operating system:
 
 <Tabs
 defaultValue="abctl-mac">
@@ -154,24 +162,27 @@ abctl local install
 
 Your browser may open automatically to the Airbyte Application. If not, access it by visiting [http://localhost:8000](http://localhost:8000).
 
-When prompted for a username and password, enter the following default values: 
-- username: `airbyte`
-- password: `password`
+You will be asked to enter your email address and an organization name. Your email address will be used to authenticate
+to your instance of Airbyte. You will also need a password, which is randomly generated as part of the install command.
+To get your password run:
 
-To set your own username and password, use command line flags or variables. For example, to set the username and password to foo and bar respectively, you can run the following command:
-
-```bash
-abctl local install --username foo --password bar
+```shell
+abctl local credentials
 ```
 
-Or, if setting these values from environment variables, you'd export the following: 
+Which should output something similar to:
 
-```
-export ABCTL_LOCAL_INSTALL_PASSWORD=foo
-export ABCTL_LOCAL_INSTALL_USERNAME=bar
+```shell
+{
+  "password": "password",
+  "client-id": "client_id",
+  "client-secret": "client_secret"
+}
 ```
 
-After supplying a username and password, you'll see the Airbyte workspace. Using this interface, you can set up and manage all your connections and move data with ease! 
+Use the value in the password field to authenticate to your new Airbyte instance. If you wish to configure 
+authentication follow the documentation on the [Authentication Integration](../../deploying-airbyte/integrations/authentication) 
+page.
 
 As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost:8000](http://localhost:8000). 
 

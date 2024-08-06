@@ -1,19 +1,20 @@
 data:
   ab_internal:
-    ql: 300
-    sl: 100
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - ${domain}
   connectorSubtype: api
   connectorType: source
   definitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-woocommerce
   documentationUrl: https://docs.airbyte.com/integrations/sources/woocommerce
   githubIssueLabel: source-woocommerce
   icon: woocommerce.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: WooCommerce
   remoteRegistries:
     pypi:
@@ -24,12 +25,16 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   tags:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: woocommerce_config_dev_null
+          id: 26705957-7051-4c95-bd93-0c031fde9b67
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-WOOCOMMERCE__CREDS
