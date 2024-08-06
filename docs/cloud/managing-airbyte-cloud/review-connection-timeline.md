@@ -12,7 +12,7 @@ The Connection Timeline displays information about several types of relevant con
 - Schema changes
 - Connection configuration changes
 
-![Job History](./assets/cloud-timeline-page.png)
+![Timeline](./assets/cloud-timeline-page.png)
 
 To review the Connection Timeline, click a connection in the list and navigate to the "Timeline" tab to view its event history. The page displays recent events and their statuses. 
 
