@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.3.2
+Ensure at least one element returned by decoder
+
 ## 4.3.1
 resumable full refresh: fix issue when live traffic regression tests pass state to connector
 
