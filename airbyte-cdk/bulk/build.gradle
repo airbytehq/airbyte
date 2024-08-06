@@ -1,0 +1,25 @@
+subprojects {
+    dependencies {
+        implementation platform('org.jetbrains.kotlin:kotlin-bom:2.0.0')
+        implementation platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
+        implementation platform('com.fasterxml.jackson:jackson-bom:2.16.1')
+        implementation platform('io.micronaut:micronaut-core-bom:4.3.13')
+        implementation platform('org.junit:junit-bom:5.10.2')
+        implementation platform('org.slf4j:slf4j-bom:2.0.13')
+        implementation platform('org.apache.logging.log4j:log4j-bom:2.21.1')
+        implementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+
+        implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+        implementation 'com.google.dagger:dagger-compiler:2.51.1'
+        ksp 'com.google.dagger:dagger-compiler:2.51.1'
+
+        annotationProcessor platform('io.micronaut:micronaut-core-bom:4.3.13')
+        annotationProcessor 'info.picocli:picocli-codegen:4.7.5'
+        annotationProcessor 'io.micronaut:micronaut-inject-kotlin'
+
+        ksp platform('io.micronaut:micronaut-core-bom:4.3.13')
+        ksp 'io.micronaut:micronaut-inject-kotlin'
+        kspTest platform('io.micronaut:micronaut-core-bom:4.3.13')
+        kspTest 'io.micronaut:micronaut-inject-kotlin'
+    }
+}
