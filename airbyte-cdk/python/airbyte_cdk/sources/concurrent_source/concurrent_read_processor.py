@@ -74,6 +74,7 @@ class ConcurrentReadProcessor:
         # It is possible for the stream to already be done if no partitions were generated
         # If the partition generation process was completed and there are no partitions left to process, the stream is done
         if self._is_stream_done(stream_name) or len(self._streams_to_running_partitions[stream_name]) == 0:
+            self._logger.info(f"debugging concurrent: {stream_name} - on_partition_generation_completed _is_stream_done ")
             yield from self._on_stream_is_done(stream_name)
         if self._stream_instances_to_start_partition_generation:
             yield self.start_next_partition_generator()
@@ -114,6 +115,7 @@ class ConcurrentReadProcessor:
                 partitions_running.remove(partition)
                 # If all partitions were generated and this was the last one, the stream is done
                 if partition.stream_name() not in self._streams_currently_generating_partitions and len(partitions_running) == 0:
+                    self._logger.info(f"debugging concurrent: {partition.stream_name()} - on_partition_complete_sentinel not partitions_running ")
                     yield from self._on_stream_is_done(partition.stream_name())
             yield from self._message_repository.consume_queue()
 
