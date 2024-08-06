@@ -18,7 +18,7 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
 
     api_key = None
     
-    env = "prod"
+    env = "staging"
     if (env == "poc"):
         api_host = "https://functions.prod.internal.glideapps.com"
         api_path_root = "api"
@@ -37,7 +37,7 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         if self.api_key is None:
             raise Exception("GLIDE_API_KEY environment variable is not set.")
 
-    # The protocol is to call `init`, `set_schema`, `add_rows` one or more times, and `commit` in that order.
+    # The protocol is to call `init`, `add_row` or `add_rows` one or more times, and `commit` in that order.
     
     def test_new_table(self):
         
@@ -45,14 +45,11 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         gbt = GlideBigTableFactory().create()
 
         table_name = f"test-table-{str(uuid.uuid4())}"
-        gbt.init(self.api_key, table_name, self.api_host, self.api_path_root)
-        
-        # set_schema
         test_columns = [
             Column("test-str", "string"),
             Column("test-num", "number")
         ]
-        gbt.set_schema(test_columns)
+        gbt.init(self.api_key, table_name, test_columns, self.api_host, self.api_path_root)
     
         # add_rows
         for batch in range(3):
@@ -82,15 +79,12 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
         # init
         
         table_name = f"test-table-{str(uuid.uuid4())}"
-        gbt = GlideBigTableFactory().create()
-        gbt.init(self.api_key, table_name, self.api_host, self.api_path_root)
-        
-        # set_schema
         test_columns = [
             Column("test-str", "string"),
             Column("test-num", "number")
         ]
-        gbt.set_schema(test_columns)
+        gbt = GlideBigTableFactory().create()
+        gbt.init(self.api_key, table_name, test_columns, self.api_host, self.api_path_root)
     
         # add_rows
         test_rows = [
@@ -108,8 +102,7 @@ class TestGlideBigTableRestStrategy(unittest.TestCase):
 
         # now do the update the second table now:
         gbt = GlideBigTableFactory().create()
-        gbt.init(self.api_key, table_name, self.api_host, self.api_path_root)
-        gbt.set_schema(test_columns)
+        gbt.init(self.api_key, table_name, test_columns, self.api_host, self.api_path_root)
 
         now = datetime.now()
         test_rows = [

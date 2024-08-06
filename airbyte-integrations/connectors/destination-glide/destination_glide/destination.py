@@ -79,10 +79,10 @@ class DestinationGlide(Destination):
         # configure the table based on the stream catalog:
         # choose a strategy based on config:
 
-        def create_table_client_for_stream(stream_name):
+        def create_table_client_for_stream(stream_name, columns):
             # TODO: sanitize stream_name chars and length for GBT name
             glide = GlideBigTableFactory.create()
-            glide.init(api_key, stream_name, api_host, api_path_root)
+            glide.init(api_key, stream_name, columns, api_host, api_path_root)
             return glide
 
         table_clients = {}
@@ -91,8 +91,6 @@ class DestinationGlide(Destination):
             if configured_stream.destination_sync_mode != DestinationSyncMode.overwrite:
                 raise Exception(f'Only destination sync mode overwrite is supported, but received "{configured_stream.destination_sync_mode}".')  # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
-            glide = create_table_client_for_stream(
-                configured_stream.stream.name)
             # upsert the GBT with schema to set_schema for dumping the data into it
             columns = []
             properties = configured_stream.stream.json_schema["properties"]
@@ -103,11 +101,10 @@ class DestinationGlide(Destination):
                     Column(prop_name, airbyteTypeToGlideType(prop_type))
                 )
 
-            glide.set_schema(columns)
+            glide = create_table_client_for_stream(configured_stream.stream.name, columns)
             table_clients[configured_stream.stream.name] = glide
 
         # stream the records into the GBT:
-        buffers = defaultdict(list)
         logger.debug("Processing messages...")
         for message in input_messages:
             logger.debug(f"processing message {message.type}...")
@@ -120,36 +117,16 @@ class DestinationGlide(Destination):
                     continue
 
                 # add to buffer
-                record_data = message.record.data
-                record_id = str(uuid.uuid4())
-                stream_buffer = buffers[stream_name]
-                stream_buffer.append(
-                    (record_id, datetime.datetime.now().isoformat(), record_data))
+                client = table_clients[stream_name]
+                client.add_row(message.record.data)
                 logger.debug("buffering record complete.")
 
             elif message.type == Type.STATE:
                 # `Type.State` is a signal from the source that we should save the previous batch of `Type.RECORD` messages to the destination.
                 #   It is a checkpoint that enables partial success.
                 #   See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#state--checkpointing
-                logger.info(f"Writing buffered records to Glide API from {len(buffers.keys())} streams...")  # nopep8
-                for stream_name in buffers.keys():
-                    stream_buffer = buffers[stream_name]
-                    logger.info(f"Saving buffered records to Glide API (stream: '{stream_name}', record count: '{len(stream_buffer)}')...")  # nopep8
-                    DATA_INDEX = 2
-                    data_rows = [row_tuple[DATA_INDEX]
-                                 for row_tuple in stream_buffer]
-                    if len(data_rows) > 0:
-                        if stream_name not in table_clients:
-                            raise Exception(
-                                f"Stream '{stream_name}' not found in table_clients")
-                        glide = table_clients[stream_name]
-                        glide.add_rows(data_rows)
-                    stream_buffer.clear()
-                    logger.info(f"Saving buffered records to Glide API complete.")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
-
-                # dump all buffers now as we just wrote them to the table:
-                buffers = defaultdict(list)
-                yield message
+                # FIXME: I don't think partial success applies to us since we only support overwrite mode anyway?
+                logger.info(f"Ignoring state message: {message.state}")
             else:
                 logger.warn(f"Ignoring unknown Airbyte input message type: {message.type}")  # nopep8 because https://github.com/hhatto/autopep8/issues/712
 
@@ -158,7 +135,8 @@ class DestinationGlide(Destination):
             glide.commit()
             logger.info(f"Committed stream '{stream_name}' to Glide.")
 
-        pass
+        # see https://stackoverflow.com/a/36863998
+        yield from ()
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """

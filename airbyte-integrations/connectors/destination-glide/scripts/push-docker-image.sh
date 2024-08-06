@@ -16,7 +16,7 @@ docker inspect --format='Pushing the local image "{{index .RepoTags 0}}" created
 tags=$(gcloud artifacts docker tags list $GLIDE_DOCKER_IMAGE_NAME --format="get(tag)")
 
 # Sort the tags and get the highest one
-highest_tag=$(echo "$tags" | awk -F'/' '{print $NF}' | sort -V | tail -n 1)
+highest_tag=$(echo "$tags" | awk -F'/' '{print $NF}' | sed 's/latest//g' | sort -V | tail -n 1)
 
 echo "found highest tag on remote: $highest_tag"
 
