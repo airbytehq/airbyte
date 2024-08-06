@@ -318,7 +318,7 @@ streams:
           type: NoAuth
         request_body_json:
           secret: "{{config['api_key']}}"
-          cursor: "{{ next_page_token['next_page_token'] }}"
+          cursor: null
           count: 500
           options:
             include_original_description: true
