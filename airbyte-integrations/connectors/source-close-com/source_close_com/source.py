@@ -235,6 +235,23 @@ class TaskCompletedActivities(CloseComActivitiesStream):
     _type = "task_completed"
 
 
+class CustomActivitiesInstances(CloseComActivitiesStream, IncrementalCloseComStreamCustomFields):
+    """
+    Get custom activities instances on a specific date
+    API Docs: https://developer.close.com/resources/custom-activities/custom-activity-instances/
+    """
+
+    _type = "custom"
+
+    def get_custom_field_schema(self) -> Mapping[str, Any]:
+        resp = requests.request(
+            "GET", url=f"{self.url_base}/custom_field/activity/", headers=self.config["authenticator"].get_auth_header()
+        )
+        resp.raise_for_status()
+        resp_json: Mapping[str, Any] = resp.json()["data"]
+        return {f"custom.{data['id']}": {"type": ["null", "string", "number", "boolean", "array"]} for data in resp_json}
+
+
 class Events(IncrementalCloseComStream):
     """
     Get events on a specific date
@@ -713,6 +730,7 @@ class SourceCloseCom(AbstractSource):
             LeadStatusChangeActivities(**args),
             SmsActivities(**args),
             TaskCompletedActivities(**args),
+            CustomActivitiesInstances(**args),
             Leads(**args),
             LeadTasks(**args),
             IncomingEmailTasks(**args),

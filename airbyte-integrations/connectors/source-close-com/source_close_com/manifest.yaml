@@ -236,6 +236,12 @@ definitions:
       $ref: "#/definitions/activities_base_stream/$parameters"
       name: "task_completed_activities"
       path: "activity/task_completed"
+  custom_activities_instances_stream:
+    $ref: "#/definitions/activities_base_stream"
+    $parameters:
+      $ref: "#/definitions/activities_base_stream/$parameters"
+      name: "custom_activities_instances"
+      path: "activity/custom"
 
   lead_custom_fields_stream:
     $ref: "#/definitions/full_refresh_stream"
@@ -471,6 +477,7 @@ streams:
   - "#/definitions/lead_status_change_activities_stream"
   - "#/definitions/opportunity_status_change_activities_stream"
   - "#/definitions/task_completed_activities_stream"
+  - "#/definitions/custom_activities_instances_stream"
   - "#/definitions/lead_custom_fields_stream"
   - "#/definitions/contact_custom_fields_stream"
   - "#/definitions/opportunity_custom_fields_stream"
