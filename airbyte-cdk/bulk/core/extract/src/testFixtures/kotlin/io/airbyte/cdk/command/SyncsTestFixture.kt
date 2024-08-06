@@ -102,7 +102,7 @@ data object SyncsTestFixture {
         for (step in afterRead) {
             val readOutput: BufferingOutputConsumer =
                 CliRunner.runSource("read", configPojo, configuredCatalog, state)
-            step.assert(readOutput)
+            step.validate(readOutput)
             connectionSupplier.get().use(step::update)
             state = readOutput.states()
         }
@@ -139,7 +139,7 @@ data object SyncsTestFixture {
         for (step in afterRead) {
             val readOutput: BufferingOutputConsumer =
                 CliRunner.runSource("read", configPojo, configuredCatalog, state)
-            step.assert(readOutput)
+            step.validate(readOutput)
             connectionSupplier.get().use(step::update)
             state = readOutput.states()
         }
@@ -170,7 +170,7 @@ data object SyncsTestFixture {
         )
 
     interface AfterRead {
-        fun assert(actualOutput: BufferingOutputConsumer)
+        fun validate(actualOutput: BufferingOutputConsumer)
 
         fun update(connection: Connection)
 
@@ -180,7 +180,7 @@ data object SyncsTestFixture {
                 update: (Connection) -> Unit = {},
             ): AfterRead =
                 object : AfterRead {
-                    override fun assert(actualOutput: BufferingOutputConsumer) {
+                    override fun validate(actualOutput: BufferingOutputConsumer) {
                         // State messages are timing-sensitive and therefore non-deterministic.
                         // Ignore them.
                         val expectedWithoutStates: List<AirbyteMessage> =

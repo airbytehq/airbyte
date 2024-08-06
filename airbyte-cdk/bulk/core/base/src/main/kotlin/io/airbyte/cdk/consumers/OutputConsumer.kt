@@ -142,7 +142,7 @@ private class StdoutOutputConsumer : OutputConsumer {
 
     private fun withLockFlush() {
         if (buffer.size() > 0) {
-            println(buffer.toString())
+            println(buffer.toString(Charsets.UTF_8))
             buffer.reset()
         }
     }

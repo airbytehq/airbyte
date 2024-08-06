@@ -1,4 +1,10 @@
 subprojects {
+
+    // Disable spotbugs on test code, which gets annoying really quickly for @MicronautTest classes.
+    spotbugsTest {
+        enabled = false
+    }
+
     dependencies {
         implementation platform('org.jetbrains.kotlin:kotlin-bom:2.0.0')
         implementation platform('org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1')
