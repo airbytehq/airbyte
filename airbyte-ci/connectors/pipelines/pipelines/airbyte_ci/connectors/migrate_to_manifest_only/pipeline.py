@@ -144,11 +144,7 @@ class StripConnector(Step):
         """
         try:
             if spec_file.suffix == ".json":
-            with open(spec_file, "r") as file:
-            with open(spec_file, "r") as file:
-                if spec_file.suffix == ".json":
                 with open(spec_file, "r") as file:
-                if spec_file.suffix == ".json":
                     spec = json.load(file)
             else:
                 spec = read_yaml(spec_file)
@@ -156,7 +152,7 @@ class StripConnector(Step):
             documentation_url = spec.get("documentationUrl") or spec.get("documentation_url")
             connection_specification = spec.get("connection_specification") or spec.get("connectionSpecification")
             return {"documentation_url": documentation_url, "connection_specification": connection_specification}
-        
+
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
 
