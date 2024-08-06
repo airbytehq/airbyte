@@ -393,6 +393,14 @@ class SnowflakeDestinationHandler(
 
         val existingTables = findExistingTables(database, databaseName, streamIds)
         val tableRowCounts = getFinalTableRowCount(streamIds)
+
+//        //TODO: Remove code duplicated for testing
+//        val existingTables_Copy1 = findExistingTables(database, databaseName, streamIds)
+//        val tableRowCounts_Copy1 = getFinalTableRowCount(streamIds)
+//
+//        println("existingTables_Copy1=" + existingTables_Copy1)
+//        println("tableRowCounts_Copy1=" + tableRowCounts_Copy1)
+
         return streamConfigs
             .stream()
             .map { streamConfig: StreamConfig ->

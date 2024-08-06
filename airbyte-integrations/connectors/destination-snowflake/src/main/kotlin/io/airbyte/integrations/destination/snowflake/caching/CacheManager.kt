@@ -8,16 +8,37 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 object CacheManager {
+
     private val cache = ConcurrentHashMap<String, CacheEntry>()
     private const val CACHE_DURATION_MILLIS = 60 * 60 * 1000 // 1 hour
+    private const val ENABLE_METADATA_CACHE = true
+
+    private var numberOfMetadataQueriesSentToDatabase = 0;
+    private var numberOfMetadataQueriesServedFromCache = 0;
 
     fun queryJsons(database: JdbcDatabase,
                    query: String,
                    parameters: Array<String>): List<JsonNode> {
 
-        LOGGER.info("Entering CacheManager.queryJsons with: cache.size()=" + cache.size
-            + "\nquery=" + query
+        LOGGER.info("Entering CacheManager.queryJsons with: "
+            + "\n ENABLE_METADATA_CACHE=" + ENABLE_METADATA_CACHE
+            + "\n cache.size()=" + cache.size
+            + "\n query=" + query
             + "\n\nparameters=" + parameters)
+
+        if( ! ENABLE_METADATA_CACHE
+            ||
+            ! query.contains("information_schema")
+            ||
+            query.uppercase().contains("ROW_COUNT")) {
+
+            //return database.queryJsons(updatedQuery)
+            return database.queryJsons(query, *parameters)
+        }
+
+        LOGGER.info("Inside CacheManager with: "
+            + " numberOfMetadataQueriesSentToDatabase=" + numberOfMetadataQueriesSentToDatabase
+            + " numberOfMetadataQueriesServedFromCache=" + numberOfMetadataQueriesServedFromCache)
 
         if(cache.size > 0) {
             LOGGER.info("Inside CacheManager: Cache contains existing entries: cache.size()=" + cache.size)
@@ -34,15 +55,12 @@ object CacheManager {
         // Print the resulting string
         LOGGER.info("updatedQuery=" + updatedQuery)
 
-        if( ! updatedQuery.contains("information_schema")) {
-            //return database.queryJsons(updatedQuery)
-            return database.queryJsons(query, *parameters)
-        }
-
         val cachedResult = CacheManager.getFromCache(updatedQuery)
         if (cachedResult != null) {
 
             LOGGER.info("Found result in cache for updatedQuery=" + updatedQuery)
+
+            numberOfMetadataQueriesServedFromCache++;
 
             return cachedResult
         }
@@ -56,8 +74,10 @@ object CacheManager {
 
             resultSet = database.queryJsons(query, *parameters)
 
-            // Cache the result
-            putInCache(query, resultSet)
+            numberOfMetadataQueriesSentToDatabase++;
+
+            // Cache the result using updatedQuery as a key
+            putInCache(updatedQuery, resultSet)
 
         } catch (e: Exception) {
             e.printStackTrace()
