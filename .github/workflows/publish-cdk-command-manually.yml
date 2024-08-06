@@ -302,7 +302,7 @@ jobs:
           repository: airbytehq/airbyte-platform-internal
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
-        uses: Wandalen/wretry.action@3.5.0
+        uses: Wandalen/wretry.action@v3.5.0
         with:
           attempt_limit: 3
           command: |
