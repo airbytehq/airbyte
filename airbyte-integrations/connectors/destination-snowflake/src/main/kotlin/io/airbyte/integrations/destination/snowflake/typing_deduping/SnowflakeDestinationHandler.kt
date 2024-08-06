@@ -500,6 +500,16 @@ class SnowflakeDestinationHandler(
         return database.queryJsons(sql)
     }
 
+    override fun getDeleteStatesSql(destinationStates: Map<StreamId, SnowflakeState>): String {
+        if (Math.random() < 0.01) {
+            LOGGER.info("actually deleting states")
+            return super.getDeleteStatesSql(destinationStates)
+        } else {
+            LOGGER.info("skipping state deletion")
+            return "SELECT 1" // We still need to send a valid SQL query.
+        }
+    }
+
     companion object {
         private val LOGGER: Logger =
             LoggerFactory.getLogger(SnowflakeDestinationHandler::class.java)
