@@ -25,9 +25,12 @@ if TYPE_CHECKING:
     from anyio import Semaphore
 
 
-# TODO: how to pass secret in dagger?
+# TODO: pass secret in dagger?
 API_KEY = "API_KEY"
 genai.configure(api_key=API_KEY)
+
+# TODO: pass secret in dagger
+DBDOCS_TOKEN = "TOKEN"
 
 
 class GenerateErdSchema(Step):
@@ -139,6 +142,35 @@ Limitations:
         return relation_dict
 
 
+class UploadDbmlSchema(Step):
+
+    context: ConnectorContext
+
+    title = "Upload DBML file to dbdocs.io"
+
+    def __init__(self, context: PipelineContext) -> None:
+        super().__init__(context)
+
+    async def _run(self, connector_to_discover: Container = None) -> StepResult:
+        connector = self.context.connector
+        python_path = connector.code_directory
+        file_path = Path(os.path.abspath(os.path.join(python_path)))
+        source_dbml_content = open(file_path / "source.dbml").read()
+
+        dbdocs_container = await (self.dagger_client.container().from_("node:lts-bullseye-slim").with_exec(
+            ["npm", "install", "-g", "dbdocs"]).with_env_variable("DBDOCS_TOKEN", DBDOCS_TOKEN).with_workdir(
+            "/airbyte_dbdocs").with_new_file("/airbyte_dbdocs/source.dbml", contents=source_dbml_content))
+
+
+        db_docs_build = ["dbdocs", "build", "source.dbml", f"--project={connector.technical_name}"]
+        dbdocs_container_output = await dbdocs_container.with_exec(db_docs_build).stdout()
+
+        return StepResult(step=self, status=StepStatus.SUCCESS)
+
+
+
+
+
 async def run_connector_generate_erd_schema_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
 
@@ -153,6 +185,18 @@ async def run_connector_generate_erd_schema_pipeline(context: ConnectorContext, 
                 step=GenerateErdSchema(context),
                 args=lambda results: {"connector_to_discover": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+        ]
+    )
+
+    steps_to_run.append(
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_DBML_UPLOAD,
+                step=UploadDbmlSchema(context),
+                # args=lambda results: {"connector_to_discover": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+                # TODO: change to AIRBYTE_DBML_GENERATE
+                depends_on=[CONNECTOR_TEST_STEP_ID.AIRBYTE_ERD_GENERATE],
             ),
         ]
     )
