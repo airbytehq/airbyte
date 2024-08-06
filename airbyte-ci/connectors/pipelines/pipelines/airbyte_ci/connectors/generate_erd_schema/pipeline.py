@@ -129,6 +129,7 @@ Limitations:
     @staticmethod
     def _remove_non_existing_relations(discovered_catalog_schema: dict, relation_dict: dict) -> dict:
         """LLM can sometimes add non-existing relations, so we need check and remove them"""
+        # TODO: filter out non existing field relations
         all_streams_names = [x.get("name") for x in discovered_catalog_schema.get("streams")]
         for stream in relation_dict["streams"]:
             ref_tables = [x.split(".")[0] for x in stream["relations"].values()]
@@ -163,12 +164,10 @@ class UploadDbmlSchema(Step):
 
 
         db_docs_build = ["dbdocs", "build", "source.dbml", f"--project={connector.technical_name}"]
-        dbdocs_container_output = await dbdocs_container.with_exec(db_docs_build).stdout()
+        await dbdocs_container.with_exec(db_docs_build).stdout()
+        # TODO: produce link to dbdocs in output logs
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
-
-
-
 
 
 async def run_connector_generate_erd_schema_pipeline(context: ConnectorContext, semaphore: "Semaphore") -> Report:
