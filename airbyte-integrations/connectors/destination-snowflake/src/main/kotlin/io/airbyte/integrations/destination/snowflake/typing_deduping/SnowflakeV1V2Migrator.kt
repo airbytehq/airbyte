@@ -28,20 +28,19 @@ class SnowflakeV1V2Migrator(
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
 
-//        return database
-//            .queryJsons(
-//                """
-//                SELECT SCHEMA_NAME
-//                FROM information_schema.schemata
-//                WHERE schema_name = ?
-//                AND catalog_name = ?;
-//
-//                """.trimIndent(),
-//                streamConfig!!.id.rawNamespace,
-//                databaseName
-//            )
-//            .isNotEmpty()
-
+        return database
+            .queryJsons(
+                """
+                SELECT SCHEMA_NAME
+                FROM information_schema.schemata
+                WHERE schema_name = ?
+                AND catalog_name = ?;
+                
+                """.trimIndent(),
+                streamConfig!!.id.rawNamespace,
+                databaseName
+            )
+            .isNotEmpty()
 
 //        return CacheManager.queryJsons(database,
 //                """
@@ -56,7 +55,7 @@ class SnowflakeV1V2Migrator(
 //            )
 //            .isNotEmpty()
 
-
+/*
         return database.queryJsons(
             String.format(
                 """
@@ -68,6 +67,8 @@ class SnowflakeV1V2Migrator(
                 streamConfig!!.id.rawNamespace,
             ),
         ).isNotEmpty()
+
+ */
 
 //        return CacheManager.queryJsons(database,
 //                """
@@ -99,6 +100,49 @@ class SnowflakeV1V2Migrator(
         // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC
         // translates
         // VARIANT as VARCHAR
+
+
+        val columns =
+            database
+                .queryJsons(
+                    """
+            SELECT column_name, data_type, is_nullable
+            FROM information_schema.columns
+            WHERE table_catalog = ?
+              AND table_schema = ?
+              AND table_name = ?
+            ORDER BY ordinal_position;
+            
+            """.trimIndent(),
+                    databaseName,
+                    namespace!!,
+                    tableName!!
+                )
+                .stream()
+                .collect(
+                    { LinkedHashMap() },
+                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                        map[row["COLUMN_NAME"].asText()] =
+                            ColumnDefinition(
+                                row["COLUMN_NAME"].asText(),
+                                row["DATA_TYPE"].asText(),
+                                0,
+                                fromIsNullableIsoString(row["IS_NULLABLE"].asText())
+                            )
+                    },
+                    {
+                        obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                        m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                        obj.putAll(m!!)
+                    }
+                )
+        return if (columns.isEmpty()) {
+            Optional.empty()
+        } else {
+            Optional.of(TableDefinition(columns))
+        }
+
+
 
         //val columns =
         /*
@@ -163,44 +207,7 @@ class SnowflakeV1V2Migrator(
                                 tableName)
                     */
 
-        val columns =
-            database
-                .queryJsons(
-                    """
-                        SELECT column_name, data_type, is_nullable
-                        FROM information_schema.columns
-                        WHERE table_catalog = ?
-                          AND table_schema = ?
-                          AND table_name = ?
-                        ORDER BY ordinal_position;
-                        
-                        """.trimIndent(),
-                    databaseName,
-                    namespace!!,
-                    tableName!!,
-                )
-                .stream()
-                .collect(
-                    { LinkedHashMap() },
-                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-                        map[row["COLUMN_NAME"].asText()] =
-                            ColumnDefinition(
-                                row["COLUMN_NAME"].asText(),
-                                row["DATA_TYPE"].asText(),
-                                0,
-                                fromIsNullableIsoString(row["IS_NULLABLE"].asText()),
-                            )
-                    },
-                    { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
-                        obj.putAll(m!!)
-                    },
-                )
-        return if (columns.isEmpty()) {
-            Optional.empty()
-        } else {
-            Optional.of(TableDefinition(columns))
-        }
+
     }
 
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {

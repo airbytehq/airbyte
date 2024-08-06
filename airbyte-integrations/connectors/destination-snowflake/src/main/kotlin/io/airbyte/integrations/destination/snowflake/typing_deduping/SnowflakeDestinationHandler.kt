@@ -62,10 +62,51 @@ class SnowflakeDestinationHandler(
 
         LOGGER.info("Entering getFinalTableRowCount");
 
+
         val tableRowCounts = LinkedHashMap<String, LinkedHashMap<String, Int>>()
         // convert list stream to array
         val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
         val names = streamIds.map { it.finalName }.toTypedArray()
+
+
+        //TODO: Remove code added for testing
+
+        try {
+
+//            val testQuery = String.format(
+//                """
+//                    USE DATABASE %s;
+//                    SHOW SCHEMAS LIKE '%s';
+//
+//                """.trimIndent(),
+//                databaseName,
+//                namespaces[0],
+//            )
+
+            val useDatabaseQuery = String.format(
+                """
+                    USE DATABASE %s; 
+                """.trimIndent(),
+                databaseName
+            )
+            database.execute(useDatabaseQuery)
+
+            val showSchemaQuery = String.format(
+                """
+                    SHOW SCHEMAS LIKE '%s';
+
+                """.trimIndent(),
+                namespaces[0]
+            )
+
+            database.queryJsons(
+                    showSchemaQuery
+            ).isNotEmpty()
+
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
+
         val query =
             """
             |SELECT table_schema, table_name, row_count
