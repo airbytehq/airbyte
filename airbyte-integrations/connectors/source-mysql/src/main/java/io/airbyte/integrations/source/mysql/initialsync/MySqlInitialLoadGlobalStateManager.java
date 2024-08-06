@@ -111,7 +111,9 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
 
     resumableFullRefreshStreams.forEach(stream -> {
       var pkStatus = getPrimaryKeyLoadStatus(stream);
-      streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
+      if (pkStatus != null) {
+        streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
+      }
     });
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       AirbyteStreamNameNamespacePair pair =

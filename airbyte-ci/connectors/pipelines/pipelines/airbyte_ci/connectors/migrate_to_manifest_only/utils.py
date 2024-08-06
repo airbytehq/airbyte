@@ -5,11 +5,13 @@
 import subprocess
 from pathlib import Path
 
+import logging
 import jinja2
 import requests
 
 ## HELPER FUNCTIONS
 
+logger = logging.getLogger("tags")
 
 def readme_for_connector(name: str) -> str:
     """
@@ -29,7 +31,7 @@ def get_latest_base_image(image_name: str) -> str:
     """
     base_url = "https://hub.docker.com/v2/repositories/"
 
-    tags_url = f"{base_url}{image_name}/tags/?page_size=2&ordering=last_updated"
+    tags_url = f"{base_url}{image_name}/tags/?page_size=10&ordering=last_updated"
     response = requests.get(tags_url)
     if response.status_code != 200:
         raise requests.ConnectionError(f"Error fetching tags: {response.status_code}")
@@ -38,8 +40,14 @@ def get_latest_base_image(image_name: str) -> str:
     if not tags_data["results"]:
         raise ValueError("No tags found for the image")
 
-    # the latest tag (at 0) is always `latest`, but we want the versioned one.
-    latest_tag = tags_data["results"][1]["name"]
+    # iterate through the tags to find the latest one that doesn't contain "dev" or "latest"
+    for tag in tags_data["results"]:
+        if "dev" not in tag["name"] and "latest" not in tag["name"]:
+            latest_tag = tag["name"]
+            break
+    
+    if not latest_tag:
+        raise ValueError("No valid tags found for the image")
 
     manifest_url = f"{base_url}{image_name}/tags/{latest_tag}"
     response = requests.get(manifest_url)

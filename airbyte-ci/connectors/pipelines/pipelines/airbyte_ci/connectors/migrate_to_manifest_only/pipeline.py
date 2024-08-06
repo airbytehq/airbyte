@@ -169,6 +169,17 @@ class StripConnector(Step):
             return StepResult(
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
+        
+        ## 2. Update the version in manifest.yaml
+        try:
+            with open(root_manifest_file, "r") as manifest_file:
+                manifest_data = yaml.load(manifest_file)
+                manifest_data["version"] = "4.3.0"
+
+                with open(root_manifest_file, "w") as manifest_file_to_write:
+                    yaml.dump(manifest_data, manifest_file_to_write)
+        except Exception as e:
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update version in manifest.yaml: {e}")
 
         ## 2. Check for non-inline spec files and add the data to manifest.yaml
         spec_file = self._check_if_non_inline_spec(connector.python_source_dir_path)

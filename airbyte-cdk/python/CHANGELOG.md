@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.3.2
+Ensure at least one element returned by decoder
+
+## 4.3.1
+resumable full refresh: fix issue when live traffic regression tests pass state to connector
+
+## 4.3.0
+Add PrintBuffer to emit records in batches
+
+## 4.2.0
+Resumable full refresh: Add SubstreamResumableFullRefreshCursor to Python CDK to allow connectors to allow checkpointing on parent records
+
 ## 4.1.0
 Align BackoffStrategy interfaces to take attempt_count as a full-fledge parameter
 
