@@ -89,7 +89,9 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
 
     resumableFullRefreshStreams.forEach(stream -> {
       var ocStatus = getOrderedColumnLoadStatus(stream);
-      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
+      if (ocStatus != null) {
+        streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
+      }
     });
 
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {

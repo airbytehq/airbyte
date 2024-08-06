@@ -225,6 +225,8 @@ class SourceGoogleAds(AbstractSource):
                         customer_id=customer.id,
                         login_customer_id=customer.login_customer_id,
                     )
+                except AirbyteTracedException as e:
+                    raise e from e
                 except Exception as exc:
                     traced_exception(exc, customer.id, False, table_name)
                 # iterate over the response otherwise exceptions will not be raised!
