@@ -51,4 +51,12 @@ Our source connector adheres to the standard rate limiting with the Airbyte low-
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.0   | 2022-11-02 | [35633](https://github.com/airbytehq/airbyte/pull/35633) | 🎉 New Source: Fleetio source  
+| 0.1.8 | 2024-08-03 | [43103](https://github.com/airbytehq/airbyte/pull/43103) | Update dependencies |
+| 0.1.7 | 2024-07-27 | [42695](https://github.com/airbytehq/airbyte/pull/42695) | Update dependencies |
+| 0.1.6 | 2024-07-20 | [42383](https://github.com/airbytehq/airbyte/pull/42383) | Update dependencies |
+| 0.1.5 | 2024-07-13 | [41717](https://github.com/airbytehq/airbyte/pull/41717) | Update dependencies |
+| 0.1.4 | 2024-07-10 | [41476](https://github.com/airbytehq/airbyte/pull/41476) | Update dependencies |
+| 0.1.3 | 2024-07-09 | [41299](https://github.com/airbytehq/airbyte/pull/41299) | Update dependencies |
+| 0.1.2 | 2024-07-06 | [39964](https://github.com/airbytehq/airbyte/pull/39964) | Update dependencies |
+| 0.1.1   | 2024-07-02 | [40695](https://github.com/airbytehq/airbyte/pull/40695) | upgrade to base image 1.2.2 and metadata fixes
+| 0.1.0   | 2022-11-02 | [35633](https://github.com/airbytehq/airbyte/pull/35633) | 🎉 New Source: Fleetio source

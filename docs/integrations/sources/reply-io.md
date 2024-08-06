@@ -41,6 +41,14 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                             | Subject                       |
 |:--------|:-----------| :------------------------------------------------------- | :---------------------------- |
+| 0.1.12 | 2024-08-03 | [43215](https://github.com/airbytehq/airbyte/pull/43215) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42827](https://github.com/airbytehq/airbyte/pull/42827) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42246](https://github.com/airbytehq/airbyte/pull/42246) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41737](https://github.com/airbytehq/airbyte/pull/41737) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41497](https://github.com/airbytehq/airbyte/pull/41497) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41302](https://github.com/airbytehq/airbyte/pull/41302) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40805](https://github.com/airbytehq/airbyte/pull/40805) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40283](https://github.com/airbytehq/airbyte/pull/40283) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [40137](https://github.com/airbytehq/airbyte/pull/40137) | Update dependencies |
 | 0.1.3 | 2024-06-17 | [38661](https://github.com/airbytehq/airbyte/pull/38661) | Make connector compatible with Builder |
 | 0.1.2 | 2024-06-04 | [39012](https://github.com/airbytehq/airbyte/pull/39012) | [autopull] Upgrade base image to v1.2.1 |

@@ -65,6 +65,14 @@ The Tyntec SMS connector should not run into limitations under normal usage. Ple
 
 | Version | Date       | Pull Request                                             | Subject                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------ |
+| 0.1.12 | 2024-08-03 | [43221](https://github.com/airbytehq/airbyte/pull/43221) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42689](https://github.com/airbytehq/airbyte/pull/42689) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42209](https://github.com/airbytehq/airbyte/pull/42209) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41740](https://github.com/airbytehq/airbyte/pull/41740) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41364](https://github.com/airbytehq/airbyte/pull/41364) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41108](https://github.com/airbytehq/airbyte/pull/41108) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40804](https://github.com/airbytehq/airbyte/pull/40804) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40482](https://github.com/airbytehq/airbyte/pull/40482) | Update dependencies |
 | 0.1.4 | 2024-06-22 | [39994](https://github.com/airbytehq/airbyte/pull/39994) | Update dependencies |
 | 0.1.3 | 2024-06-05 | [38838](https://github.com/airbytehq/airbyte/pull/38838) | Make compatible with builder |
 | 0.1.2 | 2024-06-04 | [39043](https://github.com/airbytehq/airbyte/pull/39043) | [autopull] Upgrade base image to v1.2.1 |

@@ -1,4 +1,4 @@
-version: 0.77.2
+version: 2.0.0
 
 type: DeclarativeSource
 
@@ -33,17 +33,15 @@ definitions:
           oauth2.0: "#/definitions/bearer_authenticator"
           api_token: "#/definitions/basic_authenticator"
       error_handler:
-        type: CompositeErrorHandler
-        error_handlers:
-          - type: DefaultErrorHandler
-            response_filters:
-              - http_codes: [403, 404]
-                action: IGNORE
-                error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
-          - type: DefaultErrorHandler
-            backoff_strategies:
-              - type: WaitTimeFromHeader
-                header: Retry-After
+        type: DefaultErrorHandler
+        response_filters:
+          - http_codes: [403, 404]
+            action: FAIL
+            failure_type: config_error
+            error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
+        backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: Retry-After
     record_selector:
       type: RecordSelector
       extractor:
@@ -61,7 +59,7 @@ definitions:
         type: CursorPagination
         page_size: 100
         cursor_value: '{{ response.get("next_page", {}) }}'
-        stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+        stop_condition: "{{ last_page_size == 0 }}"
       page_token_option:
         type: RequestPath
 
@@ -117,7 +115,7 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: "{{ response['links']['next'] }}"
-      stop_condition: "{{ config.get('ignore_pagination') or not response['meta']['has_more'] }}"
+      stop_condition: "{{ not response['meta']['has_more'] }}"
       page_size: 100
     page_token_option:
       type: RequestPath
@@ -131,8 +129,20 @@ definitions:
     pagination_strategy:
       type: CursorPagination
       cursor_value: '{{ response.get("after_url") }}'
-      stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
+      # there is a `end_of_stream` property inside the `response`,
+      # we should use it, instead of relying on `last_page_size`,
+      # which could be `[]` but, `end_of_stream == false` and `after_url != null`
+      stop_condition: '{{ response.get("end_of_stream") }}'
       page_size: 100
+    page_token_option:
+      type: RequestPath
+
+  end_of_stream_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: '{{ response.get("next_page", {}) }}'
+      stop_condition: '{{ response.get("end_of_stream") }}'
     page_token_option:
       type: RequestPath
 
@@ -231,7 +241,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:
@@ -306,13 +316,7 @@ definitions:
       $ref: "#/definitions/retriever"
       ignore_stream_slicer_parameters_on_paginated_requests: true
       paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/end_of_stream_paginator"
     $parameters:
       name: "organizations"
       path: "incremental/organizations"
@@ -362,7 +366,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:
@@ -400,18 +404,18 @@ definitions:
           sort_by: "created_at"
           sort_order: "desc"
         error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - backoff_strategies:
-                - type: WaitTimeFromHeader
-                  header: Retry-After
-            - response_filters:
-                - http_codes: [504]
-                  action: FAIL
-                  error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
-                - http_codes: [403, 404]
-                  action: IGNORE
-                  error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+          response_filters:
+            - http_codes: [504]
+              action: FAIL
+              error_message: "Skipping stream `{{ parameters.get('name') }}`. Timed out waiting for response: {{ response.text }}..."
+            - http_codes: [403, 404]
+              action: FAIL
+              failure_type: config_error
+              error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
       paginator:
         type: DefaultPaginator
         page_size_option:
@@ -422,7 +426,7 @@ definitions:
           type: CursorPagination
           page_size: 200
           cursor_value: "{{ response.get('before_url') }}"
-          stop_condition: "{{ config.get('ignore_pagination') or 'before_url' not in response or not last_record }}"
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     incremental_sync:
@@ -451,13 +455,7 @@ definitions:
           class_name: source_zendesk_support.components.ZendeskSupportExtractorEvents
           field_path: ["ticket_events", "*", "child_events", "*"]
       paginator:
-        type: DefaultPaginator
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or response.get("end_of_stream") }}'
-        page_token_option:
-          type: RequestPath
+        $ref: "#/definitions/end_of_stream_paginator"
     $parameters:
       name: "ticket_comments"
       path: "incremental/ticket_events.json"
@@ -490,7 +488,7 @@ definitions:
               response_filters:
                 - http_codes: [403, 404]
                   action: FAIL # fail as this stream used to define enterprise plan
-                  error_message: "Skipping stream {{ parameters.get('name') }}, error message: {{ response.get('error') }}. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support."
+                  error_message: "Unable to read data for stream {{ parameters.get('name') }} due to an issue with permissions. Please ensure that your account has the necessary access level. You can try to re-authenticate on the Set Up Connector page or you can disable stream {{ parameters.get('name') }} on the Schema Tab. Error message: {{ response.get('error') }}"
             - type: DefaultErrorHandler
               backoff_strategies:
                 - type: WaitTimeFromHeader
@@ -500,7 +498,7 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: '{{ response.get("next_page", {}) }}'
-          stop_condition: '{{ config.get("ignore_pagination") or not response.get("next_page", {}) }}'
+          stop_condition: "{{ last_page_size == 0 }}"
         page_token_option:
           type: RequestPath
     $parameters:

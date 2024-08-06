@@ -17,7 +17,7 @@ POETRY_LOCK_FILE_NAME = "poetry.lock"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 SEMVER_FOR_CONNECTORS_DOC_URL = "https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors"
 SETUP_PY_FILE_NAME = "setup.py"
-VALID_LICENSES = {"MIT", "ELV2"}
+VALID_LICENSES = {"MIT", "ELV2", "AIRBYTE ENTERPRISE"}
 
 # Derived from other constants
 AIRBYTE_PYTHON_CONNECTOR_BASE_IMAGE_NAME = f"{DOCKER_INDEX}/{AirbytePythonConnectorBaseImage.repository}"

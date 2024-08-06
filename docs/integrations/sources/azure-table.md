@@ -70,6 +70,14 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.17 | 2024-08-03 | [43292](https://github.com/airbytehq/airbyte/pull/43292) | Update dependencies |
+| 0.1.16 | 2024-07-27 | [42734](https://github.com/airbytehq/airbyte/pull/42734) | Update dependencies |
+| 0.1.15 | 2024-07-20 | [42274](https://github.com/airbytehq/airbyte/pull/42274) | Update dependencies |
+| 0.1.14 | 2024-07-13 | [41929](https://github.com/airbytehq/airbyte/pull/41929) | Update dependencies |
+| 0.1.13 | 2024-07-10 | [41492](https://github.com/airbytehq/airbyte/pull/41492) | Update dependencies |
+| 0.1.12 | 2024-07-09 | [41105](https://github.com/airbytehq/airbyte/pull/41105) | Update dependencies |
+| 0.1.11 | 2024-07-06 | [40937](https://github.com/airbytehq/airbyte/pull/40937) | Update dependencies |
+| 0.1.10 | 2024-06-25 | [40277](https://github.com/airbytehq/airbyte/pull/40277) | Update dependencies |
 | 0.1.9 | 2024-06-22 | [40072](https://github.com/airbytehq/airbyte/pull/40072) | Update dependencies |
 | 0.1.8 | 2024-06-04 | [38968](https://github.com/airbytehq/airbyte/pull/38968) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.7 | 2024-06-03 | [38915](https://github.com/airbytehq/airbyte/pull/38915) | Replace AirbyteLogger with logging.Logger |

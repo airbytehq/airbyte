@@ -31,6 +31,13 @@ class ConnectorInsights(BaseModel):
     dependencies: list[dict]
     is_cloud_enabled: StrictBool
     is_oss_enabled: StrictBool
+    deprecated_classes_in_use: list[str] | None
+    deprecated_modules_in_use: list[str] | None
+    forbidden_method_names_in_use: list[str] | None
+    manifest_uses_parameters: StrictBool
+    manifest_uses_custom_components: StrictBool
+    manifest_custom_component_classes: list[str] | None
+    has_json_schemas: StrictBool
 
     class Config:
         json_encoders = {dict: lambda v: json.dumps(v, default=pydantic_encoder)}

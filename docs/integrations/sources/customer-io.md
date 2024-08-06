@@ -52,6 +52,16 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                    |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
+| 0.2.13 | 2024-08-03 | [43185](https://github.com/airbytehq/airbyte/pull/43185) | Update dependencies |
+| 0.2.12 | 2024-07-27 | [42631](https://github.com/airbytehq/airbyte/pull/42631) | Update dependencies |
+| 0.2.11 | 2024-07-20 | [42219](https://github.com/airbytehq/airbyte/pull/42219) | Update dependencies |
+| 0.2.10 | 2024-07-13 | [41808](https://github.com/airbytehq/airbyte/pull/41808) | Update dependencies |
+| 0.2.9 | 2024-07-10 | [41389](https://github.com/airbytehq/airbyte/pull/41389) | Update dependencies |
+| 0.2.8 | 2024-07-09 | [41225](https://github.com/airbytehq/airbyte/pull/41225) | Update dependencies |
+| 0.2.7 | 2024-07-06 | [40883](https://github.com/airbytehq/airbyte/pull/40883) | Update dependencies |
+| 0.2.6 | 2024-06-29 | [40624](https://github.com/airbytehq/airbyte/pull/40624) | Update dependencies |
+| 0.2.5 | 2024-06-27 | [38318](https://github.com/airbytehq/airbyte/pull/38318) | Make compatability with builder |
+| 0.2.4 | 2024-06-25 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies |
 | 0.2.3 | 2024-06-22 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies |
 | 0.2.2 | 2024-06-04 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.1 | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |

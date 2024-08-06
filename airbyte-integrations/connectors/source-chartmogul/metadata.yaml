@@ -18,11 +18,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
-  dockerImageTag: 1.0.3
+  dockerImageTag: 1.0.10
   dockerRepository: airbyte/source-chartmogul
   githubIssueLabel: source-chartmogul
   icon: chartmogul.svg
@@ -41,6 +41,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: chartmogul_config_dev_null
+          id: 07daa31c-b7d0-4d3e-81c6-e6b7786a5c29
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-CHARTMOGUL__CREDS

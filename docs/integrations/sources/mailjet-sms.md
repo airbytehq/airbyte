@@ -32,6 +32,14 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.14 | 2024-08-03 | [43179](https://github.com/airbytehq/airbyte/pull/43179) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42747](https://github.com/airbytehq/airbyte/pull/42747) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42161](https://github.com/airbytehq/airbyte/pull/42161) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41804](https://github.com/airbytehq/airbyte/pull/41804) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41516](https://github.com/airbytehq/airbyte/pull/41516) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41208](https://github.com/airbytehq/airbyte/pull/41208) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40775](https://github.com/airbytehq/airbyte/pull/40775) | Update dependencies |
+| 0.1.7 | 2024-06-25 | [40402](https://github.com/airbytehq/airbyte/pull/40402) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40010](https://github.com/airbytehq/airbyte/pull/40010) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39165](https://github.com/airbytehq/airbyte/pull/39165) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-05-28 | [38730](https://github.com/airbytehq/airbyte/pull/38730) | Make compatible with builder. |

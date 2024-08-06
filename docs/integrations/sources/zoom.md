@@ -71,6 +71,14 @@ JWT Tokens are deprecated, only Server-to-Server works now. [link to Zoom](https
 
 | Version | Date       | Pull Request                                             | Subject                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------- |
+| 1.1.10 | 2024-08-03 | [43149](https://github.com/airbytehq/airbyte/pull/43149) | Update dependencies |
+| 1.1.9 | 2024-07-27 | [42652](https://github.com/airbytehq/airbyte/pull/42652) | Update dependencies |
+| 1.1.8 | 2024-07-20 | [42212](https://github.com/airbytehq/airbyte/pull/42212) | Update dependencies |
+| 1.1.7 | 2024-07-13 | [41813](https://github.com/airbytehq/airbyte/pull/41813) | Update dependencies |
+| 1.1.6 | 2024-07-10 | [41486](https://github.com/airbytehq/airbyte/pull/41486) | Update dependencies |
+| 1.1.5 | 2024-07-09 | [41316](https://github.com/airbytehq/airbyte/pull/41316) | Update dependencies |
+| 1.1.4 | 2024-07-06 | [40986](https://github.com/airbytehq/airbyte/pull/40986) | Update dependencies |
+| 1.1.3 | 2024-06-26 | [40509](https://github.com/airbytehq/airbyte/pull/40509) | Update dependencies |
 | 1.1.2 | 2024-06-22 | [40141](https://github.com/airbytehq/airbyte/pull/40141) | Update dependencies |
 | 1.1.1 | 2024-06-06 | [39279](https://github.com/airbytehq/airbyte/pull/39279) | [autopull] Upgrade base image to v1.2.2 |
 | 1.1.0 | 2024-02-22 | [35369](https://github.com/airbytehq/airbyte/pull/35369) | Publish S2S Oauth connector with fixed authenticator |

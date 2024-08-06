@@ -6,14 +6,13 @@ import concurrent.futures
 import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
-import backoff
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType, StreamDescriptor
 from requests import adapters as request_adapters
-from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
+from requests.exceptions import RequestException  # type: ignore[import]
 
 from .exceptions import TypeSalesforceException
 from .rate_limiting import SalesforceErrorHandler, default_backoff_handler

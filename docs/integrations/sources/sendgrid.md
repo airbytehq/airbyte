@@ -89,6 +89,14 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.12 | 2024-08-03 | [43269](https://github.com/airbytehq/airbyte/pull/43269) | Update dependencies |
+| 1.0.11 | 2024-07-27 | [42729](https://github.com/airbytehq/airbyte/pull/42729) | Update dependencies |
+| 1.0.10 | 2024-07-20 | [42310](https://github.com/airbytehq/airbyte/pull/42310) | Update dependencies |
+| 1.0.9 | 2024-07-13 | [41753](https://github.com/airbytehq/airbyte/pull/41753) | Update dependencies |
+| 1.0.8 | 2024-07-10 | [41531](https://github.com/airbytehq/airbyte/pull/41531) | Update dependencies |
+| 1.0.7 | 2024-07-09 | [41137](https://github.com/airbytehq/airbyte/pull/41137) | Update dependencies |
+| 1.0.6 | 2024-07-06 | [40898](https://github.com/airbytehq/airbyte/pull/40898) | Update dependencies |
+| 1.0.5 | 2024-06-25 | [40356](https://github.com/airbytehq/airbyte/pull/40356) | Update dependencies |
 | 1.0.4 | 2024-06-22 | [40155](https://github.com/airbytehq/airbyte/pull/40155) | Update dependencies |
 | 1.0.3 | 2024-06-06 | [39197](https://github.com/airbytehq/airbyte/pull/39197) | [autopull] Upgrade base image to v1.2.2 |
 | 1.0.2 | 2024-05-21 | [38478](https://github.com/airbytehq/airbyte/pull/38478) | Update deprecated authenticator package |

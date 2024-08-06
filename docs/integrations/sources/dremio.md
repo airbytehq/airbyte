@@ -41,6 +41,15 @@ Please read [How to get your APIs credentials](https://docs.dremio.com/software/
 
 | Version | Date       | Pull Request                                             | Subject            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------- |
+| 0.1.12 | 2024-08-03 | [43201](https://github.com/airbytehq/airbyte/pull/43201) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42670](https://github.com/airbytehq/airbyte/pull/42670) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42186](https://github.com/airbytehq/airbyte/pull/42186) | Update dependencies |
+| 0.1.9 | 2024-07-17 | [38692](https://github.com/airbytehq/airbyte/pull/38692) | Make compatible with builder |
+| 0.1.8 | 2024-07-13 | [41812](https://github.com/airbytehq/airbyte/pull/41812) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41578](https://github.com/airbytehq/airbyte/pull/41578) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [41127](https://github.com/airbytehq/airbyte/pull/41127) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [41008](https://github.com/airbytehq/airbyte/pull/41008) | Update dependencies |
+| 0.1.4 | 2024-06-25 | [40471](https://github.com/airbytehq/airbyte/pull/40471) | Update dependencies |
 | 0.1.3 | 2024-06-22 | [40045](https://github.com/airbytehq/airbyte/pull/40045) | Update dependencies |
 | 0.1.2 | 2024-06-06 | [39235](https://github.com/airbytehq/airbyte/pull/39235) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-21 | [38497](https://github.com/airbytehq/airbyte/pull/38497) | [autopull] base image + poetry + up_to_date |

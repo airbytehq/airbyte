@@ -258,6 +258,17 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.7.1 | 2024-08-03 | [43245](https://github.com/airbytehq/airbyte/pull/43245) | Update dependencies |
+| 2.7.0 | 2024-07-31 | [42548](https://github.com/airbytehq/airbyte/pull/42548) | Migrate to CDK v4.1.0 |
+| 2.6.12 | 2024-07-27 | [42812](https://github.com/airbytehq/airbyte/pull/42812) | Update dependencies |
+| 2.6.11 | 2024-07-20 | [42360](https://github.com/airbytehq/airbyte/pull/42360) | Update dependencies |
+| 2.6.10 | 2024-07-13 | [41875](https://github.com/airbytehq/airbyte/pull/41875) | Update dependencies |
+| 2.6.9 | 2024-07-10 | [41383](https://github.com/airbytehq/airbyte/pull/41383) | Update dependencies |
+| 2.6.8 | 2024-07-09 | [41314](https://github.com/airbytehq/airbyte/pull/41314) | Update dependencies |
+| 2.6.7 | 2024-07-06 | [40906](https://github.com/airbytehq/airbyte/pull/40906) | Update dependencies |
+| 2.6.6 | 2024-07-05 | [34966](https://github.com/airbytehq/airbyte/pull/34966) | Add support for Performance Max campaigns. |
+| 2.6.5 | 2024-06-27 | [40585](https://github.com/airbytehq/airbyte/pull/40585) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 2.6.4 | 2024-06-25 | [40457](https://github.com/airbytehq/airbyte/pull/40457) | Update dependencies |
 | 2.6.3 | 2024-06-22 | [40006](https://github.com/airbytehq/airbyte/pull/40006) | Update dependencies |
 | 2.6.2 | 2024-06-06 | [39177](https://github.com/airbytehq/airbyte/pull/39177) | [autopull] Upgrade base image to v1.2.2 |
 | 2.6.1 | 2024-05-02 | [36632](https://github.com/airbytehq/airbyte/pull/36632) | Schema descriptions |

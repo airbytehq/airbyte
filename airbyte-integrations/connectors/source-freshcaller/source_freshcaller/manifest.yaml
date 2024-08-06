@@ -99,8 +99,6 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
-        request_parameters:
-          has_ancestry: "true"
       record_selector:
         type: RecordSelector
         extractor:
@@ -118,7 +116,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          has_ancestry: "true"
+          include: "life_cycle"
       record_selector:
         type: RecordSelector
         extractor:

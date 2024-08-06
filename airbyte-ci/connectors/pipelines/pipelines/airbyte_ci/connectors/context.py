@@ -56,7 +56,6 @@ class ConnectorContext(PipelineContext):
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         slack_webhook: Optional[str] = None,
-        reporting_slack_channel: Optional[str] = None,
         pull_request: Optional[PullRequest.PullRequest] = None,
         should_save_report: bool = True,
         code_tests_only: bool = False,
@@ -88,7 +87,6 @@ class ConnectorContext(PipelineContext):
             pipeline_start_timestamp (Optional[int], optional): Timestamp at which the pipeline started. Defaults to None.
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
-            reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
             pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
@@ -131,7 +129,6 @@ class ConnectorContext(PipelineContext):
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
-            reporting_slack_channel=reporting_slack_channel,
             pull_request=pull_request,
             ci_report_bucket=ci_report_bucket,
             ci_gcp_credentials=ci_gcp_credentials,
@@ -258,11 +255,8 @@ class ConnectorContext(PipelineContext):
         await asyncify(update_commit_status_check)(**self.github_commit_status)
 
         if self.should_send_slack_message:
-            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook and reporting_slack_channel
-            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)  # type: ignore
+            # Using a type ignore here because the should_send_slack_message property is checking for non nullity of the slack_webhook
+            await asyncify(send_message_to_webhook)(self.create_slack_message(), self.get_slack_channels(), self.slack_webhook)  # type: ignore
 
         # Supress the exception if any
         return True
-
-    def create_slack_message(self) -> str:
-        raise NotImplementedError

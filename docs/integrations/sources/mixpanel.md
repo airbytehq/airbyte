@@ -58,6 +58,16 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.2 | 2024-08-03 | [43182](https://github.com/airbytehq/airbyte/pull/43182) | Update dependencies |
+| 3.3.1 | 2024-07-27 | [42391](https://github.com/airbytehq/airbyte/pull/42391) | Update dependencies |
+| 3.3.0 | 2024-07-15 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Add engage page size to configuration |
+| 3.2.4 | 2024-07-13 | [41754](https://github.com/airbytehq/airbyte/pull/41754) | Update dependencies |
+| 3.2.3 | 2024-07-10 | [41420](https://github.com/airbytehq/airbyte/pull/41420) | Update dependencies |
+| 3.2.2 | 2024-07-09 | [41289](https://github.com/airbytehq/airbyte/pull/41289) | Update dependencies |
+| 3.2.1 | 2024-07-06 | [40806](https://github.com/airbytehq/airbyte/pull/40806) | Update dependencies |
+| 3.2.0 | 2024-06-26 | [40607](https://github.com/airbytehq/airbyte/pull/40607) | Make engage stream really incremental |
+| 3.1.5 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 3.1.4 | 2024-06-25 | [40376](https://github.com/airbytehq/airbyte/pull/40376) | Update dependencies |
 | 3.1.3 | 2024-06-22 | [40138](https://github.com/airbytehq/airbyte/pull/40138) | Update dependencies |
 | 3.1.2 | 2024-06-18 | [38710](https://github.com/airbytehq/airbyte/pull/38710) | Update authenticator CDK package |
 | 3.1.1 | 2024-06-04 | [39006](https://github.com/airbytehq/airbyte/pull/39006) | [autopull] Upgrade base image to v1.2.1 |

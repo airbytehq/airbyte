@@ -71,7 +71,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                                                    |
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
-| `contact_lists`             | `crm.objects.lists.read`                                                                                     |
+| `contact_lists`             | `crm.lists.read`                                                                                     |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
 | `contacts_form_submissions` | `crm.objects.contacts.read`                                                                                  |
@@ -337,6 +337,14 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.14 | 2024-07-27 | [42688](https://github.com/airbytehq/airbyte/pull/42688) | Update dependencies |
+| 4.2.13 | 2024-07-20 | [42264](https://github.com/airbytehq/airbyte/pull/42264) | Update dependencies |
+| 4.2.12 | 2024-07-13 | [41766](https://github.com/airbytehq/airbyte/pull/41766) | Update dependencies |
+| 4.2.11 | 2024-07-10 | [41558](https://github.com/airbytehq/airbyte/pull/41558) | Update dependencies |
+| 4.2.10 | 2024-07-09 | [41286](https://github.com/airbytehq/airbyte/pull/41286) | Update dependencies |
+| 4.2.9 | 2024-07-08 | [41045](https://github.com/airbytehq/airbyte/pull/41045) | Use latest `CDK` version possible |
+| 4.2.8 | 2024-07-06 | [40923](https://github.com/airbytehq/airbyte/pull/40923) | Update dependencies |
+| 4.2.7 | 2024-06-25 | [40441](https://github.com/airbytehq/airbyte/pull/40441) | Update dependencies |
 | 4.2.6 | 2024-06-22 | [40126](https://github.com/airbytehq/airbyte/pull/40126) | Update dependencies |
 | 4.2.5 | 2024-06-17 | [39432](https://github.com/airbytehq/airbyte/pull/39432) | Remove references to deprecated state method |
 | 4.2.4 | 2024-06-10 | [38800](https://github.com/airbytehq/airbyte/pull/38800) | Retry hubspot _parse_and_handle_errors on JSON decode errors |

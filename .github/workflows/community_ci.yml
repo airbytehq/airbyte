@@ -30,7 +30,6 @@ jobs:
           filters: |
             protected_paths:
               - '.github/**'
-              - 'airbyte-ci/**'
 
       - name: Fail if changes in protected paths
         if: steps.check_for_changes_in_protected_paths.outputs.protected_paths == 'true'

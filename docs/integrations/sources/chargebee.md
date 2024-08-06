@@ -69,6 +69,7 @@ Most streams are supported regardless of your Chargebee site's [Product Catalog 
 | [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups)                          | ✔                   | ✔                   |
 | [Site Migration Details](https://apidocs.chargebee.com/docs/api/site_migration_details)                | ✔                   | ✔                   |
 | [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions)                                  | ✔                   | ✔                   |
+| [Subscriptions With Scheduled Changes](https://apidocs.chargebee.com/docs/api/subscriptions?lang=curl#retrieve_with_scheduled_changes)           | ✔                   | ✔                   |
 | [Transactions](https://apidocs.chargebee.com/docs/api/transactions)                                    | ✔                   | ✔                   |
 | [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges)                            | ✔                   | ✔                   |
 | [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts)                  | ✔                   | ✔                   |
@@ -103,6 +104,14 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.5 | 2024-08-03 | [43081](https://github.com/airbytehq/airbyte/pull/43081) | Update dependencies |
+| 0.6.4 | 2024-07-27 | [42626](https://github.com/airbytehq/airbyte/pull/42626) | Update dependencies |
+| 0.6.3 | 2024-07-20 | [42296](https://github.com/airbytehq/airbyte/pull/42296) | Update dependencies |
+| 0.6.2 | 2024-07-13 | [41691](https://github.com/airbytehq/airbyte/pull/41691) | Update dependencies |
+| 0.6.1 | 2024-07-10 | [41113](https://github.com/airbytehq/airbyte/pull/41113) | Update dependencies |
+| 0.6.0 | 2024-07-10 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | Adds new stream `subscription_with_scheduled_changes` |
+| 0.5.5 | 2024-07-06 | [40965](https://github.com/airbytehq/airbyte/pull/40965) | Update dependencies |
+| 0.5.4 | 2024-06-25 | [40332](https://github.com/airbytehq/airbyte/pull/40332) | Update dependencies |
 | 0.5.3 | 2024-06-23 | [40074](https://github.com/airbytehq/airbyte/pull/40074) | Update dependencies |
 | 0.5.2 | 2024-06-06 | [39217](https://github.com/airbytehq/airbyte/pull/39217) | [autopull] Upgrade base image to v1.2.2 |
 | 0.5.1 | 2024-04-24 | [36633](https://github.com/airbytehq/airbyte/pull/36633) | Schema descriptions and CDK 0.80.0 |

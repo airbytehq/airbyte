@@ -225,6 +225,14 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.4.12 | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985) | Expand Invoice discounts and tax rates
+| 5.4.11 | 2024-07-27 | [42623](https://github.com/airbytehq/airbyte/pull/42623) | Update dependencies |
+| 5.4.10 | 2024-07-20 | [42305](https://github.com/airbytehq/airbyte/pull/42305) | Update dependencies |
+| 5.4.9 | 2024-07-13 | [41760](https://github.com/airbytehq/airbyte/pull/41760) | Update dependencies |
+| 5.4.8 | 2024-07-10 | [41477](https://github.com/airbytehq/airbyte/pull/41477) | Update dependencies |
+| 5.4.7 | 2024-07-09 | [40869](https://github.com/airbytehq/airbyte/pull/40869) | Update dependencies |
+| 5.4.6 | 2024-07-08 | [41044](https://github.com/airbytehq/airbyte/pull/41044) | Use latest `CDK` version possible |
+| 5.4.5 | 2024-06-25 | [40404](https://github.com/airbytehq/airbyte/pull/40404) | Update dependencies |
 | 5.4.4 | 2024-06-22 | [40040](https://github.com/airbytehq/airbyte/pull/40040) | Update dependencies |
 | 5.4.3 | 2024-06-06 | [39284](https://github.com/airbytehq/airbyte/pull/39284) | [autopull] Upgrade base image to v1.2.2 |
 | 5.4.2 | 2024-06-11 | [39412](https://github.com/airbytehq/airbyte/pull/39412) | Removed `invoice.upcomming` event type from (incremental sync) for `Invoices` stream |

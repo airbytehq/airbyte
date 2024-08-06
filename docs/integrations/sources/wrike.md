@@ -50,6 +50,14 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
+| 0.2.12 | 2024-08-03 | [43260](https://github.com/airbytehq/airbyte/pull/43260) | Update dependencies |
+| 0.2.11 | 2024-07-27 | [42804](https://github.com/airbytehq/airbyte/pull/42804) | Update dependencies |
+| 0.2.10 | 2024-07-20 | [42292](https://github.com/airbytehq/airbyte/pull/42292) | Update dependencies |
+| 0.2.9 | 2024-07-13 | [41796](https://github.com/airbytehq/airbyte/pull/41796) | Update dependencies |
+| 0.2.8 | 2024-07-10 | [41360](https://github.com/airbytehq/airbyte/pull/41360) | Update dependencies |
+| 0.2.7 | 2024-07-09 | [41278](https://github.com/airbytehq/airbyte/pull/41278) | Update dependencies |
+| 0.2.6 | 2024-07-06 | [40954](https://github.com/airbytehq/airbyte/pull/40954) | Update dependencies |
+| 0.2.5 | 2024-06-25 | [40330](https://github.com/airbytehq/airbyte/pull/40330) | Update dependencies |
 | 0.2.4 | 2024-06-22 | [40033](https://github.com/airbytehq/airbyte/pull/40033) | Update dependencies |
 | 0.2.3 | 2024-06-06 | [39224](https://github.com/airbytehq/airbyte/pull/39224) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.2 | 2024-05-28 | [38663](https://github.com/airbytehq/airbyte/pull/38663) | Make connector compatible with Builder |

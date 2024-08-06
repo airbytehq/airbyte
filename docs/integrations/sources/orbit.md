@@ -48,6 +48,13 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.14 | 2024-08-03 | [43188](https://github.com/airbytehq/airbyte/pull/43188) | Update dependencies |
+| 0.3.13 | 2024-07-27 | [42388](https://github.com/airbytehq/airbyte/pull/42388) | Update dependencies |
+| 0.3.12 | 2024-07-13 | [41770](https://github.com/airbytehq/airbyte/pull/41770) | Update dependencies |
+| 0.3.11 | 2024-07-10 | [41428](https://github.com/airbytehq/airbyte/pull/41428) | Update dependencies |
+| 0.3.10 | 2024-07-09 | [41216](https://github.com/airbytehq/airbyte/pull/41216) | Update dependencies |
+| 0.3.9 | 2024-07-06 | [40974](https://github.com/airbytehq/airbyte/pull/40974) | Update dependencies |
+| 0.3.8 | 2024-06-25 | [40293](https://github.com/airbytehq/airbyte/pull/40293) | Update dependencies |
 | 0.3.7 | 2024-06-22 | [40041](https://github.com/airbytehq/airbyte/pull/40041) | Update dependencies |
 | 0.3.6 | 2024-06-06 | [39179](https://github.com/airbytehq/airbyte/pull/39179) | [autopull] Upgrade base image to v1.2.2 |
 | 0.3.5 | 2024-05-28 | [38700](https://github.com/airbytehq/airbyte/pull/38700) | Make compatible with builder |

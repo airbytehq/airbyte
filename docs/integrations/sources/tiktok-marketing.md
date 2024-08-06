@@ -66,7 +66,7 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | :----------- | :----------------------------------------- | :---------- |
+| :---------------------------------------- | :----------- | :----------------------------------------- |:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -85,10 +85,10 @@ To access the Sandbox environment:
 | CampaignsReportsDaily                     | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
 | CampaignsReportsLifetime                  | Prod,Sandbox | campaign_id                                | No          |
 | CreativeAssetsImages                      | Prod,Sandbox | image_id                                   | Yes         |
-| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | Yes         |
+| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | No          |
 | CreativeAssetsPortfolios                  | Prod,Sandbox | creative_portfolio_id                      | No          |
 | CreativeAssetsVideos                      | Prod,Sandbox | video_id                                   | Yes         |
-| AdvertiserIds                             | Prod         | advertiser_id                              | Yes         |
+| AdvertiserIds                             | Prod         | advertiser_id                              | No          |
 | AdvertisersAudienceReportsDaily           | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
 | AdvertisersAudienceReportsByCountryDaily  | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
 | AdvertisersAudienceReportsByPlatformDaily | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
@@ -125,7 +125,17 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.2.2 | 2024-08-03 | [42822](https://github.com/airbytehq/airbyte/pull/42822) | Update dependencies |
+| 4.2.1 | 2024-07-20 | [42375](https://github.com/airbytehq/airbyte/pull/42375) | Update dependencies |
+| 4.2.0 | 2024-07-17 | [42005](https://github.com/airbytehq/airbyte/pull/42005) | Migrate to CDK v3.5.3 |
+| 4.1.0 | 2024-07-17 | [42004](https://github.com/airbytehq/airbyte/pull/42004) | Migrate to CDK v2.4.0 |
+| 4.0.4 | 2024-07-13 | [41695](https://github.com/airbytehq/airbyte/pull/41695) | Update dependencies |
+| 4.0.3 | 2024-07-10 | [41370](https://github.com/airbytehq/airbyte/pull/41370) | Update dependencies |
+| 4.0.2 | 2024-07-09 | [41153](https://github.com/airbytehq/airbyte/pull/41153) | Update dependencies |
+| 4.0.1 | 2024-07-06 | [40915](https://github.com/airbytehq/airbyte/pull/40915) | Update dependencies |
+| 4.0.0 | 2024-07-01 | [38316](https://github.com/airbytehq/airbyte/pull/38316) | Migration to low-code CDK; Support include deleted statuses for Ads, Ad Groups and Campaign streams. |
+| 3.9.10 | 2024-06-25 | [40373](https://github.com/airbytehq/airbyte/pull/40373) | Update dependencies |
 | 3.9.9 | 2024-06-22 | [40133](https://github.com/airbytehq/airbyte/pull/40133) | Update dependencies |
 | 3.9.8 | 2024-06-06 | [39253](https://github.com/airbytehq/airbyte/pull/39253) | [autopull] Upgrade base image to v1.2.2 |
 | 3.9.7 | 2024-05-15 | [38250](https://github.com/airbytehq/airbyte/pull/38250) | Replace AirbyteLogger with logging.Logger and upgrade to latest base image |

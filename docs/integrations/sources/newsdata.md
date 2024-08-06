@@ -48,6 +48,14 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.14 | 2024-08-03 | [43271](https://github.com/airbytehq/airbyte/pull/43271) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42783](https://github.com/airbytehq/airbyte/pull/42783) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42378](https://github.com/airbytehq/airbyte/pull/42378) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41791](https://github.com/airbytehq/airbyte/pull/41791) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41567](https://github.com/airbytehq/airbyte/pull/41567) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41138](https://github.com/airbytehq/airbyte/pull/41138) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40852](https://github.com/airbytehq/airbyte/pull/40852) | Update dependencies |
+| 0.1.7 | 2024-06-25 | [40361](https://github.com/airbytehq/airbyte/pull/40361) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40082](https://github.com/airbytehq/airbyte/pull/40082) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39160](https://github.com/airbytehq/airbyte/pull/39160) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-05-28 | [38731](https://github.com/airbytehq/airbyte/pull/38731) | Make compatible with the builder |
