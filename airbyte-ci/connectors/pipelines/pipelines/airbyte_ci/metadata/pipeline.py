@@ -79,7 +79,7 @@ class MetadataUpload(SimpleDockerStep):
             context=context,
             paths_to_mount=[
                 MountPath(GIT_DIRECTORY_ROOT_PATH),
-                MountPath(context.connector),
+                MountPath(context.connector.code_directory),
             ],
             internal_tools=[
                 MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
