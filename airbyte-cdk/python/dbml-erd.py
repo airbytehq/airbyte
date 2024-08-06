@@ -1,8 +1,9 @@
 import argparse
 import json
-from typing import Union, List
+from typing import Union, List, Set
 
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStream
+from pathlib import Path
 from pydbml import Database
 from pydbml.classes import Column, Index, Reference, Table
 from pydbml.renderer.dbml.default import DefaultDBMLRenderer
@@ -60,6 +61,29 @@ def _get_column(database: Database, table_name: str, column_name: str) -> Column
     return matching_columns[0]
 
 
+def _get_source_name(source_folder: Path) -> str:
+    return source_folder.name
+
+
+def _get_manifest_path(source_folder: Path) -> Path:
+    return source_folder / source_folder.name.replace("-", "_") / "manifest.yaml"
+
+
+def _get_streams_from_schemas_folder(source_folder: Path) -> Set[str]:
+    schemas_folder = source_folder / source_folder.name.replace("-", "_") / "schemas"
+    return {p.name.replace(".json", "") for p in schemas_folder.iterdir() if p.is_file()}
+
+
+def _has_manifest(source_folder: Path):
+    return _get_manifest_path(source_folder).exists()
+
+
+def _is_dynamic(source_folder: Path, stream_name: str) -> bool:
+    if _has_manifest(source_folder):
+        raise NotImplementedError()
+    return stream_name not in _get_streams_from_schemas_folder(source_folder)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="dbml generator",
@@ -68,13 +92,19 @@ if __name__ == "__main__":
 
     parser.add_argument("-d", "--discover-output")
     parser.add_argument("-r", "--schema-relationships")
+    parser.add_argument("-s", "--source-folder")
 
     arguments = parser.parse_args()
 
     catalog = _get_catalog(arguments.discover_output)
+    source_folder = Path(arguments.source_folder)
 
-    database = Database() # FIXME pass source name as a parameter
+    database = Database()
     for stream in catalog.streams:
+        if _is_dynamic(source_folder, stream.name):
+            print(f"Skipping stream {stream.name} as it is dynamic")
+            continue
+
         dbml_table = Table(stream.name)
         for property_name, property_information in stream.json_schema.get("properties").items():
             dbml_table.add_column(
@@ -103,10 +133,19 @@ if __name__ == "__main__":
 
     for stream in _get_relationships_by_stream(arguments.schema_relationships):
         for column_name, relationship in stream["relations"].items():
+            if _is_dynamic(source_folder, stream["name"]):
+                print(f"Skipping relationship as stream {stream['name']} from relationship is dynamic")
+                continue
+
             try:
                 target_table_name, target_column_name = relationship.split(".")
             except ValueError as exception:
                 raise ValueError("If 'too many values to unpack', relationship to nested fields is not supported") from exception
+
+            if _is_dynamic(source_folder, target_table_name):
+                print(f"Skipping relationship as target stream {target_table_name} is dynamic")
+                continue
+
 
             database.add_reference(
                 Reference(
