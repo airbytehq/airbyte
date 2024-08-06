@@ -50,7 +50,9 @@ jobs:
         with:
           attempt_limit: 3
           command: |
-            exit 1
+            ./tools/bin/find_non_rate_limited_PAT \
+              ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+              ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
