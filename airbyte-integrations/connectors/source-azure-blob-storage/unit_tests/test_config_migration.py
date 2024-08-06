@@ -61,3 +61,6 @@ def test_credentials_config_migration():
     migration_instance.migrate(["check", "--config", config_path], source)
     test_migrated_config = load_config(config_path)
     assert test_migrated_config["credentials"]["azure_blob_storage_account_key"] == initial_config["azure_blob_storage_account_key"]
+
+    with open(config_path, "w") as file:
+        file.write(json.dumps(initial_config))
