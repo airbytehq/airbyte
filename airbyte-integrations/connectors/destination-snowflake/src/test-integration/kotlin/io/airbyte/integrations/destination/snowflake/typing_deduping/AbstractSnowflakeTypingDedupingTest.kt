@@ -22,12 +22,17 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.sql.SQLException
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.sql.DataSource
 import kotlin.concurrent.Volatile
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -399,6 +404,8 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 "_AIRBYTE_DATA",
                 "_airbyte_meta",
                 "_AIRBYTE_META",
+                "_airbyte_generation_id",
+                "_AIRBYTE_GENERATION_ID",
             )
 
         @Volatile private var cleanedAirbyteInternalTable = false
