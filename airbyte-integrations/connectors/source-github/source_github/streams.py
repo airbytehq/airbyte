@@ -1603,9 +1603,6 @@ class ContributorActivity(GithubStream):
     API docs: https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/stats/contributors"
 
