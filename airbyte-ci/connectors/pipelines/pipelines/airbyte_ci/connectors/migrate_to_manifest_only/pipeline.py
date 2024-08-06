@@ -12,26 +12,22 @@ from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_component_transformer import ManifestComponentTransformer
+from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_resolver import ManifestReferenceResolver
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.utils import (
     get_latest_base_image,
     readme_for_connector,
     revert_connector_directory,
 )
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
-from ruamel.yaml import YAML  # type: ignore
 
 ## GLOBAL VARIABLES ##
 
 VALID_SOURCE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py", "spec.json", "spec.yaml"]
 FILES_TO_LEAVE = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml", "secrets"]
-
-
-# Initialize YAML handler with desired output style
-yaml = YAML()
-yaml.indent(mapping=2, sequence=4, offset=2)
-yaml.preserve_quotes = True
 
 
 ## STEPS ##
@@ -158,26 +154,41 @@ class StripConnector(Step):
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
 
+    def remove_parameters(self, d):
+        if isinstance(d, dict):
+            return {k: self.remove_parameters(v) for k, v in d.items() if k != "$parameters"}
+        elif isinstance(d, list):
+            return [self.remove_parameters(item) for item in d]
+        else:
+            return d
+
     async def _run(self) -> StepResult:
         connector = self.context.connector
 
         ## 1. Move manifest.yaml to the root level of the directory
         self.logger.info(f"Moving manifest to the root level of the directory")
-        root_manifest_file = connector.manifest_path.rename(connector.code_directory / "manifest.yaml")
+        root_manifest_path = connector.code_directory / "manifest.yaml"
+        connector.manifest_path.rename(root_manifest_path)
 
-        if root_manifest_file not in connector.code_directory.iterdir():
+        if not root_manifest_path.exists():
             return StepResult(
                 step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
             )
 
         ## 2. Update the version in manifest.yaml
         try:
-            with open(root_manifest_file, "r") as manifest_file:
-                manifest_data = yaml.load(manifest_file)
-                manifest_data["version"] = "4.3.0"
+            manifest_data = read_yaml(root_manifest_path)
+            manifest_data["version"] = "4.3.0"
 
-                with open(root_manifest_file, "w") as manifest_file_to_write:
-                    yaml.dump(manifest_data, manifest_file_to_write)
+            # Resolve $parameters and types with CDK magic
+            resolved_manifest = ManifestReferenceResolver().preprocess_manifest(manifest_data)
+            propagated_manifest = ManifestComponentTransformer().propagate_types_and_parameters("", resolved_manifest, {})
+
+            # Recursively traverse the manifest, deleting any $parameters keys
+            cleaned_manifest = self.remove_parameters(propagated_manifest)
+
+            write_yaml(cleaned_manifest, root_manifest_path)
+
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update version in manifest.yaml: {e}")
 
@@ -187,22 +198,24 @@ class StripConnector(Step):
             self.logger.info(f"Non-inline spec file found. Migrating spec to manifest")
             try:
                 spec_data = self._fetch_spec_data(spec_file)
-                with open(root_manifest_file, "r") as manifest_file:
-                    manifest_data = yaml.load(manifest_file)
-                    manifest_data.setdefault("spec", {})
-                    manifest_data["spec"]["type"] = "Spec"
-                    manifest_data["spec"]["documentation_url"] = spec_data.get("documentation_url")
-                    manifest_data["spec"]["connection_specification"] = spec_data.get("connection_specification")
 
-                    with open(root_manifest_file, "w") as manifest_file_to_write:
-                        yaml.dump(manifest_data, manifest_file_to_write)
+                manifest_data = read_yaml(root_manifest_path)
+
+                # Confirm the connector does not have both inline and non-inline specs
+                if "spec" in manifest_data:
+                    return StepResult(step=self, status=StepStatus.FAILURE, stdout="Connector has both inline and non-inline specs.")
+
+                # Add the spec data to manifest.yaml
+                manifest_data["spec"] = {
+                    "type": "Spec",
+                    "documentation_url": spec_data.get("documentation_url"),
+                    "connection_specification": spec_data.get("connection_specification"),
+                }
+
+                write_yaml(manifest_data, root_manifest_path)
+
             except Exception as e:
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to add spec data to manifest.yaml: {e}")
-
-        with open(root_manifest_file, "r") as file_check:
-            manifest_data = yaml.load(file_check)
-            if not manifest_data.get("spec").get("connection_specification"):
-                return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to fetch connector's spec data from manifest.")
 
         ## 3. Delete all non-essential files
         try:
@@ -240,49 +253,43 @@ class UpdateManifestOnlyFiles(Step):
 
         ## 1. Update the acceptance test config to point to the right spec path
         try:
-            with open(connector.acceptance_test_config_path, "r") as test_config:
-                acceptance_test_config_data = yaml.load(test_config)
+            acceptance_test_config_data = read_yaml(connector.acceptance_test_config_path)
 
-                # Handle legacy acceptance-test-config:
-                if "acceptance_tests" in acceptance_test_config_data:
-                    acceptance_test_config_data["acceptance_tests"]["spec"]["tests"][0]["spec_path"] = "manifest.yaml"
-                else:
-                    acceptance_test_config_data["tests"]["spec"][0]["spec_path"] = "manifest.yaml"
+            # Handle legacy acceptance-test-config:
+            if "acceptance_tests" in acceptance_test_config_data:
+                acceptance_test_config_data["acceptance_tests"]["spec"]["tests"][0]["spec_path"] = "manifest.yaml"
+            else:
+                acceptance_test_config_data["tests"]["spec"][0]["spec_path"] = "manifest.yaml"
 
-            with open(connector.acceptance_test_config_path, "w") as file:
-                yaml.dump(acceptance_test_config_data, file)
+            write_yaml(acceptance_test_config_data, connector.acceptance_test_config_path)
+
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
 
         ## 2. Update the connector's metadata
         self.logger.info(f"Updating metadata file")
         try:
-            with open(connector.metadata_file_path, "r") as file:
-                metadata = yaml.load(file)
-                if metadata and "data" in metadata:
-                    # Update the metadata tab
-                    tags = metadata.get("data", {}).get("tags")
-                    if tags:
-                        # Remove any existing language tags and append the manifest-only tag
-                        for tag in tags:
-                            if "language:" in tag:
-                                tags.remove(tag)
-                        tags.append("language:manifest-only")
+            metadata = read_yaml(connector.metadata_file_path)
 
-                    pypi_package = metadata.get("data", {}).get("remoteRegistries", {}).get("pypi")
-                    if pypi_package and pypi_package.get("enabled") == True:
-                        pypi_package["enabled"] = False
+            # Remove any existing language tags and append the manifest-only tag
+            tags = metadata.get("data", {}).get("tags")
+            if tags:
+                for tag in tags:
+                    if "language:" in tag:
+                        tags.remove(tag)
+                tags.append("language:manifest-only")
 
-                    # Update the base image
-                    latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
-                    connector_base_image = metadata.get("data").get("connectorBuildOptions")
-                    connector_base_image["baseImage"] = latest_base_image
+            pypi_package = metadata.get("data", {}).get("remoteRegistries", {}).get("pypi")
+            if pypi_package and pypi_package.get("enabled") == True:
+                pypi_package["enabled"] = False
 
-                    # Write the changes to metadata.yaml
-                    with open(connector.metadata_file_path, "w") as file:
-                        yaml.dump(metadata, file)
-                else:
-                    return StepResult(step=self, status=StepStatus.FAILURE, stdout="Failed to read metadata.yaml content.")
+                # Update the base image
+                latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
+                connector_base_image = metadata.get("data").get("connectorBuildOptions")
+                connector_base_image["baseImage"] = latest_base_image
+
+                # Write the changes to metadata.yaml
+                write_yaml(metadata, connector.metadata_file_path)
 
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
@@ -290,6 +297,7 @@ class UpdateManifestOnlyFiles(Step):
         ## 3. Update the connector's README
         self.logger.info(f"Updating README file")
         readme = readme_for_connector(connector.technical_name)
+
         with open(connector.code_directory / "README.md", "w") as file:
             file.write(readme)
 
