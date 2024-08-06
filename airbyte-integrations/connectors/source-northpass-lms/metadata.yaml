@@ -1,0 +1,35 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.northpass.com/v2
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-northpass-lms
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c1b339a44caa3e060fb0df4bea89a11d642c86f67618aa0c72a03855772466d9
+  connectorSubtype: api
+  connectorType: source
+  definitionId: dd4d317e-7537-456c-b6ba-264b17ce6daa
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-northpass-lms
+  githubIssueLabel: source-northpass-lms
+  icon: northpass-lms.svg
+  license: MIT
+  name: Northpass LMS
+  releaseDate: 08-06-2024
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/northpass-lms
+  tags:
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"
