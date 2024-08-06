@@ -149,6 +149,8 @@ from pydantic.v1 import BaseModel
 ComponentDefinition = Mapping[str, Any]
 
 
+
+
 class ModelToComponentFactory:
     def __init__(
         self,
@@ -340,10 +342,13 @@ class ModelToComponentFactory:
         declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
         retriever = declarative_stream.retriever
+        
+        # VERIFY
         if not isinstance(retriever, SimpleRetrieverModel):
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(retriever)}"
             )
+        
         partition_router = retriever.partition_router
         if not isinstance(partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
             raise ValueError(
@@ -351,7 +356,7 @@ class ModelToComponentFactory:
             )
         if not hasattr(partition_router, "parent_stream_configs"):
             raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
-
+        
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
@@ -368,13 +373,13 @@ class ModelToComponentFactory:
             message_repository=self._message_repository,
         )
         if model.request_authentication.type == "Bearer":
-            return ModelToComponentFactory.create_bearer_authenticator(
+            return self.create_bearer_authenticator(
                 BearerAuthenticatorModel(type="BearerAuthenticator", api_token=""),  # type: ignore # $parameters has a default value
                 config,
                 token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
         else:
-            return ModelToComponentFactory.create_api_key_authenticator(
+            return self.create_api_key_authenticator(
                 ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),  # type: ignore # $parameters and headers default to None
                 config=config,
                 token_provider=token_provider,
@@ -423,6 +428,7 @@ class ModelToComponentFactory:
     ) -> CursorPaginationStrategy:
         if not isinstance(decoder, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+        
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
             decoder=decoder,
@@ -675,40 +681,50 @@ class ModelToComponentFactory:
             config=config,
             parameters=model.parameters or {},
         )
-
-    def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
-        stream_slicer = None
-        if (
+    
+    @staticmethod
+    def model_has_partition_router(model: DeclarativeStreamModel) -> bool:
+        return (
             hasattr(model.retriever, "partition_router")
             and isinstance(model.retriever, SimpleRetrieverModel)
             and model.retriever.partition_router
-        ):
+        )
+    
+    def _create_base_slicer(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
+        stream_slicer = None
+        if self.model_has_partition_router(model):
             stream_slicer_model = model.retriever.partition_router
             if isinstance(stream_slicer_model, list):
-                stream_slicer = CartesianProductStreamSlicer(
+                stream_slicer: CartesianProductStreamSlicer = CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
                 )
             else:
-                stream_slicer = self._create_component_from_model(model=stream_slicer_model, config=config)
+                stream_slicer: StreamSlicer = self._create_component_from_model(model=stream_slicer_model, config=config)
+
+        return stream_slicer
+    
+    def _create_per_partition_cursor(self, model: DeclarativeStreamModel, stream_slicer: StreamSlicer, config: Config) -> PerPartitionCursor:
+        incremental_sync_model = model.incremental_sync
+        return PerPartitionCursor(
+            cursor_factory=CursorFactory(
+                lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
+            ),
+            partition_router=stream_slicer,
+        )
+
+    def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
+        stream_slicer: Optional[StreamSlicer] = self._create_base_slicer(model, config)
 
         if model.incremental_sync and stream_slicer:
-            incremental_sync_model = model.incremental_sync
-            return PerPartitionCursor(
-                cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
-                ),
-                partition_router=stream_slicer,
-            )
+            return self._create_per_partition_cursor(model, stream_slicer, config)
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
             # To incrementally deliver RFR for low-code we're first implementing this for streams that do not use
             # nested state like substreams or those using list partition routers
             return ResumableFullRefreshCursor(parameters={})
-        elif stream_slicer:
-            return stream_slicer
-        else:
-            return None
+
+        return stream_slicer
 
     def create_default_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs: Any) -> DefaultErrorHandler:
         backoff_strategies = []
