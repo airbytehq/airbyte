@@ -45,7 +45,10 @@ class JsonSchemaParquetPreprocessor : JsonSchemaIdentityMapper() {
         // Add "type", a string field describing the type of the union
         val newProperties = MoreMappers.initMapper().createObjectNode()
         val typeObj = MoreMappers.initMapper().createObjectNode()
-        typeObj.put("type", "string")
+        // TODO: Temporary sentinel type to flag for the avro converter
+        // that this should not be made optional. This is a hack and should
+        // be replaced in the CDK by a first-class `optional` flag.
+        typeObj.put("type", "type_name")
         newProperties.replace("type", typeObj)
 
         // Convert union options to named fields of the same type

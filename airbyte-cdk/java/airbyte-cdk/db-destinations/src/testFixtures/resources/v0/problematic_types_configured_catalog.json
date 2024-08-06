@@ -4,6 +4,7 @@
       "stream": {
         "name": "problematic_types",
         "json_schema": {
+          "type": "object",
           "properties": {
             "schemaless_object": {
               "type": "object"
@@ -60,6 +61,118 @@
                   ]
                 }
               ]
+            },
+            "union_of_objects_with_properties_identical": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "union_of_objects_with_properties_overlapping": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "flagged": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              ]
+            },
+            "union_of_objects_with_properties_nonoverlapping": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "flagged": {
+                      "type": "boolean"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "union_of_objects_with_properties_contradicting": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            },
+            "empty_object": {
+              "type": "object",
+              "properties": {}
+            },
+            "object_with_null_properties": {
+              "type": "object",
+              "properties": null
             }
           }
         }
@@ -69,7 +182,8 @@
       "destination_sync_mode": "overwrite",
       "primary_key": [],
       "generation_id": 10,
-      "minimum_generation_id": 10
+      "minimum_generation_id": 10,
+      "sync_id": 999
     }
   ]
 }

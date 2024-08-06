@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.s3.jsonschema
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.commons.jackson.MoreMappers
 
 enum class AirbyteJsonSchemaType {
     BOOLEAN,
@@ -50,13 +51,13 @@ enum class AirbyteJsonSchemaType {
             OBJECT_WITHOUT_PROPERTIES -> tree.isObject
             OBJECT_WITH_PROPERTIES -> tree.isObject
             UNION,
-            COMBINED -> throw IllegalStateException("Union type cannot be matched")
+            COMBINED -> throw IllegalArgumentException("Union type cannot be matched")
         }
     }
 
     companion object {
         fun fromJsonSchema(schema: ObjectNode): AirbyteJsonSchemaType {
-            if (schema.has("oneOf")) {
+            if (schema.has("oneOf") || schema.has("anyOf") || schema.has("allOf")) {
                 return UNION
             }
 
@@ -148,7 +149,11 @@ enum class AirbyteJsonSchemaType {
                         }
                     }
                     "object" -> {
-                        if (schema.has("properties")) {
+                        if (
+                            schema.has("properties") &&
+                                !schema["properties"].isNull &&
+                                !schema["properties"].isEmpty
+                        ) {
                             OBJECT_WITH_PROPERTIES
                         } else {
                             OBJECT_WITHOUT_PROPERTIES
@@ -164,6 +169,27 @@ enum class AirbyteJsonSchemaType {
             }
         }
 
+        fun getOptions(schema: ObjectNode): List<ObjectNode> {
+            return when (fromJsonSchema(schema)) {
+                UNION -> {
+                    schema["oneOf"].elements().asSequence().map { it as ObjectNode }.toList()
+                }
+                COMBINED -> {
+                    schema["type"]
+                        .elements()
+                        .asSequence()
+                        .map {
+                            val objNode = MoreMappers.initMapper().createObjectNode()
+                            objNode.put("type", it.asText())
+                        }
+                        .toList()
+                }
+                else -> {
+                    listOf(schema)
+                }
+            }
+        }
+
         fun getMatchingValueForType(value: JsonNode, options: ArrayNode): ObjectNode {
             return getMatchingValueForType(
                 value,
@@ -172,15 +198,39 @@ enum class AirbyteJsonSchemaType {
         }
 
         fun getMatchingValueForType(value: JsonNode, options: Iterable<ObjectNode>): ObjectNode {
+            val optionsAsList = options.toList()
             val matching =
-                options
+                optionsAsList
                     .filter { option ->
-                        val rv = fromJsonSchema(option).matchesValue(value)
-                        rv
+                        when (val schemaType = fromJsonSchema(option)) {
+                            UNION -> {
+                                option["oneOf"]
+                                    .elements()
+                                    .asSequence()
+                                    .filter { fromJsonSchema(it as ObjectNode).matchesValue(value) }
+                                    .toList()
+                                    .isNotEmpty()
+                            }
+                            COMBINED -> {
+                                option["type"]
+                                    .elements()
+                                    .asSequence()
+                                    .map {
+                                        val objNode = MoreMappers.initMapper().createObjectNode()
+                                        objNode.put("type", it.asText())
+                                    }
+                                    .filter { fromJsonSchema(it).matchesValue(value) }
+                                    .toList()
+                                    .isNotEmpty()
+                            }
+                            else -> {
+                                schemaType.matchesValue(value)
+                            }
+                        }
                     }
                     .toList()
-            if (matching.size != 1) {
-                throw IllegalArgumentException("Union type does not match exactly one option")
+            if (matching.isEmpty()) {
+                throw IllegalArgumentException("Union type does not match any options")
             }
             return matching.first()
         }

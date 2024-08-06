@@ -55,7 +55,7 @@ class JsonToAvroSchemaConverter {
                 isRootNode = true,
                 useV2FieldNames = useV2FieldNames,
             )
-        logger.info { "Generated Avro schema: $schema" }
+        logger.info { "$namespace.$streamName: Generated Avro schema: $schema" }
         return schema
     }
 
@@ -175,17 +175,20 @@ class JsonToAvroSchemaConverter {
                 // This may not be the correct choice.
                 ) null
                 else (if (stdNamespace == null) stdName else ("$stdNamespace.$stdName"))
-            fieldBuilder
-                .type(
-                    parseJsonField(
-                        subfieldName,
-                        subfieldNamespace,
-                        subfieldDefinition,
-                        appendExtraProps,
-                        addStringToLogicalTypes,
-                    ),
+            val parsed =
+                parseJsonField(
+                    subfieldName,
+                    subfieldNamespace,
+                    subfieldDefinition,
+                    appendExtraProps,
+                    addStringToLogicalTypes,
                 )
-                .withDefault(null)
+            val nextStep = fieldBuilder.type(parsed)
+            if (parsed.isUnion) {
+                nextStep.withDefault(null)
+            } else {
+                nextStep.noDefault()
+            }
         }
 
         if (appendExtraProps) {
@@ -537,10 +540,15 @@ class JsonToAvroSchemaConverter {
                 val subfieldSchemas: List<Schema> =
                     entry.value
                         .flatMap { schema: Schema ->
-                            schema.types
-                                // filter out null and add it later on as the first
-                                // element
-                                .filter { s: Schema -> s != NULL_SCHEMA }
+                            val types =
+                                if (schema.isUnion) {
+                                    schema.types
+                                } else {
+                                    listOf(schema)
+                                }
+                            // filter out null and add it later on as the first
+                            // element
+                            types.filter { s: Schema -> s != NULL_SCHEMA }
                         }
                         .distinct()
 
@@ -585,7 +593,7 @@ class JsonToAvroSchemaConverter {
         addStringToLogicalTypes: Boolean,
     ): Schema {
         // Filter out null types, which will be added back in the end.
-        val nonNullFieldTypes: MutableList<Schema> =
+        val nonNullFieldTypes: MutableList<Schema?> =
             getNonNullTypes(fieldName, fieldDefinition)
                 .flatMap { fieldType: JsonSchemaType ->
                     val singleFieldSchema: Schema =
@@ -597,7 +605,10 @@ class JsonToAvroSchemaConverter {
                             appendExtraProps,
                             addStringToLogicalTypes,
                         )
-                    if (singleFieldSchema.isUnion) {
+                    if (fieldType == TYPE_NAME) {
+                        // Hack to convey `type_name`, which has no avro equivalent.
+                        return@flatMap listOf(null)
+                    } else if (singleFieldSchema.isUnion) {
                         return@flatMap singleFieldSchema.types
                     } else {
                         return@flatMap listOf(
@@ -607,6 +618,11 @@ class JsonToAvroSchemaConverter {
                 }
                 .distinct()
                 .toMutableList()
+
+        // Sentinel hack to make field names non-optional.
+        if (nonNullFieldTypes == listOf(null)) {
+            return STRING_SCHEMA
+        }
 
         if (nonNullFieldTypes.isEmpty()) {
             return Schema.create(Schema.Type.NULL)
@@ -621,7 +637,7 @@ class JsonToAvroSchemaConverter {
             // invalid and
             // cannot be properly processed.
             if (
-                ((nonNullFieldTypes.any { schema: Schema -> schema.logicalType != null }) &&
+                ((nonNullFieldTypes.any { schema: Schema? -> schema?.logicalType != null }) &&
                     (!nonNullFieldTypes.contains(STRING_SCHEMA)) &&
                     addStringToLogicalTypes)
             ) {

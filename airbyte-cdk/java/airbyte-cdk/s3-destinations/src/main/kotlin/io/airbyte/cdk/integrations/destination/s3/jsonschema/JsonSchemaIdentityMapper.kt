@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.commons.jackson.MoreMappers
 
 open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
+
     override fun mapObjectWithProperties(schema: ObjectNode): ObjectNode {
         val newSchema = MoreMappers.initMapper().createObjectNode()
         val newProperties = MoreMappers.initMapper().createObjectNode()
@@ -91,17 +92,18 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
     }
 
     override fun mapCombined(schema: ObjectNode): ObjectNode {
-        // This isn't a perfect identity, because not all types
-        // can be represented as a string.
+        // This isn't a perfect identity, because not all types can be represented as a string
         val newCombinedSchema = MoreMappers.initMapper().createObjectNode()
         val newOptions = MoreMappers.initMapper().createArrayNode()
 
         schema["type"].elements().forEach {
             val newTypeObj = MoreMappers.initMapper().createObjectNode()
             newTypeObj.put("type", it.asText())
+
             val newOption = mapSchema(newTypeObj)
             newOptions.add(newOption)
         }
+
         newCombinedSchema.replace("oneOf", newOptions)
 
         return newCombinedSchema
