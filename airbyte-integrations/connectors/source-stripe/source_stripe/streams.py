@@ -13,7 +13,7 @@ import pendulum
 import requests
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
@@ -126,7 +126,7 @@ class StripeStream(HttpStream, ABC):
         return self._extra_request_params or {}
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return ExponentialBackoffStrategy(config={}, parameters={}, factor=1)
+        return ConstantBackoffStrategy(backoff_time_in_seconds=1, config={}, parameters={})
 
     @property
     def record_extractor(self) -> IRecordExtractor:
