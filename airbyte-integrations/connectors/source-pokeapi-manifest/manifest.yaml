@@ -13,22 +13,34 @@ definitions:
       type: DeclarativeStream
       name: pokemon
       primary_key:
-        - id
+        - name
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /{{config['pokemon_name']}}
+          path: /
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - results
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/pokemon"
+      transformations:
+        - class_name: "source_declarative_manifest.components.ListAddFields"
+          fields:
+            - path: ["bens_duplicated_field"]
+              value: "{{ record['name'] }}"
+              value_type: "string"
+        - class_name: "source_declarative_manifest.components.ListAddFields"
+          fields:
+            - path: ["bens_new_field"]
+              value: "I AM NEW"
+              value_type: "string"
   base_requester:
     type: HttpRequester
     url_base: https://pokeapi.co/api/v2/pokemon
