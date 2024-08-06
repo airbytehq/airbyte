@@ -17,7 +17,7 @@
       "format": "date-time"
     },
     "customer_journey_summary": {
-      "description": "__",
+      "description": "Represents a customer's visiting activities on a shop's online store.",
       "type": ["null", "object"],
       "properties": {
         "ready": {
