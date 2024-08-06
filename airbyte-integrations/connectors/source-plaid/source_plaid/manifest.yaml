@@ -336,26 +336,6 @@ streams:
         type: DefaultPaginator
         pagination_strategy:
           type: OffsetIncrement
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: date
-      datetime_format: "%Y-%m-%d"
-      start_time_option:
-        type: RequestOption
-        field_name: start_date
-        inject_into: body_json
-      end_time_option:
-        type: RequestOption
-        field_name: end_date
-        inject_into: body_json
-      start_datetime:
-        type: MinMaxDatetime
-        datetime: "{{config['start_date']}}"
-        datetime_format: "%Y-%m-%d"
-      end_datetime:
-        type: MinMaxDatetime
-        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
