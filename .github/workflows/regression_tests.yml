@@ -46,7 +46,7 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
       - name: Check PAT rate limits
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@3.5.0
         with:
           attempt_limit: 3
           command: |
