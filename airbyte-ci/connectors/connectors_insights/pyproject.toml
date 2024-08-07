@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-insights"
-version = "0.2.4"
+version = "0.3.0"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -30,6 +30,9 @@ connectors-insights = "connectors_insights.cli:connectors_insights"
 mypy = "^1.8.0"
 types-requests = "^2.32.0.20240602"
 types-beautifulsoup4 = "^4.12.0.20240511"
+
+[tool.ruff]
+line-length = 140
 
 [tool.ruff.lint]
 select = ["F"]

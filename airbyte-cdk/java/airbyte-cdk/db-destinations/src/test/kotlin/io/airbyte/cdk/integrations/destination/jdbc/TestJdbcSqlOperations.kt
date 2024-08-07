@@ -23,13 +23,12 @@ class TestJdbcSqlOperations : JdbcSqlOperations() {
         // Not required for the testing
     }
 
-    override fun isOtherGenerationIdInTable(
+    override fun getGenerationIdInTable(
         database: JdbcDatabase,
-        generationId: Long,
         rawNamespace: String,
         rawName: String
-    ): Boolean {
-        return false
+    ): Long {
+        return -1L
         // Not required for the testing
     }
 

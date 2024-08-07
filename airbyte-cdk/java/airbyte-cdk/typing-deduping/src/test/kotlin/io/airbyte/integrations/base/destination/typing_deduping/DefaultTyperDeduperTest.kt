@@ -11,7 +11,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migrat
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.mockk.mockk
 import java.time.Instant
 import java.util.*
 import java.util.function.Consumer
@@ -58,6 +57,8 @@ class DefaultTyperDeduperTest {
 
     private lateinit var migrator: DestinationV1V2Migrator
     private lateinit var typerDeduper: TyperDeduper
+
+    private val success = StreamSyncSummary(1, AirbyteStreamStatus.COMPLETE)
 
     private val MIGRATION_REQUIRING_SOFT_RESET: Migration<MockState> =
         object : Migration<MockState> {
@@ -119,6 +120,14 @@ class DefaultTyperDeduperTest {
         initialStates.forEach(
             Consumer { initialState: DestinationInitialStatus<MockState> ->
                 Mockito.`when`(initialState.initialRawTableStatus)
+                    .thenReturn(
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.empty()
+                        )
+                    )
+                Mockito.`when`(initialState.initialTempRawTableStatus)
                     .thenReturn(
                         InitialRawTableStatus(
                             rawTableExists = true,
@@ -195,7 +204,13 @@ class DefaultTyperDeduperTest {
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
         Mockito.clearInvocations(destinationHandler)
 
-        typerDeduper.commitFinalTables()
+        typerDeduper.commitFinalTables(
+            mapOf(
+                OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+            )
+        )
         Mockito.verify(destinationHandler, Mockito.never()).execute(any())
     }
 
@@ -266,7 +281,13 @@ class DefaultTyperDeduperTest {
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
         Mockito.clearInvocations(destinationHandler)
 
-        typerDeduper.commitFinalTables()
+        typerDeduper.commitFinalTables(
+            mapOf(
+                OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+            )
+        )
         Mockito.verify(destinationHandler)
             .execute(
                 of(
@@ -397,7 +418,13 @@ class DefaultTyperDeduperTest {
         Mockito.verifyNoMoreInteractions(*Mockito.ignoreStubs(destinationHandler))
         Mockito.clearInvocations(destinationHandler)
 
-        typerDeduper.commitFinalTables()
+        typerDeduper.commitFinalTables(
+            mapOf(
+                OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+            )
+        )
         Mockito.verify(destinationHandler)
             .execute(
                 of(
@@ -469,7 +496,13 @@ class DefaultTyperDeduperTest {
         Mockito.clearInvocations(destinationHandler)
 
         typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream")
-        typerDeduper.commitFinalTables()
+        typerDeduper.commitFinalTables(
+            mapOf(
+                OVERWRITE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                APPEND_STREAM_CONFIG.id.asStreamDescriptor() to success,
+                DEDUPE_STREAM_CONFIG.id.asStreamDescriptor() to success,
+            )
+        )
 
         Mockito.verifyNoInteractions(*Mockito.ignoreStubs(destinationHandler))
     }
@@ -484,6 +517,14 @@ class DefaultTyperDeduperTest {
         initialStates.forEach(
             Consumer { initialState: DestinationInitialStatus<MockState> ->
                 Mockito.`when`(initialState.initialRawTableStatus)
+                    .thenReturn(
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = false,
+                            maxProcessedTimestamp = Optional.empty()
+                        )
+                    )
+                Mockito.`when`(initialState.initialTempRawTableStatus)
                     .thenReturn(
                         InitialRawTableStatus(
                             rawTableExists = true,
@@ -538,6 +579,15 @@ class DefaultTyperDeduperTest {
         initialStates.forEach(
             Consumer { initialState: DestinationInitialStatus<MockState> ->
                 Mockito.`when`(initialState.initialRawTableStatus)
+                    .thenReturn(
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp =
+                                Optional.of(Instant.parse("2023-01-23T12:34:56Z"))
+                        )
+                    )
+                Mockito.`when`(initialState.initialTempRawTableStatus)
                     .thenReturn(
                         InitialRawTableStatus(
                             rawTableExists = true,
@@ -625,10 +675,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         true,
                         false,
-                        MockState(false, false, true)
+                        MockState(false, false, true),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
@@ -638,10 +694,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         true,
                         false,
-                        MockState(false, false, true)
+                        MockState(false, false, true),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
@@ -651,10 +713,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         true,
                         false,
-                        MockState(false, false, true)
+                        MockState(false, false, true),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 )
             )
@@ -752,10 +820,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         false,
                         false,
-                        MockState(false, false, false)
+                        MockState(false, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
@@ -765,10 +839,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         false,
                         false,
-                        MockState(false, false, false)
+                        MockState(false, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
@@ -778,10 +858,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         false,
                         false,
-                        MockState(false, false, false)
+                        MockState(false, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 )
             )
@@ -870,10 +956,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         false,
                         false,
-                        MockState(true, false, false)
+                        MockState(true, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         APPEND_STREAM_CONFIG,
@@ -883,10 +975,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         false,
                         false,
-                        MockState(true, false, false)
+                        MockState(true, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     ),
                     DestinationInitialStatus(
                         DEDUPE_STREAM_CONFIG,
@@ -896,10 +994,16 @@ class DefaultTyperDeduperTest {
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
                         ),
-                        initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
+                        InitialRawTableStatus(
+                            rawTableExists = true,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.of(Instant.ofEpochMilli(42))
+                        ),
                         false,
                         false,
-                        MockState(true, false, false)
+                        MockState(true, false, false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 )
             )

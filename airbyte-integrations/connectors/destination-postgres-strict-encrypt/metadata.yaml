@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 2.2.1
+  dockerImageTag: 2.3.0
   dockerRepository: airbyte/destination-postgres-strict-encrypt
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
@@ -25,8 +25,8 @@ data:
         upgradeDeadline: "2024-05-31"
   releaseStage: generally_available
   supportLevel: certified
+  supportsRefreshes: true
   supportsDbt: true
-  supportsRefreshes: false
   tags:
     - language:java
   connectorTestSuitesOptions:
