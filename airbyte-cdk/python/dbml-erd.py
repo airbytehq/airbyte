@@ -1,5 +1,6 @@
 import argparse
 import json
+import yaml
 from typing import Union, List, Set
 
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStream
@@ -7,6 +8,8 @@ from pathlib import Path
 from pydbml import Database
 from pydbml.classes import Column, Index, Reference, Table
 from pydbml.renderer.dbml.default import DefaultDBMLRenderer
+
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 
 
 def _get_catalog(catalog_path: str) -> AirbyteCatalog:
@@ -32,6 +35,7 @@ def _extract_type(property_type: Union[str, List[str]]) -> str:
         # this in DBML
         types.remove("null")
     if len(types) != 1:
+        # TODO https://airbytehq-team.slack.com/archives/C02U9R3AF37/p1722957043627829?thread_ts=1722952100.044459&cid=C02U9R3AF37
         raise ValueError(f"Expected only one type apart from `null` but got {len(types)}: {property_type}")
     return types[0]
 
@@ -71,7 +75,7 @@ def _get_manifest_path(source_folder: Path) -> Path:
 
 def _get_streams_from_schemas_folder(source_folder: Path) -> Set[str]:
     schemas_folder = source_folder / source_folder.name.replace("-", "_") / "schemas"
-    return {p.name.replace(".json", "") for p in schemas_folder.iterdir() if p.is_file()}
+    return {p.name.replace(".json", "") for p in schemas_folder.iterdir() if p.is_file()} if schemas_folder.exists() else set()
 
 
 def _has_manifest(source_folder: Path):
@@ -79,9 +83,19 @@ def _has_manifest(source_folder: Path):
 
 
 def _is_dynamic(source_folder: Path, stream_name: str) -> bool:
+    manifest_static_streams = set()
     if _has_manifest(source_folder):
-        raise NotImplementedError()
-    return stream_name not in _get_streams_from_schemas_folder(source_folder)
+        with open(_get_manifest_path(source_folder)) as manifest_file:
+            resolved_manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_file))
+        for stream in resolved_manifest["streams"]:
+            if stream["schema_loader"]["type"] == "InlineSchemaLoader":
+                name = stream["name"] if "name" in stream else stream.get("$parameters").get("name", None)
+                if not name:
+                    print(f"Could not retrieve name for this stream: {stream}")
+                    continue
+                manifest_static_streams.add(stream["name"] if "name" in stream else stream.get("$parameters").get("name", None))
+
+    return stream_name not in manifest_static_streams | _get_streams_from_schemas_folder(source_folder)
 
 
 if __name__ == "__main__":
@@ -107,13 +121,17 @@ if __name__ == "__main__":
 
         dbml_table = Table(stream.name)
         for property_name, property_information in stream.json_schema.get("properties").items():
-            dbml_table.add_column(
-                Column(
-                    name=property_name,
-                    type=_extract_type(property_information["type"]),
-                    pk=_is_pk(stream, property_name),
+            try:
+                dbml_table.add_column(
+                    Column(
+                        name=property_name,
+                        type=_extract_type(property_information["type"]),
+                        pk=_is_pk(stream, property_name),
+                    )
                 )
-            )
+            except (KeyError, ValueError) as exception:
+                print(f"Ignoring field {property_name}: {exception}")
+                continue
 
         if stream.source_defined_primary_key and len(stream.source_defined_primary_key) > 1:
             if any(map(lambda key: len(key) != 1, stream.source_defined_primary_key)):
