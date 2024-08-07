@@ -18,24 +18,22 @@ def source() -> AbstractSource:
     return source_woocommerce.SourceWoocommerce()
 
 
+def url_base() -> str:
+    url = resolve_manifest(source()).record.data["manifest"]["definitions"]["requester"]["url_base"]
+    url = url.replace("{{ config['shop'] }}", config()["shop"])
+    return url
+
+
 def common_params():
     return "orderby=id&order=asc&dates_are_gmt=true&per_page=100"
 
 
-def endpoint_url(stream_name: str, custom_resource_path: Optional[str] = None, path_parameter: Optional[str] = None) -> str:
-    url = url_base()
-    resource_path = stream_name
+def build_url(resource_path: str, is_regex: bool = False, modified_after: str = None, modified_before: str = None) -> str:
+    separator = "." if is_regex else "?"
+    url = f"{url_base()}/{resource_path}{separator}{common_params()}"
+    if modified_after:
+        url = f"{url}&modified_after={modified_after}"
+    if modified_before:
+        url = f"{url}&modified_before={modified_before}"
 
-    if custom_resource_path:
-        resource_path = custom_resource_path
-
-    if path_parameter:
-        return f"{url}/{path_parameter}/{resource_path}"
-
-    return f"{url}/{resource_path}"
-
-
-def url_base() -> str:
-    url = resolve_manifest(source()).record.data["manifest"]["definitions"]["requester"]["url_base"]
-    url = url.replace("{{ config['shop'] }}", config()["shop"])
     return url
