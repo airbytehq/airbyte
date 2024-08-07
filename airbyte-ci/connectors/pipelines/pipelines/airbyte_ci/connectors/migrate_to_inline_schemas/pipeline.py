@@ -253,6 +253,7 @@ def copy_directory(src: Path, dest: Path) -> None:
         shutil.rmtree(dest)
     shutil.copytree(src, dest)
 
+
 def _has_subdirectory(directory: Path) -> bool:
     # Iterate through all items in the directory
     for entry in directory.iterdir():

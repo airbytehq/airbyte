@@ -5,7 +5,7 @@
 import json
 import shutil
 from pathlib import Path
-from typing import Any, Union, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Union
 
 import git  # type: ignore
 from anyio import Semaphore  # type: ignore
@@ -17,13 +17,13 @@ from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_resolver 
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.utils import (
     get_latest_base_image,
     readme_for_connector,
-    revert_connector_directory,
     remove_parameters_from_manifest,
+    revert_connector_directory,
 )
 from pipelines.airbyte_ci.connectors.reports import Report
+from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
-from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 ## GLOBAL VARIABLES ##
@@ -156,7 +156,7 @@ class StripConnector(Step):
         self.logger.info(f"Moving manifest to the root level of the directory")
         root_manifest_path = connector.code_directory / "manifest.yaml"
         connector.manifest_path.rename(root_manifest_path)
-        
+
         ## 2. Update the version in manifest.yaml
         try:
             manifest = read_yaml(root_manifest_path)
