@@ -9,6 +9,7 @@ It's written in Kotlin and consists of a _core_ and a bunch of _toolkits_:
 
 While the CDK is incubating, its published version numbers are 0.X where X is monotonically
 increasing based on the maximum version value found on the maven repository that the jars are
-published to.
+published to: https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/
+
 Jar publication happens via a github workflow triggered by pushes to the master branch, i.e. after
 merging a pull request.
