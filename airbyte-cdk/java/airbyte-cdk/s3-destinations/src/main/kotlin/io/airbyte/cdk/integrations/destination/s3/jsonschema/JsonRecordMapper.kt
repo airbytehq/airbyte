@@ -12,6 +12,7 @@ abstract class JsonRecordMapper<R> {
         val schemaType = AirbyteJsonSchemaType.fromJsonSchema(schema)
 
         return when (schemaType) {
+            AirbyteJsonSchemaType.NULL -> mapNull(record, schema)
             AirbyteJsonSchemaType.BOOLEAN -> mapBoolean(record, schema)
             AirbyteJsonSchemaType.INTEGER -> mapInteger(record, schema)
             AirbyteJsonSchemaType.NUMBER -> mapNumber(record, schema)
@@ -34,6 +35,7 @@ abstract class JsonRecordMapper<R> {
         }
     }
 
+    abstract fun mapNull(record: JsonNode?, schema: ObjectNode): R
     abstract fun mapBoolean(record: JsonNode?, schema: ObjectNode): R
     abstract fun mapInteger(record: JsonNode?, schema: ObjectNode): R
     abstract fun mapNumber(record: JsonNode?, schema: ObjectNode): R

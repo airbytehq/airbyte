@@ -184,7 +184,7 @@ class JsonToAvroSchemaConverter {
                     addStringToLogicalTypes,
                 )
             val nextStep = fieldBuilder.type(parsed)
-            if (parsed.isUnion) {
+            if (parsed.isUnion || parsed == NULL_SCHEMA) {
                 nextStep.withDefault(null)
             } else {
                 nextStep.noDefault()

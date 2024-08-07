@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.commons.jackson.MoreMappers
 
 enum class AirbyteJsonSchemaType {
+    NULL,
     BOOLEAN,
     INTEGER,
     NUMBER,
@@ -30,6 +31,7 @@ enum class AirbyteJsonSchemaType {
 
     fun matchesValue(tree: JsonNode): Boolean {
         return when (this) {
+            NULL -> tree.isNull
             BOOLEAN -> tree.isBoolean
             INTEGER -> tree.isIntegralNumber || tree.isInt || tree.isBigInteger
             NUMBER ->
@@ -97,6 +99,7 @@ enum class AirbyteJsonSchemaType {
                 val airbyteType = schema["airbyte_type"]?.asText()
 
                 return when (typeStr) {
+                    "null" -> NULL
                     "boolean" -> BOOLEAN
                     "integer" -> INTEGER
                     "number" -> {

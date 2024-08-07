@@ -14,6 +14,10 @@ class JsonSchemaParquetPreprocessor : JsonSchemaIdentityMapper() {
     companion object {
         fun typeFieldName(schema: ObjectNode): String {
             return when (AirbyteJsonSchemaType.fromJsonSchema(schema)) {
+                AirbyteJsonSchemaType.NULL ->
+                    throw IllegalStateException(
+                        "Null typed fields in disjoint unions not supported"
+                    )
                 AirbyteJsonSchemaType.BOOLEAN -> "boolean"
                 AirbyteJsonSchemaType.INTEGER -> "integer"
                 AirbyteJsonSchemaType.NUMBER -> "number"

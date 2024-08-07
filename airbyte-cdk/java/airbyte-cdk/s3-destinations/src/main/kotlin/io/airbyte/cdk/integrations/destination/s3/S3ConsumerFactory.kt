@@ -184,6 +184,16 @@ class S3ConsumerFactory {
                 },
                 useV2FieldNames = true
             )
+
+        // Parquet has significantly higher overhead. This small adjustment
+        // results in a ~5x performance improvement.
+        val adjustedMemoryRatio =
+            if (s3Config.formatConfig!!.format == FileUploadFormat.PARQUET) {
+                memoryRatio * 0.6 // ie 0.5 => 0.3
+            } else {
+                memoryRatio
+            }
+
         return AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(storageOps, writeConfigs),
@@ -209,7 +219,7 @@ class S3ConsumerFactory {
             // is simply omitted from the path.
             BufferManager(
                 defaultNamespace = null,
-                maxMemory = (Runtime.getRuntime().maxMemory() * memoryRatio).toLong()
+                maxMemory = (Runtime.getRuntime().maxMemory() * adjustedMemoryRatio).toLong()
             ),
             workerPool = Executors.newFixedThreadPool(nThreads)
         )
