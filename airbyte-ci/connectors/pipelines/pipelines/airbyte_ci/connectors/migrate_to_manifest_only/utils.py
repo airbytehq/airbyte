@@ -88,3 +88,4 @@ def remove_parameters_from_manifest(d: Mapping[str, Any] | List) -> Mapping[str,
         return [remove_parameters_from_manifest(item) for item in d]
     else:
         return d
+        
