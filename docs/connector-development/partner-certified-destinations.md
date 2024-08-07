@@ -14,4 +14,17 @@ This document outlines the minimum expectations for partner-certified destinatio
 
 **Publish Destinations:** A publish-type destination, often called a “reverse ETL” destination loads data to an external service or API. These destinations may be “picky”, having specific schema requirements for incoming streams. Common publish-type use cases include: publishing data to a REST API, publishing data to a messaging endpoint (e.g email, push notifications, etc.), and publishing data to an LLM vector store. Specific examples include: Destination-Pinecone, Destination-Vectara, and Destination-Weaviate.  These destinations can usually hold finite amounts of data, and slower to load. 
 
+## “Partner-Certified" Listing Requirements:
 
+1. Create a public Github repo/project for issue tracking, (to be shared with Airbyte and it's users).
+2. Respect a 3 business day SLA for first response to customer inquries or bug reports.
+3. Maintain >=95% first-sync success and >=95% overall sync success metrics on your destination connector. Note: config_errors are not counted against this metric.
+4. Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commitment to update the connector to meet any new platform requirements at least once every 6 months. 
+
+## Functional Requirements of Certified Destinations:
+
+### All Destinations
+
+### Bulk Destinations
+
+### Publish Destinations
