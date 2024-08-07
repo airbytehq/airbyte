@@ -556,7 +556,7 @@ class SnowflakeDestinationHandler(
 
             println("Entering findExistingTables(...)");
 
-            val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+            //val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
             val existingTablesFromShowCommand =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
 
@@ -586,8 +586,8 @@ class SnowflakeDestinationHandler(
             println("deduplicatedNamespaces=" + deduplicatedNamespaces)
             println("deduplicatedNames=" + deduplicatedNames)
 
-            val bindValues =
-                arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
+//            val bindValues =
+//                arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
 
             /*
 //            val bindValues =

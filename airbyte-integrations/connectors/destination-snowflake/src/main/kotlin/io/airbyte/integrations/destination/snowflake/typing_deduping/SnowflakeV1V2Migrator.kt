@@ -121,8 +121,8 @@ class SnowflakeV1V2Migrator(
                        SHOW COLUMNS IN TABLE %s.%s.%s;
                     """.trimIndent(),
                     databaseName,
-                    namespace!!,
-                    tableName!!,
+                    namespace,
+                    tableName,
                 )
 
             val showColumnsResult = database.queryJsons(
