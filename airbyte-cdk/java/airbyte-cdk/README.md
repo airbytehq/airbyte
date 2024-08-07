@@ -174,6 +174,8 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.44.3     | 2024-08-07 | [\#43330](https://github.com/airbytehq/airbyte/pull/43330)  | make TypingDedupingTest aware of column name renaming.                                                                                                                                 |
+| 0.44.3     | 2024-08-07 | [\#43329](https://github.com/airbytehq/airbyte/pull/43329)  | move generationIdHandling to its own class.                                                                                                                                 |
 | 0.44.2     | 2024-08-06 | [\#42869](https://github.com/airbytehq/airbyte/pull/42869) | Add logs about counting info to state message. |
 | 0.44.1     | 2024-08-01 | [\#42550](https://github.com/airbytehq/airbyte/pull/42550)  | Fix error on reporting counts.                                                                                                                                 |
 | 0.44.0     | 2024-08-01 | [\#42405](https://github.com/airbytehq/airbyte/pull/42405)  | s3-destinations: Use async framework, adapt to support refreshes                                                                                               |
