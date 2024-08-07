@@ -19,7 +19,10 @@ This document outlines the minimum expectations for partner-certified destinatio
 1. Create a public Github repo/project for issue tracking, (to be shared with Airbyte and it's users).
 2. Respect a 3 business day SLA for first response to customer inquries or bug reports.
 3. Maintain >=95% first-sync success and >=95% overall sync success metrics on your destination connector. Note: config_errors are not counted against this metric.
-4. Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commitment to update the connector to meet any new platform requirements at least once every 6 months. 
+4. Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commitment to update the connector to meet any new platform requirements at least once every 6 months.
+5. Important bugs are audited and major problems are solved within a reasonable timeframe.
+6. Validate that the connector is using HTTPS and secure-only access to customer data.
+
 
 ## Functional Requirements of Certified Destinations:
 
@@ -46,9 +49,9 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 
 ### Exceptions
 
-Bulk Destinations should handle metadata and logging of exceptions in a consistent manner.
+**Bulk Destinations** should handle metadata and logging of exceptions in a consistent manner.
 
-_Note: Because Publish Destinations have little control over table structures, these constraints do not apply to Publish-Type or Reverse-ETL-type Destinations. This does not apply to vector store destinations, for instance._
+_Note: Because **Publish Destinations** have little control over table structures, these constraints do not apply to Publish or Reverse-ETL Destinations. This does not apply to vector store destinations, for instance._
 
 * Columns should include all top-level field declarations.
   * Destination tables should have column definitions for each declared top-level property. For instance, if a stream has a “user_id” property, the destination table should contain a “user_id” column.
@@ -103,6 +106,6 @@ All destinations are required to adhere to standard configuration practices for 
 
 Any errors must be logged by the destination using an approved protocol. Silent errors are not permitted, but we bias towards _not_ failing an entire sync when other valid records are able to be written. Only if errors cannot be logged using an approved protocol, then the destination _must fail_ and should raise the error to the attention of the user and the platform.
 
-**For tabular destinations:** Errors should be recorded along with the record data, in the `_airbyte_meta` column, under the `_airbyte_meta.changes` key.
+**Bulk Destinations:** Errors should be recorded along with the record data, in the `_airbyte_meta` column, under the `_airbyte_meta.changes` key.
 
-**For publish-type destinations:** In absence of another specific means of communicating to the user that there was an issue, the destination _must fail_ if it is not able to write data to the destination platform. (Additional approved logging protocols may be added in the future for publish-type destinations - for instance, dead letter queues, destination-specific state artifacts, and/or other durable storage medium which could be configured by the user.
+**Publish Destinations:** In absence of another specific means of communicating to the user that there was an issue, the destination _must fail_ if it is not able to write data to the destination platform. (Additional approved logging protocols may be added in the future for publish-type destinations - for instance, dead letter queues, destination-specific state artifacts, and/or other durable storage medium which could be configured by the user.
