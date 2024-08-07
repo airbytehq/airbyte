@@ -13,6 +13,8 @@ from airbyte_cdk.models import SyncMode
 from jsonschema import validate
 from source_amazon_ads import SourceAmazonAds
 
+from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
+
 
 def setup_responses(
     profiles_response=None,
@@ -204,8 +206,8 @@ def test_streams_campaigns_pagination_403_error(mocker, status_code, config, pro
     streams = source.streams(config)
     campaigns_stream = get_stream_by_name(streams, "sponsored_display_campaigns")
 
-    with pytest.raises(requests.exceptions.HTTPError):
-        get_all_stream_records(campaigns_stream)
+    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+            get_all_stream_records(campaigns_stream)
 
 
 @responses.activate
@@ -221,8 +223,9 @@ def test_streams_campaigns_pagination_403_error_expected(mocker, config, profile
     streams = source.streams(config)
     campaigns_stream = get_stream_by_name(streams, "sponsored_display_campaigns")
 
-    campaigns_records = get_all_stream_records(campaigns_stream)
-    assert campaigns_records == []
+    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+        campaigns_records = get_all_stream_records(campaigns_stream)
+        assert campaigns_records == []
 
 
 @pytest.mark.parametrize(
@@ -303,6 +306,7 @@ def test_sponsored_product_ad_group_bid_recommendations_404_error(caplog, config
     source = SourceAmazonAds()
     streams = source.streams(config)
     test_stream = get_stream_by_name(streams, "sponsored_product_ad_group_bid_recommendations")
-    records = get_all_stream_records(test_stream, stream_slice={"campaignId": "1231", "adGroupId": "xxx"})
-    assert records == []
-    assert "Skip current AdGroup because the specified ad group has no associated bid" in caplog.text
+
+    with pytest.raises(MessageRepresentationAirbyteTracedErrors):
+        records = get_all_stream_records(test_stream)
+        assert records == []

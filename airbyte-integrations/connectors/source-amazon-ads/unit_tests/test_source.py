@@ -28,9 +28,9 @@ def setup_responses():
 
 def ensure_additional_property_is_boolean(root):
     for name, prop in root.get("properties", {}).items():
-        if prop["type"] == "array" and "items" in prop:
+        if "items" in prop and prop["type"] == "array":
             ensure_additional_property_is_boolean(prop["items"])
-        if prop["type"] == "object" and "properties" in prop:
+        if "properties" in prop and prop["type"] == "object":
             ensure_additional_property_is_boolean(prop)
     if "additionalProperties" in root:
         assert type(root["additionalProperties"]) == bool, (

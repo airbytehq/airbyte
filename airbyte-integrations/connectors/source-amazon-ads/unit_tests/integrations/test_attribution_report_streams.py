@@ -6,6 +6,7 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 import freezegun
+import re
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_protocol.models import Level as LogLevel
 from airbyte_protocol.models import SyncMode
@@ -62,11 +63,11 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         )
 
         output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
+
+        assert any([re.search("failed with.+400", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
     @HttpMocker()
     def test_given_breaking_error_when_read_products_then_stream_is_ignored(self, http_mocker):
         """
@@ -90,10 +91,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
         with patch('time.sleep', return_value=None):
             output = read_stream("attribution_report_products", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any([breaking_error.build().get("message") in error for error in error_logs])
+        assert any([re.search("retryable.+internal server error", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_one_page_when_read_products_then_return_records(self, http_mocker):
@@ -177,11 +178,11 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         )
 
         output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
+
+        assert any([re.search("failed with.+400", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_adgroup_then_stream_is_ignored(self, http_mocker):
         """
@@ -205,10 +206,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
         with patch('time.sleep', return_value=None):
             output = read_stream("attribution_report_performance_adgroup", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any([breaking_error.build().get("message") in error for error in error_logs])
+        assert any([re.search("retryable.+internal server error", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_one_page_when_read_performance_adgroup_then_return_records(self, http_mocker):
@@ -292,11 +293,13 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         )
 
         output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
+
+
+        assert any([re.search("failed with.+400", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
+
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_campaign_then_stream_is_ignored(self, http_mocker):
         """
@@ -320,10 +323,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
         with patch('time.sleep', return_value=None):
             output = read_stream("attribution_report_performance_campaign", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any([breaking_error.build().get("message") in error for error in error_logs])
+        assert any([re.search("retryable.+internal server error", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_one_page_when_read_performance_campaign_then_return_records(self, http_mocker):
@@ -407,11 +410,11 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
         )
 
         output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
+
+        assert any([re.search("failed with.+400", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
         assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
-    
     @HttpMocker()
     def test_given_breaking_error_when_read_performance_creative_then_stream_is_ignored(self, http_mocker):
         """
@@ -435,10 +438,10 @@ class TestAttributionReportStreamsFullRefresh(TestCase):
 
         with patch('time.sleep', return_value=None):
             output = read_stream("attribution_report_performance_creative", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any([breaking_error.build().get("message") in error for error in error_logs])
+        assert any([re.search("retryable.+internal server error", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_one_page_when_read_performance_creative_then_return_records(self, http_mocker):
