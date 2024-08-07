@@ -10,7 +10,6 @@ from typing import Union, Dict, List, Mapping, Any
 import jinja2
 import requests
 
-## HELPER FUNCTIONS
 
 
 def readme_for_connector(name: str) -> str:
