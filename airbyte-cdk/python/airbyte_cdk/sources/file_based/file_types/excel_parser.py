@@ -49,7 +49,9 @@ class ExcelParser(FileTypeParser):
         excel_format = config.format
         if not isinstance(excel_format, ExcelFormat):
             raise ValueError(f"Expected ExcelFormat, got {excel_format}")
-        fields = {}
+
+        fields: Dict[str, str] = {}
+
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             df = pd.ExcelFile(fp, engine="calamine").parse()
             for column, df_type in df.dtypes.items():
@@ -99,7 +101,7 @@ class ExcelParser(FileTypeParser):
                 logger.info(f"Expected ExcelFormat, got {excel_format}")
                 raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR)
 
-        def open_and_parse_file(fp) -> pd.DataFrame:
+        def open_and_parse_file(fp: Any) -> pd.DataFrame:
             """
             Opens and parses the Excel file.
 
@@ -149,7 +151,7 @@ class ExcelParser(FileTypeParser):
         return FileReadMode.READ_BINARY
 
     @staticmethod
-    def dtype_to_json_type(current_type: Optional[str], dtype) -> str:
+    def dtype_to_json_type(current_type: Optional[str], dtype: Any) -> str:
         """
         Convert Pandas DataFrame types to Airbyte Types.
 
