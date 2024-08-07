@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.44.2     | 2024-08-06 | [\#42869](https://github.com/airbytehq/airbyte/pull/42869) | Add logs about counting info to state message. |
 | 0.44.1     | 2024-08-01 | [\#42550](https://github.com/airbytehq/airbyte/pull/42550)  | Fix error on reporting counts.                                                                                                                                 |
 | 0.44.0     | 2024-08-01 | [\#42405](https://github.com/airbytehq/airbyte/pull/42405)  | s3-destinations: Use async framework, adapt to support refreshes                                                                                               |
 | 0.43.6     | 2024-07-30 | [\#42540](https://github.com/airbytehq/airbyte/pull/42540)  | Fix generationId handling for destinations                                                                                                                     |
