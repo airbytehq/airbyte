@@ -2,27 +2,36 @@
 products: all
 ---
 
-# Review the sync history
+# Review the connection timeline
 
-The job history displays information about synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this summary can help you monitor the sync performance and identify any potential issues.
+The Connection Timeline displays information about several types of relevant connection events. The following events are included in the Connection Timeline: 
+- Sync
+- Refresh
+- Clear
+- Connector Version changes (coming soon)
+- Schema changes (coming soon)
+- Connection configuration changes (coming soon)
 
-![Job History](./assets/connection-job-history.png)
+To review the Connection Timeline, click a connection in the list and navigate to the "Timeline" tab to view its event history. The page displays recent events and their statuses. Where relevant, the event will also show the user who took the action.
 
-To review the sync history, click a connection in the list and navigate to the "Job History" tab to view its sync history. The page displays recent syncs and their statuses. The sync status is defined as:
+![Timeline](./assets/cloud-timeline-page.png)
+
+## Sync, Refresh, and Clear events
+
+Completed Syncs, [Refreshes](/operator-guides/refreshes), and [Clears](/operator-guides/clear) will have a status associated to the event. 
 
 | Status              | Description                                                       |
 | ------------------- | ----------------------------------------------------------------- |
 | Succeeded           | 100% of the data has been extracted and loaded to the destination |
-| Partially Succeeded | A subset of the data has been loaded to the destination           |
-| Failed              | None of the data has been loaded to the destination               |
-| Cancelled           | The sync was cancelled manually before finishing                  |
+| Incomplete          | The sync encountered an error, and should resolve itself. A subset or none of the data has been loaded to the destination.           |
+| Failed              | The sync encountered a fatal error, and needs user intervention to resolve. A subset or none of the data has been loaded to the destination.               |
+| Cancelled           | The sync was cancelled manually before finishing.                  |
 | Running             | The sync is currently running                                     |
 
-If you have recently run a [refresh](/operator-guides/refreshes) or [clear](/operator-guides/clear), you will also see this noted on the Job History page and their corresponding status.
 
-## Sync summary
+Airbyte will also separately record when a sync has been manually started by a user. 
 
-Each sync shows the time the sync was initiated and additional metadata. This information can help in understanding sync performance over time.
+For sync and refresh events, Airbyte also shows the volume of synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this timeline can help you monitor the connection and identify any potential issues.
 
 | Data                           | Description                                                   |
 | ------------------------------ | ------------------------------------------------------------- |
@@ -31,7 +40,7 @@ Each sync shows the time the sync was initiated and additional metadata. This in
 | x loaded records               | Number of records the destination confirmed it received.      |
 | xh xm xs                       | Total time (hours, minutes, seconds) for the sync to complete |
 
-While most syncs only contain a single attempt, a sync can sometimes fail. In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. You can read more about our retry approach [here](../../understanding-airbyte/jobs.md#retry-rules). 
+While most syncs only contain a single attempt, a sync can sometimes fail. In the event of a failure, Airbyte will make several attempts to sync your data before waiting for the next sync to retry. You can read more about our retry approach [here](../../understanding-airbyte/jobs.md#retry-rules). If multiple attempts are used in a sync, you can open the logs to see individual logs from each attempt.
 
 Airbyte summarizes metrics in the sync summary across all the attempts in the sync. As a result, you may observe that the number of records extracted is higher than the number of records loaded if an attempt fails during the extraction process. A successful sync status means that all the records from the source have been successfully written to the destination.
 
