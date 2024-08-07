@@ -62,10 +62,11 @@ open class SourceStateIterator<T>(
                 val processedMessage =
                     sourceStateMessageProducer.processRecordMessage(stream, message)
                 if (processedMessage.type == AirbyteMessage.Type.RECORD) {
-                    val pair = AirbyteStreamNameNamespacePair(
-                        processedMessage.record.stream,
-                        processedMessage.record.namespace
-                    )
+                    val pair =
+                        AirbyteStreamNameNamespacePair(
+                            processedMessage.record.stream,
+                            processedMessage.record.namespace
+                        )
                     streamRecordCount[pair] = streamRecordCount.getOrPut(pair) { 0 } + 1
                     recordCount++
                 }
