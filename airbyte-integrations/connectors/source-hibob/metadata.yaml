@@ -26,7 +26,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Hibob
-  releaseDate: 08.06.2024
+  releaseDate: 2024-08-06
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/hibob
