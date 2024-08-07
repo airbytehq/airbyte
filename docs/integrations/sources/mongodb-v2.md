@@ -198,7 +198,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| 1.5.2   | 2024-08-06 | [42869](https://github.com/airbytehq/airbyte/pull/42869)   | Adopt latest CDK.                                                                                                                                          |
 | 1.5.1   | 2024-08-01 | [42549](https://github.com/airbytehq/airbyte/pull/42549) | Centered the connector icon.                                                     |
 | 1.5.0   | 2024-07-26 | [42561](https://github.com/airbytehq/airbyte/pull/42561)  | Implement WASS algorithm.                                                                                 |
 | 1.4.3   | 2024-07-22 | [39145](https://github.com/airbytehq/airbyte/pull/39145) | Warn (vs fail) on different \_id types in collection.                                                     |
