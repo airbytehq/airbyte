@@ -34,13 +34,6 @@ poetry run source-hibob discover --config secrets/config.json
 poetry run source-hibob read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-### Running tests
-
-To run tests locally, from the connector directory run:
-
-```
-poetry run pytest tests
-```
 
 ### Building the docker image
 
