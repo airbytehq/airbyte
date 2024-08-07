@@ -44,4 +44,6 @@ integrationTestJava {
 dependencies {
     implementation 'net.snowflake:snowflake-jdbc:3.14.1'
     implementation 'org.apache.commons:commons-text:1.10.0'
+    implementation 'org.json:json:20210307'
+
 }

@@ -40,6 +40,7 @@ import org.apache.commons.text.StringSubstitutor
 import org.jooq.SQLDialect
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.json.JSONObject
 
 class SnowflakeDestinationHandler(
     databaseName: String,
@@ -658,7 +659,8 @@ class SnowflakeDestinationHandler(
                 val tableName = result["table_name"].asText()
                 val columnName = result["column_name"].asText()
                 //val dataType = result["data_type"].asText()
-                val dataType = result["data_type"]["type"].asText()
+                //val dataType = result["data_type"]["type"].asText()
+                val dataType = JSONObject(result["data_type"].asText()).getString("type")
                 val isNullable = result["null?"].asText()
                 val tableDefinition =
                     existingTablesFromShowCommand
