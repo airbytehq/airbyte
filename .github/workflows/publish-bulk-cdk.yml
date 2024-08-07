@@ -9,13 +9,6 @@ on:
       - "airbyte-cdk/bulk"
   workflow_dispatch:
     inputs:
-      repo:
-        description: "Repo to check out code from. Defaults to the main airbyte repo."
-        type: choice
-        required: true
-        default: airbytehq/airbyte
-        options:
-          - airbytehq/airbyte
       build-number:
         description: "Build Number"
         required: false
@@ -26,8 +19,6 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Use the provided GITREF or default to the branch triggering the workflow.
-  GITREF: ${{ github.event.inputs.gitref || github.ref }}
   S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
@@ -39,8 +30,6 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-        with:
-          ref: ${{ env.GITREF }}
 
       - name: Setup Java
         uses: actions/setup-java@v3
