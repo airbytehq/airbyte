@@ -14,6 +14,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
 import java.util.*
 import lombok.SneakyThrows
 
@@ -28,15 +29,15 @@ class SnowflakeV1V2Migrator(
 
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         val showSchemaQuery = String.format(
-                                """
+            """
                                     SHOW SCHEMAS LIKE '%s' IN DATABASE %s;
                                 """.trimIndent(),
-                                streamConfig!!.id.rawNamespace,
-                                databaseName
+            streamConfig!!.id.rawNamespace,
+            databaseName,
         )
 
         return database.queryJsons(
-            showSchemaQuery
+            showSchemaQuery,
         ).isNotEmpty()
     }
 
@@ -64,6 +65,116 @@ class SnowflakeV1V2Migrator(
     ): Boolean {
         return containsAllIgnoreCase(existingTable.columns.keys, columns)
     }
+
+
+    @SneakyThrows
+    @Throws(Exception::class)
+    override fun getTableIfExists(
+        namespace: String?,
+        tableName: String?
+    ): Optional<TableDefinition> {
+        // TODO this looks similar to SnowflakeDestinationHandler#findExistingTables, with a twist;
+        // databaseName not upper-cased and rawNamespace and rawTableName as-is (no uppercase).
+        // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC
+        // translates
+        // VARIANT as VARCHAR
+        val columnsFromInfoSchemaQuery =
+            database
+                .queryJsons(
+                    """
+            SELECT column_name, data_type, is_nullable
+            FROM information_schema.columns
+            WHERE table_catalog = ?
+              AND table_schema = ?
+              AND table_name = ?
+            ORDER BY ordinal_position;
+            
+            """.trimIndent(),
+                    databaseName,
+                    namespace!!,
+                    tableName!!,
+                )
+                .stream()
+                .collect(
+                    { LinkedHashMap() },
+                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                        map[row["COLUMN_NAME"].asText()] =
+                            ColumnDefinition(
+                                row["COLUMN_NAME"].asText(),
+                                row["DATA_TYPE"].asText(),
+                                0,
+                                fromIsNullableIsoString(row["IS_NULLABLE"].asText()),
+                            )
+                    },
+                    { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                        obj.putAll(m!!)
+                    },
+                )
+
+        print("columnsFromInfoSchemaQuery=" + columnsFromInfoSchemaQuery)
+
+        try {
+            val showColumnsQuery =
+                String.format(
+                    """
+                       SHOW COLUMNS IN TABLE %s.%s.%s;
+                    """.trimIndent(),
+                    databaseName,
+                    namespace!!,
+                    tableName!!,
+                )
+
+            val showColumnsResult = database.queryJsons(
+                showColumnsQuery,
+            )
+
+            println("showColumnsResult=" + showColumnsResult)
+            val columnsFromShowQuery = showColumnsResult
+                .stream()
+                .collect(
+                    { LinkedHashMap() },
+                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                        map[row["column_name"].asText()] =
+                            ColumnDefinition(
+                                row["column_name"].asText(),
+                                row["data_type"].asText(),
+                                0,
+                                fromIsNullableSnowflakeString(row["null?"].asText()),
+                            )
+                    },
+                    { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                        obj.putAll(m!!)
+                    },
+                )
+
+            println("columnsFromShowQuery=" + columnsFromShowQuery)
+
+            return if (columnsFromShowQuery.isEmpty()) {
+                Optional.empty()
+            } else {
+                Optional.of(TableDefinition(columnsFromShowQuery))
+            }
+
+        } catch (e: Exception) {
+
+            //TODO: Need to correctly handle the exception
+
+            println("Exception in SnowflakeV1V2Migrator.getTableIfExists: " + e.message)
+
+            e.printStackTrace()
+
+            throw e
+
+        }
+
+
+    }
+
+
+    /*
+    ORIGINAL Code
 
     @SneakyThrows
     @Throws(Exception::class)
@@ -117,13 +228,15 @@ class SnowflakeV1V2Migrator(
         }
     }
 
+    */
+
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {
         // The implicit upper-casing happens for this in the SqlGenerator
         @Suppress("deprecation")
         val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName)
         return NamespacedTableName(
             namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace),
-            tableName
+            tableName,
         )
     }
 
@@ -133,7 +246,7 @@ class SnowflakeV1V2Migrator(
         // In v2 we preserve cases
         return super.doesValidV1RawTableExist(
             namespace!!.uppercase(Locale.getDefault()),
-            tableName!!.uppercase(Locale.getDefault())
+            tableName!!.uppercase(Locale.getDefault()),
         )
     }
 }

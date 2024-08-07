@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.commons.json.Jsons.emptyObject
+import io.airbyte.commons.json.Jsons.replaceNestedInt
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
@@ -69,6 +70,11 @@ class SnowflakeDestinationHandler(
         val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
         val names = streamIds.map { it.finalName }.toTypedArray()
 
+        //TODO: SHOW TABLES returns row count
+        // SHOW TABLES LIKE 'USERS_FINAL' IN SQL_GENERATOR_TEST_PNJAYGLBKN;
+
+        //TODO: Consider sending a batch of SHOW queries to snowflake instead of IN clause
+
         val query =
             """
                 |SELECT table_schema, table_name, row_count
@@ -78,7 +84,7 @@ class SnowflakeDestinationHandler(
                 |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
             |""".trimMargin()
 
-            //Dedup the lists to make the snowflake IN clause more efficient
+        //Dedup the lists to make the snowflake IN clause more efficient
 //          val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
 //          val deduplicatedNames = names.toSet().toTypedArray()
 
@@ -541,7 +547,6 @@ class SnowflakeDestinationHandler(
         const val SHOW_SCHEMAS: String = "show schemas;"
         const val NAME: String = "name"
 
-
         @Throws(SQLException::class)
         fun findExistingTables(
             database: JdbcDatabase,
@@ -552,20 +557,22 @@ class SnowflakeDestinationHandler(
             println("Entering findExistingTables(...)");
 
             val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-            val existingTablesFromShowCommand = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+            val existingTablesFromShowCommand =
+                LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
 
             // convert list stream to array
             val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
             val names = streamIds.map { it.finalName }.toTypedArray()
-            val query =
-                """
-                    |SELECT table_schema, table_name, column_name, data_type, is_nullable 
-                    |FROM information_schema.columns 
-                    |WHERE table_catalog = ? 
-                    |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-                    |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-                    |ORDER BY table_schema, table_name, ordinal_position; 
-                |""".trimMargin()
+
+//            val query =
+//                """
+//                    |SELECT table_schema, table_name, column_name, data_type, is_nullable
+//                    |FROM information_schema.columns
+//                    |WHERE table_catalog = ?
+//                    |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+//                    |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+//                    |ORDER BY table_schema, table_name, ordinal_position;
+//                |""".trimMargin()
 
 //            //Dedup the lists to make the snowflake IN clause more efficient
 //            val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
@@ -576,9 +583,13 @@ class SnowflakeDestinationHandler(
             val deduplicatedNamespaces = namespaces
             val deduplicatedNames = names
 
+            println("deduplicatedNamespaces=" + deduplicatedNamespaces)
+            println("deduplicatedNames=" + deduplicatedNames)
+
             val bindValues =
                 arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
 
+            /*
 //            val bindValues =
 //                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
 
@@ -609,75 +620,76 @@ class SnowflakeDestinationHandler(
 
             //--------------------
 
-            //TODO: Processing only one element from namespaces and names for testing
+             */
 
-            val showColumnsQuery =
-                String.format(
 
-                    """
+            try {
+
+                //TODO: Processing only one element from namespaces and names for testing
+
+                for (stream in streamIds) {
+
+                    val showColumnsQuery =
+                        String.format(
+
+                                """
                         SHOW COLUMNS IN TABLE %s.%s.%s;
                                 """.trimIndent(),
-                    databaseName,
-                    namespaces[0],
-                    names[0]
-                )
+                                databaseName,
+                                stream.finalNamespace,
+                                stream.finalName,
+                        )
 
-            val showColumnsResult: List<JsonNode>  = database.queryJsons(
-                showColumnsQuery)
+                    val showColumnsResult: List<JsonNode> = database.queryJsons(
+                            showColumnsQuery,
+                    )
 
-            println("showColumnsResult=" + showColumnsResult)
+                    println("showColumnsResult=" + showColumnsResult)
+
+                    for (result in showColumnsResult) {
+                        val tableSchema = result["schema_name"].asText()
+                        val tableName = result["table_name"].asText()
+                        val columnName = result["column_name"].asText()
+                        //val dataType = result["data_type"].asText()
+                        //val dataType = result["data_type"]["type"].asText()
+                        val dataType = JSONObject(result["data_type"].asText()).getString("type")
+                        val isNullable = result["null?"].asText()
+                        val tableDefinition =
+                            existingTablesFromShowCommand
+                                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
+                                .computeIfAbsent(tableName) { _: String? ->
+                                    TableDefinition(LinkedHashMap())
+                                }
+                        tableDefinition.columns[columnName] =
+                            ColumnDefinition(
+                                    columnName,
+                                    dataType,
+                                    0,
+                                    fromIsNullableSnowflakeString(isNullable),
+                            )
+                    }
+
+                    println("existingTablesFromShowCommand=" + existingTablesFromShowCommand)
+
+                }
+
+            } catch (e: Exception) {
+
+                LOGGER.error("SHOW command usage caused exception", e)
+
+                e.printStackTrace()
+
+                //TODO: Need to throw exceptionNot throwing exception during development
+                // Negative tests fail because the schema does not exist but the SHOW table throws error
+                // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
+                // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
 
 
-            /*
+                //throw e
 
-          val columnsFromShowQuery = showColumnsResult
-              .stream()
-              .collect(
-                  { LinkedHashMap() },
-                  { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-                      map[row["column_name"].asText()] =
-                          ColumnDefinition(
-                              row["column_name"].asText(),
-                              row["data_type"].asText(),
-                              0,
-                              fromIsNullableSnowflakeString(row["null?"].asText())
-                          )
-                  },
-                  {
-                      obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
-                      obj.putAll(m!!)
-                  }
-              )
-
-          println("columnsFromShowQuery=" + columnsFromShowQuery)
-
-            */
-
-            for (result in showColumnsResult) {
-                val tableSchema = result["schema_name"].asText()
-                val tableName = result["table_name"].asText()
-                val columnName = result["column_name"].asText()
-                //val dataType = result["data_type"].asText()
-                //val dataType = result["data_type"]["type"].asText()
-                val dataType = JSONObject(result["data_type"].asText()).getString("type")
-                val isNullable = result["null?"].asText()
-                val tableDefinition =
-                    existingTablesFromShowCommand
-                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
-                        .computeIfAbsent(tableName) { _: String? ->
-                            TableDefinition(LinkedHashMap())
-                        }
-                tableDefinition.columns[columnName] =
-                    ColumnDefinition(columnName, dataType, 0, fromIsNullableSnowflakeString(isNullable))
             }
 
             println("existingTablesFromShowCommand=" + existingTablesFromShowCommand)
-
-
-
-            //--------------------
-
 
             //return existingTables
 
@@ -686,6 +698,7 @@ class SnowflakeDestinationHandler(
         }
 
 
+        //Original function
         /*
         @Throws(SQLException::class)
         fun findExistingTables(
