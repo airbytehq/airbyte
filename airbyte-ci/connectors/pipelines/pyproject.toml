@@ -41,6 +41,7 @@ pydash = "6.0.2"
 python-slugify = ">=8.0.4"
 deepdiff = "^7.0.1"
 google-generativeai = "^0.7.2"
+pydbml = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"

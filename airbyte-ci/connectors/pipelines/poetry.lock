@@ -1956,6 +1956,20 @@ files = [
 dev = ["Sphinx", "black", "build", "coverage", "docformatter", "flake8", "flake8-black", "flake8-bugbear", "flake8-isort", "importlib-metadata (<5)", "invoke", "isort", "pylint", "pytest", "pytest-cov", "sphinx-rtd-theme", "tox", "twine", "wheel"]
 
 [[package]]
+name = "pydbml"
+version = "1.1.0"
+description = "Python parser and builder for DBML"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pydbml-1.1.0-py3-none-any.whl", hash = "sha256:4d463e661056e06d5a837d72bb3b1bd14691ee8a31db3d83653482bd1c13dcad"},
+    {file = "pydbml-1.1.0.tar.gz", hash = "sha256:e918e8ab949946f46267bc00576841d9283db561e6ea8a45fc401097421b15ce"},
+]
+
+[package.dependencies]
+pyparsing = ">=3.0.0"
+
+[[package]]
 name = "pygit2"
 version = "1.14.1"
 description = "Python bindings for libgit2."
@@ -3029,4 +3043,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "0fa26dcb4282d59dd24713220f76baed68e996ccfc432ddcb89cc840938a2e97"
+content-hash = "cd319f717ea80a61bbc4627bf9eb5c7a3f8b27bd2557e1dffe28b5ba278d3901"
