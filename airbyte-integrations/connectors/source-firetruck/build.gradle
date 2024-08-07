@@ -1,6 +1,5 @@
 plugins {
     id 'application'
-    id 'com.google.devtools.ksp' version '1.9.23-1.0.20'
 }
 
 application {
@@ -16,32 +15,31 @@ processResources {
     }
 }
 
+tasks.named('spotbugsTest').configure {
+    enabled = false
+}
+
 tasks.named('check').configure {
     dependsOn tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
 }
 
 dependencies {
-    def vCDK2 = '0.39'
+    def vBulkCDK = '0.2'
     def vMicronaut = '4.3.13'
-
-    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.23')
-    implementation platform('com.fasterxml.jackson:jackson-bom:2.16.1')
-    implementation platform("io.micronaut:micronaut-core-bom:${vMicronaut}")
-    implementation platform('org.junit:junit-bom:5.10.2')
-    implementation platform('org.slf4j:slf4j-bom:2.0.13')
-    implementation platform('org.apache.logging.log4j:log4j-bom:2.21.1')
 
     ksp "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
-    implementation "io.airbyte.cdk2:core:${vCDK2}"
-    implementation "io.airbyte.cdk2:source:${vCDK2}"
-    implementation "io.airbyte.cdk2:source-jdbc:${vCDK2}"
+    implementation "io.airbyte.bulk-cdk:bulk-cdk-core-base:${vBulkCDK}"
+    implementation "io.airbyte.bulk-cdk:bulk-cdk-core-extract:${vBulkCDK}"
+    implementation "io.airbyte.bulk-cdk:bulk-cdk-toolkit-extract-jdbc:${vBulkCDK}"
     implementation 'com.oracle.database.jdbc:ojdbc11-production:23.4.0.24.05'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.77'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
+    implementation 'org.bouncycastle:bctls-jdk18on:1.77'
 
     kspTest "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
 
     testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
-    testImplementation "io.airbyte.cdk2:source-test-fixtures:${vCDK2}"
+    testImplementation testFixtures("io.airbyte.bulk-cdk:bulk-cdk-core-extract:${vBulkCDK}")
     testImplementation 'org.testcontainers:oracle-xe'
 }

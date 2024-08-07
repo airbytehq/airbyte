@@ -17,6 +17,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationJsonObjectBase
 import io.airbyte.cdk.exceptions.ConfigErrorException
@@ -51,6 +52,7 @@ import jakarta.inject.Singleton
 )
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
@@ -227,12 +229,14 @@ sealed interface ConnectionData
 
 @JsonSchemaTitle("Service name")
 @JsonSchemaDescription("Use service name.")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class ServiceName : ConnectionData {
     @JsonProperty("service_name") @JsonSchemaTitle("Service name") lateinit var serviceName: String
 }
 
 @JsonSchemaTitle("System ID (SID)")
 @JsonSchemaDescription("Use Oracle System Identifier.")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class Sid : ConnectionData {
     @JsonProperty("sid") @JsonSchemaTitle("System ID (SID)") lateinit var sid: String
 }
@@ -283,6 +287,7 @@ class EncryptionAlgorithm : Encryption {
 
 @JsonSchemaTitle("TLS Encrypted (verify certificate)")
 @JsonSchemaDescription("Verify and use the certificate provided by the server.")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class SslCertificate : Encryption {
     @JsonProperty("ssl_certificate", required = true)
     @JsonSchemaTitle("SSL PEM File")
