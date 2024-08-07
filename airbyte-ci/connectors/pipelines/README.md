@@ -773,6 +773,7 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.28.3  | [#42584](https://github.com/airbytehq/airbyte/pull/42584) | Mount connector directory to metadata validation                                                                                         |
 | 4.28.2  | [#43297](https://github.com/airbytehq/airbyte/pull/43297)  | `migrate-to-inline_schemas` removes unused schema files and empty schema dirs.                                               |
 | 4.28.1  | [#42972](https://github.com/airbytehq/airbyte/pull/42972)  | Add airbyte-enterprise support for format commandi                                                                           |
 | 4.28.0  | [#42849](https://github.com/airbytehq/airbyte/pull/42849)  | Couple selection of strict-encrypt variants (e vice versa)                                                                   |
