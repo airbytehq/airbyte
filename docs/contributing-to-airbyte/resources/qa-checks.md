@@ -164,7 +164,7 @@ Connectors must use HTTPS only when making requests to external services.
 ### Python connectors must not use a Dockerfile and must declare their base image in metadata.yaml file
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: python, low-code_
+_Applies to the following connector languages: python, low-code, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 

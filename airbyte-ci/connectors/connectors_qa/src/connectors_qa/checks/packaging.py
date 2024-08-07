@@ -1,12 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
+from __future__ import annotations
 
 import semver
 import toml
+from pydash.objects import get  # type: ignore
+
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
 from connectors_qa.models import Check, CheckCategory, CheckResult
-from pydash.objects import get  # type: ignore
 
 
 class PackagingCheck(Check):
@@ -61,6 +62,24 @@ class CheckPublishToPyPiIsEnabled(PackagingCheck):
                 message=f"PyPi publishing is not enabled. Please enable it in the {consts.METADATA_FILE_NAME} file",
             )
         return self.create_check_result(connector=connector, passed=True, message="PyPi publishing is enabled")
+
+
+class CheckManifestOnlyConnectorBaseImage(PackagingCheck):
+    name = "Manifest-only connectors must use `source-declarative-manifest` as their base image"
+    description = "Manifest-only connectors must use `airbyte/source-declarative-manifest` as their base image."
+    applies_to_connector_languages = [ConnectorLanguage.MANIFEST_ONLY]
+
+    def _run(self, connector: Connector) -> CheckResult:
+        base_image = get(connector.metadata, "connectorBuildOptions.baseImage")
+        base_image_name = base_image.split(":")[0] if base_image else None
+
+        if base_image_name != "docker.io/airbyte/source-declarative-manifest":
+            return self.create_check_result(
+                connector=connector,
+                passed=False,
+                message=f"A manifest-only connector must use `source-declarative-manifest` base image. Replace the base image in {consts.METADATA_FILE_NAME} file",
+            )
+        return self.create_check_result(connector=connector, passed=True, message="Connector uses source-declarative-manifest base image")
 
 
 class CheckConnectorLicense(PackagingCheck):
