@@ -6,7 +6,7 @@ on:
     branches:
       - master
     paths:
-      - "airbyte-cdk/bulk"
+      - "airbyte-cdk/bulk/**"
   workflow_dispatch:
     inputs:
       build-number:
