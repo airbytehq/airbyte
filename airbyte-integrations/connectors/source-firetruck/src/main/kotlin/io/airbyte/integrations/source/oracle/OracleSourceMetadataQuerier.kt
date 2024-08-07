@@ -228,17 +228,20 @@ class OracleSourceMetadataQuerier(
                 .groupBy { base.findTableName(it.tableName, it.owner) }
                 .mapNotNull { (table, rowsByTable) ->
                     if (table == null) return@mapNotNull null
-                    val rowsByPK: Map<String, List<AllPrimaryKeysRow>> =
+                    val pkRows: List<AllPrimaryKeysRow> =
                         rowsByTable
                             .groupBy { it.constraintName }
                             .filterValues { rowsByPK: List<AllPrimaryKeysRow> ->
                                 rowsByPK.all { it.position != null && it.columnName != null }
                             }
-                    if (rowsByPK.isEmpty()) return@mapNotNull null
+                            .values
+                            .firstOrNull()
+                            ?: return@mapNotNull null
                     val pkColumnNames: List<List<String>> =
-                        rowsByPK.map { (_, rows: List<AllPrimaryKeysRow>) ->
-                            rows.sortedBy { it.position }.mapNotNull { it.columnName }
-                        }
+                        pkRows
+                            .sortedBy { it.position }
+                            .mapNotNull { it.columnName }
+                            .map { listOf(it) }
                     table to pkColumnNames
                 }
                 .toMap()
