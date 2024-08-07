@@ -25,7 +25,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Northpass LMS
-  releaseDate: 08-06-2024
+  releaseDate: 2024-08-06
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/northpass-lms
