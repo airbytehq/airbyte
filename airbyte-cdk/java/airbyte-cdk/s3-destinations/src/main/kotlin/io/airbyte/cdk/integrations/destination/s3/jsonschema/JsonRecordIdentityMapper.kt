@@ -11,6 +11,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.commons.jackson.MoreMappers
 
 open class JsonRecordIdentityMapper : JsonRecordMapper<JsonNode?>() {
+    override fun mapNull(record: JsonNode?, schema: ObjectNode): JsonNode? {
+        return record?.deepCopy()
+    }
+
     override fun mapBoolean(record: JsonNode?, schema: ObjectNode): JsonNode? {
         return record?.deepCopy()
     }

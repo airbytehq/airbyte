@@ -13,15 +13,19 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JsonSchemaTransformerTest {
-    private fun mangleAltCombined(node: ObjectNode) {
+    private fun mangleAltCombined(
+        node: ObjectNode,
+        type1: String = "integer",
+        type2: String = "string"
+    ) {
         val oneOf = MoreMappers.initMapper().createArrayNode()
 
         val option1 = MoreMappers.initMapper().createObjectNode()
-        option1.put("type", "integer")
+        option1.put("type", type1)
         oneOf.add(option1)
 
         val option2 = MoreMappers.initMapper().createObjectNode()
-        option2.put("type", "string")
+        option2.put("type", type2)
         oneOf.add(option2)
 
         node.remove("type")
@@ -41,6 +45,9 @@ class JsonSchemaTransformerTest {
         // Assert transformedSchema is equal to jsonSchema, accounting for a little normalization
         transformedSchema.remove("type")
         mangleAltCombined(jsonSchema["properties"]["combined_type_alt"] as ObjectNode)
+        mangleAltCombined(jsonSchema["properties"]["combined_null_string"] as ObjectNode, "null")
+        mangleAltCombined(jsonSchema["properties"]["redundant_null"] as ObjectNode, "null", "null")
+
         Assertions.assertEquals(jsonSchema, transformedSchema)
     }
 
@@ -121,5 +128,19 @@ class JsonSchemaTransformerTest {
 
         val transformedSchema = JsonSchemaUnionMerger().mapSchema(inputSchema)
         Assertions.assertEquals(outputSchema, transformedSchema)
+    }
+
+    @Test
+    fun testMergingNulls() {
+        val inputSchemaStr = javaClass.getResource("/avro/complex_schema.json")?.readText()
+        val inputSchema = MoreMappers.initMapper().readTree(inputSchemaStr) as ObjectNode
+        val merged = JsonSchemaUnionMerger().mapSchema(inputSchema)
+
+        val properties = merged["properties"] as ObjectNode
+        val nullType = MoreMappers.initMapper().createObjectNode().put("type", "null")
+        val stringType = MoreMappers.initMapper().createObjectNode().put("type", "string")
+        Assertions.assertEquals(properties["null_type"], nullType)
+        Assertions.assertEquals(properties["redundant_null"], nullType)
+        Assertions.assertEquals(properties["combined_null_string"], stringType)
     }
 }

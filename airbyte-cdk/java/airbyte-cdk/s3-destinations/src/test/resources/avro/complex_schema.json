@@ -1,5 +1,14 @@
 {
   "properties": {
+    "null_type": {
+      "type": "null"
+    },
+    "combined_null_string": {
+      "type": ["null", "string"]
+    },
+    "redundant_null": {
+      "type": ["null", "null"]
+    },
     "integer_type": {
       "type": "integer"
     },
