@@ -76,11 +76,11 @@ def revert_connector_directory(directory: Path) -> None:
         print(f"An error occurred while reverting changes: {str(e)}")
 
 
-def remove_parameters_from_manifest(d: Mapping[str, Any] | List) -> Mapping[str, Any] | List:
+def remove_parameters_from_manifest(d: dict | List | Mapping[str, Any]) -> dict | List:
     """
     Takes a dictionary (or a list) of keys and removes all instances of the key "$parameters" from it.
     """
-    if isinstance(d, dict):
+    if isinstance(d, dict) or isinstance(d, Mapping):
         return {k: remove_parameters_from_manifest(v) for k, v in d.items() if k != "$parameters"}
     elif isinstance(d, list):
         return [remove_parameters_from_manifest(item) for item in d]
