@@ -7,7 +7,10 @@
       "type": "string"
     },
     "External ID": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Voided": {
       "type": "boolean"
@@ -19,53 +22,95 @@
       "type": "string"
     },
     "Subject external ID": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Program": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Enrolment datetime": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Enrolment location": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": true,
       "properties": {
         "X": {
-          "type": ["null", "number"]
+          "type": [
+            "null",
+            "number"
+          ]
         },
         "Y": {
-          "type": ["null", "number"]
+          "type": [
+            "null",
+            "number"
+          ]
         }
       }
     },
     "Exit datetime": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Exit location": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": true,
       "properties": {
         "X": {
-          "type": ["null", "number"]
+          "type": [
+            "null",
+            "number"
+          ]
         },
         "Y": {
-          "type": ["null", "number"]
+          "type": [
+            "null",
+            "number"
+          ]
         }
       }
     },
     "observations": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": true
     },
     "exitObservations": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": true
     },
     "encounters": {
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
-        "type": ["null", "string"]
+        "type": [
+          "null",
+          "string"
+        ]
       }
     },
     "last_modified_at": {
@@ -73,22 +118,37 @@
       "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
     },
     "audit": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "additionalProperties": true,
       "properties": {
         "Created at": {
-          "type": ["null", "string"],
+          "type": [
+            "null",
+            "string"
+          ],
           "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
         },
         "Last modified at": {
-          "type": ["null", "string"],
+          "type": [
+            "null",
+            "string"
+          ],
           "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
         },
         "Created by": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "Last modified by": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     }

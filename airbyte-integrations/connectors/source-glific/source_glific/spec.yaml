@@ -1,0 +1,36 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Glific Spec
+  type: object
+  required:
+    - phone
+    - password
+    - start_time
+  properties:
+    phone:
+      type: string
+      title: Username
+      description: Phone (12 digit) to authenticate into the your glific account
+      order: 0
+    password:
+      type: string
+      title: Password
+      description: Password to authenticate into the your glific account
+      airbyte_secret: true
+      order: 1
+    start_time:
+      type: string
+      title: Start Time
+      description: Start Time from which to pull the data
+      order: 2
+      default: "2023-01-26T11:11:11Z"
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    glific_url:
+      type: string
+      title: Glific URL
+      description: URL of the Glific instance
+      order: 3
+      default: "https://api.staging.glific.com/api"
+      pattern: ^https:\/\/[a-zA-Z0-9.\-\/]+$
+
