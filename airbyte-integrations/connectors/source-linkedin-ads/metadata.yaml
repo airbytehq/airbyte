@@ -77,7 +77,7 @@ data:
               - "campaign_groups"
               - "conversions"
       4.0.0:
-        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users will need to reset affected streams after upgrading. Please see migration guide for more details.
+        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users using 3.X.X of the connector will need to reset affected streams after upgrading. Please see migration guide for more details.
         upgradeDeadline: "2024-08-21"
         scopedImpact:
           - scopeType: stream
