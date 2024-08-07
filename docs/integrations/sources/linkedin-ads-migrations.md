@@ -2,7 +2,7 @@
 
 ## Upgrading to 4.0.0
 
-Version 3.X.X introduced a regression in the connector that was reverted in 4.0.0. If you were using 3.X.X, please go through the migration steps. If you were still using 2.X.X, please upgrade to 4.0.0; after that, there is no additional action required.
+Version 3.X.X introduced a regression in the connector that was reverted in 4.0.0. If you were using 3.X.X, please go through the migration steps. If you were still using 2.X.X, please upgrade to 4.0.0; after that, there are no additional actions required.
 
 ## Migration Steps
 
