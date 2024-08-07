@@ -3,6 +3,8 @@
 #
 from enum import Enum
 
+from pipelines.consts import AIRBYTE_SUBMODULE_DIR_NAME
+
 REPO_MOUNT_PATH = "/src"
 CACHE_MOUNT_PATH = "/cache"
 
@@ -10,6 +12,7 @@ LICENSE_FILE_NAME = "LICENSE_SHORT"
 
 # TODO create .airbyte_ci_ignore files?
 DEFAULT_FORMAT_IGNORE_LIST = [
+    AIRBYTE_SUBMODULE_DIR_NAME,  # Required to format the airbyte-enterprise repo.
     "**/__init__.py",  # These files has never been formatted and we don't want to start now (for now) see https://github.com/airbytehq/airbyte/issues/33296
     "**/__pycache__",
     "**/.eggs",

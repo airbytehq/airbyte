@@ -108,6 +108,10 @@ poe lint
 
 ## Changelog
 
+### 1.5.1
+
+Bumped dependencies.
+
 ### 1.5.0
 
 Added `AIRBYTE ENTERPRISE` to the list of allowed licenses, for use by Airbyte Enterprise connectors.

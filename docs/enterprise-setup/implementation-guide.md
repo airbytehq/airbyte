@@ -219,13 +219,9 @@ Follow these instructions to add the Airbyte helm repository:
 ```yaml
 global:
   edition: enterprise
-
-# Optional - enables Airbyte's second generation Workers, which allows for better back pressure and self-healing in resource constrained environments.
-workload-api-server:
-  enabled: true
-
-workload-launcher:
-  enabled:
+  # Optional - enables Airbyte's second generation Workers, which allows for better back pressure and self-healing in resource constrained environments.
+  enterprise:
+    workloadsOptIn: true
 ```
 
 3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
