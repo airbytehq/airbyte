@@ -702,8 +702,10 @@ class ModelToComponentFactory:
                 stream_slicer: StreamSlicer = self._create_component_from_model(model=stream_slicer_model, config=config)
 
         return stream_slicer
-    
-    def _create_per_partition_cursor(self, model: DeclarativeStreamModel, stream_slicer: StreamSlicer, config: Config) -> PerPartitionCursor:
+
+    def _create_per_partition_cursor(
+        self, model: DeclarativeStreamModel, stream_slicer: StreamSlicer, config: Config
+    ) -> PerPartitionCursor:
         incremental_sync_model = model.incremental_sync
         return PerPartitionCursor(
             cursor_factory=CursorFactory(
@@ -1042,6 +1044,19 @@ class ModelToComponentFactory:
         inject_into = RequestOptionType(model.inject_into.value)
         return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
+    def _create_record_filter(
+        self, model: RecordSelectorModel, config: Config, client_side_incremental_sync: Optional[Dict[str, Any]] = None
+    ) -> RecordFilter:
+        if not client_side_incremental_sync:
+            return self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
+        else:
+            return ClientSideIncrementalRecordFilterDecorator(
+                config=config,
+                parameters=model.parameters,
+                condition=model.record_filter.condition if (model.record_filter and hasattr(model.record_filter, "condition")) else None,
+                **client_side_incremental_sync,
+            )
+
     def create_record_selector(
         self,
         model: RecordSelectorModel,
@@ -1054,14 +1069,9 @@ class ModelToComponentFactory:
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
         extractor = self._create_component_from_model(model=model.extractor, decoder=decoder, config=config)
-        record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
-        if client_side_incremental_sync:
-            record_filter = ClientSideIncrementalRecordFilterDecorator(
-                config=config,
-                parameters=model.parameters,
-                condition=model.record_filter.condition if (model.record_filter and hasattr(model.record_filter, "condition")) else None,
-                **client_side_incremental_sync,
-            )
+        record_filter = self._create_record_filter(
+            model=model, config=config, client_side_incremental_sync=client_side_incremental_sync
+        )
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
         return RecordSelector(
@@ -1104,18 +1114,17 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    def create_simple_retriever(
+    def _prepare_simple_retriever_dependencies(
         self,
         model: SimpleRetrieverModel,
         config: Config,
-        *,
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
-        transformations: List[RecordTransformation],
-    ) -> SimpleRetriever:
+        transformations: List[RecordTransformation] = [],
+    ) -> dict:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         requester = self._create_component_from_model(model=model.requester, decoder=decoder, config=config, name=name)
         record_selector = self._create_component_from_model(
@@ -1145,33 +1154,38 @@ class ModelToComponentFactory:
         )
 
         ignore_stream_slicer_parameters_on_paginated_requests = model.ignore_stream_slicer_parameters_on_paginated_requests or False
+        return {
+            "name": name,
+            "paginator": paginator,
+            "primary_key": primary_key,
+            "requester": requester,
+            "record_selector": record_selector,
+            "stream_slicer": stream_slicer,
+            "cursor": cursor,
+            "config": config,
+            "ignore_stream_slicer_parameters_on_paginated_requests": ignore_stream_slicer_parameters_on_paginated_requests,
+            "parameters": model.parameters or {},
+        }
 
-        if self._limit_slices_fetched or self._emit_connector_builder_messages:
-            return SimpleRetrieverTestReadDecorator(
-                name=name,
-                paginator=paginator,
-                primary_key=primary_key,
-                requester=requester,
-                record_selector=record_selector,
-                stream_slicer=stream_slicer,
-                cursor=cursor,
-                config=config,
-                maximum_number_of_slices=self._limit_slices_fetched or 5,
-                ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
-                parameters=model.parameters or {},
-            )
-        return SimpleRetriever(
-            name=name,
-            paginator=paginator,
-            primary_key=primary_key,
-            requester=requester,
-            record_selector=record_selector,
-            stream_slicer=stream_slicer,
-            cursor=cursor,
-            config=config,
-            ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
-            parameters=model.parameters or {},
+    def create_simple_retriever(
+        self,
+        model: SimpleRetrieverModel,
+        config: Config,
+        *,
+        name: str,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        stream_slicer: Optional[StreamSlicer],
+        stop_condition_on_cursor: bool = False,
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
+        transformations: List[RecordTransformation],
+    ) -> SimpleRetriever:
+        simple_retriever_args = self._prepare_simple_retriever_dependencies(
+            model, config, name, primary_key, stream_slicer, stop_condition_on_cursor, client_side_incremental_sync, transformations
         )
+        if self._limit_slices_fetched or self._emit_connector_builder_messages:
+            simple_retriever_args["maximum_number_of_slices"] = self._limit_slices_fetched or 5
+            return SimpleRetrieverTestReadDecorator(**simple_retriever_args)
+        return SimpleRetriever(**simple_retriever_args)
 
     @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs: Any) -> Spec:
