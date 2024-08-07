@@ -83,7 +83,6 @@ async def generate(
     concurrency: int,
     rewrite: bool,
 ) -> None:
-
     logger = logging.getLogger(__name__)
     result_backends: List[ResultBackend] = []
     if output_directory:

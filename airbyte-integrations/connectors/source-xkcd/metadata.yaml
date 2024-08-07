@@ -32,6 +32,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: xkcd_config_dev_null
+          id: 45a67896-b7f4-4d4e-bbed-1aa66801d668
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -4,11 +4,6 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_shopify/spec.json"
-        backward_compatibility_tests_config:
-          # This is the intentional change.
-          # Added new fields: `job_checkpoint_interval`, `job_product_variants_include_pres_prices`
-          # to provide the ability to override this value by the User.
-          disable_for_version: 2.4.14
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -29,6 +24,10 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          # specified the Type for `customer_journey_summary` field,
+          # for `customer_journey_summary` stream.
+          disable_for_version: 2.14.17
   basic_read:
     tests:
       - config_path: "secrets/config_transactions_with_user_id.json"

@@ -50,6 +50,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: notion_config_oauth_dev_null
+          id: 58842b61-7557-4971-829a-5a1cc43d7614
+        - name: notion_config_dev_null
+          id: 8af67fe8-a20e-4eae-816a-2a3c893c0360
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

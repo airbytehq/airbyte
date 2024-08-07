@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 39de93cb-1511-473e-a673-5cbedb9436af
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   dockerRepository: airbyte/source-senseforce
   githubIssueLabel: source-senseforce
   icon: senseforce.svg
@@ -35,6 +35,10 @@ data:
   # No/Low Airbyte Cloud usage
   #
   # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: senseforce_config_dev_null
+  #         id: 3f2f621c-59e2-4cc4-9922-f3735da8a162
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-SENSEFORCE__CREDS

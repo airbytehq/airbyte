@@ -38,6 +38,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: trello_config_dev_null
+          id: 791d4aa0-8fe2-4b8d-9ed3-131a5549821b
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
