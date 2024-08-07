@@ -1,0 +1,79 @@
+# This workflow is meant to be used to prevent/discourage merging to master during code freeze.
+# The code freeze dates are set in the env variables CODE_FREEZE_START_DATE and CODE_FREEZE_END_DATE.
+# If any connector code has been changed we display a warning message reminding merging is blocked and who to contact.
+# If no connector connector code has been changed we only display a warning message reminding merging is discouraged.
+# The Code freeze check job will be set as a required check for PRs in branch protection rules.
+
+name: Code freeze
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+
+env:
+  CODE_FREEZE_START_DATE: "2023-12-21"
+  CODE_FREEZE_END_DATE: "2024-01-02"
+jobs:
+  code-freeze-check:
+    runs-on: ubuntu-latest
+    name: Code freeze check
+    permissions:
+      # This is required to be able to comment on PRs and list changed files
+      pull-requests: write
+
+    steps:
+      # Check if code freeze is in effect by comparing the current date with the start and end date of the code freeze
+      - name: Check code freeze in effect
+        id: check-code-freeze-in-effect
+        run: |
+          start_date=$(date -d "$CODE_FREEZE_START_DATE" +%s)
+          end_date=$(date -d "$CODE_FREEZE_END_DATE" +%s)
+          current_date=$(date +%s)
+
+          if [ "$current_date" -ge "$start_date" ] && [ "$current_date" -le "$end_date" ]; then
+              echo "Code freeze is in effect"
+              echo "::set-output name=is_in_code_freeze::true"
+          else
+              echo "Code freeze is not in effect"
+              echo "::set-output name=is_in_code_freeze::false"
+          fi
+
+      # Use GitHub PR Api to get the list of changed files
+      # Filter the list to only keep the connectors files
+      - name: Get changed files
+        if: steps.check-code-freeze-in-effect.outputs.is_in_code_freeze == 'true'
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files_yaml: |
+            connectors:
+              - 'airbyte-integrations/connectors/**'
+              - '!**/*.md'
+
+      # If any connector code has been changed we display a warning message reminding merging is blocked and who to contact
+      - name: Code freeze comment on PR
+        if: steps.changed-files.outputs.connectors_any_changed == 'true' && steps.check-code-freeze-in-effect.outputs.is_in_code_freeze == 'true'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: code_freeze_warning
+          message: |
+            > [!WARNING]
+            > <b>🚨 Connector code freeze is in effect until ${{ env.CODE_FREEZE_END_DATE }}. This PR is changing connector code. Please contact the current OC engineers if you want to merge this change to master.</b>
+
+      # If no connector code has been changed we only display a warning message reminding merging is discouraged
+      - name: Code freeze comment on PR
+        if: steps.changed-files.outputs.connectors_any_changed == 'false' && steps.check-code-freeze-in-effect.outputs.is_in_code_freeze == 'true'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: code_freeze_warning
+          message: |
+            > [!WARNING]
+            > <b>Soft code freeze is in effect until ${{ env.CODE_FREEZE_END_DATE }}. Please avoid merging to master. #freedom-and-responsibility</b>
+
+      # Fail the workflow if connector code has been changed to prevent merging to master
+      - name: Fail workflow if connector code has been changed
+        if: steps.changed-files.outputs.connectors_any_changed == 'true' && steps.check-code-freeze-in-effect.outputs.is_in_code_freeze == 'true'
+        run: echo "Connector code freeze is in effect. Please contact the current OC engineers if you want to merge this change." && exit 1

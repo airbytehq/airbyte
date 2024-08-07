@@ -5,7 +5,7 @@
     "title": "https://api.census.gov/ Source Spec",
     "type": "object",
     "required": ["api_key", "query_path"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "query_params": {
         "type": "string",

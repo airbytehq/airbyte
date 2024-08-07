@@ -1,0 +1,43 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4a4d887b-0f2d-4b33-ab7f-9b01b9072804
+  dockerImageTag: 0.2.13
+  dockerRepository: airbyte/source-survey-sparrow
+  documentationUrl: https://docs.airbyte.com/integrations/sources/survey-sparrow
+  githubIssueLabel: source-survey-sparrow
+  icon: surveysparrow.svg
+  license: MIT
+  name: SurveySparrow
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-survey-sparrow
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: survey-sparrow_config_dev_null
+          id: 29c6c6f2-217f-48e7-9a36-b3a235531b63
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SURVEY-SPARROW__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

@@ -1,0 +1,101 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 200
+  allowedHosts:
+    hosts:
+      - mixpanel.com
+      - eu.mixpanel.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
+  dockerImageTag: 3.3.2
+  dockerRepository: airbyte/source-mixpanel
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
+  githubIssueLabel: source-mixpanel
+  icon: mixpanel.svg
+  license: MIT
+  maxSecondsBetweenMessages: 3600
+  name: Mixpanel
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-mixpanel
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      3.0.0:
+        message:
+          In this release, CohortMembers stream has changed due to changes in primary key and an improper state format.
+          Please reset CohortMembers stream. For more information, see our migration documentation.
+        upgradeDeadline: "2024-06-03"
+      2.0.0:
+        message:
+          In this release, the default primary key for stream Export has been
+          deleted, allowing users to select the key that best fits their data. Refreshing
+          the source schema and resetting affected streams is necessary only if new
+          primary keys are to be applied following the upgrade.
+        upgradeDeadline: "2023-11-30"
+      1.0.0:
+        message:
+          In this release, the datetime field of stream engage has had its
+          type changed from date-time to string due to inconsistent data from Mixpanel.
+          Additionally, the primary key for stream export has been fixed to uniquely
+          identify records. Users will need to refresh the source schema and reset
+          affected streams after upgrading.
+        upgradeDeadline: "2023-10-31"
+  suggestedStreams:
+    streams:
+      - export
+      - cohorts
+      - cohort_members
+      - engage
+      - annotations
+      - revenue
+      - funnels
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: mixpanel_config_incremental_dev_null
+          id: 1684fa59-b23d-4955-b9f3-f56f77599606
+        - name: mixpanel_config_old_dev_null
+          id: 4158acfe-9e39-46f4-bf0b-6865368ed5a8
+        - name: mixpanel_config_project_secret_dev_null
+          id: 575b938b-35ad-459c-a820-291e1e94c293
+        - name: mixpanel_config_dev_null
+          id: 94ebb422-0a1f-4c4d-b4a1-cc0aa63a4114
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MIXPANEL_CONFIG_INCREMENTAL
+          fileName: config_incremental.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MIXPANEL_PROJECT_SECRET
+          fileName: config_project_secret.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MIXPANEL_SERVICE_ACCOUNT
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-MIXPANEL__CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

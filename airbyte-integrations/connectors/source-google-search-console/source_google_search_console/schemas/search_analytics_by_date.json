@@ -3,26 +3,33 @@
   "type": "object",
   "properties": {
     "site_url": {
+      "description": "The URL of the site for which the search analytics data is being reported.",
       "type": ["null", "string"]
     },
     "search_type": {
+      "description": "The type of search query (e.g., web, image, video) that generated the search analytics data.",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date for which the search analytics data is being reported.",
       "type": ["null", "string"],
       "format": "date"
     },
     "clicks": {
+      "description": "The total number of times users clicked on the search result for the site URL on the specific date.",
       "type": ["null", "integer"]
     },
     "impressions": {
+      "description": "The number of times the site URL was displayed in the search results to users on the specific date.",
       "type": ["null", "integer"]
     },
     "ctr": {
+      "description": "The click-through rate (CTR) represents the percentage of total impressions that resulted in a click to the site URL.",
       "type": ["null", "number"],
       "multipleOf": 1e-25
     },
     "position": {
+      "description": "The average position of the site URL in the search results pages for the specific date.",
       "type": ["null", "number"],
       "multipleOf": 1e-25
     }

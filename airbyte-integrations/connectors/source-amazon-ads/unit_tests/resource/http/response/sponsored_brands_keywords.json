@@ -1,0 +1,12 @@
+[
+  {
+    "keywordId": 1,
+    "adGroupId": 1,
+    "campaignId": 1,
+    "keywordText": "string",
+    "nativeLanguageKeyword": "string",
+    "matchType": "broad",
+    "state": "enabled",
+    "bid": 0
+  }
+]

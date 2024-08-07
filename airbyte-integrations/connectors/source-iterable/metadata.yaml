@@ -1,0 +1,48 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 200
+  allowedHosts:
+    hosts:
+      - api.iterable.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
+  dockerImageTag: 0.6.3
+  dockerRepository: airbyte/source-iterable
+  documentationUrl: https://docs.airbyte.com/integrations/sources/iterable
+  githubIssueLabel: source-iterable
+  icon: iterable.svg
+  license: MIT
+  maxSecondsBetweenMessages: 60
+  name: Iterable
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-iterable
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: iterable_config_dev_null
+          id: 4210f42f-47f5-47e1-a96c-e0f11c883c47
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ITERABLE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

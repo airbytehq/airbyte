@@ -1,0 +1,84 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.pinterest.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
+  dockerImageTag: 2.0.9
+  dockerRepository: airbyte/source-pinterest
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  githubIssueLabel: source-pinterest
+  icon: pinterest.svg
+  license: MIT
+  maxSecondsBetweenMessages: 86400
+  name: Pinterest
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pinterest
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "This release introduces updated format of state for incremental streams. Users will need to reset affected streams after upgrading. Please see migration guide for more details."
+        upgradeDeadline: "2024-06-03"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - ad_account_analytics
+              - ad_analytics
+              - ad_group_analytics
+              - ad_groups
+              - ads
+              - campaign_analytics
+              - campaigns
+      1.0.0:
+        message: "This release updates the date-time fields to use the Airbyte format `timestamp_without_timezone`. This change affects all streams where date-time fields are present, ensuring more accurate and standardized time representations: BoardPins, BoardSectionPins, Boards, Catalogs, and CatalogFeeds. Additionally, the stream names AdvertizerReport and AdvertizerTargetingReport have been renamed to AdvertiserReport and AdvertiserTargetingReport, respectively. Users will need to refresh the source schema and reset affected streams after upgrading."
+        upgradeDeadline: "2023-12-14"
+  suggestedStreams:
+    streams:
+      - campaign_analytics
+      - ad_account_analytics
+      - ad_analytics
+      - campaigns
+      - ad_accounts
+      - ads
+      - user_account_analytics
+      - ad_group_analytics
+      - ad_groups
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pinterest_config_dev_null
+          id: 4bf1f050-10fd-4ae5-8d7a-05d6fd59820d
+        - name: pinterest_config_oauth_dev_null
+          id: 8d06a86f-fc9a-44b6-b3ef-db633636bc2c
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PINTEREST__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PINTEREST__OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

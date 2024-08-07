@@ -1,0 +1,43 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e65f84c0-7598-458a-bfac-f770c381ff5d
+  dockerImageTag: 0.1.12
+  dockerRepository: airbyte/source-whisky-hunter
+  githubIssueLabel: source-whisky-hunter
+  icon: whiskyhunter.svg
+  license: MIT
+  name: Whisky Hunter
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-whisky-hunter
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/whisky-hunter
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: whisky-hunter_config_dev_null
+          id: 49d04005-71c9-4c96-8349-bafc629ea7ee
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-WHISKY-HUNTER__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+metadataSpecVersion: "1.0"

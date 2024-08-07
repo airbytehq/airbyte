@@ -19,6 +19,8 @@
         ],
         "type": "string",
         "title": "Host",
+        "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
+        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com",
         "order": 0
       },
       "role": {
@@ -29,7 +31,7 @@
         "order": 1
       },
       "warehouse": {
-        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to sync data into",
+        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to use as a compute cluster",
         "examples": ["AIRBYTE_WAREHOUSE"],
         "type": "string",
         "title": "Warehouse",
@@ -62,10 +64,61 @@
         "type": "object",
         "oneOf": [
           {
-            "title": "OAuth2.0",
+            "title": "Key Pair Authentication",
             "type": "object",
             "order": 0,
+            "required": ["private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase",
+                "description": "Passphrase for private key",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Username and Password",
+            "type": "object",
+            "required": ["password"],
+            "order": 1,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Username and Password",
+                "enum": ["Username and Password"],
+                "default": "Username and Password",
+                "order": 0
+              },
+              "password": {
+                "description": "Enter the password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "OAuth2.0",
+            "type": "object",
+            "order": 2,
             "required": ["access_token", "refresh_token"],
+            "airbyte_hidden": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -99,49 +152,6 @@
                 "airbyte_secret": true
               }
             }
-          },
-          {
-            "title": "Key Pair Authentication",
-            "type": "object",
-            "order": 1,
-            "required": ["private_key"],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Key Pair Authentication",
-                "enum": ["Key Pair Authentication"],
-                "default": "Key Pair Authentication",
-                "order": 0
-              },
-              "private_key": {
-                "type": "string",
-                "title": "Private Key",
-                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
-                "multiline": true,
-                "airbyte_secret": true
-              },
-              "private_key_password": {
-                "type": "string",
-                "title": "Passphrase",
-                "description": "Passphrase for private key",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "title": "Username and Password",
-            "type": "object",
-            "required": ["password"],
-            "order": 2,
-            "properties": {
-              "password": {
-                "description": "Enter the password associated with the username.",
-                "type": "string",
-                "airbyte_secret": true,
-                "title": "Password",
-                "order": 1
-              }
-            }
           }
         ],
         "order": 6
@@ -152,272 +162,25 @@
         "type": "string",
         "order": 7
       },
-      "loading_method": {
-        "type": "object",
-        "title": "Data Staging Method",
-        "description": "Select a data staging method",
-        "order": 8,
-        "oneOf": [
-          {
-            "title": "Select another option",
-            "description": "Select another option",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["Standard"],
-                "default": "Standard"
-              }
-            }
-          },
-          {
-            "title": "[Recommended] Internal Staging",
-            "description": "Recommended for large production workloads for better speed and scalability.",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["Internal Staging"],
-                "default": "Internal Staging"
-              }
-            }
-          },
-          {
-            "title": "AWS S3 Staging",
-            "description": "Recommended for large production workloads for better speed and scalability.",
-            "required": [
-              "method",
-              "s3_bucket_name",
-              "access_key_id",
-              "secret_access_key"
-            ],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["S3 Staging"],
-                "default": "S3 Staging",
-                "order": 0
-              },
-              "s3_bucket_name": {
-                "title": "S3 Bucket Name",
-                "type": "string",
-                "description": "Enter your S3 bucket name",
-                "examples": ["airbyte.staging"],
-                "order": 1
-              },
-              "s3_bucket_region": {
-                "title": "S3 Bucket Region",
-                "type": "string",
-                "default": "",
-                "description": "Enter the region where your S3 bucket resides",
-                "enum": [
-                  "",
-                  "us-east-1",
-                  "us-east-2",
-                  "us-west-1",
-                  "us-west-2",
-                  "af-south-1",
-                  "ap-east-1",
-                  "ap-south-1",
-                  "ap-northeast-1",
-                  "ap-northeast-2",
-                  "ap-northeast-3",
-                  "ap-southeast-1",
-                  "ap-southeast-2",
-                  "ca-central-1",
-                  "cn-north-1",
-                  "cn-northwest-1",
-                  "eu-central-1",
-                  "eu-west-1",
-                  "eu-west-2",
-                  "eu-west-3",
-                  "eu-south-1",
-                  "eu-north-1",
-                  "sa-east-1",
-                  "me-south-1"
-                ],
-                "order": 2
-              },
-              "access_key_id": {
-                "type": "string",
-                "description": "Enter your <a href=\"https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html\">AWS access key ID</a>. Airbyte requires Read and Write permissions on your S3 bucket ",
-                "title": "AWS access key ID",
-                "airbyte_secret": true,
-                "order": 3
-              },
-              "secret_access_key": {
-                "type": "string",
-                "description": "Enter your <a href=\"https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html\">AWS secret access key</a>",
-                "title": "AWS secret access key",
-                "airbyte_secret": true,
-                "order": 4
-              },
-              "purge_staging_data": {
-                "title": "Purge Staging Files and Tables",
-                "type": "boolean",
-                "description": "Toggle to delete staging files from the S3 bucket after a successful sync",
-                "default": true,
-                "order": 5
-              },
-              "encryption": {
-                "title": "Encryption",
-                "type": "object",
-                "description": "Choose a data encryption method for the staging data",
-                "default": { "encryption_type": "none" },
-                "order": 6,
-                "oneOf": [
-                  {
-                    "title": "No encryption",
-                    "description": "Staging data will be stored in plaintext.",
-                    "type": "object",
-                    "required": ["encryption_type"],
-                    "properties": {
-                      "encryption_type": {
-                        "type": "string",
-                        "const": "none",
-                        "enum": ["none"],
-                        "default": "none"
-                      }
-                    }
-                  },
-                  {
-                    "title": "AES-CBC envelope encryption",
-                    "description": "Staging data will be encrypted using AES-CBC envelope encryption.",
-                    "type": "object",
-                    "required": ["encryption_type"],
-                    "properties": {
-                      "encryption_type": {
-                        "type": "string",
-                        "const": "aes_cbc_envelope",
-                        "enum": ["aes_cbc_envelope"],
-                        "default": "aes_cbc_envelope"
-                      },
-                      "key_encrypting_key": {
-                        "type": "string",
-                        "title": "Key",
-                        "description": "The key, base64-encoded. Must be either 128, 192, or 256 bits. Leave blank to have Airbyte generate an ephemeral key for each sync.",
-                        "airbyte_secret": true
-                      }
-                    }
-                  }
-                ]
-              },
-              "file_name_pattern": {
-                "type": "string",
-                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
-                "title": "S3 Filename pattern",
-                "examples": [
-                  "{date}",
-                  "{date:yyyy_MM}",
-                  "{timestamp}",
-                  "{part_number}",
-                  "{sync_id}"
-                ],
-                "order": 7
-              }
-            }
-          },
-          {
-            "title": "Google Cloud Storage Staging",
-            "description": "Recommended for large production workloads for better speed and scalability.",
-            "required": [
-              "method",
-              "project_id",
-              "bucket_name",
-              "credentials_json"
-            ],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["GCS Staging"],
-                "default": "GCS Staging",
-                "order": 0
-              },
-              "project_id": {
-                "title": "Google Cloud project ID",
-                "type": "string",
-                "description": "Enter the <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">Google Cloud project ID</a>",
-                "examples": ["my-project"],
-                "order": 1
-              },
-              "bucket_name": {
-                "title": "Cloud Storage bucket name",
-                "type": "string",
-                "description": "Enter the <a href=\"https://cloud.google.com/storage/docs/creating-buckets\">Cloud Storage bucket name</a>",
-                "examples": ["airbyte-staging"],
-                "order": 2
-              },
-              "credentials_json": {
-                "title": "Google Application Credentials",
-                "type": "string",
-                "description": "Enter your <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\">Google Cloud service account key</a> in the JSON format with read/write access to your Cloud Storage staging bucket",
-                "airbyte_secret": true,
-                "multiline": true,
-                "order": 3
-              }
-            }
-          },
-          {
-            "title": "Azure Blob Storage Staging",
-            "description": "Recommended for large production workloads for better speed and scalability.",
-            "required": [
-              "method",
-              "azure_blob_storage_account_name",
-              "azure_blob_storage_container_name",
-              "azure_blob_storage_sas_token"
-            ],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["Azure Blob Staging"],
-                "default": "Azure Blob Staging",
-                "order": 0
-              },
-              "azure_blob_storage_endpoint_domain_name": {
-                "title": "Azure Blob Storage Endpoint",
-                "type": "string",
-                "default": "blob.core.windows.net",
-                "description": "Enter the Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">endpoint domain name</a>",
-                "examples": ["blob.core.windows.net"],
-                "order": 1
-              },
-              "azure_blob_storage_account_name": {
-                "title": "Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">account name</a>",
-                "type": "string",
-                "description": "Enter your Azure Blob Storage account name",
-                "examples": ["airbyte5storage"],
-                "order": 2
-              },
-              "azure_blob_storage_container_name": {
-                "title": "Azure Blob Storage Container Name",
-                "type": "string",
-                "description": "Enter your Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names\">container name</a>",
-                "examples": ["airbytetestcontainername"],
-                "order": 3
-              },
-              "azure_blob_storage_sas_token": {
-                "title": "SAS Token",
-                "type": "string",
-                "airbyte_secret": true,
-                "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token\">Shared access signature</a> (SAS) token to grant Snowflake limited access to objects in your Azure Blob Storage account",
-                "examples": [
-                  "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
-                ],
-                "order": 4
-              }
-            }
-          }
-        ]
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "order": 10
+      },
+      "disable_type_dedupe": {
+        "type": "boolean",
+        "default": false,
+        "description": "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
+        "title": "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "order": 11
+      },
+      "retention_period_days": {
+        "type": "integer",
+        "default": 1,
+        "description": "The number of days of Snowflake Time Travel to enable on the tables. See <a href=\"https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period\">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.",
+        "title": "Data Retention Period (days)",
+        "order": 13
       }
     }
   },

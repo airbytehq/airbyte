@@ -1,54 +1,70 @@
 {
   "properties": {
     "usage_record_uri": {
+      "description": "The URI of the associated usage record.",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the trigger was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_fired": {
+      "description": "The date and time when the trigger was last fired.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name for the trigger.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI of the usage trigger resource.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account associated with the usage trigger.",
       "type": ["null", "string"]
     },
     "callback_method": {
+      "description": "The HTTP method used for callback notifications.",
       "type": ["null", "string"]
     },
     "trigger_by": {
+      "description": "The attribute by which the trigger condition is evaluated.",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier for the trigger.",
       "type": ["null", "string"]
     },
     "current_value": {
+      "description": "The current value for the trigger condition.",
       "type": ["null", "number"]
     },
     "date_created": {
+      "description": "The date and time when the trigger was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "callback_url": {
+      "description": "The URL where callback notifications are sent.",
       "type": ["null", "string"]
     },
     "recurring": {
+      "description": "Indicates if the trigger is set to recur periodically.",
       "type": ["null", "string"]
     },
     "usage_category": {
+      "description": "The category under which the usage falls.",
       "type": ["null", "string"]
     },
     "trigger_value": {
+      "description": "The value that triggers the condition.",
       "type": ["null", "number"]
     },
     "api_version": {
+      "description": "The version of the Twilio API used for the trigger.",
       "type": ["null", "string"]
     }
   },

@@ -1,0 +1,72 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - api.intercom.io
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
+  dockerImageTag: 0.6.17
+  dockerRepository: airbyte/source-intercom
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
+  githubIssueLabel: source-intercom
+  icon: intercom.svg
+  license: MIT
+  maxSecondsBetweenMessages: 60
+  name: Intercom
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-intercom
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - conversations
+      - contacts
+      - conversation_parts
+      - teams
+      - companies
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: intercom_config_dev_null
+          id: 09ebd6bb-2756-4cd3-8ad5-7120088cc553
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-INTERCOM_APIKEY__CREDS
+          fileName: config_apikey.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-INTERCOM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-INTERCOM_APIKEY__CREDS
+          fileName: config_apikey.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-INTERCOM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

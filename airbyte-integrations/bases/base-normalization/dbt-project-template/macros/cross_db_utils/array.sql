@@ -46,6 +46,10 @@
     left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
 {%- endmacro %}
 
+{% macro duckdb__cross_join_unnest(stream_name, array_col) -%}
+    left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
+{%- endmacro %}
+
 {% macro redshift__cross_join_unnest(stream_name, array_col) -%}
     left join joined on _airbyte_{{ stream_name }}_hashid = joined._airbyte_hashid
 {%- endmacro %}
@@ -95,6 +99,10 @@
     _airbyte_nested_data
 {%- endmacro %}
 
+{% macro duckdb__unnested_column_value(column_col) -%}
+    _airbyte_nested_data
+{%- endmacro %}
+
 {% macro oracle__unnested_column_value(column_col) -%}
     {{ column_col }}
 {%- endmacro %}
@@ -113,47 +121,13 @@
 {% macro default__unnest_cte(from_table, stream_name, column_col) -%}{%- endmacro %}
 
 {% macro redshift__unnest_cte(from_table, stream_name, column_col) -%}
-
     {# -- based on https://docs.aws.amazon.com/redshift/latest/dg/query-super.html #}
-    {% if redshift_super_type() -%}
-        with joined as (
-            select
-                table_alias._airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
-                _airbyte_nested_data
-            from {{ from_table }} as table_alias, table_alias.{{ column_col }} as _airbyte_nested_data
-        )
-    {%- else -%}
-
-    {# -- based on https://blog.getdbt.com/how-to-unnest-arrays-in-redshift/ #}
-    {%- if not execute -%}
-        {{ return('') }}
-    {% endif %}
-    {%- call statement('max_json_array_length', fetch_result=True) -%}
-        with max_value as (
-            select max(json_array_length({{ column_col }}, true)) as max_number_of_items
-            from {{ from_table }}
-        )
+    with joined as (
         select
-            case when max_number_of_items is not null and max_number_of_items > 1
-            then max_number_of_items
-            else 1 end as max_number_of_items
-        from max_value
-    {%- endcall -%}
-    {%- set max_length = load_result('max_json_array_length') -%}
-with numbers as (
-    {{dbt_utils.generate_series(max_length["data"][0][0])}}
-),
-joined as (
-    select
-        _airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
-        json_extract_array_element_text({{ column_col }}, numbers.generated_number::int - 1, true) as _airbyte_nested_data
-    from {{ from_table }}
-    cross join numbers
-    -- only generate the number of records in the cross join that corresponds
-    -- to the number of items in {{ from_table }}.{{ column_col }}
-    where numbers.generated_number <= json_array_length({{ column_col }}, true)
-)
-    {%- endif %}
+            table_alias._airbyte_{{ stream_name }}_hashid as _airbyte_hashid,
+            _airbyte_nested_data
+        from {{ from_table }} as table_alias, table_alias.{{ column_col }} as _airbyte_nested_data
+    )
 {%- endmacro %}
 
 {% macro mysql__unnest_cte(from_table, stream_name, column_col) -%}
@@ -191,5 +165,9 @@ joined as (
 {%- endmacro %}
 
 {% macro tidb__unnest_cte(from_table, stream_name, column_col) -%}
+    {{ mysql__unnest_cte(from_table, stream_name, column_col) }}
+{%- endmacro %}
+
+{% macro duckdb__unnest_cte(from_table, stream_name, column_col) -%}
     {{ mysql__unnest_cte(from_table, stream_name, column_col) }}
 {%- endmacro %}

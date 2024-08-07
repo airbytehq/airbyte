@@ -3,83 +3,81 @@
   "type": "object",
   "properties": {
     "webinar_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "address": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "city": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "comments": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "country": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom_questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "title": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
-        },
-        "required": []
+        }
       }
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "first_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "industry": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "job_title": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "last_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "no_of_employees": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "org": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "phone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "purchasing_time_frame": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "role_in_purchase_process": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "state": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "zip": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "create_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "join_url": {
-      "type": "string"
+      "type": ["null", "string"]
     }
-  },
-  "required": []
+  }
 }

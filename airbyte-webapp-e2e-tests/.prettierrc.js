@@ -1,1 +1,0 @@
-../airbyte-webapp/.prettierrc.js

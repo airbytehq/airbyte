@@ -1,0 +1,23 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+compileTestKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+
+    api 'com.google.cloud:google-cloud-bigquery:2.37.0'
+
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+}

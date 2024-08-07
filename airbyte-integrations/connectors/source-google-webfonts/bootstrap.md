@@ -1,7 +1,7 @@
 # Google-webfonts
 
 The connector uses the v1 API documented here: https://developers.google.com/fonts/docs/developer_api . It is
-straightforward HTTP REST API with API authentication. 
+straightforward HTTP REST API with API authentication.
 
 ## API key
 
@@ -32,7 +32,7 @@ Just pass the generated API key and optional parameters for establishing the con
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter your config params if needed. (Optional)
-6. Click **Set up source**.
+4. Enter your config params if needed. (Optional)
+5. Click **Set up source**.
 
- * We use only GET methods, towards the webfonts endpoints which is straightforward
+- We use only GET methods, towards the webfonts endpoints which is straightforward

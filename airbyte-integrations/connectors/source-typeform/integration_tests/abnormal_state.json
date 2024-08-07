@@ -1,13 +1,16 @@
-{
-  "responses": {
-    "SdMKQYkv": {
-      "submitted_at": 9999999999
-    },
-    "XtrcGoGJ": {
-      "submitted_at": 9999999999
-    },
-    "kRt99jlK": {
-      "submitted_at": 9999999999
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "responses" },
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "form_id": "SdMKQYkv" },
+            "cursor": { "submitted_at": "2050-09-04T16:39:47Z" }
+          }
+        ]
+      }
     }
   }
-}
+]

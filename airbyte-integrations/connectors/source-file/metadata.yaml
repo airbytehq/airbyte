@@ -1,0 +1,95 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - "*"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
+  dockerImageTag: 0.5.5
+  dockerRepository: airbyte/source-file
+  documentationUrl: https://docs.airbyte.com/integrations/sources/file
+  githubIssueLabel: source-file
+  icon: file.svg
+  license: MIT
+  maxSecondsBetweenMessages: 5400
+  name: File (CSV, JSON, Excel, Feather, Parquet)
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-file
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: file_config_dev_null
+          id: 91948602-3f4a-45a0-847d-9394ea8198e8
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-FILE_AWS__CREDS
+          fileName: aws.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE_AZBLOB__CREDS
+          fileName: azblob.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE_BOX__CREDS
+          fileName: box_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE_GCS__CREDS
+          fileName: gcs.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FILE_AWS__CREDS
+          fileName: aws.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE_AZBLOB__CREDS
+          fileName: azblob.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE_BOX__CREDS
+          fileName: box_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE_GCS__CREDS
+          fileName: gcs.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FILE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

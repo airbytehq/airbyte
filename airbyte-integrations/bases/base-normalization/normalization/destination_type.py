@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,7 +16,12 @@ class DestinationType(Enum):
     REDSHIFT = "redshift"
     SNOWFLAKE = "snowflake"
     TIDB = "tidb"
+    DUCKDB = "duckdb"
 
     @classmethod
     def from_string(cls, string_value: str) -> "DestinationType":
         return DestinationType[string_value.upper()]
+
+    @staticmethod
+    def testable_destinations():
+        return [dest for dest in list(DestinationType) if dest != DestinationType.DUCKDB]

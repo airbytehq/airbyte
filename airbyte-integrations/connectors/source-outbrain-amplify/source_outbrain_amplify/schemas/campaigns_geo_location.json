@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "geoType": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "canonicalName": {
+      "type": ["string", "null"]
+    },
+    "code": {
+      "type": ["string", "null"]
+    },
+    "parent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "geoType": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "canonicalName": {
+          "type": ["string", "null"]
+        },
+        "code": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "campaign_id": {
+      "type": ["string", "null"]
+    }
+  }
+}

@@ -1,80 +1,224 @@
 {
   "customers": {
-    "updated_at": "2022-06-22T03:50:13-07:00"
+    "updated_at": "2023-07-11T13:07:45-07:00"
+  },
+  "customer_journey_summary": {
+    "updated_at": "2023-04-24T18:00:10+00:00"
   },
   "orders": {
-    "updated_at": "2022-10-10T06:21:53-07:00"
+    "deleted": {
+      "deleted_at": ""
+    },
+    "updated_at": "2023-04-24T11:00:10-07:00"
+  },
+  "order_agreements": {
+    "updated_at": "2023-04-24T11:00:10-07:00"
   },
   "draft_orders": {
-    "updated_at": "2022-10-08T05:07:29-07:00"
+    "updated_at": "2023-07-11T12:57:55-07:00"
   },
   "products": {
-    "updated_at": "2022-10-10T06:21:56-07:00"
+    "deleted": {
+      "deleted_at": "2023-09-05T13:32:22-07:00"
+    },
+    "updated_at": "2023-09-05T07:12:05-07:00"
   },
-  "abandoned_checkouts": {},
+  "products_graph_ql": {
+    "updatedAt": "2023-09-05T14:12:05Z"
+  },
+  "abandoned_checkouts": {
+    "updated_at": "2023-07-11T13:07:45-07:00"
+  },
   "metafields": {
     "updated_at": "2022-05-30T23:42:02-07:00"
   },
   "collects": {
-    "id": 29427031703740
+    "id": 29427031703741
   },
   "custom_collections": {
-    "updated_at": "2022-10-08T04:44:51-07:00"
+    "deleted": {
+      "deleted_at": "2023-09-06T03:34:39-07:00"
+    },
+    "updated_at": "2023-09-05T07:06:59-07:00"
   },
   "order_refunds": {
-    "created_at": "2022-10-10T06:21:53-07:00",
     "orders": {
-      "updated_at": "2022-10-10T06:21:53-07:00"
-    }
+      "updated_at": "2023-04-24T11:00:10-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
+    },
+    "created_at": "2022-10-10T06:21:53-07:00"
   },
   "order_risks": {
-    "id": 6446736474301,
-    "orders": {
-      "updated_at": "2022-03-07T02:09:04-08:00"
-    }
+    "updated_at": "2023-04-24T18:00:10+00:00"
   },
   "transactions": {
-    "created_at": "2022-10-10T06:21:52-07:00",
     "orders": {
-      "updated_at": "2022-10-10T06:21:53-07:00"
-    }
+      "updated_at": "2023-04-24T11:00:10-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
+    },
+    "created_at": "2023-04-24T11:00:08-07:00"
   },
   "tender_transactions": {
-    "processed_at": "2022-10-10T06:21:52-07:00"
+    "processed_at": "2023-04-24T11:00:08-07:00"
   },
   "pages": {
-    "updated_at": "2022-10-08T08:07:00-07:00"
+    "deleted": {
+      "deleted_at": "2023-09-06T03:37:06-07:00"
+    },
+    "updated_at": "2023-04-24T11:08:41-07:00"
   },
   "price_rules": {
-    "updated_at": "2021-09-10T06:48:10-07:00"
+    "deleted": {
+      "deleted_at": "2023-09-06T03:48:46-07:00"
+    },
+    "updated_at": "2023-04-24T05:52:22-07:00"
   },
   "discount_codes": {
     "price_rules": {
-      "updated_at": "2021-09-10T06:48:10-07:00"
+      "updated_at": "2023-04-24T05:52:22-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
     },
-    "updated_at": "2021-09-10T06:48:10-07:00"
+    "updated_at": "2023-04-24T05:52:22-07:00"
   },
   "inventory_items": {
     "products": {
-      "updated_at": "2022-03-17T03:10:35-07:00"
+      "updated_at": "2023-04-20T04:12:51-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
     },
-    "updated_at": "2022-03-06T14:12:20-08:00"
+    "updated_at": "2023-04-14T03:29:27-07:00"
   },
   "inventory_levels": {
     "locations": {},
-    "updated_at": "2022-10-10T06:21:56-07:00"
+    "updated_at": "2023-04-24T11:00:10-07:00"
   },
   "fulfillment_orders": {
-    "id": 5567724486845,
     "orders": {
-      "updated_at": "2022-10-10T06:05:29-07:00"
-    }
+      "updated_at": "2023-04-24T11:00:10-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
+    },
+    "id": 5985636450493
   },
   "fulfillments": {
-    "updated_at": "2022-06-22T03:50:14-07:00",
     "orders": {
-      "updated_at": "2022-10-10T06:05:29-07:00"
+      "updated_at": "2023-04-24T11:00:10-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
+    },
+    "updated_at": "2023-04-24T11:00:09-07:00"
+  },
+  "balance_transactions": {},
+  "articles": {
+    "id": 558999404733,
+    "deleted": {
+      "deleted_at": "2023-09-05T14:02:00-07:00"
     }
   },
-  "balance_transactions": {}
+  "metafield_articles": {
+    "articles": {
+      "id": 558627979453,
+      "deleted": {}
+    },
+    "updated_at": "2023-04-14T03:19:18-07:00"
+  },
+  "blogs": {
+    "id": 85733114045,
+    "deleted": {
+      "deleted_at": "2023-09-06T03:30:22-07:00"
+    }
+  },
+  "metafield_blogs": {
+    "updated_at": "2022-10-07T06:05:23-07:00",
+    "blogs": {
+      "id": 80417685693
+    }
+  },
+  "metafield_customers": {
+    "updated_at": "2023-04-13T04:50:10-07:00"
+  },
+  "metafield_orders": {
+    "orders": {
+      "updated_at": "2023-04-24T10:59:00-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
+    },
+    "updated_at": "2023-04-14T03:52:40-07:00"
+  },
+  "metafield_draft_orders": {
+    "draft_orders": {
+      "updated_at": "2023-04-24T07:18:06-07:00"
+    },
+    "updated_at": "2023-04-24T07:18:06-07:00"
+  },
+  "metafield_products": {
+    "updated_at": "2023-04-14T04:04:46-07:00"
+  },
+  "product_images": {
+    "updated_at": "2023-04-24T10:27:15-07:00"
+  },
+  "metafield_product_images": {
+    "updated_at": "2023-04-24T10:32:19-07:00"
+  },
+  "product_variants": {
+    "updated_at": "2023-12-11T10:37:41+00:00"
+  },
+  "metafield_product_variants": {
+    "updated_at": "2023-04-14T03:29:27-07:00"
+  },
+  "collections": {
+    "collects": {
+      "id": 29427031703741
+    },
+    "updated_at": "2023-03-20T06:08:12-07:00"
+  },
+  "metafield_collections": {
+    "collects": {
+      "id": 29427031703741
+    },
+    "updated_at": "2022-10-08T04:44:51-07:00"
+  },
+  "smart_collections": {
+    "updated_at": "2023-09-05T07:12:04-07:00"
+  },
+  "metafield_smart_collections": {
+    "smart_collections": {
+      "updated_at": "2023-09-05T07:12:04-07:00"
+    },
+    "updated_at": "2023-04-14T05:21:58-07:00"
+  },
+  "metafield_pages": {
+    "pages": {
+      "updated_at": "2023-04-24T11:08:41-07:00",
+      "deleted": {
+        "deleted_at": ""
+      }
+    },
+    "updated_at": "2023-04-24T11:08:41-07:00"
+  },
+  "metafield_shops": {
+    "updated_at": "2023-04-24T11:12:38-07:00"
+  },
+  "metafield_locations": {
+    "locations": {},
+    "updated_at": "2022-10-12T02:21:35-07:00"
+  },
+  "disputes": {},
+  "customer_saved_search": {},
+  "customer_address": {
+    "id": 8212915650749,
+    "customers": {
+      "updated_at": "2023-07-11T13:07:45-07:00"
+    }
+  }
 }

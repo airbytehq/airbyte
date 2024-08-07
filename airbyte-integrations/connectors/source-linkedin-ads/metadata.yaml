@@ -1,0 +1,126 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - linkedin.com
+      - api.linkedin.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 137ece28-5434-455c-8f34-69dc3782f451
+  dockerImageTag: 3.0.1
+  dockerRepository: airbyte/source-linkedin-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
+  githubIssueLabel: source-linkedin-ads
+  icon: linkedin.svg
+  license: MIT
+  maxSecondsBetweenMessages: 86400
+  name: LinkedIn Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-linkedin-ads
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: This upgrade brings changes in primary key to *-analytics streams.
+        upgradeDeadline: "2024-04-30"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ad_campaign_analytics"
+              - "ad_creative_analytics"
+              - "ad_impression_device_analytics"
+              - "ad_member_company_size_analytics"
+              - "ad_member_country_analytics"
+              - "ad_member_job_function_analytics"
+              - "ad_member_job_title_analytics"
+              - "ad_member_industry_analytics"
+              - "ad_member_seniority_analytics"
+              - "ad_member_region_analytics"
+              - "ad_member_company_analytics"
+      2.0.0:
+        message: This upgrade changes primary key for *-analytics streams from pivotValues[array of strings] to string_of_pivot_values[string] so that it is compatible with more destination types.
+        upgradeDeadline: "2024-05-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ad_campaign_analytics"
+              - "ad_creative_analytics"
+              - "ad_impression_device_analytics"
+              - "ad_member_company_size_analytics"
+              - "ad_member_country_analytics"
+              - "ad_member_job_function_analytics"
+              - "ad_member_job_title_analytics"
+              - "ad_member_industry_analytics"
+              - "ad_member_seniority_analytics"
+              - "ad_member_region_analytics"
+              - "ad_member_company_analytics"
+      3.0.0:
+        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users will need to reset affected streams after upgrading. Please see migration guide for more details.
+        upgradeDeadline: "2024-08-20"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "account_users"
+              - "campaigns"
+              - "creatives"
+              - "campaign_groups"
+              - "conversions"
+  suggestedStreams:
+    streams:
+      - accounts
+      - account_users
+      - ad_campaign_analytics
+      - ad_creative_analytics
+      - campaigns
+      - campaign_groups
+      - creatives
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: linkedin-ads_config_multiple_account_ids_dev_null
+          id: 105e4dcd-6c79-461d-8b2b-9bbf0424d5b7
+        - name: linkedin-ads_config_dev_null
+          id: 3d35a758-f9ba-4b40-9ebd-454fe21f389d
+        - name: linkedin-ads_config_oauth_dev_null
+          id: 42888b02-5f06-4ccd-b86b-2620d7f87b61
+        - name: linkedin-ads_config_token_dev_null
+          id: a9ae94ba-24e6-406a-b02d-b100e6ffacda
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-LINKEDIN_ADS_OAUTH2_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINKEDIN_ADS_OAUTH2_MULTIPLE_IDS__CREDS
+          fileName: config_multiple_account_ids.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINKEDIN_ADS_OLD_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-LINKEDIN_ADS_TOKEN_CREDS
+          fileName: config_token.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

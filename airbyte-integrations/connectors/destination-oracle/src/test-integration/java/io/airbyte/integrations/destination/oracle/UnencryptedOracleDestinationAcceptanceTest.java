@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
 
-import static io.airbyte.integrations.util.HostPortResolver.resolveHost;
-import static io.airbyte.integrations.util.HostPortResolver.resolvePort;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstantsKt.upperQuoted;
+import static io.airbyte.cdk.integrations.util.HostPortResolver.resolveHost;
+import static io.airbyte.cdk.integrations.util.HostPortResolver.resolvePort;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,20 +14,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
@@ -35,7 +39,7 @@ import org.junit.jupiter.api.Test;
 
 public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
+  private final StandardNameTransformer namingResolver = new OracleNameTransformer();
   private static OracleContainer db;
   private static JsonNode config;
   private final String schemaName = "TEST_ORCL";
@@ -71,21 +75,16 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(namingResolver.convertStreamName(StreamId.concatenateRawTableName(namespace, streamName)), namespace)
         .stream()
         .map(r -> Jsons.deserialize(
-            r.get(OracleDestination.COLUMN_NAME_DATA.replace("\"", "")).asText()))
+            r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
         .collect(Collectors.toList());
   }
 
   @Override
   protected boolean implementsNamespaces() {
     return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
   }
 
   @Override
@@ -126,17 +125,16 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    try (final DSLContext dslContext = getDSLContext(config)) {
-      final List<org.jooq.Record> result = getDatabase(dslContext)
-          .query(ctx -> new ArrayList<>(ctx.fetch(
-              String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                  OracleDestination.COLUMN_NAME_EMITTED_AT))));
-      return result
-          .stream()
-          .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-          .map(Jsons::deserialize)
-          .collect(Collectors.toList());
-    }
+    final DSLContext dslContext = getDSLContext(config);
+    final List<org.jooq.Record> result = getDatabase(dslContext)
+        .query(ctx -> new ArrayList<>(ctx.fetch(
+            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT)))));
+    return result
+        .stream()
+        .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
   private static DSLContext getDSLContext(final JsonNode config) {
@@ -154,7 +152,7 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     db = new OracleContainer()
         .withUsername("test")
@@ -163,15 +161,13 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     db.start();
 
     config = getConfig(db);
+    final DSLContext dslContext = getDSLContext(config);
+    final Database database = getDatabase(dslContext);
+    database.query(
+        ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+    database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    try (final DSLContext dslContext = getDSLContext(config)) {
-      final Database database = getDatabase(dslContext);
-      database.query(
-          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
-      database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
-
-      ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
-    }
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
   }
 
   @Override

@@ -1,0 +1,45 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 45e0b135-615c-40ac-b38e-e65b0944197f
+  dockerImageTag: 0.1.11
+  dockerRepository: airbyte/source-lokalise
+  githubIssueLabel: source-lokalise
+  icon: lokalise.svg
+  license: MIT
+  name: Lokalise
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-lokalise
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lokalise
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  # Disabling acceptance tests for now
+  # No / Low airbyte cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: lokalise_config_dev_null
+  #         id: 1ff2f125-7634-492c-9289-c512dccd2600
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-LOKALISE__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+metadataSpecVersion: "1.0"

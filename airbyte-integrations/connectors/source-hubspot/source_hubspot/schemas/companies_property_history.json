@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "updatedByUserId": {
+      "description": "The user ID of the user who initiated the property update.",
+      "type": ["null", "number"]
+    },
+    "timestamp": {
+      "description": "The date and time when the property update occurred.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "property": {
+      "description": "The specific property that was updated in the company record.",
+      "type": ["null", "string"]
+    },
+    "companyId": {
+      "description": "The unique identifier of the company to which the property history record belongs.",
+      "type": ["null", "string"]
+    },
+    "sourceType": {
+      "description": "The type of the source that updated the property in the company record.",
+      "type": ["null", "string"]
+    },
+    "sourceId": {
+      "description": "The identifier of the source that updated the property in the company record.",
+      "type": ["null", "string"]
+    },
+    "value": {
+      "description": "The new value of the property after the update.",
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "description": "Flag indicating if the company property history record is archived or not.",
+      "type": ["null", "boolean"]
+    }
+  }
+}

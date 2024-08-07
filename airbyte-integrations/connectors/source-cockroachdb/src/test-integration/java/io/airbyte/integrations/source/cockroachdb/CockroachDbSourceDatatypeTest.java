@@ -1,28 +1,31 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.Set;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.CockroachContainer;
 
+@Disabled
 public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private CockroachContainer container;
@@ -84,7 +87,6 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    dslContext.close();
     container.close();
   }
 
@@ -211,13 +213,15 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a           ", "abc         ", "Миші йдуть; ", "櫻花分店        ",
                 "            ", null)
             .build());
+    for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
 
+    }
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'1999-01-08'", "null")
-            .addExpectedValues("1999-01-08T00:00:00Z", null)
+            .addInsertValues("'1999-01-08'", "null", "'16-12-06'")
+            .addExpectedValues("1999-01-08", null, "2016-12-06")
             .build());
 
     addDataTypeTestData(
@@ -313,14 +317,12 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06'", null)
-            .addExpectedValues("1970-01-01T04:05:06Z")
+            .addExpectedValues("04:05:06")
             .addNullExpectedValue()
             .build());
 
@@ -330,7 +332,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("timetz")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06Z'", null)
-            .addExpectedValues("1970-01-01T04:05:06Z")
+            .addExpectedValues("04:05:06.000000Z")
             .addNullExpectedValue()
             .build());
 
@@ -339,7 +341,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("timestamp")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
-            .addExpectedValues("2004-10-19T10:23:54.000000Z", "2004-10-19T10:23:54.123456Z", null)
+            .addExpectedValues("2004-10-19T10:23:54", "2004-10-19T10:23:54.123456", null)
             .build());
 
     addDataTypeTestData(

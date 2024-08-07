@@ -1,0 +1,74 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 200
+  allowedHosts:
+    hosts:
+      - api.sendgrid.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
+  dockerImageTag: 1.0.12
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: This release makes several changes that upgrade the Sendgrid connector. The configuration options have been renamed to `api_key` and `start_date`. `start_date` is now required. The `unsubscribe_groups` stream has been removed. It was the same as `suppression_groups`. You can use that and get the same data. The `single_sends` stream has been renamed `singlesend_stats`. This is closer to the data and API. The `segments` stream has been upgraded to use the Sendgrid 2.0 API because the older one has been deprecated. The schema has changed as a result. To ensure a smooth upgrade, please refresh your schemas and reset your data before resuming syncs.
+        upgradeDeadline: "2024-04-29"
+  dockerRepository: airbyte/source-sendgrid
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sendgrid
+  githubIssueLabel: source-sendgrid
+  icon: sendgrid.svg
+  license: MIT
+  maxSecondsBetweenMessages: 5400
+  name: Sendgrid
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sendgrid
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sendgrid_python_config_dev_null
+          id: 06851e4b-cd7f-4ee9-bf0a-a405050fd9b2
+        - name: sendgrid_config_dev_null
+          id: 0a1b625d-23c5-4bf1-bfd6-d2d517aa9765
+        - name: sendgrid_lowcode_config_dev_null
+          id: 312c3f32-7411-447d-b35b-37c07218d8f9
+        - name: sendgrid_old_config_dev_null
+          id: 5f1f419f-2477-4528-b348-d9900ec86c61
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SENDGRID_LOWCODE__CREDS
+          fileName: lowcode_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SENDGRID_OLD__CREDS
+          fileName: old_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SENDGRID_PYTHON__CREDS
+          fileName: python_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SENDGRID__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

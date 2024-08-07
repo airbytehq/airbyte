@@ -1,22 +1,24 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
@@ -27,6 +29,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   private static final String SCHEMA_NAME = "SOURCE_DATA_TYPE_TEST_"
       + RandomStringUtils.randomAlphanumeric(4).toUpperCase();
   private static final String INSERT_SEMI_STRUCTURED_SQL = "INSERT INTO %1$s (ID, TEST_COLUMN) SELECT %2$s, %3$s";
+  private static final Duration CONNECTION_TIMEOUT = Duration.ofSeconds(60);
 
   private JsonNode config;
   private Database database;
@@ -45,6 +48,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
   @Override
   protected Database setupDatabase() throws Exception {
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, SCHEMA_NAME);
 
     dslContext = DSLContextFactory.create(
         config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
@@ -55,7 +59,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         Map.of(
             "role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()));
+            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()),
+        CONNECTION_TIMEOUT);
 
     database = getDatabase();
 
@@ -75,13 +80,9 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    try {
-      final String dropSchemaQuery = String
-          .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
-      database.query(ctx -> ctx.fetch(dropSchemaQuery));
-    } finally {
-      dslContext.close();
-    }
+    final String dropSchemaQuery = String
+        .format("DROP SCHEMA IF EXISTS %s", SCHEMA_NAME);
+    database.query(ctx -> ctx.fetch(dropSchemaQuery));
   }
 
   @Override
@@ -197,6 +198,14 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addInsertValues("'NaN'", "'inf'", "'-inf'")
             .addExpectedValues("NaN", "Infinity", "-Infinity")
             .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("NUMBER")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMBER(38,0)")
+            .addInsertValues("9", "990", "9990", "999000", "999000000", "999000000000")
+            .addExpectedValues("9", "990", "9990", "999000", "999000000", "999000000000")
+            .build());
 
     // Data Types for Text Strings
     addDataTypeTestData(
@@ -253,15 +262,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("DATE")
             .airbyteType(JsonSchemaType.STRING_DATE)
-            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
-            .addExpectedValues(null, "0001-01-01", "9999-12-31")
+            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'", "'12-JAN-2022'")
+            .addExpectedValues(null, "0001-01-01", "9999-12-31", "2022-01-12")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DATETIME")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'0001-01-01 00:00:00'", "'9999-12-31 23:59:59'", "'9999-12-31 23:59:59.123456'")
-            .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59.000000", "9999-12-31T23:59:59.123456")
+            .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59", "9999-12-31T23:59:59.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -275,30 +284,38 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-            .addInsertValues("null", "'2018-03-22 12:00:00.123'", "'2018-03-22 12:00:00.123456'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
-            .build());
+            .addInsertValues("null", "'2018-03-26 12:00:00.123'", "'2018-03-26 12:00:00.123456'")
+            .addExpectedValues(null, "2018-03-26T12:00:00.123", "2018-03-26T12:00:00.123456")
+            .build());// This is very brittle. A change of parameters on the customer's account could change the values
+                      // returned by snowflake
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_LTZ")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-            .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
-            .addExpectedValues(null, "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
-            .build());
+            .addInsertValues("null", "'2018-03-25 12:00:00.123 +05:00'", "'2018-03-25 12:00:00.123456 +05:00'")
+            .addExpectedValues(null, "2018-03-25T00:00:00.123000-07:00", "2018-03-25T00:00:00.123000-07:00")
+            // We moved from +5 to -7 timezone, so 12:00 becomes 00:00.
+            // Snowflake default timestamp precision is TIME(3), so we lose anything past ms
+            .build());// This is extremely brittle. A change of parameters on the customer's account,
+                      // or a change of timezone where this code is executed (!!) could change the values returned by
+                      // snowflake
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_NTZ")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-            .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
-            .build());
+            .addInsertValues("null", "'2018-03-24 12:00:00.123 +05:00'", "'2018-03-24 12:00:00.123456 +05:00'")
+            .addExpectedValues(null, "2018-03-24T12:00:00.123", "2018-03-24T12:00:00.123456")
+            .build()); // This is very brittle. A change of parameters on the customer's account could change the values
+                       // returned by snowflake
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_TZ")
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-            .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
-            .addExpectedValues(null, "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
-            .build());
+            .addInsertValues("null", "'2018-03-23 12:00:00.123 +05:00'", "'2018-03-23 12:00:00.123456 +05:00'")
+            .addExpectedValues(null, "2018-03-23T12:00:00.123000+05:00", "2018-03-23T12:00:00.123000+05:00")
+            // Snowflake default timestamp-to-string conversion is TIME(3), so we lose anything past ms
+            .build());// This is very brittle. A change of parameters on the customer's account could change the values
+                      // returned by snowflake
 
     // Semi-structured Data Types
     addDataTypeTestData(
@@ -339,6 +356,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addExpectedValues(null,
                 "{\n  \"coordinates\": [\n    -122.35,\n    37.55\n  ],\n  \"type\": \"Point\"\n}",
                 "{\n  \"coordinates\": [\n    [\n      -124.2,\n      42\n    ],\n    [\n      -120.01,\n      41.99\n    ]\n  ],\n  \"type\": \"LineString\"\n}")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("NUMBER")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMBER(38,0)")
+            .addInsertValues("3E+1")
+            .addExpectedValues("30")
             .build());
   }
 

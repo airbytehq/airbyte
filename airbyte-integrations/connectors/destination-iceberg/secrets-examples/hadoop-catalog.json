@@ -1,0 +1,20 @@
+{
+  "catalog_config": {
+    "catalog_type": "Hadoop",
+    "database": "default"
+  },
+  "storage_config": {
+    "storage_type": "S3",
+    "access_key_id": "xxxxxxxxxxx",
+    "secret_access_key": "yyyyyyyyyyyy",
+    "s3_warehouse_uri": "s3a://warehouse/hive",
+    "s3_bucket_region": "us-east-1",
+    "s3_endpoint": "your-own-minio-host:9000"
+  },
+  "format_config": {
+    "format": "Parquet",
+    "flush_batch_size": 10000,
+    "auto_compact": true,
+    "compact_target_file_size_in_mb": 100
+  }
+}

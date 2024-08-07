@@ -4,14 +4,47 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "shipment-date": { "type": ["null", "string"] },
-    "currency": { "type": ["null", "string"] },
-    "item-promotion-discount": { "type": ["null", "string"] },
-    "item-promotion-id": { "type": ["null", "string"] },
-    "description": { "type": ["null", "string"] },
-    "promotion-rule-value": { "type": ["null", "string"] },
-    "amazon-order-id": { "type": ["null", "string"] },
-    "shipment-id": { "type": ["null", "string"] },
-    "shipment-item-id": { "type": ["null", "string"] }
+    "shipment-date": {
+      "description": "The date and time when the shipment was made.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "currency": {
+      "description": "The currency used for the monetary values in the data.",
+      "type": ["null", "string"]
+    },
+    "item-promotion-discount": {
+      "description": "The discount amount applied to the item as part of the promotion.",
+      "type": ["null", "string"]
+    },
+    "item-promotion-id": {
+      "description": "The unique identifier for the item promotion.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "A description of the promotion or shipment.",
+      "type": ["null", "string"]
+    },
+    "promotion-rule-value": {
+      "description": "The value associated with the promotion rule.",
+      "type": ["null", "string"]
+    },
+    "amazon-order-id": {
+      "description": "The unique identifier for the Amazon order associated with the shipment.",
+      "type": ["null", "string"]
+    },
+    "shipment-id": {
+      "description": "The unique identifier for the shipment.",
+      "type": ["null", "string"]
+    },
+    "shipment-item-id": {
+      "description": "The unique identifier for the item within the shipment.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time for the data collection period.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

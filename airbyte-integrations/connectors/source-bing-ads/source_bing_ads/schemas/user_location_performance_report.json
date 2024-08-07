@@ -1,0 +1,283 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountName": {
+      "description": "The name of the account",
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "description": "The account number",
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "description": "The unique identifier for the account",
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "description": "The time period covered by the report data",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "CampaignName": {
+      "description": "The name of the campaign",
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "description": "The unique identifier for the campaign",
+      "type": ["null", "integer"]
+    },
+    "AdGroupName": {
+      "description": "The name of the ad group",
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "description": "The unique identifier for the ad group",
+      "type": ["null", "integer"]
+    },
+    "Country": {
+      "description": "The country where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "State": {
+      "description": "The state where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "MetroArea": {
+      "description": "The metropolitan area where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "description": "The currency code used in the report",
+      "type": ["null", "string"]
+    },
+    "AdDistribution": {
+      "description": "The distribution network of the ad",
+      "type": ["null", "string"]
+    },
+    "Impressions": {
+      "description": "The total number of impressions",
+      "type": ["null", "integer"]
+    },
+    "Clicks": {
+      "description": "The total number of clicks",
+      "type": ["null", "integer"]
+    },
+    "Ctr": {
+      "description": "The click-through rate",
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "description": "The average cost per click",
+      "type": ["null", "number"]
+    },
+    "Spend": {
+      "description": "The total amount spent",
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "description": "The average position where the ad is displayed",
+      "type": ["null", "number"]
+    },
+    "ProximityTargetLocation": {
+      "description": "The targeted location for proximity",
+      "type": ["null", "string"]
+    },
+    "Radius": {
+      "description": "The radius for proximity targeting",
+      "type": ["null", "integer"]
+    },
+    "Language": {
+      "description": "The language setting of the user",
+      "type": ["null", "string"]
+    },
+    "City": {
+      "description": "The city where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "QueryIntentCountry": {
+      "description": "The query intent country",
+      "type": ["null", "string"]
+    },
+    "QueryIntentState": {
+      "description": "The query intent state",
+      "type": ["null", "string"]
+    },
+    "QueryIntentCity": {
+      "description": "The query intent city",
+      "type": ["null", "string"]
+    },
+    "QueryIntentDMA": {
+      "description": "The query intent Designated Market Area",
+      "type": ["null", "string"]
+    },
+    "BidMatchType": {
+      "description": "The match type of the bid",
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
+      "description": "The match type of the delivered item",
+      "type": ["null", "string"]
+    },
+    "Network": {
+      "description": "The network where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "TopVsOther": {
+      "description": "Indicates if the ad is shown at the top or other positions",
+      "type": ["null", "string"]
+    },
+    "DeviceType": {
+      "description": "The type of device where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "description": "The operating system of the device",
+      "type": ["null", "string"]
+    },
+    "Assists": {
+      "description": "The number of assists in conversions",
+      "type": ["null", "integer"]
+    },
+    "Conversions": {
+      "description": "The total number of conversions",
+      "type": ["null", "integer"]
+    },
+    "ConversionRate": {
+      "description": "The conversion rate",
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "description": "The total revenue generated",
+      "type": ["null", "number"]
+    },
+    "ReturnOnAdSpend": {
+      "description": "The return on ad spend",
+      "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "description": "The cost per conversion",
+      "type": ["null", "number"]
+    },
+    "CostPerAssist": {
+      "description": "The cost per assist in conversions",
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "description": "The revenue per conversion",
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "description": "The revenue per assist in conversions",
+      "type": ["null", "number"]
+    },
+    "County": {
+      "description": "The county where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "PostalCode": {
+      "description": "The postal code of the location",
+      "type": ["null", "string"]
+    },
+    "QueryIntentCounty": {
+      "description": "The query intent county",
+      "type": ["null", "string"]
+    },
+    "QueryIntentPostalCode": {
+      "description": "The query intent postal code",
+      "type": ["null", "string"]
+    },
+    "LocationId": {
+      "description": "The unique identifier for the location",
+      "type": ["null", "integer"]
+    },
+    "QueryIntentLocationId": {
+      "description": "The query intent location identifier",
+      "type": ["null", "integer"]
+    },
+    "AllConversions": {
+      "description": "The total number of all conversions",
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "description": "The total revenue for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "description": "The conversion rate for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllCostPerConversion": {
+      "description": "The cost per conversion for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "description": "The return on ad spend for all conversions",
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "description": "The revenue per conversion for all conversions",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversions": {
+      "description": "The number of conversions where the ad was displayed but not clicked",
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "description": "The goal associated with the report data",
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "description": "The type of goal associated with the report data",
+      "type": ["null", "string"]
+    },
+    "AbsoluteTopImpressionRatePercent": {
+      "description": "The percentage of impressions shown at the absolute top of the page",
+      "type": ["null", "number"]
+    },
+    "TopImpressionRatePercent": {
+      "description": "The percentage of impressions shown at the top position",
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "description": "The average cost per thousand impressions",
+      "type": ["null", "number"]
+    },
+    "ConversionsQualified": {
+      "description": "The number of qualified conversions",
+      "type": ["null", "number"]
+    },
+    "AllConversionsQualified": {
+      "description": "The number of qualified conversions",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "description": "The number of qualified view-through conversions",
+      "type": ["null", "number"]
+    },
+    "Neighborhood": {
+      "description": "The neighborhood where the ad is displayed",
+      "type": ["null", "string"]
+    },
+    "QueryIntentNeighborhood": {
+      "description": "The query intent neighborhood",
+      "type": ["null", "string"]
+    },
+    "ViewThroughRevenue": {
+      "description": "The revenue generated from view-through conversions",
+      "type": ["null", "number"]
+    },
+    "CampaignType": {
+      "description": "The type of the campaign",
+      "type": ["null", "string"]
+    },
+    "AssetGroupId": {
+      "description": "The unique identifier for the asset group",
+      "type": ["null", "integer"]
+    },
+    "AssetGroupName": {
+      "description": "The name of the asset group",
+      "type": ["null", "string"]
+    }
+  }
+}

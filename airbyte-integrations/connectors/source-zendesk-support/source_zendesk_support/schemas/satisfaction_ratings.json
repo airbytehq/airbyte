@@ -2,41 +2,53 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the satisfaction rating entry.",
       "type": ["null", "integer"]
     },
     "assignee_id": {
+      "description": "The unique identifier of the user assigned to the ticket.",
       "type": ["null", "integer"]
     },
     "group_id": {
+      "description": "The unique identifier of the group associated with the ticket.",
       "type": ["null", "integer"]
     },
     "reason_id": {
+      "description": "The unique identifier of the selected satisfaction rating reason.",
       "type": ["null", "integer"]
     },
     "requester_id": {
+      "description": "The unique identifier of the requester who provided the rating.",
       "type": ["null", "integer"]
     },
     "ticket_id": {
+      "description": "The unique identifier of the ticket associated with the satisfaction rating.",
       "type": ["null", "integer"]
     },
     "updated_at": {
+      "description": "The date and time when the satisfaction rating was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when the satisfaction rating was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "url": {
+      "description": "The URL to access the details of the satisfaction rating.",
       "type": ["null", "string"]
     },
     "score": {
+      "description": "The satisfaction score given by the requester (usually a numeric value).",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason selected by the requester for the satisfaction rating.",
       "type": ["null", "string"]
     },
     "comment": {
+      "description": "The feedback comment provided by the requester.",
       "type": ["null", "string"]
     }
   }

@@ -1,0 +1,41 @@
+name: Connector Ops CI - Connectors Weekly Tests
+
+on:
+  schedule:
+    # 12PM UTC on Sunday is 2PM CEST, 3PM EEST, 5 PDT.
+    - cron: "0 12 * * 0"
+  workflow_dispatch:
+    inputs:
+      test-connectors-options:
+        default: --concurrency=3 --support-level=community
+        required: true
+
+run-name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }}"
+
+jobs:
+  test_connectors:
+    name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Community connectors' }}"
+    timeout-minutes: 8640 # 6 days
+    runs-on: connector-weekly-xlarge
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+        id: extract_branch
+      - name: Test connectors
+        uses: ./.github/actions/run-airbyte-ci
+        with:
+          context: "master"
+          ci_job_key: "weekly_alpha_test"
+          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          subcommand: '--show-dagger-logs connectors ${{ inputs.test-connectors-options || ''--concurrency=3 --metadata-query="(data.ab_internal.ql > 100) & (data.ab_internal.sl < 200)"'' }} test'

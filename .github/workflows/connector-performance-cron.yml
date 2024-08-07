@@ -1,0 +1,42 @@
+name: Connector Performance Harness Cron
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    -  # Twice a week, Monday and Thursday.
+    - cron: "0 0 * * 1,4"
+  workflow_dispatch: # for manual triggers
+
+jobs:
+  postgres-1m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: "connectors/source-postgres"
+      dataset: 1m
+    secrets: inherit
+  mysql-1m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: "connectors/source-mysql"
+      dataset: 1m
+    secrets: inherit
+  postgres-1m-run-incremental:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: "connectors/source-postgres"
+      dataset: 1m
+      sync-mode: "incremental"
+    secrets: inherit
+  mysql-1m-run-incremental:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: "connectors/source-mysql"
+      dataset: 1m
+      sync-mode: "incremental"
+    secrets: inherit
+  mongodb-1m-run-incremental:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: "connectors/source-mongodb-v2"
+      dataset: 1m
+      sync-mode: "incremental"
+    secrets: inherit

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "page": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": { "type": ["null", "string"] },
+        "url": { "type": ["null", "string"] },
+        "status": { "type": ["null", "string"] }
+      }
+    },
+    "activeIncidents": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": { "type": ["null", "string"] },
+          "started": { "type": ["null", "string"] },
+          "status": { "type": ["null", "string"] },
+          "impact": { "type": ["null", "string"] },
+          "url": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "activeMaintenances": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": { "type": ["null", "string"] },
+          "start": { "type": ["null", "string"] },
+          "status": { "type": ["null", "string"] },
+          "duration": { "type": ["null", "string"] },
+          "url": { "type": ["null", "string"] }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "created_at": {
+      "description": "The date and time when the customer saved search was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "description": "The unique identifier for the customer saved search.",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "The name given to the customer saved search.",
+      "type": ["null", "string"]
+    },
+    "query": {
+      "description": "The search query string or parameters used for this saved search.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop associated with this customer saved search.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the customer saved search was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

@@ -1,0 +1,43 @@
+data:
+  connectorSubtype: file
+  connectorType: destination
+  definitionId: ca8f6566-e555-4b40-943a-545bf123117a
+  dockerImageTag: 0.4.6
+  dockerRepository: airbyte/destination-gcs
+  githubIssueLabel: destination-gcs
+  icon: googlecloudstorage.svg
+  license: ELv2
+  name: Google Cloud Storage (GCS)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 300
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS
+          fileName: insufficient_roles_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-GCS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

@@ -166,6 +166,129 @@
     },
     "includeInGlobalAddressList": {
       "type": ["null", "boolean"]
+    },
+    "etag": {
+      "type": ["null", "string"]
+    },
+    "languages": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "languageCode": {
+            "type": ["null", "string"]
+          },
+          "preference": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "isEnforcedIn2Sv": {
+      "type": ["null", "boolean"]
+    },
+    "isEnrolledIn2Sv": {
+      "type": ["null", "boolean"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "primaryEmail": {
+      "type": ["null", "string"]
+    },
+    "suspensionReason": {
+      "type": ["null", "string"]
+    },
+    "locations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "area": {
+            "type": ["null", "string"]
+          },
+          "buildingId": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "thumbnailPhotoEtag": {
+      "type": ["null", "string"]
+    },
+    "thumbnailPhotoUrl": {
+      "type": ["null", "string"]
+    },
+    "addresses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "formatted": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "recoveryPhone": {
+      "type": ["null", "string"]
+    },
+    "recoveryEmail": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sshPublicKeys": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "expirationTimeUsec": {
+            "type": ["null", "string"]
+          },
+          "fingerprint": {
+            "type": ["null", "string"]
+          },
+          "key": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "posixAccounts": {
+      "gid": {
+        "type": ["null", "string"]
+      },
+      "homeDirectory": {
+        "type": ["null", "string"]
+      },
+      "operatingSystemType": {
+        "type": ["null", "string"]
+      },
+      "primary": {
+        "type": ["null", "boolean"]
+      },
+      "systemId": {
+        "type": ["null", "string"]
+      },
+      "uid": {
+        "type": ["null", "string"]
+      },
+      "username": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

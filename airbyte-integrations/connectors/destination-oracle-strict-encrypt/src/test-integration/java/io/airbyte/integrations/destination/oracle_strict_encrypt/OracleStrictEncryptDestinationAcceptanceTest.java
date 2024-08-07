@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle_strict_encrypt;
@@ -10,21 +10,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.destination.oracle.OracleDestination;
 import io.airbyte.integrations.destination.oracle.OracleNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
@@ -36,7 +38,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
   private static final JSONFormat JSON_FORMAT = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
 
-  private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
+  private final StandardNameTransformer namingResolver = new OracleNameTransformer();
   private static OracleContainer db;
   private static JsonNode config;
   private final String schemaName = "TEST_ORCL";
@@ -72,18 +74,13 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(r -> Jsons.deserialize(
-            r.get(OracleDestination.COLUMN_NAME_DATA.replace("\"", "")).asText()))
+            r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
         .collect(Collectors.toList());
   }
 
   @Override
   protected boolean implementsNamespaces() {
     return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
   }
 
   @Override
@@ -117,16 +114,15 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT);
-
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
-      return result
-          .stream()
-          .map(r -> r.formatJSON(JSON_FORMAT))
-          .map(Jsons::deserialize)
-          .collect(Collectors.toList());
-    }
+    final String query =
+        String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase());
+    final DSLContext dslContext = getDslContext(config);
+    final List<org.jooq.Record> result = getDatabase(dslContext).query(ctx -> ctx.fetch(query).stream().toList());
+    return result
+        .stream()
+        .map(r -> r.formatJSON(JSON_FORMAT))
+        .map(Jsons::deserialize)
+        .collect(Collectors.toList());
   }
 
   private static Database getDatabase(final DSLContext dslContext) {
@@ -146,7 +142,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
     db = new OracleContainer()
         .withUsername("test")
@@ -155,15 +151,13 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
     db.start();
 
     config = getConfig(db);
+    final DSLContext dslContext = getDslContext(config);
+    final Database database = getDatabase(dslContext);
+    database.query(
+        ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+    database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    try (final DSLContext dslContext = getDslContext(config)) {
-      final Database database = getDatabase(dslContext);
-      database.query(
-          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
-      database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
-
-      ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
-    }
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
   }
 
   @Override
@@ -186,7 +180,8 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
+                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"),
+            Duration.ofMinutes(5));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     final String networkServiceBanner =
@@ -212,7 +207,8 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
+                "oracle.net.encryption_types_client=( " + algorithm + " )", ";"),
+            Duration.ofMinutes(5));
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";

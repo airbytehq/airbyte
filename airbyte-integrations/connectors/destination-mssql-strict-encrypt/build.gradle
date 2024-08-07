@@ -1,8 +1,27 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.30.2'
+    features = [
+            'db-sources', // required for tests
+            'db-destinations',
+            's3-destinations',
+            'typing-deduping'
+    ]
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.mssql_strict_encrypt.MssqlStrictEncryptDestination'
@@ -10,22 +29,11 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-mssql')
-    implementation project(':airbyte-test-utils')
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.testcontainers.mssqlserver
+    testImplementation libs.testcontainers.mssqlserver
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mssql-strict-encrypt')
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }

@@ -1,0 +1,37 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "stream1",
+        "namespace": "performance_bottleneck",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "field1": {
+              "type": "string"
+            },
+            "field2": {
+              "type": "string"
+            },
+            "field3": {
+              "type": "string"
+            },
+            "field4": {
+              "type": "string"
+            },
+            "field5": {
+              "type": "string"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["field1"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["field1"]],
+      "cursor_field": ["field1"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+data:
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: vectorstore
+  connectorType: destination
+  definitionId: 0b75218b-f702-4a28-85ac-34d3d84c0fc2
+  dockerImageTag: 0.0.22
+  dockerRepository: airbyte/destination-chroma
+  githubIssueLabel: destination-chroma
+  icon: chroma.svg
+  license: MIT
+  name: Chroma
+  releaseDate: "2023-09-13"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/chroma
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+metadataSpecVersion: "1.0"

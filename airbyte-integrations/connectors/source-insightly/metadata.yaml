@@ -1,0 +1,47 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.na1.insightly.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
+  dockerImageTag: 0.2.15
+  dockerRepository: airbyte/source-insightly
+  documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
+  githubIssueLabel: source-insightly
+  icon: insightly.svg
+  license: MIT
+  name: Insightly
+  registries:
+    cloud:
+      enabled: true
+      dockerImageTag: 0.2.15
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-insightly
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: insightly_config_dev_null
+          id: 2badde48-2f9c-406e-8fcf-0ef722d177cd
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-INSIGHTLY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

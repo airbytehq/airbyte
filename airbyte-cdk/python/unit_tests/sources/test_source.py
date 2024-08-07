@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -7,8 +7,7 @@ import logging
 import tempfile
 from collections import defaultdict
 from contextlib import nullcontext as does_not_raise
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
-from unittest.mock import MagicMock
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pytest
 from airbyte_cdk.models import (
@@ -43,10 +42,15 @@ class MockSource(Source):
 
 
 class MockAbstractSource(AbstractSource):
+    def __init__(self, streams: Optional[List[Stream]] = None):
+        self._streams = streams
+
     def check_connection(self, *args, **kwargs) -> Tuple[bool, Optional[Any]]:
         return True, ""
 
     def streams(self, *args, **kwargs) -> List[Stream]:
+        if self._streams:
+            return self._streams
         return []
 
 
@@ -71,7 +75,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    return ConfiguredAirbyteCatalog.model_validate(configured_catalog)
 
 
 @pytest.fixture
@@ -79,26 +83,46 @@ def abstract_source(mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
-    class MockHttpStream(MagicMock, HttpStream):
+    class MockHttpStream(HttpStream, mocker.MagicMock):
         url_base = "http://example.com"
         path = "/dummy/path"
-        get_json_schema = MagicMock()
+        get_json_schema = mocker.MagicMock()
+        _state = {}
 
-        def supports_incremental(self):
-            return True
+        @property
+        def cursor_field(self) -> Union[str, List[str]]:
+            return ["updated_at"]
+
+        def get_backoff_strategy(self):
+            return None
+
+        def get_error_handler(self):
+            return None
 
         def __init__(self, *args, **kvargs):
-            MagicMock.__init__(self)
+            mocker.MagicMock.__init__(self)
             HttpStream.__init__(self, *args, kvargs)
-            self.read_records = MagicMock()
+            self.read_records = mocker.MagicMock()
 
-    class MockStream(MagicMock, Stream):
+        @property
+        def availability_strategy(self):
+            return None
+
+        @property
+        def state(self) -> MutableMapping[str, Any]:
+            return self._state
+
+        @state.setter
+        def state(self, value: MutableMapping[str, Any]) -> None:
+            self._state = value
+
+    class MockStream(mocker.MagicMock, Stream):
         page_size = None
-        get_json_schema = MagicMock()
+        get_json_schema = mocker.MagicMock()
 
-        def __init__(self, *args, **kvargs):
-            MagicMock.__init__(self)
-            self.read_records = MagicMock()
+        def __init__(self, **kwargs):
+            mocker.MagicMock.__init__(self)
+            self.read_records = mocker.MagicMock()
 
     streams = [MockHttpStream(), MockStream()]
 
@@ -288,6 +312,14 @@ def test_read_state(source, incoming_state, expected_state, expected_error):
             assert actual == expected_state
 
 
+def test_read_invalid_state(source):
+    with tempfile.NamedTemporaryFile("w") as state_file:
+        state_file.write("invalid json content")
+        state_file.flush()
+        with pytest.raises(ValueError, match="Could not read json file"):
+            source.read_state(state_file.name)
+
+
 def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
     expected_state = [
         AirbyteStateMessage(
@@ -347,8 +379,8 @@ def test_internal_config(abstract_source, catalog):
     # Test with empty config
     logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
     records = [r for r in abstract_source.read(logger=logger, config={}, catalog=catalog, state={})]
-    # 3 for http stream and 3 for non http stream
-    assert len(records) == 3 + 3
+    # 3 for http stream, 3 for non http stream, 1 for state message for each stream (2x) and 3 for stream status messages for each stream (2x)
+    assert len(records) == 3 + 3 + 1 + 1 + 3 + 3
     assert http_stream.read_records.called
     assert non_http_stream.read_records.called
     # Make sure page_size havent been set
@@ -357,32 +389,35 @@ def test_internal_config(abstract_source, catalog):
     # Test with records limit set to 1
     internal_config = {"some_config": 100, "_limit": 1}
     records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
-    # 1 from http stream + 1 from non http stream
-    assert len(records) == 1 + 1
+    # 1 from http stream + 1 from non http stream, 1 for state message for each stream (2x) and 3 for stream status messages for each stream (2x)
+    assert len(records) == 1 + 1 + 1 + 1 + 3 + 3
     assert "_limit" not in abstract_source.streams_config
     assert "some_config" in abstract_source.streams_config
     # Test with records limit set to number that exceeds expceted records
     internal_config = {"some_config": 100, "_limit": 20}
     records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
-    assert len(records) == 3 + 3
+    assert len(records) == 3 + 3 + 1 + 1 + 3 + 3
 
     # Check if page_size paramter is set to http instance only
     internal_config = {"some_config": 100, "_page_size": 2}
     records = [r for r in abstract_source.read(logger=logger, config=internal_config, catalog=catalog, state={})]
     assert "_page_size" not in abstract_source.streams_config
     assert "some_config" in abstract_source.streams_config
-    assert len(records) == 3 + 3
+    assert len(records) == 3 + 3 + 1 + 1 + 3 + 3
     assert http_stream.page_size == 2
     # Make sure page_size havent been set for non http streams
     assert not non_http_stream.page_size
 
 
-def test_internal_config_limit(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_internal_config_limit(mocker, abstract_source, catalog):
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     del catalog.streams[1]
     STREAM_LIMIT = 2
+    SLICE_DEBUG_LOG_COUNT = 1
     FULL_RECORDS_NUMBER = 3
+    TRACE_STATUS_COUNT = 3
+    STATE_COUNT = 1
     streams = abstract_source.streams(None)
     http_stream = streams[0]
     http_stream.read_records.return_value = [{}] * FULL_RECORDS_NUMBER
@@ -390,7 +425,7 @@ def test_internal_config_limit(abstract_source, catalog):
 
     catalog.streams[0].sync_mode = SyncMode.full_refresh
     records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
-    assert len(records) == STREAM_LIMIT
+    assert len(records) == STREAM_LIMIT + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
     # Check if log line matches number of limit
     read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
@@ -399,14 +434,16 @@ def test_internal_config_limit(abstract_source, catalog):
     # No limit, check if state record produced for incremental stream
     catalog.streams[0].sync_mode = SyncMode.incremental
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == FULL_RECORDS_NUMBER + 1
-    assert records[-1].type == Type.STATE
+    assert len(records) == FULL_RECORDS_NUMBER + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + 1
+    assert records[-2].type == Type.STATE
+    assert records[-1].type == Type.TRACE
 
     # Set limit and check if state is produced when limit is set for incremental stream
     logger_mock.reset_mock()
     records = [r for r in abstract_source.read(logger=logger_mock, config=internal_config, catalog=catalog, state={})]
-    assert len(records) == STREAM_LIMIT + 1
-    assert records[-1].type == Type.STATE
+    assert len(records) == STREAM_LIMIT + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + 1
+    assert records[-2].type == Type.STATE
+    assert records[-1].type == Type.TRACE
     logger_info_args = [call[0][0] for call in logger_mock.info.call_args_list]
     read_log_record = [_l for _l in logger_info_args if _l.startswith("Read")]
     assert read_log_record[0].startswith(f"Read {STREAM_LIMIT} ")
@@ -415,23 +452,31 @@ def test_internal_config_limit(abstract_source, catalog):
 SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
 
 
-def test_source_config_no_transform(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_source_config_no_transform(mocker, abstract_source, catalog):
+    SLICE_DEBUG_LOG_COUNT = 1
+    TRACE_STATUS_COUNT = 3
+    STATE_COUNT = 1
+    # Read operation has an extra get_json_schema call when filtering invalid fields
+    GET_JSON_SCHEMA_COUNT_WHEN_FILTERING = 1
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [[{"value": 23}] * 5] * 2
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == 2 * 5
-    assert [r.record.data for r in records] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 5
-    assert non_http_stream.get_json_schema.call_count == 5
+    assert len(records) == 2 * (5 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT)
+    assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": 23}] * 2 * 5
+    assert http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
+    assert non_http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
 
 
-def test_source_config_transform(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_source_config_transform(mocker, abstract_source, catalog):
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
+    SLICE_DEBUG_LOG_COUNT = 2
+    TRACE_STATUS_COUNT = 6
+    STATE_COUNT = 2
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -439,18 +484,21 @@ def test_source_config_transform(abstract_source, catalog):
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == 2
-    assert [r.record.data for r in records] == [{"value": "23"}] * 2
+    assert len(records) == 2 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT
+    assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": "23"}] * 2
 
 
-def test_source_config_transform_and_no_transform(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_source_config_transform_and_no_transform(mocker, abstract_source, catalog):
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
+    SLICE_DEBUG_LOG_COUNT = 2
+    TRACE_STATUS_COUNT = 6
+    STATE_COUNT = 2
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
-    assert len(records) == 2
-    assert [r.record.data for r in records] == [{"value": "23"}, {"value": 23}]
+    assert len(records) == 2 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT
+    assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": "23"}, {"value": 23}]

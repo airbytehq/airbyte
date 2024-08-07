@@ -1,0 +1,55 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - "*"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
+  dockerImageTag: 2.0.11
+  dockerRepository: airbyte/source-metabase
+  documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
+  githubIssueLabel: source-metabase
+  icon: metabase.svg
+  license: MIT
+  name: Metabase
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "The `dashboard` stream's endpoint has been updated due to the previous endpoint being deprecated by the service. The new version no longer returns the `creator` field. After upgrading, please reset the schema for the stream. Additionally, the destination may require updating to handle the updated schema."
+        upgradeDeadline: "2024-04-01"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["dashboards"]
+  releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-metabase
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: metabase_config_dev_null
+          id: 59057cfd-250a-45b8-a2d5-a0ad74353d27
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-METABASE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

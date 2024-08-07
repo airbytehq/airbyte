@@ -1,0 +1,12 @@
+{
+  "dataset": "test",
+  "provider": {
+    "bucket": "a bucket",
+    "aws_access_key_id": "a key id",
+    "aws_secret_access_key": "an access key",
+    "path_prefix": ""
+  },
+  "format": { "filetype": "csv" },
+  "path_pattern": "**",
+  "schema": "{}"
+}

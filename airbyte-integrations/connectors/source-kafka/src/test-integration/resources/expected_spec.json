@@ -268,8 +268,6 @@
     }
   },
   "supportsIncremental": true,
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "supported_destination_sync_modes": [],
   "supported_source_sync_modes": ["append"]
 }

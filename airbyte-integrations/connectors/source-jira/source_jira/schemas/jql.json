@@ -3,48 +3,48 @@
   "type": "object",
   "properties": {
     "visibleFieldNames": {
-      "type": "array",
       "description": "List of fields usable in JQL queries.",
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "value": {
-            "type": "string",
-            "description": "The field identifier."
+            "description": "The field identifier.",
+            "type": "string"
           },
           "displayName": {
-            "type": "string",
-            "description": "The display name of the field."
+            "description": "The display name of the field.",
+            "type": "string"
           },
           "orderable": {
-            "type": "string",
             "description": "Whether the field can be used in a query's `ORDER BY` clause.",
+            "type": "string",
             "enum": ["true", "false"]
           },
           "searchable": {
-            "type": "string",
             "description": "Whether the content of this field can be searched.",
+            "type": "string",
             "enum": ["true", "false"]
           },
           "auto": {
+            "description": "Whether the field provides auto-complete suggestions.",
             "type": "string",
-            "description": "Whether the field provide auto-complete suggestions.",
             "enum": ["true", "false"]
           },
           "cfid": {
-            "type": "string",
-            "description": "If the item is a custom field, the ID of the custom field."
+            "description": "If the item is a custom field, the ID of the custom field.",
+            "type": "string"
           },
           "operators": {
-            "type": "array",
             "description": "The valid search operators for the field.",
+            "type": "array",
             "items": {
               "type": "string"
             }
           },
           "types": {
-            "type": "array",
             "description": "The data types of items in the field.",
+            "type": "array",
             "items": {
               "type": "string"
             }
@@ -53,27 +53,27 @@
       }
     },
     "visibleFunctionNames": {
-      "type": "array",
       "description": "List of functions usable in JQL queries.",
+      "type": "array",
       "items": {
         "type": "object",
         "properties": {
           "value": {
-            "type": "string",
-            "description": "The function identifier."
+            "description": "The function identifier.",
+            "type": "string"
           },
           "displayName": {
-            "type": "string",
-            "description": "The display name of the function."
+            "description": "The display name of the function.",
+            "type": "string"
           },
           "isList": {
-            "type": "string",
             "description": "Whether the function can take a list of arguments.",
+            "type": "string",
             "enum": ["true", "false"]
           },
           "types": {
-            "type": "array",
             "description": "The data types returned by the function.",
+            "type": "array",
             "items": {
               "type": "string"
             }
@@ -82,8 +82,8 @@
       }
     },
     "jqlReservedWords": {
-      "type": "array",
       "description": "List of JQL query reserved words.",
+      "type": "array",
       "items": {
         "type": "string"
       }

@@ -1,36 +1,61 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
+# Make sure the paths you have in each path matches with your data.
+#For multiple env testing, you can duplicate the tests and change the path to the proper credentials file
 connector_image: airbyte/source-paypal-transaction:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_paypal_transaction/spec.json"
+    tests:
+      # Test with Prod credentials (Make sure you purt the right ones)
+      - spec_path: "source_paypal_transaction/spec.yaml"
+        config_path: secrets/config.json
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config_oauth.json"
-      status: "failed"
+    tests:
+      # Test With Prod Credentials
+      - config_path: secrets/config.json
+        status: succeed
+      # Test with Invalid Credentials
+      - config_path: integration_tests/sample_files/invalid_config.json
+        status: failed
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: secrets/config.json
   basic_read:
-    # Sometimes test could fail (on weekends) because transactions could temporary disappear from Paypal Sandbox account
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["transactions"]
-    # Two-sequence read is failing because of "last_refresh_time" property inside of response,
-    # It is enough to have basic_read test for all the records to check.
-  # full_refresh:
-  #  - config_path: "secrets/config.json"
-  #    configured_catalog_path: "integration_tests/configured_catalog.json"
-  # incremental:
-    # Only "Transactions" stream is tested here because "Balances" stream always return
-    # at least one message (and causes test failure)
-  #  - config_path: "secrets/config.json"
-  #    configured_catalog_path: "integration_tests/configured_catalog_transactions.json"
-  #    future_state_path: "integration_tests/abnormal_state.json"
-  #    cursor_paths:
-  #      transactions: ["date"]
-
+    tests:
+      # Test Prod Environment - Uncomment and change according to your prod setup
+      # Change the expected records, remember to align them with the timeframe you have selected
+      # Do not select streams that take more than 5 mins to load data as that can lead to timeouts
+      # You can comment the lines if you are sure you have data for the below streams.
+      - config_path: secrets/config.json
+        empty_streams:
+          - name: show_product_details
+            bypass_reason: "Products may not exist"
+          - name: search_invoices
+            bypass_reason: "Order makes the diff fail."
+          # Have to add for testing PR CI.
+          - name: list_disputes
+            bypass_reason: "Disputes may not exist."
+        timeout_seconds: 3200
+        expect_records:
+          path: "integration_tests/sample_files/expected_records_sandbox.jsonl"
+          exact_order: yes
+        fail_on_extra_columns: False
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/incremental_catalog.json
+        future_state:
+          future_state_path: integration_tests/sample_files/abnormal_state.json
+        skip_comprehensive_incremental_tests: true
+  full_refresh:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/full_refresh_catalog.json
+        ignored_fields:
+          balances:
+            - name: last_refresh_time
+              bypass_reason: "field changes during every read"
+          list_products:
+            - name: description
+              bypass_reason: "Sometimes it is not contained in the response"

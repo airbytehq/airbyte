@@ -3,75 +3,151 @@
   "type": "object",
   "properties": {
     "expand": {
+      "description": "Expand options for the issue",
       "type": "string"
     },
     "id": {
+      "description": "ID of the issue",
       "type": "string"
     },
     "self": {
+      "description": "URL of the issue",
       "type": "string"
     },
     "key": {
+      "description": "Key of the issue",
       "type": "string"
     },
     "fields": {
+      "description": "Contains various field values associated with the sprint issue",
       "type": "object",
       "properties": {
         "flagged": {
+          "description": "Flag indicating if the issue is flagged",
           "type": ["null", "boolean"]
         },
         "sprint": {
+          "description": "Sprint related to the issue",
           "type": ["null", "object"]
         },
         "closedSprints": {
+          "description": "List of closed sprints related to the issue",
           "type": ["null", "object"]
         },
         "description": {
+          "description": "Description of the issue",
           "type": ["null", "string"]
         },
         "project": {
+          "description": "Project to which the issue belongs",
           "type": ["null", "object"]
         },
         "comment": {
+          "description": "Comments added to the sprint issue",
           "type": ["null", "array"],
           "items": {
+            "description": "Comments added to the issue",
             "type": "object"
           }
         },
         "epic": {
+          "description": "Epic information associated with the issue",
           "type": ["null", "object"]
         },
         "worklog": {
+          "description": "Work logs related to the sprint issue",
           "type": ["null", "array"],
           "items": {
+            "description": "Work logs related to the issue",
             "type": "object"
           }
         },
+        "created": {
+          "description": "Date and time when the issue was created",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "updated": {
+          "description": "Date and time when the issue was last updated",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "timetracking": {
+          "description": "Time tracking information for the issue",
           "type": ["null", "object"]
+        },
+        "status": {
+          "description": "Status details of the sprint issue",
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "description": "Description of the status",
+              "type": ["null", "string"]
+            },
+            "iconUrl": {
+              "description": "URL of the status icon",
+              "type": ["null", "string"]
+            },
+            "id": {
+              "description": "ID of the status",
+              "type": ["null", "string"]
+            },
+            "name": {
+              "description": "Name of the status",
+              "type": ["null", "string"]
+            },
+            "self": {
+              "description": "Status resource URL",
+              "type": ["null", "string"]
+            },
+            "statusCategory": {
+              "description": "Category of the status of the sprint issue",
+              "type": ["null", "object"],
+              "properties": {
+                "colorName": {
+                  "description": "Name of the color representing the status category",
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "description": "ID of the status category",
+                  "type": ["null", "integer"]
+                },
+                "key": {
+                  "description": "Key of the status category",
+                  "type": ["null", "string"]
+                },
+                "name": {
+                  "description": "Name of the status category",
+                  "type": ["null", "string"]
+                },
+                "self": {
+                  "description": "Status category resource URL",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
         }
       }
     },
     "issueId": {
+      "description": "ID of the issue",
       "type": "string"
     },
     "sprintId": {
+      "description": "ID of the sprint associated with the issue",
       "type": "integer"
     },
     "created": {
+      "description": "Date and time when the issue was created",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     },
     "updated": {
+      "description": "Date and time when the issue was last updated",
       "type": ["string", "null"],
       "format": "date-time",
-      "description": "This field transformed from fields attr",
       "readOnly": true
     }
   }

@@ -1,25 +1,28 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
 
+import static io.airbyte.cdk.integrations.base.JavaBaseConstantsKt.upperQuoted;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -28,7 +31,7 @@ import org.testcontainers.containers.Network;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new OracleNameTransformer();
+  private final StandardNameTransformer namingResolver = new OracleNameTransformer();
 
   private final String schemaName = "TEST_ORCL";
 
@@ -48,7 +51,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   @Override
   protected JsonNode getConfig() throws IOException, InterruptedException {
     return sshBastionContainer.getTunnelConfig(getTunnelMethod(),
-        getBasicOracleDbConfigBuilder(db).put(JdbcUtils.SCHEMA_KEY, schemaName));
+        getBasicOracleDbConfigBuilder(db).put(JdbcUtils.SCHEMA_KEY, schemaName), false);
   }
 
   public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(final OracleContainer db) {
@@ -123,7 +126,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
-                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, OracleDestination.COLUMN_NAME_EMITTED_AT)))
+                    .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                        upperQuoted(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))))
             .stream()
             .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
             .map(Jsons::deserialize)
@@ -131,7 +135,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     startTestContainers();
     SshTunnel.sshWrap(
         getConfig(),
@@ -181,11 +185,6 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         });
 
     sshBastionContainer.stopAndCloseContainers(db);
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
   }
 
   @Override

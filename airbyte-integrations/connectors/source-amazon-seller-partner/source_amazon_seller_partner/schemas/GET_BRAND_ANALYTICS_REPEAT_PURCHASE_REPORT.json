@@ -5,38 +5,58 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "startDate": {
+      "description": "The start date of the data collection period in date format.",
       "type": ["null", "string"],
       "format": "date"
     },
     "endDate": {
+      "description": "The end date of the data collection period in date format.",
       "type": ["null", "string"],
       "format": "date"
     },
     "asin": {
+      "description": "The unique identifier for the ASIN (Amazon Standard Identification Number).",
       "type": ["null", "string"]
     },
     "orders": {
+      "description": "The total number of orders placed during the specified time period.",
       "type": ["null", "integer"]
     },
     "uniqueCustomers": {
+      "description": "The total number of unique customers who made purchases during the specified time period.",
       "type": ["null", "integer"]
     },
     "repeatCustomersPctTotal": {
+      "description": "The percentage of repeat customers out of the total customers.",
       "type": ["null", "number"]
     },
     "repeatPurchaseRevenue": {
+      "description": "The revenue generated from repeat purchases.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "The amount of repeat purchase revenue.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "The currency code (e.g., USD) for the repeat purchase revenue amount.",
           "type": ["null", "string"]
         }
       }
     },
     "repeatPurchaseRevenuePctTotal": {
+      "description": "The percentage of repeat purchase revenue out of the total revenue.",
       "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data collection period in date format.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
+      "description": "The end date of the query period for data analysis in date format.",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

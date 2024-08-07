@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Ad Group": {
+      "description": "The name or ID of the ad group to which the app install ad belongs.",
+      "type": ["null", "string"]
+    },
+    "App Id": {
+      "description": "The unique identifier of the mobile app being promoted.",
+      "type": ["null", "integer"]
+    },
+    "Campaign": {
+      "description": "The name or ID of the advertising campaign associated with the app install ad.",
+      "type": ["null", "string"]
+    },
+    "Client Id": {
+      "description": "The unique identifier of the client or advertiser account.",
+      "type": ["null", "integer"]
+    },
+    "Custom Parameter": {
+      "description": "Optional custom parameters configured for tracking purposes.",
+      "type": ["null", "string"]
+    },
+    "Device Preference": {
+      "description": "Device preference targeting for the app install ad.",
+      "type": ["null", "string"]
+    },
+    "Editorial Appeal Status": {
+      "description": "The editorial appeal status of the ad.",
+      "type": ["null", "string"]
+    },
+    "Editorial Location": {
+      "description": "The editorial location where the ad is being reviewed.",
+      "type": ["null", "string"]
+    },
+    "Editorial Reason Code": {
+      "description": "The editorial reason code indicating the reason for disapproval of the ad.",
+      "type": ["null", "string"]
+    },
+    "Editorial Status": {
+      "description": "The editorial status of the ad (e.g., pending, approved, disapproved).",
+      "type": ["null", "string"]
+    },
+    "Editorial Term": {
+      "description": "The editorial term triggered in the review process.",
+      "type": ["null", "string"]
+    },
+    "Final Url": {
+      "description": "The final URL users are directed to after clicking the app install ad.",
+      "type": ["null", "string"]
+    },
+    "Final Url Suffix": {
+      "description": "Additional tracking information appended to the final URL.",
+      "type": ["null", "string"]
+    },
+    "Id": {
+      "description": "The unique identifier of the app install ad.",
+      "type": ["null", "integer"]
+    },
+    "Modified Time": {
+      "description": "The date and time when the app install ad was last modified.",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "Parent Id": {
+      "description": "The ID of the parent object to which the app install ad belongs.",
+      "type": ["null", "integer"]
+    },
+    "Publisher Countries": {
+      "description": "List of countries targeted for publishing the app install ad.",
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "description": "The status of the app install ad (e.g., enabled, paused, deleted).",
+      "type": ["null", "string"]
+    },
+    "Text": {
+      "description": "The text content of the app install ad.",
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "description": "The title of the app install ad.",
+      "type": ["null", "string"]
+    },
+    "Tracking Template": {
+      "description": "The tracking template URL for monitoring ad performance.",
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,7 +1,14 @@
 # Google Sheets
 
 The Google Sheets Destination is configured to push data to a single Google Sheets spreadsheet with multiple Worksheets as streams. To replicate data to multiple spreadsheets, you can create multiple instances of the Google Sheets Destination in your Airbyte instance.
-This page guides you through the process of setting up the Google Sheets destination connector.
+
+:::warning
+
+Google Sheets imposes rate limits and hard limits on the amount of data it can receive, which results in sync failure. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
+
+Read more about the [limitations](#limitations) of using Google Sheets below.
+
+:::
 
 ## Prerequisites
 
@@ -12,41 +19,82 @@ This page guides you through the process of setting up the Google Sheets destina
 
 ### Google Account
 
-#### If you don't have a Google Account
-
-Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=en) and create your Google Account.
+To create a Google account, visit [Google](https://support.google.com/accounts/answer/27441?hl=en) and create a Google Account.
 
 ### Google Sheets (Google Spreadsheets)
 
-1. Once you acquire your Google Account, simply open the [Google Support](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create the fresh empty Google to be used as a destination for your data replication, or if already have one - follow the next step.
-2. You will need the link of the Spreadsheet you'd like to sync. To get it, click Share button in the top right corner of Google Sheets interface, and then click Copy Link in the dialog that pops up.
-   These two steps are highlighted in the screenshot below:
-
-![](../../.gitbook/assets/google_spreadsheet_url.png)
+1. Once you are logged into your Google account, create a new Google Sheet. [Follow this guide](https://support.google.com/docs/answer/6000292?hl=en&co=GENIE.Platform%3DDesktop) to create a new sheet. You may use an existing Google Sheet.
+2. You will need the link of the Google Sheet you'd like to sync. To get it, click "Share" in the top right corner of the Google Sheets interface, and then click Copy Link in the dialog that pops up.
 
 ## Step 2: Set up the Google Sheets destination connector in Airbyte
 
+<!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
-3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
-4. Select `Sign in with Google`.
-5. Log in and Authorize to the Google account and click `Set up source`.
+1. Select **Google Sheets** from the Source type dropdown and enter a name for this connector.
+2. Select `Sign in with Google`.
+3. Log in and Authorize to the Google account and click `Set up source`.
+4. Copy the Google Sheet link to **Spreadsheet Link**
+<!-- /env:cloud -->
+
+<!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-At this moment the `Google Sheets Destination` works only with Airbyte Cloud.
+Authentication to Google Sheets is only available using OAuth for authentication.
+
+1. Create a new [Google Cloud project](https://console.cloud.google.com/projectcreate).
+2. Enable the [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
+3. Create a new [OAuth client ID](https://console.cloud.google.com/apis/credentials/oauthclient). Select `Web application` as the Application type, give it a `name` and add `https://developers.google.com/oauthplayground` as an Authorized redirect URI.
+4. Add a `Client Secret` (Add secret), and take note of both the `Client Secret` and `Client ID`.
+5. Go to [Google OAuth Playground](https://developers.google.com/oauthplayground/)
+6. Click the cog in the top-right corner, select `Use your own OAuth credentials` and enter the `OAuth Client ID` and `OAuth Client secret` from the previous step.
+7. In the left sidebar, find and select `Google Sheets API v4`, then choose the `https://www.googleapis.com/auth/spreadsheets` scope. Click `Authorize APIs`.
+8. In **step 2**, click `Exchange authorization code for tokens`. Take note of the `Refresh token`.
+9. Set up a new destination in Airbyte, select `Google Sheets` and enter the `Client ID`, `Client Secret`, `Refresh Token` and `Spreadsheet Link` from the previous steps.
+<!-- /env:oss -->
 
 ### Output schema
 
-Each worksheet in the selected spreadsheet will be the output as a separate source-connector stream. The data is coerced to string before the output to the spreadsheet. The nested data inside of the source connector data is normalized to the `first-level-nesting` and represented as string, this produces nested lists and objects to be a string rather than normal lists and objects, the further data processing is required if you need to analyze the data.
+Each worksheet in the selected spreadsheet will be the output as a separate source-connector stream.
 
-Airbyte only supports replicating `Grid Sheets`, which means the text raw data only could be replicated to the target spreadsheet. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
+The output columns are re-ordered in alphabetical order. The output columns should **not** be reordered manually after the sync, as this could cause future syncs to fail.
+
+All data is coerced to a `string` format in Google Sheets.
+Any nested lists and objects will be formatted as a string rather than normal lists and objects. Further data processing is required if you require the data for downstream analysis.
+
+Airbyte only supports replicating `Grid Sheets`, which means only text is replicated. Objects like charts or images cannot be synced. See the [Google Sheets API docs](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) for more info on all available sheet types.
+
+### Rate Limiting & Performance Considerations
+
+The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 60 requests per 60 seconds per user and 300 requests per 60 seconds per project, which will result in slow sync speeds. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits.
+
+### <a name="limitations"></a>Limitations
+
+Google Sheets imposes hard limits on the amount of data that can be synced. If you attempt to sync more data than is allowed, the sync will fail.
+
+**Maximum of 10 Million Cells**
+
+A Google Sheets document can contain a maximum of 10 million cells. These can be in a single worksheet or in multiple sheets.
+If you already have reached the 10 million limit, it will not allow you to add more columns (and vice versa, i.e., if the 10 million cells limit is reached with a certain number of rows, it will not allow more rows).
+
+**Maximum of 50,000 characters per cell**
+
+There can be at most 50,000 characters per cell. Do not use Google Sheets if you have fields with long text in your source.
+
+**Maximum of 18,278 Columns**
+
+There can be at most 18,278 columns in Google Sheets in a worksheet.
+
+**Maximum of 200 Worksheets in a Spreadsheet**
+
+You cannot create more than 200 worksheets within single spreadsheet.
+
+Syncs will fail if any of these limits are reached.
 
 #### Note:
 
-- The output columns are ordered alphabetically. The output columns should not be reordered manually after the sync, this could cause the data corruption for all next syncs.
 - The underlying process of record normalization is applied to avoid data corruption during the write process. This handles two scenarios:
 
 1. UnderSetting - when record has less keys (columns) than catalog declares
@@ -100,36 +148,32 @@ EXAMPLE:
 | Incremental Append             | Yes                  |
 | Incremental Append-Deduplicate | Yes                  |
 
-### Rate Limiting & Performance Considerations
-
-At the time of writing, the [Google API rate limit](https://developers.google.com/sheets/api/limits) is 100 requests per 100 seconds per user and 500 requests per 100 seconds per project. Airbyte batches requests to the API in order to efficiently pull data and respects these rate limits. It is recommended that you use the same service user \(see the "Creating a service user" section below for more information on how to create one\) for no more than 3 instances of the Google Sheets Destination to ensure high transfer speeds.
-Please be aware of the [Google Spreadsheet limitations](#limitations) before you configure your airbyte data replication using Destination Google Sheets
-
-### <a name="limitations"></a>Google Sheets Limitations
-
-During the upload process and from the data storage perspective there are some limitations that should be considered beforehands:
-
-- **Maximum of 5 Million Cells**
-
-A Google Sheets document can have a maximum of 5 million cells. These can be in a single worksheet or in multiple sheets.
-In case you already have the 5 million limit reached in fewer columns, it will not allow you to add more columns (and vice versa, i.e., if 5 million cells limit is reached with a certain number of rows, it will not allow more rows).
-
-- **Maximum of 18,278 Columns**
-
-At max, you can have 18,278 columns in Google Sheets in a worksheet.
-
-- **Up to 200 Worksheets in a Spreadsheet**
-
-You cannot create more than 200 worksheets within single spreadsheet.
-
-#### Future improvements:
-
-- Handle multiple spreadsheets to split big amount of data into parts, once the main spreadsheet is full and cannot be extended more, due to [limitations](#limitations).
-
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                             |
-| ------- | ---------- | -------------------------------------------------------- | ----------------------------------- |
-| 0.1.2   | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list              |
-| 0.1.1   | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
-| 0.1.0   | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release                     |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                    |
+| ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.2.16 | 2024-08-03 | [43066](https://github.com/airbytehq/airbyte/pull/43066) | Update dependencies |
+| 0.2.15 | 2024-07-27 | [42819](https://github.com/airbytehq/airbyte/pull/42819) | Update dependencies |
+| 0.2.14 | 2024-07-20 | [42368](https://github.com/airbytehq/airbyte/pull/42368) | Update dependencies |
+| 0.2.13 | 2024-07-13 | [41721](https://github.com/airbytehq/airbyte/pull/41721) | Update dependencies |
+| 0.2.12 | 2024-07-10 | [41520](https://github.com/airbytehq/airbyte/pull/41520) | Update dependencies |
+| 0.2.11 | 2024-07-09 | [41076](https://github.com/airbytehq/airbyte/pull/41076) | Update dependencies |
+| 0.2.10 | 2024-07-06 | [40999](https://github.com/airbytehq/airbyte/pull/40999) | Update dependencies |
+| 0.2.9 | 2024-06-26 | [40529](https://github.com/airbytehq/airbyte/pull/40529) | Update dependencies |
+| 0.2.8 | 2024-06-25 | [40353](https://github.com/airbytehq/airbyte/pull/40353) | Update dependencies |
+| 0.2.7 | 2024-06-22 | [40172](https://github.com/airbytehq/airbyte/pull/40172) | Update dependencies |
+| 0.2.6 | 2024-06-04 | [39011](https://github.com/airbytehq/airbyte/pull/39011) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.5 | 2024-05-22 | [38516](https://github.com/airbytehq/airbyte/pull/38516) | [autopull] base image + poetry + up_to_date |
+| 0.2.4 | 2024-05-21 | [38516](https://github.com/airbytehq/airbyte/pull/38516) | [autopull] base image + poetry + up_to_date |
+| 0.2.3 | 2023-09-25 | [30748](https://github.com/airbytehq/airbyte/pull/30748) | Performance testing - include socat binary in docker image |
+| 0.2.2 | 2023-07-06 | [28035](https://github.com/airbytehq/airbyte/pull/28035) | Migrate from authSpecification to advancedAuth |
+| 0.2.1 | 2023-06-26 | [27782](https://github.com/airbytehq/airbyte/pull/27782) | Only allow HTTPS urls |
+| 0.2.0 | 2023-06-26 | [27780](https://github.com/airbytehq/airbyte/pull/27780) | License Update: Elv2 |
+| 0.1.2 | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list |
+| 0.1.1 | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
+| 0.1.0 | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release |
+
+</details>

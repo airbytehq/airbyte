@@ -1,18 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional
 
 import requests
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
 @dataclass
-class HttpSelector(JsonSchemaMixin):
+class HttpSelector:
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
     records based on a heuristic.
@@ -23,13 +22,15 @@ class HttpSelector(JsonSchemaMixin):
         self,
         response: requests.Response,
         stream_state: StreamState,
+        records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> List[Record]:
+    ) -> Iterable[Record]:
         """
         Selects records from the response
         :param response: The response to select the records from
         :param stream_state: The stream state
+        :param records_schema: json schema of records to return
         :param stream_slice: The stream slice
         :param next_page_token: The paginator token
         :return: List of Records selected from the response

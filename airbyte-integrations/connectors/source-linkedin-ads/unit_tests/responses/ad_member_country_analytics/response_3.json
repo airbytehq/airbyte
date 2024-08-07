@@ -1,0 +1,38 @@
+{
+  "paging": {
+    "start": 0,
+    "count": 10,
+    "links": []
+  },
+  "elements": [
+    {
+      "videoCompletions": 0,
+      "dateRange": {
+        "start": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        },
+        "end": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        }
+      },
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
+      "viralCardImpressions": 0,
+      "videoFirstQuartileCompletions": 0,
+      "textUrlClicks": 0,
+      "videoStarts": 0,
+      "sends": 0,
+      "shares": 0,
+      "videoMidpointCompletions": 0,
+      "validWorkEmailLeads": 0,
+      "viralCardClicks": 0,
+      "videoThirdQuartileCompletions": 0,
+      "totalEngagements": 105,
+      "reactions": 0,
+      "videoViews": 0
+    }
+  ]
+}

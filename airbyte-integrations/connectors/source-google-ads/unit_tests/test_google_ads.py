@@ -1,15 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 
 from datetime import date
 
 import pendulum
-from freezegun import freeze_time
-from pendulum.tz.timezone import Timezone
+import pytest
+from airbyte_cdk.utils import AirbyteTracedException
+from google.auth import exceptions
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.models import Customer
-from source_google_ads.streams import IncrementalGoogleAdsStream, chunk_date_range, get_date_params
+from source_google_ads.streams import chunk_date_range
 
 from .common import MockGoogleAdsClient, MockGoogleAdsService
 
@@ -57,6 +58,14 @@ def test_google_ads_init(mocker):
     assert google_client_mocker.load_from_dict.call_args[0][0] == EXPECTED_CRED
 
 
+def test_google_ads_wrong_permissions(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", side_effect=exceptions.RefreshError("invalid_grant"))
+    with pytest.raises(AirbyteTracedException) as e:
+        GoogleAds(**SAMPLE_CONFIG)
+    expected_message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
+    assert e.value.message == expected_message
+
+
 def test_send_request(mocker, customers):
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(SAMPLE_CONFIG))
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient.get_service", return_value=MockGoogleAdsService())
@@ -78,78 +87,59 @@ def test_get_fields_from_schema():
 
 def test_interval_chunking():
     mock_intervals = [
-        {"start_date": "2021-06-18", "end_date": "2021-06-27"},
-        {"start_date": "2021-06-28", "end_date": "2021-07-07"},
-        {"start_date": "2021-07-08", "end_date": "2021-07-17"},
-        {"start_date": "2021-07-18", "end_date": "2021-07-27"},
-        {"start_date": "2021-07-28", "end_date": "2021-08-06"},
-        {"start_date": "2021-08-07", "end_date": "2021-08-15"},
+        {"start_date": "2021-06-17", "end_date": "2021-06-26"},
+        {"start_date": "2021-06-27", "end_date": "2021-07-06"},
+        {"start_date": "2021-07-07", "end_date": "2021-07-16"},
+        {"start_date": "2021-07-17", "end_date": "2021-07-26"},
+        {"start_date": "2021-07-27", "end_date": "2021-08-05"},
+        {"start_date": "2021-08-06", "end_date": "2021-08-10"},
     ]
-    intervals = chunk_date_range("2021-07-01", 14, "segments.date", "2021-08-15", range_days=10)
-
+    intervals = list(
+        chunk_date_range(
+            start_date="2021-07-01", end_date="2021-08-10", conversion_window=14, slice_duration=pendulum.Duration(days=9), time_zone="UTC"
+        )
+    )
     assert mock_intervals == intervals
 
 
-def test_get_date_params(customers):
-    # Please note that this is equal to inputted stream_slice start date + 1 day
-    mock_start_date = "2021-05-19"
-    mock_end_date = "2021-06-02"
-    mock_conversion_window_days = 14
-
-    incremental_stream_config = dict(
-        conversion_window_days=mock_conversion_window_days,
-        start_date=mock_start_date,
-        api=MockGoogleAdsClient(SAMPLE_CONFIG),
-        customers=customers,
-    )
-
-    stream = IncrementalGoogleAdsStream(**incremental_stream_config)
-
-    for customer in stream.customers:
-        start_date, end_date = get_date_params(
-            start_date="2021-05-18", range_days=stream.range_days, time_zone=customer.time_zone, end_date=pendulum.parse("2021-08-15")
-        )
-
-        assert mock_start_date == start_date and mock_end_date == end_date
+generic_schema = {"properties": {"ad_group_id": {}, "segments.date": {}, "campaign_id": {}, "account_id": {}}}
 
 
-@freeze_time("2022-01-30 03:21:34", tz_offset=0)
-def test_get_date_params_with_time_zone():
-    time_zone_chatham = Timezone("Pacific/Chatham")  # UTC+12:45
-    customer = Customer(id="id", time_zone=time_zone_chatham, is_manager_account=False)
-    mock_start_date_chatham = pendulum.today(tz=time_zone_chatham).subtract(days=1).to_date_string()
-    time_zone_honolulu = Timezone("Pacific/Honolulu")  # UTC-10:00
-    customer_2 = Customer(id="id_2", time_zone=time_zone_honolulu, is_manager_account=False)
-    mock_start_date_honolulu = pendulum.today(tz=time_zone_honolulu).subtract(days=1).to_date_string()
-
-    mock_conversion_window_days = 14
-
-    incremental_stream_config = dict(
-        conversion_window_days=mock_conversion_window_days,
-        start_date=mock_start_date_chatham,
-        api=MockGoogleAdsClient(SAMPLE_CONFIG),
-        customers=[customer],
-    )
-    stream = IncrementalGoogleAdsStream(**incremental_stream_config)
-    start_date_chatham, end_date_chatham = get_date_params(
-        start_date=mock_start_date_chatham, time_zone=customer.time_zone, range_days=stream.range_days
-    )
-
-    incremental_stream_config.update({"start_date": mock_start_date_honolulu, "customers": [customer_2]})
-    stream_2 = IncrementalGoogleAdsStream(**incremental_stream_config)
-
-    start_date_honolulu, end_date_honolulu = get_date_params(
-        start_date=mock_start_date_honolulu, time_zone=customer_2.time_zone, range_days=stream_2.range_days
-    )
-
-    assert start_date_honolulu != start_date_chatham and end_date_honolulu != end_date_chatham
-
-
-def test_convert_schema_into_query():
-    report_name = "ad_group_ad_report"
-    query = "SELECT segment.date FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-03-01' ORDER BY segments.date ASC"
-    response = GoogleAds.convert_schema_into_query(SAMPLE_SCHEMA, report_name, "2020-01-01", "2020-03-01", "segments.date")
-    assert response == query
+@pytest.mark.parametrize(
+    "fields, table_name, conditions, order_field, limit, expected_sql",
+    (
+        # Basic test case
+        (
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
+            "ad_group_ad",
+            ["segments.date >= '2020-01-01'", "segments.date <= '2020-01-10'"],
+            "segments.date",
+            None,
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad WHERE segments.date >= '2020-01-01' AND segments.date <= '2020-01-10' ORDER BY segments.date ASC",
+        ),
+        # Test with no conditions
+        (
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
+            "ad_group_ad",
+            None,
+            None,
+            None,
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM ad_group_ad",
+        ),
+        # Test order with limit
+        (
+            ["ad_group_id", "segments.date", "campaign_id", "account_id"],
+            "click_view",
+            None,
+            "ad_group_id",
+            5,
+            "SELECT ad_group_id, segments.date, campaign_id, account_id FROM click_view ORDER BY ad_group_id ASC LIMIT 5",
+        ),
+    ),
+)
+def test_convert_schema_into_query(fields, table_name, conditions, order_field, limit, expected_sql):
+    query = GoogleAds.convert_schema_into_query(fields, table_name, conditions, order_field, limit)
+    assert query == expected_sql
 
 
 def test_get_field_value():
@@ -165,65 +155,34 @@ def test_parse_single_result():
     assert response == response
 
 
-# Add a sample config with date parameters
-SAMPLE_CONFIG_WITH_DATE = {
-    "credentials": {
-        "developer_token": "developer_token",
-        "client_id": "client_id",
-        "client_secret": "client_secret",
-        "refresh_token": "refresh_token",
-    },
-    "customer_id": "customer_id",
-    "start_date": "2021-11-01",
-    "end_date": "2021-11-15",
-}
+def test_get_fields_metadata(mocker):
+    # Mock the GoogleAdsClient to return our mock client
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", MockGoogleAdsClient)
 
+    # Instantiate the GoogleAds client
+    google_ads_client = GoogleAds(**SAMPLE_CONFIG)
 
-def test_get_date_params_with_date(customers):
-    # Please note that this is equal to inputted stream_slice start date + 1 day
-    mock_start_date = SAMPLE_CONFIG_WITH_DATE["start_date"]
-    mock_end_date = SAMPLE_CONFIG_WITH_DATE["end_date"]
-    incremental_stream_config = dict(
-        start_date=mock_start_date,
-        end_date=mock_end_date,
-        conversion_window_days=0,
-        customers=customers,
-        api=MockGoogleAdsClient(SAMPLE_CONFIG_WITH_DATE),
-    )
-    stream = IncrementalGoogleAdsStream(**incremental_stream_config)
-    for customer in stream.customers:
-        start_date, end_date = get_date_params(
-            start_date="2021-10-31", time_zone=customer.time_zone, range_days=stream.range_days, end_date=pendulum.parse("2021-11-15")
-        )
-        assert mock_start_date == start_date and mock_end_date == end_date
+    # Define the fields we want metadata for
+    fields = ["field1", "field2", "field3"]
 
+    # Call the method to get fields metadata
+    response = google_ads_client.get_fields_metadata(fields)
 
-SAMPLE_CONFIG_WITHOUT_END_DATE = {
-    "credentials": {
-        "developer_token": "developer_token",
-        "client_id": "client_id",
-        "client_secret": "client_secret",
-        "refresh_token": "refresh_token",
-    },
-    "customer_id": "customer_id",
-    "start_date": "2021-11-01",
-}
+    # Get the mock service to check the request query
+    mock_service = google_ads_client.get_client().get_service("GoogleAdsFieldService")
 
+    # Assert the constructed request query
+    expected_query = """
+        SELECT
+          name,
+          data_type,
+          enum_values,
+          is_repeated
+        WHERE name in ('field1','field2','field3')
+        """
+    assert mock_service.request_query.strip() == expected_query.strip()
 
-def test_get_date_params_without_end_date(customers):
-    # Please note that this is equal to inputted stream_slice start date + 1 day
-    mock_start_date = SAMPLE_CONFIG_WITHOUT_END_DATE["start_date"]
-    mock_end_date = "2021-11-30"
-    incremental_stream_config = dict(
-        start_date=mock_start_date,
-        end_date=mock_end_date,
-        conversion_window_days=0,
-        customers=customers,
-        api=MockGoogleAdsClient(SAMPLE_CONFIG_WITHOUT_END_DATE),
-    )
-    stream = IncrementalGoogleAdsStream(**incremental_stream_config)
-    for customer in stream.customers:
-        start_date, end_date = get_date_params(start_date="2021-10-31", range_days=stream.range_days, time_zone=customer.time_zone)
-        assert mock_start_date == start_date
-        # There is a Google limitation where we capture only a 15-day date range
-        assert end_date == "2021-11-15"
+    # Assert the response
+    assert set(response.keys()) == set(fields)
+    for field in fields:
+        assert response[field].name == field

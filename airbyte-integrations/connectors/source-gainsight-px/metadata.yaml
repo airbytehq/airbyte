@@ -1,0 +1,46 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.aptrinsic.com/v1
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gainsight-px
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0da3b186-8879-4e94-8738-55b48762f1e8
+  dockerImageTag: 0.1.11
+  dockerRepository: airbyte/source-gainsight-px
+  githubIssueLabel: source-gainsight-px
+  icon: gainsight-px.svg
+  license: MIT
+  name: Gainsight Px
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gainsight-px
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gainsight-px_config_dev_null
+          id: b7c7c482-039e-49ef-8dc2-b5ad34d6ef65
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GAINSIGHT-PX__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

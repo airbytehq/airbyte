@@ -1,71 +1,53 @@
 # Testing Connectors
 
-## Running Integration tests
+Multiple tests suites compose the Airbyte connector testing pyramid
 
-The GitHub `master` and branch builds will build the core Airbyte infrastructure \(scheduler, ui, etc\) as well as the images for all connectors. Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways.
+## Common to all connectors
 
-### 1. Local iteration
+- [Connectors QA checks](https://docs.airbyte.com/contributing-to-airbyte/resources/qa-checks)
+- [Connector Acceptance tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)
 
-First, you can run the image locally. Connectors should have instructions in the connector's README on how to create or pull credentials necessary for the test. Also, during local development, there is usually a `main` entrypoint for Java integrations or `main_dev.py` for Python integrations that let you run your connector without containerization, which is fastest for iteration.
+## 🤖 CI
 
-### 2. Code Static Checkers
+If you want to run the global test suite, exactly like what is run in CI, you should install [`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) and use the following command:
 
-#### Python Code
-Using the following tools:
-1. flake8
-2. black
-3. isort
-4. mypy
-
-Airbyte CI/CD workflows use them during "test/publish" commands obligatorily. 
-All their settings are aggregated into the single file `pyproject.toml` into Airbyte project root.
-Locally all these tools can be launched by the following gradle command:
+```bash
+airbyte-ci connectors --name=<connector_name> test
 ```
- ./gradlew --no-daemon  :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
-```
-For instance:
-```
-./gradlew --no-daemon  :airbyte-integrations:connectors:source-s3:airbytePythonFormat
-./gradlew --no-daemon  :airbyte-integrations:connectors:source-salesforce:airbytePythonFormat
-```
-### 3. Requesting GitHub PR Integration Test Runs
 
-:::caution
+This will run all the tests for the connector, including the QA checks and the Connector Acceptance tests.
+Connector Acceptance tests require connector configuration to be provided as a `config.json` file in a `.secrets` folder in the connector code directory.
 
-This option is not available to PRs from forks, so it is effectively limited to Airbyte employees.
+Our CI infrastructure runs the connector tests with [`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md). Connectors tests are automatically and remotely triggered on your branch according to the changes made in your branch.
+**Passing tests are required to merge a connector pull request.**
 
+## Connector specific tests
+
+### 🐍 Python connectors
+
+We use `pytest` to run unit and integration tests:
+
+```bash
+# From connector directory
+poetry run pytest
+```
+
+### ☕ Java connectors
+
+:::warning
+Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
+We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
+For this reason, Airbyte is not reviewing/accepting new Java connectors for now.
 :::
 
-If you don't want to handle secrets, you're making a relatively minor change, or you want to ensure the connector's integration test will run remotely, you should request builds on GitHub. You can request an integration test run by creating a comment with a slash command.
+We run Java connector tests with gradle.
 
-Here are some example commands:
+```bash
+# Unit tests
+./gradlew :airbyte-integrations:connectors:source-postgres:test
+# Integration tests
+./gradlew :airbyte-integrations:connectors:source-postgres:integrationTestJava
+```
 
-1. `/test connector=all` - Runs integration tests for all connectors in a single GitHub workflow. Some of our integration tests interact with rate-limited resources, so please use this judiciously.
-2. `/test connector=source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.
-3. `/test connector=connectors/source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.
-4. `/test connector=source-sendgrid ref=master` - Runs integration tests for a single connector on a different branch.
-5. `/test connector=source-sendgrid ref=d5c53102` - Runs integration tests for a single connector on a specific commit.
-
-A command dispatcher GitHub workflow will launch on comment submission. This dispatcher will add an :eyes: reaction to the comment when it starts processing. If there is an error dispatching your request, an error will be appended to your comment. If it launches the test run successfully, a :rocket: reaction will appear on your comment.
-
-Once the integration test workflow launches, it will append a link to the workflow at the end of the comment. A success or failure response will also be added upon workflow completion.
-
-Integration tests can also be manually requested by clicking "[Run workflow](https://github.com/airbytehq/airbyte/actions?query=workflow%3Aintegration-test)" and specifying the connector and GitHub ref.
-
-### 4. Requesting GitHub PR publishing Docker Images
-
-In order for users to reference the new versions of a connector, it needs to be published and available in the [dockerhub](https://hub.docker.com/r/airbyte/source-sendgrid/tags?page=1&ordering=last_updated) with the latest tag updated.
-
-As seen previously, GitHub workflow can be triggered by comment submission. Publishing docker images to the dockerhub repository can also be submitted likewise:
-
-Note that integration tests can be triggered with a slightly different syntax for arguments. This second set is required to distinguish between `connectors` and `bases` folders. Thus, it is also easier to switch between the `/test` and `/publish` commands:
-
-* `/test connector=connectors/source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.
-* `/publish connector=connectors/source-sendgrid` - Publish the docker image if it doesn't exist for a single connector on the latest PR commit.
-
-### 5. Automatically Run From `master`
-
-Commits to `master` attempt to launch integration tests. Two workflows launch for each commit: one is a launcher for integration tests, the other is the core build \(the same as the default for PR and branch builds\).
-
-Since some of our connectors use rate-limited external resources, we don't want to overload from multiple commits to master. If a certain threshold of `master` integration tests are running, the integration test launcher passes but does not launch any tests. This can manually be re-run if necessary. The `master` build also runs every few hours automatically, and will launch the integration tests at that time.
+Please note that according to the test implementation you might have to provide connector configurations as a `config.json` file in a `.secrets` folder in the connector code directory.
 

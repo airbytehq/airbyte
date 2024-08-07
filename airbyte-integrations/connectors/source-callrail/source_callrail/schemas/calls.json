@@ -1,0 +1,231 @@
+{
+  "type": "object",
+  "properties": {
+    "answered": {
+      "type": ["null", "boolean"]
+    },
+    "business_phone_number": {
+      "type": ["null", "string"]
+    },
+    "customer_city": {
+      "type": ["null", "string"]
+    },
+    "customer_country": {
+      "type": ["null", "string"]
+    },
+    "customer_name": {
+      "type": ["null", "string"]
+    },
+    "customer_phone_number": {
+      "type": ["null", "string"]
+    },
+    "customer_state": {
+      "type": ["null", "string"]
+    },
+    "direction": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "recording": {
+      "type": ["null", "string"]
+    },
+    "recording_duration": {
+      "type": ["null", "integer"]
+    },
+    "recording_player": {
+      "type": ["null", "string"]
+    },
+    "start_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "tracking_phone_number": {
+      "type": ["null", "string"]
+    },
+    "voicemail": {
+      "type": ["null", "boolean"]
+    },
+    "call_type": {
+      "type": ["null", "string"]
+    },
+    "company_id": {
+      "type": ["null", "string"]
+    },
+    "company_name": {
+      "type": ["null", "string"]
+    },
+    "company_time_zone": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "device_type": {
+      "type": ["null", "string"]
+    },
+    "first_call": {
+      "type": ["null", "boolean"]
+    },
+    "formatted_call_type": {
+      "type": ["null", "string"]
+    },
+    "formatted_customer_location": {
+      "type": ["null", "string"]
+    },
+    "formatted_business_phone_number": {
+      "type": ["null", "string"]
+    },
+    "formatted_customer_name": {
+      "type": ["null", "string"]
+    },
+    "prior_calls": {
+      "type": ["null", "integer"]
+    },
+    "formatted_customer_name_or_phone_number": {
+      "type": ["null", "string"]
+    },
+    "formatted_customer_phone_number": {
+      "type": ["null", "string"]
+    },
+    "formatted_duration": {
+      "type": ["null", "string"]
+    },
+    "formatted_tracking_phone_number": {
+      "type": ["null", "string"]
+    },
+    "formatted_tracking_source": {
+      "type": ["null", "string"]
+    },
+    "formatted_value": {
+      "type": ["null", "string"]
+    },
+    "good_lead_call_id": {
+      "type": ["null", "string"]
+    },
+    "good_lead_call_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lead_status": {
+      "type": ["null", "string"]
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "source_name": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "total_calls": {
+      "type": ["null", "integer"]
+    },
+    "value": {
+      "type": ["null", "string"]
+    },
+    "waveforms": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "tracker_id": {
+      "type": ["null", "string"]
+    },
+    "speaker_percent": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "keywords": {
+      "type": ["null", "string"]
+    },
+    "medium": {
+      "type": ["null", "string"]
+    },
+    "campaign": {
+      "type": ["null", "string"]
+    },
+    "referring_url": {
+      "type": ["null", "string"]
+    },
+    "landing_page_url": {
+      "type": ["null", "string"]
+    },
+    "last_requested_url": {
+      "type": ["null", "string"]
+    },
+    "referrer_domain": {
+      "type": ["null", "string"]
+    },
+    "utm_source": {
+      "type": ["null", "string"]
+    },
+    "utm_medium": {
+      "type": ["null", "string"]
+    },
+    "utm_term": {
+      "type": ["null", "string"]
+    },
+    "utm_content": {
+      "type": ["null", "string"]
+    },
+    "utm_campaign": {
+      "type": ["null", "string"]
+    },
+    "utma": {
+      "type": ["null", "string"]
+    },
+    "utmb": {
+      "type": ["null", "string"]
+    },
+    "utmc": {
+      "type": ["null", "string"]
+    },
+    "utmv": {
+      "type": ["null", "string"]
+    },
+    "utmz": {
+      "type": ["null", "string"]
+    },
+    "ga": {
+      "type": ["null", "string"]
+    },
+    "gclid": {
+      "type": ["null", "string"]
+    },
+    "fbclid": {
+      "type": ["null", "string"]
+    },
+    "msclkid": {
+      "type": ["null", "string"]
+    },
+    "timeline_url": {
+      "type": ["null", "string"]
+    },
+    "keywords_spotted": {
+      "type": ["null", "array"],
+      "items": {},
+      "additionalProperties": true
+    },
+    "call_highlights": {
+      "type": ["null", "array"],
+      "items": {},
+      "additionalProperties": true
+    },
+    "agent_email": {
+      "type": ["null", "string"]
+    },
+    "keypad_entries": {
+      "type": ["null", "string"]
+    }
+  }
+}

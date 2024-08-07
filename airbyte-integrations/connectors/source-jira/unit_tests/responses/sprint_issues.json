@@ -1,0 +1,33 @@
+{
+  "issues": [
+    {
+      "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+      "id": "2-10012",
+      "self": "https://airbyteio.atlassian.net/rest/agile/1.0/issue/10012",
+      "key": "IT-6",
+      "fields": {
+        "customfield_10016": null,
+        "updated": "2022-05-17T04:26:21.613-0700",
+        "created": "2021-03-11T06:14:18.085-0800",
+        "status": {
+          "self": "https://airbyteio.atlassian.net/rest/api/2/status/10000",
+          "description": "",
+          "iconUrl": "https://airbyteio.atlassian.net/",
+          "name": "To Do",
+          "id": "10000",
+          "statusCategory": {
+            "self": "https://airbyteio.atlassian.net/rest/api/2/statuscategory/2",
+            "id": 2,
+            "key": "new",
+            "colorName": "blue-gray",
+            "name": "To Do"
+          }
+        }
+      },
+      "issueId": "10012",
+      "sprintId": 2,
+      "created": "2021-03-11T06:14:18.085-0800",
+      "updated": "2022-05-17T04:26:21.613-0700"
+    }
+  ]
+}

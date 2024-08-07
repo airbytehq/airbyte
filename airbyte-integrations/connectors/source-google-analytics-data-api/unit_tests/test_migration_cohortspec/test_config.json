@@ -1,0 +1,59 @@
+{
+  "credentials": {
+    "auth_type": "Service",
+    "credentials_json": ""
+  },
+  "date_ranges_start_date": "2023-09-01",
+  "window_in_days": 30,
+  "property_ids": "314186564",
+  "custom_reports_array": [
+    {
+      "name": "cohort_report",
+      "dimensions": ["cohort", "cohortNthDay"],
+      "metrics": ["cohortActiveUsers"],
+      "cohortSpec": {
+        "cohorts": [
+          {
+            "dimension": "firstSessionDate",
+            "dateRange": {
+              "startDate": "2023-04-24",
+              "endDate": "2023-04-24"
+            }
+          }
+        ],
+        "cohortsRange": {
+          "endOffset": 100,
+          "granularity": "DAILY"
+        },
+        "cohortReportSettings": {
+          "accumulate": false
+        }
+      }
+    },
+    {
+      "name": "pivot_report",
+      "dateRanges": [
+        {
+          "startDate": "2020-09-01",
+          "endDate": "2020-09-15"
+        }
+      ],
+      "dimensions": ["browser", "country", "language"],
+      "metrics": ["sessions"],
+      "pivots": [
+        {
+          "fieldNames": ["browser"],
+          "limit": 5
+        },
+        {
+          "fieldNames": ["country"],
+          "limit": 250
+        },
+        {
+          "fieldNames": ["language"],
+          "limit": 15
+        }
+      ]
+    }
+  ]
+}

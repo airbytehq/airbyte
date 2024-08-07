@@ -1,0 +1,374 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "created": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "org_id": {
+      "type": ["integer", "null"]
+    },
+    "overall_state_modified": {
+      "type": ["string", "null"]
+    },
+    "creator": {
+      "additionalProperties": true,
+      "properties": {
+        "email": {
+          "type": ["string", "null"]
+        },
+        "handle": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "deleted": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "matching_downtimes": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "end": {
+            "type": ["integer", "null"]
+          },
+          "id": {
+            "type": ["integer", "null"]
+          },
+          "scope": {
+            "items": {
+              "type": ["string", "null"]
+            },
+            "type": ["array", "null"]
+          },
+          "start": {
+            "type": ["integer", "null"]
+          }
+        },
+        "type": ["object", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "message": {
+      "type": ["string", "null"]
+    },
+    "modified": {
+      "type": ["string", "null"]
+    },
+    "multi": {
+      "type": ["boolean", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "options": {
+      "additionalProperties": true,
+      "properties": {
+        "aggregation": {
+          "additionalProperties": true,
+          "properties": {
+            "groupBy": {
+              "items": {
+                "type": ["string", "null"]
+              },
+              "type": ["array", "null"]
+            },
+            "metric": {
+              "type": ["string", "null"]
+            },
+            "type": {
+              "type": ["string", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        },
+        "device_ids": {
+          "items": {
+            "type": ["string", "null"]
+          },
+          "type": ["array", "null"]
+        },
+        "enable_logs_sample": {
+          "type": ["boolean", "null"]
+        },
+        "enable_samples": {
+          "type": ["boolean", "null"]
+        },
+        "escalation_message": {
+          "type": ["string", "null"]
+        },
+        "evaluation_delay": {
+          "type": ["integer", "null"]
+        },
+        "group_retention_duration": {
+          "type": ["string", "null"]
+        },
+        "groupby_simple_monitor": {
+          "type": ["boolean", "null"]
+        },
+        "include_tags": {
+          "type": ["boolean", "null"]
+        },
+        "locked": {
+          "type": ["boolean", "null"]
+        },
+        "new_group_delay": {
+          "type": ["integer", "null"]
+        },
+        "new_host_delay": {
+          "type": ["integer", "null"]
+        },
+        "no_data_timeframe": {
+          "type": ["integer", "null"]
+        },
+        "notification_preset_name": {
+          "type": ["string", "null"]
+        },
+        "notify_audit": {
+          "type": ["boolean", "null"]
+        },
+        "notify_by": {
+          "items": {
+            "type": ["string", "null"]
+          },
+          "type": ["array", "null"]
+        },
+        "notify_no_data": {
+          "type": ["boolean", "null"]
+        },
+        "on_missing_data": {
+          "type": ["string", "null"]
+        },
+        "renotify_interval": {
+          "type": ["integer", "null"]
+        },
+        "renotify_occurrences": {
+          "type": ["integer", "null"]
+        },
+        "renotify_statuses": {
+          "items": {
+            "type": ["string", "null"]
+          },
+          "type": ["array", "null"]
+        },
+        "require_full_window": {
+          "type": ["boolean", "null"]
+        },
+        "scheduling_options": {
+          "additionalProperties": true,
+          "properties": {
+            "evaluation_window": {
+              "additionalProperties": true,
+              "properties": {
+                "day_starts": {
+                  "type": ["string", "null"]
+                },
+                "hour_starts": {
+                  "type": ["string", "null"]
+                },
+                "month_starts": {
+                  "type": ["integer", "null"]
+                }
+              },
+              "type": ["object", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        },
+        "silenced": {
+          "patternProperties": {
+            ".+": {
+              "type": ["integer", "null"]
+            }
+          }
+        },
+        "synthetics_check_id": {
+          "type": ["string", "null"]
+        },
+        "threshold_windows": {
+          "additionalProperties": true,
+          "properties": {
+            "recovery_window": {
+              "type": ["string", "null"]
+            },
+            "trigger_window": {
+              "type": ["string", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        },
+        "thresholds": {
+          "additionalProperties": true,
+          "properties": {
+            "critical": {
+              "type": ["number", "null"]
+            },
+            "critical_recovery": {
+              "type": ["number", "null"]
+            },
+            "ok": {
+              "type": ["number", "null"]
+            },
+            "unknown": {
+              "type": ["number", "null"]
+            },
+            "warning": {
+              "type": ["number", "null"]
+            },
+            "warning_recovery": {
+              "type": ["number", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        },
+        "timeout_h": {
+          "type": ["integer", "null"]
+        },
+        "variables": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "compute": {
+                "additionalProperties": true,
+                "properties": {
+                  "aggregation": {
+                    "type": ["string", "null"]
+                  },
+                  "interval": {
+                    "type": ["integer", "null"]
+                  },
+                  "metric": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              },
+              "data_source": {
+                "type": ["string", "null"]
+              },
+              "group_by": {
+                "items": {
+                  "additionalProperties": true,
+                  "properties": {
+                    "facet": {
+                      "type": ["string", "null"]
+                    },
+                    "limit": {
+                      "type": ["integer", "null"]
+                    },
+                    "sort": {
+                      "additionalProperties": true,
+                      "properties": {
+                        "aggregation": {
+                          "type": ["string", "null"]
+                        },
+                        "metric": {
+                          "type": ["string", "null"]
+                        },
+                        "order": {
+                          "type": ["string", "null"]
+                        }
+                      },
+                      "type": ["object", "null"]
+                    }
+                  },
+                  "type": ["object", "null"]
+                },
+                "type": ["array", "null"]
+              },
+              "indexes": {
+                "items": {
+                  "type": ["string", "null"]
+                },
+                "type": ["array", "null"]
+              },
+              "name": {
+                "type": ["string", "null"]
+              },
+              "search": {
+                "additionalProperties": true,
+                "properties": {
+                  "query": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": ["object", "null"]
+              }
+            },
+            "type": ["object", "null"]
+          },
+          "type": ["array", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "overall_state": {
+      "type": ["string", "null"]
+    },
+    "priority": {
+      "type": ["integer", "null"]
+    },
+    "query": {
+      "type": ["string", "null"]
+    },
+    "restricted_roles": {
+      "items": {
+        "type": ["string", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "state": {
+      "properties": {
+        "groups": {
+          "patternProperties": {
+            ".+": {
+              "properties": {
+                "last_nodata_ts": {
+                  "type": ["integer", "null"]
+                },
+                "last_notified_ts": {
+                  "type": ["integer", "null"]
+                },
+                "last_resolved_ts": {
+                  "type": ["integer", "null"]
+                },
+                "last_triggered_ts": {
+                  "type": ["integer", "null"]
+                },
+                "name": {
+                  "type": ["string", "null"]
+                },
+                "status": {
+                  "type": ["string", "null"]
+                }
+              },
+              "type": ["object", "null"]
+            }
+          },
+          "type": ["object", "null"]
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "tags": {
+      "items": {
+        "type": ["string", "null"]
+      },
+      "type": ["array", "null"]
+    },
+    "type": {
+      "type": ["string", "null"]
+    }
+  },
+  "type": ["object", "null"]
+}

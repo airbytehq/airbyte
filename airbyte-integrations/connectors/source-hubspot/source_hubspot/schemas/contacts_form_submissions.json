@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "canonical-vid": {
+      "description": "The canonical VID associated with the submission",
+      "type": ["null", "integer"]
+    },
+    "canonical-url": {
+      "description": "The canonical URL of the submitted form",
+      "type": ["null", "string"]
+    },
+    "conversion-id": {
+      "description": "The conversion ID related to the form submission",
+      "type": ["null", "string"]
+    },
+    "page-title": {
+      "description": "The title of the page where the form submission occurred",
+      "type": ["null", "string"]
+    },
+    "timestamp": {
+      "description": "The timestamp of when the form submission occurred",
+      "type": ["null", "integer"]
+    },
+    "form-id": {
+      "description": "The unique ID of the form submitted",
+      "type": ["null", "string"]
+    },
+    "portal-id": {
+      "description": "The ID of the portal where the form submission was made",
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "description": "The title of the form submitted",
+      "type": ["null", "string"]
+    },
+    "page-url": {
+      "description": "The URL of the page where the form was submitted",
+      "type": ["null", "string"]
+    },
+    "form-type": {
+      "description": "The type of form that was submitted",
+      "type": ["null", "string"]
+    },
+    "contact-associated-by": {
+      "description": "The specific contacts associated with the submission",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Individual contact details",
+        "type": ["null", "string"]
+      }
+    },
+    "meta-data": {
+      "description": "Additional metadata associated with the submission",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Specific metadata details"
+      }
+    }
+  }
+}

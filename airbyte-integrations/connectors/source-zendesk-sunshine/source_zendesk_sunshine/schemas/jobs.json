@@ -1,20 +1,27 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "description": "The unique identifier for the job",
+      "type": ["null", "string"]
     },
     "job_status": {
-      "type": "string"
+      "description": "The status of the job (e.g., pending, processing, completed)",
+      "type": ["null", "string"]
     },
     "created_at": {
-      "type": "string"
+      "description": "The timestamp when the job was created",
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "description": "The timestamp when the job was last updated",
+      "type": ["null", "string"]
     },
     "completed_at": {
-      "type": "string"
+      "description": "The timestamp when the job was completed",
+      "type": ["null", "string"]
     }
   }
 }

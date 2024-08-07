@@ -2,138 +2,109 @@
 
 ## Overview
 
-This destination syncs data to Delta Lake on Databricks Lakehouse. Each stream is written to its own [delta-table](https://delta.io/).
+This destination syncs data to Delta Lake on Databricks Lakehouse. Each stream is written to its own
+[delta-table](https://delta.io/).
 
-This connector requires a JDBC driver to connect to the Databricks cluster. By using the driver and the connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this connector to connect third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
+:::caution
+You **must** be using Unity Catalog to use this connector.
+:::
 
-Currently, this connector requires 30+MB of memory for each stream. When syncing multiple streams, it may run into an out-of-memory error if the allocated memory is too small. This performance bottleneck is tracked in [this issue](https://github.com/airbytehq/airbyte/issues/11424). Once this issue is resolved, the connector should be able to sync an almost infinite number of streams with less than 500MB of memory.
+This connector requires a JDBC driver to connect to the Databricks cluster. By using the driver and
+the connector, you must agree to the
+[JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can
+only use this connector to connect third party applications to Apache Spark SQL within a Databricks
+offering using the ODBC and/or JDBC protocols.
+
+## Airbyte Setup
+
+When setting up a Databricks destination, you need these pieces of information:
+
+### Server Hostname / HTTP Path / Port
+
+1. Open the workspace console.
+2. Open your SQL warehouse:
+
+   ![](../../.gitbook/assets/destination/databricks/databricks_open_sql_warehouse.png)
+3. Open the Connection Details tab:
+
+   ![](../../.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
+
+### Authentication
+
+#### OAuth (Recommended)
+
+Follow the instructions in [Databricks documentation](https://docs.databricks.com/en/dev-tools/auth/oauth-m2m.html)
+to generate a client ID and secret.
+
+#### Personal Access Token
+
+1. Open workspace console.
+2. Open User Settings, go to Access tokens tab and click Generate new token:
+
+   ![](../../.gitbook/assets/destination/databricks/dtabricks_token_user_new.png)
+3. Enter a description for the token and how long it will be valid for (or 0 for a permanent token):
+
+   ![](../../.gitbook/assets/destination/databricks/databricks_generate_token.png)
+
+### Other Options
+
+* `Default Schema` - The schema that will contain your data. You can later override this on a per-connection basis.
+* `Purge Staging Files and Tables` - Whether Airbyte should delete files after loading them into tables.
 
 ## Sync Mode
 
-| Feature | Support | Notes |
-| :--- | :---: | :--- |
-| Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured bucket path. |
-| Incremental - Append Sync | ✅ |  |
-| Incremental - Deduped History | ❌ |  |
-| Namespaces | ✅ |  |
-
-## Data Source
-
-Databricks Delta Lake supports various cloud storage as the [data source](https://docs.databricks.com/data/data-sources/index.html). Currently, only Amazon S3 and Azure Blob Storage are supported by this connector.
-
-## Configuration
-
-| Category            | Parameter             |  Type   | Notes                                                                                                                                                                                                                                                                                                                                                       |
-|:--------------------|:----------------------|:-------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Databricks          | Server Hostname       | string  | Required. Example: `abc-12345678-wxyz.cloud.databricks.com`. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url). Please note that this is the server for the Databricks Cluster. It is different from the SQL Endpoint Cluster.                                             |
-|                     | HTTP Path             | string  | Required. Example: `sql/protocolvx/o/1234567489/0000-1111111-abcd90`. See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url).                                                                                                                                                   |
-|                     | Port                  | string  | Optional. Default to "443". See [documentation](https://docs.databricks.com/integrations/bi/jdbc-odbc-bi.html#get-server-hostname-port-http-path-and-jdbc-url).                                                                                                                                                                                             |
-|                     | Personal Access Token | string  | Required. Example: `dapi0123456789abcdefghij0123456789AB`. See [documentation](https://docs.databricks.com/sql/user/security/personal-access-tokens.html).                                                                                                                                                                                                  |
-| General             | Database schema       | string  | Optional. Default to "public". Each data stream will be written to a table under this database schema.                                                                                                                                                                                                                                                      |
-|                     | Purge Staging Data    | boolean | The connector creates staging files and tables on S3 or Azure. By default, they will be purged when the data sync is complete. Set it to `false` for debugging purposes.                                                                                                                                                                                    |
-| Data Source - S3    | Bucket Name           | string  | Name of the bucket to sync data into.                                                                                                                                                                                                                                                                                                                       |
-|                     | Bucket Path           | string  | Subdirectory under the above bucket to sync the data into.                                                                                                                                                                                                                                                                                                  |
-|                     | Region                | string  | See [documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.                                                                                                                                                                                             |
-|                     | Access Key ID         | string  | AWS/Minio credential.                                                                                                                                                                                                                                                                                                                                       |
-|                     | Secret Access Key     | string  | AWS/Minio credential.                                                                                                                                                                                                                                                                                                                                       |
-|                     | S3 Filename pattern   | string  | The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized. |
-| Data Source - Azure | Account Name          | string  | Name of the account to sync data into.                                                                                                                                                                                                                                                                                                                      |
-|                     | Container Name        | string  | Container under the above account to sync the data into.                                                                                                                                                                                                                                                                                                    |
-|                     | SAS token             | string  | Shared-access signature token for the above account.                                                                                                                                                                                                                                                                                                        |
-|                     | Endpoint domain name  | string  | Usually blob.core.windows.net.                                                                                                                                                                                                                                                                                                                              |
-
-⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you provision a dedicated S3 or Azure resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
-
-## Staging Files (Delta Format)
-
-### S3
-Data streams are first written as staging delta-table ([Parquet](https://parquet.apache.org/) + [Transaction Log](https://databricks.com/blog/2019/08/21/diving-into-delta-lake-unpacking-the-transaction-log.html)) files on S3, and then loaded into Databricks delta-tables. All the staging files will be deleted after the sync is done. For debugging purposes, here is the full path for a staging file:
-
-```text
-s3://<bucket-name>/<bucket-path>/<uuid>/<stream-name>
-```
-
-For example:
-
-```text
-s3://testing_bucket/data_output_path/98c450be-5b1c-422d-b8b5-6ca9903727d9/users/_delta_log
-     ↑              ↑                ↑                                    ↑     ↑
-     |              |                |                                    |     transaction log
-     |              |                |                                    stream name
-     |              |                database schema
-     |              bucket path
-     bucket name
-```
-
-### Azure
-Similarly, streams are first written to a staging location, but the Azure option uses CSV format. A staging table is created from the CSV files.
-
-## Unmanaged Spark SQL Table
-
-Currently, all streams are synced into unmanaged Spark SQL tables. See [documentation](https://docs.databricks.com/data/tables.html#managed-and-unmanaged-tables) for details. In summary, you have full control of the location of the data underlying an unmanaged table. In S3, the full path of each data stream is:
-
-```text
-s3://<bucket-name>/<bucket-path>/<database-schema>/<stream-name>
-```
-
-For example:
-
-```text
-s3://testing_bucket/data_output_path/public/users
-     ↑              ↑                ↑      ↑
-     |              |                |      stream name
-     |              |                database schema
-     |              bucket path
-     bucket name
-```
-
-In Azure, the full path of each data stream is:
-
-```text
-abfss://<container-name>@<account-name>.dfs.core.windows.net/<database-schema>/<stream-name>
-```
-Please keep these data directories on S3/Azure. Otherwise, the corresponding tables will have no data in Databricks.
+| Feature                        | Support | Notes                                                                                |
+| :----------------------------- | :-----: | :----------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path. |
+| Incremental - Append Sync      |   ✅    |                                                                                      |
+| Incremental - Append + Deduped |   ✅    |                                                                                      |
+| Namespaces                     |   ✅    |                                                                                      |
 
 ## Output Schema
 
-Each table will have the following columns:
+Each table will have the following columns, in addition to your whatever columns were in your data:
 
-| Column | Type | Notes |
-| :--- | :---: | :--- |
-| `_airbyte_ab_id` | string | UUID. |
-| `_airbyte_emitted_at` | timestamp | Data emission timestamp. |
-| Data fields from the source stream | various | All fields in the staging files will be expanded in the table. |
+| Column                   |   Type    | Notes                                                                  |
+| :----------------------- | :-------: | :--------------------------------------------------------------------- |
+| `_airbyte_raw_id`        | string    | A random UUID.                                                         |
+| `_airbyte_extracted_at`  | timestamp | Timestamp when the source read the record.                             |
+| `_airbyte_loaded_at`     | timestamp | Timestamp when the record was written to the destination               |
+| `_airbyte_generation_id` | bigint    | See the [refreshes](../../operator-guides/refreshes.md) documentation. |
 
-Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.io/understanding-airbyte/json-avro-conversion).
+Airbyte will also produce "raw tables" (by default in the `airbyte_internal` schema). We do not recommend directly interacting
+with the raw tables, and their format is subject to change without notice.
 
-## Getting started
+## Changelog
 
-### Requirements
+<details>
+  <summary>Expand to review</summary>
 
-1. Credentials for a Databricks cluster. See [documentation](https://docs.databricks.com/clusters/create.html).
-2. Credentials for an S3 bucket or Azure container. See [documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-3. Grant the Databricks cluster full access to the S3 bucket or Azure container. Or mount it as Databricks File System \(DBFS\). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
+| Version | Date       | Pull Request                                                                                                        | Subject                                                                                                                  |
+|:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0   | 2024-07-22 | [#40692](https://github.com/airbytehq/airbyte/pull/40692)                                                           | Support for [refreshes](../../operator-guides/refreshes.md) and resumable full refresh. WARNING: You must upgrade to platform 0.63.7 before upgrading to this connector version. |
+| 3.0.0   | 2024-07-12 | [#40689](https://github.com/airbytehq/airbyte/pull/40689)                                                           | (Private release, not to be used for production) Add `_airbyte_generation_id` column, and `sync_id` entry in `_airbyte_meta` |
+| 2.0.0   | 2024-05-17 | [#37613](https://github.com/airbytehq/airbyte/pull/37613)                                                           | (Private release, not to be used for production) Alpha release of the connector to use Unity Catalog                     |
+| 1.1.2   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846)                                                           | (incompatible with CDK, do not use) Remove duplicate S3 Region                                                           |
+| 1.1.1   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924)                                                           | (incompatible with CDK, do not use) Add new ap-southeast-3 AWS region                                                    |
+| 1.1.0   | 2023-06-02 | [\#26942](https://github.com/airbytehq/airbyte/pull/26942)                                                          | Support schema evolution                                                                                                 |
+| 1.0.2   | 2023-04-20 | [\#25366](https://github.com/airbytehq/airbyte/pull/25366)                                                          | Fix default catalog to be `hive_metastore`                                                                               |
+| 1.0.1   | 2023-03-30 | [\#24657](https://github.com/airbytehq/airbyte/pull/24657)                                                          | Fix support for external tables on S3                                                                                    |
+| 1.0.0   | 2023-03-21 | [\#23965](https://github.com/airbytehq/airbyte/pull/23965)                                                          | Added: Managed table storage type, Databricks Catalog field                                                              |
+| 0.3.1   | 2022-10-15 | [\#18032](https://github.com/airbytehq/airbyte/pull/18032)                                                          | Add `SSL=1` to the JDBC URL to ensure SSL connection.                                                                    |
+| 0.3.0   | 2022-10-14 | [\#15329](https://github.com/airbytehq/airbyte/pull/15329)                                                          | Add support for Azure storage.                                                                                           |
+|         | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243)                                                          | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
+| 0.2.6   | 2022-08-05 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801)                                                          | Fix multiply log bindings                                                                                                |
+| 0.2.5   | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494)                                                          | Make S3 output filename configurable.                                                                                    |
+| 0.2.4   | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618)                                                          | Removed additionalProperties: false from JDBC destination connectors                                                     |
+| 0.2.3   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852)                                                          | Updated stacktrace format for any trace message errors                                                                   |
+| 0.2.2   | 2022-06-13 | [\#13722](https://github.com/airbytehq/airbyte/pull/13722)                                                          | Rename to "Databricks Lakehouse".                                                                                        |
+| 0.2.1   | 2022-06-08 | [\#13630](https://github.com/airbytehq/airbyte/pull/13630)                                                          | Rename to "Databricks Delta Lake" and add field orders in the spec.                                                      |
+| 0.2.0   | 2022-05-15 | [\#12861](https://github.com/airbytehq/airbyte/pull/12861)                                                          | Use new public Databricks JDBC driver, and open source the connector.                                                    |
+| 0.1.5   | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578)                                                          | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging.                          |
+| 0.1.4   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256)                                                          | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                             |
+| 0.1.3   | 2022-01-06 | [\#7622](https://github.com/airbytehq/airbyte/pull/7622) [\#9153](https://github.com/airbytehq/airbyte/issues/9153) | Upgrade Spark JDBC driver to `2.6.21` to patch Log4j vulnerability; update connector fields title/description.           |
+| 0.1.2   | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288)                                                          | Support Json `additionalProperties`.                                                                                     |
+| 0.1.1   | 2021-10-05 | [\#6792](https://github.com/airbytehq/airbyte/pull/6792)                                                            | Require users to accept Databricks JDBC Driver [Terms & Conditions](https://databricks.com/jdbc-odbc-driver-license).    |
+| 0.1.0   | 2021-09-14 | [\#5998](https://github.com/airbytehq/airbyte/pull/5998)                                                            | Initial private release.                                                                                                 |
 
-## Related tutorial
-Suppose you are interested in learning more about the Databricks connector or details on how the Delta Lake tables are created. You may want to consult the tutorial on [How to Load Data into Delta Lake on Databricks Lakehouse](https://airbyte.com/tutorials/load-data-into-delta-lake-on-databricks-lakehouse).
-
-## CHANGELOG
-
-| Version | Date       | Pull Request                                                                                                        | Subject                                                                                                               |
-|:--------|:-----------|:--------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|
-| 0.3.1   | 2022-10-15 | [\#18032](https://github.com/airbytehq/airbyte/pull/18032) | Add `SSL=1` to the JDBC URL to ensure SSL connection. |
-| 0.3.0   | 2022-10-14 | [\#15329](https://github.com/airbytehq/airbyte/pull/15329) | Add support for Azure storage. |
-|         | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields) |
-| 0.2.6   | 2022-08-05 | [\#14801](https://github.com/airbytehq/airbyte/pull/14801)                                                          | Fix multiply log bindings                                                                                             |
-| 0.2.5   | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494)                                                          | Make S3 output filename configurable.                                                                                 |
-| 0.2.4   | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618)                                                          | Removed additionalProperties: false from JDBC destination connectors                                                  |
-| 0.2.3   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852)                                                          | Updated stacktrace format for any trace message errors                                                                |
-| 0.2.2   | 2022-06-13 | [\#13722](https://github.com/airbytehq/airbyte/pull/13722)                                                          | Rename to "Databricks Lakehouse".                                                                                     |
-| 0.2.1   | 2022-06-08 | [\#13630](https://github.com/airbytehq/airbyte/pull/13630)                                                          | Rename to "Databricks Delta Lake" and add field orders in the spec.                                                   |
-| 0.2.0   | 2022-05-15 | [\#12861](https://github.com/airbytehq/airbyte/pull/12861)                                                          | Use new public Databricks JDBC driver, and open source the connector.                                                 |
-| 0.1.5   | 2022-05-04 | [\#12578](https://github.com/airbytehq/airbyte/pull/12578)                                                          | In JSON to Avro conversion, log JSON field values that do not follow Avro schema for debugging.                       |
-| 0.1.4   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256)                                                          | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                          |
-| 0.1.3   | 2022-01-06 | [\#7622](https://github.com/airbytehq/airbyte/pull/7622) [\#9153](https://github.com/airbytehq/airbyte/issues/9153) | Upgrade Spark JDBC driver to `2.6.21` to patch Log4j vulnerability; update connector fields title/description.        |
-| 0.1.2   | 2021-11-03 | [\#7288](https://github.com/airbytehq/airbyte/issues/7288)                                                          | Support Json `additionalProperties`.                                                                                  |
-| 0.1.1   | 2021-10-05 | [\#6792](https://github.com/airbytehq/airbyte/pull/6792)                                                            | Require users to accept Databricks JDBC Driver [Terms & Conditions](https://databricks.com/jdbc-odbc-driver-license). |
-| 0.1.0   | 2021-09-14 | [\#5998](https://github.com/airbytehq/airbyte/pull/5998)                                                            | Initial private release.                                                                                              |
+</details>

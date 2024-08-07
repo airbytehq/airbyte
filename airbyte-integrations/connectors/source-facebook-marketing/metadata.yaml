@@ -1,0 +1,105 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - graph.facebook.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
+  dockerImageTag: 3.3.15
+  dockerRepository: airbyte/source-facebook-marketing
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
+  githubIssueLabel: source-facebook-marketing
+  icon: facebook.svg
+  license: ELv2
+  maxSecondsBetweenMessages: 86400
+  name: Facebook Marketing
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-facebook-marketing
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. Please pay attention that data older than 37 months will become unavailable due to FaceBook limitations. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
+        upgradeDeadline: "2024-03-17"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ads_insights"
+              - "ads_insights_age_and_gender"
+              - "ads_insights_action_type"
+              - "ads_insights_country"
+              - "ads_insights_platform_and_device"
+              - "ads_insights_region"
+              - "ads_insights_dma"
+              - "ads_insights_action_product_id"
+      3.0.0:
+        message: "There are breaking schema changes to Custom Insights Streams that use body_asset, call_to_action_asset, description_asset, image_asset, link_url_asset, title_asset or video_asset.  If you use any of these streams, you will need to retest source configuration, refresh the source schema and clear affected streams after upgrading."
+        upgradeDeadline: "2024-06-14"
+      3.1.0:
+        message: "The `AdsInsights` Reports now don't have the possibility to fetch the root level properties `cost_per_conversion_lead` and `conversion_lead_rate`. These will therefore be removed."
+        upgradeDeadline: "2024-06-14"
+  suggestedStreams:
+    streams:
+      - ads_insights
+      - campaigns
+      - ads
+      - ad_sets
+      - ad_creatives
+      - ads_insights_age_and_gender
+      - ads_insights_action_type
+      - custom_conversions
+      - images
+      - ads_insights_country
+      - ads_insights_platform_and_device
+      - ads_insights_region
+      - ads_insights_dma
+      - activities
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: facebook-marketing_config_dev_null
+          id: 33d36a34-1416-4d83-968b-72cd1ede8c43
+        - name: facebook-marketing_config_no_date_dev_null
+          id: 3bfed4a5-9953-4a7f-be8e-f2ad4e70b90b
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING_NO_DATE__CREDS
+          fileName: config_no_date.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING_NO_DATE__CREDS
+          fileName: config_no_date.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-FACEBOOK-MARKETING__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

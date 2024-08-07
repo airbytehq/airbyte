@@ -3,6 +3,7 @@
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Mixpanel Spec",
+    "required": ["credentials"],
     "type": "object",
     "properties": {
       "credentials": {
@@ -14,7 +15,7 @@
           {
             "type": "object",
             "title": "Service Account",
-            "required": ["username", "secret"],
+            "required": ["username", "secret", "project_id"],
             "properties": {
               "option_title": {
                 "type": "string",
@@ -33,6 +34,12 @@
                 "type": "string",
                 "description": "Mixpanel Service Account Secret. See the <a href=\"https://developer.mixpanel.com/reference/service-accounts\">docs</a> for more information on how to obtain this.",
                 "airbyte_secret": true
+              },
+              "project_id": {
+                "order": 3,
+                "title": "Project ID",
+                "description": "Your project ID number. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id\">docs</a> for more information on how to obtain this.",
+                "type": "integer"
               }
             }
           },
@@ -57,17 +64,11 @@
           }
         ]
       },
-      "project_id": {
-        "order": 1,
-        "title": "Project ID",
-        "description": "Your project ID number. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id\">docs</a> for more information on how to obtain this.",
-        "type": "integer"
-      },
       "attribution_window": {
         "order": 2,
         "title": "Attribution Window",
         "type": "integer",
-        "description": " A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted. Default attribution window is 5 days.",
+        "description": "A period of time for attributing results to ads and the lookback period after those actions occur during which ad results are counted. Default attribution window is 5 days. (This value should be non-negative integer)",
         "default": 5
       },
       "project_timezone": {
@@ -91,7 +92,8 @@
         "type": "string",
         "description": "The date in the format YYYY-MM-DD. Any data before this date will not be replicated. If this option is not set, the connector will replicate data from up to one year ago by default.",
         "examples": ["2021-11-16"],
-        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
+        "format": "date-time"
       },
       "end_date": {
         "order": 6,
@@ -99,7 +101,8 @@
         "type": "string",
         "description": "The date in the format YYYY-MM-DD. Any data after this date will not be replicated. Left empty to always sync to most recent date",
         "examples": ["2021-11-16"],
-        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
+        "format": "date-time"
       },
       "region": {
         "order": 7,
@@ -112,10 +115,18 @@
       "date_window_size": {
         "order": 8,
         "title": "Date slicing window",
-        "description": "Defines window size in days, that used to slice through data. You can reduce it, if amount of data in each window is too big for your environment.",
+        "description": "Defines window size in days, that used to slice through data. You can reduce it, if amount of data in each window is too big for your environment. (This value should be positive integer)",
         "type": "integer",
         "minimum": 1,
         "default": 30
+      },
+      "page_size": {
+        "order": 9,
+        "title": "Page Size",
+        "description": "The number of records to fetch per request for the engage stream. Default is 1000. If you are experiencing long sync times with this stream, try increasing this value.",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1000
       }
     }
   }

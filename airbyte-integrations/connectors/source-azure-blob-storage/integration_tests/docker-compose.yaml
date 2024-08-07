@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    container_name: "azurite"
+    hostname: azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - ./data:/data
+    environment:
+      - AZURITE_ACCOUNTS=account1:key1
+      - UseDevelopmentStorage=true
+    command: "azurite-blob --blobHost 0.0.0.0 --location /data --loose"

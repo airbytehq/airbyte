@@ -1,0 +1,43 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b1ccb590-e84f-46c0-83a0-2048ccfffdae
+  dockerImageTag: 0.1.15
+  dockerRepository: airbyte/source-pendo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pendo
+  githubIssueLabel: source-pendo
+  icon: pendo.svg
+  license: MIT
+  name: Pendo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pendo
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pendo_config_dev_null
+          id: 8964641e-f0cf-42a2-a1f1-20226b198cf4
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PENDO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

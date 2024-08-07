@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
@@ -9,8 +9,8 @@ import static java.util.stream.Collectors.joining;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +34,18 @@ public class SnowflakeDataSourceUtils {
 
   public static final String OAUTH_METHOD = "OAuth";
   public static final String USERNAME_PASSWORD_METHOD = "username/password";
-  public static final String UNRECOGNIZED = "Unrecognized";
-  private static final String JDBC_CONNECTION_STRING =
-      "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=Airbyte_Connector";
+  public static final String KEY_PAIR_METHOD = "Key Pair Authentication";
+  public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
+  public static final String PRIVATE_KEY_PASSWORD = "private_key_password";
+  public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
 
+  public static final String UNRECOGNIZED = "Unrecognized";
+  public static final String AIRBYTE_OSS = "airbyte_oss";
+  public static final String AIRBYTE_CLOUD = "airbyte_cloud";
+  private static final String JDBC_CONNECTION_STRING =
+      "role=%s&warehouse=%s&database=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=%s";
+
+  private static final String JDBC_SCHEMA_PARAM = "&schema=%s&CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX=true";
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDataSourceUtils.class);
   private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
   private static final String REFRESH_TOKEN_URL = "https://%s/oauth/token-request";
@@ -53,9 +62,9 @@ public class SnowflakeDataSourceUtils {
    * @param config source config JSON
    * @return datasource
    */
-  public static HikariDataSource createDataSource(final JsonNode config) {
+  public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
     final HikariDataSource dataSource = new HikariDataSource();
-    dataSource.setJdbcUrl(buildJDBCUrl(config));
+    dataSource.setJdbcUrl(buildJDBCUrl(config, airbyteEnvironment));
 
     if (config.has("credentials")) {
       final JsonNode credentials = config.get("credentials");
@@ -72,6 +81,10 @@ public class SnowflakeDataSourceUtils {
         case USERNAME_PASSWORD_METHOD -> {
           LOGGER.info("Authorization mode is 'Username and password'");
           populateUsernamePasswordConfig(dataSource, config.get("credentials"));
+        }
+        case KEY_PAIR_METHOD -> {
+          LOGGER.info("Authorization mode is 'Key Pair Authentication'");
+          populateKeyPairConfig(dataSource, config.get("credentials"));
         }
         default -> throw new IllegalArgumentException("Unrecognized auth type: " + authType);
       }
@@ -130,7 +143,7 @@ public class SnowflakeDataSourceUtils {
     }
   }
 
-  public static String buildJDBCUrl(final JsonNode config) {
+  public static String buildJDBCUrl(final JsonNode config, final String airbyteEnvironment) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
         config.get(JdbcUtils.HOST_KEY).asText()));
 
@@ -139,11 +152,15 @@ public class SnowflakeDataSourceUtils {
         config.get("role").asText(),
         config.get("warehouse").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText(),
-        config.get("schema").asText(),
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",
-        true));
+        true,
+        airbyteEnvironment));
+
+    if (config.get("schema") != null && StringUtils.isNotBlank(config.get("schema").asText())) {
+      jdbcUrl.append(JDBC_SCHEMA_PARAM.formatted(config.get("schema").asText()));
+    }
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
@@ -194,6 +211,20 @@ public class SnowflakeDataSourceUtils {
   private static void populateUsernamePasswordConfig(final HikariConfig hikariConfig, final JsonNode config) {
     hikariConfig.setUsername(config.get(JdbcUtils.USERNAME_KEY).asText());
     hikariConfig.setPassword(config.get(JdbcUtils.PASSWORD_KEY).asText());
+  }
+
+  private static void populateKeyPairConfig(final HikariConfig hikariConfig, final JsonNode config) {
+    hikariConfig.setUsername(config.get(JdbcUtils.USERNAME_KEY).asText());
+    hikariConfig.setDataSourceProperties(buildKeyPairProperties(config));
+  }
+
+  private static Properties buildKeyPairProperties(JsonNode config) {
+    final Properties properties = new Properties();
+    properties.setProperty("private_key_file", PRIVATE_KEY_FILE_NAME);
+    if (config.has(PRIVATE_KEY_PASSWORD)) {
+      properties.setProperty("private_key_file_pwd", config.get(PRIVATE_KEY_PASSWORD).asText());
+    }
+    return properties;
   }
 
 }

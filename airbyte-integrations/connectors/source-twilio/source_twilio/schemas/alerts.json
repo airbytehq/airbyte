@@ -1,51 +1,66 @@
 {
   "properties": {
     "log_level": {
+      "description": "The severity level of the alert (info, warning, error)",
       "type": ["null", "string"]
     },
     "resource_sid": {
+      "description": "The SID of the specific resource associated with the alert",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the alert was last updated",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The unique identifier for the account associated with the alert",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL or endpoint related to the alert",
       "type": ["null", "string"]
     },
     "request_method": {
+      "description": "The method used in the HTTP request that triggered the alert",
       "type": ["null", "string"]
     },
     "date_generated": {
+      "description": "The date and time when the alert data was generated",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "alert_text": {
+      "description": "The actual content or text of the alert message",
       "type": ["null", "string"]
     },
     "sid": {
+      "description": "The unique identifier (SID) for the alert entry",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the alert was created",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "request_url": {
+      "description": "The URL that was requested and triggered the alert",
       "type": ["null", "string"]
     },
     "service_sid": {
+      "description": "The SID of the Twilio service related to the alert",
       "type": ["null", "string"]
     },
     "error_code": {
+      "description": "The code representing the error, if an error occurred",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API used for the alert",
       "type": ["null", "string"]
     },
     "more_info": {
+      "description": "Additional information or details related to the alert",
       "type": ["null", "string"]
     }
   },

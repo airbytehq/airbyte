@@ -103,7 +103,5 @@
       }
     }
   },
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "supported_destination_sync_modes": []
 }

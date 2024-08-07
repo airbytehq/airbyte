@@ -1,31 +1,46 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import calendar
+import copy
+import logging
 import re
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from urllib.parse import parse_qsl, urlparse
 
+import freezegun
 import pendulum
 import pytest
 import pytz
 import requests
-from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
     DATETIME_FORMAT,
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
-    BaseSourceZendeskSupportStream,
+    AccountAttributes,
+    ArticleComments,
+    ArticleCommentVotes,
+    Articles,
+    ArticleVotes,
+    AttributeDefinitions,
+    AuditLogs,
+    BaseZendeskSupportStream,
     Brands,
     CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
+    OrganizationMemberships,
     Organizations,
+    PostCommentVotes,
+    Posts,
+    PostVotes,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -38,12 +53,17 @@ from source_zendesk_support.streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
+    TicketSkips,
+    TicketSubstream,
+    Topics,
+    UserFields,
     Users,
     UserSettingsStream,
-    UserSubscriptionStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
+
+TICKET_SUBSTREAMS = [TicketSubstream, TicketMetrics]
 
 # prepared config
 STREAM_ARGS = {
@@ -58,6 +78,19 @@ TEST_CONFIG = {
     "start_date": "2021-06-01T00:00:00Z",
     "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
 }
+
+# raw old config
+TEST_OLD_CONFIG = {
+    "auth_method": {"auth_method": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
+    "subdomain": "sandbox",
+    "start_date": "2021-06-01T00:00:00Z",
+}
+
+TEST_CONFIG_WITHOUT_START_DATE = {
+    "subdomain": "sandbox",
+    "credentials": {"credentials": "api_token", "email": "integration-test@airbyte.io", "api_token": "api_token"},
+}
+
 
 # raw config oauth
 TEST_CONFIG_OAUTH = {
@@ -75,6 +108,13 @@ URL_BASE = "https://sandbox.zendesk.com/api/v2/"
 def snake_case(name):
     s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
+
+
+def get_stream_instance(stream_class, args):
+    if stream_class in TICKET_SUBSTREAMS:
+        parent = Tickets(**args)
+        return stream_class(parent=parent, **args)
+    return stream_class(**args)
 
 
 def test_date_time_format():
@@ -106,10 +146,20 @@ def test_convert_config2stream_args(config):
     assert "authenticator" in result
 
 
+@freezegun.freeze_time("2022-01-01")
+def test_default_start_date():
+    result = SourceZendeskSupport().convert_config2stream_args(TEST_CONFIG_WITHOUT_START_DATE)
+    assert result["start_date"] == "2020-01-01T00:00:00Z"
+
+
 @pytest.mark.parametrize(
     "config, expected",
-    [(TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="), (TEST_CONFIG_OAUTH, "test_access_token")],
-    ids=["api_token", "oauth"],
+    [
+        (TEST_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
+        (TEST_CONFIG_OAUTH, "test_access_token"),
+        (TEST_OLD_CONFIG, "aW50ZWdyYXRpb24tdGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="),
+    ],
+    ids=["api_token", "oauth", "old_config"],
 )
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
@@ -118,33 +168,52 @@ def test_get_authenticator(config, expected):
 
 
 @pytest.mark.parametrize(
-    "response, check_passed",
-    [
-        ({"active_features": {"organization_access_enabled": True}}, (True, None)),
-    ],
-    ids=["check_connection"],
+    "response, start_date, check_passed",
+    [({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True), ({}, "2020-01-00T00:00:00Z", False)],
+    ids=["check_successful", "invalid_start_date"],
 )
-def test_check(response, check_passed):
+def test_check(response, start_date, check_passed):
+    config = copy.deepcopy(TEST_CONFIG)
+    config["start_date"] = start_date
     with patch.object(UserSettingsStream, "get_settings", return_value=response) as mock_method:
-        result = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
-        mock_method.assert_called()
-        assert check_passed == result
+        ok, _ = SourceZendeskSupport().check_connection(logger=logging.Logger, config=config)
+        assert check_passed == ok
+        if ok:
+            mock_method.assert_called()
 
 
 @pytest.mark.parametrize(
-    "response, expected_n_streams",
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ("Enterprise", 18),
-        # if restricted, TicketForms stream will not be listed
-        ("Other", 17),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 35, [], None),
+        (
+            '{"error": "Not sufficient permissions"}',
+            403,
+            32,
+            [
+                "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
+            ],
+            None,
+        ),
+        (
+            "",
+            404,
+            32,
+            [
+                "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
+            ],
+            "Not Found",
+        ),
     ],
-    ids=["full_access", "restricted_access"],
+    ids=["forms_accessible", "forms_inaccessible", "forms_not_exists"],
 )
-def test_full_access_streams(response, expected_n_streams):
-    with patch.object(UserSubscriptionStream, "get_subscription_plan", return_value=response) as mock_method:
-        result = SourceZendeskSupport().streams(config=TEST_CONFIG)
-        mock_method.assert_called()
-        assert len(result) == expected_n_streams
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, text=ticket_forms_response, reason=reason)
+    result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+    assert len(result) == expected_n_streams
+    logged_warnings = (record for record in caplog.records if record.levelname == "WARNING")
+    for msg in expected_warnings:
+        assert msg in next(logged_warnings).message
 
 
 @pytest.fixture(autouse=True)
@@ -155,75 +224,48 @@ def time_sleep_mock(mocker):
 
 def test_str2datetime():
     expected = datetime.strptime(DATETIME_STR, DATETIME_FORMAT)
-    output = BaseSourceZendeskSupportStream.str2datetime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str2datetime(DATETIME_STR)
     assert output == expected
 
 
 def test_datetime2str():
     expected = datetime.strftime(DATETIME_FROM_STR.replace(tzinfo=pytz.UTC), DATETIME_FORMAT)
-    output = BaseSourceZendeskSupportStream.datetime2str(DATETIME_FROM_STR)
+    output = BaseZendeskSupportStream.datetime2str(DATETIME_FROM_STR)
     assert output == expected
 
 
 def test_str2unixtime():
     expected = calendar.timegm(DATETIME_FROM_STR.utctimetuple())
-    output = BaseSourceZendeskSupportStream.str2unixtime(DATETIME_STR)
+    output = BaseZendeskSupportStream.str2unixtime(DATETIME_STR)
     assert output == expected
 
 
 def test_check_start_time_param():
     expected = 1626936955
     start_time = calendar.timegm(pendulum.parse(DATETIME_STR).utctimetuple())
-    output = SourceZendeskIncrementalExportStream.check_start_time_param(start_time)
+    output = SourceZendeskIncrementalExportStream.validate_start_time(start_time)
     assert output == expected
-
-
-def test_parse_next_page_number(requests_mock):
-    expected = dict(parse_qsl(urlparse(TICKET_EVENTS_STREAM_RESPONSE.get("next_page")).query)).get("page")
-    requests_mock.get(STREAM_URL, json=TICKET_EVENTS_STREAM_RESPONSE)
-    test_response = requests.get(STREAM_URL)
-    output = BaseSourceZendeskSupportStream._parse_next_page_number(test_response)
-    assert output == expected
-
-
-def test_next_page_token(requests_mock):
-    # mocking the logic of next_page_token
-    if TICKET_EVENTS_STREAM_RESPONSE.get(END_OF_STREAM_KEY) is False:
-        expected = {"created_at": 1122334455}
-    else:
-        expected = None
-    requests_mock.get(STREAM_URL, json=TICKET_EVENTS_STREAM_RESPONSE)
-    test_response = requests.get(STREAM_URL)
-    output = TicketComments(**STREAM_ARGS).next_page_token(test_response)
-    assert expected == output
 
 
 @pytest.mark.parametrize(
     "stream_state, expected",
     [
         # valid state, expect the value of the state
-        ({"updated_at": "2022-04-01"}, 1648771200),
-        # invalid state, expect the start_date from STREAM_ARGS
-        ({"updated_at": ""}, 1622505600),
-        ({"updated_at": None}, 1622505600),
-        ({"missing_cursor": "2022-04-01"}, 1622505600),
+        ({"generated_timestamp": 1648771200}, 1648771200),
+        (None, 1622505600),
     ],
-    ids=["state present", "empty string in state", "state is None", "cursor is not in the state object"],
+    ids=["state present", "state is None"],
 )
 def test_check_stream_state(stream_state, expected):
-    result = Tickets(**STREAM_ARGS).check_stream_state(stream_state)
+    result = Tickets(**STREAM_ARGS).get_stream_state_value(stream_state)
     assert result == expected
 
 
-def test_request_params(requests_mock):
-    expected = {"start_time": calendar.timegm(pendulum.parse(STREAM_ARGS.get("start_date")).utctimetuple()), "include": "comment_events"}
-    stream_state = None
-    requests_mock.get(STREAM_URL, json=TICKET_EVENTS_STREAM_RESPONSE)
+def test_parse_response_from_empty_json(requests_mock):
+    requests_mock.get(STREAM_URL, text="", status_code=403)
     test_response = requests.get(STREAM_URL)
-    next_page_token = TicketComments(**STREAM_ARGS).next_page_token(test_response)
-    output = TicketComments(**STREAM_ARGS).request_params(stream_state, None)
-    assert next_page_token is not None
-    assert expected == output
+    output = Schedules(**STREAM_ARGS).parse_response(test_response, {})
+    assert list(output) == []
 
 
 def test_parse_response(requests_mock):
@@ -238,64 +280,22 @@ def test_parse_response(requests_mock):
 
 
 class TestAllStreams:
-    @pytest.mark.parametrize(
-        "expected_stream_cls",
-        [
-            (GroupMemberships),
-            (Groups),
-            (Macros),
-            (Organizations),
-            (SatisfactionRatings),
-            (SlaPolicies),
-            (Tags),
-            (TicketAudits),
-            (TicketComments),
-            (TicketFields),
-            (TicketForms),
-            (TicketMetrics),
-            (TicketMetricEvents),
-            (Tickets),
-            (Users),
-            (Brands),
-            (CustomRoles),
-            (Schedules),
-        ],
-        ids=[
-            "GroupMemberships",
-            "Groups",
-            "Macros",
-            "Organizations",
-            "SatisfactionRatings",
-            "SlaPolicies",
-            "Tags",
-            "TicketAudits",
-            "TicketComments",
-            "TicketFields",
-            "TicketForms",
-            "TicketMetrics",
-            "TicketMetricEvents",
-            "Tickets",
-            "Users",
-            "Brands",
-            "CustomRoles",
-            "Schedules",
-        ],
-    )
-    def test_streams(self, expected_stream_cls):
-        with patch.object(UserSubscriptionStream, "get_subscription_plan", return_value="Enterprise") as mock_method:
+    def test_ticket_forms_exception_stream(self):
+        with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
+            mocked_records.side_effect = Exception("The error")
             streams = SourceZendeskSupport().streams(TEST_CONFIG)
-            mock_method.assert_called()
-            for stream in streams:
-                if expected_stream_cls in streams:
-                    assert isinstance(stream, expected_stream_cls)
+            assert not any([isinstance(stream, TicketForms) for stream in streams])
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
+            (AuditLogs, "audit_logs"),
             (GroupMemberships, "group_memberships"),
             (Groups, "groups"),
             (Macros, "macros"),
-            (Organizations, "organizations"),
+            (Organizations, "incremental/organizations.json"),
+            (Posts, "community/posts"),
+            (OrganizationMemberships, "organization_memberships"),
             (SatisfactionRatings, "satisfaction_ratings"),
             (SlaPolicies, "slas/policies.json"),
             (Tags, "tags"),
@@ -303,19 +303,27 @@ class TestAllStreams:
             (TicketComments, "incremental/ticket_events.json"),
             (TicketFields, "ticket_fields"),
             (TicketForms, "ticket_forms"),
-            (TicketMetrics, "ticket_metrics"),
+            (TicketMetrics, "tickets/13/metrics"),
+            (TicketSkips, "skips.json"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
-            (Tickets, "incremental/tickets.json"),
-            (Users, "incremental/users.json"),
+            (Tickets, "incremental/tickets/cursor.json"),
+            (Users, "incremental/users/cursor.json"),
+            (Topics, "community/topics"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
             (Schedules, "business_hours/schedules.json"),
+            (AccountAttributes, "routing/attributes"),
+            (AttributeDefinitions, "routing/attributes/definitions"),
+            (UserFields, "user_fields"),
         ],
         ids=[
+            "AuditLogs",
             "GroupMemberships",
             "Groups",
             "Macros",
             "Organizations",
+            "Posts",
+            "OrganizationMemberships",
             "SatisfactionRatings",
             "SlaPolicies",
             "Tags",
@@ -324,70 +332,71 @@ class TestAllStreams:
             "TicketFields",
             "TicketForms",
             "TicketMetrics",
+            "TicketSkips",
             "TicketMetricEvents",
             "Tickets",
+            "Topics",
             "Users",
             "Brands",
             "CustomRoles",
             "Schedules",
+            "AccountAttributes",
+            "AttributeDefinitions",
+            "UserFields",
         ],
     )
     def test_path(self, stream_cls, expected):
-        stream = stream_cls(**STREAM_ARGS)
-        result = stream.path()
+        stream = get_stream_instance(stream_cls, STREAM_ARGS)
+        result = stream.path(stream_slice={"ticket_id": "13"})
         assert result == expected
 
 
 class TestSourceZendeskSupportStream:
     @pytest.mark.parametrize(
         "stream_cls",
-        [
-            (Macros),
-            (Organizations),
-            (Groups),
-            (SatisfactionRatings),
-            (TicketFields),
-            (TicketMetrics),
-        ],
-        ids=[
-            "Macros",
-            "Organizations",
-            "Groups",
-            "SatisfactionRatings",
-            "TicketFields",
-            "TicketMetrics",
-        ],
+        [(Macros), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (TicketMetrics), (Topics)],
+        ids=["Macros", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
     )
     def test_parse_response(self, requests_mock, stream_cls):
-        stream = stream_cls(**STREAM_ARGS)
-        stream_name = snake_case(stream.__class__.__name__)
-        expected = [{"updated_at": "2022-03-17T16:03:07Z"}]
-        requests_mock.get(STREAM_URL, json={stream_name: expected})
+        if stream_cls in TICKET_SUBSTREAMS:
+            parent = Tickets(**STREAM_ARGS)
+            stream = stream_cls(parent=parent, **STREAM_ARGS)
+            expected = {"updated_at": "2022-03-17T16:03:07Z"}
+            response_field = stream.response_list_name
+
+        else:
+            stream = stream_cls(**STREAM_ARGS)
+            expected = [{"updated_at": "2022-03-17T16:03:07Z"}]
+            response_field = stream.name
+
+        requests_mock.get(STREAM_URL, json={response_field: expected})
         test_response = requests.get(STREAM_URL)
         output = list(stream.parse_response(test_response, None))
+
+        expected = expected if isinstance(expected, list) else [expected]
         assert expected == output
+
+    def test_attribute_definition_parse_response(self, requests_mock):
+        stream = AttributeDefinitions(**STREAM_ARGS)
+        conditions_all = {"subject": "number_of_incidents", "title": "Number of incidents"}
+        conditions_any = {"subject": "brand", "title": "Brand"}
+        response_json = {"definitions": {"conditions_all": [conditions_all], "conditions_any": [conditions_any]}}
+        requests_mock.get(STREAM_URL, json=response_json)
+        test_response = requests.get(STREAM_URL)
+        output = list(stream.parse_response(test_response, None))
+        expected_records = [
+            {"condition": "all", "subject": "number_of_incidents", "title": "Number of incidents"},
+            {"condition": "any", "subject": "brand", "title": "Brand"},
+        ]
+        assert expected_records == output
 
     @pytest.mark.parametrize(
         "stream_cls",
-        [
-            (Macros),
-            (Organizations),
-            (Groups),
-            (SatisfactionRatings),
-            (TicketFields),
-            (TicketMetrics),
-        ],
-        ids=[
-            "Macros",
-            "Organizations",
-            "Groups",
-            "SatisfactionRatings",
-            "TicketFields",
-            "TicketMetrics",
-        ],
+        [(Macros), (Organizations), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (TicketMetrics), (Topics)],
+        ids=["Macros", "Organizations", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
     )
     def test_url_base(self, stream_cls):
-        stream = stream_cls(**STREAM_ARGS)
+        stream = get_stream_instance(stream_cls, STREAM_ARGS)
         result = stream.url_base
         assert result == URL_BASE
 
@@ -395,6 +404,7 @@ class TestSourceZendeskSupportStream:
         "stream_cls, current_state, last_record, expected",
         [
             (Macros, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Posts, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (
                 Organizations,
                 {"updated_at": "2022-03-17T16:03:07Z"},
@@ -405,18 +415,12 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketMetrics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
-        ids=[
-            "Macros",
-            "Organizations",
-            "Groups",
-            "SatisfactionRatings",
-            "TicketFields",
-            "TicketMetrics",
-        ],
+        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
-        stream = stream_cls(**STREAM_ARGS)
+        stream = get_stream_instance(stream_cls, STREAM_ARGS)
         result = stream.get_updated_state(current_state, last_record)
         assert expected == result
 
@@ -424,20 +428,24 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, None),
-            (Organizations, None),
+            (Posts, None),
+            (Organizations, {}),
             (Groups, None),
             (TicketFields, None),
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
         ],
     )
-    def test_next_page_token(self, stream_cls, expected):
+    def test_next_page_token(self, stream_cls, expected, mocker):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.next_page_token()
+        posts_response = mocker.Mock()
+        posts_response.json.return_value = {"next_page": None}
+        result = stream.next_page_token(response=posts_response)
         assert expected == result
 
     @pytest.mark.parametrize(
@@ -457,21 +465,14 @@ class TestSourceZendeskSupportStream:
     )
     def test_request_params(self, stream_cls, expected):
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.request_params()
+        result = stream.request_params(stream_state={})
         assert expected == result
 
 
 class TestSourceZendeskSupportFullRefreshStream:
     @pytest.mark.parametrize(
         "stream_cls",
-        [
-            (Tags),
-            (SlaPolicies),
-            (Brands),
-            (CustomRoles),
-            (Schedules),
-            (UserSettingsStream),
-        ],
+        [(Tags), (SlaPolicies), (Brands), (CustomRoles), (Schedules), (UserSettingsStream), (AccountAttributes), (AttributeDefinitions)],
         ids=[
             "Tags",
             "SlaPolicies",
@@ -479,6 +480,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_url_base(self, stream_cls):
@@ -495,6 +498,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             (CustomRoles),
             (Schedules),
             (UserSettingsStream),
+            (AccountAttributes),
+            (AttributeDefinitions),
         ],
         ids=[
             "Tags",
@@ -503,6 +508,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
     def test_next_page_token(self, requests_mock, stream_cls):
@@ -514,14 +521,16 @@ class TestSourceZendeskSupportFullRefreshStream:
         assert output is None
 
     @pytest.mark.parametrize(
-        "stream_cls",
+        "stream_cls, expected_params",
         [
-            (Tags),
-            (SlaPolicies),
-            (Brands),
-            (CustomRoles),
-            (Schedules),
-            (UserSettingsStream),
+            (Tags, {"page[size]": 100}),
+            (SlaPolicies, {}),
+            (Brands, {"page[size]": 100}),
+            (CustomRoles, {}),
+            (Schedules, {"page[size]": 100}),
+            (UserSettingsStream, {}),
+            (AccountAttributes, {}),
+            (AttributeDefinitions, {}),
         ],
         ids=[
             "Tags",
@@ -530,13 +539,14 @@ class TestSourceZendeskSupportFullRefreshStream:
             "CustomRoles",
             "Schedules",
             "UserSettingsStream",
+            "AccountAttributes",
+            "AttributeDefinitions",
         ],
     )
-    def test_request_params(self, stream_cls):
-        expected = {"page": 1, "per_page": 100}
+    def test_request_params(self, stream_cls, expected_params):
         stream = stream_cls(**STREAM_ARGS)
         result = stream.request_params(next_page_token=None, stream_state=None)
-        assert expected == result
+        assert expected_params == result
 
 
 class TestSourceZendeskSupportCursorPaginationStream:
@@ -547,45 +557,80 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketForms, {}, {"updated_at": "2023-03-17T16:03:07Z"}, {"updated_at": "2023-03-17T16:03:07Z"}),
             (TicketMetricEvents, {}, {"time": "2024-03-17T16:03:07Z"}, {"time": "2024-03-17T16:03:07Z"}),
             (TicketAudits, {}, {"created_at": "2025-03-17T16:03:07Z"}, {"created_at": "2025-03-17T16:03:07Z"}),
+            (OrganizationMemberships, {}, {"updated_at": "2025-03-17T16:03:07Z"}, {"updated_at": "2025-03-17T16:03:07Z"}),
+            (TicketSkips, {}, {"updated_at": "2025-03-17T16:03:07Z"}, {"updated_at": "2025-03-17T16:03:07Z"}),
         ],
         ids=[
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
             "TicketAudits",
+            "OrganizationMemberships",
+            "TicketSkips",
         ],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
-        stream = stream_cls(**STREAM_ARGS)
+        stream = get_stream_instance(stream_cls, STREAM_ARGS)
         result = stream.get_updated_state(current_state, last_record)
         assert expected == result
 
     @pytest.mark.parametrize(
-        "stream_cls",
+        "stream_cls, response, expected",
         [
-            (GroupMemberships),
-            (TicketForms),
-            (TicketMetricEvents),
-            (TicketAudits),
-            (TicketMetrics),
-            (SatisfactionRatings),
+            (GroupMemberships, {}, None),
+            (TicketForms, {}, None),
+            (
+                TicketMetricEvents,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    },
+                },
+                {"page[after]": "<after_cursor>"},
+            ),
+            (TicketAudits, {}, None),
+            (SatisfactionRatings, {}, None),
+            (
+                OrganizationMemberships,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    },
+                },
+                {"page[after]": "<after_cursor>"},
+            ),
+            (
+                TicketSkips,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    },
+                },
+                {"page[after]": "<after_cursor>"},
+            ),
         ],
         ids=[
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
             "TicketAudits",
-            "TicketMetrics",
             "SatisfactionRatings",
+            "OrganizationMemberships",
+            "TicketSkips",
         ],
     )
-    def test_next_page_token(self, requests_mock, stream_cls):
+    def test_next_page_token(self, requests_mock, stream_cls, response, expected):
         stream = stream_cls(**STREAM_ARGS)
-        stream_name = snake_case(stream.__class__.__name__)
-        requests_mock.get(STREAM_URL, json={stream_name: {}})
+        requests_mock.get(STREAM_URL, json=response)
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
-        assert output is None
+        assert output == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -594,28 +639,26 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketForms, 1622505600),
             (TicketMetricEvents, 1622505600),
             (TicketAudits, 1622505600),
+            (OrganizationMemberships, 1622505600),
+            (TicketSkips, 1622505600),
         ],
-        ids=[
-            "GroupMemberships",
-            "TicketForms",
-            "TicketMetricEvents",
-            "TicketAudits",
-        ],
+        ids=["GroupMemberships", "TicketForms", "TicketMetricEvents", "TicketAudits", "OrganizationMemberships", "TicketSkips"],
     )
     def test_check_stream_state(self, stream_cls, expected):
-        stream = stream_cls(**STREAM_ARGS)
-        result = stream.check_stream_state()
+        stream = get_stream_instance(stream_cls, STREAM_ARGS)
+        result = stream.get_stream_state_value()
         assert result == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (GroupMemberships, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
+            (GroupMemberships, {"page[size]": 100, "sort_by": "asc", "start_time": 1622505600}),
             (TicketForms, {"start_time": 1622505600}),
-            (TicketMetricEvents, {"start_time": 1622505600}),
-            (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 1000}),
-            (SatisfactionRatings, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
-            (TicketMetrics, {"page": 1, "per_page": 100, "start_time": 1622505600}),
+            (TicketMetricEvents, {"page[size]": 100, "start_time": 1622505600}),
+            (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 200}),
+            (SatisfactionRatings, {"page[size]": 100, "sort_by": "created_at", "start_time": 1622505600}),
+            (OrganizationMemberships, {"page[size]": 100, "start_time": 1622505600}),
+            (TicketSkips, {"page[size]": 100, "start_time": 1622505600}),
         ],
         ids=[
             "GroupMemberships",
@@ -623,11 +666,12 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "TicketMetricEvents",
             "TicketAudits",
             "SatisfactionRatings",
-            "TicketMetrics",
+            "OrganizationMemberships",
+            "TicketSkips",
         ],
     )
     def test_request_params(self, stream_cls, expected):
-        stream = stream_cls(**STREAM_ARGS)
+        stream = get_stream_instance(stream_cls, STREAM_ARGS)
         result = stream.request_params(stream_state=None, next_page_token=None)
         assert expected == result
 
@@ -647,23 +691,7 @@ class TestSourceZendeskIncrementalExportStream:
     def test_check_start_time_param(self, stream_cls):
         expected = int(dict(parse_qsl(urlparse(STREAM_URL).query)).get("start_time"))
         stream = stream_cls(**STREAM_ARGS)
-        result = stream.check_start_time_param(expected)
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Users, "incremental/users.json"),
-            (Tickets, "incremental/tickets.json"),
-        ],
-        ids=[
-            "Users",
-            "Tickets",
-        ],
-    )
-    def test_path(self, stream_cls, expected):
-        stream = stream_cls(**STREAM_ARGS)
-        result = stream.path()
+        result = stream.validate_start_time(expected)
         assert result == expected
 
     @pytest.mark.parametrize(
@@ -683,17 +711,19 @@ class TestSourceZendeskIncrementalExportStream:
         requests_mock.get(STREAM_URL, json={stream_name: {}})
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
-        assert output is None
+        assert output == {}
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
             (Users, {"start_time": 1622505600}),
             (Tickets, {"start_time": 1622505600}),
+            (Articles, {"sort_by": "updated_at", "sort_order": "asc", "start_time": 1622505600}),
         ],
         ids=[
             "Users",
             "Tickets",
+            "Articles",
         ],
     )
     def test_request_params(self, stream_cls, expected):
@@ -720,6 +750,23 @@ class TestSourceZendeskIncrementalExportStream:
         test_response = requests.get(STREAM_URL)
         output = list(stream.parse_response(test_response))
         assert expected == output
+
+    @pytest.mark.parametrize(
+        "stream_cls, stream_slice, expected_path",
+        [
+            (ArticleVotes, {"parent": {"id": 1}}, "help_center/articles/1/votes"),
+            (ArticleComments, {"parent": {"id": 1}}, "help_center/articles/1/comments"),
+            (ArticleCommentVotes, {"parent": {"id": 1, "source_id": 1}}, "help_center/articles/1/comments/1/votes"),
+        ],
+        ids=[
+            "ArticleVotes_path",
+            "ArticleComments_path",
+            "ArticleCommentVotes_path",
+        ],
+    )
+    def test_path(self, stream_cls, stream_slice, expected_path):
+        stream = stream_cls(**STREAM_ARGS)
+        assert stream.path(stream_slice=stream_slice) == expected_path
 
 
 class TestSourceZendeskSupportTicketEventsExportStream:
@@ -827,7 +874,7 @@ class TestSourceZendeskSupportTicketEventsExportStream:
 
 def test_read_tickets_stream(requests_mock):
     requests_mock.get(
-        "https://subdomain.zendesk.com/api/v2/incremental/tickets.json",
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json",
         json={
             "tickets": [
                 {"custom_fields": []},
@@ -840,7 +887,8 @@ def test_read_tickets_stream(requests_mock):
                         {"id": 360023712840, "value": False},
                     ]
                 },
-            ]
+            ],
+            "end_of_stream": True,
         },
     )
 
@@ -858,3 +906,263 @@ def test_read_tickets_stream(requests_mock):
             ]
         },
     ]
+
+
+def test_read_post_votes_stream(requests_mock):
+    post_response = {
+        "posts": [{"id": 7253375870607, "title": "Test_post", "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"}]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts", json=post_response)
+
+    post_votes_response = {
+        "votes": [
+            {
+                "author_id": 89567,
+                "body": "Test_comment for Test_post",
+                "id": 35467,
+                "post_id": 7253375870607,
+                "updated_at": "2023-01-02T00:00:00Z",
+            }
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/votes", json=post_votes_response)
+
+    stream = PostVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == post_votes_response.get("votes")
+
+
+def test_read_post_comment_votes_stream(requests_mock):
+    post_response = {
+        "posts": [{"id": 7253375870607, "title": "Test_post", "created_at": "2023-01-01T00:00:00Z", "updated_at": "2023-01-01T00:00:00Z"}]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts", json=post_response)
+
+    post_comments_response = {
+        "comments": [
+            {
+                "author_id": 89567,
+                "body": "Test_comment for Test_post",
+                "id": 35467,
+                "post_id": 7253375870607,
+                "updated_at": "2023-01-02T00:00:00Z",
+            }
+        ]
+    }
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments", json=post_comments_response)
+
+    votes = [{"id": 35467, "user_id": 888887, "value": -1, "updated_at": "2023-01-03T00:00:00Z"}]
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/community/posts/7253375870607/comments/35467/votes", json={"votes": votes})
+    stream = PostCommentVotes(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == votes
+
+
+def test_read_ticket_metric_events_request_params(requests_mock):
+    first_page_response = {
+        "ticket_metric_events": [
+            {"id": 1, "ticket_id": 123, "metric": "agent_work_time", "instance_id": 0, "type": "measure", "time": "2020-01-01T01:00:00Z"},
+            {
+                "id": 2,
+                "ticket_id": 123,
+                "metric": "pausable_update_time",
+                "instance_id": 0,
+                "type": "measure",
+                "time": "2020-01-01T01:00:00Z",
+            },
+            {"id": 3, "ticket_id": 123, "metric": "reply_time", "instance_id": 0, "type": "measure", "time": "2020-01-01T01:00:00Z"},
+            {
+                "id": 4,
+                "ticket_id": 123,
+                "metric": "requester_wait_time",
+                "instance_id": 1,
+                "type": "activate",
+                "time": "2020-01-01T01:00:00Z",
+            },
+        ],
+        "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+        "links": {
+            "prev": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bbefore%5D=<before_cursor>&page%5Bsize%5D=100&start_time=1577836800",
+            "next": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bafter%5D=<after_cursor>&page%5Bsize%5D=100&start_time=1577836800",
+        },
+        "end_of_stream": False,
+    }
+
+    second_page_response = {
+        "ticket_metric_events": [
+            {
+                "id": 5163373143183,
+                "ticket_id": 130,
+                "metric": "reply_time",
+                "instance_id": 1,
+                "type": "fulfill",
+                "time": "2022-07-18T16:39:48Z",
+            },
+            {
+                "id": 5163373143311,
+                "ticket_id": 130,
+                "metric": "requester_wait_time",
+                "instance_id": 0,
+                "type": "measure",
+                "time": "2022-07-18T16:39:48Z",
+            },
+        ],
+        "meta": {"has_more": False, "after_cursor": "<before_cursor>", "before_cursor": "<before_cursor>"},
+        "links": {
+            "prev": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bbefore%5D=<before_cursor>&page%5Bsize%5D=100&start_time=1577836800",
+            "next": "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events.json?page%5Bbefore%5D=<before_cursor>&page%5Bsize%5D=100&start_time=1577836800",
+        },
+        "end_of_stream": True,
+    }
+    request_history = requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/ticket_metric_events",
+        [{"json": first_page_response}, {"json": second_page_response}],
+    )
+    stream = TicketMetricEvents(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    read_full_refresh(stream)
+    assert request_history.call_count == 2
+    assert request_history.last_request.qs == {"page[after]": ["<after_cursor>"], "page[size]": ["100"], "start_time": ["1577836800"]}
+
+
+@pytest.mark.parametrize("status_code", [(403), (404)])
+def test_read_tickets_comment(requests_mock, status_code):
+    request_history = requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/ticket_events.json", status_code=status_code, json={"error": "wrong permissions"}
+    )
+    stream = TicketComments(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    read_full_refresh(stream)
+    assert request_history.call_count == 1
+
+
+def test_read_non_json_error(requests_mock, caplog):
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/incremental/tickets/cursor.json", text="not_json_response")
+    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = (
+        "Skipping stream tickets: Non-JSON response received. Please ensure that you have enough permissions for this stream."
+    )
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
+
+
+class TestTicketSubstream:
+    @pytest.mark.parametrize(
+        "stream_state, response, expected_slices",
+        [
+            (
+                {},
+                {"tickets": [{"id": "13"}, {"id": "80"}]},
+                [
+                    {"ticket_id": "13", "updated_at": STREAM_ARGS["start_date"]},
+                    {"ticket_id": "80", "updated_at": STREAM_ARGS["start_date"]},
+                ],
+            ),
+            (
+                {"updated_at": "2024-04-17T19:34:06Z"},
+                {"tickets": [{"id": "80"}]},
+                [{"ticket_id": "80", "updated_at": "2024-04-17T19:34:06Z"}],
+            ),
+            ({"updated_at": "2224-04-17T19:34:06Z"}, {"tickets": []}, []),
+        ],
+        ids=[
+            "read_without_state",
+            "read_with_state",
+            "read_with_abnormal_state",
+        ],
+    )
+    def test_stream_slices(self, requests_mock, stream_state, response, expected_slices):
+        stream = get_stream_instance(TicketSubstream, STREAM_ARGS)
+        requests_mock.get(f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json", json=response)
+        assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
+
+    @pytest.mark.parametrize(
+        "stream_slice, response, expected_records",
+        [
+            ({"updated_at": "2024-05-17T19:34:06Z"}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, []),
+            (
+                {"updated_at": "2024-03-17T19:34:06Z"},
+                {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}],
+            ),
+            (
+                {},
+                {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"},
+                [{"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}],
+            ),
+        ],
+        ids=[
+            "read_with_slice_cursor_greater_than_record_cursor",
+            "read_with_slice_cursor_less_than_record_cursor",
+            "read_without_slice_cursor",
+        ],
+    )
+    def test_ticket_metrics_parse_response(self, stream_slice, response, expected_records):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        mocked_response = Mock()
+        mocked_response.json.return_value = {"ticket_metric": response}
+        records = list(stream.parse_response(mocked_response, stream_state={}, stream_slice=stream_slice))
+        assert records == expected_records
+
+    def test_read_ticket_metrics_with_error(self, requests_mock):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        requests_mock.get(
+            f"https://sandbox.zendesk.com/api/v2/tickets/13/metrics",
+            json={"error": "RecordNotFound", "description": "Not found"}
+        )
+
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"ticket_id": "13"}))
+
+        assert records == []
+
+    @pytest.mark.parametrize(
+        "status_code, response_action",
+        (
+                (200, ResponseAction.SUCCESS),
+                (404, ResponseAction.IGNORE),
+                (403, ResponseAction.IGNORE),
+                (500, ResponseAction.RETRY),
+                (429, ResponseAction.RATE_LIMITED),
+        )
+    )
+    def test_ticket_metrics_should_retry(self, status_code: int, response_action: bool):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        mocked_response = requests.Response()
+        mocked_response.status_code = status_code
+        assert stream.get_error_handler().interpret_response(mocked_response).response_action == response_action
+
+
+def test_read_ticket_audits_504_error(requests_mock, caplog):
+    requests_mock.get("https://subdomain.zendesk.com/api/v2/ticket_audits", status_code=504, text="upstream request timeout")
+    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    expected_message = "Skipping stream `ticket_audits`. Timed out waiting for response: upstream request timeout..."
+    read_full_refresh(stream)
+    assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
+
+
+@pytest.mark.parametrize(
+    "start_date, stream_state, audits_response, expected",
+    [
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "2020-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "2022-01-01T00:00:00Z"}], True),
+        ("2020-01-01T00:00:00Z", {"created_at": "2021-01-01T00:00:00Z"}, [{"created_at": "1990-01-01T00:00:00Z"}], False),
+    ],
+)
+def test_validate_response_ticket_audits(start_date, stream_state, audits_response, expected):
+    stream = TicketAudits(subdomain="subdomain", start_date=start_date)
+    response_mock = Mock()
+    response_mock.json.return_value = {"audits": audits_response}
+    assert stream._validate_response(response_mock, stream_state) == expected
+
+
+@pytest.mark.parametrize(
+    "audits_response, expected",
+    [
+        ({"no_audits": []}, False),
+        ({}, False),
+    ],
+)
+def test_validate_response_ticket_audits_handle_empty_response(audits_response, expected):
+    stream = TicketAudits(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    response_mock = Mock()
+    response_mock.json.return_value = audits_response
+    assert stream._validate_response(response_mock, {}) == expected

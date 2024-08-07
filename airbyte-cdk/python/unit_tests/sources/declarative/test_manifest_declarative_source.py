@@ -1,17 +1,35 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
 import logging
 import os
 import sys
+from copy import deepcopy
+from pathlib import Path
+from typing import Any, List, Mapping
+from unittest.mock import call, patch
 
 import pytest
+import requests
 import yaml
-from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
+from airbyte_cdk.models import (
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Level,
+    SyncMode,
+    Type,
+)
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from jsonschema.exceptions import ValidationError
+from pydantic import AnyUrl
 
 logger = logging.getLogger("airbyte")
 
@@ -32,7 +50,7 @@ class MockManifestDeclarativeSource(ManifestDeclarativeSource):
     """
 
 
-class TestYamlDeclarativeSource:
+class TestManifestDeclarativeSource:
     @pytest.fixture
     def use_external_yaml_spec(self):
         # Our way of resolving the absolute path to root of the airbyte-cdk unit test directory where spec.yaml files should
@@ -52,97 +70,125 @@ class TestYamlDeclarativeSource:
 
     def test_valid_manifest(self):
         manifest = {
-            "version": "version",
-            "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
-                "retriever": {
-                    "paginator": {
-                        "type": "DefaultPaginator",
-                        "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
-                        "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
-                    },
-                    "requester": {
-                        "path": "/v3/marketing/lists",
-                        "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                        "request_parameters": {"page_size": 10},
-                    },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
-                },
-            },
+            "version": "3.8.2",
+            "definitions": {},
+            "description": "This is a sample source connector that is very valid.",
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
-                            "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
                         },
                         "requester": {
                             "path": "/v3/marketing/lists",
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                            "request_parameters": {"page_size": 10},
+                            "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
-                }
+                },
+                {
+                    "type": "DeclarativeStream",
+                    "$parameters": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "type": "CustomRequester",
+                            "class_name": "unit_tests.sources.declarative.external_component.SampleCustomComponent",
+                            "path": "/v3/marketing/lists",
+                            "custom_request_parameters": {"page_size": 10},
+                        },
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
+                    },
+                },
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
-        ManifestDeclarativeSource(source_config=manifest)
+        source = ManifestDeclarativeSource(source_config=manifest)
+
+        check_stream = source.connection_checker
+        check_stream.check_connection(source, logging.getLogger(""), {})
+
+        streams = source.streams({})
+        assert len(streams) == 2
+        assert isinstance(streams[0], DeclarativeStream)
+        assert isinstance(streams[1], DeclarativeStream)
+        assert source.resolved_manifest["description"] == "This is a sample source connector that is very valid."
 
     def test_manifest_with_spec(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
                         "path": "/v3/marketing/lists",
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                        "request_parameters": {"page_size": 10},
+                        "request_parameters": {"page_size": "{{ 10 }}"},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
                             "path": "/v3/marketing/lists",
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                            "request_parameters": {"page_size": 10},
+                            "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -164,7 +210,7 @@ class TestYamlDeclarativeSource:
         source = ManifestDeclarativeSource(source_config=manifest)
         connector_specification = source.spec(logger)
         assert connector_specification is not None
-        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-manifest"
+        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-manifest")
         assert connector_specification.connectionSpecification["title"] == "Test Spec"
         assert connector_specification.connectionSpecification["required"][0] == "api_key"
         assert connector_specification.connectionSpecification["additionalProperties"] is False
@@ -178,47 +224,50 @@ class TestYamlDeclarativeSource:
 
     def test_manifest_with_external_spec(self, use_external_yaml_spec):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
                         "path": "/v3/marketing/lists",
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                        "request_parameters": {"page_size": 10},
+                        "request_parameters": {"page_size": "{{ 10 }}"},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
                             "path": "/v3/marketing/lists",
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                            "request_parameters": {"page_size": 10},
+                            "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -228,20 +277,23 @@ class TestYamlDeclarativeSource:
 
         connector_specification = source.spec(logger)
 
-        assert connector_specification.documentationUrl == "https://airbyte.com/#yaml-from-external"
+        assert connector_specification.documentationUrl == AnyUrl("https://airbyte.com/#yaml-from-external")
         assert connector_specification.connectionSpecification == EXTERNAL_CONNECTION_SPECIFICATION
 
     def test_source_is_not_created_if_toplevel_fields_are_unknown(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -249,23 +301,23 @@ class TestYamlDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": 10},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -273,27 +325,30 @@ class TestYamlDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
             "not_a_valid_field": "error",
         }
-        with pytest.raises(InvalidConnectorDefinitionException):
-            ManifestDeclarativeSource(manifest)
+        with pytest.raises(ValidationError):
+            ManifestDeclarativeSource(source_config=manifest)
 
     def test_source_missing_checker_fails_validation(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -301,23 +356,23 @@ class TestYamlDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": 10},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -325,7 +380,7 @@ class TestYamlDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -335,20 +390,23 @@ class TestYamlDeclarativeSource:
             ManifestDeclarativeSource(source_config=manifest)
 
     def test_source_with_missing_streams_fails(self):
-        manifest = {"version": "version", "definitions": None, "check": {"type": "CheckStream", "stream_names": ["lists"]}}
+        manifest = {"version": "0.29.3", "definitions": None, "check": {"type": "CheckStream", "stream_names": ["lists"]}}
         with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(manifest)
+            ManifestDeclarativeSource(source_config=manifest)
 
     def test_source_with_missing_version_fails(self):
         manifest = {
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -356,23 +414,23 @@ class TestYamlDeclarativeSource:
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                         "request_parameters": {"page_size": 10},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -380,79 +438,184 @@ class TestYamlDeclarativeSource:
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                             "request_parameters": {"page_size": 10},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
         with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(manifest)
+            ManifestDeclarativeSource(source_config=manifest)
+
+    @pytest.mark.parametrize(
+        "cdk_version, manifest_version, expected_error",
+        [
+            pytest.param("0.35.0", "0.30.0", None, id="manifest_version_less_than_cdk_package_should_run"),
+            pytest.param("1.5.0", "0.29.0", None, id="manifest_version_less_than_cdk_major_package_should_run"),
+            pytest.param("0.29.0", "0.29.0", None, id="manifest_version_matching_cdk_package_should_run"),
+            pytest.param(
+                "0.29.0",
+                "0.25.0",
+                ValidationError,
+                id="manifest_version_before_beta_that_uses_the_beta_0.29.0_cdk_package_should_throw_error",
+            ),
+            pytest.param(
+                "1.5.0",
+                "0.25.0",
+                ValidationError,
+                id="manifest_version_before_beta_that_uses_package_later_major_version_than_beta_0.29.0_cdk_package_should_throw_error",
+            ),
+            pytest.param("0.34.0", "0.35.0", ValidationError, id="manifest_version_greater_than_cdk_package_should_throw_error"),
+            pytest.param("0.29.0", "-1.5.0", ValidationError, id="manifest_version_has_invalid_major_format"),
+            pytest.param("0.29.0", "0.invalid.0", ValidationError, id="manifest_version_has_invalid_minor_format"),
+            pytest.param("0.29.0", "0.29.0.1", ValidationError, id="manifest_version_has_extra_version_parts"),
+            pytest.param("0.29.0", "5.0", ValidationError, id="manifest_version_has_too_few_version_parts"),
+            pytest.param("0.29.0:dev", "0.29.0", ValidationError, id="manifest_version_has_extra_release"),
+        ],
+    )
+    @patch("importlib.metadata.version")
+    def test_manifest_versions(self, version, cdk_version, manifest_version, expected_error):
+        # Used to mock the metadata.version() for test scenarios which normally returns the actual version of the airbyte-cdk package
+        version.return_value = cdk_version
+
+        manifest = {
+            "version": manifest_version,
+            "definitions": {},
+            "streams": [
+                {
+                    "type": "DeclarativeStream",
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "path": "/v3/marketing/lists",
+                            "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                            "request_parameters": {"page_size": "{{ 10 }}"},
+                        },
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
+                    },
+                },
+                {
+                    "type": "DeclarativeStream",
+                    "$parameters": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "type": "CustomRequester",
+                            "class_name": "unit_tests.sources.declarative.external_component.SampleCustomComponent",
+                            "path": "/v3/marketing/lists",
+                            "custom_request_parameters": {"page_size": 10},
+                        },
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
+                    },
+                },
+            ],
+            "check": {"type": "CheckStream", "stream_names": ["lists"]},
+        }
+        if expected_error:
+            with pytest.raises(expected_error):
+                ManifestDeclarativeSource(source_config=manifest)
+        else:
+            ManifestDeclarativeSource(source_config=manifest)
 
     def test_source_with_invalid_stream_config_fails_validation(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"}
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                }
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                 }
             ],
             "check": {"type": "CheckStream", "stream_names": ["lists"]},
         }
         with pytest.raises(ValidationError):
-            ManifestDeclarativeSource(manifest)
+            ManifestDeclarativeSource(source_config=manifest)
 
     def test_source_with_no_external_spec_and_no_in_yaml_spec_fails(self):
         manifest = {
-            "version": "version",
+            "version": "0.29.3",
             "definitions": {
-                "schema_loader": {"name": "{{ options.stream_name }}", "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
                 "retriever": {
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
                         "path": "/v3/marketing/lists",
                         "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                        "request_parameters": {"page_size": 10},
+                        "request_parameters": {"page_size": "{{ 10 }}"},
                     },
-                    "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
                 },
             },
             "streams": [
                 {
                     "type": "DeclarativeStream",
-                    "$options": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
                     "schema_loader": {
-                        "name": "{{ options.stream_name }}",
-                        "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
                     },
                     "retriever": {
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
                             "path": "/v3/marketing/lists",
                             "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                            "request_parameters": {"page_size": 10},
+                            "request_parameters": {"page_size": "{{ 10 }}"},
                         },
-                        "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
                     },
                 }
             ],
@@ -464,138 +627,678 @@ class TestYamlDeclarativeSource:
         with pytest.raises(FileNotFoundError):
             source.spec(logger)
 
+    def test_manifest_without_at_least_one_stream(self):
+        manifest = {
+            "version": "0.29.3",
+            "definitions": {
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
+                    },
+                    "requester": {
+                        "path": "/v3/marketing/lists",
+                        "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                        "request_parameters": {"page_size": 10},
+                    },
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
+                },
+            },
+            "streams": [],
+            "check": {"type": "CheckStream", "stream_names": ["lists"]},
+        }
+        with pytest.raises(ValidationError):
+            ManifestDeclarativeSource(source_config=manifest)
 
-def test_generate_schema():
-    schema_str = ManifestDeclarativeSource.generate_schema()
-    schema = json.loads(schema_str)
+    @patch("airbyte_cdk.sources.declarative.declarative_source.DeclarativeSource.read")
+    def test_given_debug_when_read_then_set_log_level(self, declarative_source_read):
+        any_valid_manifest = {
+            "version": "0.29.3",
+            "definitions": {
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
+                    },
+                    "requester": {
+                        "path": "/v3/marketing/lists",
+                        "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                        "request_parameters": {"page_size": "10"},
+                    },
+                    "record_selector": {"extractor": {"field_path": ["result"]}},
+                },
+            },
+            "streams": [
+                {
+                    "type": "DeclarativeStream",
+                    "$parameters": {"name": "lists", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "path": "/v3/marketing/lists",
+                            "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
+                            "request_parameters": {"page_size": "{{ 10 }}"},
+                        },
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
+                    },
+                },
+                {
+                    "type": "DeclarativeStream",
+                    "$parameters": {"name": "stream_with_custom_requester", "primary_key": "id", "url_base": "https://api.sendgrid.com"},
+                    "schema_loader": {
+                        "name": "{{ parameters.stream_name }}",
+                        "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                    },
+                    "retriever": {
+                        "paginator": {
+                            "type": "DefaultPaginator",
+                            "page_size": 10,
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
+                            "pagination_strategy": {
+                                "type": "CursorPagination",
+                                "cursor_value": "{{ response._metadata.next }}",
+                                "page_size": 10,
+                            },
+                        },
+                        "requester": {
+                            "type": "CustomRequester",
+                            "class_name": "unit_tests.sources.declarative.external_component.SampleCustomComponent",
+                            "path": "/v3/marketing/lists",
+                            "custom_request_parameters": {"page_size": 10},
+                        },
+                        "record_selector": {"extractor": {"field_path": ["result"]}},
+                    },
+                },
+            ],
+            "check": {"type": "CheckStream", "stream_names": ["lists"]},
+        }
+        source = ManifestDeclarativeSource(source_config=any_valid_manifest, debug=True)
 
-    assert "version" in schema["required"]
-    assert "checker" in schema["required"]
-    assert "streams" in schema["required"]
-    assert schema["properties"]["checker"]["$ref"] == "#/definitions/CheckStream"
-    assert schema["properties"]["streams"]["items"]["$ref"] == "#/definitions/DeclarativeStream"
+        debug_logger = logging.getLogger("logger.debug")
+        list(source.read(debug_logger, {}, {}, {}))
 
-    check_stream = schema["definitions"]["CheckStream"]
-    assert {"stream_names"}.issubset(check_stream["required"])
-    assert check_stream["properties"]["stream_names"]["type"] == "array"
-    assert check_stream["properties"]["stream_names"]["items"]["type"] == "string"
+        assert debug_logger.isEnabledFor(logging.DEBUG)
 
-    declarative_stream = schema["definitions"]["DeclarativeStream"]
-    assert {"retriever", "config"}.issubset(declarative_stream["required"])
-    assert {"$ref": "#/definitions/DefaultSchemaLoader"} in declarative_stream["properties"]["schema_loader"]["anyOf"]
-    assert {"$ref": "#/definitions/JsonFileSchemaLoader"} in declarative_stream["properties"]["schema_loader"]["anyOf"]
-    assert declarative_stream["properties"]["retriever"]["$ref"] == "#/definitions/SimpleRetriever"
-    assert declarative_stream["properties"]["name"]["type"] == "string"
-    assert {"type": "array", "items": {"type": "string"}} in declarative_stream["properties"]["primary_key"]["anyOf"]
-    assert {"type": "array", "items": {"type": "array", "items": {"type": "string"}}} in declarative_stream["properties"]["primary_key"][
-        "anyOf"
-    ]
-    assert {"type": "string"} in declarative_stream["properties"]["primary_key"]["anyOf"]
-    assert {"type": "array", "items": {"type": "string"}} in declarative_stream["properties"]["stream_cursor_field"]["anyOf"]
-    assert {"type": "string"} in declarative_stream["properties"]["stream_cursor_field"]["anyOf"]
-    assert declarative_stream["properties"]["transformations"]["type"] == "array"
-    assert {"$ref": "#/definitions/AddFields"} in declarative_stream["properties"]["transformations"]["items"]["anyOf"]
-    assert {"$ref": "#/definitions/RemoveFields"} in declarative_stream["properties"]["transformations"]["items"]["anyOf"]
-    assert declarative_stream["properties"]["checkpoint_interval"]["type"] == "integer"
 
-    simple_retriever = schema["definitions"]["SimpleRetriever"]["allOf"][1]
-    assert {"requester", "record_selector"}.issubset(simple_retriever["required"])
-    assert simple_retriever["properties"]["requester"]["$ref"] == "#/definitions/HttpRequester"
-    assert simple_retriever["properties"]["record_selector"]["$ref"] == "#/definitions/RecordSelector"
-    assert simple_retriever["properties"]["name"]["type"] == "string"
-    assert {"type": "array", "items": {"type": "string"}} in declarative_stream["properties"]["primary_key"]["anyOf"]
-    assert {"type": "array", "items": {"type": "array", "items": {"type": "string"}}} in declarative_stream["properties"]["primary_key"][
-        "anyOf"
-    ]
-    assert {"type": "string"} in declarative_stream["properties"]["primary_key"]["anyOf"]
-    assert {"$ref": "#/definitions/DefaultPaginator"} in simple_retriever["properties"]["paginator"]["anyOf"]
-    assert {"$ref": "#/definitions/NoPagination"} in simple_retriever["properties"]["paginator"]["anyOf"]
-    assert {"$ref": "#/definitions/CartesianProductStreamSlicer"} in simple_retriever["properties"]["stream_slicer"]["anyOf"]
-    assert {"$ref": "#/definitions/DatetimeStreamSlicer"} in simple_retriever["properties"]["stream_slicer"]["anyOf"]
-    assert {"$ref": "#/definitions/ListStreamSlicer"} in simple_retriever["properties"]["stream_slicer"]["anyOf"]
-    assert {"$ref": "#/definitions/SingleSlice"} in simple_retriever["properties"]["stream_slicer"]["anyOf"]
-    assert {"$ref": "#/definitions/SubstreamSlicer"} in simple_retriever["properties"]["stream_slicer"]["anyOf"]
+def request_log_message(request: dict) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"request:{json.dumps(request)}"))
 
-    http_requester = schema["definitions"]["HttpRequester"]["allOf"][1]
-    assert {"name", "url_base", "path", "config"}.issubset(http_requester["required"])
-    assert http_requester["properties"]["name"]["type"] == "string"
-    assert {"$ref": "#/definitions/InterpolatedString"} in http_requester["properties"]["url_base"]["anyOf"]
-    assert {"type": "string"} in http_requester["properties"]["path"]["anyOf"]
-    assert {"$ref": "#/definitions/InterpolatedString"} in http_requester["properties"]["url_base"]["anyOf"]
-    assert {"type": "string"} in http_requester["properties"]["path"]["anyOf"]
-    assert {"type": "string"} in http_requester["properties"]["http_method"]["anyOf"]
-    assert {"type": "string", "enum": ["GET", "POST"]} in http_requester["properties"]["http_method"]["anyOf"]
-    assert http_requester["properties"]["request_options_provider"]["$ref"] == "#/definitions/InterpolatedRequestOptionsProvider"
-    assert {"$ref": "#/definitions/DeclarativeOauth2Authenticator"} in http_requester["properties"]["authenticator"]["anyOf"]
-    assert {"$ref": "#/definitions/ApiKeyAuthenticator"} in http_requester["properties"]["authenticator"]["anyOf"]
-    assert {"$ref": "#/definitions/BearerAuthenticator"} in http_requester["properties"]["authenticator"]["anyOf"]
-    assert {"$ref": "#/definitions/BasicHttpAuthenticator"} in http_requester["properties"]["authenticator"]["anyOf"]
-    assert {"$ref": "#/definitions/CompositeErrorHandler"} in http_requester["properties"]["error_handler"]["anyOf"]
-    assert {"$ref": "#/definitions/DefaultErrorHandler"} in http_requester["properties"]["error_handler"]["anyOf"]
 
-    api_key_authenticator = schema["definitions"]["ApiKeyAuthenticator"]["allOf"][1]
-    assert {"header", "api_token", "config"}.issubset(api_key_authenticator["required"])
-    assert {"$ref": "#/definitions/InterpolatedString"} in api_key_authenticator["properties"]["header"]["anyOf"]
-    assert {"type": "string"} in api_key_authenticator["properties"]["header"]["anyOf"]
-    assert {"$ref": "#/definitions/InterpolatedString"} in api_key_authenticator["properties"]["api_token"]["anyOf"]
-    assert {"type": "string"} in api_key_authenticator["properties"]["api_token"]["anyOf"]
+def response_log_message(response: dict) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=f"response:{json.dumps(response)}"))
 
-    default_error_handler = schema["definitions"]["DefaultErrorHandler"]["allOf"][1]
-    assert default_error_handler["properties"]["response_filters"]["type"] == "array"
-    assert default_error_handler["properties"]["response_filters"]["items"]["$ref"] == "#/definitions/HttpResponseFilter"
-    assert default_error_handler["properties"]["max_retries"]["type"] == "integer"
-    assert default_error_handler["properties"]["backoff_strategies"]["type"] == "array"
 
-    default_paginator = schema["definitions"]["DefaultPaginator"]["allOf"][1]
-    assert {"page_token_option", "pagination_strategy", "config", "url_base"}.issubset(default_paginator["required"])
-    assert default_paginator["properties"]["page_size_option"]["$ref"] == "#/definitions/RequestOption"
-    assert default_paginator["properties"]["page_token_option"]["$ref"] == "#/definitions/RequestOption"
-    assert {"$ref": "#/definitions/CursorPaginationStrategy"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
-    assert {"$ref": "#/definitions/OffsetIncrement"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
-    assert {"$ref": "#/definitions/PageIncrement"} in default_paginator["properties"]["pagination_strategy"]["anyOf"]
-    assert default_paginator["properties"]["decoder"]["$ref"] == "#/definitions/JsonDecoder"
-    assert {"$ref": "#/definitions/InterpolatedString"} in http_requester["properties"]["url_base"]["anyOf"]
-    assert {"type": "string"} in http_requester["properties"]["path"]["anyOf"]
+def _create_request():
+    url = "https://example.com/api"
+    headers = {"Content-Type": "application/json"}
+    return requests.Request("POST", url, headers=headers, json={"key": "value"}).prepare()
 
-    cursor_pagination_strategy = schema["definitions"]["CursorPaginationStrategy"]["allOf"][1]
-    assert {"cursor_value", "config"}.issubset(cursor_pagination_strategy["required"])
-    assert {"$ref": "#/definitions/InterpolatedString"} in cursor_pagination_strategy["properties"]["cursor_value"]["anyOf"]
-    assert {"type": "string"} in cursor_pagination_strategy["properties"]["cursor_value"]["anyOf"]
-    assert {"$ref": "#/definitions/InterpolatedBoolean"} in cursor_pagination_strategy["properties"]["stop_condition"]["anyOf"]
-    assert {"type": "string"} in cursor_pagination_strategy["properties"]["stop_condition"]["anyOf"]
-    assert cursor_pagination_strategy["properties"]["decoder"]["$ref"] == "#/definitions/JsonDecoder"
 
-    list_stream_slicer = schema["definitions"]["ListStreamSlicer"]["allOf"][1]
-    assert {"slice_values", "cursor_field", "config"}.issubset(list_stream_slicer["required"])
-    assert {"type": "array", "items": {"type": "string"}} in list_stream_slicer["properties"]["slice_values"]["anyOf"]
-    assert {"type": "string"} in list_stream_slicer["properties"]["slice_values"]["anyOf"]
-    assert {"$ref": "#/definitions/InterpolatedString"} in list_stream_slicer["properties"]["cursor_field"]["anyOf"]
-    assert {"type": "string"} in list_stream_slicer["properties"]["cursor_field"]["anyOf"]
-    assert list_stream_slicer["properties"]["request_option"]["$ref"] == "#/definitions/RequestOption"
+def _create_response(body):
+    response = requests.Response()
+    response.status_code = 200
+    response._content = bytes(json.dumps(body), "utf-8")
+    response.headers["Content-Type"] = "application/json"
+    return response
 
-    added_field_definition = schema["definitions"]["AddedFieldDefinition"]
-    assert {"path", "value"}.issubset(added_field_definition["required"])
-    assert added_field_definition["properties"]["path"]["type"] == "array"
-    assert added_field_definition["properties"]["path"]["items"]["type"] == "string"
-    assert {"$ref": "#/definitions/InterpolatedString"} in added_field_definition["properties"]["value"]["anyOf"]
-    assert {"type": "string"} in added_field_definition["properties"]["value"]["anyOf"]
 
-    # There is something very strange about JsonSchemaMixin.json_schema(). For some reason, when this test is called independently
-    # it will pass. However, when it is invoked with the entire test file, certain components won't get generated in the schema. Since
-    # the generate_schema() method is invoked by independently so this doesn't happen under normal circumstance when we generate the
-    # complete schema. It only happens when the tests are all called together.
-    # One way to replicate this is to add DefaultErrorHandler.json_schema() to the start of this test and uncomment the assertions below
+def _create_page(response_body):
+    response = _create_response(response_body)
+    response.request = _create_request()
+    return response
 
-    # assert {"$ref": "#/definitions/ConstantBackoffStrategy"} in default_error_handler["properties"]["backoff_strategies"]["items"]["anyOf"]
-    # assert {"$ref": "#/definitions/ExponentialBackoffStrategy"} in default_error_handler["properties"]["backoff_strategies"]["items"][
-    #     "anyOf"
-    # ]
-    # assert {"$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"} in default_error_handler["properties"]["backoff_strategies"][
-    #     "items"
-    # ]["anyOf"]
-    # assert {"$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"} in default_error_handler["properties"]["backoff_strategies"][
-    #     "items"
-    # ]["anyOf"]
-    #
-    # exponential_backoff_strategy = schema["definitions"]["ExponentialBackoffStrategy"]["allOf"][1]
-    # assert exponential_backoff_strategy["properties"]["factor"]["type"] == "number"
+
+@pytest.mark.parametrize(
+    "test_name, manifest, pages, expected_records, expected_calls",
+    [
+        (
+            "test_read_manifest_no_pagination_no_partitions",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {
+                                    "ABC": {"type": "number"},
+                                    "AED": {"type": "number"},
+                                },
+                                "type": "object",
+                            },
+                        },
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {"type": "NoPagination"},
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0}, {"AED": 1}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 2}], "_metadata": {"next": "next"}}),
+            )
+            * 10,
+            [{"ABC": 0}, {"AED": 1}],
+            [call({}, {})],
+        ),
+        (
+            "test_read_manifest_with_added_fields",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {
+                                    "ABC": {"type": "number"},
+                                    "AED": {"type": "number"},
+                                },
+                                "type": "object",
+                            },
+                        },
+                        "transformations": [
+                            {
+                                "type": "AddFields",
+                                "fields": [{"type": "AddedFieldDefinition", "path": ["added_field_key"], "value": "added_field_value"}],
+                            }
+                        ],
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {"type": "NoPagination"},
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0}, {"AED": 1}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 2}], "_metadata": {"next": "next"}}),
+            )
+            * 10,
+            [{"ABC": 0, "added_field_key": "added_field_value"}, {"AED": 1, "added_field_key": "added_field_value"}],
+            [call({}, {})],
+        ),
+        (
+            "test_read_with_pagination_no_partitions",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {
+                                    "ABC": {"type": "number"},
+                                    "AED": {"type": "number"},
+                                    "USD": {"type": "number"},
+                                },
+                                "type": "object",
+                            },
+                        },
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {
+                                "type": "DefaultPaginator",
+                                "page_size": 2,
+                                "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                                "page_token_option": {"inject_into": "path", "type": "RequestPath"},
+                                "pagination_strategy": {
+                                    "type": "CursorPagination",
+                                    "cursor_value": "{{ response._metadata.next }}",
+                                    "page_size": 2,
+                                },
+                            },
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0}, {"AED": 1}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 2}], "_metadata": {}}),
+            )
+            * 10,
+            [{"ABC": 0}, {"AED": 1}, {"USD": 2}],
+            [call({}, {}), call({"next_page_token": "next"}, {"next_page_token": "next"})],
+        ),
+        (
+            "test_no_pagination_with_partition_router",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {"ABC": {"type": "number"}, "AED": {"type": "number"}, "partition": {"type": "number"}},
+                                "type": "object",
+                            },
+                        },
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "partition_router": {"type": "ListPartitionRouter", "values": ["0", "1"], "cursor_field": "partition"},
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {"type": "NoPagination"},
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {"next": "next"}}),
+            ),
+            [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
+            [call({}, {"partition": "0"}, None), call({}, {"partition": "1"}, None)],
+        ),
+        (
+            "test_with_pagination_and_partition_router",
+            {
+                "version": "0.34.2",
+                "type": "DeclarativeSource",
+                "check": {"type": "CheckStream", "stream_names": ["Rates"]},
+                "streams": [
+                    {
+                        "type": "DeclarativeStream",
+                        "name": "Rates",
+                        "primary_key": [],
+                        "schema_loader": {
+                            "type": "InlineSchemaLoader",
+                            "schema": {
+                                "$schema": "http://json-schema.org/schema#",
+                                "properties": {"ABC": {"type": "number"}, "AED": {"type": "number"}, "partition": {"type": "number"}},
+                                "type": "object",
+                            },
+                        },
+                        "retriever": {
+                            "type": "SimpleRetriever",
+                            "requester": {
+                                "type": "HttpRequester",
+                                "url_base": "https://api.apilayer.com",
+                                "path": "/exchangerates_data/latest",
+                                "http_method": "GET",
+                                "request_parameters": {},
+                                "request_headers": {},
+                                "request_body_json": {},
+                                "authenticator": {
+                                    "type": "ApiKeyAuthenticator",
+                                    "header": "apikey",
+                                    "api_token": "{{ config['api_key'] }}",
+                                },
+                            },
+                            "partition_router": {"type": "ListPartitionRouter", "values": ["0", "1"], "cursor_field": "partition"},
+                            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["rates"]}},
+                            "paginator": {
+                                "type": "DefaultPaginator",
+                                "page_size": 2,
+                                "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
+                                "page_token_option": {"inject_into": "path", "type": "RequestPath"},
+                                "pagination_strategy": {
+                                    "type": "CursorPagination",
+                                    "cursor_value": "{{ response._metadata.next }}",
+                                    "page_size": 2,
+                                },
+                            },
+                        },
+                    }
+                ],
+                "spec": {
+                    "connection_specification": {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "required": ["api_key"],
+                        "properties": {"api_key": {"type": "string", "title": "API Key", "airbyte_secret": True}},
+                        "additionalProperties": True,
+                    },
+                    "documentation_url": "https://example.org",
+                    "type": "Spec",
+                },
+            },
+            (
+                _create_page({"rates": [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}], "_metadata": {"next": "next"}}),
+                _create_page({"rates": [{"USD": 3, "partition": 0}], "_metadata": {}}),
+                _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {}}),
+            ),
+            [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
+            [
+                call({}, {"partition": "0"}, None),
+                call({}, {"partition": "0"}, {"next_page_token": "next"}),
+                call({}, {"partition": "1"}, None),
+            ],
+        ),
+    ],
+)
+def test_read_manifest_declarative_source(test_name, manifest, pages, expected_records, expected_calls):
+    _stream_name = "Rates"
+    with patch.object(SimpleRetriever, "_fetch_next_page", side_effect=pages) as mock_retriever:
+        output_data = [message.record.data for message in _run_read(manifest, _stream_name) if message.record]
+        assert output_data == expected_records
+        mock_retriever.assert_has_calls(expected_calls)
+
+
+def test_only_parent_streams_use_cache():
+    applications_stream = {
+        "type": "DeclarativeStream",
+        "$parameters": {"name": "applications", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+        "schema_loader": {
+            "name": "{{ parameters.stream_name }}",
+            "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+        },
+        "retriever": {
+            "paginator": {
+                "type": "DefaultPaginator",
+                "page_size": 10,
+                "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                "page_token_option": {"type": "RequestPath"},
+                "pagination_strategy": {
+                    "type": "CursorPagination",
+                    "cursor_value": "{{ headers['link']['next']['url'] }}",
+                    "stop_condition": "{{ 'next' not in headers['link'] }}",
+                    "page_size": 100,
+                },
+            },
+            "requester": {
+                "path": "applications",
+                "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+            },
+            "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+        },
+    }
+
+    manifest = {
+        "version": "0.29.3",
+        "definitions": {},
+        "streams": [
+            deepcopy(applications_stream),
+            {
+                "type": "DeclarativeStream",
+                "$parameters": {"name": "applications_interviews", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {
+                            "type": "CursorPagination",
+                            "cursor_value": "{{ headers['link']['next']['url'] }}",
+                            "stop_condition": "{{ 'next' not in headers['link'] }}",
+                            "page_size": 100,
+                        },
+                    },
+                    "requester": {
+                        "path": "applications_interviews",
+                        "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+                    },
+                    "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+                    "partition_router": {
+                        "parent_stream_configs": [
+                            {"parent_key": "id", "partition_field": "parent_id", "stream": deepcopy(applications_stream)}
+                        ],
+                        "type": "SubstreamPartitionRouter",
+                    },
+                },
+            },
+            {
+                "type": "DeclarativeStream",
+                "$parameters": {"name": "jobs", "primary_key": "id", "url_base": "https://harvest.greenhouse.io/v1/"},
+                "schema_loader": {
+                    "name": "{{ parameters.stream_name }}",
+                    "file_path": "./source_sendgrid/schemas/{{ parameters.name }}.yaml",
+                },
+                "retriever": {
+                    "paginator": {
+                        "type": "DefaultPaginator",
+                        "page_size": 10,
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "per_page"},
+                        "page_token_option": {"type": "RequestPath"},
+                        "pagination_strategy": {
+                            "type": "CursorPagination",
+                            "cursor_value": "{{ headers['link']['next']['url'] }}",
+                            "stop_condition": "{{ 'next' not in headers['link'] }}",
+                            "page_size": 100,
+                        },
+                    },
+                    "requester": {
+                        "path": "jobs",
+                        "authenticator": {"type": "BasicHttpAuthenticator", "username": "{{ config['api_key'] }}"},
+                    },
+                    "record_selector": {"extractor": {"type": "DpathExtractor", "field_path": []}},
+                },
+            },
+        ],
+        "check": {"type": "CheckStream", "stream_names": ["applications"]},
+    }
+    source = ManifestDeclarativeSource(source_config=manifest)
+
+    streams = source.streams({})
+    assert len(streams) == 3
+
+    # Main stream with caching (parent for substream `applications_interviews`)
+    assert streams[0].name == "applications"
+    assert streams[0].retriever.requester.use_cache
+
+    # Substream
+    assert streams[1].name == "applications_interviews"
+    assert not streams[1].retriever.requester.use_cache
+
+    # Parent stream created for substream
+    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.name == "applications"
+    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.retriever.requester.use_cache
+
+    # Main stream without caching
+    assert streams[2].name == "jobs"
+    assert not streams[2].retriever.requester.use_cache
+
+
+def _run_read(manifest: Mapping[str, Any], stream_name: str) -> List[AirbyteMessage]:
+    source = ManifestDeclarativeSource(source_config=manifest)
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
+    return list(source.read(logger, {}, catalog, {}))
+
+
+def test_declarative_component_schema_valid_ref_links():
+    def load_yaml(file_path) -> Mapping[str, Any]:
+        with open(file_path, 'r') as file:
+            return yaml.safe_load(file)
+
+    def extract_refs(data, base_path='#') -> List[str]:
+        refs = []
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key == '$ref' and isinstance(value, str) and value.startswith('#'):
+                    ref_path = value
+                    refs.append(ref_path)
+                else:
+                    refs.extend(extract_refs(value, base_path))
+        elif isinstance(data, list):
+            for item in data:
+                refs.extend(extract_refs(item, base_path))
+        return refs
+
+    def resolve_pointer(data: Mapping[str, Any], pointer: str) -> bool:
+        parts = pointer.split('/')[1:]  # Skip the first empty part due to leading '#/'
+        current = data
+        try:
+            for part in parts:
+                part = part.replace('~1', '/').replace('~0', '~')  # Unescape JSON Pointer
+                current = current[part]
+            return True
+        except (KeyError, TypeError):
+            return False
+
+    def validate_refs(yaml_file: str) -> List[str]:
+        data = load_yaml(yaml_file)
+        refs = extract_refs(data)
+        invalid_refs = [ref for ref in refs if not resolve_pointer(data, ref.replace('#', ''))]
+        return invalid_refs
+
+    yaml_file_path = Path(__file__).resolve().parent.parent.parent.parent / 'airbyte_cdk/sources/declarative/declarative_component_schema.yaml'
+    assert not validate_refs(yaml_file_path)

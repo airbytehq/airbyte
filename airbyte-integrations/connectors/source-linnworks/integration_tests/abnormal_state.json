@@ -1,8 +1,16 @@
-{
-  "processed_orders": {
-    "dProcessedOn": "2050-01-01T00:00:00+00:00"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "dProcessedOn": "2050-01-01T00:00:00+00:00" },
+      "stream_descriptor": { "name": "processed_orders" }
+    }
   },
-  "processed_order_details": {
-    "ProcessedDateTime": "2050-01-01T00:00:00+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "ProcessedDateTime": "2050-01-01T00:00:00+00:00" },
+      "stream_descriptor": { "name": "processed_order_details" }
+    }
   }
-}
+]

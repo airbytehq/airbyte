@@ -3,78 +3,108 @@
   "type": "object",
   "properties": {
     "funnel_id": {
+      "description": "Unique identifier for the funnel.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the funnel.",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "Date field for the funnel data.",
       "type": ["null", "string"],
       "format": "date"
     },
     "datetime": {
+      "description": "Date and time field for the funnel data.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "steps": {
+      "description": "List of steps involved in the funnel.",
       "type": ["null", "array"],
       "items": {
+        "description": "Properties of each step in the funnel.",
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "count": {
+            "description": "Count of users in this step.",
+            "type": ["null", "integer"]
+          },
+          "custom_event": {
+            "description": "Custom event associated with the step.",
+            "type": ["null", "boolean"]
+          },
+          "custom_event_id": {
+            "description": "Unique identifier for the custom event.",
             "type": ["null", "integer"]
           },
           "avg_time": {
+            "description": "Average time taken in the step.",
             "type": ["null", "number"],
             "multipleOf": 1e-20
           },
           "avg_time_from_start": {
+            "description": "Average time taken from the start to this step.",
             "type": ["null", "number"],
             "multipleOf": 1e-20
           },
           "goal": {
+            "description": "Goal set for the step.",
             "type": ["null", "string"]
           },
           "overall_conv_ratio": {
+            "description": "Overall conversion ratio for the step.",
             "type": ["null", "number"],
             "multipleOf": 1e-20
           },
           "step_conv_ratio": {
+            "description": "Conversion ratio for the step.",
             "type": ["null", "number"],
             "multipleOf": 1e-20
           },
           "event": {
+            "description": "Event triggered in this step.",
             "type": ["null", "string"]
           },
           "session_event": {
+            "description": "Session event recorded for the step.",
             "type": ["null", "string"]
           },
           "step_label": {
+            "description": "Label for the step.",
             "type": ["null", "string"]
           },
           "selector": {
+            "description": "Selector for the step.",
             "type": ["null", "string"]
           },
           "selector_params": {
+            "description": "Parameters for the selector used.",
             "type": ["null", "object"],
             "additionalProperties": true,
             "properties": {
               "step_label": {
+                "description": "Label for the step selector.",
                 "type": ["null", "string"]
               }
             }
           },
           "time_buckets_from_start": {
+            "description": "Time buckets measured from the start.",
             "type": ["null", "object"],
             "properties": {
               "lower": {
+                "description": "Lower range boundary for time buckets.",
                 "type": ["null", "integer"]
               },
               "higher": {
+                "description": "Higher range boundary for time buckets.",
                 "type": ["null", "integer"]
               },
               "buckets": {
+                "description": "Buckets for time measurement from the start.",
                 "type": ["null", "array"],
                 "items": {
                   "type": "integer"
@@ -83,15 +113,19 @@
             }
           },
           "time_buckets_from_prev": {
+            "description": "Time buckets measured from the previous step.",
             "type": ["null", "object"],
             "properties": {
               "lower": {
+                "description": "Lower range boundary for time buckets.",
                 "type": ["null", "integer"]
               },
               "higher": {
+                "description": "Higher range boundary for time buckets.",
                 "type": ["null", "integer"]
               },
               "buckets": {
+                "description": "Buckets for time measurement from previous step.",
                 "type": ["null", "array"],
                 "items": {
                   "type": "integer"
@@ -103,18 +137,23 @@
       }
     },
     "analysis": {
+      "description": "Describes the analysis metrics for the funnel data.",
       "type": ["null", "object"],
       "properties": {
         "completion": {
+          "description": "Completion metric value.",
           "type": ["null", "integer"]
         },
         "starting_amount": {
+          "description": "Starting amount of users in the funnel.",
           "type": ["null", "integer"]
         },
         "steps": {
+          "description": "Total number of steps in the funnel.",
           "type": ["null", "integer"]
         },
         "worst": {
+          "description": "Worst performing step in the funnel.",
           "type": ["null", "integer"]
         }
       }

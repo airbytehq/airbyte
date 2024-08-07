@@ -1,0 +1,43 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 88ecd3a8-5f5b-11ed-9b6a-0242ac120002
+  dockerImageTag: 0.1.14
+  dockerRepository: airbyte/source-pypi
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pypi
+  githubIssueLabel: source-pypi
+  icon: pypi.svg
+  license: MIT
+  name: PyPI
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pypi
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pypi_config_dev_null
+          id: 23e31426-34f6-474d-9917-ad1e8631c8e2
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PYPI__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

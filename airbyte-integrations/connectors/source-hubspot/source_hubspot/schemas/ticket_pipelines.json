@@ -3,58 +3,85 @@
   "type": ["null", "object"],
   "properties": {
     "label": {
+      "description": "The label or name of the ticket pipeline.",
       "type": ["null", "string"]
     },
+    "displayOrder": {
+      "description": "The order in which the ticket pipeline is displayed.",
+      "type": ["null", "integer"]
+    },
     "id": {
+      "description": "The unique identifier of the ticket pipeline.",
       "type": ["null", "string"]
     },
     "archived": {
+      "description": "Indicates if the ticket pipeline is archived or not.",
       "type": ["null", "boolean"]
     },
     "stages": {
+      "description": "List of stages within the ticket pipeline.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "label": {
+            "description": "The label or name of the stage.",
             "type": ["null", "string"]
           },
           "displayOrder": {
+            "description": "The order in which the stage is displayed.",
             "type": ["null", "integer"]
           },
           "metadata": {
+            "description": "Additional metadata related to the stage.",
             "type": ["null", "object"],
             "properties": {
               "ticketState": {
+                "description": "The state of the ticket within this stage.",
                 "type": ["null", "string"]
               },
               "isClosed": {
+                "description": "Indicates if the stage is closed or not.",
                 "type": ["null", "string"]
               }
             }
           },
           "id": {
+            "description": "The unique identifier of the stage.",
             "type": ["null", "string"]
           },
           "createdAt": {
+            "description": "The date and time when the stage was created.",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "updatedAt": {
+            "description": "The date and time when the stage was last updated.",
             "type": ["null", "string"],
             "format": "date-time"
           },
           "active": {
+            "description": "Indicates if the stage is actively being used.",
             "type": ["null", "boolean"]
+          },
+          "archived": {
+            "description": "Indicates if the stage is archived or not.",
+            "type": ["null", "boolean"]
+          },
+          "writePermissions": {
+            "description": "Permissions for writing/modifying the stage.",
+            "type": ["null", "string"]
           }
         }
       }
     },
     "createdAt": {
+      "description": "The date and time when the ticket pipeline was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "The date and time when the ticket pipeline was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     }

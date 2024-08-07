@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class UnexpectedFieldBehaviorEnum(str, Enum):
@@ -38,9 +38,9 @@ class JsonlFormat(BaseModel):
         examples=["ignore", "infer", "error"],
         order=1,
     )
-
+    # Block size set to 0 as default value to disable this feature for most not-experienced users
     block_size: int = Field(
-        default=10000,
+        default=0,
         description="The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
         order=2,
     )

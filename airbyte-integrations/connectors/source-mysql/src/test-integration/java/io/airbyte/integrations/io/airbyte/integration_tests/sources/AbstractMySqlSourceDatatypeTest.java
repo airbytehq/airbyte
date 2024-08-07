@@ -1,51 +1,46 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mysql.cj.MysqlType;
-import io.airbyte.db.Database;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
 
 public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractMySqlSourceDatatypeTest.class);
 
-  protected MySQLContainer<?> container;
-  protected JsonNode config;
+  protected MySQLTestDatabase testdb;
 
   @Override
-  protected JsonNode getConfig() {
-    return config;
+  protected String getNameSpace() {
+    return testdb.getDatabaseName();
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    testdb.close();
   }
 
   @Override
   protected String getImageName() {
     return "airbyte/source-mysql:dev";
-  }
-
-  @Override
-  protected abstract Database setupDatabase() throws Exception;
-
-  @Override
-  protected String getNameSpace() {
-    return container.getDatabaseName();
   }
 
   @Override
@@ -235,10 +230,10 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .fullSourceDataType("decimal(19,2)")
-            .addInsertValues("1700000.01")
-            .addExpectedValues("1700000.01")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("decimal(32,0)")
+            .addInsertValues("1700000.01", "123")
+            .addExpectedValues("1700000", "123")
             .build());
 
     for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
@@ -247,8 +242,8 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .sourceType("date")
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
-              .addInsertValues("'1999-01-08'", "'2021-01-01'")
-              .addExpectedValues("1999-01-08", "2021-01-01")
+              .addInsertValues("'1999-01-08'", "'2021-01-01'", "'2022/11/12'", "'1987.12.01'")
+              .addExpectedValues("1999-01-08", "2021-01-01", "2022-11-12", "1987-12-01")
               .build());
     }
 
@@ -260,6 +255,14 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues((String) null)
             .build());
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date")
+            .airbyteType(JsonSchemaType.STRING_DATE)
+            .addInsertValues("0000-00-00")
+            .addExpectedValues((String) null)
+            .build());
+
     for (final String fullSourceType : Set.of("datetime", "datetime not null default now()")) {
       addDataTypeTestData(
           TestDataHolder.builder()
@@ -267,7 +270,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .addInsertValues("'2005-10-10 23:22:21'", "'2013-09-05T10:10:02'", "'2013-09-06T10:10:02'")
-              .addExpectedValues("2005-10-10T23:22:21.000000", "2013-09-05T10:10:02.000000", "2013-09-06T10:10:02.000000")
+              .addExpectedValues("2005-10-10T23:22:21", "2013-09-05T10:10:02", "2013-09-06T10:10:02")
               .build());
     }
 
@@ -289,7 +292,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
               .addInsertValues("'-22:59:59'", "'23:59:59'", "'00:00:00'")
-              .addExpectedValues("22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
+              .addExpectedValues("22:59:59", "23:59:59", "00:00:00.000000")
               .build());
 
     }
@@ -306,11 +309,11 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("year")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.INTEGER)
             // MySQL converts values in the ranges '0' - '69' to YEAR value in the range 2000 - 2069
             // and '70' - '99' to 1970 - 1999.
-            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'")
-            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999")
+            .addInsertValues("null", "'1997'", "'0'", "'50'", "'70'", "'80'", "'99'", "'00'", "'000'")
+            .addExpectedValues(null, "1997", "2000", "2050", "1970", "1980", "1999", "2000", "2000")
             .build());
 
     // char types can be string or binary, so they are tested separately
@@ -442,6 +445,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
 
+    addDecimalValuesTest();
   }
 
   protected void addJsonDataTypeTest() {
@@ -476,11 +480,22 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
   private String getFileDataInBase64() {
     final File file = new File(getClass().getClassLoader().getResource("test.png").getFile());
     try {
-      return Base64.encodeBase64String(FileUtils.readFileToByteArray(file));
+      return Base64.getEncoder().encodeToString(FileUtils.readFileToByteArray(file));
     } catch (final IOException e) {
       LOGGER.error(String.format("Fail to read the file: %s. Error: %s", file.getAbsoluteFile(), e.getMessage()));
     }
     return null;
+  }
+
+  protected void addDecimalValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.01", "'123'")
+            .addExpectedValues("1700000.01", "123.0")
+            .build());
   }
 
 }

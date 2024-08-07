@@ -1,0 +1,66 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
+  dockerImageTag: 2.4.14
+  dockerRepository: airbyte/source-google-analytics-data-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
+  githubIssueLabel: source-google-analytics-data-api
+  icon: google-analytics.svg
+  license: Elv2
+  maxSecondsBetweenMessages: 86400
+  name: Google Analytics 4 (GA4)
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-google-analytics-data-api
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: Version 2.0.0 introduces changes to stream names for those syncing more than one Google Analytics 4 property. It allows streams from all properties to sync successfully. Please upgrade the connector to enable this additional functionality.
+        upgradeDeadline: "2023-10-16"
+  suggestedStreams:
+    streams:
+      - website_overview
+      - daily_active_users
+      - traffic_sources
+      - pages
+      - weekly_active_users
+      - devices
+      - locations
+      - four_weekly_active_users
+      - sessions
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-analytics-data-api_config_dev_null
+          id: 6cee88ef-3893-4498-9812-8b80dbfcab0e
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GOOGLE-ANALYTICS-DATA-API__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

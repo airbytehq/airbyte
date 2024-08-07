@@ -6,8 +6,8 @@ The source connector fetches data from [Auth0 Management API](https://auth0.com/
 
 ## Prerequisites
 
-* You own an Auth0 account, free or paid.
-* Follow the [Setup guide](#setup-guide) to authorize Airbyte to read data from your account.
+- You own an Auth0 account, free or paid.
+- Follow the [Setup guide](#setup-guide) to authorize Airbyte to read data from your account.
 
 ## Setup guide
 
@@ -30,18 +30,24 @@ The source connector fetches data from [Auth0 Management API](https://auth0.com/
 2. In Auth0, go to [Dashboard > Applications > Applications](https://manage.auth0.com/?#/applications).
 3. Create a new application, name it **Airbyte**. Choose the application type **Machine to Machine Applications**
 4. Select the Management API V2, this is the api you want call from Airbyte.
-5. Each M2M app that accesses an API must be granted a set of permissions (or scopes). Here, we only need permissions starting with `read` (e.g. *read:users*). Under the [API doc](https://auth0.com/docs/api/management/v2#!/Users/get_users), each api will list the required scopes.
+5. Each M2M app that accesses an API must be granted a set of permissions (or scopes). Here, we only need permissions starting with `read` (e.g. _read:users_). Under the [API doc](https://auth0.com/docs/api/management/v2#!/Users/get_users), each api will list the required scopes.
 6. More details can be found from [this documentation](https://auth0.com/docs/secure/tokens/access-tokens/get-management-api-access-tokens-for-production).
 
 ## Supported sync modes
 
 The Auth0 source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh
- - Incremental
+
+- Full Refresh
+- Incremental
 
 ## Supported Streams
 
+- [Clients](https://auth0.com/docs/api/management/v2#!/Clients/get_clients)
+- [Organizations](https://auth0.com/docs/api/management/v2#!/Organizations/get_organizations)
+- [OrganizationMembers](https://auth0.com/docs/api/management/v2#!/Organizations/get_members)
+- [OrganizationMemberRoles](https://auth0.com/docs/api/management/v2#!/Organizations/get_organization_member_roles)
 - [Users](https://auth0.com/docs/api/management/v2#!/Users/get_users)
+- [Clients](https://auth0.com/docs/api/management/v2/clients/get-clients)
 
 ## Performance considerations
 
@@ -49,6 +55,28 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.1.0  | 2022-10-21 | TBD | Add Auth0 and Users stream |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                 |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| 0.5.13 | 2024-08-03 | [43250](https://github.com/airbytehq/airbyte/pull/43250) | Update dependencies |
+| 0.5.12 | 2024-07-27 | [42794](https://github.com/airbytehq/airbyte/pull/42794) | Update dependencies |
+| 0.5.11 | 2024-07-20 | [42171](https://github.com/airbytehq/airbyte/pull/42171) | Update dependencies |
+| 0.5.10 | 2024-07-13 | [41899](https://github.com/airbytehq/airbyte/pull/41899) | Update dependencies |
+| 0.5.9 | 2024-07-10 | [41417](https://github.com/airbytehq/airbyte/pull/41417) | Update dependencies |
+| 0.5.8 | 2024-07-09 | [41320](https://github.com/airbytehq/airbyte/pull/41320) | Update dependencies |
+| 0.5.7 | 2024-07-06 | [40840](https://github.com/airbytehq/airbyte/pull/40840) | Update dependencies |
+| 0.5.6 | 2024-06-25 | [40344](https://github.com/airbytehq/airbyte/pull/40344) | Update dependencies |
+| 0.5.5 | 2024-06-21 | [39933](https://github.com/airbytehq/airbyte/pull/39933) | Update dependencies |
+| 0.5.4 | 2024-06-06 | [39194](https://github.com/airbytehq/airbyte/pull/39194) | [autopull] Upgrade base image to v1.2.2 |
+| 0.5.2 | 2024-05-02 | [37770](https://github.com/airbytehq/airbyte/pull/37770) | Add Selective Authenticator. Migrate to poetry |
+| 0.5.1 | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0 |
+| 0.5.0 | 2023-10-11 | [30467](https://github.com/airbytehq/airbyte/pull/30467) | Use Python base image |
+| 0.4.1 | 2023-08-24 | [29804](https://github.com/airbytehq/airbyte/pull/29804) | Fix low code migration bugs |
+| 0.4.0 | 2023-08-03 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Migrate to Low-Code CDK |
+| 0.3.0 | 2023-06-20 | [29001](https://github.com/airbytehq/airbyte/pull/29001) | Add Organizations, OrganizationMembers, OrganizationMemberRoles streams |
+| 0.2.0 | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream |
+| 0.1.0 | 2022-10-21 | [18338](https://github.com/airbytehq/airbyte/pull/18338) | Add Auth0 and Users stream |
+
+</details>

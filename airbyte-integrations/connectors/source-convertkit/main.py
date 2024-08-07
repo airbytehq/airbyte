@@ -1,13 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_convertkit import SourceConvertkit
+from source_convertkit.run import run
 
 if __name__ == "__main__":
-    source = SourceConvertkit()
-    launch(source, sys.argv[1:])
+    run()

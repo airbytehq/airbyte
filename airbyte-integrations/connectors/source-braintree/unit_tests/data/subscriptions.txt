@@ -1,5 +1,0 @@
-<search-results>
-    <page-size type="integer">50</page-size>
-    <ids type="array">
-  </ids>
-</search-results>

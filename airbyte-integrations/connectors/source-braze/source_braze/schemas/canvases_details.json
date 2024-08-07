@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "updated_at": { "type": ["null", "string"], "format": "date-time" },
+    "name": { "type": ["null", "string"] },
+    "description": { "type": ["null", "string"] },
+    "archived": { "type": ["null", "boolean"] },
+    "draft": { "type": ["null", "boolean"] },
+    "schedule_type": { "type": ["null", "string"] },
+    "first_entry": { "type": ["null", "string"], "format": "date-time" },
+    "last_entry": { "type": ["null", "string"], "format": "date-time" },
+    "message": { "type": "string" },
+    "canvas_id": {
+      "type": ["null", "string"]
+    },
+    "channels": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "steps": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {}
+      }
+    },
+    "variants": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {}
+      }
+    },
+    "enabled": {
+      "type": ["null", "boolean"]
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

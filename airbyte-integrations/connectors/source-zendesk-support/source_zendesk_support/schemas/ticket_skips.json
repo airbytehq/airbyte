@@ -1,0 +1,35 @@
+{
+  "properties": {
+    "created_at": {
+      "description": "The timestamp when the ticket skip entry was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "description": "Unique identifier for the ticket skip entry",
+      "type": ["null", "integer"]
+    },
+    "reason": {
+      "description": "The reason for skipping the ticket",
+      "type": ["null", "string"]
+    },
+    "ticket_id": {
+      "description": "The unique identifier of the skipped ticket",
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "description": "The timestamp when the ticket skip entry was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "user_id": {
+      "description": "The unique identifier of the user who skipped the ticket",
+      "type": ["null", "integer"]
+    },
+    "ticket": {
+      "description": "Information related to the skipped ticket",
+      "$ref": "tickets.json"
+    }
+  },
+  "type": ["null", "object"]
+}

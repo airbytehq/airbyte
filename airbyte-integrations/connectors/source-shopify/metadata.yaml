@@ -1,0 +1,150 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - ${shop}.myshopify.com
+      - shopify.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
+  dockerImageTag: 2.4.18
+  dockerRepository: airbyte/source-shopify
+  documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
+  githubIssueLabel: source-shopify
+  icon: shopify.svg
+  license: ELv2
+  maxSecondsBetweenMessages: 21600
+  name: Shopify
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-shopify
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."
+        upgradeDeadline: "2023-09-17"
+      2.0.0:
+        message: "This upgrade brings perfomance impovements and stream schema changes. Details are available here: https://github.com/airbytehq/airbyte/pull/32345#issue-1985556333."
+        upgradeDeadline: "2024-03-18"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "collections",
+                "customer_address",
+                "discount_codes",
+                "fulfillment_orders",
+                "fulfillments",
+                "inventory_items",
+                "inventory_levels",
+                "metafield_collections",
+                "metafield_customers",
+                "metafield_draft_orders",
+                "metafield_locations",
+                "metafield_orders",
+                "metafield_product_images",
+                "metafield_product_variants",
+                "order_refunds",
+                "product_images",
+                "product_variants",
+                "transactions",
+              ]
+      2.1.0:
+        message:
+          "This upgrade changes the `Products`, `Product Images` and `Product Variants` streams to use `Shopify GraphQL BULK`.
+          More details here: https://github.com/airbytehq/airbyte/pull/37767."
+        upgradeDeadline: "2024-06-10"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["product_variants"]
+      2.2.0:
+        message: "The countries object from the admin REST API now always return a number"
+        upgradeDeadline: "2024-06-11"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["countries"]
+  suggestedStreams:
+    streams:
+      - customers
+      - customer_journey_summary
+      - order_agreements
+      - order_refunds
+      - transactions_graphql
+      - product_variants
+      - abandoned_checkouts
+      - discount_codes
+      - inventory_items
+      - locations
+      - shop
+      - price_rules
+      - inventory_levels
+      - custom_collections
+      - fulfillments
+      - products_graph_ql
+      - product_images
+      - collects
+      - tender_transactions
+      - smart_collections
+      - draft_orders
+      - metafield_customers
+      - metafield_products
+      - metafield_orders
+      - customer_address
+      - fulfillment_orders
+      - metafield_shops
+      - countries
+      - metafield_product_variants
+      - metafield_smart_collections
+      - metafield_product_images
+      - metafield_draft_orders
+      - metafield_locations
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: shopify_config_dev_null
+          id: 1de7c985-bcce-425a-a762-57389cea3900
+        - name: shopify_config_old_dev_null
+          id: 1f3550b3-740a-4841-8337-0e28a7b23458
+        - name: shopify_config_transactions_with_user_id_dev_null
+          id: 5f1d6da1-87bc-46b4-8de7-1b3fe1a2be90
+        - name: shopify_config_oauth_dev_null
+          id: a08529a9-618c-4bfc-884f-f5dccba1c1ab
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SHOPIFY-TRANSACTIONS-WITH-USER-ID__CREDS
+          fileName: config_transactions_with_user_id.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SHOPIFY_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SHOPIFY_OLD_CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SHOPIFY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

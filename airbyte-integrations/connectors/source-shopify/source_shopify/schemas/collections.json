@@ -3,44 +3,57 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the collection.",
       "type": ["null", "integer"]
     },
     "handle": {
+      "description": "A unique URL-friendly string that represents the collection.",
       "type": ["null", "string"]
     },
     "title": {
+      "description": "The title or name of the collection.",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The datetime when the collection was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "body_html": {
+      "description": "The HTML content describing the collection.",
       "type": ["null", "string"]
     },
     "published_at": {
+      "description": "The datetime when the collection was published.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "sort_order": {
+      "description": "The order in which the collection should be sorted.",
       "type": ["null", "string"]
     },
     "template_suffix": {
+      "description": "The name of the template that is used to render the collection.",
       "type": ["null", "string"]
     },
     "products_count": {
+      "description": "The number of products within the collection.",
       "type": ["null", "integer"]
     },
     "collection_type": {
+      "description": "The type or category of the collection.",
       "type": ["null", "string"]
     },
     "published_scope": {
+      "description": "The visibility of the collection to customers.",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "The unique identifier for the collection in the Admin GraphQL API.",
       "type": ["null", "string"]
     },
     "shop_url": {
+      "description": "The URL of the shop where the collection belongs.",
       "type": ["null", "string"]
     }
   }

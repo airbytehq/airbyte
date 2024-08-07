@@ -1,0 +1,140 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "account_performance_report" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "click_view" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "geographic_view" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "keyword_view" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "topic_view" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "shopping_performance_view" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "ad_group_ad" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "ad_group" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "customer" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "campaign" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "user_location_view" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "ad_group_ad_legacy" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "display_keyword_view" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "campaign_budget" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "campaign_bidding_strategy" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "4651612872": { "segments.date": "2222-01-01" } },
+      "stream_descriptor": { "name": "ad_group_bidding_strategy" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "change_status": {
+          "4651612872": {
+            "change_status.last_change_date_time": "2024-08-16 13:20:01.003295"
+          }
+        }
+      },
+      "stream_descriptor": { "name": "ad_group_criterion" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "change_status": {
+          "4651612872": {
+            "change_status.last_change_date_time": "2024-08-16 13:20:01.003295"
+          }
+        }
+      },
+      "stream_descriptor": { "name": "campaign_criterion" }
+    }
+  }
+]

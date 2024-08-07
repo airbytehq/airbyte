@@ -1,38 +1,53 @@
+import org.jsonschema2pojo.SourceType
+
 plugins {
-    id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-performance-test-java'
-    id 'airbyte-source-acceptance-test'
+    id 'airbyte-java-connector'
+    id "org.jsonschema2pojo" version "1.2.1"
+}
+
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes,-unchecked"
+    }
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.44.2'
+    features = ['db-sources', 'datastore-postgres']
+    useLocalCdk = false
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
+    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium-v1-9-6')
-    implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
+    implementation 'commons-codec:commons-codec:1.16.0'
+    implementation 'io.debezium:debezium-embedded:2.6.2.Final'
+    implementation 'io.debezium:debezium-connector-postgres:2.6.2.Final'
 
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation libs.postgresql
+    testFixturesApi 'org.testcontainers:postgresql:1.19.0'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation project(":airbyte-json-validation")
-    testImplementation project(':airbyte-test-utils')
-    testImplementation libs.connectors.testcontainers.jdbc
-    testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+}
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+jsonSchema2Pojo {
+    sourceType = SourceType.YAMLSCHEMA
+    source = files("${sourceSets.main.output.resourcesDir}/internal_models")
+    targetDirectory = new File(project.buildDir, 'generated/src/gen/java/')
+    removeOldOutput = true
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    targetPackage = 'io.airbyte.integrations.source.postgres.internal.models'
+
+    useLongIntegers = true
+    generateBuilders = true
+    includeConstructors = false
+    includeSetters = true
+}
+
+compileKotlin {
+    dependsOn {
+        generateJsonSchema2Pojo
+    }
 }

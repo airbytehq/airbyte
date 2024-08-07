@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -103,6 +103,9 @@
         },
         "type": "object"
       },
+      "type": ["array", "null"]
+    },
+    "life_cycle": {
       "type": ["array", "null"]
     }
   }

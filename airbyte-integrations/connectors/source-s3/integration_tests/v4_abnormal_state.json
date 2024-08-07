@@ -1,0 +1,18 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "history": {
+          "simple_test.csv": "2021-07-25T15:33:04.000000Z",
+          "simple_test_2.csv": "2021-12-20T12:35:05.000000Z",
+          "redshift_result.csv": "2022-05-26T09:17:47.000000Z",
+          "redshift_result_3.csv": "2022-05-26T09:55:15.000000Z",
+          "redshift_result_2.csv": "2022-05-26T09:55:16.000000Z"
+        },
+        "_ab_source_file_last_modified": "2999-01-01T00:00:00.000000Z_redshift_result_2.csv"
+      },
+      "stream_descriptor": { "name": "test" }
+    }
+  }
+]

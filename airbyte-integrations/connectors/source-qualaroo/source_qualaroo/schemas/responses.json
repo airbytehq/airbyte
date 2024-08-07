@@ -15,6 +15,9 @@
     "identity": {
       "type": ["null", "string"]
     },
+    "location": {
+      "type": ["null", "string"]
+    },
     "page": {
       "type": ["null", "string"]
     },

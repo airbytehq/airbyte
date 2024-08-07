@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -81,7 +82,10 @@
       "type": ["null", "string"]
     },
     "billingAddressIds": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "isEmailVerified": {
       "type": ["null", "boolean"]
@@ -96,6 +100,15 @@
       "$ref": "custom.json"
     },
     "locale": {
+      "type": ["null", "string"]
+    },
+    "authenticationMode": {
+      "type": ["null", "string"]
+    },
+    "lastMessageSequenceNumber": {
+      "type": ["null", "integer"]
+    },
+    "versionModifiedAt": {
       "type": ["null", "string"]
     }
   }

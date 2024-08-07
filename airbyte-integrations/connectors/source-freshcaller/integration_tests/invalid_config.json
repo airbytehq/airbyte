@@ -1,5 +1,5 @@
 {
   "api_key": "incorrect_key",
   "start_date": "2021-08-02T00:00:00Z",
-  "domain": "incorrect_domain"
+  "domain": "incorrect-domain"
 }

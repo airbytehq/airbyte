@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -27,4 +27,4 @@ def test_coerce_catalog_as_full_refresh():
         ]
     )
 
-    assert expected == CatalogHelper.coerce_catalog_as_full_refresh(input)
+    assert CatalogHelper.coerce_catalog_as_full_refresh(input) == expected

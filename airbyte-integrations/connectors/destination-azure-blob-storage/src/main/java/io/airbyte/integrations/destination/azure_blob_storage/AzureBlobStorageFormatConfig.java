@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.azure_blob_storage;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public interface AzureBlobStorageFormatConfig {
+
+  boolean isFileExtensionRequired();
 
   AzureBlobStorageFormat getFormat();
 

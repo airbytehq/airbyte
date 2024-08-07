@@ -3,67 +3,86 @@
   "type": ["null", "object"],
   "properties": {
     "label": {
+      "description": "The label or name of the deal pipeline.",
       "type": ["null", "string"]
     },
     "displayOrder": {
+      "description": "The ordering of the deal pipeline for display.",
       "type": ["null", "integer"]
     },
     "active": {
+      "description": "Indicates if the deal pipeline is currently active or not.",
       "type": ["null", "boolean"]
     },
     "stages": {
+      "description": "List of deal stages within the pipeline.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
           "label": {
+            "description": "The label or name of the deal stage.",
             "type": ["null", "string"]
           },
           "displayOrder": {
+            "description": "The ordering of the deal stage for display within the pipeline.",
             "type": ["null", "integer"]
           },
           "metadata": {
+            "description": "Additional information related to the deal stage.",
             "type": ["null", "object"],
             "properties": {
               "isClosed": {
+                "description": "Indicates if the deal stage is considered closed or not.",
                 "type": ["null", "string"]
               },
               "probability": {
+                "description": "The probability of closing a deal at this stage.",
                 "type": ["null", "string"]
               }
             }
           },
           "stageId": {
+            "description": "The unique identifier of the deal stage.",
             "type": ["null", "string"]
           },
           "createdAt": {
+            "description": "Timestamp for the creation date of the deal stage.",
             "type": ["null", "integer"]
           },
           "updatedAt": {
+            "description": "Timestamp for the last update to the deal stage.",
             "type": ["null", "integer"]
           },
           "active": {
+            "description": "Indicates if the deal stage is currently active or not.",
             "type": ["null", "boolean"]
           }
         }
       }
     },
     "objectType": {
+      "description": "The type of object this deal pipeline is associated with.",
       "type": ["null", "string"]
     },
     "objectTypeId": {
+      "description": "The ID of the object type this deal pipeline is associated with.",
       "type": ["null", "string"]
     },
     "pipelineId": {
+      "description": "The unique identifier of the deal pipeline.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Timestamp for the creation date of the deal pipeline.",
       "type": ["null", "integer"]
     },
     "updatedAt": {
+      "description": "Timestamp for the last update to the deal pipeline.",
       "type": ["null", "integer"]
     },
     "default": {
+      "description": "Indicates if this pipeline is the default one in the system.",
       "type": ["null", "boolean"]
     }
   }

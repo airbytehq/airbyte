@@ -1,84 +1,92 @@
 {
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
+    "user_created_at": {
+      "type": ["null", "string"]
+    },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom_attributes": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "key": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "value": {
-            "type": "string"
+            "type": ["null", "string"]
           }
-        },
-        "required": []
+        }
       }
     },
     "dept": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "employee_unique_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "first_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "group_ids": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       }
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "im_group_ids": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       }
     },
+    "language": {
+      "type": ["null", "string"]
+    },
     "last_client_version": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "last_login_time": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "last_name": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "phone_number": {
+      "type": ["null", "string"]
     },
     "plan_united_type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "pmi": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "role_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "timezone": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "number"
+      "type": ["null", "number"]
     },
     "verified": {
-      "type": "number"
-    }
-  },
-  "required": []
+      "type": ["null", "number"]
+    },
+    "display_name": { "type": ["null", "string"] }
+  }
 }

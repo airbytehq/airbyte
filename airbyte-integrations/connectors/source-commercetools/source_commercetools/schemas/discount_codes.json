@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -65,6 +66,28 @@
     },
     "custom": {
       "$ref": "custom.json"
+    },
+    "applicationVersion": {
+      "type": ["null", "integer"]
+    },
+    "attributeTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "cartFieldTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "customLineItemFieldTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "lineItemFieldTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "versionModifiedAt": {
+      "type": ["null", "string"]
     }
   }
 }

@@ -1,0 +1,46 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
+  dockerImageTag: 0.1.12
+  dockerRepository: airbyte/source-secoda
+  githubIssueLabel: source-secoda
+  icon: secoda.svg
+  license: MIT
+  name: Secoda
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-secoda
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  # Disabling acceptanceTests for now
+  # They are not passing
+  # No Airbyte Cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: liveTests
+  #     testConnections:
+  #       - name: secoda_config_dev_null
+  #         id: 431ebdb2-24a3-4c09-a1f0-b841a5422eca
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-SECODA__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+metadataSpecVersion: "1.0"

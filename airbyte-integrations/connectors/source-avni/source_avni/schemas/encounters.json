@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "type": "string"
+    },
+    "External ID": {
+      "type": ["null", "string"]
+    },
+    "Voided": {
+      "type": "boolean"
+    },
+    "Encounter type": {
+      "type": ["null", "string"]
+    },
+    "Subject ID": {
+      "type": "string"
+    },
+    "Subject type": {
+      "type": "string"
+    },
+    "Subject external ID": {
+      "type": ["null", "string"]
+    },
+    "Encounter date time": {
+      "type": ["null", "string"],
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "Encounter location": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "X": {
+          "type": ["null", "number"]
+        },
+        "Y": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "Earliest scheduled date": {
+      "type": ["null", "string"],
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "Max scheduled date": {
+      "type": ["null", "string"],
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "observations": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "Cancel location": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "X": {
+          "type": ["null", "number"]
+        },
+        "Y": {
+          "type": ["null", "number"],
+          "example": 74.7364501
+        }
+      }
+    },
+    "Cancel date time": {
+      "type": ["null", "string"],
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "cancelObservations": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "last_modified_at": {
+      "type": "string",
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "audit": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "Created at": {
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Last modified at": {
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Created by": {
+          "type": ["null", "string"]
+        },
+        "Last modified by": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

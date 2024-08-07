@@ -1,0 +1,84 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 300
+  allowedHosts:
+    hosts:
+      - api.stripe.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
+  dockerImageTag: 5.4.12
+  dockerRepository: airbyte/source-stripe
+  documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
+  githubIssueLabel: source-stripe
+  icon: stripe.svg
+  license: ELv2
+  maxSecondsBetweenMessages: 1
+  name: Stripe
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-stripe
+  registries:
+    cloud:
+      enabled: true
+      dockerImageTag: 5.4.5
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      4.0.0:
+        message: Version 4.0.0 changes the cursors in most of the Stripe streams that support incremental sync mode. This is done to not only sync the data that was created since previous sync, but also the data that was modified. A schema refresh of all effected streams is required to use the new cursor format.
+        upgradeDeadline: "2023-09-14"
+      5.0.0:
+        message: Version 5.0.0 introduces fixes for the `CheckoutSessions`, `CheckoutSessionsLineItems` and `Refunds` streams. The cursor field is changed for the `CheckoutSessionsLineItems` and `Refunds` streams. This will prevent data loss during incremental syncs. Also, the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream schemas have been updated.
+        upgradeDeadline: "2023-12-11"
+      5.4.0:
+        message: Version 5.4.0 introduces fixes for the `Refunds` streams. The `Refunds`, which previously was `incremental` on the `creation date`, now tracks updates as well. In order to do that, the cursor field needs to be updated and a `resetting` is required to get the updates.
+        upgradeDeadline: "2024-07-14"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["refunds"]
+  suggestedStreams:
+    streams:
+      - customers
+      - invoices
+      - charges
+      - subscriptions
+      - refunds
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: stripe_config_dev_null
+          id: 0f3c8a84-53e2-4a33-89a9-26bf36a2367c
+        - name: stripe_performance-config_dev_null
+          id: 4f738e2c-a1d2-48b4-9b93-f56e2258068d
+        - name: stripe_connected_account_config_dev_null
+          id: 97d55640-b443-49c5-a9d9-aed28396841d
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-STRIPE_CONNECTED_ACCOUNT__CREDS
+          fileName: connected_account_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-STRIPE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-STRIPE__PERFORMANCE
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

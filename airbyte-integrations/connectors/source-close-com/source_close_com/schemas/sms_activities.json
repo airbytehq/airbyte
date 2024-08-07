@@ -1,7 +1,39 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "date_updated": {
+      "type": ["null", "string"]
+    },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "attachments": {
+      "type": ["null", "array"]
+    },
+    "date_scheduled": {
+      "type": ["null", "string"]
+    },
+    "error_message": {
+      "type": ["null", "string"]
+    },
+    "local_phone_formatted": {
+      "type": ["null", "string"]
+    },
+    "sequence_id": {
+      "type": ["null", "string"]
+    },
+    "sequence_name": {
+      "type": ["null", "string"]
+    },
+    "sequence_subscription_id": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "template_id": {
       "type": ["null", "string"]
     },
     "date_created": {

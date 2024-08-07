@@ -1,0 +1,43 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 21cc4a17-a011-4485-8a3e-e2341a91ab9f
+  dockerImageTag: 0.1.14
+  dockerRepository: airbyte/source-smartengage
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartengage
+  githubIssueLabel: source-smartengage
+  icon: smartengage.svg
+  license: MIT
+  name: SmartEngage
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-smartengage
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: smartengage_config_dev_null
+          id: 801ae179-411b-4d4a-aa33-816121360b38
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SMARTENGAGE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

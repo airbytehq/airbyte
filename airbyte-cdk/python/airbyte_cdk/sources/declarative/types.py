@@ -1,16 +1,18 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from __future__ import annotations
 
-from typing import Any, List, Mapping
+from airbyte_cdk.sources.types import Config, ConnectionDefinition, FieldPointer, Record, StreamSlice, StreamState
 
-Record = Mapping[str, Any]
-# A FieldPointer designates a path to a field inside a mapping. For example, retrieving ["k1", "k1.2"] in the object {"k1" :{"k1.2":
-# "hello"}] returns "hello"
-FieldPointer = List[str]
-Config = Mapping[str, Any]
-ConnectionDefinition = Mapping[str, Any]
-StreamSlice = Mapping[str, Any]
-StreamState = Mapping[str, Any]
+# Note: This package originally contained class definitions for low-code CDK types, but we promoted them into the Python CDK.
+# We've migrated connectors in the repository to reference the new location, but these assignments are used to retain backwards
+# compatibility for sources created by OSS customers or on forks. This can be removed when we start bumping major versions.
+
+FieldPointer = FieldPointer
+Config = Config
+ConnectionDefinition = ConnectionDefinition
+StreamState = StreamState
+Record = Record
+StreamSlice = StreamSlice

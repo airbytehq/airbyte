@@ -1,0 +1,33 @@
+{
+  "next": null,
+  "previous": null,
+  "onetimes": [
+    {
+      "id": 16909886,
+      "address_id": 45154492,
+      "created_at": "2024-01-01T00:00:00+00:00",
+      "customer_id": 40565990,
+      "external_product_id": {
+        "ecommerce": "4950280863846"
+      },
+      "external_variant_id": {
+        "ecommerce": "32139793137766"
+      },
+      "is_cancelled": false,
+      "next_charge_scheduled_at": "2025-02-01T00:00:00+00:00",
+      "price": "6.00",
+      "product_title": "ABC Shirt",
+      "properties": [
+        {
+          "name": "Color",
+          "value": "Blue"
+        }
+      ],
+      "quantity": 1,
+      "sku": "TOM0001",
+      "sku_override": false,
+      "updated_at": "2024-02-01T00:00:00+00:00",
+      "variant_title": "Blue star"
+    }
+  ]
+}

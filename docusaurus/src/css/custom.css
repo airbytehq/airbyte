@@ -4,7 +4,7 @@
  * work well for content-centric websites.
  */
 
- @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap");
 
 /* You can override the default Infima variables here. */
 :root {
@@ -17,24 +17,40 @@
   --ifm-color-primary-lightest: #c8c7ff;
   --ifm-code-font-size: 95%;
   --ifm-navbar-height: 82px;
-  --ifm-alert-border-color:  #615eff;
+  --ifm-alert-border-color: #615eff;
   --ifm-navbar-link-color: #615eff;
-  --ifm-font-family-base: 'Inter';
+  --ifm-font-family-base: "Inter";
   --ifm-alert-shadow: none;
   --ifm-menu-color: var(--ifm-color-emphasis-900);
   --ifm-hover-overlay: rgb(0 0 0 / 2%);
+  --color-active-nav-item-background: #f4f4ff;
+  --color-active-nav-item-text: var(--ifm-color-primary-darker);
+
+  --color-grey-40: hsl(240, 25%, 98%);
+  --color-grey-100: hsl(240, 12%, 92%);
+  --color-grey-400: hsl(240, 10%, 59%);
+  --color-grey-900: hsl(240, 19%, 18%);
+  --color-green-50: hsl(184, 67%, 92%);
+  --color-blue-30: hsl(240, 100%, 98%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-html[data-theme='dark'] {
-  --ifm-color-primary: #7976FF;
-  --ifm-navbar-link-color: #7976FF;
+html[data-theme="dark"] {
+  --ifm-color-primary: #7976ff;
+  --ifm-navbar-link-color: #7976ff;
   --ifm-color-primary-dark: #3f3bff;
   --ifm-color-primary-darker: #2e2aff;
   --ifm-color-primary-darkest: #0500f4;
   --ifm-color-primary-light: #8381ff;
   --ifm-color-primary-lighter: #9492ff;
   --ifm-color-primary-lightest: #c8c7ff;
+  --color-active-nav-item-background: #272729;
+  --color-active-nav-item-text: var(--ifm-color-primary-lighter);
+
+  --color-grey-40: hsl(240, 14%, 14%);
+  --color-grey-400: hsl(240, 13%, 72%);
+  --color-green-50: hsl(184, 100%, 12%);
+  --color-blue-30: hsl(252, 25%, 18%);
 }
 
 .docusaurus-highlight-code-line {
@@ -44,52 +60,161 @@ html[data-theme='dark'] {
   padding: 0 var(--ifm-pre-padding);
 }
 
-html[data-theme='dark'] .docusaurus-highlight-code-line {
+html[data-theme="dark"] .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
-.admonition-icon, .iconExternalLink_wgqa, .iconExternalLink_node_modules-\@docusaurus-theme-classic-lib-next-theme-IconExternalLink-styles-module {
+.admonition-icon,
+.iconExternalLink_wgqa,
+.iconExternalLink_node_modules-\@docusaurus-theme-classic-lib-next-theme-IconExternalLink-styles-module {
   display: none;
 }
 
-/* .navbar {
-  padding: 0 63px;
-} */
-
-.navbar__brand {
-  margin: 0 75px;
+.navbar__logo img {
+  /* Correct for visual imbalance in the logo */
+  transform: translateY(-2px);
 }
 
+.navbar__items--right {
+  gap: 4px;
+}
+
+.header-github-link:hover {
+  opacity: 0.6;
+}
+
+.header-github-link::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+[data-theme="dark"] .header-github-link::before {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='white' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+.navbar__item.header-button.navbar__link {
+  background: var(--ifm-color-primary);
+  color: white !important;
+  border-radius: 1.5em;
+}
+
+.navbar__item.header-button:hover {
+  background: var(--ifm-color-primary-dark);
+}
+
+.navbar .navbar__link {
+  color: var(--ifm-menu-color);
+  font-weight: var(--ifm-font-weight-normal);
+}
+
+.navbar .navbar__link:hover {
+  color: var(--ifm-color-primary-light);
+}
+
+/* Disable external link icons. */
+.navbar .navbar__link svg {
+  display: none;
+}
 
 .navbar__link--active {
-    cursor: pointer;
-    color: var(--ifm-navbar-link-color);
-    text-decoration: none;
+  cursor: pointer;
+  color: var(--ifm-navbar-link-color);
+  text-decoration: none;
 }
 
 .navbar__link:hover {
   cursor: pointer;
-    color: #3b38e2;
-    text-decoration: none;
+  color: #3b38e2;
+  text-decoration: none;
+}
+
+.navbar__category {
+  font-weight: 700;
+  font-size: 0.8em;
+  padding: 0.4em 0 0.4em 0.4em;
+  color: var(--docsearch-text-color);
+  background-color: var(--ifm-hover-overlay);
+}
+
+.navbar__category:not(:first-child) {
+  margin-top: 1.1em;
+}
+
+/* Hide the breadcrumbs if they have only the house as an entry (i.e. on the start page) */
+.breadcrumbs:has(li:first-child:last-child) {
+  display: none;
+}
+
+.cloudStatusLink {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+@media (max-width: 996px) {
+  .cloudStatusLink {
+    display: none;
+  }
+}
+
+.cloudStatusLink::before {
+  content: "";
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+  border-radius: 100%;
+  background: #d1d1d1;
+  transition: background 0.3s ease;
+}
+
+.navbar-sidebar .cloudStatusLink::before {
+  display: none;
+}
+
+.cloudStatusLink.status-up::before,
+.cloudStatusLink.status-undermaintenance::before {
+  background: #00b093;
+}
+
+.cloudStatusLink.status-hasissues::before {
+  background: #ed8936;
 }
 
 .codeBlockContainer_I0IT {
-    box-shadow: none !important;
+  box-shadow: none !important;
 }
 
 img {
-    max-width: 100%;
-    border-radius: 8px;
+  max-width: 100%;
+  border-radius: 8px;
 }
 
 .iconExternalLink_I5OW {
-    margin-left: 0.3rem;
-    display: none;
+  margin-left: 0.3rem;
+  display: none;
+}
+
+.menu__link {
+  font-weight: var(--ifm-font-weight-normal);
 }
 
 .menu__link--sublist-caret:after {
-    background: var(--ifm-menu-link-sublist-icon) 50%/1.5rem 1.5rem;
-    min-width: 1.25rem;
+  background: var(--ifm-menu-link-sublist-icon) 50%/2rem 2rem;
+  min-width: 1.25rem;
 }
 
+/* These properties set the color of the active item in the navbar (background and text).
+The variables for them have been added to :root at the top of this file */
 
+.menu__link--active,
+.menu__link--active:not(.menu__link--sublist),
+.menu__list-item-collapsible--active,
+.menu__list-item-collapsible--active:hover {
+  background: var(--color-active-nav-item-background);
+  color: var(--color-active-nav-item-text);
+}

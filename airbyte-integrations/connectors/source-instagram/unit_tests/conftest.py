@@ -1,12 +1,19 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+from typing import List
 
 from facebook_business import FacebookAdsApi, FacebookSession
 from pytest import fixture
 from source_instagram.api import InstagramAPI as API
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
+
+
+@fixture(autouse=True)
+def mock_sleep(mocker):
+    mocker.patch("time.sleep")
 
 
 @fixture(scope="session", name="account_id")
@@ -29,6 +36,11 @@ def some_config_fixture(account_id):
     return {"start_date": "2021-01-23T00:00:00Z", "access_token": "unknown_token"}
 
 
+@fixture(scope="session", name="some_config_future_date")
+def some_config_future_date_fixture(account_id):
+    return {"start_date": "2030-01-23T00:00:00Z", "access_token": "unknown_token"}
+
+
 @fixture(name="fb_account_response")
 def fb_account_response_fixture(account_id, some_config, requests_mock):
     account = {"id": "test_id", "instagram_business_account": {"id": "test_id"}}
@@ -42,13 +54,16 @@ def fb_account_response_fixture(account_id, some_config, requests_mock):
         "json": {
             "data": [
                 {
-                    "account_id": account_id,
+                    "access_token": "access_token",
+                    "category": "Software company",
                     "id": f"act_{account_id}",
-                }
-            ],
-            "paging": {"cursors": {"before": "MjM4NDYzMDYyMTcyNTAwNzEZD", "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"}},
-        },
-        "status_code": 200,
+                    "paging": {"cursors": {
+                        "before": "cursor",
+                        "after": "cursor"}},
+                    "summary": {"total_count": 1},
+                    "status_code": 200
+                }]
+        }
     }
 
 
@@ -65,16 +80,6 @@ def api_fixture(some_config, requests_mock, fb_account_response):
     return api
 
 
-@fixture(name="user_data")
-def user_data_fixture():
-    return {
-        "biography": "Dino data crunching app",
-        "id": "17841405822304914",
-        "username": "metricsaurus",
-        "website": "http://www.metricsaurus.com/",
-    }
-
-
 @fixture(name="user_insight_data")
 def user_insight_data_fixture():
     return {
@@ -85,6 +90,42 @@ def user_insight_data_fixture():
         "description": "Total number of times this profile has been seen",
         "id": "17841400008460056/insights/impressions/day",
     }
+
+
+@fixture(name="user_insights")
+def user_insights():
+    class UserInsightEntityMock:
+        # reference Issue:
+        # https://github.com/airbytehq/airbyte/issues/24697
+        class UserInsight:
+            def __init__(self, values: dict):
+                self.data = {
+                    "description": "test_insight",
+                    "id": "123",
+                    "name": "test_insight_metric",
+                    "period": "day",
+                    "title": "Test Insight",
+                    "values": [values],
+                }
+
+            def __dict__(self):
+                return self.data
+
+            def export_all_data(self):
+                return self.__dict__()
+
+        def __new__(cls, values: dict):
+            cls.insights = [cls.UserInsight(values)]
+
+        @classmethod
+        def get(cls, element):
+            return cls.insights[0].__dict__()[element]
+
+        @classmethod
+        def get_insights(cls, **kwargs) -> List[dict]:
+            return cls.insights
+
+    return UserInsightEntityMock
 
 
 @fixture(name="user_stories_data")

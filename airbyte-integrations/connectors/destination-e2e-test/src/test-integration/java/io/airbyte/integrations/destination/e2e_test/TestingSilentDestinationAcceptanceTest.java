@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.e2e_test;
@@ -7,13 +7,16 @@ package io.airbyte.integrations.destination.e2e_test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.e2e_test.TestingDestinations.TestDestinationType;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -24,12 +27,13 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", TestDestinationType.SILENT.name()));
+    return Jsons.jsonNode(
+        Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name())));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", "invalid"));
+    return Jsons.jsonNode(Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", "invalid")));
   }
 
   @Override
@@ -41,7 +45,7 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     // do nothing
   }
 
@@ -55,6 +59,21 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
                                     final List<AirbyteRecordMessage> actual,
                                     final boolean pruneAirbyteInternalFields) {
     assertEquals(0, actual.size());
+  }
+
+  @Override
+  // Skip because `retrieveRecords` returns an empty list at all times.
+  @Disabled
+  @Test
+  public void testSyncNotFailsWithNewFields() {}
+
+  @Override
+  // This test assumes that dedup support means normalization support.
+  // Override it to do nothing.
+  @Disabled
+  @Test
+  public void testIncrementalDedupeSync() throws Exception {
+    super.testIncrementalDedupeSync();
   }
 
 }

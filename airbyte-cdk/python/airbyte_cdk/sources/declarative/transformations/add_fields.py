@@ -1,37 +1,38 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Type, Union
 
-import dpath.util
+import dpath
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.types import Config, FieldPointer, Record, StreamSlice, StreamState
 
 
 @dataclass(frozen=True)
-class AddedFieldDefinition(JsonSchemaMixin):
+class AddedFieldDefinition:
     """Defines the field to add on a record"""
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
-    options: InitVar[Mapping[str, Any]]
+    value_type: Optional[Type[Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
-class ParsedAddFieldDefinition(JsonSchemaMixin):
+class ParsedAddFieldDefinition:
     """Defines the field to add on a record"""
 
     path: FieldPointer
     value: InterpolatedString
-    options: InitVar[Mapping[str, Any]]
+    value_type: Optional[Type[Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
 
 @dataclass
-class AddFields(RecordTransformation, JsonSchemaMixin):
+class AddFields(RecordTransformation):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
@@ -83,13 +84,13 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
     """
 
     fields: List[AddedFieldDefinition]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         for add_field in self.fields:
             if len(add_field.path) < 1:
-                raise f"Expected a non-zero-length path for the AddFields transformation {add_field}"
+                raise ValueError(f"Expected a non-zero-length path for the AddFields transformation {add_field}")
 
             if not isinstance(add_field.value, InterpolatedString):
                 if not isinstance(add_field.value, str):
@@ -97,11 +98,16 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
                 else:
                     self._parsed_fields.append(
                         ParsedAddFieldDefinition(
-                            add_field.path, InterpolatedString.create(add_field.value, options=options), options=options
+                            add_field.path,
+                            InterpolatedString.create(add_field.value, parameters=parameters),
+                            value_type=add_field.value_type,
+                            parameters=parameters,
                         )
                     )
             else:
-                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, options={}))
+                self._parsed_fields.append(
+                    ParsedAddFieldDefinition(add_field.path, add_field.value, value_type=add_field.value_type, parameters={})
+                )
 
     def transform(
         self,
@@ -110,12 +116,15 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
+        if config is None:
+            config = {}
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:
-            value = parsed_field.value.eval(config, **kwargs)
-            dpath.util.new(record, parsed_field.path, value)
+            valid_types = (parsed_field.value_type,) if parsed_field.value_type else None
+            value = parsed_field.value.eval(config, valid_types=valid_types, **kwargs)
+            dpath.new(record, parsed_field.path, value)
 
         return record
 
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+    def __eq__(self, other: Any) -> bool:
+        return bool(self.__dict__ == other.__dict__)

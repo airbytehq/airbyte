@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.e2e_test;
@@ -7,20 +7,14 @@ package io.airbyte.integrations.source.e2e_test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.*;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,7 +72,12 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
           hasEmittedStateAtCount.set(true);
           return new AirbyteMessage()
               .withType(Type.STATE)
-              .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
+              .withState(new AirbyteStateMessage()
+                  .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
+                  .withStream(new AirbyteStreamState()
+                      .withStreamDescriptor(new StreamDescriptor().withName(LegacyConstants.DEFAULT_STREAM))
+                      .withStreamState(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))))
+                  .withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
         } else if (throwAfterNRecords > recordsEmitted.get()) {
           recordsEmitted.incrementAndGet();
           recordValue.incrementAndGet();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -8,24 +8,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -42,7 +45,7 @@ public class ClickhouseDestinationTest {
 
   private static final String DB_NAME = "default";
   private static final String STREAM_NAME = "id_and_name";
-  private static final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private static ClickHouseContainer db;
   private static ConfiguredAirbyteCatalog catalog;
@@ -95,22 +98,26 @@ public class ClickhouseDestinationTest {
   @Test
   void sanityTest() throws Exception {
     final Destination dest = new ClickhouseDestination();
-    final AirbyteMessageConsumer consumer = dest.getConsumer(config, catalog,
+    DestinationConfig.initialize(config, dest.isV2Destination());
+    final SerializedAirbyteMessageConsumer consumer = dest.getSerializedMessageConsumer(config, catalog,
         Destination::defaultOutputRecordCollector);
     final List<AirbyteMessage> expectedRecords = generateRecords(10);
 
     consumer.start();
     expectedRecords.forEach(m -> {
       try {
-        consumer.accept(m);
+        final var strMessage = Jsons.jsonNode(m).toString();
+        consumer.accept(strMessage, strMessage.getBytes(StandardCharsets.UTF_8).length);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     });
-    consumer.accept(new AirbyteMessage()
+    final var abMessage = Jsons.jsonNode(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(ImmutableMap.of(DB_NAME + "." + STREAM_NAME, 10)))));
+            .withData(Jsons.jsonNode(ImmutableMap.of(DB_NAME + "." + STREAM_NAME, 10)))))
+        .toString();
+    consumer.accept(abMessage, abMessage.getBytes(StandardCharsets.UTF_8).length);
     consumer.close();
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
@@ -126,8 +133,8 @@ public class ClickhouseDestinationTest {
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery(
-            String.format("SELECT * FROM %s.%s;", DB_NAME,
-                namingResolver.getRawTableName(STREAM_NAME))),
+            String.format("SELECT * FROM %s.%s;", "airbyte_internal",
+                StreamId.concatenateRawTableName(DB_NAME, STREAM_NAME))),
         JdbcUtils.getDefaultSourceOperations()::rowToJson);
 
     assertEquals(

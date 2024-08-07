@@ -1,0 +1,123 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "website_overview",
+        "json_schema": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "ga_date": {
+              "type": ["string"]
+            },
+            "ga_users": {
+              "type": ["null", "integer"]
+            },
+            "ga_newUsers": {
+              "type": ["null", "integer"]
+            },
+            "ga_sessions": {
+              "type": ["null", "integer"]
+            },
+            "ga_sessionsPerUser": {
+              "type": ["null", "number"]
+            },
+            "ga_avgSessionDuration": {
+              "type": ["null", "number"]
+            },
+            "ga_pageviews": {
+              "type": ["null", "integer"]
+            },
+            "ga_pageviewsPerSession": {
+              "type": ["null", "number"]
+            },
+            "ga_avgTimeOnPage": {
+              "type": ["null", "number"]
+            },
+            "ga_bounceRate": {
+              "type": ["null", "number"]
+            },
+            "ga_exitRate": {
+              "type": ["null", "number"]
+            },
+            "report_start_date": {
+              "type": ["string"]
+            },
+            "report_end_date": {
+              "type": ["string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["report_start_date"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "traffic_sources",
+        "json_schema": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "ga_date": {
+              "type": ["string"]
+            },
+            "ga_source": {
+              "type": ["string"]
+            },
+            "ga_medium": {
+              "type": ["string"]
+            },
+            "ga_socialNetwork": {
+              "type": ["string"]
+            },
+            "ga_users": {
+              "type": ["null", "integer"]
+            },
+            "ga_newUsers": {
+              "type": ["null", "integer"]
+            },
+            "ga_sessions": {
+              "type": ["null", "integer"]
+            },
+            "ga_sessionsPerUser": {
+              "type": ["null", "number"]
+            },
+            "ga_avgSessionDuration": {
+              "type": ["null", "number"]
+            },
+            "ga_pageviews": {
+              "type": ["null", "integer"]
+            },
+            "ga_pageviewsPerSession": {
+              "type": ["null", "number"]
+            },
+            "ga_avgTimeOnPage": {
+              "type": ["null", "number"]
+            },
+            "ga_bounceRate": {
+              "type": ["null", "number"]
+            },
+            "ga_exitRate": {
+              "type": ["null", "number"]
+            },
+            "report_start_date": {
+              "type": ["string"]
+            },
+            "report_end_date": {
+              "type": ["string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["report_start_date"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

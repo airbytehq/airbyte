@@ -79,7 +79,7 @@ The source is capable of syncing the content stream.
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, select **The Guardian API** from the Source type dropdown.
 4. Enter your api_key (mandatory) and any other optional parameters as per your requirements.
@@ -108,6 +108,16 @@ The key that you are assigned is rate-limited and as such any applications that 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.1.5 | 2024-08-03 | [42781](https://github.com/airbytehq/airbyte/pull/42781) | Update dependencies |
+| 0.1.4 | 2024-07-20 | [42316](https://github.com/airbytehq/airbyte/pull/42316) | Update dependencies |
+| 0.1.3 | 2024-07-13 | [41878](https://github.com/airbytehq/airbyte/pull/41878) | Update dependencies |
+| 0.1.2 | 2024-07-10 | [41505](https://github.com/airbytehq/airbyte/pull/41505) | Update dependencies |
+| 0.1.1 | 2024-07-10 | [41049](https://github.com/airbytehq/airbyte/pull/41049) | Migrate to poetry |
 | 0.1.0   | 2022-10-30 | [#18654](https://github.com/airbytehq/airbyte/pull/18654) | 🎉 New Source: The Guardian API [low-code CDK] |
+
+</details>

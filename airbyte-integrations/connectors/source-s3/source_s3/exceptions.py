@@ -1,11 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import List, Optional, Union
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, FailureType
 
 from .source_files_abstract.file_info import FileInfo
 

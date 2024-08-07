@@ -1,7 +1,7 @@
 # Step 6: Testing
 
 We should make sure the connector respects the Airbyte specifications before we start using it in production.
-This can be done by executing the Source Acceptance Tests (SAT).
+This can be done by executing the Connector Acceptance Tests.
 
 These tests will assert the most basic functionalities work as expected and are configured in `acceptance-test-config.yml`.
 
@@ -25,19 +25,17 @@ and `integration_tests/abnormal_state.json` with
     "date": "2999-12-31"
   }
 }
-
 ```
 
-You can run the acceptance tests with the following commands:
+You can run the [acceptance tests](https://github.com/airbytehq/airbyte/blob/master/docs/connector-development/testing-connectors/connector-acceptance-tests-reference.md#L1) with the following commands using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1):
 
 ```bash
-docker build . -t airbyte/source-exchange-rates-tutorial:dev
-python -m pytest integration_tests -p integration_tests.acceptance
+airbyte-ci connectors --use-remote-secrets=false --name source-exchange-rates-tutorial test --only-step=acceptance
 ```
 
 ## Next steps:
 
-Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte).
+Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/operator-guides/using-custom-connectors).
 
 ## Read more:
 

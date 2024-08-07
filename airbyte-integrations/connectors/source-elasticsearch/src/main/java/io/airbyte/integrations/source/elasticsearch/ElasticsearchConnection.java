@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.elasticsearch;
@@ -21,7 +21,7 @@ import org.elasticsearch.client.indices.GetIndexResponse;
 import org.elasticsearch.client.indices.GetMappingsRequest;
 import org.elasticsearch.client.indices.GetMappingsResponse;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
@@ -44,6 +44,7 @@ public class ElasticsearchConnection {
    *
    * @param config Configuration parameters for connecting to the Elasticsearch host
    */
+  @SuppressWarnings("this-escape")
   public ElasticsearchConnection(ConnectorConfiguration config) {
     log.info(String.format(
         "creating ElasticsearchConnection: %s", config.getEndpoint()));
@@ -146,11 +147,18 @@ public class ElasticsearchConnection {
    * @throws IOException throws IOException if Elasticsearch request fails
    */
   public Map<String, MappingMetadata> getMappings(final List<String> indices) throws IOException {
-    GetMappingsRequest request = new GetMappingsRequest();
-    String[] copiedIndices = indices.toArray(String[]::new);
-    request.indices(copiedIndices);
-    GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
-    return getMappingResponse.mappings();
+    int chunk = 15;
+    Map<String, MappingMetadata> mappings = new HashMap<>();
+    // Avoid too_long_frame_exception error by "batching"
+    // the indexes mapping calls
+    for (int i = 0; i < indices.size(); i += chunk) {
+      String[] copiedIndices = indices.subList(i, Math.min(indices.size(), i + chunk)).toArray(String[]::new);
+      GetMappingsRequest request = new GetMappingsRequest();
+      request.indices(copiedIndices);
+      GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
+      mappings.putAll(getMappingResponse.mappings());
+    }
+    return mappings;
   }
 
   /**

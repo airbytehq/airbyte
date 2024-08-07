@@ -1,0 +1,47 @@
+# Genesys
+
+## Overview
+
+The Genesys source retrieves data from [Genesys](https://www.genesys.com/) using their [JSON REST APIs](https://developer.genesys.cloud/devapps/api-explorer).
+
+## Setup Guide
+
+### Requirements
+
+We are using `OAuth2` as this is the only supported authentication method. So you will need to follow the steps below to generate the `Client ID` and `Client Secret`.
+
+- Genesys region
+- Client ID
+- Client Secret
+
+You can follow the documentation on [API credentials](https://developer.genesys.cloud/authorization/platform-auth/use-client-credentials#obtain-an-access-token) or you can login directly to the [OAuth admin page](https://apps.mypurecloud.com/directory/#/admin/integrations/oauth)
+
+## Supported Streams
+
+- [Locations](https://developer.genesys.cloud/telephony/locations-apis)
+- [Routing](https://developer.genesys.cloud/routing/routing/)
+- [Stations](https://developer.genesys.cloud/telephony/stations-apis)
+- [Telephony](hhttps://developer.genesys.cloud/telephony/telephony-apis)
+- [Users](https://developer.genesys.cloud/useragentman/users/)
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                        |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.10 | 2024-08-03 | [43187](https://github.com/airbytehq/airbyte/pull/43187) | Update dependencies |
+| 0.1.9 | 2024-07-27 | [42797](https://github.com/airbytehq/airbyte/pull/42797) | Update dependencies |
+| 0.1.8 | 2024-07-20 | [42370](https://github.com/airbytehq/airbyte/pull/42370) | Update dependencies |
+| 0.1.7 | 2024-07-13 | [41902](https://github.com/airbytehq/airbyte/pull/41902) | Update dependencies |
+| 0.1.6 | 2024-07-10 | [41438](https://github.com/airbytehq/airbyte/pull/41438) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [40945](https://github.com/airbytehq/airbyte/pull/40945) | Update dependencies |
+| 0.1.4 | 2024-06-25 | [40383](https://github.com/airbytehq/airbyte/pull/40383) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40142](https://github.com/airbytehq/airbyte/pull/40142) | Update dependencies |
+| 0.1.2 | 2024-06-06 | [39256](https://github.com/airbytehq/airbyte/pull/39256) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1 | 2024-05-20 | [38450](https://github.com/airbytehq/airbyte/pull/38450) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2023-04-27 | [25598](https://github.com/airbytehq/airbyte/pull/25598) | Use region specific API server |
+| 0.1.0 | 2022-10-06 | [17559](https://github.com/airbytehq/airbyte/pull/17559) | The Genesys Source is created |
+
+</details>

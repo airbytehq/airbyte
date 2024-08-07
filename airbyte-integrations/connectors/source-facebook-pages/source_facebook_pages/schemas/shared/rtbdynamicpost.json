@@ -3,7 +3,7 @@
   "properties": {
     "created": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "description": {
       "type": ["string", "null"]

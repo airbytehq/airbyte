@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "type": "string"
+    },
+    "External ID": {
+      "type": ["null", "string"]
+    },
+    "Voided": {
+      "type": "boolean"
+    },
+    "Subject type": {
+      "type": ["null", "string"]
+    },
+    "Registration location": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "X": {
+          "type": ["null", "number"]
+        },
+        "Y": {
+          "type": ["null", "number"],
+          "example": 74.7364501
+        }
+      }
+    },
+    "Registration date": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "relatives": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "Voided": {
+            "type": "boolean"
+          },
+          "Relationship type": {
+            "type": ["null", "string"]
+          },
+          "Relative ID": {
+            "type": ["null", "string"]
+          },
+          "Relative external ID": {
+            "type": ["null", "string"]
+          },
+          "Enter date": {
+            "type": ["null", "string"]
+          },
+          "Exit date": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "observations": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "encounters": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"],
+        "format": "uuid"
+      }
+    },
+    "enrolments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"],
+        "format": "uuid"
+      }
+    },
+    "last_modified_at": {
+      "type": "string",
+      "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+    },
+    "catchments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "audit": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "Created at": {
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Last modified at": {
+          "type": ["null", "string"],
+          "format": "YYYY-MM-DDTHH:mm:ss.sssZ"
+        },
+        "Created by": {
+          "type": ["null", "string"]
+        },
+        "Last modified by": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "Groups": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

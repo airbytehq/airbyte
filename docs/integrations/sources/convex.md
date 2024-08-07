@@ -7,7 +7,7 @@ See your data on the [Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex connector supports Full Refresh, Incremental Append, and Incremental Dedupe with deletes.
+The Convex source connector supports Full Refresh, Incremental Append, and Incremental Dedupe with deletes.
 
 ### Output schema
 
@@ -31,14 +31,14 @@ Additionally, each document has system fields:
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Incremental - Dedupe Sync | Yes |
-| Replicate Incremental Deletes | Yes |
-| Change Data Capture           | Yes |
-| Namespaces | No |
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental - Append Sync     | Yes        |
+| Incremental - Dedupe Sync     | Yes        |
+| Replicate Incremental Deletes | Yes        |
+| Change Data Capture           | Yes        |
+| Namespaces                    | No         |
 
 ### Performance considerations
 
@@ -50,13 +50,13 @@ please reach out to [Convex support](mailto:support@convex.dev).
 
 ### Requirements
 
-* Convex Account
-* Convex Project
-* Deploy key
+- Convex Account
+- Convex Project
+- Deploy key
 
 ### Setup guide
 
-Contact Convex via [email](mailto:support@convex.dev) or [Discord](https://convex.dev/community) to request Airbyte support for your account.
+Airbyte integration is available to Convex teams on Professional [plans](https://www.convex.dev/plans).
 
 On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project that you want to sync.
 Note only "Production" deployments should be synced.
@@ -70,6 +70,26 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                          |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
+| 0.4.11 | 2024-08-03 | [43166](https://github.com/airbytehq/airbyte/pull/43166) | Update dependencies |
+| 0.4.10 | 2024-07-27 | [42751](https://github.com/airbytehq/airbyte/pull/42751) | Update dependencies |
+| 0.4.9 | 2024-07-20 | [42224](https://github.com/airbytehq/airbyte/pull/42224) | Update dependencies |
+| 0.4.8 | 2024-07-13 | [41868](https://github.com/airbytehq/airbyte/pull/41868) | Update dependencies |
+| 0.4.7 | 2024-07-10 | [41584](https://github.com/airbytehq/airbyte/pull/41584) | Update dependencies |
+| 0.4.6 | 2024-07-09 | [41261](https://github.com/airbytehq/airbyte/pull/41261) | Update dependencies |
+| 0.4.5 | 2024-07-06 | [40799](https://github.com/airbytehq/airbyte/pull/40799) | Update dependencies |
+| 0.4.4 | 2024-06-25 | [40305](https://github.com/airbytehq/airbyte/pull/40305) | Update dependencies |
+| 0.4.3 | 2024-06-22 | [40038](https://github.com/airbytehq/airbyte/pull/40038) | Update dependencies |
+| 0.4.2 | 2024-06-06 | [39210](https://github.com/airbytehq/airbyte/pull/39210) | [autopull] Upgrade base image to v1.2.2 |
+| 0.4.1 | 2024-05-21 | [38485](https://github.com/airbytehq/airbyte/pull/38485) | [autopull] base image + poetry + up_to_date |
+| 0.4.0 | 2023-12-13 | [33431](https://github.com/airbytehq/airbyte/pull/33431) | 🐛 Convex source fix bug where full_refresh stops after one page |
+| 0.3.0 | 2023-09-28 | [30853](https://github.com/airbytehq/airbyte/pull/30853) | 🐛 Convex source switch to clean JSON format |
+| 0.2.0 | 2023-06-21 | [27226](https://github.com/airbytehq/airbyte/pull/27226) | 🐛 Convex source fix skipped records |
+| 0.1.1 | 2023-03-06 | [23797](https://github.com/airbytehq/airbyte/pull/23797) | 🐛 Convex source connector error messages |
 | 0.1.0 | 2022-10-24 | [18403](https://github.com/airbytehq/airbyte/pull/18403) | 🎉 New Source: Convex |
+
+</details>

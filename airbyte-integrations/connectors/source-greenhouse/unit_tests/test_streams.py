@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -28,28 +28,28 @@ def create_response(headers):
 def test_next_page_token_has_next(applications_stream):
     headers = {"link": '<https://harvest.greenhouse.io/v1/applications?per_page=100&since_id=123456789>; rel="next"'}
     response = create_response(headers)
-    next_page_token = applications_stream.retriever.next_page_token(response=response)
+    next_page_token = applications_stream.retriever._next_page_token(response=response)
     assert next_page_token == {"next_page_token": "https://harvest.greenhouse.io/v1/applications?per_page=100&since_id=123456789"}
 
 
 def test_next_page_token_has_not_next(applications_stream):
     response = create_response({})
-    next_page_token = applications_stream.retriever.next_page_token(response=response)
+    next_page_token = applications_stream.retriever._next_page_token(response=response)
 
     assert next_page_token is None
 
 
 def test_request_params_next_page_token_is_not_none(applications_stream):
     response = create_response({"link": f'<https://harvest.greenhouse.io/v1/applications?per_page={100}&since_id=123456789>; rel="next"'})
-    next_page_token = applications_stream.retriever.next_page_token(response=response)
-    request_params = applications_stream.retriever.request_params(next_page_token=next_page_token, stream_state={})
-    path = applications_stream.retriever.path(next_page_token=next_page_token, stream_state={})
+    next_page_token = applications_stream.retriever._next_page_token(response=response)
+    request_params = applications_stream.retriever._request_params(next_page_token=next_page_token, stream_state={})
+    path = applications_stream.retriever._paginator_path()
     assert "applications?per_page=100&since_id=123456789" == path
     assert request_params == {"per_page": 100}
 
 
 def test_request_params_next_page_token_is_none(applications_stream):
-    request_params = applications_stream.retriever.request_params(stream_state={})
+    request_params = applications_stream.retriever._request_params(stream_state={})
 
     assert request_params == {"per_page": 100}
 
@@ -138,8 +138,8 @@ def test_parse_response_expected_response(applications_stream):
         ]
     """
     response._content = response_content
-    parsed_response = applications_stream.retriever.parse_response(response, stream_state={})
-    records = [record for record in parsed_response]
+    parsed_response = applications_stream.retriever._parse_response(response, stream_state={}, records_schema={})
+    records = [dict(record) for record in parsed_response]
 
     assert records == json.loads(response_content)
 
@@ -148,17 +148,23 @@ def test_parse_response_empty_content(applications_stream):
     response = requests.Response()
     response.status_code = 200
     response._content = b"[]"
-    parsed_response = applications_stream.retriever.parse_response(response, stream_state={})
+    parsed_response = applications_stream.retriever._parse_response(response, stream_state={}, records_schema={})
     records = [record for record in parsed_response]
 
     assert records == []
+
+
+def test_number_of_streams():
+    source = SourceGreenhouse()
+    streams = source.streams({})
+    assert len(streams) == 36
 
 
 def test_ignore_403(applications_stream):
     response = requests.Response()
     response.status_code = 403
     response._content = b""
-    parsed_response = applications_stream.retriever.parse_response(response, stream_state={})
+    parsed_response = applications_stream.retriever._parse_response(response, stream_state={}, records_schema={})
     records = [record for record in parsed_response]
     assert records == []
 
@@ -167,5 +173,5 @@ def test_retry_429(applications_stream):
     response = requests.Response()
     response.status_code = 429
     response._content = b"{}"
-    should_retry = applications_stream.retriever.should_retry(response)
+    should_retry = applications_stream.retriever.requester._should_retry(response)
     assert should_retry is True

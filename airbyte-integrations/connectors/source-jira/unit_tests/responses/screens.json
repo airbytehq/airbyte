@@ -1,0 +1,14 @@
+{
+  "values": [
+    {
+      "id": 1,
+      "name": "Default Screen",
+      "description": "Allows to update all system fields."
+    },
+    {
+      "id": 2,
+      "name": "Workflow Screen",
+      "description": "This screen is used in the workflow and enables you to assign issues"
+    }
+  ]
+}

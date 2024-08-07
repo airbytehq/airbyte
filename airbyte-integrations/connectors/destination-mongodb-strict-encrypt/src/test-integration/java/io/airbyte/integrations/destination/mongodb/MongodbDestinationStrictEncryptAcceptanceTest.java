@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -12,17 +12,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
+import io.airbyte.cdk.db.mongodb.MongoUtils;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.mongodb.MongoDatabase;
-import io.airbyte.db.mongodb.MongoUtils;
-import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeAll;
@@ -53,7 +53,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", MongoInstanceType.ATLAS.getType())
+        .put("instance", MongoUtils.MongoInstanceType.ATLAS.getType())
         .put("cluster_url", credentialsJson.get("cluster_url").asText())
         .build());
 
@@ -111,7 +111,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   @Test
   void testCheck() throws Exception {
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", MongoInstanceType.STANDALONE.getType())
+        .put("instance", MongoUtils.MongoInstanceType.STANDALONE.getType())
         .put("tls", false)
         .build());
 
@@ -127,7 +127,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     final var credentials = String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText());
     final String connectionString = String.format("mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true",

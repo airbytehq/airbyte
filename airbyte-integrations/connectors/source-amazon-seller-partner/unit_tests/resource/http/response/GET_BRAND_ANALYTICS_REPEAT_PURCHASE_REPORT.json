@@ -1,0 +1,39 @@
+{
+  "reportSpecification": {
+    "reportType": "GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT",
+    "reportOptions": {
+      "reportPeriod": "WEEK"
+    },
+    "dataStartTime": "2021-06-06",
+    "dataEndTime": "2021-06-19",
+    "marketplaceIds": ["ATVPDKIKX0DER"]
+  },
+  "dataByAsin": [
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B123456789",
+      "orders": 1256,
+      "uniqueCustomers": 1201,
+      "repeatCustomersPctTotal": 0.0083,
+      "repeatPurchaseRevenue": {
+        "amount": 2246.13,
+        "currencyCode": "USD"
+      },
+      "repeatPurchaseRevenuePctTotal": 0.0217
+    },
+    {
+      "startDate": "2021-06-06",
+      "endDate": "2021-06-12",
+      "asin": "B234567890",
+      "orders": 2561,
+      "uniqueCustomers": 43,
+      "repeatCustomersPctTotal": 0.1234,
+      "repeatPurchaseRevenue": {
+        "amount": 1234.56,
+        "currencyCode": "USD"
+      },
+      "repeatPurchaseRevenuePctTotal": 0.0465
+    }
+  ]
+}

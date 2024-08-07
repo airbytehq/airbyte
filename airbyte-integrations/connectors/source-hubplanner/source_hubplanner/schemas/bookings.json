@@ -149,6 +149,12 @@
     "lastUpdatedById": {
       "type": ["null", "string"]
     },
+    "deletedById": {
+      "type": ["null", "string"]
+    },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
     "backgroundColor": {
       "type": ["null", "string"]
     }

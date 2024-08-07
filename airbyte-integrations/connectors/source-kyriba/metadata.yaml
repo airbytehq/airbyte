@@ -1,0 +1,42 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
+  dockerImageTag: 0.1.13
+  dockerRepository: airbyte/source-kyriba
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
+  githubIssueLabel: source-kyriba
+  icon: kyriba.svg
+  license: MIT
+  name: Kyriba
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-kyriba
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    # Disable acceptance tests for now
+    # No / Low airbyte cloud usage
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE_KYRIBA__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

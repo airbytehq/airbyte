@@ -1,0 +1,44 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ce38aec4-5a77-439a-be29-9ca44fd4e811
+  dockerImageTag: 0.1.14
+  dockerRepository: airbyte/source-gnews
+  githubIssueLabel: source-gnews
+  icon: gnews.svg
+  license: MIT
+  name: GNews
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-gnews
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gnews_config_dev_null
+          id: 2f19d7dc-0dc8-4e35-b785-d17270d59106
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GNEWS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+metadataSpecVersion: "1.0"

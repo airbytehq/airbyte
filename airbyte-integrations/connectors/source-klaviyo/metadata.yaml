@@ -1,0 +1,64 @@
+data:
+  allowedHosts:
+    hosts:
+      - a.klaviyo.com
+      - klaviyo.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  dockerImageTag: 2.9.1
+  dockerRepository: airbyte/source-klaviyo
+  githubIssueLabel: source-klaviyo
+  icon: klaviyo.svg
+  license: MIT
+  maxSecondsBetweenMessages: 60
+  name: Klaviyo
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-klaviyo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - events
+      - campaigns
+      - lists
+      - metrics
+      - flows
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: In this release, streams 'campaigns', 'email_templates', 'events', 'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data using latest API which has a different schema. Users will need to refresh the source schemas and reset these streams after upgrading.
+        upgradeDeadline: "2023-11-30"
+      1.0.0:
+        message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
+        upgradeDeadline: "2023-11-30"
+  documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 300
+    ql: 400
+  supportLevel: certified
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: klaviyo_config_dev_null
+          id: 7d2eeae8-62d9-4694-8bfa-46b96375cd2d
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-KLAVIYO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

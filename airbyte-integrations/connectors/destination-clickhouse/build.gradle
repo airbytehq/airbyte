@@ -1,8 +1,22 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.22.1'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.clickhouse.ClickhouseDestination'
@@ -10,23 +24,12 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
-    testImplementation libs.connectors.destination.testcontainers.clickhouse
-    testImplementation project(":airbyte-json-validation")
+    testImplementation libs.testcontainers.clickhouse
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-clickhouse')
-    integrationTestJavaImplementation project(':airbyte-commons-worker')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
-    integrationTestJavaImplementation libs.connectors.destination.testcontainers.clickhouse
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
 }

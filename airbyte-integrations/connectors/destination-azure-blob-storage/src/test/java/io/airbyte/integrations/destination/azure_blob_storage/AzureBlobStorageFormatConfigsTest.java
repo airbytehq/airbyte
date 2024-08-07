@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -26,6 +26,7 @@ public class AzureBlobStorageFormatConfigsTest {
     final ObjectNode stubFormatConfig = mapper.createObjectNode();
     stubFormatConfig.put("format_type", AzureBlobStorageFormat.CSV.toString());
     stubFormatConfig.put("flattening", Flattening.ROOT_LEVEL.getValue());
+    stubFormatConfig.put("file_extension", Boolean.TRUE);
 
     final ObjectNode stubConfig = mapper.createObjectNode();
     stubConfig.set("format", stubFormatConfig);

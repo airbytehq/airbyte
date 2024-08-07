@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import concurrent.futures
@@ -8,11 +8,14 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType, StreamDescriptor
 from requests import adapters as request_adapters
-from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
+from requests.exceptions import RequestException  # type: ignore[import]
 
 from .exceptions import TypeSalesforceException
-from .rate_limiting import default_backoff_handler
+from .rate_limiting import SalesforceErrorHandler, default_backoff_handler
 from .utils import filter_streams_by_criteria
 
 STRING_TYPES = [
@@ -49,7 +52,6 @@ QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "AppTabMember",
     "CollaborationGroupRecord",
     "ColorDefinition",
-    "ContentDocumentLink",
     "ContentFolderItem",
     "ContentFolderMember",
     "DataStatistics",
@@ -127,6 +129,19 @@ QUERY_INCOMPATIBLE_SALESFORCE_OBJECTS = [
     "UserRecordAccess",
 ]
 
+PARENT_SALESFORCE_OBJECTS = {
+    # parent_name - name of parent stream
+    # field - in each parent record, which is needed for stream slice
+    # schema_minimal - required for getting proper class name full_refresh/incremental, rest/bulk for parent stream
+    "ContentDocumentLink": {
+        "parent_name": "ContentDocument",
+        "field": "Id",
+        "schema_minimal": {
+            "properties": {"Id": {"type": ["string", "null"]}, "SystemModstamp": {"type": ["string", "null"], "format": "date-time"}}
+        },
+    }
+}
+
 # The following objects are not supported by the Bulk API. Listed objects are version specific.
 UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "AcceptedEventRelation",
@@ -154,11 +169,35 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "TaskStatus",
     "TaskWhoRelation",
     "UndecidedEventRelation",
+    "WorkOrderLineItemStatus",
+    "WorkOrderStatus",
+    "UserRecordAccess",
+    "OwnedContentDocument",
+    "OpenActivity",
+    "NoteAndAttachment",
+    "Name",
+    "LookedUpFromActivity",
+    "FolderedContentDocument",
+    "ContractStatus",
+    "ContentFolderItem",
+    "CombinedAttachment",
+    "CaseTeamTemplateRecord",
+    "CaseTeamTemplateMember",
+    "CaseTeamTemplate",
+    "CaseTeamRole",
+    "CaseTeamMember",
+    "AttachedContentDocument",
+    "AggregateResult",
+    "ChannelProgramLevelShare",
+    "AccountBrandShare",
+    "AccountFeed",
+    "AssetFeed",
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
     "ApiEvent",
     "BulkApiResultEventStore",
+    "ContentDocumentLink",
     "EmbeddedServiceDetail",
     "EmbeddedServiceLabel",
     "FormulaFunction",
@@ -178,10 +217,12 @@ UNSUPPORTED_FILTERING_STREAMS = [
     "UriEvent",
 ]
 
+UNSUPPORTED_STREAMS = ["ActivityMetric", "ActivityMetricRollup"]
+
 
 class Salesforce:
     logger = logging.getLogger("airbyte")
-    version = "v52.0"
+    version = "v57.0"
     parallel_tasks_size = 100
     # https://developer.salesforce.com/docs/atlas.en-us.salesforce_app_limits_cheatsheet.meta/salesforce_app_limits_cheatsheet/salesforce_app_limits_platform_api.htm
     # Request Size Limits
@@ -207,6 +248,7 @@ class Salesforce:
         # Change the connection pool size. Default value is not enough for parallel tasks
         adapter = request_adapters.HTTPAdapter(pool_connections=self.parallel_tasks_size, pool_maxsize=self.parallel_tasks_size)
         self.session.mount("https://", adapter)
+        self._http_client = HttpClient("sf_api", self.logger, session=self.session, error_handler=SalesforceErrorHandler())
 
         self.is_sandbox = is_sandbox in [True, "true"]
         if self.is_sandbox:
@@ -233,10 +275,13 @@ class Salesforce:
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
+            if stream_object["name"] in UNSUPPORTED_STREAMS:
+                self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
+                continue
             if stream_object["queryable"]:
                 stream_objects[stream_object.pop("name")] = stream_object
             else:
-                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+                self.logger.warning(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
         if catalog:
             return {
@@ -257,19 +302,8 @@ class Salesforce:
         validated_streams = [stream_name for stream_name in stream_names if self.filter_streams(stream_name)]
         return {stream_name: sobject_options for stream_name, sobject_options in stream_objects.items() if stream_name in validated_streams}
 
-    @default_backoff_handler(max_tries=5, factor=5)
-    def _make_request(
-        self, http_method: str, url: str, headers: dict = None, body: dict = None, stream: bool = False, params: dict = None
-    ) -> requests.models.Response:
-        try:
-            if http_method == "GET":
-                resp = self.session.get(url, headers=headers, stream=stream, params=params)
-            elif http_method == "POST":
-                resp = self.session.post(url, headers=headers, data=body)
-            resp.raise_for_status()
-        except HTTPError as err:
-            self.logger.warn(f"http error body: {err.response.text}")
-            raise
+    def _make_request(self, http_method: str, url: str, headers: dict = None, body: dict = None) -> requests.models.Response:
+        _, resp = self._http_client.send_request(http_method, url, headers=headers, data=body, request_kwargs={})
         return resp
 
     def login(self):
@@ -280,9 +314,7 @@ class Salesforce:
             "client_secret": self.client_secret,
             "refresh_token": self.refresh_token,
         }
-
         resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
-
         auth = resp.json()
         self.access_token = auth["access_token"]
         self.instance_url = auth["instance_url"]
@@ -320,13 +352,20 @@ class Salesforce:
         stream_schemas = {}
         for i in range(0, len(stream_names), self.parallel_tasks_size):
             chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
-            with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
                 for stream_name, schema, err in executor.map(
                     lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
                 ):
                     if err:
                         self.logger.error(f"Loading error of the {stream_name} schema: {err}")
-                        continue
+                        # Without schema information, the source can't determine the type of stream to instantiate and there might be issues
+                        # related to property chunking
+                        raise AirbyteTracedException(
+                            message=f"Schema could not be extracted for stream {stream_name}. Please retry later.",
+                            internal_message=str(err),
+                            failure_type=FailureType.system_error,
+                            stream_descriptor=StreamDescriptor(name=stream_name),
+                        )
                     stream_schemas[stream_name] = schema
         return stream_schemas
 

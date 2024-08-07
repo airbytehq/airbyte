@@ -1,0 +1,103 @@
+data:
+  ab_internal:
+    ql: 400
+    sl: 200
+  allowedHosts:
+    hosts:
+      - bingads.microsoft.com
+      - login.microsoftonline.com
+      - login.live.com
+      - login.windows-ppe.net
+      - ads.microsoft.com
+      - api.ads.microsoft.com
+      - clientcenter.api.bingads.microsoft.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
+  dockerImageTag: 2.7.1
+  dockerRepository: airbyte/source-bing-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+  githubIssueLabel: source-bing-ads
+  icon: bingads.svg
+  license: MIT
+  maxSecondsBetweenMessages: 60
+  name: Bing Ads
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bing-ads
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: Version 1.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect.
+        upgradeDeadline: "2023-10-25"
+      2.0.0:
+        message: >
+          Version 2.0.0 updates schemas for all hourly reports (end in report_hourly),
+          and the following streams: Accounts, Campaigns, Search Query Performance
+          Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword
+          Labels, Ad Group Labels, Keywords, and Budget Summary Report.
+          Users will need to refresh the source schema and reset affected streams
+          after upgrading.
+        upgradeDeadline: "2023-12-11"
+  suggestedStreams:
+    streams:
+      - campaigns
+      - ad_performance_report_daily
+      - campaign_performance_report_daily
+      - account_performance_report_daily
+      - ad_group_performance_report_daily
+      - accounts
+      - ad_groups
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: bing-ads_config_old_dev_null
+          id: 21c29326-2309-4226-97f0-5b1bad621887
+        - name: bing-ads_config_dev_null
+          id: 3434a551-958c-49e2-acae-c19b57b69500
+        - name: bing-ads_config_no_date_dev_null
+          id: 4684190a-bf8b-4b1b-8d95-4744e4c0a070
+        - name: bing-ads_config_full_refresh_dev_null
+          id: b4f2dd3d-3ae8-4341-84f9-9abd9f700e50
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-BING-ADS_FULL_REFRESH__CREDS
+          fileName: config_full_refresh.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-BING-ADS_NO_DATE_CREDS
+          fileName: config_no_date.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-BING-ADS_NO_START_DATE__CREDS
+          fileName: config_no_date.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-BING-ADS_OLD__CREDS
+          fileName: config_old.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-BING-ADS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

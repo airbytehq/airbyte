@@ -1,0 +1,58 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - graph.facebook.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
+  dockerImageTag: 1.0.10
+  dockerRepository: airbyte/source-facebook-pages
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
+  githubIssueLabel: source-facebook-pages
+  icon: facebook.svg
+  license: ELv2
+  name: Facebook Pages
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-facebook-pages
+  supportLevel: community
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >-
+          This version updates the API version from v15 to v19. Deprecated fields have been removed and new fields have been added for the stream `Page`.
+        upgradeDeadline: 2024-04-18
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["page"]
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: facebook-pages_config_dev_null
+          id: 4446147a-669a-472b-bda8-6ee069eb3099
+    - suite: unitTests
+    # Disable acceptance tests for now
+    # No/Low cloud usage
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE-FACEBOOK-PAGES__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

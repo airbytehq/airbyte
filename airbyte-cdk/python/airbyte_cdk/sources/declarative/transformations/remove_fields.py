@@ -1,19 +1,19 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
+import dpath
 import dpath.exceptions
-import dpath.util
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import FieldPointer, Record
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamState
 
 
 @dataclass
-class RemoveFields(RecordTransformation, JsonSchemaMixin):
+class RemoveFields(RecordTransformation):
     """
     A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
@@ -40,9 +40,19 @@ class RemoveFields(RecordTransformation, JsonSchemaMixin):
     """
 
     field_pointers: List[FieldPointer]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
+    condition: str = ""
 
-    def transform(self, record: Record, **kwargs) -> Record:
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters)
+
+    def transform(
+        self,
+        record: Mapping[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Mapping[str, Any]:
         """
         :param record: The record to be transformed
         :return: the input record with the requested fields removed
@@ -50,7 +60,11 @@ class RemoveFields(RecordTransformation, JsonSchemaMixin):
         for pointer in self.field_pointers:
             # the dpath library by default doesn't delete fields from arrays
             try:
-                dpath.util.delete(record, pointer)
+                dpath.delete(
+                    record,
+                    pointer,
+                    afilter=(lambda x: self._filter_interpolator.eval(config or {}, property=x)) if self.condition else None,
+                )
             except dpath.exceptions.PathNotFound:
                 # if the (potentially nested) property does not exist, silently skip
                 pass

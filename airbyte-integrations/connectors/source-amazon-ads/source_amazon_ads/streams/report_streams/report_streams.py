@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
 import re
+import uuid
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
@@ -17,7 +18,8 @@ import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
@@ -36,6 +38,7 @@ class RecordType(str, Enum):
 class Status(str, Enum):
     IN_PROGRESS = "IN_PROGRESS"
     SUCCESS = "SUCCESS"
+    COMPLETED = "COMPLETED"
     FAILURE = "FAILURE"
 
 
@@ -47,6 +50,7 @@ class ReportInitResponse(BaseModel):
 class ReportStatus(BaseModel):
     status: str
     location: Optional[str]
+    url: Optional[str]
 
 
 @dataclass
@@ -89,15 +93,15 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     Common base class for report streams
     """
 
-    primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
-    # Amazon ads updates the data for the next 3 days
-    LOOK_BACK_WINDOW = 3
+    API_VERSION = "v2"
+    primary_key = ["profileId", "recordType", "reportDate", "recordId"]
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
     REPORTING_PERIOD = 60
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
     cursor_field = "reportDate"
+    report_is_created = HTTPStatus.ACCEPTED
 
     ERRORS = [
         (400, "KDP authors do not have access to Sponsored Brands functionality"),
@@ -105,27 +109,34 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Check if the connector received an error like: 'Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3.'
         # https://docs.developer.amazonservices.com/en_UK/dev_guide/DG_Endpoints.html
         (400, re.compile(r"^Tactic T00020 is not supported for report API in marketplace [A-Z\d]+\.$")),
+        (400, re.compile(r"^Tactic T00030 is not supported for report API in marketplace [A-Z\d]+\.$")),
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
-        (406, "Report date is too far in the past."),
+        (406, re.compile(r"^Report date is too far in the past\.")),
     ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
         super().__init__(config, profiles)
         self._state = {}
-        self._authenticator = authenticator
         self._session = requests.Session()
+        self._session.auth = authenticator
         self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
+        self._look_back_window: int = config["look_back_window"]
         # Timeout duration in minutes for Reports. Default is 180 minutes.
         self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
         # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
         self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
+        self._report_record_types = config.get("report_record_types")
 
     @property
     def model(self) -> CatalogModel:
         return self._model
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def read_records(
         self,
@@ -139,7 +150,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         collects metrics for all profiles and record types. Amazon Ads metric
         generation works in async way: First we need to initiate creating report
         for specific profile/record type/date and then constantly check for report
-        generation status - when it will have "SUCCESS" status then download the
+        generation status - when it will have "SUCCESS" or "COMPLETED" status then download the
         report and parse result.
         """
 
@@ -152,18 +163,21 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return
         profile = stream_slice["profile"]
         report_date = stream_slice[self.cursor_field]
-        report_infos = self._init_and_try_read_records(profile, report_date)
+        report_info_list = self._init_and_try_read_records(profile, report_date)
         self._update_state(profile, report_date)
 
-        for report_info in report_infos:
+        for report_info in report_info_list:
             for metric_object in report_info.metric_objects:
                 yield self._model(
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    updatedAt=pendulum.now(tz=profile.timezone).replace(microsecond=0).to_iso8601_string(),
+                    recordId=self.get_record_id(metric_object, report_info.record_type),
                     metric=metric_object,
                 ).dict()
+
+    def get_record_id(self, metric_object: dict, record_type: str) -> str:
+        return metric_object.get(self.metrics_type_to_id_map[record_type]) or str(uuid.uuid4())
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
@@ -183,35 +197,35 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     @backoff_max_tries
     def _init_and_try_read_records(self, profile: Profile, report_date):
-        report_infos = self._init_reports(profile, report_date)
-        self.logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
-        self._try_read_records(report_infos)
-        return report_infos
+        report_info_list = self._init_reports(profile, report_date)
+        self.logger.info(f"Waiting for {len(report_info_list)} report(s) to be generated")
+        self._try_read_records(report_info_list)
+        return report_info_list
 
     @backoff_max_time
-    def _try_read_records(self, report_infos):
-        incomplete_report_infos = self._incomplete_report_infos(report_infos)
-        self.logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
-        for report_info in incomplete_report_infos:
+    def _try_read_records(self, report_info_list):
+        incomplete_report_info = self._incomplete_report_info(report_info_list)
+        self.logger.info(f"Checking report status, {len(incomplete_report_info)} report(s) remaining")
+        for report_info in incomplete_report_info:
             report_status, download_url = self._check_status(report_info)
             report_info.status = report_status
 
             if report_status == Status.FAILURE:
                 message = f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed"
                 raise ReportGenerationFailure(message)
-            elif report_status == Status.SUCCESS:
+            elif report_status == Status.SUCCESS or report_status == Status.COMPLETED:
                 try:
                     report_info.metric_objects = self._download_report(report_info, download_url)
                 except requests.HTTPError as error:
                     raise ReportGenerationFailure(error)
 
-        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_infos(report_infos)]
+        pending_report_status = [(r.profile_id, r.report_id, r.status) for r in self._incomplete_report_info(report_info_list)]
         if len(pending_report_status) > 0:
             message = f"Report generation in progress: {repr(pending_report_status)}"
             raise ReportGenerationInProgress(message)
 
-    def _incomplete_report_infos(self, report_infos):
-        return [r for r in report_infos if r.status != Status.SUCCESS]
+    def _incomplete_report_info(self, report_info_list):
+        return [r for r in report_info_list if r.status != Status.SUCCESS and r.status != Status.COMPLETED]
 
     def _generate_model(self):
         """
@@ -225,11 +239,15 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return MetricsReport.generate_metric_model(metrics)
 
     def _get_auth_headers(self, profile_id: int):
-        return {
-            "Amazon-Advertising-API-ClientId": self._client_id,
-            "Amazon-Advertising-API-Scope": str(profile_id),
-            **self._authenticator.get_auth_header(),
-        }
+        return (
+            {
+                "Amazon-Advertising-API-ClientId": self._client_id,
+                "Amazon-Advertising-API-Scope": str(profile_id),
+                **self._session.auth.get_auth_header(),
+            }
+            if profile_id
+            else {}
+        )
 
     @abstractmethod
     def report_init_endpoint(self, record_type: str) -> str:
@@ -246,11 +264,18 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :return: Map record type to list of available metrics
         """
 
+    @property
+    @abstractmethod
+    def metrics_type_to_id_map(self) -> Dict[str, List]:
+        """
+        :return: Map record type to to its unique identifier in metrics
+        """
+
     def _check_status(self, report_info: ReportInfo) -> Tuple[Status, str]:
         """
         Check report status and return download link if report generated successfuly
         """
-        check_endpoint = f"/v2/reports/{report_info.report_id}"
+        check_endpoint = f"/{self.API_VERSION}/reports/{report_info.report_id}"
         resp = self._send_http_request(urljoin(self._url, check_endpoint), report_info.profile_id)
 
         try:
@@ -258,7 +283,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         except ValueError as error:
             raise ReportStatusFailure(error)
 
-        return resp.status, resp.location
+        return resp.status, resp.location or resp.url
 
     @backoff.on_exception(
         backoff.expo,
@@ -291,6 +316,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         start_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
         if start_date:
             start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
+            # Taking date from state if it's not older than 60 days
             return max(start_date, today.subtract(days=self.REPORTING_PERIOD))
         if self._start_date:
             return max(self._start_date, today.subtract(days=self.REPORTING_PERIOD))
@@ -329,7 +355,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def _update_state(self, profile: Profile, report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
-        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW - 1)
+        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self._look_back_window - 1)
         start_date = self.get_start_date(profile, self._state)
         updated_state = max(min(report_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
 
@@ -355,43 +381,48 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :report_date - date for generating metric report.
         :return List of ReportInfo objects each of them has reportId field to check report status.
         """
-        report_infos = []
+        report_info_list = []
         for record_type, metrics in self.metrics_map.items():
-            report_init_body = self._get_init_report_body(report_date, record_type, profile)
-            if not report_init_body:
+            if len(self._report_record_types) > 0 and record_type not in self._report_record_types:
                 continue
-            # Some of the record types has subtypes. For example asins type
-            # for  product report have keyword and targets subtypes and it
-            # repseneted as asins_keywords and asins_targets types. Those
-            # subtypes have mutualy excluded parameters so we requesting
-            # different metric list for each record.
-            record_type = record_type.split("_")[0]
-            self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
-            response = self._send_http_request(
-                urljoin(self._url, self.report_init_endpoint(record_type)),
-                profile.profileId,
-                report_init_body,
-            )
-            if response.status_code != HTTPStatus.ACCEPTED:
-                error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
-                if self._skip_known_errors(response):
-                    self.logger.warning(error_msg)
-                    break
-                raise ReportInitFailure(error_msg)
 
-            response = ReportInitResponse.parse_raw(response.text)
-            report_infos.append(
-                ReportInfo(
-                    report_id=response.reportId,
-                    record_type=record_type,
-                    profile_id=profile.profileId,
-                    status=Status.IN_PROGRESS,
-                    metric_objects=[],
+            for report_init_body in self._get_init_report_body(report_date, record_type, profile):
+                if not report_init_body:
+                    continue
+                # Some of the record types has subtypes. For example asins type
+                # for  product report have keyword and targets subtypes and it
+                # represented as asins_keywords and asins_targets types. Those
+                # subtypes have mutually excluded parameters so we requesting
+                # different metric list for each record.
+                request_record_type = record_type.split("_")[0]
+                self.logger.info(
+                    f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date"
                 )
-            )
-            self.logger.info("Initiated successfully")
+                response = self._send_http_request(
+                    urljoin(self._url, self.report_init_endpoint(request_record_type)),
+                    profile.profileId,
+                    report_init_body,
+                )
+                if response.status_code != self.report_is_created:
+                    error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
+                    if self._skip_known_errors(response):
+                        self.logger.warning(error_msg)
+                        break
+                    raise ReportInitFailure(error_msg)
 
-        return report_infos
+                response = ReportInitResponse.parse_raw(response.text)
+                report_info_list.append(
+                    ReportInfo(
+                        report_id=response.reportId,
+                        record_type=record_type,
+                        profile_id=profile.profileId,
+                        status=Status.IN_PROGRESS,
+                        metric_objects=[],
+                    )
+                )
+                self.logger.info("Initiated successfully")
+
+        return report_info_list
 
     @backoff.on_exception(
         backoff.expo,
@@ -402,7 +433,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         """
         Download and parse report result
         """
-        response = self._send_http_request(url, report_info.profile_id)
+        response = self._send_http_request(url, report_info.profile_id) if report_info else self._send_http_request(url, None)
         response.raise_for_status()
         raw_string = decompress(response.content).decode("utf")
         return json.loads(raw_string)

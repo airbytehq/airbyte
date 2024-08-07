@@ -3,47 +3,44 @@
   "type": "object",
   "properties": {
     "webinar_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "custom_questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "answers": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
-              "type": "string"
+              "type": ["null", "string"]
             }
           },
           "required": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           },
           "title": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "type": {
-            "type": "string"
+            "type": ["null", "string"]
           }
-        },
-        "required": []
+        }
       }
     },
     "questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "field_name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "required": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           }
-        },
-        "required": []
+        }
       }
     }
-  },
-  "required": []
+  }
 }

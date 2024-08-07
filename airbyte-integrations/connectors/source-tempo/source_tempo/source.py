@@ -1,12 +1,18 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
-from airbyte_cdk.sources.deprecated.base_source import BaseSource
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
 
-from .client import Client
+WARNING: Do not modify this file.
+"""
 
 
-class SourceTempo(BaseSource):
-    client_class = Client
+# Declarative Source
+class SourceTempo(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

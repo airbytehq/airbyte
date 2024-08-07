@@ -1,11 +1,13 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "type": {
       "$ref": "reference.json"
     },
     "fields": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "type": {
           "$ref": "field_type.json"

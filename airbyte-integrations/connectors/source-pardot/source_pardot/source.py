@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .api import Pardot
 from .stream import Campaigns, EmailClicks, ListMembership, Lists, ProspectAccounts, Prospects, Users, VisitorActivities, Visitors, Visits
@@ -34,8 +34,6 @@ class SourcePardot(AbstractSource):
         auth = TokenAuthenticator(pardot.access_token)
         args = {"authenticator": auth, "config": config}
 
-        visitors = Visitors(**args)
-
         return [
             EmailClicks(**args),
             Campaigns(**args),
@@ -45,6 +43,6 @@ class SourcePardot(AbstractSource):
             Prospects(**args),
             Users(**args),
             VisitorActivities(**args),
-            visitors,
-            Visits(parent_stream=visitors, **args),
+            Visitors(**args),
+            Visits(parent_stream=Visitors(**args), **args),
         ]

@@ -1,0 +1,21 @@
+.appliesTo {
+  background: #F5F5FF;
+  border-radius: var(--ifm-alert-border-radius);
+  border-left-style: solid;
+  border-left-width: var(--ifm-alert-border-left-width);
+  border-left-color: var(--ifm-color-primary);
+  margin-bottom: 1em;
+  padding: var(--ifm-alert-padding-vertical) var(--ifm-alert-padding-horizontal);
+}
+
+[data-theme="dark"] .appliesTo {
+  background: var(--ifm-background-surface-color);
+}
+
+.header {
+  font-weight: var(--ifm-heading-font-weight);
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.3em;
+}

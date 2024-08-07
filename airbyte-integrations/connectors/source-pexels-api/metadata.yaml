@@ -1,0 +1,43 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 69d9eb65-8026-47dc-baf1-e4bf67901fd6
+  dockerImageTag: 0.1.13
+  dockerRepository: airbyte/source-pexels-api
+  githubIssueLabel: source-pexels-api
+  icon: pexels.svg
+  license: MIT
+  name: Pexels API
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pexels-api
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pexels-api
+  tags:
+    - language:python
+    - cdk:low-code
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pexels-api_config_dev_null
+          id: 0db7dc91-997c-4ee7-abbd-4793086e7836
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PEXELS-API__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+metadataSpecVersion: "1.0"

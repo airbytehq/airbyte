@@ -1,0 +1,43 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - api.timelyapp.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
+  dockerImageTag: 0.3.15
+  dockerRepository: airbyte/source-timely
+  documentationUrl: https://docs.airbyte.com/integrations/sources/timely
+  githubIssueLabel: source-timely
+  icon: timely.svg
+  license: MIT
+  name: Timely
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseDate: 2022-06-22
+  releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-timely
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TIMELY_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "oauth_not_supported",
+    "message": "This application does not have the required permissions for this endpoint on account 'acct_1G9HZLIEn49ers'.",
+    "request_log_url": "https://dashboard.stripe.com/acct_1IB2IIRPz4Eoy76F/test/logs/req_yfhmzM1ChMWuhX?t=1703806215",
+    "type": "invalid_request_error"
+  }
+}

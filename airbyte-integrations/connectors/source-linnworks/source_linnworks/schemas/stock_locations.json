@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "StockLocationId": {
       "type": "string",
@@ -30,6 +30,42 @@
     "IsWarehouseManaged": {
       "type": ["null", "boolean"],
       "description": "If the location is warehouse managed."
+    },
+    "Address1": {
+      "description": "The first line of the stock location address.",
+      "type": ["null", "string"]
+    },
+    "Address2": {
+      "description": "The second line of the stock location address, if applicable.",
+      "type": ["null", "string"]
+    },
+    "City": {
+      "description": "The city where the stock location is located.",
+      "type": ["null", "string"]
+    },
+    "County": {
+      "description": "The county or region where the stock location is located.",
+      "type": ["null", "string"]
+    },
+    "Country": {
+      "description": "The country where the stock location is situated.",
+      "type": ["null", "string"]
+    },
+    "ZipCode": {
+      "description": "The postal code of the stock location.",
+      "type": ["null", "string"]
+    },
+    "CountInOrderUntilAcknowledgement": {
+      "description": "The flag indicating whether to count stock in order until it is acknowledged.",
+      "type": ["null", "boolean"]
+    },
+    "FulfilmentCenterDeductStockWhenProcessed": {
+      "description": "The flag indicating whether to deduct stock from the fulfilment center when processed.",
+      "type": ["null", "boolean"]
+    },
+    "IsNotTrackable": {
+      "description": "The flag indicating whether the stock location is not trackable.",
+      "type": ["null", "boolean"]
     }
   }
 }

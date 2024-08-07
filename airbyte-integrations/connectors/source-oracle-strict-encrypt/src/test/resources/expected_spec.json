@@ -35,7 +35,6 @@
               "connection_type": {
                 "type": "string",
                 "const": "service_name",
-                "default": "service_name",
                 "order": 0
               },
               "service_name": {
@@ -53,7 +52,6 @@
               "connection_type": {
                 "type": "string",
                 "const": "sid",
-                "default": "sid",
                 "order": 0
               },
               "sid": {
@@ -108,9 +106,7 @@
             "properties": {
               "encryption_method": {
                 "type": "string",
-                "const": "client_nne",
-                "enum": ["client_nne"],
-                "default": "client_nne"
+                "const": "client_nne"
               },
               "encryption_algorithm": {
                 "type": "string",
@@ -128,9 +124,7 @@
             "properties": {
               "encryption_method": {
                 "type": "string",
-                "const": "encrypted_verify_certificate",
-                "enum": ["encrypted_verify_certificate"],
-                "default": "encrypted_verify_certificate"
+                "const": "encrypted_verify_certificate"
               },
               "ssl_certificate": {
                 "title": "SSL PEM File",

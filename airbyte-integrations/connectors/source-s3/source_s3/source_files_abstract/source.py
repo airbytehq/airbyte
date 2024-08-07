@@ -1,17 +1,13 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk import AbstractSource, ConnectorSpecification, DestinationSyncMode, Stream, SyncMode
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
 # ideas on extending this to handle multiple streams:
@@ -44,33 +40,36 @@ class SourceFilesAbstract(AbstractSource, ABC):
         :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         This method checks two things:
             - That the credentials provided in config are valid for access.
             - That the path pattern(s) provided in config are valid to be matched against.
 
-        :param logger: an instance of AirbyteLogger to use
+        :param logger: an instance of logging.Logger to use
         :param config: The user-provided configuration as specified by the source's spec.
                                 This usually contains information required to check connection e.g. tokens, secrets and keys etc.
-        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful and we can connect to the underlying data
+        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful, and we can connect to the underlying data
         source using the provided configuration.
         Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
         The error object will be cast to string to display the problem to the user.
         """
         try:
-            for file_info in self.stream_class(**config).filepath_iterator():
+            stream = self.stream_class.with_minimal_block_size(config)
+            stream.fileformatparser_class(stream._format)._validate_config(config)
+            for file_info in stream.filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
                 globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 # just need first file here to test connection and valid patterns
-                return True, None
-
+                break
+            slice_ = next(stream.stream_slices(sync_mode=SyncMode.full_refresh), None)
+            if slice_:
+                next(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_), None)
         except Exception as e:
             logger.error(format_exc())
             return False, e
 
-        logger.warn("Found 0 files (but connection is valid).")
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -88,7 +87,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         required to run this integration.
         """
         # make dummy instance of stream_class in order to get 'supports_incremental' property
-        incremental = self.stream_class(dataset="", provider="", format="", path_pattern="").supports_incremental
+        incremental = self.stream_class(dataset="", provider={}, format="", path_pattern="").supports_incremental
 
         supported_dest_sync_modes = [DestinationSyncMode.overwrite]
         if incremental:

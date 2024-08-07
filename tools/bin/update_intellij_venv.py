@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import argparse
 import os
 import subprocess
@@ -31,13 +35,12 @@ def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
         print(f"{environment_name} already exists. Skipping...")
         return
 
-    jdk_node = ET.SubElement(table, 'jdk', {"version": "2"})
+    jdk_node = ET.SubElement(table, "jdk", {"version": "2"})
 
     ET.SubElement(jdk_node, "name", {"value": environment_name})
     ET.SubElement(jdk_node, "type", {"value": "Python SDK"})
     ET.SubElement(jdk_node, "version", {"value": f"{python_version}"})
-    ET.SubElement(jdk_node, "homePath",
-                  {"value": f"{module_full_path}/.venv/bin/python"})
+    ET.SubElement(jdk_node, "homePath", {"value": f"{module_full_path}/.venv/bin/python"})
 
     roots = ET.SubElement(jdk_node, "roots")
     annotationsPath = ET.SubElement(roots, "annotationsPath")
@@ -46,10 +49,7 @@ def add_venv_to_xml_root(module: str, module_full_path: str, xml_root):
     classPath = ET.SubElement(roots, "classPath")
     classPathRoot = ET.SubElement(classPath, "root", {"type": "composite"})
 
-    ET.SubElement(classPathRoot, "root", {"url":
-                                              f"file://{path_to_lib}{python_version}/site-packages",
-                                          "type": "simple"
-                                          })
+    ET.SubElement(classPathRoot, "root", {"url": f"file://{path_to_lib}{python_version}/site-packages", "type": "simple"})
 
 
 def get_output_path(input_path, output_path):
@@ -72,7 +72,8 @@ def get_input_path(input_from_args, version, home_directory):
             intellij_version_to_update = intellij_versions[0]
         else:
             raise RuntimeError(
-                f"Please select which version of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}")
+                f"Please select which version of Intellij to update with the `{INTELLIJ_VERSION_FLAG}` flag. Options are: {intellij_versions}"
+            )
         return f"{path_to_intellij_settings}{intellij_version_to_update}/options/jdk.table.xml"
 
 
@@ -91,12 +92,12 @@ def get_default_airbyte_path():
 def create_parser():
     parser = argparse.ArgumentParser(description="Prepare Python virtual environments for Python connectors")
     actions_group = parser.add_argument_group("actions")
-    actions_group.add_argument("--install-venv", action="store_true",
-                               help="Create virtual environment and install the module's dependencies")
+    actions_group.add_argument(
+        "--install-venv", action="store_true", help="Create virtual environment and install the module's dependencies"
+    )
     actions_group.add_argument("--update-intellij", action="store_true", help="Add interpreter to IntelliJ's list of known interpreters")
 
-    parser.add_argument("-airbyte", default=get_default_airbyte_path(),
-                        help="Path to Airbyte root directory")
+    parser.add_argument("-airbyte", default=get_default_airbyte_path(), help="Path to Airbyte root directory")
 
     modules_group = parser.add_mutually_exclusive_group(required=True)
     modules_group.add_argument("-modules", nargs="?", help="Comma separated list of modules to add (eg source-strava,source-stripe)")
@@ -150,7 +151,7 @@ if __name__ == "__main__":
         input_path = get_input_path(args.input, args.intellij_version, home_directory)
 
         output_path = get_output_path(input_path, args.output)
-        with open(input_path, 'r') as f:
+        with open(input_path, "r") as f:
             root = ET.fromstring(f.read())
 
             for module in modules:
@@ -173,7 +174,6 @@ def setup_module():
 if "pytest" in sys.argv[0]:
     import unittest
 
-
     class TestNoneTypeError(unittest.TestCase):
         def test_output_is_input_if_not_set(self):
             input_path = "/input_path"
@@ -187,8 +187,7 @@ if "pytest" in sys.argv[0]:
 
         @unittest.mock.patch("os.walk")
         def test_input_is_selected(self, mock_os):
-            os.walk.return_value = iter(
-                (("./test1", ["consentOptions", "IdeaIC2021.3", "PyCharmCE2021.3"], []),))
+            os.walk.return_value = iter((("./test1", ["consentOptions", "IdeaIC2021.3", "PyCharmCE2021.3"], []),))
             os.getenv.return_value = "{HOME}"
             input_from_args = None
             version = "IdeaIC2021.3"
@@ -197,8 +196,7 @@ if "pytest" in sys.argv[0]:
 
         @unittest.mock.patch("os.walk")
         def test_input_single_intellij_version(self, mock_os):
-            os.walk.return_value = iter(
-                (("./test1", ["consentOptions", "IdeaIC2021.3"], []),))
+            os.walk.return_value = iter((("./test1", ["consentOptions", "IdeaIC2021.3"], []),))
             input_from_args = None
 
             version = None
@@ -207,8 +205,7 @@ if "pytest" in sys.argv[0]:
 
         @unittest.mock.patch("os.walk")
         def test_input_multiple_intellij_versions(self, mock_os):
-            os.walk.return_value = iter(
-                (('./test1', ['consentOptions', 'IdeaIC2021.3', "PyCharmCE2021.3"], []),))
+            os.walk.return_value = iter((("./test1", ["consentOptions", "IdeaIC2021.3", "PyCharmCE2021.3"], []),))
             input_from_args = None
 
             version = None

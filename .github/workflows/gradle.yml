@@ -1,1020 +1,124 @@
-name: Airbyte CI
+name: Connector Ops CI - Gradle Check
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
 on:
-  #ability to start task manually in Web UI
   workflow_dispatch:
-  schedule:
-    - cron: "0 */1 * * *"
   push:
-    branches-ignore:
-      - "gitbook/v1"
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 jobs:
-  # COMMON TASKS
-  ensure-images-exist:
-    name: "Ensure all required Docker images exist on Dockerhub"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh all
-  # The output of this job is used to trigger the following builds.
   changes:
-    name: "Detect Modified Files"
-    # The filtering action does not deal with well scheduled events so skip to avoid errors.
-    # See https://github.com/dorny/paths-filter/issues/100 for more info.
-    # This is okay this workflow is only scheduled on master, where we want to build everything
-    # so filtering is not required. Use always() in each start block to force the start task.
-    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      build: ${{ steps.filter.outputs.build }}
-      cli: ${{ steps.filter.outputs.cli }}
-      connectors: ${{ steps.filter.outputs.connectors }}
-      db: ${{ steps.filter.outputs.db }}
-      frontend: ${{ steps.filter.outputs.frontend }}
+      java: ${{ steps.changes.outputs.java }}
+
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: filter
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - id: changes
+        uses: dorny/paths-filter@v2
         with:
-          # Note, the following glob expression within a filters are ORs.
+          # Note: expressions within a filter are OR'ed
           filters: |
-            backend:
-              - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
-              - 'airbyte-integrations/connectors/(destination-jdbc|destination-postgres|source-jdbc|source-postgres)/**'
-              - 'airbyte-config/init/src/main/resources/seed/(source|destination)_definitions.yaml'
-            build:
-              - '.github/**'
-              - 'buildSrc/**'
-              - 'tools/**'
-              - '*.gradle'
-            cli:
-              - 'airbyte-api/**'
-              - 'octavia-cli/**'
-            connectors:
-              - 'airbyte-cdk/**'
-              - 'airbyte-protocol/**'
-              - 'airbyte-integrations/**'
-              - 'airbyte-commons-worker/**'
-            db:
-              - 'airbyte-db/**'
-            frontend:
-              - 'airbyte-api/src/main/openapi/config.yaml'
-              - 'airbyte-webapp/**'
-              - 'airbyte-webapp-e2e-tests/**'
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            java:
+              - '**/*.java'
+              - '**/*.gradle'
+              - '**/*.kt'
+              - 'airbyte-cdk/java/**/*'
 
-  # Uncomment to debug.
-  #  changes-output:
-  #    name: "Debug Change Detection Logic"
-  #    needs: changes
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - uses: actions/checkout@v3
-  #      - run: |
-  #          echo '${{ toJSON(needs) }}'
-
-  ## BUILDS
-  octavia-cli-build:
-    needs: changes
-    runs-on: ubuntu-latest
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-    name: "Octavia CLI: Build"
-    timeout-minutes: 90
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Format
-        run: SUB_BUILD=OCTAVIA_CLI ./gradlew format --scan --info --stacktrace
-
-      - name: Ensure no file change
-        run: ./tools/bin/check_for_file_changes
-
-      - name: Build
-        run: |
-          SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
-
-      - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
-
-      - name: Run integration tests
-        run: ./tools/bin/integration_tests_octavia.sh
-
-  # Connectors Base
-  # In case of self-hosted EC2 errors, remove this block.
-  start-connectors-base-build-runner:
-    name: "Connectors Base: Start Build EC2 Runner"
+  run-check:
     needs:
       - changes
-      - find_valid_pat
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: |
-      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    if: needs.changes.outputs.java == 'true'
+    # As of now, 16 cores seems to be enough.
+    # Any revision upwards should be based on a performance analysis of gradle scans.
+    # See https://github.com/airbytehq/airbyte/pull/36055 for an example of this,
+    # which explains why which we went down from 64 cores to 16.
+    runs-on: connector-test-large
+    name: Gradle Check
+    timeout-minutes: 30
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-
-  build-connectors-base:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
-    name: "Connectors Base: Build"
-    timeout-minutes: 90
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-
+        uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-node@v3
+          java-version: "21"
+      - name: Docker login
+        # We login to benefit from increased rate limits for docker pulls
+        # We can't do it on forks as pull_requests events on forks do not have access to GH secrets
+        if: github.event.pull_request.head.repo.fork != true
+        uses: docker/login-action@v3
         with:
-          node-version: "lts/gallium"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
-
-      - name: Install automake
-        run: apt-get install -y automake build-essential libtool libtool-bin autoconf
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Generate Template scaffold
-        run: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
-
-      - name: Format
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
-
-      - name: Build
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
-
-      - name: Ensure no file change
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
-
-      - name: Publish Connectors Base Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        id: connectors-test-results
-        if: always()
-        with:
-          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
-          json_file: connectors_base_results.json
-          json_test_case_results: true
-          check_name: "Connectors Base Test Results"
-
-      - name: Setup Google Cloud SDK
-        if: always()
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-          service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Prep Test Results For GCS
-        if: always()
-        run: |
-          python tools/bin/prep_test_results_for_gcs.py --json connectors_base_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
-
-      - name: Upload Test Results to GCS
-        if: always()
-        run: |
-          gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
-          echo "$filename"
-          gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
-
-      - name: Generate Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Connectors Base Test Report
-          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
-          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          reporter: java-junit
-
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-connectors-base-build-runner:
-    name: "Connectors Base: Stop Build EC2 Runner"
-    timeout-minutes: 10
-    needs:
-      - start-connectors-base-build-runner # required to get output from the start-runner job
-      - build-connectors-base # required to wait when the main job is done
-      - find_valid_pat
-    runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-    # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-connectors-base-build-runner.result != 'skipped'}}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
-
-  ## Frontend Test
-  # In case of self-hosted EC2 errors, remove this block.
-  start-frontend-runner:
-    name: "Frontend: Start EC2 Runner"
-    needs:
-      - changes
-      - find_valid_pat
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: |
-      needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
-      || (always() && needs.changes.outputs.backend == 'true')
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-  frontend-build:
-    name: "Frontend: Build"
-    needs:
-      - start-frontend-runner
-      - find_valid_pat
-    runs-on: ${{ needs.start-frontend-runner.outputs.label }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Build :airbyte-webapp
-        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
-
-      - name: Publish Storybook to Chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
-          token: ${{ needs.find_valid_pat.outputs.pat }}
-          workingDir: ./airbyte-webapp/
-          storybookBuildDir: build/storybook/
-          autoAcceptChanges: true
-          exitOnceUploaded: true
-
-  frontend-test:
-    name: "Frontend: Run End-to-End Tests"
-    needs:
-      - start-frontend-runner # required to have runner started
-    runs-on: ${{ needs.start-frontend-runner.outputs.label }} # run the job on the newly created runner
-    timeout-minutes: 120
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
-
-      - name: Run End-to-End Frontend Tests
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Run Gradle Check
+        uses: burrunan/gradle-cache-action@v1
         env:
-          CYPRESS_WEBAPP_KEY: ${{ secrets.CYPRESS_WEBAPP_KEY }}
-        run: ./tools/bin/e2e_test.sh
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-frontend-runner:
-    name: "Frontend: Stop Runner"
-    timeout-minutes: 10
-    needs:
-      - start-frontend-runner # required to get output from the start-runner job
-      - frontend-test # required to wait when the e2e-test job is done
-      - frontend-build # required to wait when then build job is done
-      - find_valid_pat
+          CI: true
+        with:
+          job-id: gradle-check
+          read-only: ${{ github.ref != 'refs/heads/master' }}
+          gradle-distribution-sha-256-sum-warning: false
+          concurrent: true
+          # TODO: be able to remove the skipSlowTests property
+          arguments: --scan check -DskipSlowTests=true
+
+  set-instatus-incident-on-failure:
+    name: Create Instatus Incident on Failure
     runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-    # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-frontend-runner.result != 'skipped'}}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-frontend-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
-
-  ## FOLLOWING BUILDS ARE ALL PLATFORM BUILDS.
-
-  # Main Platform
-  # In case of self-hosted EC2 errors, remove this block.
-  start-platform-build-runner:
-    name: "Platform: Start Build EC2 Runner"
     needs:
-      - changes
-      - find_valid_pat
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-    timeout-minutes: 10
+      - run-check
+    if: ${{ failure() && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Call Instatus Webhook
+        uses: joelwmale/webhook-action@master
+        with:
+          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
+          body: '{ "trigger": "down", "status": "HASISSUES" }'
+
+  set-instatus-incident-on-success:
+    name: Create Instatus Incident on Success
     runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-  platform-build:
-    name: "Platform: Build"
-    # In case of self-hosted EC2 errors, remove the next two lines and uncomment the currently commented out `runs-on` line.
-    needs: start-platform-build-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
-    timeout-minutes: 90
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Format
-        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
-
-      - name: Ensure no file change
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
-
-      - name: Build
-        run: |
-          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
-
-      - name: Integration test
-        run: |
-          SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
-
-      - name: Slow integration test
-        if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
-        run: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
-
-      - name: Test if Seed spec is updated
-        run: SUB_BUILD=PLATFORM ./gradlew format && git --no-pager diff && test -z "$(git --no-pager diff)"
-
-      # todo (cgardens) - scope by platform.
-      - name: Check documentation
-        if: success() && github.ref == 'refs/heads/master'
-        run: ./tools/site/link_checker.sh check_docs
-
-      #       This is only required on the usual github runner. The usual runner does not contain enough disk space for our use.
-      #      - name: Get Docker Space
-      #        run: docker run --rm busybox df -h
-
-      - name: Run End-to-End Acceptance Tests
-        run: ./tools/bin/acceptance_test.sh
-
-      - name: Automatic Migration Acceptance Test
-        run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
-
-      - uses: actions/setup-python@v4
-        if: always()
-        with:
-          python-version: "3.9"
-
-      - name: Publish Platform Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        id: platform-results
-        if: always()
-        with:
-          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
-          json_file: platform_results.json
-          json_test_case_results: true
-          check_name: "Platform Test Results"
-
-      - name: Setup Google Cloud SDK
-        if: always()
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-          service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Prep Test Results For GCS
-        if: always()
-        run: |
-          python tools/bin/prep_test_results_for_gcs.py --json platform_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
-
-      - name: Upload Test Results to GCS
-        if: always()
-        run: |
-          gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
-          echo "$filename"
-          gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
-
-      - name: Generate Test Report
-        uses: dorny/test-reporter@v1
-        if: always() # run this step even if previous step failed
-        with:
-          name: Platform Test Report with Docker E2E Test
-          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
-          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          reporter: java-junit
-
-      - name: Upload test results to BuildPulse for flaky test detection
-        if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
-        uses: Workshop64/buildpulse-action@main
-        with:
-          account: 59758427
-          repository: 283046497
-          path: "/actions-runner/_work/airbyte/airbyte/*"
-          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
-          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
-
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-platform-build-runner:
-    name: "Platform: Stop Build EC2 Runner"
-    timeout-minutes: 10
     needs:
-      - start-platform-build-runner # required to get output from the start-runner job
-      - platform-build # required to wait when the main job is done
-      - find_valid_pat
-    runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-    # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-platform-build-runner.result != 'skipped'}}
+      - run-check
+    if: ${{ success() && github.ref == 'refs/heads/master' }}
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Call Instatus Webhook
+        uses: joelwmale/webhook-action@master
         with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-platform-build-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
-
-  ## Kube Acceptance Tests
-  # Docker acceptance tests run as part of the build job.
-  # In case of self-hosted EC2 errors, remove this block.
-  start-kube-acceptance-test-runner:
-    name: "Platform: Start Kube Acceptance Test Runner"
-    needs:
-      - changes
-      - find_valid_pat
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - name: Start AWS Runner
-        id: start-ec2-runner
-        uses: ./.github/actions/start-aws-runner
-        with:
-          # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
-          ec2-image-id: ami-0c1a9bc22624339d8
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-  kube-acceptance-test:
-    name: "Platform: Acceptance Tests (Kube)"
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-kube-acceptance-test-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-kube-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
-    environment: more-secrets
-    timeout-minutes: 40
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Fix EC-2 Runner
-        run: |
-          mkdir -p /home/runner
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Create cluster config file
-        run: |
-          cat > /tmp/kind-config.yaml <<EOF
-          kind: Cluster
-          apiVersion: kind.x-k8s.io/v1alpha4
-          nodes:
-          - role: control-plane
-          - role: worker
-          EOF
-
-      - name: KIND Kubernetes Cluster Setup
-        uses: helm/kind-action@v1.2.0
-        with:
-          node_image: kindest/node:v1.21.2
-          config: /tmp/kind-config.yaml
-        # In case of self-hosted EC2 errors, remove this env block.
-        env:
-          USER: root
-          HOME: /home/runner
-          CHANGE_MINIKUBE_NONE_USER: true
-
-      - name: Build Platform Docker Images
-        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
-
-      - name: Run Kubernetes End-to-End Acceptance Tests
-        env:
-          USER: root
-          HOME: /home/runner
-          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
-          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-        run: |
-          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
-
-      - uses: actions/setup-python@v4
-        if: always()
-        with:
-          python-version: "3.9"
-
-      - name: Publish Kube Test Results
-        id: kube-results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
-          json_file: kube_results.json
-          json_test_case_results: true
-          check_name: "Kube Test Results"
-
-      - name: Setup Google Cloud SDK
-        if: always()
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-          service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Prep Test Results For GCS
-        if: always()
-        run: |
-          python tools/bin/prep_test_results_for_gcs.py --json kube_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
-
-      - name: Upload Test Results to GCS
-        if: always()
-        run: |
-          gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
-          echo "$filename"
-          gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
-
-      - name: Generate Test Report
-        uses: dorny/test-reporter@v1
-        if: always() # run this step even if previous step failed
-        with:
-          name: Platform Kubernetes E2E Test Report
-          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml"
-          reporter: java-junit
-
-      - name: Upload test results to BuildPulse for flaky test detection
-        if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
-        uses: Workshop64/buildpulse-action@main
-        with:
-          account: 59758427
-          repository: 283046497
-          path: "/actions-runner/_work/airbyte/airbyte/*"
-          key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
-          secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
-
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: Kubernetes Logs
-          path: /tmp/kubernetes_logs/*
-
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-kube-acceptance-test-runner:
-    name: "Platform: Stop Kube Acceptance Test EC2 Runner"
-    timeout-minutes: 10
-    needs:
-      - start-kube-acceptance-test-runner # required to get output from the start-runner job
-      - kube-acceptance-test # required to wait when the main job is done
-      - find_valid_pat
-    runs-on: ubuntu-latest
-    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-    # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-kube-acceptance-test-runner.result != 'skipped'}}
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-      - name: Stop EC2 runner
-        uses: supertopher/ec2-github-runner@base64v1.0.10
-        with:
-          mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-          label: ${{ needs.start-kube-acceptance-test-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-kube-acceptance-test-runner.outputs.ec2-instance-id }}
-
-  ## Kube Acceptance Tests
-  # Docker acceptance tests run as part of the build job.
-  # In case of self-hosted EC2 errors, remove this block.
-  # TODO:
-  # Kyryl to fix issue
-  # start-helm-acceptance-test-runner:
-  #   name: "Platform: Start Helm Acceptance Test Runner"
-  #   needs:
-  #     - changes
-  #     - find_valid_pat
-  #   # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-  #   if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-  #   timeout-minutes: 10
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     label: ${{ steps.start-ec2-runner.outputs.label }}
-  #     ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-  #   steps:
-  #     - name: Checkout Airbyte
-  #       uses: actions/checkout@v3
-  #     - name: Start AWS Runner
-  #       id: start-ec2-runner
-  #       uses: ./.github/actions/start-aws-runner
-  #       with:
-  #         # github-self-hosted-runner-ubuntu-20-with-150gdisk-docker-20.10.7-and-socat
-  #         ec2-image-id: ami-0c1a9bc22624339d8
-  #         aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-  #         github-token: ${{ needs.find_valid_pat.outputs.pat }}
-
-  # Todo: Kyrylo turn this on.
-  #  helm-acceptance-test:
-  #    name: "Platform: Acceptance Tests (Helm)"
-  #    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-  #    needs: start-helm-acceptance-test-runner # required to start the main job when the runner is ready
-  #    runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
-  #    environment: more-secrets
-  #    timeout-minutes: 90
-  #    steps:
-  #      - name: Checkout Airbyte
-  #        uses: actions/checkout@v3
-  #
-  #      - name: Cache Build Artifacts
-  #        uses: ./.github/actions/cache-build-artifacts
-  #        with:
-  #          cache-key: ${{ secrets.CACHE_VERSION }}
-  #          cache-python: "false"
-  #
-  #      - uses: actions/setup-java@v3
-  #        with:
-  #          distribution: "zulu"
-  #          java-version: "17"
-  #
-  #      - uses: actions/setup-node@v3
-  #        with:
-  #          node-version: "lts/gallium"
-  #
-  #      - name: Install unzip
-  #        shell: bash
-  #        run: sudo apt-get update && sudo apt-get install -y unzip
-  #
-  #      - uses: azure/setup-helm@v3
-  #        with:
-  #          version: 'latest'
-  #          token: ${{ secrets.GITHUB_TOKEN }}
-  #        id: install
-  #
-  #      - name: Fix EC-2 Runner
-  #        run: |
-  #          mkdir -p /home/runner
-  #
-  #      - name: Set up CI Gradle Properties
-  #        run: |
-  #          mkdir -p ~/.gradle/
-  #          cat > ~/.gradle/gradle.properties <<EOF
-  #          org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-  #            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-  #            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-  #            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-  #            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-  #          org.gradle.workers.max=8
-  #          org.gradle.vfs.watch=false
-  #          EOF
-  #
-  #      - name: Create cluster config file
-  #        run: |
-  #          cat > /tmp/kind-config.yaml <<EOF
-  #          kind: Cluster
-  #          apiVersion: kind.x-k8s.io/v1alpha4
-  #          nodes:
-  #          - role: control-plane
-  #          - role: worker
-  #          EOF
-  #
-  #      - name: KIND Kubernetes Cluster Setup
-  #        uses: helm/kind-action@v1.2.0
-  #        with:
-  #          node_image: kindest/node:v1.21.2
-  #          config: /tmp/kind-config.yaml
-  #        # In case of self-hosted EC2 errors, remove this env block.
-  #        env:
-  #          USER: root
-  #          HOME: /home/runner
-  #          CHANGE_MINIKUBE_NONE_USER: true
-  #
-  #      - name: Build Platform Docker Images
-  #        run: SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
-  #
-  #      - name: Run Helm End-to-End Acceptance Tests
-  #        env:
-  #          USER: root
-  #          HOME: /home/runner
-  #          # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
-  #          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-  #          SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
-  #          SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-  #        run: |
-  #          CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh
-  #
-  #      - uses: actions/upload-artifact@v3
-  #        if: failure()
-  #        with:
-  #          name: Kubernetes Logs
-  #          path: /tmp/kubernetes_logs/*
-
-  # In case of self-hosted EC2 errors, remove this block.
-  # Todo: Kyryl turn this on.
-  #  stop-helm-acceptance-test-runner:
-  #    name: "Platform: Stop Helm Acceptance Test EC2 Runner"
-  #    timeout-minutes: 10
-  #    needs:
-  #      - start-helm-acceptance-test-runner # required to get output from the start-runner job
-  #      - helm-acceptance-test # required to wait when the main job is done
-  #      - find_valid_pat
-  #    runs-on: ubuntu-latest
-  #    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
-  #    # Thus, we check for skipped here.
-  #    if: ${{ always() && needs.start-helm-acceptance-test-runner.result != 'skipped'}}
-  #    steps:
-  #      - name: Configure AWS credentials
-  #        uses: aws-actions/configure-aws-credentials@v1
-  #        with:
-  #          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-  #          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-  #          aws-region: us-east-2
-  #      - name: Stop EC2 runner
-  #        uses: supertopher/ec2-github-runner@base64v1.0.10
-  #        with:
-  #          mode: stop
-  #          github-token: ${{ needs.find_valid_pat.outputs.pat }}
-  #          label: ${{ needs.start-helm-acceptance-test-runner.outputs.label }}
-  #          ec2-instance-id: ${{ needs.start-helm-acceptance-test-runner.outputs.ec2-instance-id }}
+          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
+          body: '{ "trigger": "up" }'
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
-      - frontend-build
-      - octavia-cli-build
-      - platform-build
-      - kube-acceptance-test
-      # Todo: Kyryl turn this on.
-      # - helm-acceptance-test
+      - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Match GitHub User to Slack User
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to OSS Build Failure Slack Channel
         uses: abinoda/slack-action@master
         env:
@@ -1025,6 +129,7 @@ jobs:
             {\"type\":\"divider\"},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Merge to OSS Master failed! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
 
@@ -1032,14 +137,8 @@ jobs:
     name: "Notify Slack Channel on Build Fixes"
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
-      - frontend-build
-      - octavia-cli-build
-      - platform-build
-      - kube-acceptance-test
-      # Todo: Kyryl turn this on.
-      # - helm-acceptance-test
-    if: success()
+      - run-check
+    if: ${{ success() && github.event.pull_request.head.repo.fork != true }}
     steps:
       - name: Get Previous Workflow Status
         uses: Mercymeilya/last-workflow-status@v0.3

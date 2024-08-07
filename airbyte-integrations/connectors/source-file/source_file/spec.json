@@ -1,6 +1,5 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
-
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
@@ -21,6 +20,7 @@
           "jsonl",
           "excel",
           "excel_binary",
+          "fwf",
           "feather",
           "parquet",
           "yaml"
@@ -33,12 +33,21 @@
         "type": "string",
         "title": "Reader Options",
         "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-        "examples": ["{}", "{\"sep\": \" \"}"]
+        "examples": [
+          "{}",
+          "{\"sep\": \" \"}",
+          "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"] }"
+        ]
       },
       "url": {
         "type": "string",
         "title": "URL",
-        "description": "The URL path to access the file which should be replicated."
+        "description": "The URL path to access the file which should be replicated.",
+        "examples": [
+          "https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv",
+          "gs://my-google-bucket/data.csv",
+          "s3://gdelt-open-data/events/20190914.export.csv"
+        ]
       },
       "provider": {
         "type": "object",
@@ -74,6 +83,7 @@
               "service_account_json": {
                 "type": "string",
                 "title": "Service Account JSON",
+                "airbyte_secret": true,
                 "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
               }
             }

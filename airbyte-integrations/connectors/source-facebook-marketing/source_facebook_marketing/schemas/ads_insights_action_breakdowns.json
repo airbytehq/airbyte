@@ -1,14 +1,44 @@
 {
   "properties": {
-    "action_device": { "type": ["null", "string"] },
-    "action_canvas_component_name": { "type": ["null", "string"] },
-    "action_carousel_card_id": { "type": ["null", "string"] },
-    "action_carousel_card_name": { "type": ["null", "string"] },
-    "action_destination": { "type": ["null", "string"] },
-    "action_reaction": { "type": ["null", "string"] },
-    "action_target_id": { "type": ["null", "string"] },
-    "action_type": { "type": ["null", "string"] },
-    "action_video_sound": { "type": ["null", "string"] },
-    "action_video_type": { "type": ["null", "string"] }
+    "action_device": {
+      "description": "The device from which the action was performed.",
+      "type": ["null", "string"]
+    },
+    "action_canvas_component_name": {
+      "description": "The name of the canvas component where the action occurred.",
+      "type": ["null", "string"]
+    },
+    "action_carousel_card_id": {
+      "description": "The ID of the carousel card where the action occurred.",
+      "type": ["null", "string"]
+    },
+    "action_carousel_card_name": {
+      "description": "The name of the carousel card where the action occurred.",
+      "type": ["null", "string"]
+    },
+    "action_destination": {
+      "description": "The destination where the action was taken.",
+      "type": ["null", "string"]
+    },
+    "action_reaction": {
+      "description": "The user reaction associated with the action.",
+      "type": ["null", "string"]
+    },
+    "action_target_id": {
+      "description": "The ID of the target where the action took place.",
+      "type": ["null", "string"]
+    },
+    "action_type": {
+      "description": "The type of action performed.",
+      "type": ["null", "string"]
+    },
+    "action_video_sound": {
+      "description": "The sound setting for the video where the action occurred.",
+      "type": ["null", "string"]
+    },
+    "action_video_type": {
+      "description": "The type of video where the action occurred.",
+      "type": ["null", "string"]
+    }
   }
 }

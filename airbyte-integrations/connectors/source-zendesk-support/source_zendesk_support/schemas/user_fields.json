@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "User Fields",
+  "type": "object",
+  "properties": {
+    "active": {
+      "description": "Flag indicating if the user field is currently active or not.",
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "description": "Timestamp indicating when the user field was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "description": {
+      "description": "Detailed description of the user field.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for the user field.",
+      "type": ["null", "number"]
+    },
+    "key": {
+      "description": "Unique key associated with the user field.",
+      "type": ["null", "string"]
+    },
+    "position": {
+      "description": "Position index of the user field in the user profile.",
+      "type": ["null", "number"]
+    },
+    "raw_description": {
+      "description": "Raw HTML content for the user field description.",
+      "type": ["null", "string"]
+    },
+    "raw_title": {
+      "description": "Raw HTML content for the user field title.",
+      "type": ["null", "string"]
+    },
+    "regexp_for_validation": {
+      "description": "Regular expression for validating the user field value.",
+      "type": ["null", "string"]
+    },
+    "system": {
+      "description": "Flag indicating if the user field is a system default field or a custom field.",
+      "type": ["null", "boolean"]
+    },
+    "tag": {
+      "description": "Tag associated with the user field for categorization.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "Title or name of the user field.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "Data type of the user field value.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "Timestamp indicating when the user field was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "URL pointing to the user field's endpoint for detailed information.",
+      "type": ["null", "string"]
+    }
+  }
+}

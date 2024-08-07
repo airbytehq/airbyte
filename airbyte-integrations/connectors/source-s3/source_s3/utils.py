@@ -1,17 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import multiprocessing as mp
 import traceback
 from multiprocessing import Queue
 from typing import Any, Callable, List, Mapping
 
 import dill
-from airbyte_cdk.logger import AirbyteLogger
 
 
-def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger: AirbyteLogger, args: List[Any]) -> Mapping[str, Any]:
+def run_in_external_process(fn: Callable, timeout: int, max_timeout: int, logger: logging.Logger, args: List[Any]) -> Mapping[str, Any]:
     """
     fn passed in must return a tuple of (desired return value, Exception OR None)
     This allows propagating any errors from the process up and raising accordingly
@@ -50,5 +50,5 @@ def multiprocess_queuer(func: Callable, queue: mp.Queue, *args: Any, **kwargs: A
     queue.put(dill.loads(func)(*args, **kwargs))
 
 
-def get_value_or_json_if_empty_string(options: str) -> str:
-    return options.strip() or "{}"
+def get_value_or_json_if_empty_string(options: str = None) -> str:
+    return options.strip() if options else "{}"

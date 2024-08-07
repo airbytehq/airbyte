@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.cdk.db.DataTypeUtils;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;

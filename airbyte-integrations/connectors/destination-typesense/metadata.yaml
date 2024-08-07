@@ -1,0 +1,36 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 36be8dc6-9851-49af-b776-9d4c30e4ab6a
+  dockerImageTag: 0.1.17
+  dockerRepository: airbyte/destination-typesense
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  githubIssueLabel: destination-typesense
+  icon: typesense.svg
+  license: MIT
+  name: Typesense
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/typesense
+  tags:
+    - language:python
+    - cdk:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-TYPESENSE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

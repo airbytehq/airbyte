@@ -1,0 +1,52 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+compileTestKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations')
+
+    // Re-export dependencies for gcs-destinations.
+    api 'com.amazonaws:aws-java-sdk-s3:1.12.647'
+    api 'com.amazonaws:aws-java-sdk-sts:1.12.647'
+    api ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    api 'com.github.alexmojaki:s3-stream-upload:2.2.4'
+    api 'org.apache.avro:avro:1.11.3'
+    api 'org.apache.commons:commons-csv:1.10.0'
+    api 'org.apache.commons:commons-text:1.11.0'
+    api ('org.apache.hadoop:hadoop-aws:3.3.6') { exclude group: 'com.amazonaws', module: 'aws-java-sdk-bundle' }
+    api ('org.apache.hadoop:hadoop-common:3.3.6') {
+        exclude group: 'org.apache.zookeeper'
+        exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+    }
+    api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.6') {
+        exclude group: 'org.apache.zookeeper'
+        exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
+    }
+    api 'org.apache.parquet:parquet-avro:1.13.1'
+    runtimeOnly 'com.hadoop.gplcompression:hadoop-lzo:0.4.20'
+
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations'))
+
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+}
