@@ -103,10 +103,12 @@ class MgramsevaStream(HttpStream, ABC):
 class MgramsevaDemands(MgramsevaStream):
     """object for consumer demands"""
 
-    def __init__(self, headers: dict, request_info: dict, user_request: dict, start_date: datetime, end_date: datetime, **kwargs):
+    def __init__(
+        self, headers: dict, request_info: dict, user_request: dict, tenantid: str, start_date: datetime, end_date: datetime, **kwargs
+    ):
         """specify endpoint for demands and call super"""
         params = {
-            "tenantId": "br.testing",
+            "tenantId": tenantid,
             "businessService": "WS",
             "periodFrom": int(1000 * start_date.timestamp()),
             "periodTo": int(1000 * end_date.timestamp()),
@@ -117,14 +119,14 @@ class MgramsevaDemands(MgramsevaStream):
 class MgramsevaBills(MgramsevaStream):
     """object for consumer bills"""
 
-    def __init__(self, headers: dict, request_info: dict, user_request: dict, consumer_codes: list, **kwargs):
+    def __init__(self, headers: dict, request_info: dict, user_request: dict, tenantid: str, consumer_codes: list, **kwargs):
         """specify endpoint for bills and call super"""
         self.headers = headers
         self.request_info = request_info
         self.user_request = user_request
         self.consumer_codes = consumer_codes
         self.params = {
-            "tenantId": "br.testing",
+            "tenantId": tenantid,
             "businessService": "WS",
         }
 
@@ -148,13 +150,16 @@ class MgramsevaBills(MgramsevaStream):
 class MgramsevaTenantExpenses(MgramsevaStream):
     """object for tenant payments"""
 
-    def __init__(self, headers: dict, request_info: dict, user_request: dict, **kwargs):
+    def __init__(self, headers: dict, request_info: dict, user_request: dict, tenantid: str, fromdate: int, todate: int, **kwargs):
         """
         specify endpoint for demands and call super
         1672531200000 = 2023-01-01 00:00
         1830297600000 = 2028-01-01 00:00
         """
-        params = {"tenantId": "br.testing", "fromDate": 1672531200000, "toDate": 1830297600000}
+        self.tenantid = tenantid
+        self.fromdate = fromdate
+        self.todate = todate
+        params = {"tenantId": self.tenantid, "fromDate": self.fromdate, "toDate": self.todate}
         super().__init__(
             "echallan-services/eChallan/v1/_expenseDashboard", headers, request_info, user_request, params, "ExpenseDashboard", **kwargs
         )
@@ -163,15 +168,19 @@ class MgramsevaTenantExpenses(MgramsevaStream):
         """
         :this response has only one object, so return it
         """
-        return [{"data": response.json()[self.response_key], "id": "1"}]
+        expenses = response.json()[self.response_key]
+        expenses["tenantId"] = self.tenantid
+        expenses["fromDate"] = self.fromdate
+        expenses["toDate"] = self.todate
+        return [{"data": expenses, "id": "1"}]
 
 
 class MgramsevaPayments(MgramsevaStream):
     """object for consumer payments"""
 
-    def __init__(self, headers: dict, request_info: dict, user_request: dict, **kwargs):
+    def __init__(self, headers: dict, request_info: dict, user_request: dict, tenantid: str, **kwargs):
         """specify endpoint for payments and call super"""
-        params = {"tenantId": "br.testing", "businessService": "WS"}
+        params = {"tenantId": tenantid, "businessService": "WS"}
         super().__init__("collection-services/payments/WS/_search", headers, request_info, user_request, params, "Payments", **kwargs)
 
 
@@ -259,23 +268,34 @@ class SourceMgramseva(AbstractSource):
         self.setup(config)
         self.get_auth_token()
 
-        # Generate streams for each object type
-        streams = [
-            MgramsevaPayments(self.headers, self.request_info, self.user_request),
-            MgramsevaTenantExpenses(self.headers, self.request_info, self.user_request),
-        ]
+        tenant_expenses_from = datetime.strptime(config.get("tenant_expenses_from", "2022-01-01"), "%Y-%m-%d")
+        tenant_expenses_to = datetime.strptime(config.get("tenant_expenses_to", "2022-01-01"), "%Y-%m-%d")
 
         start_date = datetime.strptime(config.get("start_date", "2022-01-01"), "%Y-%m-%d").replace(tzinfo=pytz.UTC)
         end_date = datetime.today().replace(tzinfo=pytz.UTC)
 
-        demand_stream = MgramsevaDemands(self.headers, self.request_info, self.user_request, start_date, end_date)
-        streams.append(demand_stream)
+        for tenantid in self.config["tenantids"]:
+            # Generate streams for each object type
+            streams = [
+                MgramsevaPayments(self.headers, self.request_info, self.user_request, tenantid),
+                MgramsevaTenantExpenses(
+                    self.headers,
+                    self.request_info,
+                    self.user_request,
+                    tenantid,
+                    int(tenant_expenses_from.timestamp() * 1000),
+                    int(tenant_expenses_to.timestamp() * 1000),
+                ),
+            ]
 
-        # and now we need bills for each consumer
-        consumer_codes = set()
-        for demand in demand_stream.read_records(SyncMode.full_refresh):
-            consumer_codes.add(demand["data"]["consumerCode"])
+            demand_stream = MgramsevaDemands(self.headers, self.request_info, self.user_request, tenantid, start_date, end_date)
+            streams.append(demand_stream)
 
-        streams.append(MgramsevaBills(self.headers, self.request_info, self.user_request, list(consumer_codes)))
+            # and now we need bills for each consumer
+            consumer_codes = set()
+            for demand in demand_stream.read_records(SyncMode.full_refresh):
+                consumer_codes.add(demand["data"]["consumerCode"])
 
-        return streams
+            streams.append(MgramsevaBills(self.headers, self.request_info, self.user_request, tenantid, list(consumer_codes)))
+
+            return streams
