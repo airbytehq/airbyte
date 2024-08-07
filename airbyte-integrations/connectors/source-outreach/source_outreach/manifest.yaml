@@ -185,7 +185,7 @@ definitions:
     request_parameters:
       count: "false"
       sort: updatedAt
-      page[size]: "1"
+      page[size]: "1000"
     request_headers: {}
     authenticator:
       type: OAuthAuthenticator
