@@ -773,11 +773,10 @@ E.G.: running Poe tasks on the modified internal packages of the current branch:
 
 ### <a id="migrate-to-manifest-only-command"></a>`migrate-to-manifest-only` command
 
-This command migrates valid connectors to the `manifest-only` format. It contains three steps:
+This command migrates valid connectors to the `manifest-only` format. It contains two steps:
 
-1. Check -> Validates whether a connector is a candidate for the migration. If not, the operation will be skipped.
-2. Strip -> Strips out all unneccessary files/folders, leaving only the root-level manifest, metadata, icon, and acceptance/integration test files
-3. Update -> Updates the connector's metadata and test-config, and generates a templated README
+1. Check: Validates whether a connector is a candidate for the migration. If not, the operation will be skipped.
+2. Migrate: Strips out all unneccessary files/folders, leaving only the root-level manifest, metadata, icon, and acceptance/integration test files. Unwraps the manifest (references and `$parameters`) so it's compatible with Connector Builder.
 
 #### Examples
 
