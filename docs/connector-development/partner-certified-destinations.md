@@ -16,12 +16,13 @@ This document outlines the minimum expectations for partner-certified destinatio
 
 ## “Partner-Certified" Listing Requirements:
 
-1. Create a public Github repo/project for issue tracking, (to be shared with Airbyte and it's users).
-2. Respect a 3 business day SLA for first response to customer inquries or bug reports.
-3. Maintain >=95% first-sync success and >=95% overall sync success metrics on your destination connector. Note: config_errors are not counted against this metric.
-4. Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commitment to update the connector to meet any new platform requirements at least once every 6 months.
-5. Important bugs are audited and major problems are solved within a reasonable timeframe.
-6. Validate that the connector is using HTTPS and secure-only access to customer data.
+1. Issue Tracking: Create a public Github repo/project to be shared with Airbyte and it's users.
+2. Airbyte Communications: Monitor a Slack channel for communications directly from the Airbyte Support and Development teams.
+3. SLAs: Respect a 3 business day first response maximum to customer inquries or bug reports.
+4. Metrics: Maintain >=95% first-sync success and >=95% overall sync success on your destination connector. _Note: config_errors are not counted against this metric._
+5. Platform Updates: Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commit to updating your connector to meet any new platform requirements at least once every 6 months.
+6. Connector Updates: Important bugs are audited and major problems are solved within a reasonable timeframe.
+7. Security: Validate that the connector is using HTTPS and secure-only access to customer data.
 
 
 ## Functional Requirements of Certified Destinations:
