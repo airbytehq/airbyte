@@ -173,6 +173,22 @@
             "object_with_null_properties": {
               "type": "object",
               "properties": null
+            },
+            "combined_with_null": {
+              "type": ["string", "null"]
+            },
+            "union_with_null": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "combined_nulls": {
+              "type": ["null", "null"]
             }
           }
         }

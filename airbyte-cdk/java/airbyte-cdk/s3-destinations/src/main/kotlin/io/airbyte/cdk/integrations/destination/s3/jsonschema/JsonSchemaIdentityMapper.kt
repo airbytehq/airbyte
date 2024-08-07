@@ -9,6 +9,10 @@ import io.airbyte.commons.jackson.MoreMappers
 
 open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
 
+    override fun mapNull(schema: ObjectNode): ObjectNode {
+        return schema.deepCopy()
+    }
+
     override fun mapObjectWithProperties(schema: ObjectNode): ObjectNode {
         val newSchema = MoreMappers.initMapper().createObjectNode()
         val newProperties = MoreMappers.initMapper().createObjectNode()
