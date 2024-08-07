@@ -2,31 +2,34 @@
 products: all
 ---
 
-# Review the Connection Timeline
+# Review the connection timeline
 
 The Connection Timeline displays information about several types of relevant connection events. The following events are included in the Connection Timeline: 
 - Sync
 - Refresh
 - Clear
-- Version changes
-- Schema changes
-- Connection configuration changes
+- Connector Version changes (coming soon)
+- Schema changes (coming soon)
+- Connection configuration changes (coming soon)
+
+To review the Connection Timeline, click a connection in the list and navigate to the "Timeline" tab to view its event history. The page displays recent events and their statuses. Where relevant, the event will also show the user who took the action.
 
 ![Timeline](./assets/cloud-timeline-page.png)
 
-To review the Connection Timeline, click a connection in the list and navigate to the "Timeline" tab to view its event history. The page displays recent events and their statuses. 
-
 ## Sync, Refresh, and Clear events
 
-Syncs, [Refreshes](/operator-guides/refreshes), and [Clears](/operator-guides/clear) will have a status associated to the event. 
+Completed Syncs, [Refreshes](/operator-guides/refreshes), and [Clears](/operator-guides/clear) will have a status associated to the event. 
 
 | Status              | Description                                                       |
 | ------------------- | ----------------------------------------------------------------- |
 | Succeeded           | 100% of the data has been extracted and loaded to the destination |
-| Partially Succeeded | A subset of the data has been loaded to the destination           |
-| Failed              | None of the data has been loaded to the destination               |
-| Cancelled           | The sync was cancelled manually before finishing                  |
+| Incomplete          | The sync encountered an error, and should resolve itself. A subset or none of the data has been loaded to the destination.           |
+| Failed              | The sync encountered a fatal error, and needs user intervention to resolve. A subset or none of the data has been loaded to the destination.               |
+| Cancelled           | The sync was cancelled manually before finishing.                  |
 | Running             | The sync is currently running                                     |
+
+
+Airbyte will also separately record when a sync has been manually started by a user. 
 
 For sync and refresh events, Airbyte also shows the volume of synced data, such as the amount of data moved, the number of records read and committed, and the total sync time. Reviewing this timeline can help you monitor the connection and identify any potential issues.
 
