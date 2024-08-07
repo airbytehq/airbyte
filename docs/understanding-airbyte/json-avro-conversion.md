@@ -12,7 +12,7 @@ Json schema types are mapped to Avro types as follows:
 | :------------: | :------------: |
 |     string     |     string     |
 |     number     |     double     |
-|    integer     |      int       |
+|    integer     |      long      |
 |    boolean     |    boolean     |
 |      null      |      null      |
 |     object     |     record     |
@@ -32,7 +32,7 @@ The following built-in Json formats will be mapped to Avro logical types.
 | `string`  | `time`               | `long`    | `time-micros`      | Number of microseconds after midnight ([reference](https://avro.apache.org/docs/current/spec.html#Time+%28microsecond+precision%29)).                   |
 | `string`  | `date-time`          | `long`    | `timestamp-micros` | Number of microseconds from `1970-01-01T00:00:00Z` ([reference](https://avro.apache.org/docs/current/spec.html#Timestamp+%28microsecond+precision%29)). |
 
-In the final Avro schema, these Avro logical type fields will be a union of the logical type and string. The rationale is that the incoming Json objects may contain invalid Json built-in formats. If that's the case, and the conversion from the Json built-in format to Avro built-in format fails, the field will fall back to a string. The extra string type can cause problem for some users in the destination. We may re-evaluate this conversion rule in the future. This issue is tracked [here](https://github.com/airbytehq/airbyte/issues/17011).
+In the final Avro schema, these logical type fields will be typed as a union of null and the logical type. The logical type will be stored as UTC, respecting timezone as/applicable. If the incoming data cannot be converted, the field will be nulled, and the failure will be captured in `_airbyte_meta.changes[]`.
 
 **Date**
 
@@ -65,8 +65,7 @@ and the Avro schema is:
     {
       "type": "int",
       "logicalType": "date"
-    },
-    "string"
+    }
   ]
 }
 ```
@@ -102,8 +101,7 @@ and the Avro schema is:
     {
       "type": "long",
       "logicalType": "time-micros"
-    },
-    "string"
+    }
   ]
 }
 ```
@@ -139,8 +137,7 @@ and the Avro schema is:
     {
       "type": "long",
       "logicalType": "timestamp-micros"
-    },
-    "string"
+    }
   ]
 }
 ```
@@ -348,7 +345,7 @@ Note that the first object in `array_field` originally does not have a `message`
 
 ### Untyped Array
 
-When a Json array field has no `items`, the element in that array field may have any type. However, Avro requires that each array has a clear type specification. To solve this problem, the elements in the array are forced to be `string`s.
+When a Json array field has no `items`, the element in that array field may have any type. However, Avro requires that each array has a clear type specification. To solve this problem, the json array is serialized into its string representation.
 
 For example, given the following Json schema and object:
 
@@ -379,10 +376,7 @@ the corresponding Avro schema and object will be:
       "name": "identifier",
       "type": [
         "null",
-        {
-          "type": "array",
-          "items": ["null", "string"]
-        }
+        "string"
       ],
       "default": null
     }
@@ -392,11 +386,9 @@ the corresponding Avro schema and object will be:
 
 ```json
 {
-  "identifier": ["151", "152", "true", "{\"id\": 153}", null]
+  "identifier": "[151, 152, true, {\"id\": 153}, null]"
 }
 ```
-
-Note that every non-null element inside the `identifier` array field is converted to string.
 
 ### Airbyte-Specific Fields
 
@@ -404,21 +396,14 @@ Three Airbyte specific fields will be added to each Avro record:
 
 | Field                            | Schema             |                                          Document                                           |
 | :------------------------------- | :----------------- | :-----------------------------------------------------------------------------------------: |
-| `_airbyte_ab_id`                 | `uuid`             |                 [link](http://avro.apache.org/docs/current/spec.html#UUID)                  |
-| `_airbyte_emitted_at`            | `timestamp-millis` | [link](http://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
-| `_airbyte_additional_properties` | `map` of `string`  |                                   See explanation below.                                    |
+| `_airbyte_raw_id`                | `uuid`             |                 [link](http://avro.apache.org/docs/current/spec.html#UUID)                  |
+| `_airbyte_extracted_at`          | `timestamp-millis` | [link](http://avro.apache.org/docs/current/spec.html#Timestamp+%28millisecond+precision%29) |
+| `_airbyte_generation_id`         | `long`             |                     https://github.com/airbytehq/airbyte/issues/17011                       |
+| `_airbyte_meta`                  | `record`           |                                                                                             |
 
 ### Additional Properties
 
-A Json object can have additional properties of unknown types, which is not compatible with the Avro schema. To solve this problem during Json to Avro object conversion, we introduce a special field: `_airbyte_additional_properties` typed as a nullable `map` from `string` to `string`:
-
-```json
-{
-  "name": "_airbyte_additional_properties",
-  "type": ["null", { "type": "map", "values": "string" }],
-  "default": null
-}
-```
+A Json object can have additional properties of unknown types, which is not compatible with the Avro schema. These properties will be silently dropped.
 
 For example, given the following Json schema:
 
@@ -453,20 +438,13 @@ will be converted to the following Avro object:
 
 ```json
 {
-  "username": "admin",
-  "_airbyte_additional_properties": {
-    "active": "true",
-    "age": "21",
-    "auth": "{\"auth_type\":\"ssl\",\"api_key\":\"abcdefg/012345\",\"admin\":false,\"id\":1000}"
-  }
+  "username": "admin"
 }
 ```
 
-Note that all fields other than the `username` is moved under `_ab_additional_properties` as serialized strings, including the original object `auth`.
-
 ### Untyped Object
 
-If an `object` field has no `properties` specification, all fields within this `object` will be put into the aforementioned `_airbyte_additional_properties` field.
+If an `object` field has no `properties` specification, the entire json object will be serialized into its string representation.
 
 For example, given the following Json schema and object:
 
@@ -488,26 +466,12 @@ the corresponding Avro schema and record will be:
 
 ```json
 {
-  "type": "record",
-  "name": "record_without_properties",
-  "fields": [
-    {
-      "name": "_airbyte_additional_properties",
-      "type": ["null", { "type": "map", "values": "string" }],
-      "default": null
-    }
-  ]
+  "type": "string"
 }
 ```
 
 ```json
-{
-  "_airbyte_additional_properties": {
-    "username": "343-guilty-spark",
-    "password": "1439",
-    "active": "true"
-  }
-}
+"{\"username\":\"343-guilty-spark\",\"password\":1439,\"active\":true}"
 ```
 
 ### Untyped Field
@@ -553,17 +517,59 @@ Its corresponding Avro schema will be:
   "type": "record",
   "fields": [
     {
-      "name": "_airbyte_ab_id",
+      "name": "_airbyte_raw_id",
       "type": {
         "type": "string",
         "logicalType": "uuid"
       }
     },
     {
-      "name": "_airbyte_emitted_at",
+      "name": "_airbyte_extracted_at",
       "type": {
         "type": "long",
         "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "_airbyte_generation_id",
+      "type": "long"
+    },
+    {
+      "name" : "_airbyte_meta",
+      "type" : {
+        "type" : "record",
+        "name" : "_airbyte_meta",
+        "namespace" : "",
+        "fields" : [
+          {
+            "name" : "sync_id",
+            "type" : "long"
+          },
+          {
+            "name" : "changes",
+            "type" : {
+              "type" : "array",
+              "items" : {
+                "type" : "record",
+                "name" : "change",
+                "fields" : [
+                  {
+                    "name" : "field",
+                    "type" : "string"
+                  },
+                  {
+                    "name" : "change",
+                    "type" : "string"
+                  },
+                  {
+                    "name" : "reason",
+                    "type" : "string"
+                  }
+                ]
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -589,11 +595,6 @@ Its corresponding Avro schema will be:
               "type": ["null", "int"],
               "doc": "_airbyte_original_name:field_with_spécial_character",
               "default": null
-            },
-            {
-              "name": "_airbyte_additional_properties",
-              "type": ["null", { "type": "map", "values": "string" }],
-              "default": null
             }
           ]
         }
@@ -604,14 +605,8 @@ Its corresponding Avro schema will be:
       "name": "created_at",
       "type": [
         "null",
-        { "type": "long", "logicalType": "timestamp-micros" },
-        "string"
+        { "type": "long", "logicalType": "timestamp-micros" }
       ],
-      "default": null
-    },
-    {
-      "name": "_airbyte_additional_properties",
-      "type": ["null", { "type": "map", "values": "string" }],
       "default": null
     }
   ]
