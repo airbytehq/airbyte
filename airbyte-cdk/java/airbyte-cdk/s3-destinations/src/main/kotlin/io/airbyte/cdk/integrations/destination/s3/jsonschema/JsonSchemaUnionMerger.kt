@@ -72,6 +72,15 @@ class JsonSchemaUnionMerger : JsonSchemaIdentityMapper() {
         val options = schema["oneOf"] ?: schema["anyOf"] ?: schema["allOf"]
         for (oldOption in options) {
             val remappedOldOption = mapSchema(oldOption as ObjectNode)
+
+            // Drop null types from the union.
+            if (
+                AirbyteJsonSchemaType.fromJsonSchema(remappedOldOption) ==
+                    AirbyteJsonSchemaType.NULL
+            ) {
+                continue
+            }
+
             if (seenSet.contains(remappedOldOption)) {
                 continue
             }
@@ -94,10 +103,21 @@ class JsonSchemaUnionMerger : JsonSchemaIdentityMapper() {
         // Special case: only one option remains: this is no longer a union
         if (newOptions.size() == 1) {
             return newOptions[0] as ObjectNode
+        } else if (newOptions.size() == 0) {
+            // If there are no options, it's because they were all nulls
+            // Which probably shouldn't happen.
+            val nullSchema = MoreMappers.initMapper().createObjectNode()
+            nullSchema.put("type", "null")
+            return nullSchema
         }
 
         newSchema.replace("oneOf", newOptions)
 
         return newSchema
+    }
+
+    override fun mapCombined(schema: ObjectNode): ObjectNode {
+        val toUnion = super.mapCombined(schema)
+        return mapUnion(toUnion)
     }
 }

@@ -11,6 +11,7 @@ abstract class JsonSchemaMapper {
         val schemaType = AirbyteJsonSchemaType.fromJsonSchema(schema)
 
         return when (schemaType) {
+            AirbyteJsonSchemaType.NULL -> mapNull(schema)
             AirbyteJsonSchemaType.OBJECT_WITH_PROPERTIES -> mapObjectWithProperties(schema)
             AirbyteJsonSchemaType.OBJECT_WITHOUT_PROPERTIES -> mapObjectWithoutProperties(schema)
             AirbyteJsonSchemaType.ARRAY_WITH_ITEMS -> mapArrayWithItems(schema)
@@ -31,6 +32,7 @@ abstract class JsonSchemaMapper {
         }
     }
 
+    abstract fun mapNull(schema: ObjectNode): ObjectNode
     abstract fun mapObjectWithProperties(schema: ObjectNode): ObjectNode
     abstract fun mapObjectWithoutProperties(schema: ObjectNode): ObjectNode
     abstract fun mapArrayWithItems(schema: ObjectNode): ObjectNode
