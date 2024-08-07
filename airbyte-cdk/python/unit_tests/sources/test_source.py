@@ -452,6 +452,10 @@ def test_internal_config_limit(mocker, abstract_source, catalog):
 SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
 
 
+def test_assert_true():
+    assert False, "adding this test to see how it behaves in CI"
+
+
 def test_source_config_no_transform(mocker, abstract_source, catalog):
     SLICE_DEBUG_LOG_COUNT = 1
     TRACE_STATUS_COUNT = 3
