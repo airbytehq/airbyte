@@ -270,3 +270,46 @@ def shipping_zone_methods_http_calls():
             "response": {"text": get_json_contents("shipping_zone_methods.json", __file__)},
         },
     ]
+
+
+def tax_classes_http_calls():
+    return [
+        {
+            "request": {
+                "url": build_url("taxes/classes"),
+                "is_regex": False
+            },
+            "response": {"text": get_json_contents("tax_classes.json", __file__)},
+        },
+    ]
+
+
+def tax_rates_http_calls():
+    return [
+        {
+            "request": {
+                "url": build_url("taxes"),
+                "is_regex": False
+            },
+            "response": {"text": get_json_contents("tax_rates.json", __file__)},
+        },
+    ]
+
+
+def orders_empty_last_page():
+    return [
+        {
+            "request": {
+                "url": build_url("orders", modified_after=".+", modified_before=".+", is_regex=True),
+                "is_regex": True
+            },
+            "response": {"text": get_json_contents("orders.json", __file__)},
+        },
+        {
+            "request": {
+                "url": build_url("orders", modified_after=".+", modified_before=".+", is_regex=True),
+                "is_regex": True
+            },
+            "response": {"text": "[]"},
+        },
+    ]

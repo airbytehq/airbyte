@@ -7,7 +7,7 @@ import pytest
 import requests_mock
 from freezegun import freeze_time
 
-from airbyte_cdk.test.utils.assertions import assert_good_read
+from airbyte_cdk.test.utils.assertions import assert_good_read, is_not_in_logs
 from airbyte_cdk.test.utils.reading import read_records
 from airbyte_protocol.models import SyncMode
 
@@ -31,7 +31,7 @@ from .conftest import (
     shipping_zone_locations_http_calls,
     shipping_zone_methods_http_calls,
     shipping_zones_http_calls,
-    system_status_tools_http_calls,
+    system_status_tools_http_calls, orders_empty_last_page, tax_classes_http_calls, tax_rates_http_calls,
 )
 
 
@@ -58,6 +58,8 @@ def modified_before() -> str:
         ("shipping_methods", 3, shipping_methods_http_calls()),
         ("shipping_zones", 2, shipping_zones_http_calls()),
         ("system_status_tools", 9, system_status_tools_http_calls()),
+        ("tax_classes", 3, tax_classes_http_calls()),
+        ("tax_rates", 10, tax_rates_http_calls()),
         # Streams with parent streams
         ("order_notes", 6, order_notes_http_calls()),
         ("product_attribute_terms", 14, product_attribute_terms_http_calls()),
@@ -70,6 +72,30 @@ def modified_before() -> str:
 def test_read_simple_endpoints_successfully(stream_name, num_records, http_calls, **kwargs) -> None:
     """Test basic read for  all streams that don't have parent streams."""
 
+    # Register mock responses
+    for call in http_calls:
+        request, response = call["request"], call["response"]
+        matcher = re.compile(request["url"]) if request["is_regex"] else request["url"]
+        kwargs["mock"].get(matcher, **response)
+
+    # Read records
+    output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
+
+    # Check read was successful
+    assert_good_read(output, num_records)
+
+
+@freeze_time("2017-02-10T00:00:00")
+@requests_mock.Mocker(kw="mock")
+@pytest.mark.parametrize(
+    "stream_name, num_records, http_calls",
+    [
+        ("orders", 2, orders_empty_last_page()),
+    ]
+)
+def test_read_with_multiple_pages_with_empty_last_page_successfully(stream_name, num_records, http_calls, **kwargs) -> None:
+    """Test basic read for streams that have multiple pages."""
+
     # Register mock response
     for call in http_calls:
         request, response = call["request"], call["response"]
@@ -81,3 +107,4 @@ def test_read_simple_endpoints_successfully(stream_name, num_records, http_calls
 
     # Check read was successful
     assert_good_read(output, num_records)
+    assert is_not_in_logs("StopIteration", output)
