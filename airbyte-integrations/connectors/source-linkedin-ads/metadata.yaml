@@ -99,7 +99,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:low-code
+    - cdk:python
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
