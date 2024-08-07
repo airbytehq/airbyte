@@ -24,3 +24,10 @@ PYTHON_3_10_14 = PublishedImage(
     tag="3.10.14-slim-bookworm",
     sha="3b37199fbc5a730a551909b3efa7b29105c859668b7502451c163f2a4a7ae1ed",
 )
+
+PYPY_3_10_14 = PublishedImage(
+    registry="docker.io",
+    repository="pypy",
+    tag="3.10-slim-bookworm",
+    sha="8fb8431a68aacf652db50a5aeafcfb04b9f66e67b5d6a2bd848d4dfa100be4f8",
+)

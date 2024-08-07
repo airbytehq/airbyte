@@ -57,7 +57,7 @@ def get_main_file_name(connector: Connector) -> str:
 
 def get_entrypoint(connector: Connector) -> List[str]:
     main_file_name = get_main_file_name(connector)
-    return ["python", f"/airbyte/integration_code/{main_file_name}"]
+    return ["pypy", f"/airbyte/integration_code/{main_file_name}"]
 
 
 def apply_airbyte_entrypoint(connector_container: Container, connector: Connector) -> Container:
