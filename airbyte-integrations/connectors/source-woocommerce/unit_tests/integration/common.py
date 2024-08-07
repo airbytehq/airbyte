@@ -1,4 +1,4 @@
-from typing import MutableMapping, Any
+from typing import MutableMapping, Any, Optional
 
 import source_woocommerce
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
@@ -22,11 +22,17 @@ def common_params():
     return "orderby=id&order=asc&dates_are_gmt=true&per_page=100"
 
 
-def endpoint_url(stream_name: str, path_parameter: str = None) -> str:
-    if path_parameter:
-        return f"{url_base()}/{path_parameter}/{stream_name}"
+def endpoint_url(stream_name: str, custom_resource_path: Optional[str] = None, path_parameter: Optional[str] = None) -> str:
+    url = url_base()
+    resource_path = stream_name
 
-    return f"{url_base()}/{stream_name}"
+    if custom_resource_path:
+        resource_path = custom_resource_path
+
+    if path_parameter:
+        return f"{url}/{path_parameter}/{resource_path}"
+
+    return f"{url}/{resource_path}"
 
 
 def url_base() -> str:
