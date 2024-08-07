@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 455d10e4-7d80-491a-93eb-a965d49e6e7b
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-glific
+  githubIssueLabel: source-glific
+  icon: glific.svg
+  license: MIT
+  name: Glific
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/glific
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
