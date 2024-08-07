@@ -156,27 +156,34 @@ class StateManagerFactory(
             return null
         }
 
-        fun pkOrNull(pkColumnIDs: List<String>): List<Field>? {
+        fun pkOrNull(pkColumnIDComponents: List<List<String>>): List<Field>? {
+            if (pkColumnIDComponents.isEmpty()) {
+                return null
+            }
+            val pkColumnIDs: List<String> =
+                pkColumnIDComponents.map { it.joinToString(separator = ".") }
             val pk: List<Field> = pkColumnIDs.mapNotNull(::dataColumnOrNull)
-            if (pk.isEmpty() || pk.size < pkColumnIDs.size) {
+            if (pk.size < pkColumnIDComponents.size) {
                 handler.accept(InvalidPrimaryKey(name, namespace, pkColumnIDs))
                 return null
             }
             return pk
         }
 
-        fun cursorOrNull(cursorColumnID: String): FieldOrMetaField? {
+        fun cursorOrNull(cursorColumnIDComponents: List<String>): FieldOrMetaField? {
+            if (cursorColumnIDComponents.isEmpty()) {
+                return null
+            }
+            val cursorColumnID: String = cursorColumnIDComponents.joinToString(separator = ".")
             if (cursorColumnID == CommonMetaField.CDC_LSN.id) {
                 return CommonMetaField.CDC_LSN
             }
             return dataColumnOrNull(cursorColumnID)
         }
-        val primaryKeyCandidates: List<List<Field>> =
-            stream.sourceDefinedPrimaryKey.mapNotNull(::pkOrNull)
         val configuredPrimaryKey: List<Field>? =
-            configuredStream.primaryKey?.asSequence()?.mapNotNull(::pkOrNull)?.firstOrNull()
+            configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =
-            configuredStream.cursorField?.asSequence()?.mapNotNull(::cursorOrNull)?.firstOrNull()
+            configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
         val configuredSyncMode: SyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
@@ -192,7 +199,6 @@ class StateManagerFactory(
             name,
             namespace,
             streamFields,
-            primaryKeyCandidates,
             configuredSyncMode,
             configuredPrimaryKey,
             configuredCursor,

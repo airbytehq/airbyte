@@ -59,12 +59,15 @@ class DiscoverOperation(
                     AirbyteField.of(it.id, it.type.airbyteType.asJsonSchemaType())
                 },
             )
-        val pkColumnIDs: List<List<String>> =
-            discoveredStream.primaryKeyColumnIDs.filter { pk: List<String> ->
-                // Only keep PKs whose values can be round-tripped.
-                pk.all { airbyteStreamDecorator.isPossiblePrimaryKeyElement(allColumnsByID[it]!!) }
+        val isValidPK: Boolean =
+            discoveredStream.primaryKeyColumnIDs.all { idComponents: List<String> ->
+                val id: String = idComponents.joinToString(separator = ".")
+                val field: Field? = allColumnsByID[id]
+                field != null && airbyteStreamDecorator.isPossiblePrimaryKeyElement(field)
             }
-        airbyteStream.withSourceDefinedPrimaryKey(pkColumnIDs)
+        airbyteStream.withSourceDefinedPrimaryKey(
+            if (isValidPK) discoveredStream.primaryKeyColumnIDs else listOf(),
+        )
         if (config.global) {
             // There is a global feed of incremental records, like CDC.
             airbyteStreamDecorator.decorateGlobal(airbyteStream)
