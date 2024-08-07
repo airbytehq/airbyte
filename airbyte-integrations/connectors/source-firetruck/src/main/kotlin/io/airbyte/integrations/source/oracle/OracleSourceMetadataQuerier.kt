@@ -202,6 +202,67 @@ class OracleSourceMetadataQuerier(
         val scale: Int?,
     )
 
+    val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
+        val results = mutableListOf<AllPrimaryKeysRow>()
+        val schemas: List<String> = base.streamNamespaces()
+        val sql: String = PK_QUERY_FMTSTR.format(schemas.joinToString { "\'$it\'" })
+        log.info { "Querying Oracle system tables for all primary keys for catalog discovery." }
+        try {
+            base.conn.createStatement().use { stmt: Statement ->
+                stmt.executeQuery(sql).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        results.add(
+                            AllPrimaryKeysRow(
+                                rs.getString("OWNER"),
+                                rs.getString("TABLE_NAME"),
+                                rs.getString("CONSTRAINT_NAME"),
+                                rs.getInt("POSITION").takeUnless { rs.wasNull() },
+                                rs.getString("COLUMN_NAME").takeUnless { rs.wasNull() },
+                            ),
+                        )
+                    }
+                }
+            }
+            log.info { "Discovered all primary keys in ${schemas.size} Oracle schema(s)." }
+            return@lazy results
+                .groupBy { base.findTableName(it.tableName, it.owner) }
+                .mapNotNull { (table, rowsByTable) ->
+                    if (table == null) return@mapNotNull null
+                    val rowsByPK: Map<String, List<AllPrimaryKeysRow>> =
+                        rowsByTable
+                            .groupBy { it.constraintName }
+                            .filterValues { rowsByPK: List<AllPrimaryKeysRow> ->
+                                rowsByPK.all { it.position != null && it.columnName != null }
+                            }
+                    if (rowsByPK.isEmpty()) return@mapNotNull null
+                    val pkColumnNames: List<List<String>> =
+                        rowsByPK.map { (_, rows: List<AllPrimaryKeysRow>) ->
+                            rows.sortedBy { it.position }.mapNotNull { it.columnName }
+                        }
+                    table to pkColumnNames
+                }
+                .toMap()
+        } catch (e: Exception) {
+            throw RuntimeException("Oracle primary key discovery query failed: ${e.message}", e)
+        }
+    }
+
+    override fun primaryKeys(
+        streamName: String,
+        streamNamespace: String?,
+    ): List<List<String>> {
+        val table: TableName = base.findTableName(streamName, streamNamespace) ?: return listOf()
+        return memoizedPrimaryKeys[table] ?: listOf()
+    }
+
+    private data class AllPrimaryKeysRow(
+        val owner: String,
+        val tableName: String,
+        val constraintName: String,
+        val position: Int?,
+        val columnName: String?,
+    )
+
     companion object {
         const val VARRAY_QUERY =
             """
@@ -216,6 +277,24 @@ SELECT OWNER, TYPE_NAME
 FROM ALL_TYPES 
 WHERE OWNER IS NOT NULL AND TYPE_NAME IS NOT NULL           
         """
+
+        const val PK_QUERY_FMTSTR =
+            """
+SELECT
+    ac.OWNER,
+    ac.TABLE_NAME,
+    ac.CONSTRAINT_NAME,
+    acc.POSITION,
+    acc.COLUMN_NAME
+FROM
+    ALL_CONSTRAINTS ac
+    JOIN ALL_CONS_COLUMNS acc
+    ON ac.OWNER = acc.OWNER
+    AND ac.CONSTRAINT_NAME = acc.CONSTRAINT_NAME
+WHERE
+    ac.CONSTRAINT_TYPE = 'P'
+    AND ac.OWNER IN (%s)
+            """
     }
 
     /** Oracle implementation of [MetadataQuerier.Factory]. */
