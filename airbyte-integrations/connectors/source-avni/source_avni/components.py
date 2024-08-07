@@ -1,14 +1,12 @@
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from dataclasses import dataclass
-
 import boto3
 import requests
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 
 
 @dataclass
 class CustomAuthenticator(BasicHttpAuthenticator):
+
     @property
     def token(self) -> str:
 
@@ -30,8 +28,8 @@ class CustomAuthenticator(BasicHttpAuthenticator):
 
     def get_client_id(self):
 
-        url_client = "https://app.avniproject.org/idp-details"
-        response = requests.get(url_client)
+        url_client = self.config["url_base"] + "/idp-details"
+        response = requests.get(url_client, timeout=30)
         response.raise_for_status()
         client = response.json()
         return client["cognito"]["clientId"]

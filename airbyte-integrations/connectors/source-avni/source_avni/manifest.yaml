@@ -9,12 +9,13 @@ definitions:
 
   requester:
     type: HttpRequester
-    url_base: "https://app.avniproject.org/api"
+    url_base: "{{config['url_base']}}/api"
     http_method: "GET"
     authenticator:
       class_name: source_avni.components.CustomAuthenticator
       username: "{{config['username']}}"
       password: "{{config['password']}}"
+      idp_base: "{{config['url_base']}}"
 
   retriever:
     type: SimpleRetriever
@@ -28,7 +29,7 @@ definitions:
         field_name: "size"
       pagination_strategy:
         type: "PageIncrement"
-        page_size: 100
+        page_size: 1000
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"
@@ -48,10 +49,10 @@ definitions:
       inject_into: "request_parameter"
 
   transformations_base:
-    - type: AddFields
-      fields:
-        - path: ["last_modified_at"]
-          value: "{{ record['audit']['Last modified at'] }}"
+      - type: AddFields
+        fields:
+          - path: [ "last_modified_at" ]
+            value: "{{ record['audit']['Last modified at'] }}"
 
   base_stream:
     type: DeclarativeStream
@@ -102,11 +103,35 @@ definitions:
     $parameters:
       path: "/encounters"
 
+  approval_status_stream:
+    $ref: "#/definitions/base_stream"
+    name: "approvalStatuses"
+    primary_key: "Entity ID"
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/approvalStatuses"
+
+  locations_stream:
+    $ref: "#/definitions/base_stream"
+    name: "locations"
+    primary_key: "ID"      
+    incremental_sync:
+      $ref: "#/definitions/incremental_base"
+    transformations:
+      $ref: "#/definitions/transformations_base"
+    $parameters:
+      path: "/locations"
+
 streams:
   - "#/definitions/subjects_stream"
   - "#/definitions/program_enrolments_stream"
   - "#/definitions/program_encounters_stream"
   - "#/definitions/encounters_stream"
+  - "#/definitions/approval_status_stream"
+  - "#/definitions/locations_stream"
 
 check:
   type: CheckStream
@@ -122,19 +147,31 @@ spec:
     required:
       - username
       - password
+      - url_base
       - start_date
     additionalProperties: true
     properties:
       username:
         type: string
         description: Your avni platform Username
+        title: Username
+        order: 1
       password:
         type: string
         description: Your avni platform password
+        title: Password
         airbyte_secret: true
+        order: 2
+      url_base:
+        type: string
+        description: Your avni platform base url, with no trailing slash (/)
+        title: Base URL (no trailing /)
+        order: 3
       start_date:
         type: string
         default: "2000-06-23T01:30:00.000Z"
         description: Specify Date and time from which you want to fetch data
+        title: Start Date
+        order: 4
         examples:
           - "2000-10-31T01:30:00.000Z"
