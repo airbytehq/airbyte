@@ -50,7 +50,7 @@ class SnowflakeDestinationHandler(
         databaseName,
         database,
         rawTableSchema,
-        SQLDialect.POSTGRES
+        SQLDialect.POSTGRES,
     ) {
     // Postgres is close enough to Snowflake SQL for our purposes.
     // We don't quote the database name in any queries, so just upcase it.
@@ -68,149 +68,26 @@ class SnowflakeDestinationHandler(
         val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
         val names = streamIds.map { it.finalName }.toTypedArray()
 
+        val query =
+            """
+                |SELECT table_schema, table_name, row_count
+                |FROM information_schema.tables
+                |WHERE table_catalog = ? 
+                |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
+                |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+            |""".trimMargin()
 
-        //TODO: Remove code added for testing
+            //Dedup the lists to make the snowflake IN clause more efficient
+//          val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
+//          val deduplicatedNames = names.toSet().toTypedArray()
 
-//
-//        val useDatabaseQuery = String.format(
-//            """
-//                USE DATABASE %s;
-//            """.trimIndent(),
-//            databaseName
-//        )
-//        database.execute(useDatabaseQuery)
-//
-//        val useSchemaQuery = String.format(
-//            """
-//                USE SCHEMA %s;
-//            """.trimIndent(),
-//            namespaces[0]
-//        )
-//        database.execute(useSchemaQuery)
+        //TODO: Temporarily setting same values for testing
+        val deduplicatedNamespaces = namespaces
+        val deduplicatedNames = names
 
+        val bindValues = arrayOf(databaseName) + deduplicatedNamespaces + deduplicatedNames
 
-        val showColumnsQuery =
-            String.format(
-
-                """
-                        SHOW COLUMNS IN TABLE %s.%s.%s;
-                                """.trimIndent(),
-                databaseName,
-                namespaces[0],
-                names[0]
-            )
-
-        val showColumnsResult = database.queryJsons(
-            showColumnsQuery)
-
-        println("showColumnsResult=" + showColumnsResult)
-
-        val columns = showColumnsResult
-            .stream()
-            .collect(
-                { LinkedHashMap() },
-                { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-                    map[row["column_name"].asText()] =
-                        ColumnDefinition(
-                            row["column_name"].asText(),
-                            row["data_type"].asText(),
-                            0,
-                            fromIsNullableSnowflakeString(row["null?"].asText())
-                        )
-                },
-                {
-                    obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-                    m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
-                    obj.putAll(m!!)
-                }
-            )
-
-        println("columns=" + columns)
-
-
-
-
-
-//val columns =
-/*
-database
-    .queryJsons(
-        """
-SELECT column_name, data_type, is_nullable
-FROM information_schema.columns
-WHERE table_catalog = ?
-  AND table_schema = ?
-  AND table_name = ?
-ORDER BY ordinal_position;
-
-""".trimIndent(),
-        databaseName,
-        namespace!!,
-        tableName!!
-    )
-*/
-
-/*
-val columnDetailsQuery =
-    String.format(
-
-        """
-                SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
-                FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
-                WHERE TABLE_CATALOG = %s
-                  AND TABLE_SCHEMA = %s
-                  AND TABLE_NAME = %s
-                ORDER BY ORDINAL_POSITION;
-
-                        """.trimIndent(),
-
-        databaseName,
-        namespaces[0],
-        names[0]
-    )
-
-
-val columns = database.queryJsons(
-    columnDetailsQuery)
-    .stream()
-    .collect(
-        { LinkedHashMap() },
-        { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-            map[row["COLUMN_NAME"].asText()] =
-                ColumnDefinition(
-                    row["COLUMN_NAME"].asText(),
-                    row["DATA_TYPE"].asText(),
-                    0,
-                    fromIsNullableIsoString(row["IS_NULLABLE"].asText())
-                )
-        },
-        {
-            obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-            m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
-            obj.putAll(m!!)
-        }
-    )
-
-println(columns)
-*/
-
-
-val query =
-    """
-    |SELECT table_schema, table_name, row_count
-    |FROM information_schema.tables
-    |WHERE table_catalog = ? 
-    |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-    |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-    |""".trimMargin()
-
-//Dedupe the lists to make the snowflake IN clause more efficient
-val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
-val deduplicatedNames = names.toSet().toTypedArray()
-
-val bindValues = arrayOf(databaseName) + deduplicatedNamespaces + deduplicatedNames
-
-val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
 
 //        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
 //            + "\n bindValues=" + bindValues)
@@ -220,81 +97,84 @@ val results: List<JsonNode> = database.queryJsons(query, *bindValues)
 //        val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
 
 
-for (result in results) {
-    val tableSchema = result["TABLE_SCHEMA"].asText()
-    val tableName = result["TABLE_NAME"].asText()
-    val rowCount = result["ROW_COUNT"].asInt()
-    tableRowCounts
-        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
-        rowCount
-}
-return tableRowCounts
-}
+        for (result in results) {
+            val tableSchema = result["TABLE_SCHEMA"].asText()
+            val tableName = result["TABLE_NAME"].asText()
+            val rowCount = result["ROW_COUNT"].asInt()
+            tableRowCounts
+                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
+                rowCount
+        }
+        return tableRowCounts
+    }
 
 
-@Throws(Exception::class)
-private fun getInitialRawTableState(
-id: StreamId,
-suffix: String,
-): InitialRawTableStatus {
-val rawTableName = id.rawName + suffix
-val tableExists =
-    database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
-        LOGGER.info(
-            "Retrieving table from Db metadata: {} {}",
-            id.rawNamespace,
-            rawTableName
-        )
-        try {
-            val rs =
-                databaseMetaData.getTables(
-                    databaseName,
+    @Throws(Exception::class)
+    private fun getInitialRawTableState(
+        id: StreamId,
+        suffix: String,
+    ): InitialRawTableStatus {
+        val rawTableName = id.rawName + suffix
+        val tableExists =
+            database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
+                LOGGER.info(
+                    "Retrieving table from Db metadata: {} {}",
                     id.rawNamespace,
                     rawTableName,
-                    null
                 )
-            // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
-            // interpreted as uppercase
-            // in db metadata calls. check for both
-            val rsUppercase =
-                databaseMetaData.getTables(
-                    databaseName,
-                    id.rawNamespace.uppercase(),
-                    rawTableName.uppercase(),
-                    null
-                )
-            rs.next() || rsUppercase.next()
-        } catch (e: SQLException) {
-            LOGGER.error("Failed to retrieve table metadata", e)
-            throw RuntimeException(e)
+                try {
+                    val rs =
+                        databaseMetaData.getTables(
+                            databaseName,
+                            id.rawNamespace,
+                            rawTableName,
+                            null,
+                        )
+                    // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
+                    // interpreted as uppercase
+                    // in db metadata calls. check for both
+                    val rsUppercase =
+                        databaseMetaData.getTables(
+                            databaseName,
+                            id.rawNamespace.uppercase(),
+                            rawTableName.uppercase(),
+                            null,
+                        )
+                    rs.next() || rsUppercase.next()
+                } catch (e: SQLException) {
+                    LOGGER.error("Failed to retrieve table metadata", e)
+                    throw RuntimeException(e)
+                }
+            }
+        if (!tableExists) {
+            return InitialRawTableStatus(
+                rawTableExists = false,
+                hasUnprocessedRecords = false,
+                maxProcessedTimestamp = Optional.empty(),
+            )
         }
-    }
-if (!tableExists) {
-    return InitialRawTableStatus(
-        rawTableExists = false,
-        hasUnprocessedRecords = false,
-        maxProcessedTimestamp = Optional.empty()
-    )
-}
 // Snowflake timestamps have nanosecond precision, so decrement by 1ns
 // And use two explicit queries because COALESCE doesn't short-circuit.
 // This first query tries to find the oldest raw record with loaded_at = NULL
-val minUnloadedTimestamp =
-    Optional.ofNullable<String>(
-        database
-            .queryStrings(
-                { conn: Connection ->
-                    conn
-                        .createStatement()
-                        .executeQuery(
-                            StringSubstitutor(
-                                    java.util.Map.of(
-                                        "raw_table",
-                                        id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+        val minUnloadedTimestamp =
+            Optional.ofNullable<String>(
+                database
+                    .queryStrings(
+                        { conn: Connection ->
+                            conn
+                                .createStatement()
+                                .executeQuery(
+                                    StringSubstitutor(
+                                        java.util.Map.of(
+                                            "raw_table",
+                                            id.rawTableId(
+                                                SnowflakeSqlGenerator.QUOTE,
+                                                suffix,
+                                            ),
+                                        ),
                                     )
-                                )
-                                .replace(
-                                    """
+                                        .replace(
+                                            """
         WITH MIN_TS AS (
           SELECT TIMESTAMPADD(NANOSECOND, -1,
             MIN(TIMESTAMPADD(
@@ -310,22 +190,22 @@ val minUnloadedTimestamp =
           WHERE "_airbyte_loaded_at" IS NULL
         ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
         
-        """.trimIndent()
+        """.trimIndent(),
+                                        ),
                                 )
-                        )
-                }, // The query will always return exactly one record, so use .get(0)
-                { record: ResultSet -> record.getString("MIN_TIMESTAMP_UTC") }
+                        }, // The query will always return exactly one record, so use .get(0)
+                        { record: ResultSet -> record.getString("MIN_TIMESTAMP_UTC") },
+                    )
+                    .first(),
             )
-            .first()
-    )
-if (minUnloadedTimestamp.isPresent) {
-    return InitialRawTableStatus(
-        rawTableExists = true,
-        hasUnprocessedRecords = true,
-        maxProcessedTimestamp =
-            minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
-    )
-}
+        if (minUnloadedTimestamp.isPresent) {
+            return InitialRawTableStatus(
+                rawTableExists = true,
+                hasUnprocessedRecords = true,
+                maxProcessedTimestamp =
+                minUnloadedTimestamp.map { text: String? -> Instant.parse(text) },
+            )
+        }
 
 // If there are no unloaded raw records, then we can safely skip all existing raw records.
 // This second query just finds the newest raw record.
@@ -335,22 +215,25 @@ if (minUnloadedTimestamp.isPresent) {
 // lot
 // of work for a very small edge case.
 // We released the fix to write extracted_at in UTC before DST changed, so this is fine.
-val maxTimestamp =
-    Optional.ofNullable<String>(
-        database
-            .queryStrings(
-                { conn: Connection ->
-                    conn
-                        .createStatement()
-                        .executeQuery(
-                            StringSubstitutor(
-                                    java.util.Map.of(
-                                        "raw_table",
-                                        id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+        val maxTimestamp =
+            Optional.ofNullable<String>(
+                database
+                    .queryStrings(
+                        { conn: Connection ->
+                            conn
+                                .createStatement()
+                                .executeQuery(
+                                    StringSubstitutor(
+                                        java.util.Map.of(
+                                            "raw_table",
+                                            id.rawTableId(
+                                                SnowflakeSqlGenerator.QUOTE,
+                                                suffix,
+                                            ),
+                                        ),
                                     )
-                                )
-                                .replace(
-                                    """
+                                        .replace(
+                                            """
         WITH MAX_TS AS (
           SELECT MAX("_airbyte_extracted_at")
           AS MAX_TIMESTAMP
@@ -366,171 +249,170 @@ val maxTimestamp =
             )
         ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
         
-        """.trimIndent()
+        """.trimIndent(),
+                                        ),
                                 )
-                        )
-                },
-                { record: ResultSet -> record.getString("MAX_TIMESTAMP_UTC") }
+                        },
+                        { record: ResultSet -> record.getString("MAX_TIMESTAMP_UTC") },
+                    )
+                    .first(),
             )
-            .first()
-    )
-return InitialRawTableStatus(
-    rawTableExists = true,
-    hasUnprocessedRecords = false,
-    maxProcessedTimestamp = maxTimestamp.map { text: String? -> Instant.parse(text) }
-)
-}
+        return InitialRawTableStatus(
+            rawTableExists = true,
+            hasUnprocessedRecords = false,
+            maxProcessedTimestamp = maxTimestamp.map { text: String? -> Instant.parse(text) },
+        )
+    }
 
-@Throws(Exception::class)
-override fun execute(sql: Sql) {
-val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT")
-val queryId = UUID.randomUUID()
-for (transaction in transactions) {
-    val transactionId = UUID.randomUUID()
-    LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, transaction)
-    val startTime = System.currentTimeMillis()
+    @Throws(Exception::class)
+    override fun execute(sql: Sql) {
+        val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT")
+        val queryId = UUID.randomUUID()
+        for (transaction in transactions) {
+            val transactionId = UUID.randomUUID()
+            LOGGER.info("Executing sql {}-{}: {}", queryId, transactionId, transaction)
+            val startTime = System.currentTimeMillis()
 
-    try {
-        database.execute(transaction)
-    } catch (e: SnowflakeSQLException) {
-        LOGGER.error("Sql {} failed", queryId, e)
-        // Snowflake SQL exceptions by default may not be super helpful, so we try to
-        // extract the relevant
-        // part of the message.
-        val trimmedMessage =
-            if (e.message!!.startsWith(EXCEPTION_COMMON_PREFIX)) {
-                // The first line is a pretty generic message, so just remove it
-                e.message!!.substring(e.message!!.indexOf("\n") + 1)
-            } else {
-                e.message
+            try {
+                database.execute(transaction)
+            } catch (e: SnowflakeSQLException) {
+                LOGGER.error("Sql {} failed", queryId, e)
+                // Snowflake SQL exceptions by default may not be super helpful, so we try to
+                // extract the relevant
+                // part of the message.
+                val trimmedMessage =
+                    if (e.message!!.startsWith(EXCEPTION_COMMON_PREFIX)) {
+                        // The first line is a pretty generic message, so just remove it
+                        e.message!!.substring(e.message!!.indexOf("\n") + 1)
+                    } else {
+                        e.message
+                    }
+                throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow {
+                    RuntimeException(trimmedMessage, e)
+                }
             }
-        throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow {
-            RuntimeException(trimmedMessage, e)
+
+            LOGGER.info(
+                "Sql {}-{} completed in {} ms",
+                queryId,
+                transactionId,
+                System.currentTimeMillis() - startTime,
+            )
         }
     }
 
-    LOGGER.info(
-        "Sql {}-{} completed in {} ms",
-        queryId,
-        transactionId,
-        System.currentTimeMillis() - startTime
-    )
-}
-}
+    private fun getPks(stream: StreamConfig?): Set<String> {
+        return if (stream?.primaryKey != null) stream.primaryKey.map { it.name }.toSet()
+        else emptySet()
+    }
 
-private fun getPks(stream: StreamConfig?): Set<String> {
-return if (stream?.primaryKey != null) stream.primaryKey.map { it.name }.toSet()
-else emptySet()
-}
+    override fun isAirbyteRawIdColumnMatch(existingTable: TableDefinition): Boolean {
+        val abRawIdColumnName: String =
+            JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.uppercase(Locale.getDefault())
+        return existingTable.columns.containsKey(abRawIdColumnName) &&
+            toJdbcTypeName(AirbyteProtocolType.STRING) ==
+            existingTable.columns[abRawIdColumnName]!!.type
+    }
 
-override fun isAirbyteRawIdColumnMatch(existingTable: TableDefinition): Boolean {
-val abRawIdColumnName: String =
-    JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.uppercase(Locale.getDefault())
-return existingTable.columns.containsKey(abRawIdColumnName) &&
-    toJdbcTypeName(AirbyteProtocolType.STRING) ==
-        existingTable.columns[abRawIdColumnName]!!.type
-}
+    override fun isAirbyteExtractedAtColumnMatch(existingTable: TableDefinition): Boolean {
+        val abExtractedAtColumnName: String =
+            JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.uppercase(Locale.getDefault())
+        return existingTable.columns.containsKey(abExtractedAtColumnName) &&
+            toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE) ==
+            existingTable.columns[abExtractedAtColumnName]!!.type
+    }
 
-override fun isAirbyteExtractedAtColumnMatch(existingTable: TableDefinition): Boolean {
-val abExtractedAtColumnName: String =
-    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.uppercase(Locale.getDefault())
-return existingTable.columns.containsKey(abExtractedAtColumnName) &&
-    toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE) ==
-        existingTable.columns[abExtractedAtColumnName]!!.type
-}
+    override fun isAirbyteMetaColumnMatch(existingTable: TableDefinition): Boolean {
+        val abMetaColumnName: String =
+            JavaBaseConstants.COLUMN_NAME_AB_META.uppercase(Locale.getDefault())
+        return existingTable.columns.containsKey(abMetaColumnName) &&
+            "VARIANT" == existingTable.columns[abMetaColumnName]!!.type
+    }
 
-override fun isAirbyteMetaColumnMatch(existingTable: TableDefinition): Boolean {
-val abMetaColumnName: String =
-    JavaBaseConstants.COLUMN_NAME_AB_META.uppercase(Locale.getDefault())
-return existingTable.columns.containsKey(abMetaColumnName) &&
-    "VARIANT" == existingTable.columns[abMetaColumnName]!!.type
-}
+    private fun isAirbyteGenerationIdColumnMatch(existingTable: TableDefinition): Boolean {
+        val abGenerationIdColumnName: String =
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase(Locale.getDefault())
+        return existingTable.columns.containsKey(abGenerationIdColumnName) &&
+            toJdbcTypeName(AirbyteProtocolType.INTEGER) ==
+            existingTable.columns[abGenerationIdColumnName]!!.type
+    }
 
-private fun isAirbyteGenerationIdColumnMatch(existingTable: TableDefinition): Boolean {
-val abGenerationIdColumnName: String =
-    JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase(Locale.getDefault())
-return existingTable.columns.containsKey(abGenerationIdColumnName) &&
-    toJdbcTypeName(AirbyteProtocolType.INTEGER) ==
-        existingTable.columns[abGenerationIdColumnName]!!.type
-}
-
-@SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-override fun existingSchemaMatchesStreamConfig(
-stream: StreamConfig?,
-existingTable: TableDefinition
-): Boolean {
-val pks = getPks(stream)
+    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+    override fun existingSchemaMatchesStreamConfig(
+        stream: StreamConfig?,
+        existingTable: TableDefinition
+    ): Boolean {
+        val pks = getPks(stream)
 // This is same as JdbcDestinationHandler#existingSchemaMatchesStreamConfig with upper case
 // conversion.
 // TODO: Unify this using name transformer or something.
-if (
-    !isAirbyteRawIdColumnMatch(existingTable) ||
-        !isAirbyteExtractedAtColumnMatch(existingTable) ||
-        !isAirbyteMetaColumnMatch(existingTable) ||
-        !isAirbyteGenerationIdColumnMatch(existingTable)
-) {
-    // Missing AB meta columns from final table, we need them to do proper T+D so trigger
-    // soft-reset
-    return false
-}
-val intendedColumns =
-    stream!!
-        .columns
-        .entries
-        .stream()
-        .collect(
-            { LinkedHashMap() },
-            { map: LinkedHashMap<String, String>, column: Map.Entry<ColumnId, AirbyteType>
-                ->
-                map[column.key.name] = toJdbcTypeName(column.value)
-            },
-            { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
-                obj.putAll(m!!)
-            }
-        )
+        if (
+            !isAirbyteRawIdColumnMatch(existingTable) ||
+            !isAirbyteExtractedAtColumnMatch(existingTable) ||
+            !isAirbyteMetaColumnMatch(existingTable) ||
+            !isAirbyteGenerationIdColumnMatch(existingTable)
+        ) {
+            // Missing AB meta columns from final table, we need them to do proper T+D so trigger
+            // soft-reset
+            return false
+        }
+        val intendedColumns =
+            stream!!
+                .columns
+                .entries
+                .stream()
+                .collect(
+                    { LinkedHashMap() },
+                    { map: LinkedHashMap<String, String>, column: Map.Entry<ColumnId, AirbyteType>
+                        ->
+                        map[column.key.name] = toJdbcTypeName(column.value)
+                    },
+                    { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
+                        obj.putAll(m!!)
+                    },
+                )
 
 // Filter out Meta columns since they don't exist in stream config.
-val actualColumns =
-    existingTable.columns.entries
-        .stream()
-        .filter { column: Map.Entry<String, ColumnDefinition?> ->
-            JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
-                .map { obj: String -> obj.uppercase(Locale.getDefault()) }
-                .noneMatch { airbyteColumnName: String -> airbyteColumnName == column.key }
-        }
-        .collect(
-            { LinkedHashMap() },
-            {
-                map: LinkedHashMap<String, String>,
-                column: Map.Entry<String, ColumnDefinition> ->
-                map[column.key] = column.value.type
-            },
-            { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
-                obj.putAll(m!!)
-            }
-        )
+        val actualColumns =
+            existingTable.columns.entries
+                .stream()
+                .filter { column: Map.Entry<String, ColumnDefinition?> ->
+                    JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream()
+                        .map { obj: String -> obj.uppercase(Locale.getDefault()) }
+                        .noneMatch { airbyteColumnName: String -> airbyteColumnName == column.key }
+                }
+                .collect(
+                    { LinkedHashMap() },
+                    { map: LinkedHashMap<String, String>,
+                      column: Map.Entry<String, ColumnDefinition> ->
+                        map[column.key] = column.value.type
+                    },
+                    { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
+                        obj.putAll(m!!)
+                    },
+                )
 // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
-val hasPksWithNonNullConstraint =
-    existingTable.columns.entries.stream().anyMatch { c: Map.Entry<String, ColumnDefinition>
-        ->
-        pks.contains(c.key) && !c.value.isNullable
+        val hasPksWithNonNullConstraint =
+            existingTable.columns.entries.stream().anyMatch { c: Map.Entry<String, ColumnDefinition>
+                ->
+                pks.contains(c.key) && !c.value.isNullable
+            }
+
+        return !hasPksWithNonNullConstraint && actualColumns == intendedColumns
     }
 
-return !hasPksWithNonNullConstraint && actualColumns == intendedColumns
-}
+    @Throws(Exception::class)
+    override fun gatherInitialState(
+        streamConfigs: List<StreamConfig>
+    ): List<DestinationInitialStatus<SnowflakeState>> {
+        val destinationStates = super.getAllDestinationStates()
 
-@Throws(Exception::class)
-override fun gatherInitialState(
-streamConfigs: List<StreamConfig>
-): List<DestinationInitialStatus<SnowflakeState>> {
-val destinationStates = super.getAllDestinationStates()
+        val streamIds = streamConfigs.map(StreamConfig::id).toList()
 
-val streamIds = streamConfigs.map(StreamConfig::id).toList()
+        LOGGER.info("Entering gatherInitialState(...)");
 
-LOGGER.info("Entering gatherInitialState(...)");
-
-val existingTables = findExistingTables(database, databaseName, streamIds)
-val tableRowCounts = getFinalTableRowCount(streamIds)
+        val existingTables = findExistingTables(database, databaseName, streamIds)
+        val tableRowCounts = getFinalTableRowCount(streamIds)
 
 //        //TODO: Remove code duplicated for testing
 //        val existingTables_Copy1 = findExistingTables(database, databaseName, streamIds)
@@ -539,180 +421,336 @@ val tableRowCounts = getFinalTableRowCount(streamIds)
 //        println("existingTables_Copy1=" + existingTables_Copy1)
 //        println("tableRowCounts_Copy1=" + tableRowCounts_Copy1)
 
-return streamConfigs
-    .stream()
-    .map { streamConfig: StreamConfig ->
-        try {
-            val namespace = streamConfig.id.finalNamespace.uppercase(Locale.getDefault())
-            val name = streamConfig.id.finalName.uppercase(Locale.getDefault())
-            var isSchemaMismatch = false
-            var isFinalTableEmpty = true
-            val isFinalTablePresent =
-                existingTables.containsKey(namespace) &&
-                    existingTables[namespace]!!.containsKey(name)
-            val hasRowCount =
-                tableRowCounts.containsKey(namespace) &&
-                    tableRowCounts[namespace]!!.containsKey(name)
-            if (isFinalTablePresent) {
-                val existingTable = existingTables[namespace]!![name]
-                isSchemaMismatch =
-                    !existingSchemaMatchesStreamConfig(streamConfig, existingTable!!)
-                isFinalTableEmpty = hasRowCount && tableRowCounts[namespace]!![name] == 0
+        return streamConfigs
+            .stream()
+            .map { streamConfig: StreamConfig ->
+                try {
+                    val namespace = streamConfig.id.finalNamespace.uppercase(Locale.getDefault())
+                    val name = streamConfig.id.finalName.uppercase(Locale.getDefault())
+                    var isSchemaMismatch = false
+                    var isFinalTableEmpty = true
+                    val isFinalTablePresent =
+                        existingTables.containsKey(namespace) &&
+                            existingTables[namespace]!!.containsKey(name)
+                    val hasRowCount =
+                        tableRowCounts.containsKey(namespace) &&
+                            tableRowCounts[namespace]!!.containsKey(name)
+                    if (isFinalTablePresent) {
+                        val existingTable = existingTables[namespace]!![name]
+                        isSchemaMismatch =
+                            !existingSchemaMatchesStreamConfig(streamConfig, existingTable!!)
+                        isFinalTableEmpty = hasRowCount && tableRowCounts[namespace]!![name] == 0
+                    }
+                    val initialRawTableState = getInitialRawTableState(streamConfig.id, "")
+                    val tempRawTableState =
+                        getInitialRawTableState(
+                            streamConfig.id,
+                            AbstractStreamOperation.TMP_TABLE_SUFFIX,
+                        )
+                    val destinationState =
+                        destinationStates.getOrDefault(
+                            streamConfig.id.asPair(),
+                            toDestinationState(emptyObject()),
+                        )
+                    return@map DestinationInitialStatus<SnowflakeState>(
+                        streamConfig,
+                        isFinalTablePresent,
+                        initialRawTableState,
+                        tempRawTableState,
+                        isSchemaMismatch,
+                        isFinalTableEmpty,
+                        destinationState,
+                    )
+                } catch (e: Exception) {
+                    throw RuntimeException(e)
+                }
             }
-            val initialRawTableState = getInitialRawTableState(streamConfig.id, "")
-            val tempRawTableState =
-                getInitialRawTableState(
-                    streamConfig.id,
-                    AbstractStreamOperation.TMP_TABLE_SUFFIX
-                )
-            val destinationState =
-                destinationStates.getOrDefault(
-                    streamConfig.id.asPair(),
-                    toDestinationState(emptyObject())
-                )
-            return@map DestinationInitialStatus<SnowflakeState>(
-                streamConfig,
-                isFinalTablePresent,
-                initialRawTableState,
-                tempRawTableState,
-                isSchemaMismatch,
-                isFinalTableEmpty,
-                destinationState
-            )
-        } catch (e: Exception) {
-            throw RuntimeException(e)
+            .collect(Collectors.toList())
+    }
+
+    override fun toJdbcTypeName(airbyteType: AirbyteType): String {
+        if (airbyteType is AirbyteProtocolType) {
+            return toJdbcTypeName(airbyteType)
+        }
+
+        return when (airbyteType.typeName) {
+            Struct.TYPE -> "OBJECT"
+            Array.TYPE -> "ARRAY"
+            UnsupportedOneOf.TYPE -> "VARIANT"
+            Union.TYPE -> toJdbcTypeName((airbyteType as Union).chooseType())
+            else -> throw IllegalArgumentException("Unrecognized type: " + airbyteType.typeName)
         }
     }
-    .collect(Collectors.toList())
-}
 
-override fun toJdbcTypeName(airbyteType: AirbyteType): String {
-if (airbyteType is AirbyteProtocolType) {
-    return toJdbcTypeName(airbyteType)
-}
-
-return when (airbyteType.typeName) {
-    Struct.TYPE -> "OBJECT"
-    Array.TYPE -> "ARRAY"
-    UnsupportedOneOf.TYPE -> "VARIANT"
-    Union.TYPE -> toJdbcTypeName((airbyteType as Union).chooseType())
-    else -> throw IllegalArgumentException("Unrecognized type: " + airbyteType.typeName)
-}
-}
-
-override fun toDestinationState(json: JsonNode): SnowflakeState {
+    override fun toDestinationState(json: JsonNode): SnowflakeState {
 // Note the field name is isAirbyteMetaPresentInRaw but jackson interprets it as
 // airbyteMetaPresentInRaw when serializing so we map that to the correct field when
 // deserializing
-return SnowflakeState(
-    json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
-    json.hasNonNull("airbyteMetaPresentInRaw") &&
-        json["airbyteMetaPresentInRaw"].asBoolean()
-)
-}
+        return SnowflakeState(
+            json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
+            json.hasNonNull("airbyteMetaPresentInRaw") &&
+                json["airbyteMetaPresentInRaw"].asBoolean(),
+        )
+    }
 
-private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
-return SnowflakeDatabaseUtils.toSqlTypeName(airbyteProtocolType)
-}
+    private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
+        return SnowflakeDatabaseUtils.toSqlTypeName(airbyteProtocolType)
+    }
 
-override fun createNamespaces(schemas: Set<String>) {
-schemas.forEach {
-    try {
-        // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
-        // we quote for final schemas names too (earlier existed in
-        // SqlGenerator#createSchema).
-        if (!isSchemaExists(it)) {
-            LOGGER.info("Schema $it does not exist, proceeding to create one")
-            database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", it))
+    override fun createNamespaces(schemas: Set<String>) {
+        schemas.forEach {
+            try {
+                // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
+                // we quote for final schemas names too (earlier existed in
+                // SqlGenerator#createSchema).
+                if (!isSchemaExists(it)) {
+                    LOGGER.info("Schema $it does not exist, proceeding to create one")
+                    database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", it))
+                }
+            } catch (e: Exception) {
+                throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
+            }
         }
-    } catch (e: Exception) {
-        throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
     }
-}
-}
 
-private fun isSchemaExists(schema: String): Boolean {
-try {
-    database.unsafeQuery(SHOW_SCHEMAS).use { results ->
-        return results
-            .map { schemas: JsonNode -> schemas[NAME].asText() }
-            .anyMatch { anObject: String -> schema == anObject }
+    private fun isSchemaExists(schema: String): Boolean {
+        try {
+            database.unsafeQuery(SHOW_SCHEMAS).use { results ->
+                return results
+                    .map { schemas: JsonNode -> schemas[NAME].asText() }
+                    .anyMatch { anObject: String -> schema == anObject }
+            }
+        } catch (e: Exception) {
+            throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
+        }
     }
-} catch (e: Exception) {
-    throw SnowflakeDatabaseUtils.checkForKnownConfigExceptions(e).orElseThrow { e }
-}
-}
 
-fun query(sql: String): List<JsonNode> {
+    fun query(sql: String): List<JsonNode> {
 //return database.queryJsons(sql)
 
-LOGGER.info("Inside query method: Calling CacheManager.queryJsons for sql=" + sql)
-return CacheManager.queryJsons(database, sql, "")
-}
+        LOGGER.info("Inside query method: Calling CacheManager.queryJsons for sql=" + sql)
+        return CacheManager.queryJsons(database, sql, "")
+    }
 
-companion object {
-private val LOGGER: Logger =
-    LoggerFactory.getLogger(SnowflakeDestinationHandler::class.java)
-const val EXCEPTION_COMMON_PREFIX: String =
-    "JavaScript execution error: Uncaught Execution of multiple statements failed on statement"
-const val SHOW_SCHEMAS: String = "show schemas;"
-const val NAME: String = "name"
+    companion object {
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(SnowflakeDestinationHandler::class.java)
+        const val EXCEPTION_COMMON_PREFIX: String =
+            "JavaScript execution error: Uncaught Execution of multiple statements failed on statement"
+        const val SHOW_SCHEMAS: String = "show schemas;"
+        const val NAME: String = "name"
 
-@Throws(SQLException::class)
-fun findExistingTables(
-    database: JdbcDatabase,
-    databaseName: String,
-    streamIds: List<StreamId>
-): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
-    println("Entering findExistingTables(...)");
+        @Throws(SQLException::class)
+        fun findExistingTables(
+            database: JdbcDatabase,
+            databaseName: String,
+            streamIds: List<StreamId>
+        ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
-    val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-    // convert list stream to array
-    val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-    val names = streamIds.map { it.finalName }.toTypedArray()
-    val query =
-        """
-        |SELECT table_schema, table_name, column_name, data_type, is_nullable 
-        |FROM information_schema.columns 
-        |WHERE table_catalog = ? 
-        |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-        |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-        |ORDER BY table_schema, table_name, ordinal_position; 
-        |""".trimMargin()
+            println("Entering findExistingTables(...)");
 
-    //Dedupe the lists to make the snowflake IN clause more efficient
-    val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
-    val deduplicatedNames = names.toSet().toTypedArray()
+            val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+            val existingTablesFromShowCommand = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
 
-    val bindValues = arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
+            // convert list stream to array
+            val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
+            val names = streamIds.map { it.finalName }.toTypedArray()
+            val query =
+                """
+                    |SELECT table_schema, table_name, column_name, data_type, is_nullable 
+                    |FROM information_schema.columns 
+                    |WHERE table_catalog = ? 
+                    |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
+                    |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
+                    |ORDER BY table_schema, table_name, ordinal_position; 
+                |""".trimMargin()
+
+//            //Dedup the lists to make the snowflake IN clause more efficient
+//            val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
+//            val deduplicatedNames = names.toSet().toTypedArray()
+
+
+            //TODO: Temporarily setting same values for testing
+            val deduplicatedNamespaces = namespaces
+            val deduplicatedNames = names
+
+            val bindValues =
+                arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
 
 //            val bindValues =
 //                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
 
-   val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+            val results: List<JsonNode> = database.queryJsons(query, *bindValues)
 
 //            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
 //                + "\n bindValues=" + bindValues)
 //
 //            val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
 
-    for (result in results) {
-        val tableSchema = result["TABLE_SCHEMA"].asText()
-        val tableName = result["TABLE_NAME"].asText()
-        val columnName = result["COLUMN_NAME"].asText()
-        val dataType = result["DATA_TYPE"].asText()
-        val isNullable = result["IS_NULLABLE"].asText()
-        val tableDefinition =
-            existingTables
-                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
-                .computeIfAbsent(tableName) { _: String? ->
-                    TableDefinition(LinkedHashMap())
-                }
-        tableDefinition.columns[columnName] =
-            ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
+            for (result in results) {
+                val tableSchema = result["TABLE_SCHEMA"].asText()
+                val tableName = result["TABLE_NAME"].asText()
+                val columnName = result["COLUMN_NAME"].asText()
+                val dataType = result["DATA_TYPE"].asText()
+                val isNullable = result["IS_NULLABLE"].asText()
+                val tableDefinition =
+                    existingTables
+                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
+                        .computeIfAbsent(tableName) { _: String? ->
+                            TableDefinition(LinkedHashMap())
+                        }
+                tableDefinition.columns[columnName] =
+                    ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
+            }
+
+            println("existingTables=" + existingTables)
+
+            //--------------------
+
+            //TODO: Processing only one element from namespaces and names for testing
+
+            val showColumnsQuery =
+                String.format(
+
+                    """
+                        SHOW COLUMNS IN TABLE %s.%s.%s;
+                                """.trimIndent(),
+                    databaseName,
+                    namespaces[0],
+                    names[0]
+                )
+
+            val showColumnsResult: List<JsonNode>  = database.queryJsons(
+                showColumnsQuery)
+
+            println("showColumnsResult=" + showColumnsResult)
+
+
+            /*
+
+          val columnsFromShowQuery = showColumnsResult
+              .stream()
+              .collect(
+                  { LinkedHashMap() },
+                  { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                      map[row["column_name"].asText()] =
+                          ColumnDefinition(
+                              row["column_name"].asText(),
+                              row["data_type"].asText(),
+                              0,
+                              fromIsNullableSnowflakeString(row["null?"].asText())
+                          )
+                  },
+                  {
+                      obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                      obj.putAll(m!!)
+                  }
+              )
+
+          println("columnsFromShowQuery=" + columnsFromShowQuery)
+
+            */
+
+            for (result in showColumnsResult) {
+                val tableSchema = result["schema_name"].asText()
+                val tableName = result["table_name"].asText()
+                val columnName = result["column_name"].asText()
+                //val dataType = result["data_type"].asText()
+                val dataType = result["data_type"]["type"].asText()
+                val isNullable = result["null?"].asText()
+                val tableDefinition =
+                    existingTablesFromShowCommand
+                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
+                        .computeIfAbsent(tableName) { _: String? ->
+                            TableDefinition(LinkedHashMap())
+                        }
+                tableDefinition.columns[columnName] =
+                    ColumnDefinition(columnName, dataType, 0, fromIsNullableSnowflakeString(isNullable))
+            }
+
+            println("existingTablesFromShowCommand=" + existingTablesFromShowCommand)
+
+
+
+            //--------------------
+
+
+            //return existingTables
+
+            return existingTablesFromShowCommand
+
+        }
+
+
+        /*
+        @Throws(SQLException::class)
+        fun findExistingTables(
+            database: JdbcDatabase,
+            databaseName: String,
+            streamIds: List<StreamId>
+        ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
+
+            println("Entering findExistingTables(...)");
+
+            val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+            // convert list stream to array
+            val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
+            val names = streamIds.map { it.finalName }.toTypedArray()
+            val query =
+                """
+        |SELECT table_schema, table_name, column_name, data_type, is_nullable
+        |FROM information_schema.columns
+        |WHERE table_catalog = ?
+        |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+        |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+        |ORDER BY table_schema, table_name, ordinal_position;
+        |""".trimMargin()
+
+    //            //Dedup the lists to make the snowflake IN clause more efficient
+    //            val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
+    //            val deduplicatedNames = names.toSet().toTypedArray()
+
+
+            //TODO: Temporarily setting same values for testing
+            val deduplicatedNamespaces = namespaces
+            val deduplicatedNames = names
+
+            val bindValues =
+                arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
+
+    //            val bindValues =
+    //                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
+
+            val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+    //            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
+    //                + "\n bindValues=" + bindValues)
+    //
+    //            val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
+
+            for (result in results) {
+                val tableSchema = result["TABLE_SCHEMA"].asText()
+                val tableName = result["TABLE_NAME"].asText()
+                val columnName = result["COLUMN_NAME"].asText()
+                val dataType = result["DATA_TYPE"].asText()
+                val isNullable = result["IS_NULLABLE"].asText()
+                val tableDefinition =
+                    existingTables
+                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
+                        .computeIfAbsent(tableName) { _: String? ->
+                            TableDefinition(LinkedHashMap())
+                        }
+                tableDefinition.columns[columnName] =
+                    ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
+            }
+            return existingTables
+        }
+
+         */
+
     }
-    return existingTables
-}
-}
+
+
 }
