@@ -14,6 +14,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
 import io.airbyte.integrations.destination.snowflake.caching.CacheManager
 import java.util.*
 import lombok.SneakyThrows
@@ -28,19 +29,53 @@ class SnowflakeV1V2Migrator(
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
 
-        return database
-            .queryJsons(
-                """
-                SELECT SCHEMA_NAME
-                FROM information_schema.schemata
-                WHERE schema_name = ?
-                AND catalog_name = ?;
-                
-                """.trimIndent(),
-                streamConfig!!.id.rawNamespace,
-                databaseName
-            )
-            .isNotEmpty()
+//        val useDatabaseQuery = String.format(
+//            """
+//                USE DATABASE %s;
+//            """.trimIndent(),
+//            databaseName
+//        )
+//        database.execute(useDatabaseQuery)
+
+        val showSchemaQuery = String.format(
+            """
+                SHOW SCHEMAS LIKE '%s' IN DATABASE %s;
+
+            """.trimIndent(),
+            streamConfig!!.id.rawNamespace,
+            databaseName
+        )
+
+        return database.queryJsons(
+            showSchemaQuery
+        ).isNotEmpty()
+
+
+//        return database
+//            .queryJsons(
+//                """
+//                SELECT SCHEMA_NAME
+//                FROM information_schema.schemata
+//                WHERE schema_name = ?
+//                AND catalog_name = ?;
+//
+//                """.trimIndent(),
+//                streamConfig!!.id.rawNamespace,
+//                databaseName
+//            )
+//            .isNotEmpty()
+
+
+//            val testQuery = String.format(
+//                """
+//                    USE DATABASE %s;
+//                    SHOW SCHEMAS LIKE '%s';
+//
+//                """.trimIndent(),
+//                databaseName,
+//                namespaces[0],
+//            )
+
 
 //        return CacheManager.queryJsons(database,
 //                """
@@ -102,6 +137,124 @@ class SnowflakeV1V2Migrator(
         // VARIANT as VARCHAR
 
 
+        val showColumnsQuery =
+            String.format(
+
+                """
+                        SHOW COLUMNS IN TABLE %s.%s.%s;
+                                """.trimIndent(),
+                databaseName,
+                namespace,
+                tableName
+            )
+
+        val showColumnsResult = database.queryJsons(
+            showColumnsQuery)
+
+        println("showColumnsResult=" + showColumnsResult)
+
+        val columns = showColumnsResult
+            .stream()
+            .collect(
+                { LinkedHashMap() },
+                { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                    map[row["column_name"].asText()] =
+                        ColumnDefinition(
+                            row["column_name"].asText(),
+                            row["data_type"].asText(),
+                            0,
+                            fromIsNullableSnowflakeString(row["null?"].asText())
+                        )
+                },
+                {
+                    obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                    m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                    obj.putAll(m!!)
+                }
+            )
+
+        println("columns=" + columns)
+
+        return if (columns.isEmpty()) {
+            Optional.empty()
+        } else {
+            Optional.of(TableDefinition(columns))
+        }
+
+
+        /*
+        val useDatabaseQuery = String.format(
+            """
+                USE DATABASE %s; 
+            """.trimIndent(),
+            databaseName
+        )
+        database.execute(useDatabaseQuery)
+
+        val useSchemaQuery = String.format(
+            """
+                USE SCHEMA %s; 
+            """.trimIndent(),
+            namespace!!
+        )
+        database.execute(useSchemaQuery)
+
+        val showColumnsQuery =
+            String.format(
+
+                """
+                      
+                        -- Show columns in the specified table
+                        SHOW COLUMNS IN TABLE %s;
+
+                        -- Process and filter the results
+                        SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+                        FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+                        WHERE TABLE_CATALOG = %s
+                          AND TABLE_SCHEMA = %s
+                          AND TABLE_NAME = %s
+                        ORDER BY ORDINAL_POSITION;
+
+                                """.trimIndent(),
+
+                tableName!!,
+                databaseName,
+                namespace,
+                tableName
+            )
+
+        val columns = database.queryJsons(
+            showColumnsQuery)
+            .stream()
+            .collect(
+                { LinkedHashMap() },
+                { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                    map[row["COLUMN_NAME"].asText()] =
+                        ColumnDefinition(
+                            row["COLUMN_NAME"].asText(),
+                            row["DATA_TYPE"].asText(),
+                            0,
+                            fromIsNullableIsoString(row["IS_NULLABLE"].asText())
+                        )
+                },
+                {
+                    obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                    m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                    obj.putAll(m!!)
+                }
+            )
+
+
+        return if (columns.isEmpty()) {
+            Optional.empty()
+        } else {
+            Optional.of(TableDefinition(columns))
+        }
+
+        */
+
+
+        /*
         val columns =
             database
                 .queryJsons(
@@ -142,6 +295,7 @@ class SnowflakeV1V2Migrator(
             Optional.of(TableDefinition(columns))
         }
 
+         */
 
 
         //val columns =
@@ -209,6 +363,7 @@ class SnowflakeV1V2Migrator(
 
 
     }
+
 
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {
 // The implicit upper-casing happens for this in the SqlGenerator

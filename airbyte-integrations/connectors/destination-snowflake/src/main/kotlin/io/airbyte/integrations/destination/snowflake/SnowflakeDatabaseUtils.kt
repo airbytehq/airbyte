@@ -293,4 +293,8 @@ object SnowflakeDatabaseUtils {
             AirbyteProtocolType.UNKNOWN -> "VARIANT"
         }
     }
+
+    fun fromIsNullableSnowflakeString(isNullable: String?): Boolean {
+        return "true".equals(isNullable, ignoreCase = true)
+    }
 }
