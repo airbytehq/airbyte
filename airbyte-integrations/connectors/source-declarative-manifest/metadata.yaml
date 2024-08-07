@@ -3,7 +3,7 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/pypy-connector-base:0.0.0-rc.1@sha256:62924d9028a1766f545df98f4ecdd2d8c89cb2d9da66fb7ed3876947ce685313
   connectorSubtype: api
   connectorType: source
   definitionId: 64a2f99c-542f-4af8-9a6f-355f1217b436
@@ -25,7 +25,7 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-declarative-manifest
   supportLevel: community
   tags:

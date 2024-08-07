@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "base_images" }]
 include = ["generated"]
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "~3.10"
 dagger-io = "==0.9.6"
 beartype = "<0.17.2"                                          # dagger 0.9.6 doesn't pin this but doesn't play well with it. We should probably upgrade dagger
 gitpython = "^3.1.35"
