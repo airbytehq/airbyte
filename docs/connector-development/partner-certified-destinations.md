@@ -16,13 +16,25 @@ This document outlines the minimum expectations for partner-certified destinatio
 
 ## “Partner-Certified" Listing Requirements:
 
-1. Issue Tracking: Create a public Github repo/project to be shared with Airbyte and it's users.
-2. Airbyte Communications: Monitor a Slack channel for communications directly from the Airbyte Support and Development teams.
-3. SLAs: Respect a 3 business day first response maximum to customer inquries or bug reports.
-4. Metrics: Maintain >=95% first-sync success and >=95% overall sync success on your destination connector. _Note: config_errors are not counted against this metric._
-5. Platform Updates: Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commit to updating your connector to meet any new platform requirements at least once every 6 months.
-6. Connector Updates: Important bugs are audited and major problems are solved within a reasonable timeframe.
-7. Security: Validate that the connector is using HTTPS and secure-only access to customer data.
+### Issue Tracking: 
+Create a public Github repo/project to be shared with Airbyte and it's users.
+
+### Airbyte Communications: 
+Monitor a Slack channel for communications directly from the Airbyte Support and Development teams.
+
+### SLAs: 
+Respect a 3 business day first response maximum to customer inquries or bug reports.
+### Metrics: 
+Maintain >=95% first-sync success and >=95% overall sync success on your destination connector. _Note: config_errors are not counted against this metric._
+
+### Platform Updates: 
+Adhere to a regular update cadence for either the relevant Airbyte-managed CDK, or a commit to updating your connector to meet any new platform requirements at least once every 6 months.
+
+### Connector Updates: 
+Important bugs are audited and major problems are solved within a reasonable timeframe.
+
+### Security: 
+Validate that the connector is using HTTPS and secure-only access to customer data.
 
 
 ## Functional Requirements of Certified Destinations:
@@ -79,22 +91,21 @@ All destinations are required to adhere to standard configuration practices for 
 * The connector’s manifest must specify `AllowedHosts` - limiting which APIs/IPs this connector can communicate with.
 
 ### Data Fidelity and Data Types
-## 3. Data Fidelity and Data Types
 
 **Every attempt should be made to ensure data does not lose fidelity during transit and that syncs do not fail due to data type mapping issues.**
 
-**_Note: Publish-type destinations may be excluded from some or all of the below rules, if they are constrained to use predefined types. In these cases, the destination should aim to fail early so the user can reconfigure their source before causing any data corruption or data inconsistencies from partially-loaded datasets._**
+_Note: Publish-type destinations may be excluded from some or all of the below rules, if they are constrained to use predefined types. In these cases, the destination should aim to fail early so the user can reconfigure their source before causing any data corruption or data inconsistencies from partially-loaded datasets._
 
 
 * Data types should be _at least_ as large as needed to store incoming data.
   * Larger types should be preferred in cases where there is a choice - for instance a choice between INT32 or INT64, the latter should be preferred.
 
 
-*Floats should be handled with the maximum possible size for floating point numbers
+* Floats should be handled with the maximum possible size for floating point numbers
   * Normally this means a `double` precision floating point type.
 
 
-*Decimals should be handled with the largest-possible precision and scale, generally `DECIMAL(38, 9)`
+* Decimals should be handled with the largest-possible precision and scale, generally `DECIMAL(38, 9)`
   * This allows for very-large integers (for example, Active Directory IDs) as well as very precise small numbers - to the 9th decimal place.
   * Floating point storage should _not_ be used for decimals and other numeric values unless they are declared as `float` in the source catalog.
 
