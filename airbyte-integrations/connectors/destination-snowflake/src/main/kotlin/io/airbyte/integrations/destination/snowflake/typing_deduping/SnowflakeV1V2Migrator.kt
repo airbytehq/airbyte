@@ -30,8 +30,8 @@ class SnowflakeV1V2Migrator(
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         val showSchemaQuery = String.format(
             """
-                                    SHOW SCHEMAS LIKE '%s' IN DATABASE %s;
-                                """.trimIndent(),
+               SHOW SCHEMAS LIKE '%s' IN DATABASE %s;
+            """.trimIndent(),
             streamConfig!!.id.rawNamespace,
             databaseName,
         )
@@ -114,6 +114,14 @@ class SnowflakeV1V2Migrator(
 
         print("columnsFromInfoSchemaQuery=" + columnsFromInfoSchemaQuery)
 
+        return if (columnsFromInfoSchemaQuery.isEmpty()) {
+            Optional.empty()
+        } else {
+            Optional.of(TableDefinition(columnsFromInfoSchemaQuery))
+        }
+
+
+        /*
         try {
             val showColumnsQuery =
                 String.format(
@@ -138,7 +146,8 @@ class SnowflakeV1V2Migrator(
                         map[row["column_name"].asText()] =
                             ColumnDefinition(
                                 row["column_name"].asText(),
-                                row["data_type"].asText(),
+                                //row["data_type"].asText(),
+                                JSONObject(row["data_type"].asText()).getString("type"),
                                 0,
                                 fromIsNullableSnowflakeString(row["null?"].asText()),
                             )
@@ -157,6 +166,7 @@ class SnowflakeV1V2Migrator(
                 Optional.of(TableDefinition(columnsFromShowQuery))
             }
 
+
         } catch (e: Exception) {
 
             //TODO: Need to correctly handle the exception
@@ -168,7 +178,7 @@ class SnowflakeV1V2Migrator(
             throw e
 
         }
-
+            */
 
     }
 

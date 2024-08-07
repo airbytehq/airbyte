@@ -556,6 +556,8 @@ class SnowflakeDestinationHandler(
 
             println("Entering findExistingTables(...)");
 
+            //TODO: Remove code added for testing
+
             //val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
             val existingTablesFromShowCommand =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
@@ -563,6 +565,7 @@ class SnowflakeDestinationHandler(
             // convert list stream to array
             val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
             val names = streamIds.map { it.finalName }.toTypedArray()
+
 
 //            val query =
 //                """
@@ -632,16 +635,16 @@ class SnowflakeDestinationHandler(
                     val showColumnsQuery =
                         String.format(
 
-                                """
+                            """
                         SHOW COLUMNS IN TABLE %s.%s.%s;
                                 """.trimIndent(),
-                                databaseName,
-                                stream.finalNamespace,
-                                stream.finalName,
+                            databaseName,
+                            stream.finalNamespace,
+                            stream.finalName,
                         )
 
                     val showColumnsResult: List<JsonNode> = database.queryJsons(
-                            showColumnsQuery,
+                        showColumnsQuery,
                     )
 
                     println("showColumnsResult=" + showColumnsResult)
@@ -662,10 +665,10 @@ class SnowflakeDestinationHandler(
                                 }
                         tableDefinition.columns[columnName] =
                             ColumnDefinition(
-                                    columnName,
-                                    dataType,
-                                    0,
-                                    fromIsNullableSnowflakeString(isNullable),
+                                columnName,
+                                dataType,
+                                0,
+                                fromIsNullableSnowflakeString(isNullable),
                             )
                     }
 
@@ -693,13 +696,54 @@ class SnowflakeDestinationHandler(
 
             //return existingTables
 
+            //------------Test code
+
+            //TODO: Remove temp code added for testing
+
+            val showColumnsQuery =
+                String.format(
+                    """
+                       SHOW COLUMNS IN TABLE %s.%s.%s;
+                    """.trimIndent(),
+                    databaseName,
+                    namespaces[0],
+                    names[0],
+                )
+
+            val showColumnsResult = database.queryJsons(
+                showColumnsQuery,
+            )
+
+            println("showColumnsResult=" + showColumnsResult)
+            val columnsFromShowQuery = showColumnsResult
+                .stream()
+                .collect(
+                    { LinkedHashMap() },
+                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                        map[row["column_name"].asText()] =
+                            ColumnDefinition(
+                                row["column_name"].asText(),
+                                //row["data_type"].asText(),
+                                JSONObject(row["data_type"].asText()).getString("type"),
+                                0,
+                                fromIsNullableSnowflakeString(row["null?"].asText()),
+                            )
+                    },
+                    { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                        obj.putAll(m!!)
+                    },
+                )
+
+            println("columnsFromShowQuery=" + columnsFromShowQuery)
+
+            //------------End of test code
+
             return existingTablesFromShowCommand
 
-        }
 
-
-        //Original function
-        /*
+            //Original function
+            /*
         @Throws(SQLException::class)
         fun findExistingTables(
             database: JdbcDatabase,
@@ -765,7 +809,9 @@ class SnowflakeDestinationHandler(
 
          */
 
-    }
+        }
 
+
+    }
 
 }
