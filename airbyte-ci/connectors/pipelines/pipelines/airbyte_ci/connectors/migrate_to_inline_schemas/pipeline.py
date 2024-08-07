@@ -91,12 +91,6 @@ class CheckIsInlineCandidate(Step):
         )
 
 
-def copy_directory(src: Path, dest: Path) -> None:
-    if dest.exists():
-        shutil.rmtree(dest)
-    shutil.copytree(src, dest)
-
-
 class RestoreInlineState(Step):
     context: ConnectorContext
 
@@ -253,6 +247,11 @@ class JsonLoaderNode:
     ref: str
     file_path: str
 
+
+def copy_directory(src: Path, dest: Path) -> None:
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(src, dest)
 
 def _has_subdirectory(directory: Path) -> bool:
     # Iterate through all items in the directory

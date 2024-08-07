@@ -5,6 +5,8 @@
 import subprocess
 from pathlib import Path
 
+from typing import Union, Dict, List, Mapping, Any
+
 import jinja2
 import requests
 
@@ -75,3 +77,14 @@ def revert_connector_directory(directory: Path) -> None:
     except subprocess.CalledProcessError as e:
         # Handle errors in the subprocess calls
         print(f"An error occurred while reverting changes: {str(e)}")
+
+def remove_parameters_from_manifest(d: Mapping[str, Any] | List) -> Mapping[str, Any] | List:
+    """
+    Takes a dictionary (or a list) of keys and removes all instances of the key "$parameters" from it.
+    """
+    if isinstance(d, dict):
+        return {k: remove_parameters_from_manifest(v) for k, v in d.items() if k != "$parameters"}
+    elif isinstance(d, list):
+        return [remove_parameters_from_manifest(item) for item in d]
+    else:
+        return d

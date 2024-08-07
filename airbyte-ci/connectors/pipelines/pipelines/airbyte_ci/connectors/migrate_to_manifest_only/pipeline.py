@@ -5,29 +5,32 @@
 import json
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Union, Dict, List, Mapping
 
 import git  # type: ignore
 from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_component_transformer import ManifestComponentTransformer
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_resolver import ManifestReferenceResolver
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.utils import (
     get_latest_base_image,
     readme_for_connector,
     revert_connector_directory,
+    remove_parameters_from_manifest,
 )
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 ## GLOBAL VARIABLES ##
 
-VALID_SOURCE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py", "spec.json", "spec.yaml"]
-FILES_TO_LEAVE = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml", "secrets"]
+# spec.yaml and spec.json will be removed as part of the conversion. But if they are present, it's fine to convert still.
+MANIFEST_ONLY_COMPATIBLE_FILES = ["manifest.yaml", "run.py", "__init__.py", "source.py", "spec.json", "spec.yaml"]
+MANIFEST_ONLY_KEEP_FILES = ["manifest.yaml", "metadata.yaml", "icon.svg", "integration_tests", "acceptance-test-config.yml", "secrets"]
 
 
 ## STEPS ##
@@ -63,13 +66,13 @@ class CheckIsManifestMigrationCandidate(Step):
 
         ## 2. Detect invalid python files in the connector's source directory
         for file in connector.python_source_dir_path.iterdir():
-            if file.name not in VALID_SOURCE_FILES:
+            if file.name not in MANIFEST_ONLY_COMPATIBLE_FILES:
                 invalid_files.append(file.name)
         if invalid_files:
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
-                stdout=f"The connector has unrecognized source files: {invalid_files}",
+                stdout=f"The connector has unrecognized source files: {', '.join(invalid_files)}",
             )
 
         ## 3. Detect connector class name to make sure it's inherited from source-declarative-manifest
@@ -115,17 +118,7 @@ class StripConnector(Step):
         except Exception as e:
             raise ValueError(f"Failed to delete {file.name}: {e}")
 
-    def _handle_integration_tests(self, file: Path) -> None:
-        """
-        Preserves any integration tests, deletes other test files.
-        """
-        if file.name in {"integration", "integrations"}:
-            return
-        else:
-            self._delete_directory_item(file)
-
-    @staticmethod
-    def _check_if_non_inline_spec(path: Path) -> Path | None:
+    def _check_if_non_inline_spec(self, path: Path) -> Path | None:
         """
         Checks if a non-inline spec file exists and return its path.
         """
@@ -138,7 +131,7 @@ class StripConnector(Step):
             return spec_file_json
         return None
 
-    def _fetch_spec_data(self, spec_file: Path) -> dict:
+    def _read_spec_from_file(self, spec_file: Path) -> dict:
         """
         Grabs the relevant data from a non-inline spec, to be added to the manifest.
         """
@@ -156,14 +149,6 @@ class StripConnector(Step):
         except Exception as e:
             raise ValueError(f"Failed to read data in spec file: {e}")
 
-    def remove_parameters(self, d: Any) -> Any:
-        if isinstance(d, dict):
-            return {k: self.remove_parameters(v) for k, v in d.items() if k != "$parameters"}
-        elif isinstance(d, list):
-            return [self.remove_parameters(item) for item in d]
-        else:
-            return d
-
     async def _run(self) -> StepResult:
         connector = self.context.connector
 
@@ -171,72 +156,50 @@ class StripConnector(Step):
         self.logger.info(f"Moving manifest to the root level of the directory")
         root_manifest_path = connector.code_directory / "manifest.yaml"
         connector.manifest_path.rename(root_manifest_path)
-
-        if not root_manifest_path.exists():
-            return StepResult(
-                step=self, status=StepStatus.FAILURE, stdout="Failed to move manifest.yaml to the root level of the directory."
-            )
-
+        
         ## 2. Update the version in manifest.yaml
         try:
-            manifest_data = read_yaml(root_manifest_path)
-            manifest_data["version"] = "4.3.0"
+            manifest = read_yaml(root_manifest_path)
+            manifest["version"] = "4.3.0"
 
             # Resolve $parameters and types with CDK magic
-            resolved_manifest = ManifestReferenceResolver().preprocess_manifest(manifest_data)
+            resolved_manifest = ManifestReferenceResolver().preprocess_manifest(manifest)
             propagated_manifest = ManifestComponentTransformer().propagate_types_and_parameters("", resolved_manifest, {})
-
-            # Recursively traverse the manifest, deleting any $parameters keys
-            cleaned_manifest = self.remove_parameters(propagated_manifest)
-
+            cleaned_manifest = remove_parameters_from_manifest(propagated_manifest)
             write_yaml(cleaned_manifest, root_manifest_path)
-
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update version in manifest.yaml: {e}")
 
-        ## 2. Check for non-inline spec files and add the data to manifest.yaml
+        ## 3. Check for non-inline spec files and add the data to manifest.yaml
         spec_file = self._check_if_non_inline_spec(connector.python_source_dir_path)
         if spec_file:
             self.logger.info(f"Non-inline spec file found. Migrating spec to manifest")
             try:
-                spec_data = self._fetch_spec_data(spec_file)
-
-                manifest_data = read_yaml(root_manifest_path)
+                spec_data = self._read_spec_from_file(spec_file)
+                manifest = read_yaml(root_manifest_path)
 
                 # Confirm the connector does not have both inline and non-inline specs
-                if "spec" in manifest_data:
+                if "spec" in manifest:
                     return StepResult(step=self, status=StepStatus.FAILURE, stdout="Connector has both inline and non-inline specs.")
 
-                # Add the spec data to manifest.yaml
-                manifest_data["spec"] = {
+                manifest["spec"] = {
                     "type": "Spec",
                     "documentation_url": spec_data.get("documentation_url"),
                     "connection_specification": spec_data.get("connection_specification"),
                 }
-
-                write_yaml(manifest_data, root_manifest_path)
-
+                write_yaml(manifest, root_manifest_path)
             except Exception as e:
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to add spec data to manifest.yaml: {e}")
 
-        ## 3. Delete all non-essential files
+        ## 4. Delete all non-essential files
         try:
             for item in connector.code_directory.iterdir():
-                if item.name in FILES_TO_LEAVE:
+                if item.name in MANIFEST_ONLY_KEEP_FILES:
                     continue  # Preserve the allowed files
-                elif item.name == "unit_tests":
-                    # Preserve any integration tests, delete the rest
-                    self._handle_integration_tests(item)
-                # Delete everything else in root folder
                 else:
                     self._delete_directory_item(item)
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete files: {e}")
-
-        ## 4. Verify that only allowed files remain
-        for file in connector.code_directory.iterdir():
-            if file.name not in FILES_TO_LEAVE and file.name != "unit_tests":
-                return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to delete {file.name}")
 
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="The connector has been successfully stripped.")
 
@@ -250,21 +213,17 @@ class UpdateManifestOnlyFiles(Step):
     title = "Update Connector Metadata"
 
     async def _run(self) -> StepResult:
-
         connector = self.context.connector
 
         ## 1. Update the acceptance test config to point to the right spec path
         try:
             acceptance_test_config_data = read_yaml(connector.acceptance_test_config_path)
-
             # Handle legacy acceptance-test-config:
             if "acceptance_tests" in acceptance_test_config_data:
                 acceptance_test_config_data["acceptance_tests"]["spec"]["tests"][0]["spec_path"] = "manifest.yaml"
             else:
                 acceptance_test_config_data["tests"]["spec"][0]["spec_path"] = "manifest.yaml"
-
             write_yaml(acceptance_test_config_data, connector.acceptance_test_config_path)
-
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
 
@@ -274,25 +233,23 @@ class UpdateManifestOnlyFiles(Step):
             metadata = read_yaml(connector.metadata_file_path)
 
             # Remove any existing language tags and append the manifest-only tag
-            tags = metadata.get("data", {}).get("tags")
-            if tags:
-                for tag in tags:
-                    if "language:" in tag:
-                        tags.remove(tag)
-                tags.append("language:manifest-only")
+            tags = metadata.get("data", {}).get("tags", [])
+            for tag in tags:
+                if "language:" in tag:
+                    tags.remove(tag)
+            tags.append("language:manifest-only")
 
             pypi_package = metadata.get("data", {}).get("remoteRegistries", {}).get("pypi")
-            if pypi_package and pypi_package.get("enabled") == True:
+            if pypi_package:
                 pypi_package["enabled"] = False
 
-                # Update the base image
-                latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
-                connector_base_image = metadata.get("data", {}).get("connectorBuildOptions")
-                connector_base_image["baseImage"] = latest_base_image
+            # Update the base image
+            latest_base_image = get_latest_base_image("airbyte/source-declarative-manifest")
+            connector_base_image = metadata.get("data", {}).get("connectorBuildOptions")
+            connector_base_image["baseImage"] = latest_base_image
 
-                # Write the changes to metadata.yaml
-                write_yaml(metadata, connector.metadata_file_path)
-
+            # Write the changes to metadata.yaml
+            write_yaml(metadata, connector.metadata_file_path)
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
 
@@ -307,7 +264,7 @@ class UpdateManifestOnlyFiles(Step):
 
 
 ## MAIN FUNCTION ##
-async def run_connectors_manifest_only_pipeline(context: ConnectorContext, semaphore: "Semaphore", *args: Any) -> ConnectorReport:
+async def run_connectors_manifest_only_pipeline(context: ConnectorContext, semaphore: "Semaphore", *args: Any) -> Report:
 
     steps_to_run: STEP_TREE = []
     steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.MANIFEST_ONLY_CHECK, step=CheckIsManifestMigrationCandidate(context))])
@@ -332,19 +289,4 @@ async def run_connectors_manifest_only_pipeline(context: ConnectorContext, semap
         ]
     )
 
-    async with semaphore:
-        async with context:
-            result_dict = await run_steps(
-                runnables=steps_to_run,
-                options=context.run_step_options,
-            )
-            results = list(result_dict.values())
-            # If the pipeline failed, restore the connector directory to revert any changes
-            if any(result.status == StepStatus.FAILURE for result in results):
-                context.logger.error("The pipeline failed. Restoring the connector directory.")
-                revert_connector_directory(context.connector.code_directory)
-
-            report = ConnectorReport(context, steps_results=results, name="STRIP MIGRATION RESULTS")
-            context.report = report
-
-    return report
+    return await run_connector_steps(context, semaphore, steps_to_run)
