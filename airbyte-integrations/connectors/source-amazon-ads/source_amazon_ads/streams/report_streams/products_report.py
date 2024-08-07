@@ -4,9 +4,14 @@
 
 
 from http import HTTPStatus
-from typing import List
+from typing import Any, List, Mapping
 
-from .report_streams import ReportInfo, ReportStream
+import backoff
+import requests
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from source_amazon_ads.schemas import Profile
+
+from .report_streams import ReportInfo, ReportStream, TooManyRequests
 
 METRICS_MAP = {
     "campaigns": [
@@ -266,6 +271,10 @@ class SponsoredProductsReportStream(ReportStream):
     metrics_map = METRICS_MAP
     metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
+    def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+        super().__init__(config, profiles, authenticator)
+        self._no_auth_session = requests.Session()
+
     def report_init_endpoint(self, record_type: str) -> str:
         return f"/{self.API_VERSION}/reports"
 
@@ -274,6 +283,27 @@ class SponsoredProductsReportStream(ReportStream):
         Download and parse report result
         """
         return super()._download_report(None, url)
+
+    @backoff.on_exception(
+        backoff.expo,
+        (
+            requests.exceptions.Timeout,
+            requests.exceptions.ConnectionError,
+            TooManyRequests,
+        ),
+        max_tries=10,
+    )
+    def _send_http_request(self, url: str, profile_id: int, json: dict = None):
+        headers = self._get_auth_headers(profile_id)
+        if json:
+            response = self._session.post(url, headers=headers, json=json)
+        else:
+            # using session without auth as API returns 400 bad request if Authorization header presents in request
+            # X-Amz-Algorithm and X-Amz-Signature query params already present in the url, that is enough to make proper request
+            response = self._no_auth_session.get(url, headers=headers)
+        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+            raise TooManyRequests()
+        return response
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]
