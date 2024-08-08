@@ -39,9 +39,8 @@ class DiscoverOperation(
                         }
                         continue
                     }
-                    val primaryKeys: List<List<String>> =
-                        metadataQuerier.primaryKeys(name, namespace)
-                    val discoveredStream = DiscoveredStream(name, namespace, fields, primaryKeys)
+                    val primaryKey: List<List<String>> = metadataQuerier.primaryKey(name, namespace)
+                    val discoveredStream = DiscoveredStream(name, namespace, fields, primaryKey)
                     airbyteStreams.add(toAirbyteStream(discoveredStream))
                 }
             }
@@ -68,6 +67,7 @@ class DiscoverOperation(
         airbyteStream.withSourceDefinedPrimaryKey(
             if (isValidPK) discoveredStream.primaryKeyColumnIDs else listOf(),
         )
+        airbyteStream.isResumable = airbyteStream.sourceDefinedPrimaryKey.isNotEmpty()
         if (config.global) {
             // There is a global feed of incremental records, like CDC.
             airbyteStreamDecorator.decorateGlobal(airbyteStream)
