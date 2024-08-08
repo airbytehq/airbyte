@@ -13,7 +13,6 @@ from typing import Dict, List, Optional
 from connector_ops.utils import Connector, ConnectorLanguage  # type: ignore
 from connectors_qa import consts
 
-
 ALL_LANGUAGES = [
     ConnectorLanguage.JAVA,
     ConnectorLanguage.LOW_CODE,
@@ -276,9 +275,9 @@ class Report:
                 " ", "_"
             )
             connectors_report[connector_technical_name]["badge_text"] = badge_text
-            connectors_report[connector_technical_name]["badge_url"] = (
-                f"{self.image_shield_root_url}/{badge_name}-{badge_text}-{connectors_report[connector_technical_name]['badge_color']}"
-            )
+            connectors_report[connector_technical_name][
+                "badge_url"
+            ] = f"{self.image_shield_root_url}/{badge_name}-{badge_text}-{connectors_report[connector_technical_name]['badge_color']}"
         return json.dumps(
             {
                 "generation_timestamp": datetime.utcnow().isoformat(),
