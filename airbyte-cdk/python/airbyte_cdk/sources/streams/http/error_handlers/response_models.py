@@ -5,10 +5,9 @@ from enum import Enum
 from typing import Optional, Union
 
 import requests
-from requests import HTTPError
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from requests import HTTPError
 
 
 class ResponseAction(Enum):
@@ -41,7 +40,11 @@ def _format_response_error_message(response: requests.Response) -> str:
 
 
 def create_fallback_error_resolution(response_or_exception: Union[requests.Response, Exception]) -> ErrorResolution:
-    error_message = _format_exception_error_message(response_or_exception) if isinstance(response_or_exception, Exception) else _format_response_error_message(response_or_exception)
+    error_message = (
+        _format_exception_error_message(response_or_exception)
+        if isinstance(response_or_exception, Exception)
+        else _format_response_error_message(response_or_exception)
+    )
     return ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.system_error,

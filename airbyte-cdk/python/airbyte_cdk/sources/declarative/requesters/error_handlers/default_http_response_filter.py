@@ -25,4 +25,6 @@ class DefaultHttpResponseFilter(HttpResponseFilter):
 
             default_mapped_error_resolution = DEFAULT_ERROR_MAPPING.get(mapped_key)
 
-        return default_mapped_error_resolution if default_mapped_error_resolution else create_fallback_error_resolution(response_or_exception)
+        return (
+            default_mapped_error_resolution if default_mapped_error_resolution else create_fallback_error_resolution(response_or_exception)
+        )

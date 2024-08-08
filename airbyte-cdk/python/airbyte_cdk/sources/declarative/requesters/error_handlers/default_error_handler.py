@@ -9,7 +9,11 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import SUCCESS_RESOLUTION, ErrorResolution, create_fallback_error_resolution
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
+    SUCCESS_RESOLUTION,
+    ErrorResolution,
+    create_fallback_error_resolution,
+)
 from airbyte_cdk.sources.types import Config
 
 
@@ -114,7 +118,11 @@ class DefaultErrorHandler(ErrorHandler):
         default_reponse_filter = DefaultHttpResponseFilter(parameters={}, config=self.config)
         default_response_filter_resolution = default_reponse_filter.matches(response_or_exception)
 
-        return default_response_filter_resolution if default_response_filter_resolution else create_fallback_error_resolution(response_or_exception)
+        return (
+            default_response_filter_resolution
+            if default_response_filter_resolution
+            else create_fallback_error_resolution(response_or_exception)
+        )
 
     def backoff_time(
         self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int = 0

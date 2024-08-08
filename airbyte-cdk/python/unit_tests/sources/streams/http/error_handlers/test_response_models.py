@@ -4,11 +4,9 @@ from unittest import TestCase
 
 import requests
 import requests_mock
-from airbyte_protocol.models import FailureType
-
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import create_fallback_error_resolution, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction, create_fallback_error_resolution
 from airbyte_cdk.utils.airbyte_secrets_utils import update_secrets
-
+from airbyte_protocol.models import FailureType
 
 _A_SECRET = "a-secret"
 _A_URL = "https://a-url.com"

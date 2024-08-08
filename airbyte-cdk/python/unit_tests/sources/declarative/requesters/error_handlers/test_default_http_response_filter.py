@@ -5,11 +5,10 @@
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_protocol.models import FailureType
-
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_protocol.models import FailureType
 from requests import RequestException, Response
 
 
