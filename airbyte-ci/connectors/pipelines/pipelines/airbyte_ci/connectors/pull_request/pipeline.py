@@ -69,6 +69,8 @@ async def run_connector_pull_request_pipeline(
             step_results = []
             modified_files = await get_connector_changes(context)
 
+            unique_branch_id = f"{branch_id}/{context.connector.name}"
+
             create_or_update_pull_request = CreateOrUpdatePullRequest(context, skip_ci=True)
 
             if not modified_files:
