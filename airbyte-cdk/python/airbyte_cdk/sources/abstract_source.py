@@ -214,6 +214,13 @@ class AbstractSource(Source, ABC):
         stream_name = configured_stream.stream.name
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
 
+        # This is a hack. Existing full refresh streams that are converted into resumable full refresh need to discard
+        # the state because the terminal state for a full refresh sync is not compatible with substream resumable full
+        # refresh state. This is only required when running live traffic regression testing since the platform normally
+        # handles whether to pass state
+        if stream_state == {"__ab_no_cursor_state_message": True}:
+            stream_state = {}
+
         if "state" in dir(stream_instance):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")

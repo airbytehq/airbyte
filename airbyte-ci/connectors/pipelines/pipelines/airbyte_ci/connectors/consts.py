@@ -34,10 +34,14 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     UPDATE_PULL_REQUEST = "up_to_date.pull"
     INLINE_CANDIDATE = "migration_to_inline_schemas.candidate"
     INLINE_MIGRATION = "migration_to_inline_schemas.migration"
+    INLINE_CLEANUP = "migration_to_inline_schemas.cleanup"
     AIRBYTE_LOGGER_CANDIDATE = "migration_to_logging_logger.candidate"
     AIRBYTE_LOGGER_MIGRATION = "migration_to_logging_logger.migration"
     PULL_REQUEST_CREATE = "pull_request.create"
     PULL_REQUEST_UPDATE = "pull_request.update"
+    MANIFEST_ONLY_CHECK = "migrate_to_manifest_only.check"
+    MANIFEST_ONLY_STRIP = "migrate_to_manifest_only.strip"
+    MANIFEST_ONLY_UPDATE = "migrate_to_manifest_only.update"
 
     def __str__(self) -> str:
         return self.value

@@ -5,12 +5,14 @@ import json
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
 from airbyte_cdk.sources.source import TState
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -23,6 +25,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateBlob, AirbyteStreamState, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from integration.config import ConfigBuilder
+from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
@@ -121,20 +124,6 @@ def _bank_accounts_response() -> HttpResponseBuilder:
     )
 
 
-def _given_customers_availability_check(http_mocker: HttpMocker) -> None:
-    http_mocker.get(
-        StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _customers_response().with_record(_a_customer()).build()  # there needs to be a record in the parent stream for the child to be available
-    )
-
-
-def _given_events_availability_check(http_mocker: HttpMocker) -> None:
-    http_mocker.get(
-        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _events_response().build()
-    )
-
-
 def _as_dict(response_builder: HttpResponseBuilder) -> Dict[str, Any]:
     return json.loads(response_builder.build().body)
 
@@ -150,16 +139,10 @@ def _read(
     return read(_source(catalog, config, state), config, catalog, state, expecting_exception)
 
 
-def _assert_not_available(output: EntrypointOutput) -> None:
-    # right now, no stream statuses means stream unavailable
-    assert len(output.get_stream_statuses(_STREAM_NAME)) == 0
-
-
 @freezegun.freeze_time(_NOW.isoformat())
 class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
@@ -186,7 +169,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_source_is_not_bank_account_when_read_then_filter_record(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
@@ -208,7 +190,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_multiple_bank_accounts_pages_when_read_then_query_pagination_on_child(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
@@ -240,7 +221,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_multiple_customers_pages_when_read_then_query_pagination_on_parent(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
@@ -277,8 +257,7 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
-    def test_given_parent_stream_without_bank_accounts_when_read_then_stream_is_unavailable(self, http_mocker: HttpMocker) -> None:
-        # events stream is not validated as application fees is validated first
+    def test_given_parent_stream_without_bank_accounts_when_read_then_stream_did_not_run(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response().build(),
@@ -286,7 +265,7 @@ class FullRefreshTest(TestCase):
 
         output = self._read(_config().with_start_date(_A_START_DATE))
 
-        _assert_not_available(output)
+        assert_stream_did_not_run(output, _STREAM_NAME)
 
     @HttpMocker()
     def test_given_slice_range_when_read_then_perform_multiple_requests(self, http_mocker: HttpMocker) -> None:
@@ -294,7 +273,6 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
 
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
             _customers_response().with_record(
@@ -323,7 +301,6 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
 
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
             _customers_response().build()
@@ -355,7 +332,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_no_state_when_read_then_return_ignore_lookback(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response().with_record(_a_customer()).build(),
@@ -367,7 +343,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_cursor_field_is_set(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response()
@@ -388,17 +363,16 @@ class FullRefreshTest(TestCase):
         assert output.records[0].record.data["updated"] == int(_NOW.timestamp())
 
     @HttpMocker()
-    def test_given_http_status_401_when_read_then_system_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_401_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _customers_request().with_any_query_params().build(),
             a_response_with_status(401),
         )
         output = self._read(_config(), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_any_query_params().build(),
             [
@@ -416,14 +390,15 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_when_read_then_raise_config_error(self, http_mocker: HttpMocker) -> None:
         request = _customers_request().with_any_query_params().build()
         http_mocker.get(
             request,
             a_response_with_status(500),
         )
-        output = self._read(_config(), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        with patch.object(HttpStatusErrorHandler, 'max_retries', new=1):
+            output = self._read(_config(), expecting_exception=True)
+            assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
     def _read(self, config: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
@@ -436,7 +411,6 @@ class IncrementalTest(TestCase):
     def test_given_no_state_and_successful_sync_when_read_then_set_state_to_now(self, http_mocker: HttpMocker) -> None:
         # If stripe takes some time to ingest the data, we should recommend to use a lookback window when syncing the bank_accounts stream
         # to make sure that we don't lose data between the first and the second sync
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _customers_request().with_expands(_EXPANDS).with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _customers_response().with_record(
@@ -457,8 +431,6 @@ class IncrementalTest(TestCase):
         state_datetime = _NOW - timedelta(days=5)
         cursor_value = int(state_datetime.timestamp()) + 1
 
-        _given_customers_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(
@@ -477,8 +449,6 @@ class IncrementalTest(TestCase):
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_customers_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
             _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
@@ -504,8 +474,6 @@ class IncrementalTest(TestCase):
         slice_range = timedelta(days=3)
         slice_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES + slice_range
 
-        _given_customers_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)  # the availability check does not consider the state so we need to define a generic availability check
         http_mocker.get(
             _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(slice_datetime).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(self._a_bank_account_event()).build(),
@@ -526,7 +494,6 @@ class IncrementalTest(TestCase):
     def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(self, http_mocker: HttpMocker) -> None:
         # this seems odd as we would miss some data between start_date and events_lower_boundary. In that case, we should hit the
         # customer endpoint
-        _given_customers_availability_check(http_mocker)
         start_date = _NOW - timedelta(days=40)
         state_value = _NOW - timedelta(days=39)
         events_lower_boundary = _NOW - timedelta(days=30)
@@ -544,8 +511,6 @@ class IncrementalTest(TestCase):
 
     @HttpMocker()
     def test_given_source_is_not_bank_account_when_read_then_filter_record(self, http_mocker: HttpMocker) -> None:
-        _given_customers_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
             _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
