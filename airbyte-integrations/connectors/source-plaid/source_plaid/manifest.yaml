@@ -318,7 +318,7 @@ streams:
           type: NoAuth
         request_body_json:
           secret: "{{config['api_key']}}"
-          cursor: null
+          cursor: "{{ next_page_token.next_page_token }}"
           count: 500
           options:
             include_original_description: true
@@ -335,7 +335,9 @@ streams:
       paginator:
         type: DefaultPaginator
         pagination_strategy:
-          type: OffsetIncrement
+          type: CursorPagination
+          cursor_value: "{{ response.get('next_cursor') }}"
+          stop_condition: "{{ response.has_more is false }}"
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
