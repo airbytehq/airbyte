@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
 import java.util.*
 import lombok.SneakyThrows
+import org.json.JSONObject
 
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class SnowflakeV1V2Migrator(
@@ -78,18 +79,21 @@ class SnowflakeV1V2Migrator(
         // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC
         // translates
         // VARIANT as VARCHAR
+
+        println("Entering SnowflakeV1V2Migrator.getTableIfExists")
+
         val columnsFromInfoSchemaQuery =
             database
                 .queryJsons(
                     """
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_catalog = ?
-              AND table_schema = ?
-              AND table_name = ?
-            ORDER BY ordinal_position;
-            
-            """.trimIndent(),
+                   SELECT column_name, data_type, is_nullable
+                   FROM information_schema.columns
+                   WHERE table_catalog = ?
+                     AND table_schema = ?
+                     AND table_name = ?
+                   ORDER BY ordinal_position;
+
+                   """.trimIndent(),
                     databaseName,
                     namespace!!,
                     tableName!!,
@@ -115,14 +119,14 @@ class SnowflakeV1V2Migrator(
         print("columnsFromInfoSchemaQuery=" + columnsFromInfoSchemaQuery)
 
         return if (columnsFromInfoSchemaQuery.isEmpty()) {
-            Optional.empty()
+           Optional.empty()
         } else {
-            Optional.of(TableDefinition(columnsFromInfoSchemaQuery))
+           Optional.of(TableDefinition(columnsFromInfoSchemaQuery))
         }
 
-
-        /*
+/*
         try {
+
             val showColumnsQuery =
                 String.format(
                     """
@@ -133,8 +137,10 @@ class SnowflakeV1V2Migrator(
                     tableName,
                 )
 
+            println("showColumnsQuery=" + showColumnsQuery)
+
             val showColumnsResult = database.queryJsons(
-                showColumnsQuery,
+                showColumnsQuery
             )
 
             println("showColumnsResult=" + showColumnsResult)
@@ -175,10 +181,13 @@ class SnowflakeV1V2Migrator(
 
             e.printStackTrace()
 
-            throw e
+            //throw e
 
         }
-            */
+
+        return Optional.empty()
+
+        */
 
     }
 
