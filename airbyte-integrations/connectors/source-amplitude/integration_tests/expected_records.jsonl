@@ -7,3 +7,5 @@
 {"stream":"average_session_length","data":{"date":"2024-07-01T00:00:00","length":0.0},"emitted_at":1722380352267}
 {"stream":"average_session_length","data":{"date":"2024-07-02T00:00:00","length":0.0},"emitted_at":1722380352269}
 {"stream":"average_session_length","data":{"date":"2024-07-03T00:00:00","length":0.0},"emitted_at":1722380352271}
+{"stream":"events_list","data":{"autohidden":false,"id":809136211,"value":"Airbyte.UI.Connection.ConfirmedCancelSync","display":"Airbyte.UI.Connection.ConfirmedCancelSync","hidden":false,"deleted":false,"flow_hidden":false,"timeline_hidden":false,"non_active":false,"in_waitroom":false,"waitroom_approved":null,"name":"Airbyte.UI.Connection.ConfirmedCancelSync","totals":841,"totals_delta":0.952083015130693},"emitted_at":1723147082818}
+{"stream":"events_list","data":{"autohidden":false,"id":50554914,"value":"Airbyte.UI.Connection.Create","display":"Airbyte.UI.Connection.Create","hidden":false,"deleted":false,"flow_hidden":false,"timeline_hidden":false,"non_active":false,"in_waitroom":false,"waitroom_approved":null,"name":"Airbyte.UI.Connection.Create","totals":2730,"totals_delta":0.21249779312265754},"emitted_at":1723147082820}
