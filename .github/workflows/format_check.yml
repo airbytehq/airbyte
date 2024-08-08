@@ -20,16 +20,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Resolve symlinks
-        # airbyte-ci is unable to add symlinks to containers
-        run: |
-          for l in $(find . -type l); do
-            SRC="$(readlink -f "$l")"
-            DST="$(dirname "$l")"
-            rm "$l"
-            cp -r --preserve "$SRC" "$DST"
-          done
-
       - name: Run airbyte-ci format check [MASTER]
         id: airbyte_ci_format_check_all_master
         if: github.ref == 'refs/heads/master'
