@@ -3,7 +3,8 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Callable, Iterator, List, Mapping, Optional, Type
+
+from typing import Any, Callable, Iterator, List, Mapping, Optional, Type, TypeVar
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.types import Config
@@ -11,7 +12,11 @@ from pydantic.v1 import BaseModel
 
 
 @dataclass
-class ComponentConstructor:
+class Component:
+    """
+    Abstract representation of the abstract component.
+    """
+    
     @property
     def is_default_component(self) -> bool:
         """
@@ -19,19 +24,7 @@ class ComponentConstructor:
         The default value is `True`, meaning we always want the built-in components to rely on this flag.
         """
         return True
-
-    @staticmethod
-    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
-        if not value_type:
-            return None
-        names_to_types = {
-            ValueType.string: str,
-            ValueType.number: float,
-            ValueType.integer: int,
-            ValueType.boolean: bool,
-        }
-        return names_to_types[value_type]
-
+    
     @classmethod
     def resolve_dependencies(
         cls,
@@ -48,6 +41,22 @@ class ComponentConstructor:
         """
         return {}
 
+
+@dataclass
+class ComponentConstructor(Component):
+
+    @staticmethod
+    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
+        if not value_type:
+            return None
+        names_to_types = {
+            ValueType.string: str,
+            ValueType.number: float,
+            ValueType.integer: int,
+            ValueType.boolean: bool,
+        }
+        return names_to_types[value_type]
+
     @classmethod
     def build(
         cls,
@@ -56,7 +65,7 @@ class ComponentConstructor:
         dependency_constructor: Callable[[BaseModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]],
         **kwargs,
-    ):
+    ) -> Component:
         """
         Builds up the Component and it's component-specific dependencies.
         Order of operations:

@@ -148,6 +148,8 @@ from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
+from airbyte_cdk.sources.declarative.parsers.component_constructor import Component
+
 
 class ModelToComponentFactory:
     """
@@ -182,7 +184,7 @@ class ModelToComponentFactory:
         }
 
     def _init_mappings(self) -> None:
-        self.MODEL_TO_COMPONENT: Mapping[Type[BaseModel], Callable[..., Any]] = {
+        self.MODEL_TO_COMPONENT: Mapping[Type[BaseModel], Type[Component]] = {
             AddedFieldDefinitionModel: AddedFieldDefinition,
             AddFieldsModel: AddFields,
             ApiKeyAuthenticatorModel: self.create_api_key_authenticator,
@@ -237,7 +239,7 @@ class ModelToComponentFactory:
             LegacySessionTokenAuthenticatorModel: self.create_legacy_session_token_authenticator,
             SelectiveAuthenticatorModel: self.create_selective_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
-            SpecModel: self.create_spec,
+            SpecModel: Spec,
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
             WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
@@ -269,14 +271,15 @@ class ModelToComponentFactory:
             raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
         return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
 
-    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs: Any) -> Any:
+    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs: Any) -> Type[Component]:
         if model.__class__ not in self.MODEL_TO_COMPONENT:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
 
-        component = self.MODEL_TO_COMPONENT.get(model.__class__)
+        component: Optional[Type[Component]] = self.MODEL_TO_COMPONENT.get(model.__class__)
         if not component:
             raise ValueError(f"Could not find constructor for {model.__class__}")
-
+        
+        
         if not hasattr(component, "is_default_component"):
             # build the Custom components flow
             return component(model=model, config=config, **kwargs)
@@ -1201,14 +1204,14 @@ class ModelToComponentFactory:
             return SimpleRetrieverTestReadDecorator(**simple_retriever_args)
         return SimpleRetriever(**simple_retriever_args)
 
-    @staticmethod
-    def create_spec(model: SpecModel, config: Config, **kwargs: Any) -> Spec:
-        return Spec(
-            connection_specification=model.connection_specification,
-            documentation_url=model.documentation_url,
-            advanced_auth=model.advanced_auth,
-            parameters={},
-        )
+    # @staticmethod
+    # def create_spec(model: SpecModel, config: Config, **kwargs: Any) -> Spec:
+    #     return Spec(
+    #         connection_specification=model.connection_specification,
+    #         documentation_url=model.documentation_url,
+    #         advanced_auth=model.advanced_auth,
+    #         parameters={},
+    #     )
 
     def create_substream_partition_router(
         self, model: SubstreamPartitionRouterModel, config: Config, **kwargs: Any
