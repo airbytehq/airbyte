@@ -33,7 +33,6 @@ class ComponentConstructor:
         return names_to_types[value_type]
 
     @classmethod
-    @abstractmethod
     def resolve_dependencies(
         cls,
         model: BaseModel,
@@ -47,6 +46,7 @@ class ComponentConstructor:
         if there are any dependencies on other components, or we need to adopt / change / adjust / fine-tune
         specific component's behaiour.
         """
+        return {}
 
     @classmethod
     def build(
