@@ -300,14 +300,14 @@ def orders_empty_last_page():
     return [
         {
             "request": {
-                "url": build_url("orders", modified_after=".+", modified_before=".+", is_regex=True),
+                "url": build_url("orders", modified_after=".+", modified_before="2017-01-30.+", is_regex=True),
                 "is_regex": True
             },
             "response": {"text": get_json_contents("orders.json", __file__)},
         },
         {
             "request": {
-                "url": build_url("orders", modified_after=".+", modified_before=".+", is_regex=True),
+                "url": build_url("orders", modified_after=".+", modified_before="2017-02-10.+", is_regex=True),
                 "is_regex": True
             },
             "response": {"text": "[]"},
