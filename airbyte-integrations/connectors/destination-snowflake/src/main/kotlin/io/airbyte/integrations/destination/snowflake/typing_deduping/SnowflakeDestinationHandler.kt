@@ -68,16 +68,16 @@ class SnowflakeDestinationHandler(
         val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
 
         // convert list stream to array
-        val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-        val names = streamIds.map { it.finalName }.toTypedArray()
+        //val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
+        //val names = streamIds.map { it.finalName }.toTypedArray()
 
         //Dedup the lists to make the snowflake IN clause more efficient
 //          val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
 //          val deduplicatedNames = names.toSet().toTypedArray()
 
         //TODO: Temporarily setting same values for testing
-        val deduplicatedNamespaces = namespaces
-        val deduplicatedNames = names
+        //val deduplicatedNamespaces = namespaces
+        //val deduplicatedNames = names
 
 
         //TODO: SHOW TABLES returns row count
@@ -85,6 +85,7 @@ class SnowflakeDestinationHandler(
 
         //TODO: Consider sending a batch of SHOW queries to snowflake instead of IN clause
 
+        /*
         val query =
             """
                 |SELECT table_schema, table_name, row_count
@@ -98,6 +99,8 @@ class SnowflakeDestinationHandler(
         val bindValues = arrayOf(databaseName) + deduplicatedNamespaces + deduplicatedNames
 
         val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+
 
 //        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
 //            + "\n bindValues=" + bindValues)
@@ -114,6 +117,10 @@ class SnowflakeDestinationHandler(
                 .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
                 rowCount
         }
+
+
+         */
+
 
         try {
 
@@ -823,7 +830,7 @@ class SnowflakeDestinationHandler(
 
             //TODO: Remove temp code added for testing
 
-
+/*
             val columnsFromInfoSchemaQuery =
                 database
                     .queryJsons(
@@ -928,6 +935,10 @@ class SnowflakeDestinationHandler(
             }
 
             //------------End of test code
+
+
+ */
+
 
             return existingTablesFromShowCommand
 
