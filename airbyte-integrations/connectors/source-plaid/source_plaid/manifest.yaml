@@ -328,10 +328,11 @@ streams:
       record_selector:
         type: RecordSelector
         extractor:
-          type: DpathExtractor
+          type: CustomRecordExtractor
+          class_name: source_plaid.components.PlaidTransactionExtractor
           field_path:
-            - transactions
-            - "*"
+            - "added"
+            - "modified"
       paginator:
         type: DefaultPaginator
         pagination_strategy:
