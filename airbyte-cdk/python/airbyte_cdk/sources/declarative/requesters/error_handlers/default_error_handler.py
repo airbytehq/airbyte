@@ -3,18 +3,22 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, List, Mapping, MutableMapping, Optional, Union, Callable
 
 import requests
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
+
 
 
 @dataclass
-class DefaultErrorHandler(ErrorHandler):
+class DefaultErrorHandler(ErrorHandler, ComponentConstructor):
     """
     Default error handler.
 
@@ -93,6 +97,33 @@ class DefaultErrorHandler(ErrorHandler):
     _max_time: int = field(init=False, repr=False, default=60 * 10)
     backoff_strategies: Optional[List[BackoffStrategy]] = None
 
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: DefaultErrorHandlerModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        backoff_strategies = []
+        if model.backoff_strategies:
+            for backoff_strategy_model in model.backoff_strategies:
+                backoff_strategies.append(dependency_constructor(model=backoff_strategy_model, config=config))
+
+        response_filters = []
+        if model.response_filters:
+            for response_filter_model in model.response_filters:
+                response_filters.append(dependency_constructor(model=response_filter_model, config=config))
+        response_filters.append(HttpResponseFilter(config=config, parameters=model.parameters or {}))
+
+        return {
+            "backoff_strategies": backoff_strategies,
+            "max_retries": model.max_retries,
+            "response_filters": response_filters,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
 
         if not self.response_filters:

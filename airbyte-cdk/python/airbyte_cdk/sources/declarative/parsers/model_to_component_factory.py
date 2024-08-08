@@ -210,20 +210,20 @@ class ModelToComponentFactory:
             DatetimeBasedCursorModel: DatetimeBasedCursor,
             # TODO: DO NOT CHANGE `DeclarativeStream`
             DeclarativeStreamModel: self.create_declarative_stream,
-            DefaultErrorHandlerModel: self.create_default_error_handler,
-            DefaultPaginatorModel: self.create_default_paginator,
-            DpathExtractorModel: self.create_dpath_extractor,
-            ExponentialBackoffStrategyModel: self.create_exponential_backoff_strategy,
+            DefaultErrorHandlerModel: DefaultErrorHandler,
+            DefaultPaginatorModel: DefaultPaginator,
+            DpathExtractorModel: DpathExtractor,
+            ExponentialBackoffStrategyModel: ExponentialBackoffStrategy,
             SessionTokenAuthenticatorModel: self.create_session_token_authenticator,
-            HttpRequesterModel: self.create_http_requester,
-            HttpResponseFilterModel: self.create_http_response_filter,
-            InlineSchemaLoaderModel: self.create_inline_schema_loader,
-            JsonDecoderModel: self.create_json_decoder,
-            JsonlDecoderModel: self.create_jsonl_decoder,
-            IterableDecoderModel: self.create_iterable_decoder,
-            JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
-            JwtAuthenticatorModel: self.create_jwt_authenticator,
-            LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
+            HttpRequesterModel: HttpRequester,
+            HttpResponseFilterModel: HttpResponseFilter,
+            InlineSchemaLoaderModel: InlineSchemaLoader,
+            JsonDecoderModel: JsonDecoder,
+            JsonlDecoderModel: JsonlDecoder,
+            IterableDecoderModel: IterableDecoder,
+            JsonFileSchemaLoaderModel: JsonFileSchemaLoader,
+            JwtAuthenticatorModel: JwtAuthenticator,
+            LegacyToPerPartitionStateMigrationModel: LegacyToPerPartitionStateMigration,
             # TODO:
             ListPartitionRouterModel: ListPartitionRouter,
             MinMaxDatetimeModel: MinMaxDatetime,
@@ -407,7 +407,7 @@ class ModelToComponentFactory:
                 token_provider=token_provider,  # type: ignore # $parameters defaults to None
             )
         else:
-            return self.create_api_key_authenticator(
+            return self._create_component_from_model(
                 ApiKeyAuthenticatorModel(type="ApiKeyAuthenticator", api_token="", inject_into=model.request_authentication.inject_into),  # type: ignore # $parameters and headers default to None
                 config=config,
                 token_provider=token_provider,
@@ -419,19 +419,19 @@ class ModelToComponentFactory:
     #         password=model.password or "", username=model.username, config=config, parameters=model.parameters or {}
     #     )
 
-    # @staticmethod
-    # def create_bearer_authenticator(
-    #     model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
-    # ) -> BearerAuthenticator:
-    #     if token_provider is not None and model.api_token != "":
-    #         raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
-    #     return BearerAuthenticator(
-    #         token_provider=token_provider
-    #         if token_provider is not None
-    #         else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
-    #         config=config,
-    #         parameters=model.parameters or {},
-    #     )
+    @staticmethod
+    def create_bearer_authenticator(
+        model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
+    ) -> BearerAuthenticator:
+        if token_provider is not None and model.api_token != "":
+            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
+        return BearerAuthenticator(
+            token_provider=token_provider
+            if token_provider is not None
+            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            config=config,
+            parameters=model.parameters or {},
+        )
 
     # @staticmethod
     # def create_check_stream(model: CheckStreamModel, config: Config, **kwargs: Any) -> CheckStream:
@@ -776,47 +776,47 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    def create_default_paginator(
-        self,
-        model: DefaultPaginatorModel,
-        config: Config,
-        *,
-        url_base: str,
-        decoder: Optional[Decoder] = None,
-        cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
-    ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
-        if decoder:
-            decoder_to_use = decoder
-        elif model.decoder:
-            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
-        else:
-            decoder_to_use = JsonDecoder(parameters={})
-        if not isinstance(decoder_to_use, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
-
-        page_size_option = (
-            self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
-        )
-        page_token_option = (
-            self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
-        )
-        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
-        if cursor_used_for_stop_condition:
-            pagination_strategy = StopConditionPaginationStrategyDecorator(
-                pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
-            )
-        paginator = DefaultPaginator(
-            decoder=decoder_to_use,
-            page_size_option=page_size_option,
-            page_token_option=page_token_option,
-            pagination_strategy=pagination_strategy,
-            url_base=url_base,
-            config=config,
-            parameters=model.parameters or {},
-        )
-        if self._limit_pages_fetched_per_slice:
-            return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
-        return paginator
+    # def create_default_paginator(
+    #     self,
+    #     model: DefaultPaginatorModel,
+    #     config: Config,
+    #     *,
+    #     url_base: str,
+    #     decoder: Optional[Decoder] = None,
+    #     cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
+    # ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
+    #     if decoder:
+    #         decoder_to_use = decoder
+    #     elif model.decoder:
+    #         decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
+    #     else:
+    #         decoder_to_use = JsonDecoder(parameters={})
+    #     if not isinstance(decoder_to_use, JsonDecoder):
+    #         raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
+    #
+    #     page_size_option = (
+    #         self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
+    #     )
+    #     page_token_option = (
+    #         self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
+    #     )
+    #     pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
+    #     if cursor_used_for_stop_condition:
+    #         pagination_strategy = StopConditionPaginationStrategyDecorator(
+    #             pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
+    #         )
+    #     paginator = DefaultPaginator(
+    #         decoder=decoder_to_use,
+    #         page_size_option=page_size_option,
+    #         page_token_option=page_token_option,
+    #         pagination_strategy=pagination_strategy,
+    #         url_base=url_base,
+    #         config=config,
+    #         parameters=model.parameters or {},
+    #     )
+    #     if self._limit_pages_fetched_per_slice:
+    #         return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
+    #     return paginator
 
     def create_dpath_extractor(
         self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any

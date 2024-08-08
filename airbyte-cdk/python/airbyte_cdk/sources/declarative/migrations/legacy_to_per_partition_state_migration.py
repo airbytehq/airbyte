@@ -1,18 +1,27 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Callable, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ParentStreamConfig
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPartitionRouter as CustomPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel
+from airbyte_cdk.sources.types import Config
+
+from pydantic import BaseModel
 
 
 def _is_already_migrated(stream_state: Mapping[str, Any]) -> bool:
     return "states" in stream_state
 
 
-class LegacyToPerPartitionStateMigration(StateMigration):
+class LegacyToPerPartitionStateMigration(StateMigration, ComponentConstructor):
     """
     Transforms the input state for per-partitioned streams from the legacy format to the low-code format.
     The cursor field and partition ID fields are automatically extracted from the stream's DatetimebasedCursor and SubstreamPartitionRouter.
@@ -28,6 +37,34 @@ class LegacyToPerPartitionStateMigration(StateMigration):
       "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
     }
     """
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: LegacyToPerPartitionStateMigrationModel,
+        config: Config,
+        declarative_stream: DeclarativeStreamModel,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        retriever = declarative_stream.retriever
+
+        # VERIFY
+        if not isinstance(retriever, SimpleRetrieverModel):
+            raise ValueError(
+                f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(retriever)}"
+            )
+
+        partition_router = retriever.partition_router
+        if not isinstance(partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
+            raise ValueError(
+                f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(partition_router)}"
+            )
+        if not hasattr(partition_router, "parent_stream_configs"):
+            raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
+
+        return {"partition_router": declarative_stream.retriever.partition_router, "cursor":declarative_stream.incremental_sync, "config": config, "parameters": declarative_stream.parameters}  # type: ignore # The retriever type was already checked
 
     def __init__(
         self,

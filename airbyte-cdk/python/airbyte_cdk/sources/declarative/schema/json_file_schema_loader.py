@@ -6,12 +6,17 @@ import json
 import pkgutil
 import sys
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Tuple, Union
+from typing import Any, Mapping, Tuple, Union, Callable, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.types import Config
+
+from pydantic import BaseModel
 
 
 def _default_file_path() -> str:
@@ -30,7 +35,7 @@ def _default_file_path() -> str:
 
 
 @dataclass
-class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
+class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, ComponentConstructor):
     """
     Loads the schema from a json file
 
@@ -44,6 +49,17 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     file_path: Union[InterpolatedString, str] = field(default="")
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: JsonFileSchemaLoaderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"file_path": model.file_path or "", "config": config, "parameters": model.parameters or {}}
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not self.file_path:

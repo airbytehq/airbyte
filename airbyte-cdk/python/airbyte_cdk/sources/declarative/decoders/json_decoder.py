@@ -9,12 +9,14 @@ from typing import Any, Generator, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+
 
 logger = logging.getLogger("airbyte")
 
 
 @dataclass
-class JsonDecoder(Decoder):
+class JsonDecoder(Decoder, ComponentConstructor):
     """
     Decoder strategy that returns the json-encoded content of a response, if any.
     """
@@ -42,7 +44,7 @@ class JsonDecoder(Decoder):
 
 
 @dataclass
-class IterableDecoder(Decoder):
+class IterableDecoder(Decoder, ComponentConstructor):
     """
     Decoder strategy that returns the string content of the response, if any.
     """
@@ -58,7 +60,7 @@ class IterableDecoder(Decoder):
 
 
 @dataclass
-class JsonlDecoder(Decoder):
+class JsonlDecoder(Decoder, ComponentConstructor):
     """
     Decoder strategy that returns the json-encoded content of the response, if any.
     """

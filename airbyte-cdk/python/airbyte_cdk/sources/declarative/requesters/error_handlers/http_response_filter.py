@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Set, Union
+from typing import Any, Mapping, Optional, Set, Union, Callable
 
 import requests
 from airbyte_cdk.models import FailureType
@@ -14,9 +14,14 @@ from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping impor
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config
 
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
+
+from pydantic import BaseModel
+
 
 @dataclass
-class HttpResponseFilter:
+class HttpResponseFilter(ComponentConstructor):
     """
     Filter to select a response based on its HTTP status code, error message or a predicate.
     If a response matches the filter, the response action, failure_type, and error message are returned as an ErrorResolution object.
@@ -40,6 +45,37 @@ class HttpResponseFilter:
     error_message_contains: Optional[str] = None
     predicate: Union[InterpolatedBoolean, str] = ""
     error_message: Union[InterpolatedString, str] = ""
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: HttpResponseFilterModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        if model.action:
+            action = ResponseAction(model.action.value)
+        else:
+            action = None
+
+        failure_type = FailureType(model.failure_type.value) if model.failure_type else None
+
+        http_codes = (
+            set(model.http_codes) if model.http_codes else set()
+        )  # JSON schema notation has no set data type. The schema enforces an array of unique elements
+
+        return {
+            "action": action,
+            "failure_type": failure_type,
+            "error_message": model.error_message or "",
+            "error_message_contains": model.error_message_contains or "",
+            "http_codes": http_codes,
+            "predicate": model.predicate or "",
+            "config": config,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
 

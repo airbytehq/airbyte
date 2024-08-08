@@ -12,7 +12,9 @@ import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -22,10 +24,13 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+
+from pydantic import BaseModel
 
 
 @dataclass
-class HttpRequester(Requester):
+class HttpRequester(Requester, ComponentConstructor):
     """
     Default implementation of a Requester
 
@@ -58,6 +63,56 @@ class HttpRequester(Requester):
     stream_response: bool = False
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: HttpRequesterModel,
+        config: Config,
+        decoder: Decoder,
+        name: str,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        authenticator = (
+            dependency_constructor(model=model.authenticator, config=config, url_base=model.url_base, name=name, decoder=decoder)
+            if model.authenticator
+            else None
+        )
+        error_handler = (
+            dependency_constructor(model=model.error_handler, config=config)
+            if model.error_handler
+            else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, parameters=model.parameters or {})
+        )
+
+        request_options_provider = InterpolatedRequestOptionsProvider(
+            request_body_data=model.request_body_data,
+            request_body_json=model.request_body_json,
+            request_headers=model.request_headers,
+            request_parameters=model.request_parameters,
+            config=config,
+            parameters=model.parameters or {},
+        )
+
+        assert model.use_cache is not None  # for mypy
+        assert model.http_method is not None  # for mypy
+
+        return {
+            "name": name,
+            "url_base": model.url_base,
+            "path": model.path,
+            "authenticator": authenticator,
+            "error_handler": error_handler,
+            "http_method": HttpMethod[model.http_method.value],
+            "request_options_provider": request_options_provider,
+            "config": config,
+            "disable_retries": additional_flags["_disable_retries"],
+            "parameters": model.parameters or {},
+            "message_repository": additional_flags["_message_repository"],
+            "use_cache": model.use_cache,
+            "decoder": decoder,
+            "stream_response": decoder.is_stream_response() if decoder else False,
+        }
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
         self._path = InterpolatedString.create(self.path, parameters=parameters)

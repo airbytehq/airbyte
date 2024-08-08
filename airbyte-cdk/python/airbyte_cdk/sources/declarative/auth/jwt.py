@@ -5,13 +5,20 @@
 import base64
 from dataclasses import InitVar, dataclass
 from datetime import datetime
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Mapping, Optional, Union, Callable
 
 import jwt
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
+from airbyte_cdk.sources.types import Config
+
+from pydantic import BaseModel
 
 
 class JwtAlgorithm(str):
@@ -36,7 +43,7 @@ class JwtAlgorithm(str):
 
 
 @dataclass
-class JwtAuthenticator(DeclarativeAuthenticator):
+class JwtAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
     """
     Generates a JSON Web Token (JWT) based on a declarative connector configuration file. The generated token is attached to each request via the Authorization header.
 
@@ -72,6 +79,35 @@ class JwtAuthenticator(DeclarativeAuthenticator):
     aud: Optional[Union[InterpolatedString, str]] = None
     additional_jwt_headers: Optional[Mapping[str, Any]] = None
     additional_jwt_payload: Optional[Mapping[str, Any]] = None
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: JwtAuthenticatorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        jwt_headers = model.jwt_headers or JwtHeadersModel(kid=None, typ="JWT", cty=None)
+        jwt_payload = model.jwt_payload or JwtPayloadModel(iss=None, sub=None, aud=None)
+        return {
+            "config": config,
+            "parameters": model.parameters or {},
+            "algorithm": JwtAlgorithm(model.algorithm.value),
+            "secret_key": model.secret_key,
+            "base64_encode_secret_key": model.base64_encode_secret_key,
+            "token_duration": model.token_duration,
+            "header_prefix": model.header_prefix,
+            "kid": jwt_headers.kid,
+            "typ": jwt_headers.typ,
+            "cty": jwt_headers.cty,
+            "iss": jwt_payload.iss,
+            "sub": jwt_payload.sub,
+            "aud": jwt_payload.aud,
+            "additional_jwt_headers": model.additional_jwt_headers,
+            "additional_jwt_payload": model.additional_jwt_payload,
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)

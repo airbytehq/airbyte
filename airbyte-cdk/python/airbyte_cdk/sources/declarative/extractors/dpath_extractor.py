@@ -3,19 +3,22 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Union, Callable, Optional
 
 import dpath
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 
 @dataclass
-class DpathExtractor(RecordExtractor):
+class DpathExtractor(RecordExtractor, ComponentConstructor):
     """
     Record extractor that searches a decoded response over a path defined as an array of fields.
 
@@ -57,6 +60,25 @@ class DpathExtractor(RecordExtractor):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+
+    @classmethod
+    def resolve_dependencies(
+            cls,
+            model: DpathExtractorModel,
+            config: Config,
+            dependency_constructor: Callable[[BaseModel, Config], Any],
+            additional_flags: Optional[Mapping[str, Any]] = None,
+            decoder: Optional[Decoder] = None,
+            **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        if decoder:
+            decoder_to_use = decoder
+        elif model.decoder:
+            decoder_to_use = dependency_constructor(model=model.decoder, config=config)
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
+        model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
+        return {"decoder": decoder_to_use, "field_path": model_field_path, "config": config, "parameters": model.parameters or {}}
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
