@@ -33,6 +33,10 @@ To use the Typesense destination, you'll need an existing Typesense instance. Yo
 
 The setup only requires two fields. First is the `host` which is the address at which Typesense can be reached. The second piece of information is the API key.
 
+### Typesense with High Availability
+
+To connect a Typesense with HA, you can type multiple hosts on the host field using a comma separator.
+
 ## Changelog
 
 <details>
@@ -40,6 +44,13 @@ The setup only requires two fields. First is the `host` which is the address at 
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.17  | 2024-08-01 | [42868](https://github.com/airbytehq/airbyte/pull/42868) | Allows you to specify multiple hosts, separated by commas, to connect to Typesense with HA. |
+| 0.1.16 | 2024-08-03 | [43282](https://github.com/airbytehq/airbyte/pull/43282) | Update dependencies |
+| 0.1.15 | 2024-07-27 | [42606](https://github.com/airbytehq/airbyte/pull/42606) | Update dependencies |
+| 0.1.14 | 2024-07-20 | [42146](https://github.com/airbytehq/airbyte/pull/42146) | Update dependencies |
+| 0.1.13 | 2024-07-13 | [41881](https://github.com/airbytehq/airbyte/pull/41881) | Update dependencies |
+| 0.1.12 | 2024-07-10 | [41361](https://github.com/airbytehq/airbyte/pull/41361) | Update dependencies |
+| 0.1.11 | 2024-07-09 | [41220](https://github.com/airbytehq/airbyte/pull/41220) | Update dependencies |
 | 0.1.10 | 2024-07-06 | [40918](https://github.com/airbytehq/airbyte/pull/40918) | Update dependencies |
 | 0.1.9 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.1.8 | 2024-06-25 | [40487](https://github.com/airbytehq/airbyte/pull/40487) | Update dependencies |

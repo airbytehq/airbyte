@@ -1,0 +1,125 @@
+name: Approve Regression Tests
+permissions:
+  pull-requests: write
+  statuses: write
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number. Used to pull the proper branch ref, including on forks."
+        type: number
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      connector-name:
+        description: "Optional. Name of the connector whose regression tests are approved."
+        required: false
+
+      # These must be declared, but they are unused and ignored.
+      # TODO: Infer 'repo' and 'gitref' from PR number on other workflows, so we can remove these.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+
+run-name: "Approve Regression Tests #${{ github.event.inputs.pr }}"
+
+jobs:
+  approve-regression-tests:
+    name: "Approve Regression Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get job variables
+        id: job-vars
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          echo "PR_JSON: $PR_JSON"
+          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
+          BRANCH=$(echo "$PR_JSON" | jq -r .head.ref)
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          LATEST_COMMIT=$(gh api repos/${{ github.repository }}/commits/$BRANCH | jq -r .sha)
+          echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
+
+      - name: Append comment with job run link
+        # If comment-id is not provided, this will create a new
+        # comment with the job run link.
+        id: first-comment-action
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          issue-number: ${{ github.event.inputs.pr }}
+          body: |
+
+            > [Check job output.][1]
+
+            [1]: ${{ steps.job-vars.outputs.run-url }}
+
+      - name: Approve regression tests
+        id: approve-regression-tests
+        if: github.event.inputs.connector-name != null
+        run: |
+          echo "approving regression test status check for ${{ github.event.inputs.connector-name }} if it exists ...."
+          response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
+            --request POST \
+            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data '{
+              "state": "success",
+              "context": "Regression Tests on ${{ github.event.inputs.connector-name }}",
+              "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+            }')
+          if [ $response -ne 201 ]; then
+            echo "Failed to approve regression tests for ${{ github.event.inputs.connector-name }}. HTTP status code: $response"
+            exit 1
+          else
+            echo "Regression tests for ${{ github.event.inputs.connector-name }} approved."
+          fi
+
+      - name: Update global regression test approval
+        id: update-global-regression-test-approval
+        if: github.event.inputs.connector-name == null
+        run: |
+          echo "updating regression test approval status check if it exists ...."
+          response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
+            --request POST \
+            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'content-type: application/json' \
+            --data '{
+              "state": "success",
+              "context": "Regression Test Results Reviewed and Approved",
+              "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+            }')
+          if [ $response -ne 201 ]; then
+            echo "Failed to update regression test approval status check. HTTP status code: $response"
+            exit 1
+          else
+            echo "Regression test status check updated."
+          fi
+
+      - name: Append success comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: success()
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: "+1"
+          body: |
+            > ✅ Approving regression tests
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: failure()
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > ❌ Regression test approval failed

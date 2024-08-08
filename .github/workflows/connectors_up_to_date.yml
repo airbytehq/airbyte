@@ -11,7 +11,7 @@ on:
     inputs:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--concurrency=10 --language=python --language=low-code"
+        default: "--concurrency=10 --language=python --language=low-code --language=manifest-only"
       auto-merge:
         description: "Whether to auto-merge the PRs created by the action."
         default: "false"

@@ -72,6 +72,12 @@ And the [Databend Cloud](https://app.databend.com/) will only support databend v
 
 | Version                                                  | Date                                     | Pull Request                                              | Subject                                                  |
 | :------------------------------------------------------- | :--------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------- | ----------- |
+| 0.1.15 | 2024-08-03 | [43234](https://github.com/airbytehq/airbyte/pull/43234) | Update dependencies |
+| 0.1.14 | 2024-07-27 | [42588](https://github.com/airbytehq/airbyte/pull/42588) | Update dependencies |
+| 0.1.13 | 2024-07-20 | [42164](https://github.com/airbytehq/airbyte/pull/42164) | Update dependencies |
+| 0.1.12 | 2024-07-13 | [41800](https://github.com/airbytehq/airbyte/pull/41800) | Update dependencies |
+| 0.1.11 | 2024-07-10 | [41429](https://github.com/airbytehq/airbyte/pull/41429) | Update dependencies |
+| 0.1.10 | 2024-07-09 | [41243](https://github.com/airbytehq/airbyte/pull/41243) | Update dependencies |
 | 0.1.9 | 2024-07-06 | [40916](https://github.com/airbytehq/airbyte/pull/40916) | Update dependencies |
 | 0.1.8 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.1.7 | 2024-06-25 | [40301](https://github.com/airbytehq/airbyte/pull/40301) | Update dependencies |

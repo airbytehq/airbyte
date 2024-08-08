@@ -2563,16 +2563,17 @@ definitions:
       client_secret: '{{ config["client_secret"] }}'
       refresh_token: '{{ config["refresh_token"] }}'
     error_handler:
-      type: CompositeErrorHandler
-      error_handlers:
-        - type: DefaultErrorHandler
-          response_filters:
-            - type: HttpResponseFilter
-              action: RETRY
-              http_codes:
-                - 403
-              error_message: >-
-                Got permission error when accessing URL. Skipping {{self.name}} stream.
+      type: DefaultErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 403
+          error_message: >-
+            Got permission error when accessing URL. Skipping {{self.name}} stream.
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 1
 
 streams:
   - $ref: "#/definitions/streams/organizations"

@@ -18,11 +18,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
-  dockerImageTag: 1.0.6
+  dockerImageTag: 1.0.12
   releases:
     breakingChanges:
       1.0.0:
@@ -45,6 +45,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshsales_config_dev_null
+          id: 7825dcaf-24d1-43d6-8a57-8be179ef8f94
     - suite: integrationTests
       testSecrets:
         - name: SECRET_SOURCE-FRESHSALES__CREDS

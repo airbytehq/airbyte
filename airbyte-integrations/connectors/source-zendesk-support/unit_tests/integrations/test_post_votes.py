@@ -83,8 +83,8 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any(["the 403 error" in error for error in error_logs])
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any(["Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support." in error for error in info_logs])
 
     @HttpMocker()
     def test_given_404_error_when_read_posts_comments_then_skip_stream(self, http_mocker):
@@ -108,8 +108,8 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         output = read_stream("post_votes", SyncMode.full_refresh, self._config)
         assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any(["the 404 error" in error for error in error_logs])
+        info_logs = get_log_messages_by_log_level(output.logs, LogLevel.INFO)
+        assert any(["Not found. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support." in error for error in info_logs])
 
     @HttpMocker()
     def test_given_500_error_when_read_posts_comments_then_stop_syncing(self, http_mocker):
@@ -136,7 +136,7 @@ class TestPostsVotesStreamFullRefresh(TestCase):
         assert len(output.records) == 0
 
         error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any(["the 500 error" in error for error in error_logs])
+        assert any(["Internal server error" in error for error in error_logs])
 
 
 @freezegun.freeze_time(_NOW.isoformat())
@@ -188,11 +188,6 @@ class TestPostsVotesStreamIncremental(TestCase):
         """
         api_token_authenticator = self._get_authenticator(self._config)
 
-        # Ticket Forms mock. Will be the same for check availability and read requests
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
-        # Posts mock for check availability request
-        _ = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
-
         state_start_date = pendulum.parse(self._config["start_date"]).add(years=1)
         first_page_record_updated_at = state_start_date.add(months=1)
         last_page_record_updated_at = first_page_record_updated_at.add(months=2)
@@ -204,15 +199,6 @@ class TestPostsVotesStreamIncremental(TestCase):
 
         post_comments_first_record_builder = PostsVotesRecordBuilder.posts_votes_record().with_field(
             FieldPath("updated_at"), datetime_to_string(first_page_record_updated_at)
-        )
-
-        # Check availability request mock
-        http_mocker.get(
-            PostsVotesRequestBuilder.posts_votes_endpoint(api_token_authenticator, post["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
-            PostsVotesResponseBuilder.posts_votes_response().with_record(PostsVotesRecordBuilder.posts_votes_record()).build(),
         )
 
         # Read first page request mock

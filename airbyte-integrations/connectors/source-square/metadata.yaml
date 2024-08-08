@@ -7,11 +7,11 @@ data:
       - connect.squareupsandbox.com
       - connect.squareup.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
-  dockerImageTag: 1.6.8
+  dockerImageTag: 1.6.14
   dockerRepository: airbyte/source-square
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   githubIssueLabel: source-square
@@ -33,6 +33,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: square_config_oauth_dev_null
+          id: 83af0127-0962-4e07-ac73-c19f37326810
+        - name: square_config_dev_null
+          id: ac295afb-3984-45cc-9a67-73d35297671d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -83,7 +83,6 @@ async def generate(
     concurrency: int,
     rewrite: bool,
 ) -> None:
-
     logger = logging.getLogger(__name__)
     result_backends: List[ResultBackend] = []
     if output_directory:
@@ -104,7 +103,6 @@ async def generate(
         )
     else:
         logger.info(f"Generating insights for {len(connectors)} connectors.")
-
     semaphore = Semaphore(concurrency)
     soon_results = []
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:

@@ -79,7 +79,11 @@ class ShopifyBulkTemplates:
 
 @dataclass
 class ShopifyBulkQuery:
-    shop_id: int
+    config: Mapping[str, Any]
+
+    @property
+    def shop_id(self) -> int:
+        return self.config.get("shop_id")
 
     @property
     def tools(self) -> BulkTools:
@@ -111,6 +115,14 @@ class ShopifyBulkQuery:
         The field name by which the records are ASC sorted, if defined.
         """
         return None
+
+    @property
+    def supports_checkpointing(self) -> bool:
+        """
+        The presence of `sort_key = "UPDATED_AT"` for a query instance, usually means,
+        the server-side BULK Job results are fetched and ordered correctly, suitable for checkpointing.
+        """
+        return self.sort_key == "UPDATED_AT"
 
     @property
     def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
@@ -191,7 +203,7 @@ class MetafieldType(Enum):
     ORDERS = "orders"
     DRAFT_ORDERS = "draftOrders"
     PRODUCTS = "products"
-    PRODUCT_IMAGES = ["products", "images"]
+    PRODUCT_IMAGES = "products"
     PRODUCT_VARIANTS = "productVariants"
     COLLECTIONS = "collections"
     LOCATIONS = "locations"
@@ -479,25 +491,30 @@ class MetafieldProduct(Metafield):
 class MetafieldProductImage(Metafield):
     """
     {
-        products(query: "updated_at:>='2023-02-07T00:00:00+00:00' AND updated_at:<='2023-12-04T00:00:00+00:00'", sortKey: UPDATED_AT) {
+        products(query: "updated_at:>='2023-01-08T00:00:00+00:00' AND updated_at:<='2024-08-02T15:12:41.689153+00:00'", sortKey: UPDATED_AT) {
             edges {
                 node {
+                    __typename
                     id
-                    images{
-                        edges{
-                            node{
+                    media {
+                        edges {
+                            node {
+                                __typename
                                 id
-                                metafields {
-                                    edges {
-                                        node {
-                                            id
-                                            namespace
-                                            value
-                                            key
-                                            description
-                                            createdAt
-                                            updatedAt
-                                            type
+                                ... on MediaImage {
+                                    metafields {
+                                        edges {
+                                            node {
+                                                __typename
+                                                id
+                                                namespace
+                                                value
+                                                key
+                                                description
+                                                createdAt
+                                                updatedAt
+                                                type
+                                            }
                                         }
                                     }
                                 }
@@ -509,6 +526,28 @@ class MetafieldProductImage(Metafield):
         }
     }
     """
+
+    @property
+    def query_nodes(self) -> List[Field]:
+        """
+        This is the overide for the default `query_nodes` method,
+        because the usual way of retrieving the metafields for product images` was suddently deprecated,
+        for `2024-10`, but the changes are reflected in the `2024-04` as well, starting: `2024-08-01T00:06:44`
+
+        More info here:
+        https://shopify.dev/docs/api/release-notes/2024-04#productimage-value-removed
+        """
+        # define metafield node
+        metafield_node = self.get_edge_node("metafields", self.metafield_fields)
+        media_fields: List[Field] = [
+            "__typename",
+            "id",
+            InlineFragment(type="MediaImage", fields=[metafield_node]),
+        ]
+        # define media node
+        media_node = self.get_edge_node("media", media_fields)
+        fields: List[Field] = ["__typename", "id", media_node]
+        return fields
 
     type = MetafieldType.PRODUCT_IMAGES
 
@@ -2382,60 +2421,73 @@ class ProductVariant(ShopifyBulkQuery):
     """
     {
         productVariants(
-            query: "updated_at:>='2019-04-13T00:00:00+00:00' AND updated_at:<='2024-04-30T12:16:17.273363+00:00'"
-            sortKey: UPDATED_AT
+            query: "updatedAt:>='2019-04-13T00:00:00+00:00' AND updatedAt:<='2024-04-30T12:16:17.273363+00:00'"
         ) {
             edges {
                 node {
                     __typename
                     id
-                    product {
-                        product_id: id
-                    }
                     title
                     price
                     sku
                     position
                     inventoryPolicy
                     compareAtPrice
-                    fulfillmentService {
-                        fulfillment_service: handle
-                    }
                     inventoryManagement
                     createdAt
                     updatedAt
                     taxable
                     barcode
-                    grams: weight
                     weight
                     weightUnit
-                    inventoryItem {
-                        inventory_item_id: id
-                    }
                     inventoryQuantity
-                    old_inventory_quantity: inventoryQuantity
-                    presentmentPrices {
-                        edges {
-                            node {
-                                __typename
-                                price {
-                                    amount
-                                    currencyCode
-                                }
-                                compareAtPrice {
-                                    amount
-                                    currencyCode
+                    requiresShipping
+                    availableForSale
+                    displayName
+                    taxCode
+                    options: selectedOptions {
+                        name
+                        value
+                        option_value: optionValue {
+                            id
+                            name
+                            has_variants: hasVariants
+                            swatch {
+                                color
+                                image {
+                                    id
                                 }
                             }
                         }
                     }
-                    requiresShipping
+                    grams: weight
                     image {
                         image_id: id
                     }
-                    availableForSale
-                    displayName
-                    taxCode
+                    old_inventory_quantity: inventoryQuantity
+                    product {
+                        product_id: id
+                    }
+                    fulfillmentService {
+                        fulfillment_service: handle
+                    }
+                    inventoryItem {
+                        inventory_item_id: id
+                    }
+                    presentmentPrices {
+                    edges {
+                        node {
+                            __typename
+                            price {
+                                amount
+                                currencyCode
+                            }
+                            compareAtPrice {
+                                amount
+                                currencyCode
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2443,51 +2495,76 @@ class ProductVariant(ShopifyBulkQuery):
     """
 
     query_name = "productVariants"
-    sort_key = "ID"
 
-    prices_fields: List[str] = ["amount", "currencyCode"]
-    presentment_prices_fields: List[Field] = [
-        Field(
-            name="edges",
-            fields=[
-                Field(
-                    name="node",
-                    fields=["__typename", Field(name="price", fields=prices_fields), Field(name="compareAtPrice", fields=prices_fields)],
-                )
-            ],
+    @property
+    def _should_include_presentment_prices(self) -> bool:
+        return self.config.get("job_product_variants_include_pres_prices", True)
+
+    @property
+    def query_nodes(self) -> Optional[Union[List[Field], List[str]]]:
+
+        prices_fields: List[str] = ["amount", "currencyCode"]
+        presentment_prices_fields: List[Field] = [
+            Field(
+                name="edges",
+                fields=[
+                    Field(
+                        name="node",
+                        fields=[
+                            "__typename",
+                            Field(name="price", fields=prices_fields),
+                            Field(name="compareAtPrice", fields=prices_fields),
+                        ],
+                    )
+                ],
+            )
+        ]
+        option_value_fields: List[Field] = [
+            "id",
+            "name",
+            Field(name="hasVariants", alias="has_variants"),
+            Field(name="swatch", fields=["color", Field(name="image", fields=["id"])]),
+        ]
+        option_fields: List[Field] = [
+            "name",
+            "value",
+            Field(name="optionValue", alias="option_value", fields=option_value_fields),
+        ]
+        presentment_prices = (
+            [Field(name="presentmentPrices", fields=presentment_prices_fields)] if self._should_include_presentment_prices else []
         )
-    ]
 
-    # main query
-    query_nodes: List[Field] = [
-        "__typename",
-        "id",
-        "title",
-        "price",
-        "sku",
-        "position",
-        "inventoryPolicy",
-        "compareAtPrice",
-        "inventoryManagement",
-        "createdAt",
-        "updatedAt",
-        "taxable",
-        "barcode",
-        "weight",
-        "weightUnit",
-        "inventoryQuantity",
-        "requiresShipping",
-        "availableForSale",
-        "displayName",
-        "taxCode",
-        Field(name="weight", alias="grams"),
-        Field(name="image", fields=[Field(name="id", alias="image_id")]),
-        Field(name="inventoryQuantity", alias="old_inventory_quantity"),
-        Field(name="product", fields=[Field(name="id", alias="product_id")]),
-        Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
-        Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
-        Field(name="presentmentPrices", fields=presentment_prices_fields),
-    ]
+        query_nodes: List[Field] = [
+            "__typename",
+            "id",
+            "title",
+            "price",
+            "sku",
+            "position",
+            "inventoryPolicy",
+            "compareAtPrice",
+            "inventoryManagement",
+            "createdAt",
+            "updatedAt",
+            "taxable",
+            "barcode",
+            "weight",
+            "weightUnit",
+            "inventoryQuantity",
+            "requiresShipping",
+            "availableForSale",
+            "displayName",
+            "taxCode",
+            Field(name="selectedOptions", alias="options", fields=option_fields),
+            Field(name="weight", alias="grams"),
+            Field(name="image", fields=[Field(name="id", alias="image_id")]),
+            Field(name="inventoryQuantity", alias="old_inventory_quantity"),
+            Field(name="product", fields=[Field(name="id", alias="product_id")]),
+            Field(name="fulfillmentService", fields=[Field(name="handle", alias="fulfillment_service")]),
+            Field(name="inventoryItem", fields=[Field(name="id", alias="inventory_item_id")]),
+        ] + presentment_prices
+
+        return query_nodes
 
     record_composition = {
         "new_record": "ProductVariant",

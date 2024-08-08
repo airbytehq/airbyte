@@ -32,6 +32,12 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.14 | 2024-08-03 | [43158](https://github.com/airbytehq/airbyte/pull/43158) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42611](https://github.com/airbytehq/airbyte/pull/42611) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42216](https://github.com/airbytehq/airbyte/pull/42216) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41860](https://github.com/airbytehq/airbyte/pull/41860) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41445](https://github.com/airbytehq/airbyte/pull/41445) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41310](https://github.com/airbytehq/airbyte/pull/41310) | Update dependencies |
 | 0.1.8 | 2024-07-06 | [40966](https://github.com/airbytehq/airbyte/pull/40966) | Update dependencies |
 | 0.1.7 | 2024-06-25 | [40342](https://github.com/airbytehq/airbyte/pull/40342) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40157](https://github.com/airbytehq/airbyte/pull/40157) | Update dependencies |

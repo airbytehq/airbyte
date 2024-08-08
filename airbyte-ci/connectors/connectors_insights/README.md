@@ -25,7 +25,7 @@ connectors-insights generate --output-directory <path-to-local-output-dir> --gcs
 ### CLI Options
 
 - `generate`: The command to generate the artifacts.
-  
+
 - `-o, --output-dir`: Specifies the local directory where the generated artifacts will be saved. In this example, artifacts are saved to `/Users/augustin/Desktop/insights`.
 
 - `-g, --gcs-uri`: The Google Cloud Storage (GCS) URI prefix where the artifacts will be uploaded. In the form: `gs://<bucket>/<key-prefix>`.
@@ -55,6 +55,12 @@ This command will generate `insights.json` and `sbom.json` files, saving them to
 This CLI is currently running nightly in GitHub Actions. The workflow can be found in `.github/workflows/connector_insights.yml`.
 
 ## Changelog
+
+### 0.3.0
+Adding `manifest_uses_parameters`, `manifest_uses_custom_components`, and `manifest_custom_components_classes` insights.
+
+### 0.2.4
+Do not generate insights for `*-scaffold-*` and `*-strict-encrypt` connectors.
 
 ### 0.2.3
 Share `.docker/config.json` with `syft` to benefit from increased DockerHub rate limit.

@@ -53,6 +53,12 @@ The Recruitee source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                             | Subject               |
 |:--------|:-----------| :------------------------------------------------------- | :-------------------- |
+| 0.1.12 | 2024-08-03 | [43264](https://github.com/airbytehq/airbyte/pull/43264) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42605](https://github.com/airbytehq/airbyte/pull/42605) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42268](https://github.com/airbytehq/airbyte/pull/42268) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41930](https://github.com/airbytehq/airbyte/pull/41930) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41388](https://github.com/airbytehq/airbyte/pull/41388) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41265](https://github.com/airbytehq/airbyte/pull/41265) | Update dependencies |
 | 0.1.6 | 2024-07-06 | [40792](https://github.com/airbytehq/airbyte/pull/40792) | Update dependencies |
 | 0.1.5 | 2024-06-28 | [38744](https://github.com/airbytehq/airbyte/pull/38744) | Make connector compatible with Builder |
 | 0.1.4 | 2024-06-25 | [40455](https://github.com/airbytehq/airbyte/pull/40455) | Update dependencies |
