@@ -93,6 +93,8 @@ def format_java_container(dagger_client: dagger.Client, java_code: dagger.Direct
             # The go-offline goal purportedly downloads all dependencies.
             # This isn't quite the case, we still need to add spotless goals.
             "mvn -f spotless-maven-pom.xml"
+            " --errors"
+            " --batch-mode"
             " org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline"
             " spotless:apply"
             " spotless:check"
