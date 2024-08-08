@@ -187,12 +187,12 @@ class ModelToComponentFactory:
         self.MODEL_TO_COMPONENT: Mapping[Type[BaseModel], Type[Component]] = {
             AddedFieldDefinitionModel: AddedFieldDefinition,
             AddFieldsModel: AddFields,
-            ApiKeyAuthenticatorModel: self.create_api_key_authenticator,
-            BasicHttpAuthenticatorModel: self.create_basic_http_authenticator,
-            BearerAuthenticatorModel: self.create_bearer_authenticator,
-            CheckStreamModel: self.create_check_stream,
-            CompositeErrorHandlerModel: self.create_composite_error_handler,
-            ConstantBackoffStrategyModel: self.create_constant_backoff_strategy,
+            ApiKeyAuthenticatorModel: ApiKeyAuthenticator,
+            BasicHttpAuthenticatorModel: BasicHttpAuthenticator,
+            BearerAuthenticatorModel: BearerAuthenticator,
+            CheckStreamModel: CheckStream,
+            CompositeErrorHandlerModel: CompositeErrorHandler,
+            ConstantBackoffStrategyModel: ConstantBackoffStrategy,
             CursorPaginationModel: CursorPaginationStrategy,
             CustomAuthenticatorModel: self.create_custom_component,
             CustomBackoffStrategyModel: self.create_custom_component,
@@ -207,7 +207,8 @@ class ModelToComponentFactory:
             CustomPaginationStrategyModel: self.create_custom_component,
             CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
-            DatetimeBasedCursorModel: self.create_datetime_based_cursor,
+            DatetimeBasedCursorModel: DatetimeBasedCursor,
+            # TODO: DO NOT CHANGE `DeclarativeStream`
             DeclarativeStreamModel: self.create_declarative_stream,
             DefaultErrorHandlerModel: self.create_default_error_handler,
             DefaultPaginatorModel: self.create_default_paginator,
@@ -223,8 +224,9 @@ class ModelToComponentFactory:
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
+            # TODO:
             ListPartitionRouterModel: ListPartitionRouter,
-            MinMaxDatetimeModel: self.create_min_max_datetime,
+            MinMaxDatetimeModel: MinMaxDatetime,
             NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
@@ -236,7 +238,7 @@ class ModelToComponentFactory:
             RemoveFieldsModel: self.create_remove_fields,
             RequestPathModel: self.create_request_path,
             RequestOptionModel: self.create_request_option,
-            LegacySessionTokenAuthenticatorModel: self.create_legacy_session_token_authenticator,
+            LegacySessionTokenAuthenticatorModel: LegacySessionTokenAuthenticator,
             SelectiveAuthenticatorModel: self.create_selective_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
             SpecModel: Spec,
@@ -278,12 +280,12 @@ class ModelToComponentFactory:
         component: Optional[Type[Component]] = self.MODEL_TO_COMPONENT.get(model.__class__)
         if not component:
             raise ValueError(f"Could not find constructor for {model.__class__}")
-        
-        
+
         if not hasattr(component, "is_default_component"):
-            # build the Custom components flow
+            # Custom components flow
             return component(model=model, config=config, **kwargs)
         else:
+            # Default components flow
             return component.build(
                 model=model,
                 config=config,
@@ -325,40 +327,40 @@ class ModelToComponentFactory:
     #     }
     #     return names_to_types[value_type]
 
-    @staticmethod
-    def create_api_key_authenticator(
-        model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
-    ) -> ApiKeyAuthenticator:
-        if model.inject_into is None and model.header is None:
-            raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
+    # @staticmethod
+    # def create_api_key_authenticator(
+    #     model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
+    # ) -> ApiKeyAuthenticator:
+    #     if model.inject_into is None and model.header is None:
+    #         raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
 
-        if model.inject_into is not None and model.header is not None:
-            raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
+    #     if model.inject_into is not None and model.header is not None:
+    #         raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
 
-        if token_provider is not None and model.api_token != "":
-            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
+    #     if token_provider is not None and model.api_token != "":
+    #         raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
 
-        request_option = (
-            RequestOption(
-                inject_into=RequestOptionType(model.inject_into.inject_into.value),
-                field_name=model.inject_into.field_name,
-                parameters=model.parameters or {},
-            )
-            if model.inject_into
-            else RequestOption(
-                inject_into=RequestOptionType.header,
-                field_name=model.header or "",
-                parameters=model.parameters or {},
-            )
-        )
-        return ApiKeyAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
-            request_option=request_option,
-            config=config,
-            parameters=model.parameters or {},
-        )
+    #     request_option = (
+    #         RequestOption(
+    #             inject_into=RequestOptionType(model.inject_into.inject_into.value),
+    #             field_name=model.inject_into.field_name,
+    #             parameters=model.parameters or {},
+    #         )
+    #         if model.inject_into
+    #         else RequestOption(
+    #             inject_into=RequestOptionType.header,
+    #             field_name=model.header or "",
+    #             parameters=model.parameters or {},
+    #         )
+    #     )
+    #     return ApiKeyAuthenticator(
+    #         token_provider=token_provider
+    #         if token_provider is not None
+    #         else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+    #         request_option=request_option,
+    #         config=config,
+    #         parameters=model.parameters or {},
+    #     )
 
     def create_legacy_to_per_partition_state_migration(
         self,
@@ -384,6 +386,7 @@ class ModelToComponentFactory:
 
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
+    # TODO: There is no COMPONENT for `SessionTokenAuthenticator`, it should be created at first.
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, decoder: Decoder, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
@@ -410,43 +413,43 @@ class ModelToComponentFactory:
                 token_provider=token_provider,
             )
 
-    @staticmethod
-    def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs: Any) -> BasicHttpAuthenticator:
-        return BasicHttpAuthenticator(
-            password=model.password or "", username=model.username, config=config, parameters=model.parameters or {}
-        )
+    # @staticmethod
+    # def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs: Any) -> BasicHttpAuthenticator:
+    #     return BasicHttpAuthenticator(
+    #         password=model.password or "", username=model.username, config=config, parameters=model.parameters or {}
+    #     )
 
-    @staticmethod
-    def create_bearer_authenticator(
-        model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
-    ) -> BearerAuthenticator:
-        if token_provider is not None and model.api_token != "":
-            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
-        return BearerAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
-            config=config,
-            parameters=model.parameters or {},
-        )
+    # @staticmethod
+    # def create_bearer_authenticator(
+    #     model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
+    # ) -> BearerAuthenticator:
+    #     if token_provider is not None and model.api_token != "":
+    #         raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
+    #     return BearerAuthenticator(
+    #         token_provider=token_provider
+    #         if token_provider is not None
+    #         else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+    #         config=config,
+    #         parameters=model.parameters or {},
+    #     )
 
-    @staticmethod
-    def create_check_stream(model: CheckStreamModel, config: Config, **kwargs: Any) -> CheckStream:
-        return CheckStream(stream_names=model.stream_names, parameters={})
+    # @staticmethod
+    # def create_check_stream(model: CheckStreamModel, config: Config, **kwargs: Any) -> CheckStream:
+    #     return CheckStream(stream_names=model.stream_names, parameters={})
 
-    def create_composite_error_handler(self, model: CompositeErrorHandlerModel, config: Config, **kwargs: Any) -> CompositeErrorHandler:
-        error_handlers = [
-            self._create_component_from_model(model=error_handler_model, config=config) for error_handler_model in model.error_handlers
-        ]
-        return CompositeErrorHandler(error_handlers=error_handlers, parameters=model.parameters or {})
+    # def create_composite_error_handler(self, model: CompositeErrorHandlerModel, config: Config, **kwargs: Any) -> CompositeErrorHandler:
+    #     error_handlers = [
+    #         self._create_component_from_model(model=error_handler_model, config=config) for error_handler_model in model.error_handlers
+    #     ]
+    #     return CompositeErrorHandler(error_handlers=error_handlers, parameters=model.parameters or {})
 
-    @staticmethod
-    def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs: Any) -> ConstantBackoffStrategy:
-        return ConstantBackoffStrategy(
-            backoff_time_in_seconds=model.backoff_time_in_seconds,
-            config=config,
-            parameters=model.parameters or {},
-        )
+    # @staticmethod
+    # def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs: Any) -> ConstantBackoffStrategy:
+    #     return ConstantBackoffStrategy(
+    #         backoff_time_in_seconds=model.backoff_time_in_seconds,
+    #         config=config,
+    #         parameters=model.parameters or {},
+    #     )
 
     # def create_cursor_pagination(
     #     self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
@@ -1114,22 +1117,22 @@ class ModelToComponentFactory:
             **kwargs,
         )
 
-    @staticmethod
-    def create_legacy_session_token_authenticator(
-        model: LegacySessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any
-    ) -> LegacySessionTokenAuthenticator:
-        return LegacySessionTokenAuthenticator(
-            api_url=url_base,
-            header=model.header,
-            login_url=model.login_url,
-            password=model.password or "",
-            session_token=model.session_token or "",
-            session_token_response_key=model.session_token_response_key or "",
-            username=model.username or "",
-            validate_session_url=model.validate_session_url,
-            config=config,
-            parameters=model.parameters or {},
-        )
+    # @staticmethod
+    # def create_legacy_session_token_authenticator(
+    #     model: LegacySessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any
+    # ) -> LegacySessionTokenAuthenticator:
+    #     return LegacySessionTokenAuthenticator(
+    #         api_url=url_base,
+    #         header=model.header,
+    #         login_url=model.login_url,
+    #         password=model.password or "",
+    #         session_token=model.session_token or "",
+    #         session_token_response_key=model.session_token_response_key or "",
+    #         username=model.username or "",
+    #         validate_session_url=model.validate_session_url,
+    #         config=config,
+    #         parameters=model.parameters or {},
+    #     )
 
     def _prepare_simple_retriever_dependencies(
         self,

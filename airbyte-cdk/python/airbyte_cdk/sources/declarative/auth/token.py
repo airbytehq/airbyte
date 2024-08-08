@@ -5,19 +5,27 @@
 import base64
 import logging
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, SessionTokenProvider, TokenProvider
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
+)
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config
 from cachetools import TTLCache, cached
+from pydantic.v1 import BaseModel
 
 
 @dataclass
-class ApiKeyAuthenticator(DeclarativeAuthenticator):
+class ApiKeyAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent.
 
@@ -40,6 +48,48 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
     token_provider: TokenProvider
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: ApiKeyAuthenticatorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        token_provider: Optional[TokenProvider] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        if model.inject_into is None and model.header is None:
+            raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
+
+        if model.inject_into is not None and model.header is not None:
+            raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
+
+        if token_provider is not None and model.api_token != "":
+            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
+
+        request_option = (
+            RequestOption(
+                inject_into=RequestOptionType(model.inject_into.inject_into.value),
+                field_name=model.inject_into.field_name,
+                parameters=model.parameters or {},
+            )
+            if model.inject_into
+            else RequestOption(
+                inject_into=RequestOptionType.header,
+                field_name=model.header or "",
+                parameters=model.parameters or {},
+            )
+        )
+
+        return {
+            "token_provider": token_provider
+            if token_provider is not None
+            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            "request_option": request_option,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._field_name = InterpolatedString.create(self.request_option.field_name, parameters=parameters)
@@ -70,7 +120,7 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
 
 
 @dataclass
-class BearerAuthenticator(DeclarativeAuthenticator):
+class BearerAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
 
@@ -87,6 +137,26 @@ class BearerAuthenticator(DeclarativeAuthenticator):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: BearerAuthenticatorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        token_provider: Optional[TokenProvider] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        if token_provider is not None and model.api_token != "":
+            raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
+        return {
+            "token_provider": token_provider
+            if token_provider is not None
+            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            "config": config,
+            "parameters": model.parameters or {},
+        }
+
     @property
     def auth_header(self) -> str:
         return "Authorization"
@@ -97,7 +167,7 @@ class BearerAuthenticator(DeclarativeAuthenticator):
 
 
 @dataclass
-class BasicHttpAuthenticator(DeclarativeAuthenticator):
+class BasicHttpAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using base64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
@@ -116,6 +186,22 @@ class BasicHttpAuthenticator(DeclarativeAuthenticator):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     password: Union[InterpolatedString, str] = ""
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: BasicHttpAuthenticatorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        return {
+            "username": model.username,
+            "config": config,
+            "parameters": model.parameters or {},
+            "password": model.password,
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._username = InterpolatedString.create(self.username, parameters=parameters)
@@ -169,7 +255,7 @@ def get_new_session_token(api_url: str, username: str, password: str, response_k
 
 
 @dataclass
-class LegacySessionTokenAuthenticator(DeclarativeAuthenticator):
+class LegacySessionTokenAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
     """
     Builds auth based on session tokens.
     A session token is a random value generated by a server to identify
@@ -201,6 +287,29 @@ class LegacySessionTokenAuthenticator(DeclarativeAuthenticator):
     login_url: Union[InterpolatedString, str]
     validate_session_url: Union[InterpolatedString, str]
     password: Union[InterpolatedString, str] = ""
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: LegacySessionTokenAuthenticatorModel,
+        config: Config,
+        url_base: str,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        return {
+            "api_url": url_base,
+            "header": model.header,
+            "login_url": model.login_url,
+            "password": model.password or "",
+            "session_token": model.session_token or "",
+            "session_token_response_key": model.session_token_response_key or "",
+            "username": model.username or "",
+            "validate_session_url": model.validate_session_url,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._username = InterpolatedString.create(self.username, parameters=parameters)

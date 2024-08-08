@@ -5,13 +5,12 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Callable, Mapping, Optional
 
-from pydantic import BaseModel
-
 from airbyte_cdk.models.airbyte_protocol import AdvancedAuth, ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow
-from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 
 @dataclass
@@ -23,12 +22,12 @@ class Spec(ComponentConstructor):
         connection_specification (Mapping[str, Any]): information related to how a connector can be configured
         documentation_url (Optional[str]): The link the Airbyte documentation about this connector
     """
-    
+
     connection_specification: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
     documentation_url: Optional[str] = None
     advanced_auth: Optional[AuthFlow] = None
-    
+
     @classmethod
     def resolve_dependencies(
         cls,

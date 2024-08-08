@@ -4,14 +4,18 @@
 
 import datetime as dt
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 
 @dataclass
-class MinMaxDatetime:
+class MinMaxDatetime(ComponentConstructor):
     """
     Compares the provided date against optional minimum or maximum times. If date is earlier than
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.
@@ -36,6 +40,23 @@ class MinMaxDatetime:
     _datetime_format: str = field(init=False, repr=False, default="")
     min_datetime: Union[InterpolatedString, str] = ""
     max_datetime: Union[InterpolatedString, str] = ""
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: MinMaxDatetimeModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        return {
+            "datetime": model.datetime,
+            "datetime_format": model.datetime_format or "",
+            "max_datetime": model.max_datetime or "",
+            "min_datetime": model.min_datetime or "",
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.datetime = InterpolatedString.create(self.datetime, parameters=parameters or {})

@@ -12,14 +12,17 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeBasedCursor as DatetimeBasedCursorModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from isodate import Duration, parse_duration
+from pydantic import BaseModel
 
 
 @dataclass
-class DatetimeBasedCursor(DeclarativeCursor):
+class DatetimeBasedCursor(DeclarativeCursor, ComponentConstructor):
     """
     Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 
@@ -69,6 +72,64 @@ class DatetimeBasedCursor(DeclarativeCursor):
     message_repository: Optional[MessageRepository] = None
     is_compare_strictly: Optional[bool] = False
     cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: DatetimeBasedCursorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        start_datetime: Union[str, MinMaxDatetime] = (
+            model.start_datetime if isinstance(model.start_datetime, str) else dependency_constructor(model.start_datetime, config)
+        )
+        end_datetime: Union[str, MinMaxDatetime, None] = None
+        if model.is_data_feed and model.end_datetime:
+            raise ValueError("Data feed does not support end_datetime")
+        if model.is_data_feed and model.is_client_side_incremental:
+            raise ValueError("`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them.")
+        if model.end_datetime:
+            end_datetime = model.end_datetime if isinstance(model.end_datetime, str) else dependency_constructor(model.end_datetime, config)
+
+        end_time_option = (
+            RequestOption(
+                inject_into=RequestOptionType(model.end_time_option.inject_into.value),
+                field_name=model.end_time_option.field_name,
+                parameters=model.parameters or {},
+            )
+            if model.end_time_option
+            else None
+        )
+        start_time_option = (
+            RequestOption(
+                inject_into=RequestOptionType(model.start_time_option.inject_into.value),
+                field_name=model.start_time_option.field_name,
+                parameters=model.parameters or {},
+            )
+            if model.start_time_option
+            else None
+        )
+
+        return {
+            "cursor_field": model.cursor_field,
+            "cursor_datetime_formats": model.cursor_datetime_formats if model.cursor_datetime_formats else [],
+            "cursor_granularity": model.cursor_granularity,
+            "datetime_format": model.datetime_format,
+            "end_datetime": end_datetime,
+            "start_datetime": start_datetime,
+            "step": model.step,
+            "end_time_option": end_time_option,
+            "lookback_window": model.lookback_window,
+            "start_time_option": start_time_option,
+            "partition_field_end": model.partition_field_end,
+            "partition_field_start": model.partition_field_start,
+            "message_repository": additional_flags.get("_message_repository"),
+            "is_compare_strictly": model.is_compare_strictly,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if (self.step and not self.cursor_granularity) or (not self.step and self.cursor_granularity):

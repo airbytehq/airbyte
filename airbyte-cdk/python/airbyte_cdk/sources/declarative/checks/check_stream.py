@@ -5,15 +5,19 @@
 import logging
 import traceback
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Callable, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 
 @dataclass
-class CheckStream(ConnectionChecker):
+class CheckStream(ConnectionChecker, ComponentConstructor):
     """
     Checks the connections by checking availability of one or many streams selected by the developer
 
@@ -23,6 +27,20 @@ class CheckStream(ConnectionChecker):
 
     stream_names: List[str]
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: CheckStreamModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        return {
+            "stream_names": model.stream_names,
+            "parameters": {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters

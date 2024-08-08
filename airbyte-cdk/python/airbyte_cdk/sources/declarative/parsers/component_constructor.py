@@ -3,7 +3,6 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-
 from typing import Any, Callable, Iterator, List, Mapping, Optional, Type, TypeVar
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
@@ -16,7 +15,7 @@ class Component:
     """
     Abstract representation of the abstract component.
     """
-    
+
     @property
     def is_default_component(self) -> bool:
         """
@@ -24,7 +23,7 @@ class Component:
         The default value is `True`, meaning we always want the built-in components to rely on this flag.
         """
         return True
-    
+
     @classmethod
     def resolve_dependencies(
         cls,
@@ -44,7 +43,6 @@ class Component:
 
 @dataclass
 class ComponentConstructor(Component):
-
     @staticmethod
     def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
         if not value_type:
