@@ -80,7 +80,6 @@ class SnowflakeDestinationHandler(
         val deduplicatedNames = names
 
 
-        /*
         //TODO: SHOW TABLES returns row count
         // SHOW TABLES LIKE 'USERS_FINAL' IN SQL_GENERATOR_TEST_PNJAYGLBKN;
 
@@ -116,9 +115,9 @@ class SnowflakeDestinationHandler(
                 rowCount
         }
 
-        */
-
         try {
+
+            //TODO: Processing only one element from namespaces and names for testing
 
             for (stream in streamIds) {
 
@@ -819,6 +818,116 @@ class SnowflakeDestinationHandler(
             println("existingTablesFromShowCommand=" + existingTablesFromShowCommand)
 
             //return existingTables
+
+            //------------Test code
+
+            //TODO: Remove temp code added for testing
+
+
+            val columnsFromInfoSchemaQuery =
+                database
+                    .queryJsons(
+                        """
+                   SELECT column_name, data_type, is_nullable
+                   FROM information_schema.columns
+                   WHERE table_catalog = ?
+                     AND table_schema = ?
+                     AND table_name = ?
+                   ORDER BY ordinal_position;
+
+                   """.trimIndent(),
+                        databaseName,
+                        namespaces[0],
+                        names[0],
+                    )
+                    .stream()
+                    .collect(
+                        { LinkedHashMap() },
+                        { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                            map[row["COLUMN_NAME"].asText()] =
+                                ColumnDefinition(
+                                    row["COLUMN_NAME"].asText(),
+                                    row["DATA_TYPE"].asText(),
+                                    0,
+                                    fromIsNullableIsoString(row["IS_NULLABLE"].asText()),
+                                )
+                        },
+                        { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                          m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                            obj.putAll(m!!)
+                        },
+                    )
+
+            print("columnsFromInfoSchemaQuery=" + columnsFromInfoSchemaQuery)
+
+//               return if (columnsFromInfoSchemaQuery.isEmpty()) {
+//                   Optional.empty()
+//               } else {
+//                   Optional.of(TableDefinition(columnsFromInfoSchemaQuery))
+//               }
+
+
+            try {
+
+                val showColumnsQuery =
+                    String.format(
+                        """
+                       SHOW COLUMNS IN TABLE %s.%s.%s;
+                    """.trimIndent(),
+                        databaseName,
+                        namespaces[0],
+                        names[0],
+                    )
+
+                println("showColumnsQuery=" + showColumnsQuery)
+
+                val showColumnsResult = database.queryJsons(
+                    showColumnsQuery,
+                )
+
+                println("showColumnsResult=" + showColumnsResult)
+                val columnsFromShowQuery = showColumnsResult
+                    .stream()
+                    .collect(
+                        { LinkedHashMap() },
+                        { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                            map[row["column_name"].asText()] =
+                                ColumnDefinition(
+                                    row["column_name"].asText(),
+                                    //row["data_type"].asText(),
+                                    JSONObject(row["data_type"].asText()).getString("type"),
+                                    0,
+                                    fromIsNullableSnowflakeString(row["null?"].asText()),
+                                )
+                        },
+                        { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                          m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                            obj.putAll(m!!)
+                        },
+                    )
+
+                println("columnsFromShowQuery=" + columnsFromShowQuery)
+
+//                return if (columnsFromShowQuery.isEmpty()) {
+//                    Optional.empty()
+//                } else {
+//                    Optional.of(TableDefinition(columnsFromShowQuery))
+//                }
+
+
+            } catch (e: Exception) {
+
+                //TODO: Need to correctly handle the exception
+
+                println("Exception in SnowflakeV1V2Migrator.getTableIfExists: " + e.message)
+
+                e.printStackTrace()
+
+                //throw e
+
+            }
+
+            //------------End of test code
 
             return existingTablesFromShowCommand
 
