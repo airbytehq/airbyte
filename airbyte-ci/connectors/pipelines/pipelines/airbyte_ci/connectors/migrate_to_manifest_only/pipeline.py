@@ -5,25 +5,24 @@
 import json
 import shutil
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Union
+from typing import Any
 
 import git  # type: ignore
 from anyio import Semaphore  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
-from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_component_transformer import ManifestComponentTransformer
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.manifest_resolver import ManifestReferenceResolver
 from pipelines.airbyte_ci.connectors.migrate_to_manifest_only.utils import (
     get_latest_base_image,
     readme_for_connector,
     remove_parameters_from_manifest,
-    revert_connector_directory,
 )
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.connectors.yaml import read_yaml, write_yaml
-from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun, run_steps
+from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 ## GLOBAL VARIABLES ##
@@ -54,7 +53,7 @@ class CheckIsManifestMigrationCandidate(Step):
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
-                stderr=f"The connector is not a low-code connector.",
+                stderr="The connector is not a low-code connector.",
             )
 
         if connector.language == ConnectorLanguage.MANIFEST_ONLY:
@@ -153,7 +152,7 @@ class StripConnector(Step):
         connector = self.context.connector
 
         ## 1. Move manifest.yaml to the root level of the directory
-        self.logger.info(f"Moving manifest to the root level of the directory")
+        self.logger.info("Moving manifest to the root level of the directory")
         root_manifest_path = connector.code_directory / "manifest.yaml"
         connector.manifest_path.rename(root_manifest_path)
 
@@ -173,7 +172,7 @@ class StripConnector(Step):
         ## 3. Check for non-inline spec files and add the data to manifest.yaml
         spec_file = self._check_if_non_inline_spec(connector.python_source_dir_path)
         if spec_file:
-            self.logger.info(f"Non-inline spec file found. Migrating spec to manifest")
+            self.logger.info("Non-inline spec file found. Migrating spec to manifest")
             try:
                 spec_data = self._read_spec_from_file(spec_file)
                 manifest = read_yaml(root_manifest_path)
@@ -228,7 +227,7 @@ class UpdateManifestOnlyFiles(Step):
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update acceptance-test-config.yml: {e}")
 
         ## 2. Update the connector's metadata
-        self.logger.info(f"Updating metadata file")
+        self.logger.info("Updating metadata file")
         try:
             metadata = read_yaml(connector.metadata_file_path)
 
@@ -254,7 +253,7 @@ class UpdateManifestOnlyFiles(Step):
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update metadata.yaml: {e}")
 
         ## 3. Update the connector's README
-        self.logger.info(f"Updating README file")
+        self.logger.info("Updating README file")
         readme = readme_for_connector(connector.technical_name)
 
         with open(connector.code_directory / "README.md", "w") as file:

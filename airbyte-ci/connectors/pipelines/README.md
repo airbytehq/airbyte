@@ -788,7 +788,8 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+|---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.30.0  | [#42583](https://github.com/airbytehq/airbyte/pull/42583)  | Updated dependencies                                                                                                         |
 | 4.29.0  | [#42576](https://github.com/airbytehq/airbyte/pull/42576)  | New command: `migrate-to-manifest-only`                                                                                      |
 | 4.28.3  | [#42046](https://github.com/airbytehq/airbyte/pull/42046)  | Trigger connector tests on doc change.                                                                                       |
 | 4.28.2  | [#43297](https://github.com/airbytehq/airbyte/pull/43297)  | `migrate-to-inline_schemas` removes unused schema files and empty schema dirs.                                               |
