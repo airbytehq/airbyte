@@ -38,7 +38,7 @@ instead of relying on the generic JDBC metadata methods.
 ## Dependencies
 
 The Bulk CDK gradle build relies heavily on so-called [BOM dependencies](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#bill-of-materials-bom-poms).
-This pattern is strongly encouraged to keep transitive version conflicts to a minimum.
+This pattern is strongly encouraged to keep transitive version conflicts to a minimum.  This is beneficial for many reasons, including reproducible builds and a good security posture. 
 
 Consider for example the whole Jackson ecosystem.
 Using a BOM allows us to add specific Jackson dependencies without having to figure out which
