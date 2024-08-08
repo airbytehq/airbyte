@@ -19,8 +19,8 @@ interface MetadataQuerier : AutoCloseable {
         streamNamespace: String?,
     ): List<Field>
 
-    /** Queries the information_schema for all primary keys for the given table. */
-    fun primaryKeys(
+    /** Queries the information_schema for any primary key on the given table. */
+    fun primaryKey(
         streamName: String,
         streamNamespace: String?,
     ): List<List<String>>
