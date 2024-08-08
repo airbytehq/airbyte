@@ -1,5 +1,4 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta
