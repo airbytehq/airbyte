@@ -34,7 +34,7 @@ interface AirbyteStreamDecorator {
      * message.
      *
      * This method does not determine (1), of course, because the source keys are defined in the
-     * source database itself and are retrieved via [MetadataQuerier.primaryKeys]. Instead, this
+     * source database itself and are retrieved via [MetadataQuerier.primaryKey]. Instead, this
      * method determines (2) based on the type information of the field, typically the [FieldType]
      * objects. For instance if the [Field.type] does not map to a [LosslessFieldType] then the
      * field can't reliably round-trip checkpoint values during a resumable initial sync.
