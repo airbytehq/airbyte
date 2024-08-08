@@ -5,9 +5,11 @@
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_protocol.models import FailureType
+
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from requests import RequestException, Response
 
 
@@ -69,4 +71,6 @@ def test_unmapped_http_status_code_returns_default_error_resolution():
     )
 
     actual_error_resolution = response_filter.matches(response)
-    assert actual_error_resolution == DEFAULT_ERROR_RESOLUTION
+    assert actual_error_resolution
+    assert actual_error_resolution.failure_type == FailureType.system_error
+    assert actual_error_resolution.response_action == ResponseAction.RETRY
