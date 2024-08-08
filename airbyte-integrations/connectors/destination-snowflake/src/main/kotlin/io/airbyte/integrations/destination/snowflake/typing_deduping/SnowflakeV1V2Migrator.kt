@@ -82,6 +82,7 @@ class SnowflakeV1V2Migrator(
 
         println("Entering SnowflakeV1V2Migrator.getTableIfExists")
 
+        /*
         val columnsFromInfoSchemaQuery =
             database
                 .queryJsons(
@@ -123,8 +124,9 @@ class SnowflakeV1V2Migrator(
         } else {
            Optional.of(TableDefinition(columnsFromInfoSchemaQuery))
         }
+*/
 
-/*
+
         try {
 
             val showColumnsQuery =
@@ -187,7 +189,7 @@ class SnowflakeV1V2Migrator(
 
         return Optional.empty()
 
-        */
+
 
     }
 
