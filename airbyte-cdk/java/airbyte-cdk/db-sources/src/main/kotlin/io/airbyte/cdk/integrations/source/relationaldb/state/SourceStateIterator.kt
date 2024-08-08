@@ -81,10 +81,11 @@ open class SourceStateIterator<T>(
             finalStateMessageForStream!!.withSourceStats(
                 AirbyteStateStats().withRecordCount(recordCount.toDouble())
             )
-            LOGGER.info { "sending state message, with count per stream: $streamRecordCount " }
-            streamRecordCount.clear()
+            LOGGER.info { "sending final state message, with count per stream: $streamRecordCount " }
 
             recordCount = 0L
+            streamRecordCount.clear()
+
             return AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(finalStateMessageForStream)
