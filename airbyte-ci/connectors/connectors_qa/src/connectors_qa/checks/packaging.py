@@ -235,4 +235,5 @@ ENABLED_CHECKS = [
     CheckVersionFollowsSemver(),
     CheckConnectorVersionMatchInPyproject(),
     CheckPublishToPyPiIsEnabled(),
+    CheckManifestOnlyConnectorBaseImage(),
 ]
