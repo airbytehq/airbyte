@@ -10,6 +10,8 @@ The **Full Refresh** modes are the simplest methods that Airbyte uses to sync da
 
 In the **Overwrite + Deduped** variant, new syncs will replace all data in the existing destination table and then pull the new data in. Therefore, data that has been removed from the source after an old sync will be deleted in the destination table. The **deduped** variant also means that the data in the final table will be unique per primary key \(unlike [Full Refresh Overwrite](./full-refresh-overwrite.md)\). This is determined by sorting the data using the cursor field and keeping only the latest de-duplicated data row.
 
+Full Refresh syncs may be [resumed](/understanding-airbyte/resumability) (to recover from transient errors for example), when this happens, duplicate may happen. If avoiding duplicate is a strong requirement, we recommend using **Overwrite + Deduped** over **Overwrite**. Bear in mind that deduplication incurs additional warehouse costs.
+
 ## Example Behavior
 
 On the nth sync of a full refresh connection:
