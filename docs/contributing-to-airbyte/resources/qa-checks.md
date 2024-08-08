@@ -139,6 +139,15 @@ _Applies to connector with any Airbyte usage level_
 
 Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `PyAirbyte`.
 
+### Manifest-only connectors must use `source-declarative-manifest` as their base image
+
+_Applies to the following connector types: source, destination_
+_Applies to the following connector languages: manifest-only_
+_Applies to connector with any support level_
+_Applies to connector with any Airbyte usage level_
+
+Manifest-only connectors must use `airbyte/source-declarative-manifest` as their base image.
+
 ## 💼 Assets
 
 ### Connectors must have an icon
