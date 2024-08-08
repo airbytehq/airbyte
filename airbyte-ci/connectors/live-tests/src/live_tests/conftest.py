@@ -940,7 +940,7 @@ async def read_with_state_control_execution_result(
 
 @pytest.fixture(scope="session")
 async def read_with_state_target_connector_runner(
-        request: SubRequest,
+    request: SubRequest,
     dagger_client: dagger.Client,
     read_with_state_target_execution_inputs: ExecutionInputs,
     read_with_state_control_execution_result: ExecutionResult,

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import sys
-import json
+
 import hashlib
+import json
+import sys
 from typing import Any
 
 

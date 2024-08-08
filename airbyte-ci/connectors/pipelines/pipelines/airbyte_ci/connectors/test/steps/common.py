@@ -650,8 +650,8 @@ class LiveTests(Step):
         exit_code, stdout, stderr = await get_exec_result(container)
 
         if (
-            f"session_{self.run_id}" not in await container.directory(f"{tests_artifacts_dir}").entries() or
-            "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries()
+            f"session_{self.run_id}" not in await container.directory(f"{tests_artifacts_dir}").entries()
+            or "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries()
         ):
             main_logger.exception(
                 "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
@@ -698,9 +698,7 @@ class LiveTests(Step):
             )
             .with_file(
                 "/tmp/record_obfuscator.py",
-                self.context.get_repo_dir("tools/bin", include=["record_obfuscator.py"]).file(
-                    "record_obfuscator.py"
-                ),
+                self.context.get_repo_dir("tools/bin", include=["record_obfuscator.py"]).file("record_obfuscator.py"),
             )
         )
 

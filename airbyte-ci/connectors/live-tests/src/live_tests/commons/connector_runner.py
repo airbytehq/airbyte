@@ -149,7 +149,8 @@ class ConnectorRunner:
                 [
                     "sh",
                     "-c",
-                    " ".join(airbyte_command) + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
+                    " ".join(airbyte_command)
+                    + f"| {self.IN_CONTAINER_OBFUSCATOR_PATH} > {self.IN_CONTAINER_OUTPUT_PATH} 2>&1 | tee -a {self.IN_CONTAINER_OUTPUT_PATH}",
                 ],
                 skip_entrypoint=True,
             )
