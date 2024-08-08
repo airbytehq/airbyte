@@ -2,13 +2,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import time
+import uuid
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Tuple
 
-import requests
-import time
 import jwt
-import uuid
+import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.types import Config
@@ -93,22 +93,23 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
             "aud": f"https://{domain}.okta.com/oauth2/v1/token",
             "iat": now,
             "exp": now + 3600,
-            "jti": str(uuid.uuid4())
+            "jti": str(uuid.uuid4()),
         }
-        jwt_headers = {
-            "kid": key_id,
-            "alg": "RS256"
-        }
+        jwt_headers = {"kid": key_id, "alg": "RS256"}
 
         client_assertion = jwt.encode(jwt_payload, private_key, algorithm="RS256", headers=jwt_headers)
         token_url = f"https://{domain}.okta.com/oauth2/v1/token"
-        token_response = requests.post(token_url, data={
-            "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-            "client_assertion": client_assertion,
-            "scope": scope
-        }, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        token_response = requests.post(
+            token_url,
+            data={
+                "grant_type": "client_credentials",
+                "client_id": client_id,
+                "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+                "client_assertion": client_assertion,
+                "scope": scope,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
 
         try:
             response = token_response.json()

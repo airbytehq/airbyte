@@ -25,7 +25,7 @@ definitions:
     authenticator_selection_path: ["credentials", "auth_type"]
     authenticators:
       oauth2.0: "#/definitions/custom_oauth_authenticator"
-      oauth2.0_private_key:  "#/definitions/custom_oauth_private_key_authenticator"
+      oauth2.0_private_key: "#/definitions/custom_oauth_private_key_authenticator"
       api_token: "#/definitions/custom_bearer_authenticator"
 
   paginator:
