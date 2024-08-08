@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 3.0.1
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -76,6 +76,17 @@ data:
               - "creatives"
               - "campaign_groups"
               - "conversions"
+      4.0.0:
+        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from composite key - [account, user] to key - account. Users using 3.X.X of the connector will need to reset affected streams after upgrading. Please see migration guide for more details.
+        upgradeDeadline: "2024-08-21"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "account_users"
+              - "campaigns"
+              - "creatives"
+              - "campaign_groups"
+              - "conversions"
   suggestedStreams:
     streams:
       - accounts
@@ -88,7 +99,7 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:low-code
+    - cdk:python
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
