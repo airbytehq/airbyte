@@ -293,28 +293,6 @@ definitions:
         examples:
           - ["users"]
           - ["users", "contacts"]
-  CompositeErrorHandler:
-    title: Composite Error Handler
-    description: Error handler that sequentially iterates over a list of error handlers.
-    type: object
-    required:
-      - type
-      - error_handlers
-    properties:
-      type:
-        type: string
-        enum: [CompositeErrorHandler]
-      error_handlers:
-        title: Error Handlers
-        description: List of error handlers to iterate on to determine how to handle a failed response.
-        type: array
-        items:
-          anyOf:
-            - "$ref": "#/definitions/CompositeErrorHandler"
-            - "$ref": "#/definitions/DefaultErrorHandler"
-      $parameters:
-        type: object
-        additionalProperties: true
   ConstantBackoffStrategy:
     title: Constant Backoff
     description: Backoff strategy with a constant backoff interval.
@@ -1462,7 +1440,6 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
           - "$ref": "#/definitions/CustomErrorHandler"
-          - "$ref": "#/definitions/CompositeErrorHandler"
       http_method:
         title: HTTP Method
         description: The HTTP method used to fetch data from the source (can be GET or POST).

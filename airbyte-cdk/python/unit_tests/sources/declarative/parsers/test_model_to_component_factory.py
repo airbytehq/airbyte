@@ -27,7 +27,6 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideI
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
-from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import CustomSchemaLoader as CustomSchemaLoaderModel
@@ -55,7 +54,7 @@ from airbyte_cdk.sources.declarative.partition_routers import (
     SubstreamPartitionRouter,
 )
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
     ConstantBackoffStrategy,
     ExponentialBackoffStrategy,
@@ -1243,42 +1242,6 @@ requester:
     }
 
 
-def test_given_composite_error_handler_does_not_match_response_then_fallback_on_default_error_handler(requests_mock):
-    content = """
-requester:
-  type: HttpRequester
-  path: "/v3/marketing/lists"
-  $parameters:
-    name: 'lists'
-  url_base: "https://api.sendgrid.com"
-  error_handler:
-    type: CompositeErrorHandler
-    error_handlers:
-      - type: DefaultErrorHandler
-        response_filters:
-          - type: HttpResponseFilter
-            action: FAIL
-            http_codes:
-              - 500
-    """
-    parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
-    http_requester = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name", decoder=JsonDecoder(parameters={})
-    )
-    requests_mock.get(
-        "https://api.sendgrid.com/v3/marketing/lists", status_code=401
-    )
-
-    with pytest.raises(AirbyteTracedException) as exception:
-        http_requester.send_request()
-
-    # The default behavior when we don't know about an error is to return a system_error.
-    # Here, we can confirm that we return a config_error which means we picked up the default error mapper
-    assert exception.value.failure_type == FailureType.config_error
-
-
 @pytest.mark.parametrize(
     "input_config, expected_authenticator_class",
     [
@@ -1323,42 +1286,6 @@ authenticator:
     )
 
     assert isinstance(authenticator, expected_authenticator_class)
-
-
-def test_create_composite_error_handler():
-    content = """
-        error_handler:
-          type: "CompositeErrorHandler"
-          error_handlers:
-            - response_filters:
-                - predicate: "{{ 'code' in response }}"
-                  action: RETRY
-            - response_filters:
-                - http_codes: [ 403 ]
-                  action: RETRY
-    """
-    parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    error_handler_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["error_handler"], {})
-
-    error_handler = factory.create_component(
-        model_type=CompositeErrorHandlerModel, component_definition=error_handler_manifest, config=input_config
-    )
-
-    assert isinstance(error_handler, CompositeErrorHandler)
-    assert len(error_handler.error_handlers) == 2
-
-    error_handler_0 = error_handler.error_handlers[0]
-    assert isinstance(error_handler_0, DefaultErrorHandler)
-    assert isinstance(error_handler_0.response_filters[0], HttpResponseFilter)
-    assert error_handler_0.response_filters[0].predicate.condition == "{{ 'code' in response }}"
-    assert error_handler_0.response_filters[0].action == ResponseAction.RETRY
-
-    error_handler_1 = error_handler.error_handlers[1]
-    assert isinstance(error_handler_1, DefaultErrorHandler)
-    assert isinstance(error_handler_1.response_filters[0], HttpResponseFilter)
-    assert error_handler_1.response_filters[0].http_codes == {403}
-    assert error_handler_1.response_filters[0].action == ResponseAction.RETRY
 
 
 # This might be a better test for the manifest transformer but also worth testing end-to-end here as well

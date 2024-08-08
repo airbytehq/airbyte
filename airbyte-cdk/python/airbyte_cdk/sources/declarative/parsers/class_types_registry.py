@@ -37,7 +37,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import DefaultPaginator
@@ -65,7 +64,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, type] = {
     "BearerAuthenticator": BearerAuthenticator,
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
     "CheckStream": CheckStream,
-    "CompositeErrorHandler": CompositeErrorHandler,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
     "CursorPagination": CursorPaginationStrategy,
     "DatetimeBasedCursor": DatetimeBasedCursor,

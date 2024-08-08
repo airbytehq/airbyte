@@ -13,7 +13,6 @@ ErrorHandler:
   description: "Error handler"
   anyOf:
     - "$ref": "#/definitions/DefaultErrorHandler"
-    - "$ref": "#/definitions/CompositeErrorHandler"
 ```
 
 ## Default error handler
@@ -308,46 +307,7 @@ requester:
               backoff_time_in_seconds: 5
 ```
 
-The `requester` can be configured to use a `CompositeErrorHandler`, which sequentially iterates over a list of error handlers, enabling different retry mechanisms for different types of errors.
-
 In this example, a constant backoff of 5 seconds, will be applied if the response contains a "code" field, and an exponential backoff will be applied if the error code is 403:
-
-Schema:
-
-```yaml
-CompositeErrorHandler:
-  type: object
-  required:
-    - error_handlers
-  additionalProperties:
-    "$parameters":
-      "$ref": "#/definitions/$parameters"
-    error_handlers:
-      type: array
-      items:
-        "$ref": "#/definitions/ErrorHandler"
-```
-
-Example:
-
-```yaml
-requester:
-  <...>
-  error_handler:
-    type: "CompositeErrorHandler"
-    error_handlers:
-      - response_filters:
-          - predicate: "{{ 'code' in response }}"
-            action: RETRY
-        backoff_strategies:
-          - type: "ConstantBackoffStrategy"
-            backoff_time_in_seconds: 5
-      - response_filters:
-          - http_codes: [ 403 ]
-            action: RETRY
-        backoff_strategies:
-          - type: "ExponentialBackoffStrategy"
-```
 
 ## More readings
 

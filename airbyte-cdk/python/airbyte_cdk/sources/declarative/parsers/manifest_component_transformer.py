@@ -10,8 +10,6 @@ PARAMETERS_STR = "$parameters"
 
 
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
-    # CompositeErrorHandler
-    "CompositeErrorHandler.error_handlers": "DefaultErrorHandler",
     # CursorPagination
     "CursorPagination.decoder": "JsonDecoder",
     # DatetimeBasedCursor
@@ -63,7 +61,6 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
 # be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
-    "CompositeErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DeclarativeStream.retriever": "CustomRetriever",
     "DeclarativeStream.transformations": "CustomTransformation",
     "DefaultErrorHandler.backoff_strategies": "CustomBackoffStrategy",
