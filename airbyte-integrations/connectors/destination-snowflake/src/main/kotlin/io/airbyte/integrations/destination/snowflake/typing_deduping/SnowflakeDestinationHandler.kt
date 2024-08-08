@@ -132,9 +132,10 @@ class SnowflakeDestinationHandler(
                     String.format(
 
                         """
-                        SHOW TABLES LIKE '%s' IN %s;
+                        SHOW TABLES LIKE '%s' IN %s.%s;
                                 """.trimIndent(),
                         stream.finalName,
+                        databaseName,
                         stream.finalNamespace
 
                     )
@@ -252,6 +253,9 @@ class SnowflakeDestinationHandler(
         suffix: String,
     ): InitialRawTableStatus {
         val rawTableName = id.rawName + suffix
+
+        //TODO: Need to check if this query is using information_schema on Snowflake
+
         val tableExists =
             database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
                 LOGGER.info(
