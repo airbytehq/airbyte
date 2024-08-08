@@ -11,11 +11,11 @@
           "start.month": 1,
           "start.year": 2021
         },
-        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues"
+        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,approximateMemberReach,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,pivotValues"
       },
       {
         "campaign_id": 123,
-        "fields": "externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,dateRange",
+        "fields": "downloadClicks,externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,dateRange",
         "dateRange": {
           "start.day": 1,
           "start.month": 1,
@@ -27,7 +27,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "postClickJobApplyClicks,postClickRegistrations,postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,dateRange,pivotValues",
+        "fields": "postClickJobApplications,postClickJobApplyClicks,postClickRegistrations,postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,dateRange,pivotValues",
         "dateRange": {
           "start.day": 1,
           "start.month": 1,
@@ -39,7 +39,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,viralImpressions,dateRange,pivotValues",
+        "fields": "videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,dateRange,pivotValues",
         "dateRange": {
           "start.day": 1,
           "start.month": 1,
@@ -51,7 +51,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,viralVideoCompletions,dateRange,pivotValues",
+        "fields": "viralImpressions,viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,dateRange,pivotValues",
         "dateRange": {
           "start.day": 1,
           "start.month": 1,
@@ -63,7 +63,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivotValues",
+        "fields": "viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivotValues",
         "dateRange": {
           "start.day": 1,
           "start.month": 1,
@@ -79,7 +79,7 @@
     "field_date_chunks": [
       {
         "campaign_id": 123,
-        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,pivotValues",
+        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,approximateMemberReach,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,pivotValues",
         "dateRange": {
           "start.day": 31,
           "start.month": 1,
@@ -91,7 +91,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,dateRange",
+        "fields": "downloadClicks,externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,dateRange",
         "dateRange": {
           "start.day": 31,
           "start.month": 1,
@@ -103,7 +103,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "postClickJobApplyClicks,postClickRegistrations,postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,dateRange,pivotValues",
+        "fields": "postClickJobApplications,postClickJobApplyClicks,postClickRegistrations,postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,dateRange,pivotValues",
         "dateRange": {
           "start.day": 31,
           "start.month": 1,
@@ -115,7 +115,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,viralImpressions,dateRange,pivotValues",
+        "fields": "videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,dateRange,pivotValues",
         "dateRange": {
           "start.day": 31,
           "start.month": 1,
@@ -127,7 +127,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,viralVideoCompletions,dateRange,pivotValues",
+        "fields": "viralImpressions,viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,dateRange,pivotValues",
         "dateRange": {
           "start.day": 31,
           "start.month": 1,
@@ -139,7 +139,7 @@
       },
       {
         "campaign_id": 123,
-        "fields": "viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivotValues",
+        "fields": "viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivotValues",
         "dateRange": {
           "start.day": 31,
           "start.month": 1,
