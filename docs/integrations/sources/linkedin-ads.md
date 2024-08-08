@@ -178,7 +178,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.1   | 2024-08-08 |  | Update fields: `approximateUniqueImpressions` field has been deprecated and is replaced by the new API field `approximateMemberReach` |
+| 4.0.1   | 2024-08-08 | [42847](https://github.com/airbytehq/airbyte/pull/42847) | Update fields: `approximateUniqueImpressions` field has been deprecated and is replaced by the new API field `approximateMemberReach` |
 | 4.0.0   | 2024-08-07 | [43359](https://github.com/airbytehq/airbyte/pull/43359) | Revert low code migration                                                                                                         |
 | 3.0.1   | 2024-08-03 | [43087](https://github.com/airbytehq/airbyte/pull/43087) | Update dependencies                                                                                                               |
 | 3.0.0   | 2024-06-18 | [38314](https://github.com/airbytehq/airbyte/pull/38314) | Migrate to low-code                                                                                                               |
