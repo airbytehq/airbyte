@@ -4,7 +4,7 @@ type: DeclarativeSource
 definitions:
   custom_oauth_authenticator:
     type: CustomAuthenticator
-    class_name: source_okta.custom_authenticators.CustomOauth2Authenticator
+    class_name: source_okta.components.CustomOauth2Authenticator
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
@@ -14,11 +14,11 @@ definitions:
 
   custom_oauth_private_key_authenticator:
     type: CustomAuthenticator
-    class_name: source_okta.custom_authenticators.CustomOauth2PrivateKeyAuthenticator
+    class_name: source_okta.components.CustomOauth2PrivateKeyAuthenticator
 
   custom_bearer_authenticator:
     type: CustomAuthenticator
-    class_name: source_okta.custom_authenticators.CustomBearerAuthenticator
+    class_name: source_okta.components.CustomBearerAuthenticator
 
   selective_authenticator:
     type: SelectiveAuthenticator

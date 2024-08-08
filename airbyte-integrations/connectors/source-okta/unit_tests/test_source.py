@@ -2,7 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from source_okta.custom_authenticators import CustomBearerAuthenticator, CustomOauth2Authenticator
+from source_okta.components import CustomBearerAuthenticator, CustomOauth2Authenticator
 from source_okta.source import SourceOkta
 
 
