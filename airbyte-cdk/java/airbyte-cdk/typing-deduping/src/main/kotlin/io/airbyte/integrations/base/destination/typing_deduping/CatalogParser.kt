@@ -137,7 +137,7 @@ constructor(
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
         if (stream.generationId == null || stream.minimumGenerationId == null) {
             throw ConfigErrorException(
-                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7"
+                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7. (Missing `generationId` or `minimumGenerationId` in configured catalog.)"
             )
         }
         if (
