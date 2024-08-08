@@ -1,0 +1,35 @@
+data:
+  allowedHosts:
+    hosts:
+      - app.pennylane.com
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: false
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-pennylane
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3bcc0555-a7b7-4368-88f3-87a5e7d742df
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-pennylane
+  githubIssueLabel: source-pennylane
+  icon: pennylane.svg
+  license: MIT
+  name: Pennylane
+  releaseDate: 2024-08-09
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pennylane
+  tags:
+    - language:python
+    - cdk:low-code
+metadataSpecVersion: "1.0"
