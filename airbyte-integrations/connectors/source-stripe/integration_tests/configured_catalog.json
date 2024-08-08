@@ -320,10 +320,13 @@
       "stream": {
         "name": "invoice_line_items",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated"],
         "source_defined_primary_key": [["id"]]
       },
       "primary_key": [["id"]],
+      "cursor_field": ["updated"],
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     },
