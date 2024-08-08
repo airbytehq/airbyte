@@ -3,22 +3,42 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Type, Union
+from typing import Any, Callable, List, Mapping, Optional, Type, Union
 
 import dpath
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, FieldPointer, Record, StreamSlice, StreamState
+from pydantic import BaseModel
 
 
-@dataclass(frozen=True)
-class AddedFieldDefinition:
+@dataclass
+class AddedFieldDefinition(ComponentConstructor):
     """Defines the field to add on a record"""
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
     value_type: Optional[Type[Any]]
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: AddedFieldDefinitionModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {
+            "path": model.path,
+            "value": InterpolatedString.create(model.value, parameters=model.parameters or {}),
+            "value_type": cls._json_schema_type_name_to_type(model.value_type),
+            "parameters": model.parameters or {},
+        }
 
 
 @dataclass(frozen=True)
@@ -32,7 +52,7 @@ class ParsedAddFieldDefinition:
 
 
 @dataclass
-class AddFields(RecordTransformation):
+class AddFields(RecordTransformation, ComponentConstructor):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
@@ -86,6 +106,28 @@ class AddFields(RecordTransformation):
     fields: List[AddedFieldDefinition]
     parameters: InitVar[Mapping[str, Any]]
     _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: AddFieldsModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        added_field_definitions = [
+            dependency_constructor(
+                model=added_field_definition_model,
+                value_type=cls._json_schema_type_name_to_type(added_field_definition_model.value_type),
+                config=config,
+            )
+            for added_field_definition_model in model.fields
+        ]
+        return {
+            "fields": added_field_definitions,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         for add_field in self.fields:

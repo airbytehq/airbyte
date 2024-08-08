@@ -3,16 +3,19 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from pydantic import BaseModel
 
 
 @dataclass
-class ListPartitionRouter(PartitionRouter):
+class ListPartitionRouter(PartitionRouter, ComponentConstructor):
     """
     Partition router that iterates over the values of a list
     If values is a string, then evaluate it as literal and assert the resulting literal is a list
@@ -30,13 +33,38 @@ class ListPartitionRouter(PartitionRouter):
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: ListPartitionRouterModel,
+        config: Config,
+        dependency_constructor: Optional[Callable[[BaseModel, Config], Any]],
+        additional_flags: Optional[Mapping[str, Any]],
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        request_option = (
+            RequestOption(
+                inject_into=RequestOptionType(model.request_option.inject_into.value),
+                field_name=model.request_option.field_name,
+                parameters=model.parameters or {},
+            )
+            if model.request_option
+            else None
+        )
+        return {
+            "cursor_field": model.cursor_field,
+            "request_option": request_option,
+            "values": model.values,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if isinstance(self.values, str):
             self.values = InterpolatedString.create(self.values, parameters=parameters).eval(self.config)
         self._cursor_field = (
             InterpolatedString(string=self.cursor_field, parameters=parameters) if isinstance(self.cursor_field, str) else self.cursor_field
         )
-
         self._cursor = None
 
     def get_request_params(
@@ -81,6 +109,7 @@ class ListPartitionRouter(PartitionRouter):
     def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: Optional[StreamSlice]) -> Mapping[str, Any]:
         if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:
             slice_value = stream_slice.get(self._cursor_field.eval(self.config))
+            print(self._public_available)
             if slice_value:
                 return {self.request_option.field_name.eval(self.config): slice_value}  # type: ignore # field_name is always casted to InterpolatedString
             else:

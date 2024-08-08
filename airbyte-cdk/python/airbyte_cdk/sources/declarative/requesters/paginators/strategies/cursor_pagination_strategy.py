@@ -3,19 +3,22 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Dict, Mapping, Optional, Union
+from typing import Any, Callable, Dict, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.types import Config, Record
+from pydantic import BaseModel
 
 
 @dataclass
-class CursorPaginationStrategy(PaginationStrategy):
+class CursorPaginationStrategy(PaginationStrategy, ComponentConstructor):
     """
     Pagination strategy that evaluates an interpolated string to define the next page token
 
@@ -26,6 +29,27 @@ class CursorPaginationStrategy(PaginationStrategy):
         stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating
         decoder (Decoder): decoder to decode the response
     """
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: CursorPaginationModel,
+        config: Config,
+        decoder: Decoder,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        if not isinstance(decoder, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+        return {
+            "cursor_value": model.cursor_value,
+            "decoder": decoder,
+            "page_size": model.page_size,
+            "stop_condition": model.stop_condition,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
 
     cursor_value: Union[InterpolatedString, str]
     config: Config
