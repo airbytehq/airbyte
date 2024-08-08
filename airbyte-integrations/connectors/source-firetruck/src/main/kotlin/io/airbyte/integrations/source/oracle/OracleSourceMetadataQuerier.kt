@@ -250,7 +250,7 @@ class OracleSourceMetadataQuerier(
         }
     }
 
-    override fun primaryKeys(
+    override fun primaryKey(
         streamName: String,
         streamNamespace: String?,
     ): List<List<String>> {
