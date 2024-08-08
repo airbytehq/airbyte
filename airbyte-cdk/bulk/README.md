@@ -53,7 +53,7 @@ This has some pleasant ripple-effects:
 - The BOM import is re-exported by the `bulk-cdk-core-base` artifact meaning that the rest of the
   CDK as well as connectors don't need to worry about Jackson version numbers either.
 
-It gets better when multiple BOMs are involve.
+It gets better when multiple BOMs are involved.
 Consider for example Micronaut and Jackson: Micronaut also depends on Jackson.
 This can (and will!) cause dependency version conflicts; these are much easier to resolve by
 reconciling just two BOM versions.
