@@ -6,10 +6,11 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Set, Union
 
 import dpath
 import google.generativeai as genai
+from airbyte_protocol.models import AirbyteCatalog, AirbyteStream
 from dagger import Container
 from markdown_it import MarkdownIt
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
@@ -20,12 +21,6 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
-
-import json
-from typing import Union, List, Set
-
-from airbyte_protocol.models import AirbyteCatalog, AirbyteStream
-from pathlib import Path
 from pydbml import Database
 from pydbml.classes import Column, Index, Reference, Table
 from pydbml.renderer.dbml.default import DefaultDBMLRenderer
@@ -253,8 +248,9 @@ class GenerateDbmlSchema(Step):
                 if any(map(lambda key: len(key) != 1, stream.source_defined_primary_key)):
                     raise ValueError(f"Does not support nested key as part of primary key `{stream.source_defined_primary_key}`")
 
-                composite_key_columns = [column for key in stream.source_defined_primary_key for column in dbml_table.columns if
-                                         column.name in key]
+                composite_key_columns = [
+                    column for key in stream.source_defined_primary_key for column in dbml_table.columns if column.name in key
+                ]
                 if len(composite_key_columns) < len(stream.source_defined_primary_key):
                     raise ValueError("Unexpected error: missing PK column from dbml table")
 
@@ -310,9 +306,14 @@ class UploadDbmlSchema(Step):
         file_path = Path(os.path.abspath(os.path.join(python_path)))
         source_dbml_content = open(file_path / "source.dbml").read()
 
-        dbdocs_container = await (self.dagger_client.container().from_("node:lts-bullseye-slim").with_exec(
-            ["npm", "install", "-g", "dbdocs"]).with_env_variable("DBDOCS_TOKEN", DBDOCS_TOKEN).with_workdir(
-            "/airbyte_dbdocs").with_new_file("/airbyte_dbdocs/source.dbml", contents=source_dbml_content))
+        dbdocs_container = await (
+            self.dagger_client.container()
+            .from_("node:lts-bullseye-slim")
+            .with_exec(["npm", "install", "-g", "dbdocs"])
+            .with_env_variable("DBDOCS_TOKEN", DBDOCS_TOKEN)
+            .with_workdir("/airbyte_dbdocs")
+            .with_new_file("/airbyte_dbdocs/source.dbml", contents=source_dbml_content)
+        )
 
         db_docs_build = ["dbdocs", "build", "source.dbml", f"--project={connector.technical_name}"]
         await dbdocs_container.with_exec(db_docs_build).stdout()
