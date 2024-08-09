@@ -3,7 +3,6 @@
 #
 
 import datetime
-import decimal
 
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryExcelFilesStreamReader
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder

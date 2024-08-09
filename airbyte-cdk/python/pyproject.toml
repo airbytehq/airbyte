@@ -66,6 +66,7 @@ pytz = "2024.1"
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"
 mypy = "*"
+asyncio = "*"
 pandas = "2.2.0"
 python-calamine = "^0.2.3"
 poethepoet = "^0.24.2"
