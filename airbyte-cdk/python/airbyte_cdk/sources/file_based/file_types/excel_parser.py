@@ -3,6 +3,7 @@
 #
 
 import logging
+from io import IOBase
 from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
@@ -154,7 +155,7 @@ class ExcelParser(FileTypeParser):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR)
 
     @staticmethod
-    def open_and_parse_file(fp: Union[str, Path]) -> pd.DataFrame:
+    def open_and_parse_file(fp: Union[IOBase, str, Path]) -> pd.DataFrame:
         """
         Opens and parses the Excel file.
 
