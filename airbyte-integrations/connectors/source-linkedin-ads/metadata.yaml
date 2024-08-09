@@ -91,6 +91,8 @@ data:
     streams:
       - accounts
       - account_users
+      - leads
+      - forms
       - ad_campaign_analytics
       - ad_creative_analytics
       - campaigns
