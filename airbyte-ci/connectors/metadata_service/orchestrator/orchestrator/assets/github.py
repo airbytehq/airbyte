@@ -6,6 +6,7 @@ import base64
 import datetime
 import hashlib
 import os
+import textwrap
 
 import pandas as pd
 import yaml
@@ -134,11 +135,13 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, m
             send_slack_message(context, channel, f"🚨 Stale metadata detected! (cc. <!subteam^{TOOLING_TEAM_SLACK_TEAM_ID}>)")
             send_slack_message(context, channel, stale_report_md, enable_code_block_wrapping=True)
         else:
-            message = f"""
-            Analyzed {len(github_metadata_definitions)} metadata files on our master branch and {len(metadata_definitions)} latest metadata files hosted in GCS.All MD5 hashes of these files.
-            All MD5 hashes of our metadata files on master match the latest metadata files on GCS.
+            message = textwrap.dedent(
+                f"""
+            Analyzed {len(latest_versions_on_github)} metadata files on our master branch and {len(latest_versions_on_gcs)} latest metadata files hosted in GCS.
+            All dockerImageTag value on master match the latest metadata files on GCS.
             No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
             """
+            )
             send_slack_message(context, channel, message)
     return output_dataframe(stale_connectors_df)
 
