@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-
+from airbyte_cdk.sources.declarative.concurrent.stream import DeclarativeConcurrentSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 """
@@ -13,6 +13,6 @@ WARNING: Do not modify this file.
 
 
 # Declarative Source
-class SourcePokeapi(YamlDeclarativeSource):
+class SourcePokeapi(DeclarativeConcurrentSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
