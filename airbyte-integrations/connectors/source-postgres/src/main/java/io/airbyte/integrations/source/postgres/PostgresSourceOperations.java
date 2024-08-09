@@ -83,7 +83,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
                              final String value)
       throws SQLException {
 
-    LOGGER.warn("SGX setCursorField value=" + value + "cursorFieldType=" + cursorFieldType);
     switch (cursorFieldType) {
 
       case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
