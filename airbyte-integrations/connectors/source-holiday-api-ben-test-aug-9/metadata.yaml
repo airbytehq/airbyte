@@ -1,0 +1,36 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+    registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-holiday-api-ben-test-aug-9
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.3.3@sha256:8586ff17ed9584435d0e946a5d0ec393435c81d08da2d8e2913f7984836ce452
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e58a14cf-277e-4c72-b6bd-db3a8945a6f5
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-holiday-api-ben-test-aug-9
+  githubIssueLabel: source-holiday-api-ben-test-aug-9
+  icon: icon.svg
+  license: MIT
+  name: Holiday api
+  releaseDate: 2024-08-09
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api-ben-test-aug-9
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+
+  ab_internal:
+    ql: 100
+    sl: 100
