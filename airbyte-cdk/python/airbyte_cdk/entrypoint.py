@@ -49,6 +49,7 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def parse_args(args: List[str]) -> argparse.Namespace:
+        print("test!")
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
         parent_parser.add_argument("--debug", action="store_true", help="enables detailed debug logs related to the sync")
