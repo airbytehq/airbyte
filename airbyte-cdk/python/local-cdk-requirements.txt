@@ -1,0 +1,2 @@
+pandas==2.0.3
+python-calamine==0.2.0
