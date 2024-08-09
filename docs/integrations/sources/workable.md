@@ -54,19 +54,19 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
-| 0.2.0 | 2024-08-09 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Refactor connector to manifest-only format |
-| 0.1.12 | 2024-08-03 | [43146](https://github.com/airbytehq/airbyte/pull/43146) | Update dependencies |
-| 0.1.11 | 2024-07-27 | [42772](https://github.com/airbytehq/airbyte/pull/42772) | Update dependencies |
-| 0.1.10 | 2024-07-20 | [42290](https://github.com/airbytehq/airbyte/pull/42290) | Update dependencies |
-| 0.1.9 | 2024-07-16 | [38343](https://github.com/airbytehq/airbyte/pull/38343) | Make compatable with the builder |
-| 0.1.8 | 2024-07-13 | [41916](https://github.com/airbytehq/airbyte/pull/41916) | Update dependencies |
-| 0.1.7 | 2024-07-10 | [41524](https://github.com/airbytehq/airbyte/pull/41524) | Update dependencies |
-| 0.1.6 | 2024-07-09 | [41091](https://github.com/airbytehq/airbyte/pull/41091) | Update dependencies |
-| 0.1.5 | 2024-07-06 | [41012](https://github.com/airbytehq/airbyte/pull/41012) | Update dependencies |
-| 0.1.4 | 2024-06-25 | [40479](https://github.com/airbytehq/airbyte/pull/40479) | Update dependencies |
-| 0.1.3 | 2024-06-22 | [39984](https://github.com/airbytehq/airbyte/pull/39984) | Update dependencies |
-| 0.1.2 | 2024-06-06 | [39268](https://github.com/airbytehq/airbyte/pull/39268) | [autopull] Upgrade base image to v1.2.2 |
-| 0.1.1 | 2024-05-21 | [38503](https://github.com/airbytehq/airbyte/pull/38503) | [autopull] base image + poetry + up_to_date |
-| 0.1.0 | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033) | New Source: Workable |
+| 0.2.0   | 2024-08-09 | [43454](https://github.com/airbytehq/airbyte/pull/43454) | Refactor connector to manifest-only format |
+| 0.1.12  | 2024-08-03 | [43146](https://github.com/airbytehq/airbyte/pull/43146) | Update dependencies |
+| 0.1.11  | 2024-07-27 | [42772](https://github.com/airbytehq/airbyte/pull/42772) | Update dependencies |
+| 0.1.10  | 2024-07-20 | [42290](https://github.com/airbytehq/airbyte/pull/42290) | Update dependencies |
+| 0.1.9   | 2024-07-16 | [38343](https://github.com/airbytehq/airbyte/pull/38343) | Make compatable with the builder |
+| 0.1.8   | 2024-07-13 | [41916](https://github.com/airbytehq/airbyte/pull/41916) | Update dependencies |
+| 0.1.7   | 2024-07-10 | [41524](https://github.com/airbytehq/airbyte/pull/41524) | Update dependencies |
+| 0.1.6   | 2024-07-09 | [41091](https://github.com/airbytehq/airbyte/pull/41091) | Update dependencies |
+| 0.1.5   | 2024-07-06 | [41012](https://github.com/airbytehq/airbyte/pull/41012) | Update dependencies |
+| 0.1.4   | 2024-06-25 | [40479](https://github.com/airbytehq/airbyte/pull/40479) | Update dependencies |
+| 0.1.3   | 2024-06-22 | [39984](https://github.com/airbytehq/airbyte/pull/39984) | Update dependencies |
+| 0.1.2   | 2024-06-06 | [39268](https://github.com/airbytehq/airbyte/pull/39268) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1   | 2024-05-21 | [38503](https://github.com/airbytehq/airbyte/pull/38503) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-15 | [18033](https://github.com/airbytehq/airbyte/pull/18033) | New Source: Workable |
 
 </details>
