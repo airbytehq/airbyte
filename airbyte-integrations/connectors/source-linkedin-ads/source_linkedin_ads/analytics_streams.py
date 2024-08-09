@@ -24,6 +24,7 @@ ANALYTICS_FIELDS_V2: List = [
     "actionClicks",
     "adUnitClicks",
     "approximateUniqueImpressions",
+    "approximateMemberReach",
     "cardClicks",
     "cardImpressions",
     "clicks",
