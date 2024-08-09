@@ -55,7 +55,6 @@ class DefaultStream(AbstractStream):
     def cursor_field(self) -> Optional[str]:
         return self._cursor_field
 
-    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._json_schema
 
