@@ -361,7 +361,7 @@ class TestSourceZendeskSupportStream:
         if stream_cls in TICKET_SUBSTREAMS:
             parent = Tickets(**STREAM_ARGS)
             stream = stream_cls(parent=parent, **STREAM_ARGS)
-            expected = {"updated_at": "2022-03-17T16:03:07Z"}
+            expected = {"ticket_id": 13, "generated_timestamp": 1647532987}
             response_field = stream.response_list_name
 
         else:
@@ -371,7 +371,12 @@ class TestSourceZendeskSupportStream:
 
         requests_mock.get(STREAM_URL, json={response_field: expected})
         test_response = requests.get(STREAM_URL)
-        output = list(stream.parse_response(test_response, None))
+
+        if isinstance(stream, TicketMetrics):
+            stream_slice = {"ticket_id": 13, "generated_timestamp": 1647532987}
+            output = list(stream.parse_response(response=test_response, stream_state=None, stream_slice=stream_slice))
+        else:
+            output = list(stream.parse_response(test_response, None))
 
         expected = expected if isinstance(expected, list) else [expected]
         assert expected == output
@@ -414,7 +419,7 @@ class TestSourceZendeskSupportStream:
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (TicketMetrics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (TicketMetrics, {}, {"generated_timestamp": 1622505600}, {"generated_timestamp": 1622505600}),
             (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
         ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
@@ -1050,18 +1055,18 @@ class TestTicketSubstream:
         [
             (
                 {},
-                {"tickets": [{"id": "13"}, {"id": "80"}]},
+                {"tickets": [{"id": "13", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp}, {"id": "80", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp}]},
                 [
-                    {"ticket_id": "13", "updated_at": STREAM_ARGS["start_date"]},
-                    {"ticket_id": "80", "updated_at": STREAM_ARGS["start_date"]},
+                    {"ticket_id": "13", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
+                    {"ticket_id": "80", "generated_timestamp": pendulum.parse(STREAM_ARGS["start_date"]).int_timestamp},
                 ],
             ),
             (
-                {"updated_at": "2024-04-17T19:34:06Z"},
-                {"tickets": [{"id": "80"}]},
-                [{"ticket_id": "80", "updated_at": "2024-04-17T19:34:06Z"}],
+                {"generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp},
+                {"tickets": [{"id": "80", "generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}]},
+                [{"ticket_id": "80", "generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}],
             ),
-            ({"updated_at": "2224-04-17T19:34:06Z"}, {"tickets": []}, []),
+            ({"generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}, {"tickets": []}, []),
         ],
         ids=[
             "read_without_state",
@@ -1073,34 +1078,6 @@ class TestTicketSubstream:
         stream = get_stream_instance(TicketSubstream, STREAM_ARGS)
         requests_mock.get(f"https://sandbox.zendesk.com/api/v2/incremental/tickets/cursor.json", json=response)
         assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state)) == expected_slices
-
-    @pytest.mark.parametrize(
-        "stream_slice, response, expected_records",
-        [
-            ({"updated_at": "2024-05-17T19:34:06Z"}, {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}, []),
-            (
-                {"updated_at": "2024-03-17T19:34:06Z"},
-                {"updated_at": "2024-04-17T19:34:06Z", "id": "test id"},
-                [{"updated_at": "2024-04-17T19:34:06Z", "id": "test id"}],
-            ),
-            (
-                {},
-                {"updated_at": "1979-04-17T19:34:06Z", "id": "test id"},
-                [{"updated_at": "1979-04-17T19:34:06Z", "id": "test id"}],
-            ),
-        ],
-        ids=[
-            "read_with_slice_cursor_greater_than_record_cursor",
-            "read_with_slice_cursor_less_than_record_cursor",
-            "read_without_slice_cursor",
-        ],
-    )
-    def test_ticket_metrics_parse_response(self, stream_slice, response, expected_records):
-        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
-        mocked_response = Mock()
-        mocked_response.json.return_value = {"ticket_metric": response}
-        records = list(stream.parse_response(mocked_response, stream_state={}, stream_slice=stream_slice))
-        assert records == expected_records
 
     def test_read_ticket_metrics_with_error(self, requests_mock):
         stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
