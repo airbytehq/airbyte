@@ -164,8 +164,8 @@
       "format": "date-time"
     },
     "generated_timestamp": {
-        "description": "Timestamp when the ticket was last updated, either by a system update or by a ticket event.",
-        "type": ["null", "integer"]
+      "description": "Timestamp when the ticket was last updated, either by a system update or by a ticket event.",
+      "type": ["null", "integer"]
     },
     "url": {
       "description": "URL link to the ticket details",
