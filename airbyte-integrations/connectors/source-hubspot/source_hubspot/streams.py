@@ -2167,7 +2167,7 @@ class Contacts(CRMSearchStream):
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
@@ -2175,7 +2175,7 @@ class EngagementsCalls(CRMSearchStream):
 class EngagementsEmails(CRMSearchStream):
     entity = "emails"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read", "sales-email-read"}
 
@@ -2183,7 +2183,7 @@ class EngagementsEmails(CRMSearchStream):
 class EngagementsMeetings(CRMSearchStream):
     entity = "meetings"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
@@ -2191,7 +2191,7 @@ class EngagementsMeetings(CRMSearchStream):
 class EngagementsNotes(CRMSearchStream):
     entity = "notes"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
@@ -2199,7 +2199,7 @@ class EngagementsNotes(CRMSearchStream):
 class EngagementsTasks(CRMSearchStream):
     entity = "tasks"
     last_modified_field = "hs_lastmodifieddate"
-    associations = ["contacts", "deal", "company", "tickets"]
+    associations = ["contacts", "deals", "companies", "tickets"]
     primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
