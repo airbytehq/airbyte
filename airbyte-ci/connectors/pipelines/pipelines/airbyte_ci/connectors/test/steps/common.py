@@ -762,5 +762,9 @@ class LiveTests(Step):
                 )
             )
 
-        container = container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
+        container = await container.with_exec(["ls", "-a", "."])
+        main_logger.info(f">>>>>>>>>>>>>>>>>: stdout={await container.stdout()} stderr={await container.stderr()}")
+
+        container = await container.with_exec(["poetry", "lock", "--no-update", "-vvv"]).with_exec(["poetry", "install"])
+        main_logger.info(f">>>>>>>>>>>>>>>>>  did poetry install: stdout={await container.stdout()} stderr={await container.stderr()}")
         return container
