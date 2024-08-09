@@ -22,6 +22,6 @@ test desc
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
-| 0.0.1 | 2024-08-08 | Initial release by bechurch-test via Connector Builder|
+| 0.0.1 | 2024-08-09 | Initial release by bechurch-test via Connector Builder|
 
 </details>
