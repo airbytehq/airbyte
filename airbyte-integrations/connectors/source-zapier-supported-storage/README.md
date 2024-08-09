@@ -1,4 +1,4 @@
-# Zapier supported storage source connector
+# Zapier Supported Storage source connector
 
 This directory contains the manifest-only connector for `source-zapier-supported-storage`.
 This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
