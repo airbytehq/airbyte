@@ -9,10 +9,11 @@ from urllib import parse
 
 import pendulum
 import requests
-from airbyte_cdk import BackoffStrategy
+from airbyte_cdk import BackoffStrategy, StreamSlice
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
@@ -56,6 +57,9 @@ class GithubStreamABC(HttpStream, ABC):
         self.access_token_type = access_token_type
         self.api_url = api_url
         self.state = {}
+
+        if not self.supports_incremental:
+            self.cursor = SubstreamResumableFullRefreshCursor()
 
     @property
     def url_base(self) -> str:
@@ -1613,7 +1617,8 @@ class ContributorActivity(GithubStream):
         return record
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
-        return ContributorActivityErrorHandler(logger=self.logger, max_retries=self.max_retries, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
+
+        return ContributorActivityErrorHandler(logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
         return ContributorActivityBackoffStrategy()
@@ -1645,6 +1650,13 @@ class ContributorActivity(GithubStream):
                         message=f"Syncing `{self.__class__.__name__}` " f"stream isn't available for repository `{repository}`.",
                     ),
                 )
+
+                # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
+                # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
+                # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
+                partition_obj = stream_slice.get("partition")
+                if self.cursor and partition_obj:
+                    self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
             else:
                 raise e
 
