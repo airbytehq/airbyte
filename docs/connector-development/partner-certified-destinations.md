@@ -1,4 +1,4 @@
-# Requirements for Airbyte Partners: “1.0” Bulk and Publish Destinations
+# Requirements for Airbyte Partner Connectors: Bulk and Publish Destinations
 
 ## Welcome
 
