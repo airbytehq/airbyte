@@ -1,0 +1,179 @@
+version: 1.0.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - QueueMessages
+
+definitions:
+  streams:
+    QueueMessages:
+      type: DeclarativeStream
+      name: QueueMessages
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          authenticator:
+            type: CustomAuthenticator
+            class_name: source_amazon_sqs.components.AmazonSQSAuthenticator
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - Messages
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: MaxNumberOfMessages
+          pagination_strategy:
+            type: PageIncrement
+            page_size: "{{ config['max_batch_size'] }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record['MessageId'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - body
+              value: "{{ record['Body'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - attributes
+              value: "{{ record['MessageAttributes'] }}"
+  base_requester:
+    type: HttpRequester
+    url_base: "https://sqs.{{ config['region'] }}.amazonaws.com"
+
+streams:
+  - $ref: "#/definitions/streams/QueueMessages"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - queue_url
+      - region
+      - delete_messages
+    properties:
+      queue_url:
+        type: string
+        order: 0
+        title: Queue URL
+        examples:
+          - https://sqs.eu-west-1.amazonaws.com/1234567890/my-example-queue
+        description: URL of the SQS Queue
+      region:
+        type: string
+        enum:
+          - af-south-1
+          - ap-east-1
+          - ap-northeast-1
+          - ap-northeast-2
+          - ap-northeast-3
+          - ap-south-1
+          - ap-south-2
+          - ap-southeast-1
+          - ap-southeast-2
+          - ap-southeast-3
+          - ap-southeast-4
+          - ca-central-1
+          - ca-west-1
+          - cn-north-1
+          - cn-northwest-1
+          - eu-central-1
+          - eu-central-2
+          - eu-north-1
+          - eu-south-1
+          - eu-south-2
+          - eu-west-1
+          - eu-west-2
+          - eu-west-3
+          - il-central-1
+          - me-central-1
+          - me-south-1
+          - sa-east-1
+          - us-east-1
+          - us-east-2
+          - us-gov-east-1
+          - us-gov-west-1
+          - us-west-1
+          - us-west-2
+        order: 1
+        title: AWS Region
+        description: AWS Region of the SQS Queue
+      delete_messages:
+        type: boolean
+        order: 2
+        title: Delete Messages After Read
+        default: false
+        description: >-
+          If Enabled, messages will be deleted from the SQS Queue after being
+          read. If Disabled, messages are left in the queue and can be read more
+          than once. WARNING: Enabling this option can result in data loss in
+          cases of failure, use with caution, see documentation for more
+          detail.
+      max_batch_size:
+        type: integer
+        order: 3
+        title: Max Batch Size
+        examples:
+          - "5"
+        description: Max amount of messages to get in one batch (10 max)
+      max_wait_time:
+        type: integer
+        order: 4
+        title: Max Wait Time
+        examples:
+          - "5"
+        description: >-
+          Max amount of time in seconds to wait for messages in a single poll
+          (20 max)
+      attributes_to_return:
+        type: string
+        order: 5
+        title: Message Attributes To Return
+        examples:
+          - attr1,attr2
+        description: Comma separated list of Mesage Attribute names to return
+      visibility_timeout:
+        type: integer
+        order: 6
+        title: Message Visibility Timeout
+        examples:
+          - "15"
+        description: >-
+          Modify the Visibility Timeout of the individual message from the
+          Queue's default (seconds).
+      access_key:
+        type: string
+        order: 7
+        title: AWS IAM Access Key ID
+        examples:
+          - xxxxxHRNxxx3TBxxxxxx
+        description: The Access Key ID of the AWS IAM Role to use for pulling messages
+        airbyte_secret: true
+      secret_key:
+        type: string
+        order: 8
+        title: AWS IAM Secret Key
+        examples:
+          - hu+qE5exxxxT6o/ZrKsxxxxxxBhxxXLexxxxxVKz
+        description: The Secret Key of the AWS IAM Role to use for pulling messages
+        airbyte_secret: true
+    additionalProperties: true
