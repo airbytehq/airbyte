@@ -6,17 +6,12 @@
 from typing import Any, Dict, Literal, Optional, Union
 
 import dpath.util
-from airbyte_cdk import OneOfOptionConfig
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic.v1 import AnyUrl, BaseModel, ConfigDict, Field
 
 
 class Oauth2(BaseModel):
-    class Config(OneOfOptionConfig):
-        title = "Authenticate via Oauth2"
-        discriminator = "auth_type"
-
-    auth_type: Literal["oauth2"] = Field("oauth2", const=True)
+    auth_type: Literal["oauth2"] = "oauth2"
     tenant_id: str = Field(title="Tenant ID", description="Tenant ID of the Microsoft Azure Application user", airbyte_secret=True)
     client_id: str = Field(
         title="Client ID",
@@ -34,13 +29,12 @@ class Oauth2(BaseModel):
         airbyte_secret=True,
     )
 
+    model_config = ConfigDict(title="Authenticate via Oauth2", discriminator="auth_type")
+
 
 class StorageAccountKey(BaseModel):
-    class Config(OneOfOptionConfig):
-        title = "Authenticate via Storage Account Key"
-        discriminator = "auth_type"
 
-    auth_type: Literal["storage_account_key"] = Field("storage_account_key", const=True)
+    auth_type: Literal["storage_account_key"] = "storage_account_key"
     azure_blob_storage_account_key: str = Field(
         title="Azure Blob Storage account key",
         description="The Azure blob storage account key.",
@@ -48,6 +42,8 @@ class StorageAccountKey(BaseModel):
         examples=["Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="],
         order=3,
     )
+
+    model_config = ConfigDict(title="Authenticate via Storage Account Key", discriminator="auth_type")
 
 
 class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
