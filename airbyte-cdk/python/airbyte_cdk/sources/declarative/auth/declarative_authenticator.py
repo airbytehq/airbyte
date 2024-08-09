@@ -5,6 +5,7 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Union
 
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 
@@ -28,7 +29,7 @@ class DeclarativeAuthenticator(AbstractHeaderAuthenticator):
 
 
 @dataclass
-class NoAuth(DeclarativeAuthenticator):
+class NoAuth(DeclarativeAuthenticator, ComponentConstructor):
     parameters: InitVar[Mapping[str, Any]]
 
     @property

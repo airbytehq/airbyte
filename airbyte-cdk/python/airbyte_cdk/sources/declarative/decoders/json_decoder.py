@@ -5,12 +5,16 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass
-from typing import Any, Generator, Mapping
+from typing import Any, Callable, Generator, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import IterableDecoder as IterableDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonlDecoderModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
-
+from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 logger = logging.getLogger("airbyte")
 
@@ -22,6 +26,17 @@ class JsonDecoder(Decoder, ComponentConstructor):
     """
 
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: JsonDecoderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"parameters": {}}
 
     def is_stream_response(self) -> bool:
         return False
@@ -51,6 +66,17 @@ class IterableDecoder(Decoder, ComponentConstructor):
 
     parameters: InitVar[Mapping[str, Any]]
 
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: IterableDecoderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"parameters": {}}
+
     def is_stream_response(self) -> bool:
         return True
 
@@ -66,6 +92,17 @@ class JsonlDecoder(Decoder, ComponentConstructor):
     """
 
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: JsonlDecoderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"parameters": {}}
 
     def is_stream_response(self) -> bool:
         return True

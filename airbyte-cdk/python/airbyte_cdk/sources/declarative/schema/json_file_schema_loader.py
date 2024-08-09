@@ -6,16 +6,14 @@ import json
 import pkgutil
 import sys
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, Tuple, Union, Callable, Optional
+from typing import Any, Callable, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
-from airbyte_cdk.sources.types import Config
-
 from pydantic import BaseModel
 
 

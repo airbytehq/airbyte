@@ -3,20 +3,18 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Set, Union, Callable
+from typing import Any, Callable, Mapping, Optional, Set, Union
 
 import requests
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.streams.http.error_handlers import JsonErrorMessageParser
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config
-
-from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
-
 from pydantic import BaseModel
 
 

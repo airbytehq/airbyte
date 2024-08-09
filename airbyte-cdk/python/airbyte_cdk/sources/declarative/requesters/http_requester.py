@@ -12,9 +12,10 @@ import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.decoders import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -24,8 +25,6 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
-from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
-
 from pydantic import BaseModel
 
 
@@ -113,6 +112,7 @@ class HttpRequester(Requester, ComponentConstructor):
             "decoder": decoder,
             "stream_response": decoder.is_stream_response() if decoder else False,
         }
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
         self._path = InterpolatedString.create(self.path, parameters=parameters)

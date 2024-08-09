@@ -1,19 +1,20 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Mapping, Callable, Optional
+from typing import Any, Callable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor, SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import ParentStreamConfig
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
-from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel,
+)
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ParentStreamConfig
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPartitionRouter as CustomPartitionRouterModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import LegacyToPerPartitionStateMigration as LegacyToPerPartitionStateMigrationModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config
-
 from pydantic import BaseModel
 
 
@@ -64,7 +65,7 @@ class LegacyToPerPartitionStateMigration(StateMigration, ComponentConstructor):
         if not hasattr(partition_router, "parent_stream_configs"):
             raise ValueError("LegacyToPerPartitionStateMigrations can only be applied with a parent stream configuration.")
 
-        return {"partition_router": declarative_stream.retriever.partition_router, "cursor":declarative_stream.incremental_sync, "config": config, "parameters": declarative_stream.parameters}  # type: ignore # The retriever type was already checked
+        return {"partition_router": declarative_stream.retriever.partition_router, "cursor": declarative_stream.incremental_sync, "config": config, "parameters": declarative_stream.parameters}  # type: ignore # The retriever type was already checked
 
     def __init__(
         self,

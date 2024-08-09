@@ -227,24 +227,24 @@ class ModelToComponentFactory:
             # TODO:
             ListPartitionRouterModel: ListPartitionRouter,
             MinMaxDatetimeModel: MinMaxDatetime,
-            NoAuthModel: self.create_no_auth,
-            NoPaginationModel: self.create_no_pagination,
+            NoAuthModel: NoAuth,
+            NoPaginationModel: NoPagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
-            OffsetIncrementModel: self.create_offset_increment,
-            PageIncrementModel: self.create_page_increment,
+            OffsetIncrementModel: OffsetIncrement,
+            PageIncrementModel: PageIncrement,
             ParentStreamConfigModel: self.create_parent_stream_config,
-            RecordFilterModel: self.create_record_filter,
+            RecordFilterModel: RecordFilter,
             RecordSelectorModel: RecordSelector,
-            RemoveFieldsModel: self.create_remove_fields,
-            RequestPathModel: self.create_request_path,
-            RequestOptionModel: self.create_request_option,
+            RemoveFieldsModel: RemoveFields,
+            RequestPathModel: RequestPath,
+            RequestOptionModel: RequestOption,
             LegacySessionTokenAuthenticatorModel: LegacySessionTokenAuthenticator,
             SelectiveAuthenticatorModel: self.create_selective_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
             SpecModel: Spec,
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
-            WaitTimeFromHeaderModel: self.create_wait_time_from_header,
-            WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
+            WaitTimeFromHeaderModel: WaitTimeFromHeaderBackoffStrategy,
+            WaitUntilTimeFromHeaderModel: WaitUntilTimeFromHeaderBackoffStrategy,
         }
 
         # Needed for the case where we need to perform a second parse on the fields of a custom component
@@ -576,6 +576,7 @@ class ModelToComponentFactory:
                 matching_parameters = {kwarg: model_parameters[kwarg] for kwarg in constructor_kwargs if kwarg in model_parameters}
                 return self._create_component_from_model(model=parsed_model, config=config, **matching_parameters)
             except TypeError as error:
+                raise error
                 missing_parameters = self._extract_missing_parameters(error)
                 if missing_parameters:
                     raise ValueError(
@@ -899,21 +900,21 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    @staticmethod
-    def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs: Any) -> InlineSchemaLoader:
-        return InlineSchemaLoader(schema=model.schema_ or {}, parameters={})
+    # @staticmethod
+    # def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs: Any) -> InlineSchemaLoader:
+    #     return InlineSchemaLoader(schema=model.schema_ or {}, parameters={})
 
-    @staticmethod
-    def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:
-        return JsonDecoder(parameters={})
-
-    @staticmethod
-    def create_jsonl_decoder(model: JsonlDecoderModel, config: Config, **kwargs: Any) -> JsonlDecoder:
-        return JsonlDecoder(parameters={})
-
-    @staticmethod
-    def create_iterable_decoder(model: IterableDecoderModel, config: Config, **kwargs: Any) -> IterableDecoder:
-        return IterableDecoder(parameters={})
+    # @staticmethod
+    # def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:
+    #     return JsonDecoder(parameters={})
+    #
+    # @staticmethod
+    # def create_jsonl_decoder(model: JsonlDecoderModel, config: Config, **kwargs: Any) -> JsonlDecoder:
+    #     return JsonlDecoder(parameters={})
+    #
+    # @staticmethod
+    # def create_iterable_decoder(model: IterableDecoderModel, config: Config, **kwargs: Any) -> IterableDecoder:
+    #     return IterableDecoder(parameters={})
 
     @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
@@ -970,81 +971,91 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    @staticmethod
-    def create_no_auth(model: NoAuthModel, config: Config, **kwargs: Any) -> NoAuth:
-        return NoAuth(parameters=model.parameters or {})
-
-    @staticmethod
-    def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs: Any) -> NoPagination:
-        return NoPagination(parameters={})
+    # @staticmethod
+    # def create_no_auth(model: NoAuthModel, config: Config, **kwargs: Any) -> NoAuth:
+    #     return NoAuth(parameters=model.parameters or {})
+    #
+    # @staticmethod
+    # def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs: Any) -> NoPagination:
+    #     return NoPagination(parameters={})
 
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            # ignore type error because fixing it would have a lot of dependencies, revisit later
-            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(  # type: ignore
-                config,
-                InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
-                access_token_name=InterpolatedString.create(
-                    model.access_token_name or "access_token", parameters=model.parameters or {}
-                ).eval(config),
-                refresh_token_name=model.refresh_token_updater.refresh_token_name,
-                expires_in_name=InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.parameters or {}).eval(
-                    config
-                ),
-                client_id=InterpolatedString.create(model.client_id, parameters=model.parameters or {}).eval(config),
-                client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters or {}).eval(config),
-                access_token_config_path=model.refresh_token_updater.access_token_config_path,
-                refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
-                token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
-                grant_type=InterpolatedString.create(model.grant_type or "refresh_token", parameters=model.parameters or {}).eval(config),
-                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters or {}).eval(config),
-                scopes=model.scopes,
-                token_expiry_date_format=model.token_expiry_date_format,
-                message_repository=self._message_repository,
-                refresh_token_error_status_codes=model.refresh_token_updater.refresh_token_error_status_codes,
-                refresh_token_error_key=model.refresh_token_updater.refresh_token_error_key,
-                refresh_token_error_values=model.refresh_token_updater.refresh_token_error_values,
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator.build(
+                model=model, config=config, dependency_constructor=self._create_component_from_model, additional_flags=self._flags
             )
+            # ignore type error because fixing it would have a lot of dependencies, revisit later
+            # return DeclarativeSingleUseRefreshTokenOauth2Authenticator(  # type: ignore
+            #     config,
+            #     InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(config),
+            #     access_token_name=InterpolatedString.create(
+            #         model.access_token_name or "access_token", parameters=model.parameters or {}
+            #     ).eval(config),
+            #     refresh_token_name=model.refresh_token_updater.refresh_token_name,
+            #     expires_in_name=InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.parameters or {}).eval(
+            #         config
+            #     ),
+            #     client_id=InterpolatedString.create(model.client_id, parameters=model.parameters or {}).eval(config),
+            #     client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters or {}).eval(config),
+            #     access_token_config_path=model.refresh_token_updater.access_token_config_path,
+            #     refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
+            #     token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
+            #     grant_type=InterpolatedString.create(model.grant_type or "refresh_token", parameters=model.parameters or {}).eval(config),
+            #     refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters or {}).eval(config),
+            #     scopes=model.scopes,
+            #     token_expiry_date_format=model.token_expiry_date_format,
+            #     message_repository=self._message_repository,
+            #     refresh_token_error_status_codes=model.refresh_token_updater.refresh_token_error_status_codes,
+            #     refresh_token_error_key=model.refresh_token_updater.refresh_token_error_key,
+            #     refresh_token_error_values=model.refresh_token_updater.refresh_token_error_values,
+            # )
         # ignore type error because fixing it would have a lot of dependencies, revisit later
-        return DeclarativeOauth2Authenticator(  # type: ignore
-            access_token_name=model.access_token_name or "access_token",
-            client_id=model.client_id,
-            client_secret=model.client_secret,
-            expires_in_name=model.expires_in_name or "expires_in",
-            grant_type=model.grant_type or "refresh_token",
-            refresh_request_body=model.refresh_request_body,
-            refresh_token=model.refresh_token,
-            scopes=model.scopes,
-            token_expiry_date=model.token_expiry_date,
-            token_expiry_date_format=model.token_expiry_date_format,  # type: ignore
-            token_expiry_is_time_of_expiration=bool(model.token_expiry_date_format),
-            token_refresh_endpoint=model.token_refresh_endpoint,
-            config=config,
-            parameters=model.parameters or {},
-            message_repository=self._message_repository,
+        return DeclarativeOauth2Authenticator.build(
+            model=model,
+            config=config,  # type: ignore
+            dependency_constructor=self._create_component_from_model,
+            additional_flags=self._flags,
         )
 
-    @staticmethod
-    def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
-        if not isinstance(decoder, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
-        return OffsetIncrement(
-            page_size=model.page_size,
-            config=config,
-            decoder=decoder,
-            inject_on_first_request=model.inject_on_first_request or False,
-            parameters=model.parameters or {},
-        )
+        # return DeclarativeOauth2Authenticator(  # type: ignore
+        #     access_token_name=model.access_token_name or "access_token",
+        #     client_id=model.client_id,
+        #     client_secret=model.client_secret,
+        #     expires_in_name=model.expires_in_name or "expires_in",
+        #     grant_type=model.grant_type or "refresh_token",
+        #     refresh_request_body=model.refresh_request_body,
+        #     refresh_token=model.refresh_token,
+        #     scopes=model.scopes,
+        #     token_expiry_date=model.token_expiry_date,
+        #     token_expiry_date_format=model.token_expiry_date_format,  # type: ignore
+        #     token_expiry_is_time_of_expiration=bool(model.token_expiry_date_format),
+        #     token_refresh_endpoint=model.token_refresh_endpoint,
+        #     config=config,
+        #     parameters=model.parameters or {},
+        #     message_repository=self._message_repository,
+        # )
 
-    @staticmethod
-    def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
-        return PageIncrement(
-            page_size=model.page_size,
-            config=config,
-            start_from_page=model.start_from_page or 0,
-            inject_on_first_request=model.inject_on_first_request or False,
-            parameters=model.parameters or {},
-        )
+    # @staticmethod
+    # def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
+    #     if not isinstance(decoder, JsonDecoder):
+    #         raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+    #     return OffsetIncrement(
+    #         page_size=model.page_size,
+    #         config=config,
+    #         decoder=decoder,
+    #         inject_on_first_request=model.inject_on_first_request or False,
+    #         parameters=model.parameters or {},
+    #     )
+
+    # @staticmethod
+    # def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
+    #     return PageIncrement(
+    #         page_size=model.page_size,
+    #         config=config,
+    #         start_from_page=model.start_from_page or 0,
+    #         inject_on_first_request=model.inject_on_first_request or False,
+    #         parameters=model.parameters or {},
+    #     )
 
     def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs: Any) -> ParentStreamConfig:
         declarative_stream = self._create_component_from_model(model.stream, config=config)
@@ -1059,18 +1070,18 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    @staticmethod
-    def create_record_filter(model: RecordFilterModel, config: Config, **kwargs: Any) -> RecordFilter:
-        return RecordFilter(condition=model.condition or "", config=config, parameters=model.parameters or {})
+    # @staticmethod
+    # def create_record_filter(model: RecordFilterModel, config: Config, **kwargs: Any) -> RecordFilter:
+    #     return RecordFilter(condition=model.condition or "", config=config, parameters=model.parameters or {})
 
-    @staticmethod
-    def create_request_path(model: RequestPathModel, config: Config, **kwargs: Any) -> RequestPath:
-        return RequestPath(parameters={})
+    # @staticmethod
+    # def create_request_path(model: RequestPathModel, config: Config, **kwargs: Any) -> RequestPath:
+    #     return RequestPath(parameters={})
 
-    @staticmethod
-    def create_request_option(model: RequestOptionModel, config: Config, **kwargs: Any) -> RequestOption:
-        inject_into = RequestOptionType(model.inject_into.value)
-        return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
+    # @staticmethod
+    # def create_request_option(model: RequestOptionModel, config: Config, **kwargs: Any) -> RequestOption:
+    #     inject_into = RequestOptionType(model.inject_into.value)
+    #     return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
 
     # def create_record_selector(
     #     self,
@@ -1103,9 +1114,9 @@ class ModelToComponentFactory:
     #         parameters=model.parameters or {},
     #     )
 
-    @staticmethod
-    def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
-        return RemoveFields(field_pointers=model.field_pointers, condition=model.condition or "", parameters={})
+    # @staticmethod
+    # def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
+    #     return RemoveFields(field_pointers=model.field_pointers, condition=model.condition or "", parameters={})
 
     def create_selective_authenticator(self, model: SelectiveAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeAuthenticator:
         authenticators = {name: self._create_component_from_model(model=auth, config=config) for name, auth in model.authenticators.items()}
@@ -1244,23 +1255,23 @@ class ModelToComponentFactory:
         )
         return substream_factory._create_component_from_model(model=model, config=config)
 
-    @staticmethod
-    def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs: Any) -> WaitTimeFromHeaderBackoffStrategy:
-        return WaitTimeFromHeaderBackoffStrategy(
-            header=model.header,
-            parameters=model.parameters or {},
-            config=config,
-            regex=model.regex,
-            max_waiting_time_in_seconds=model.max_waiting_time_in_seconds if model.max_waiting_time_in_seconds is not None else None,
-        )
+    # @staticmethod
+    # def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs: Any) -> WaitTimeFromHeaderBackoffStrategy:
+    #     return WaitTimeFromHeaderBackoffStrategy(
+    #         header=model.header,
+    #         parameters=model.parameters or {},
+    #         config=config,
+    #         regex=model.regex,
+    #         max_waiting_time_in_seconds=model.max_waiting_time_in_seconds if model.max_waiting_time_in_seconds is not None else None,
+    #     )
 
-    @staticmethod
-    def create_wait_until_time_from_header(
-        model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs: Any
-    ) -> WaitUntilTimeFromHeaderBackoffStrategy:
-        return WaitUntilTimeFromHeaderBackoffStrategy(
-            header=model.header, parameters=model.parameters or {}, config=config, min_wait=model.min_wait, regex=model.regex
-        )
+    # @staticmethod
+    # def create_wait_until_time_from_header(
+    #     model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs: Any
+    # ) -> WaitUntilTimeFromHeaderBackoffStrategy:
+    #     return WaitUntilTimeFromHeaderBackoffStrategy(
+    #         header=model.header, parameters=model.parameters or {}, config=config, min_wait=model.min_wait, regex=model.regex
+    #     )
 
     def get_message_repository(self) -> MessageRepository:
         return self._message_repository

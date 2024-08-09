@@ -6,17 +6,20 @@ import numbers
 import re
 import time
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 
 @dataclass
-class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
+class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor):
     """
     Extract time at which we can retry the request from response header
     and wait for the difference between now and that time
@@ -32,6 +35,23 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
     config: Config
     min_wait: Optional[Union[float, InterpolatedString, str]] = None
     regex: Optional[Union[InterpolatedString, str]] = None
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: WaitUntilTimeFromHeaderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {
+            "header": model.header,
+            "parameters": model.parameters or {},
+            "config": config,
+            "min_wait": model.min_wait,
+            "regex": model.regex,
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.header = InterpolatedString.create(self.header, parameters=parameters)

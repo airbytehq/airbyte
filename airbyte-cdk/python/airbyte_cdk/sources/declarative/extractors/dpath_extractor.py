@@ -3,16 +3,16 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Union, Callable, Optional
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 import dpath
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config
 from pydantic import BaseModel
 
@@ -63,13 +63,13 @@ class DpathExtractor(RecordExtractor, ComponentConstructor):
 
     @classmethod
     def resolve_dependencies(
-            cls,
-            model: DpathExtractorModel,
-            config: Config,
-            dependency_constructor: Callable[[BaseModel, Config], Any],
-            additional_flags: Optional[Mapping[str, Any]] = None,
-            decoder: Optional[Decoder] = None,
-            **kwargs: Any,
+        cls,
+        model: DpathExtractorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        decoder: Optional[Decoder] = None,
+        **kwargs: Any,
     ) -> Optional[Mapping[str, Any]]:
         if decoder:
             decoder_to_use = decoder

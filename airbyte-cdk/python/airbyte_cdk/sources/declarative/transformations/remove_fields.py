@@ -3,17 +3,20 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Callable, List, Mapping, Optional
 
 import dpath
 import dpath.exceptions
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RemoveFields as RemoveFieldsModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamState
+from pydantic import BaseModel
 
 
 @dataclass
-class RemoveFields(RecordTransformation):
+class RemoveFields(RecordTransformation, ComponentConstructor):
     """
     A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
@@ -42,6 +45,17 @@ class RemoveFields(RecordTransformation):
     field_pointers: List[FieldPointer]
     parameters: InitVar[Mapping[str, Any]]
     condition: str = ""
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: RemoveFieldsModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"field_pointers": model.field_pointers, "condition": model.condition or "", "parameters": {}}
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters)

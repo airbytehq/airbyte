@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, MutableMapping, Optional, Union, Callable
+from typing import Any, Callable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
@@ -14,7 +14,6 @@ from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, Err
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.types import Config
 from pydantic import BaseModel
-
 
 
 @dataclass
@@ -124,6 +123,7 @@ class DefaultErrorHandler(ErrorHandler, ComponentConstructor):
             "config": config,
             "parameters": model.parameters or {},
         }
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
 
         if not self.response_filters:

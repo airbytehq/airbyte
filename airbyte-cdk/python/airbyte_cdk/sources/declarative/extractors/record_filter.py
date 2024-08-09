@@ -3,15 +3,18 @@
 #
 import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordFilter as RecordFilterModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from pydantic import BaseModel
 
 
 @dataclass
-class RecordFilter:
+class RecordFilter(ComponentConstructor):
     """
     Filter applied on a list of Records
 
@@ -22,6 +25,17 @@ class RecordFilter:
     parameters: InitVar[Mapping[str, Any]]
     config: Config
     condition: str = ""
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: RecordFilterModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"condition": model.condition or "", "config": config, "parameters": model.parameters or {}}
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters)

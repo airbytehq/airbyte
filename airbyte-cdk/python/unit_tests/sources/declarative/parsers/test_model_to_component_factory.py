@@ -2104,7 +2104,7 @@ def test_create_page_increment():
     )
     expected_strategy = PageIncrement(page_size=10, start_from_page=1, inject_on_first_request=True, parameters={}, config=input_config)
 
-    strategy = factory.create_page_increment(model, input_config)
+    strategy = factory._create_component_from_model(model, input_config)
 
     assert strategy.page_size == expected_strategy.page_size
     assert strategy.start_from_page == expected_strategy.start_from_page
@@ -2124,7 +2124,7 @@ def test_create_page_increment_with_interpolated_page_size():
     }
     expected_strategy = PageIncrement(page_size=5, start_from_page=1, inject_on_first_request=True, parameters={}, config=config)
 
-    strategy = factory.create_page_increment(model, config)
+    strategy = factory._create_component_from_model(model, config)
 
     assert strategy.get_page_size() == expected_strategy.get_page_size()
     assert strategy.start_from_page == expected_strategy.start_from_page
@@ -2139,7 +2139,7 @@ def test_create_offset_increment():
     )
     expected_strategy = OffsetIncrement(page_size=10, inject_on_first_request=True, parameters={}, config=input_config)
 
-    strategy = factory.create_offset_increment(model, input_config, decoder=JsonDecoder(parameters={}))
+    strategy = factory._create_component_from_model(model, input_config, decoder=JsonDecoder(parameters={}))
 
     assert strategy.page_size == expected_strategy.page_size
     assert strategy.inject_on_first_request == expected_strategy.inject_on_first_request
