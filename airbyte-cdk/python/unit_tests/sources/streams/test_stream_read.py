@@ -194,7 +194,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     logger = _mock_logger(True)
     message_repository = InMemoryMessageRepository(Level.DEBUG)
     stream = constructor(slice_to_partition, slice_logger, logger, message_repository)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
 
     expected_records = [
         AirbyteMessage(
@@ -252,7 +252,7 @@ def test_full_refresh_read_a_single_slice(constructor):
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
 
     records = [
         {"id": 1, "partition": 1},
@@ -309,7 +309,7 @@ def test_full_refresh_read_two_slices(constructor):
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
 
     records_partition_1 = [
         {"id": 1, "partition": 1},
@@ -367,7 +367,7 @@ def test_incremental_read_two_slices():
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
     timestamp = "1708899427"
 
     records_partition_1 = [
@@ -406,7 +406,7 @@ def test_concurrent_incremental_read_two_slices():
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
     slice_timestamp_1 = "1708850000"
     slice_timestamp_2 = "1708950000"
     cursor = MockConcurrentCursor(message_repository)
@@ -456,7 +456,7 @@ def setup_stream_dependencies(configured_json_schema):
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
     return configured_stream, internal_config, logger, slice_logger, message_repository, state_manager
 
 

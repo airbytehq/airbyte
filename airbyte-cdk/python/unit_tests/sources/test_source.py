@@ -243,15 +243,8 @@ def abstract_source(mocker):
             does_not_raise(),
             id="test_incoming_global_state",
         ),
-        pytest.param(
-            {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
-            {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
-            does_not_raise(),
-            id="test_incoming_legacy_state",
-        ),
-        pytest.param([], defaultdict(dict, {}), does_not_raise(), id="test_empty_incoming_stream_state"),
-        pytest.param(None, defaultdict(dict, {}), does_not_raise(), id="test_none_incoming_state"),
-        pytest.param({}, defaultdict(dict, {}), does_not_raise(), id="test_empty_incoming_legacy_state"),
+        pytest.param([], [], does_not_raise(), id="test_empty_incoming_stream_state"),
+        pytest.param(None, [], does_not_raise(), id="test_none_incoming_state"),
         pytest.param(
             [
                 {
@@ -295,12 +288,6 @@ def abstract_source(mocker):
             pytest.raises(ValidationError),
             id="test_invalid_global_state_streams_not_list",
         ),
-        pytest.param(
-            [{"type": "LEGACY", "not": "something"}],
-            None,
-            pytest.raises(ValueError),
-            id="test_invalid_state_message_has_no_stream_global_or_data",
-        ),
     ],
 )
 def test_read_state(source, incoming_state, expected_state, expected_error):
@@ -320,24 +307,9 @@ def test_read_invalid_state(source):
             source.read_state(state_file.name)
 
 
-def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
-    expected_state = [
-        AirbyteStateMessage(
-            type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}
-        )
-    ]
-    source = MockAbstractSource()
-    with tempfile.NamedTemporaryFile("w") as state_file:
-        state_file.write(json.dumps({"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}))
-        state_file.flush()
-        actual = source.read_state(state_file.name)
-        assert actual == expected_state
-
-
 @pytest.mark.parametrize(
     "source, expected_state",
     [
-        pytest.param(MockSource(), {}, id="test_source_implementing_read_returns_legacy_format"),
         pytest.param(MockAbstractSource(), [], id="test_source_not_implementing_read_returns_per_stream_format"),
     ],
 )

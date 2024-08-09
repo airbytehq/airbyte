@@ -59,7 +59,6 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(
-            stream_instance_map={s.name: AirbyteStream(name=s.name, namespace=None, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]) for s in self._streams},
             state=self._state,
         )  # The input values into the AirbyteStream are dummy values; the connector state manager only uses `name` and `namespace`
 

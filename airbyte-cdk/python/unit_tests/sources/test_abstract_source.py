@@ -600,28 +600,18 @@ def test_read_incremental_with_slices_sends_slice_messages(mocker):
 
 
 class TestIncrementalRead:
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_state_attribute(self, mocker, use_legacy):
+    def test_with_state_attribute(self, mocker):
         """Test correct state passing for the streams that have a state attribute"""
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
         old_state = {"cursor": "old_value"}
-        if use_legacy:
-            input_state = {"s1": old_state}
-        else:
-            input_state = [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(old_state)
-                    ),
+        input_state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(old_state)
                 ),
-            ]
+            ),
+        ]
         new_state_from_connector = {"cursor": "new_value"}
 
         stream_1 = MockStreamWithState(
@@ -690,21 +680,11 @@ class TestIncrementalRead:
         # once for each record (4 times), and at the end of each slice (2 times)
         assert len(state_property.fget.mock_calls) == 8
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_checkpoint_interval(self, mocker, use_legacy):
+    def test_with_checkpoint_interval(self, mocker):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message
         after reading N records within a stream.
         """
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
         stream_1 = MockStream(
@@ -759,21 +739,11 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_no_interval(self, mocker, use_legacy):
+    def test_with_no_interval(self, mocker):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs
         a STATE message only after fully reading the stream and does not output any STATE messages during syncing the stream.
         """
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
         stream_1 = MockStream(
@@ -816,19 +786,9 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_slices(self, mocker, use_legacy):
+    def test_with_slices(self, mocker):
         """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
 
@@ -902,42 +862,32 @@ class TestIncrementalRead:
         assert messages == expected
 
     @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    @pytest.mark.parametrize(
         "slices",
         [
             pytest.param([], id="test_slices_as_list"),
             pytest.param(iter([]), id="test_slices_as_iterator")
         ]
     )
-    def test_no_slices(self, mocker, use_legacy, slices):
+    def test_no_slices(self, mocker, slices):
         """
         Tests that an incremental read returns at least one state messages even if no records were read:
             1. outputs a state message after reading the entire stream
         """
         state = {"cursor": "value"}
-        if use_legacy:
-            input_state = {"s1": state, "s2": state}
-        else:
-            input_state = [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(state)
-                    ),
+        input_state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(state)
                 ),
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob.parse_obj(state)
-                    ),
+            ),
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob.parse_obj(state)
                 ),
-            ]
+            ),
+        ]
 
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
         stream_1 = MockStreamWithState(
@@ -1004,24 +954,14 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_slices_and_interval(self, mocker, use_legacy):
+    def test_with_slices_and_interval(self, mocker):
         """
         Tests that an incremental read which uses slices and a checkpoint interval:
             1. outputs all records
             2. outputs a state message every N records (N=checkpoint_interval)
             3. outputs a state message after reading the entire slice
         """
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
         stream_1 = MockStream(

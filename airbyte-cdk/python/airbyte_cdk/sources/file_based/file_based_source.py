@@ -144,10 +144,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         """
 
         if self.catalog:
-            state_manager = ConnectorStateManager(
-                stream_instance_map={s.stream.name: s.stream for s in self.catalog.streams},
-                state=self.state,
-            )
+            state_manager = ConnectorStateManager(state=self.state)
         else:
             # During `check` operations we don't have a catalog so cannot create a state manager.
             # Since the state manager is only required for incremental syncs, this is fine.
