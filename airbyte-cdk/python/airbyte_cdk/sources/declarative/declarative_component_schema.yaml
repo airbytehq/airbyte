@@ -1462,6 +1462,7 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
           - "$ref": "#/definitions/CustomErrorHandler"
+          - "$ref": "#/definitions/CompositeErrorHandler"
       http_method:
         title: HTTP Method
         description: The HTTP method used to fetch data from the source (can be GET or POST).

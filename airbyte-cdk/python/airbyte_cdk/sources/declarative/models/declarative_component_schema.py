@@ -1275,6 +1275,16 @@ class Spec(BaseModel):
     )
 
 
+class CompositeErrorHandler(BaseModel):
+    type: Literal['CompositeErrorHandler']
+    error_handlers: List[Union[CompositeErrorHandler, DefaultErrorHandler]] = Field(
+        ...,
+        description='List of error handlers to iterate on to determine how to handle a failed response.',
+        title='Error Handlers',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class DeclarativeSource(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -1467,7 +1477,9 @@ class HttpRequester(BaseModel):
         description='Authentication method to use for requests sent to the API.',
         title='Authenticator',
     )
-    error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler]] = Field(
+    error_handler: Optional[
+        Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]
+    ] = Field(
         None,
         description='Error handler component that defines how to handle errors.',
         title='Error Handler',
@@ -1605,6 +1617,7 @@ class SubstreamPartitionRouter(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
 SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
