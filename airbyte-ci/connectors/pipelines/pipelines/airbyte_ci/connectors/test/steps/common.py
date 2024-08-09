@@ -689,16 +689,16 @@ class LiveTests(Step):
             # Enable dagger-in-dagger
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            .with_file(
+                "/tmp/record_obfuscator.py",
+                self.context.get_repo_dir("tools/bin", include=["record_obfuscator.py"]).file("record_obfuscator.py"),
+            )
             # The connector being tested is already built and is stored in a location accessible to an inner dagger kicked off by
             # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to
             # build their own.
             .with_new_file(
                 f"/tmp/{slugify(self.connector_image + ':' + self.target_version)}_container_id.txt", contents=str(target_container_id)
-            )
-            .with_file(
-                "/tmp/record_obfuscator.py",
-                self.context.get_repo_dir("tools/bin", include=["record_obfuscator.py"]).file("record_obfuscator.py"),
             )
         )
 

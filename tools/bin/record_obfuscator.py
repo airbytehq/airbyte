@@ -14,17 +14,19 @@ def _generate_hash(value: Any) -> str:
 
 def obfuscate(value: Any) -> Any:
     if isinstance(value, str):
-        obfuscated_value = "string_" + _generate_hash(value)
-    elif isinstance(value, (int, float)):
-        obfuscated_value = "number_" + _generate_hash(value)
+        obfuscated_value = f"string_len-{len(value)}_" + _generate_hash(value)
+    elif isinstance(value, int):
+        obfuscated_value = f"integer_len-{len(str(value))}" + _generate_hash(value)
+    elif isinstance(value, float):
+        obfuscated_value = f"number_len-{len(str(value))}" + _generate_hash(value)
     elif isinstance(value, bool):
         obfuscated_value = "boolean_" + _generate_hash(value)
     elif value is None:
         obfuscated_value = "null_" + _generate_hash(value)
     elif isinstance(value, list):
-        obfuscated_value = "array_" + _generate_hash(json.dumps(value, sort_keys=True).encode())
+        obfuscated_value = f"array_len-{len(value)}" + _generate_hash(json.dumps(value, sort_keys=True).encode())
     elif isinstance(value, dict):
-        obfuscated_value = "object_" + _generate_hash(json.dumps(value, sort_keys=True).encode())
+        obfuscated_value = f"object_len-{len(value.keys())}" + _generate_hash(json.dumps(value, sort_keys=True).encode())
     else:
         raise ValueError(f"Unsupported data type: {type(value)}")
 
@@ -38,10 +40,10 @@ if __name__ == "__main__":
             data = json.loads(line)
         except Exception as exc:
             # We don't expect invalid json so if we see it, it will go to stderr
-            print(line, file=sys.stderr)
+            sys.stderr.write(f"{line}\n")
         else:
             if data.get("type") == "RECORD":
                 record_data = data["record"].get("data", {})
                 obfuscated_record = {k: obfuscate(v) for k, v in record_data.items()}
                 data["record"]["data"] = obfuscated_record
-            print(json.dumps(data))
+            sys.stdout.write(f"{json.dumps(data)}\n")

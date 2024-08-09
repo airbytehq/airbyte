@@ -334,8 +334,10 @@ class ExecutionResult:
         for k, v in data.items():
             if v.startswith("string_"):
                 types[k] = "a"
-            elif v.startswith("number_"):
+            elif v.startswith("integer_"):
                 types[k] = 0
+            elif v.startswith("number_"):
+                types[k] = 0.1
             elif v.startswith("boolean_"):
                 types[k] = True
             elif v.startswith("null_"):
