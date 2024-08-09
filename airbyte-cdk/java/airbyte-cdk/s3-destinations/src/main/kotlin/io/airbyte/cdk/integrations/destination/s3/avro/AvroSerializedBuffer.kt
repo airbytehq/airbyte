@@ -126,7 +126,8 @@ class AvroSerializedBuffer(
                             ),
                         stream.name,
                         stream.namespace,
-                        useV2FieldNames = useV2FieldNames
+                        useV2FieldNames = useV2FieldNames,
+                        addStringToLogicalTypes = false
                     )
                 AvroSerializedBuffer(
                     createStorageFunction.call(),

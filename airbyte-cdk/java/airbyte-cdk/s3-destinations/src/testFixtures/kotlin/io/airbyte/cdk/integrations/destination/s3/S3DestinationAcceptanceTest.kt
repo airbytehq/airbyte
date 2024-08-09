@@ -58,12 +58,14 @@ private val LOGGER = KotlinLogging.logger {}
 abstract class S3DestinationAcceptanceTest
 protected constructor(
     protected val outputFormat: FileUploadFormat,
-    supportsChangeCapture: Boolean = false
+    supportsChangeCapture: Boolean = false,
+    expectNumericTimestamps: Boolean = false
 ) :
     DestinationAcceptanceTest(
         verifyIndividualStateAndCounts = true,
         useV2Fields = true,
-        supportsChangeCapture
+        supportsChangeCapture = supportsChangeCapture,
+        expectNumericTimestamps = expectNumericTimestamps
     ) {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
