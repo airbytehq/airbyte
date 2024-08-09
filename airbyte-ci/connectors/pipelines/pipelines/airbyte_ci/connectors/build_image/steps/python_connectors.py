@@ -46,10 +46,11 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             Container: The builder container, with installed dependencies.
         """
         ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
-
+        self.logger.info(f"_create_builder_container: about to await with_python_connector_installed")
         builder = await with_python_connector_installed(
             self.context, base_container, str(self.context.connector.code_directory), install_root_package=False, include=ONLY_BUILD_FILES
         )
+        self.logger.info(f"_create_builder_container: awaited with_python_connector_installed")
         return builder
 
     async def _build_from_base_image(self, platform: Platform) -> Container:
