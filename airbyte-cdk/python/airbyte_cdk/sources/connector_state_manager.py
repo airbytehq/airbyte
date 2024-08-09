@@ -5,14 +5,7 @@
 import copy
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AirbyteStateBlob,
-    AirbyteStateMessage,
-    AirbyteStateType,
-    AirbyteStreamState,
-    StreamDescriptor,
-)
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.models import Type as MessageType
 from pydantic import ConfigDict as V2ConfigDict
 

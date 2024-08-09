@@ -6,13 +6,7 @@ import concurrent
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import (
-    AirbyteStateMessage,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    DestinationSyncMode,
-    SyncMode,
-)
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
