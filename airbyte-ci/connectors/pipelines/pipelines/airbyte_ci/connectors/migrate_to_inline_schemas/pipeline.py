@@ -213,8 +213,6 @@ class RemoveUnusedJsonSchamas(Step):
 
     async def _run(self) -> StepResult:
         connector = self.context.connector
-        connector_path = connector.code_directory
-        manifest_path = connector.manifest_path
         python_path = connector.python_source_dir_path
         schemas_path = python_path / SCHEMAS_DIR_NAME
         logger = self.logger

@@ -12,7 +12,6 @@ LICENSE_FILE_NAME = "LICENSE_SHORT"
 
 # TODO create .airbyte_ci_ignore files?
 DEFAULT_FORMAT_IGNORE_LIST = [
-    AIRBYTE_SUBMODULE_DIR_NAME,  # Required to format the airbyte-enterprise repo.
     "**/__init__.py",  # These files has never been formatted and we don't want to start now (for now) see https://github.com/airbytehq/airbyte/issues/33296
     "**/__pycache__",
     "**/.eggs",
@@ -44,6 +43,12 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "airbyte-ci/connectors/pipelines/tests/test_format/non_formatted_code",  # This is a test directory with badly formatted code
 ]
 
+# In the airbyte-enterprise repo, the airbyte repo is included as a submodule.
+# Glob patterns which don't start with '**/' need to be repeated with a prefix.
+DEFAULT_FORMAT_IGNORE_LIST = DEFAULT_FORMAT_IGNORE_LIST + [
+    f"{AIRBYTE_SUBMODULE_DIR_NAME}/{path}" for path in DEFAULT_FORMAT_IGNORE_LIST if not path.startswith("**/")
+]
+
 
 class Formatter(Enum):
     """An enum for the formatter values which can be ["java", "js", "python", "license"]."""
@@ -62,7 +67,7 @@ class Formatter(Enum):
 WARM_UP_INCLUSIONS = {
     Formatter.JAVA: [
         "spotless-maven-pom.xml",
-        "tools/gradle/codestyle/java-google-style.xml",
+        "tools/",  # Whole directory instead of just 'java-google-style.xml' to support airbyte-enterprise.
     ],
     Formatter.PYTHON: ["pyproject.toml", "poetry.lock"],
     Formatter.LICENSE: [LICENSE_FILE_NAME],

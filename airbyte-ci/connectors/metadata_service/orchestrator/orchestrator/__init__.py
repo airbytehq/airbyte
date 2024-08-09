@@ -189,7 +189,7 @@ SCHEDULES = [
     ),
     ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly"),
     ScheduleDefinition(
-        cron_schedule="0 8 * * *",  # Daily at 8am US/Pacific
+        cron_schedule="0 * * * *",  # Every hour
         execution_timezone="US/Pacific",
         job=generate_stale_gcs_latest_metadata_file,
     ),

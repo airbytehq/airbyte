@@ -122,6 +122,7 @@ class CheckConnectorUsesPythonBaseImage(SecurityCheck):
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,
+        ConnectorLanguage.MANIFEST_ONLY,
     ]
 
     def _run(self, connector: Connector) -> CheckResult:

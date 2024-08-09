@@ -82,11 +82,8 @@ private fun StreamStateJsonValue.checkpoint(ctx: StreamReadContext): CheckpointS
         if (primaryKey.isEmpty()) {
             return@run mapOf()
         }
-        val keys: List<Field>? =
-            ctx.stream.primaryKeyCandidates.find { pk: List<Field> ->
-                pk.map { it.id }.toSet() == primaryKey.keys
-            }
-        if (keys == null) {
+        val pk: List<Field> = ctx.stream.configuredPrimaryKey ?: listOf()
+        if (primaryKey.keys != pk.map { it.id }.toSet()) {
             ctx.handler.accept(
                 InvalidPrimaryKey(
                     ctx.stream.name,
@@ -96,7 +93,7 @@ private fun StreamStateJsonValue.checkpoint(ctx: StreamReadContext): CheckpointS
             )
             return null
         }
-        keys.associateWith { primaryKey[it.id]!! }
+        pk.associateWith { primaryKey[it.id]!! }
     }
     val cursorPair: Pair<Field, JsonNode>? = run {
         if (cursors.isEmpty()) {

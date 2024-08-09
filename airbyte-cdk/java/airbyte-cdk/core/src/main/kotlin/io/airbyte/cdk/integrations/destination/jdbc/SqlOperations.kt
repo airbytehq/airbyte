@@ -132,13 +132,6 @@ interface SqlOperations {
     /** Check if the data record is valid and ok to be written to destination */
     fun isValidData(data: JsonNode?): Boolean
 
-    /**
-     * get the value of _airbyte_generation_id for any row in table {@code rawNamespace.rawName}
-     *
-     * @returns true if the table exists and contains such a row, false otherwise
-     */
-    fun getGenerationIdInTable(database: JdbcDatabase, namespace: String, name: String): Long?
-
     /** overwrite the raw table with the temporary raw table */
     fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String)
 

@@ -1,4 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
 from connectors_qa import consts
 from connectors_qa.checks import packaging
@@ -55,6 +56,47 @@ class TestCheckConnectorUsesPoetry:
         # Assert
         assert result.status == CheckStatus.PASSED
         assert result.message == "Poetry is used for dependency management"
+
+
+class TestCheckManifestOnlyConnectorBaseImage:
+    def test_pass_with_source_declarative_manifest(self, mocker, tmp_path):
+        connector = mocker.MagicMock(
+            code_directory=tmp_path,
+            metadata={"connectorBuildOptions": {"baseImage": "docker.io/airbyte/source-declarative-manifest:4.3.0@SHA"}},
+        )
+
+        # Act
+        result = packaging.CheckManifestOnlyConnectorBaseImage()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.PASSED
+        assert "Connector uses source-declarative-manifest base image" in result.message
+
+    def test_fail_with_different_image(self, mocker, tmp_path):
+        connector = mocker.MagicMock(
+            code_directory=tmp_path,
+            metadata={"connectorBuildOptions": {"baseImage": "docker.io/airbyte/connector-base-image:2.0.0@SHA"}},
+        )
+
+        # Act
+        result = packaging.CheckManifestOnlyConnectorBaseImage()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert "A manifest-only connector must use `source-declarative-manifest` base image" in result.message
+
+    def test_fail_with_missing_image(self, mocker, tmp_path):
+        connector = mocker.MagicMock(
+            code_directory=tmp_path,
+            metadata={"connectorBuildOptions": {}},
+        )
+
+        # Act
+        result = packaging.CheckManifestOnlyConnectorBaseImage()._run(connector)
+
+        # Assert
+        assert result.status == CheckStatus.FAILED
+        assert "A manifest-only connector must use `source-declarative-manifest` base image" in result.message
 
 
 class TestCheckPublishToPyPiIsEnabled:

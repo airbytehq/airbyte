@@ -34,7 +34,6 @@ data class Stream(
     val name: String,
     val namespace: String?,
     val fields: List<Field>,
-    val primaryKeyCandidates: List<List<Field>>,
     val configuredSyncMode: SyncMode,
     val configuredPrimaryKey: List<Field>?,
     val configuredCursor: FieldOrMetaField?,

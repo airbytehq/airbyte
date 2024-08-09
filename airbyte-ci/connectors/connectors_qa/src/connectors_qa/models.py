@@ -17,6 +17,7 @@ ALL_LANGUAGES = [
     ConnectorLanguage.JAVA,
     ConnectorLanguage.LOW_CODE,
     ConnectorLanguage.PYTHON,
+    ConnectorLanguage.MANIFEST_ONLY,
 ]
 
 ALL_TYPES = ["source", "destination"]
@@ -62,7 +63,6 @@ class CheckResult:
 
 
 class Check(ABC):
-
     requires_metadata: bool = True
     runs_on_released_connectors: bool = True
 

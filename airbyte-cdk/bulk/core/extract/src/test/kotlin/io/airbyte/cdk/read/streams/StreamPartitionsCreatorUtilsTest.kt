@@ -60,7 +60,6 @@ class StreamPartitionsCreatorUtilsTest {
             name = "kv",
             namespace = "public",
             fields = listOf(k, v),
-            primaryKeyCandidates = listOf(listOf(k)),
             configuredSyncMode = SyncMode.FULL_REFRESH,
             configuredPrimaryKey = listOf(k),
             configuredCursor = null,

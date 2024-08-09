@@ -214,7 +214,6 @@ data class TestCase(
             name = name,
             namespace = "test",
             fields = listOf(),
-            primaryKeyCandidates = listOf(),
             configuredSyncMode = SyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,

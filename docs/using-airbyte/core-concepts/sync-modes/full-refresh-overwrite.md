@@ -42,7 +42,7 @@ data in the destination _after_ the sync (note how the old value of "bash" is no
 
 ## Destination-specific mechanism for full refresh
 
-The mechanism by which a destination connector acomplishes the full refresh will vary wildly from destination to destinaton. For our certified database and data warehouse destinations, we will be recreating the final table each sync. This allows us leave the previous sync's data viewable by writing to a "final-table-tmp" location as the sync is running, and at the end dropping the olf "final" table, and renaming the new one into place. That said, this may not possible for all destinations, and we may need to erase the existing data at the start of each full-refresh sync.
+The mechanism by which a destination connector accomplishes the full refresh will vary wildly from destination to destination. For our certified database and data warehouse destinations, we will be recreating the final table each sync. This allows us leave the previous sync's data viewable by writing to a "final-table-tmp" location as the sync is running, and at the end dropping the old "final" table, and renaming the new one into place. That said, this may not possible for all destinations, and we may need to erase the existing data at the start of each full-refresh sync.
 
 ## Related information
 

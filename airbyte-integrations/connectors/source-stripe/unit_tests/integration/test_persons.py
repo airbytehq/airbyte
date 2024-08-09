@@ -3,9 +3,10 @@
 from datetime import datetime, timedelta, timezone
 from typing import List
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -19,17 +20,9 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import (
-    AirbyteStateBlob,
-    AirbyteStreamState,
-    AirbyteStreamStatus,
-    ConfiguredAirbyteCatalog,
-    FailureType,
-    Level,
-    StreamDescriptor,
-    SyncMode,
-)
+from airbyte_protocol.models import AirbyteStateBlob, AirbyteStreamStatus, FailureType, Level, StreamDescriptor, SyncMode
 from integration.config import ConfigBuilder
+from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
@@ -121,11 +114,6 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
-
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
@@ -150,13 +138,6 @@ class PersonsTest(TestCase):
         http_mocker.get(
             _create_persons_request(parent_account_id="last_page_record_id").with_limit(100).build(),
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-        )
-
-        # The persons stream makes a final call to events endpoint
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
         )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
@@ -186,13 +167,6 @@ class PersonsTest(TestCase):
                 record=_create_record("persons")).build(),
         )
 
-        # The persons stream makes a final call to events endpoint
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
-
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
@@ -208,12 +182,8 @@ class PersonsTest(TestCase):
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
-        error_log_messages = [message for message in actual_messages.logs if message.log.level == Level.ERROR]
-
-        # For Stripe, streams that get back a 400 or 403 response code are skipped over silently without throwing an error as part of
-        # this connector's availability strategy
-        assert len(actual_messages.get_stream_statuses(_STREAM_NAME)) == 0
-        assert len(error_log_messages) > 0
+        # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
+        assert_stream_did_not_run(actual_messages, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
     def test_persons_400_error(self, http_mocker: HttpMocker):
@@ -230,12 +200,9 @@ class PersonsTest(TestCase):
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
-        error_log_messages = [message for message in actual_messages.logs if message.log.level == Level.ERROR]
 
-        # For Stripe, streams that get back a 400 or 403 response code are skipped over silently without throwing an error as part of
-        # this connector's availability strategy. They are however reported in the log messages
-        assert len(actual_messages.get_stream_statuses(_STREAM_NAME)) == 0
-        assert len(error_log_messages) > 0
+        # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
+        assert_stream_did_not_run(actual_messages, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
     def test_accounts_401_error(self, http_mocker: HttpMocker):
@@ -247,7 +214,7 @@ class PersonsTest(TestCase):
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
 
-        assert actual_messages.errors[-1].trace.error.failure_type == FailureType.system_error
+        assert actual_messages.errors[-1].trace.error.failure_type == FailureType.config_error
 
     @HttpMocker()
     def test_persons_401_error(self, http_mocker: HttpMocker):
@@ -265,7 +232,7 @@ class PersonsTest(TestCase):
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
 
-        assert actual_messages.errors[-1].trace.error.failure_type == FailureType.system_error
+        assert actual_messages.errors[-1].trace.error.failure_type == FailureType.config_error
 
     @HttpMocker()
     def test_persons_403_error(self, http_mocker: HttpMocker):
@@ -282,32 +249,14 @@ class PersonsTest(TestCase):
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog(), expecting_exception=True)
-        error_log_messages = [message for message in actual_messages.logs if message.log.level == Level.ERROR]
 
-        # For Stripe, streams that get back a 400 or 403 response code are skipped over silently without throwing an error as part of
-        # this connector's availability strategy
-        assert len(actual_messages.get_stream_statuses(_STREAM_NAME)) == 0
-        assert len(error_log_messages) > 0
+        # For Stripe, streams that get back a 400 or 403 response code are skipped over silently
+        assert_stream_did_not_run(actual_messages, _STREAM_NAME, "This application does not have the required permissions")
 
     @HttpMocker()
     def test_incremental_with_recent_state(self, http_mocker: HttpMocker):
         state_datetime = _NOW - timedelta(days=5)
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
-
-        http_mocker.get(
-            _create_accounts_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts")).build(),
-        )
-
-        http_mocker.get(
-            _create_persons_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-        )
-
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.created")).build(),
-        )
 
         http_mocker.get(
             _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
@@ -336,21 +285,6 @@ class PersonsTest(TestCase):
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
 
         http_mocker.get(
-            _create_accounts_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts")).build(),
-        )
-
-        http_mocker.get(
-            _create_persons_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-        )
-
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
-        )
-
-        http_mocker.get(
             _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
                 ["person.created", "person.updated", "person.deleted"]).build(),
             _create_response().with_record(record=_create_persons_event_record(event_type="person.deleted")).build(),
@@ -377,16 +311,6 @@ class PersonsTest(TestCase):
         start_datetime = _NOW - timedelta(days=7)
         state_datetime = _NOW - timedelta(days=15)
         config = _create_config().with_start_date(start_datetime).build()
-
-        http_mocker.get(
-            _create_accounts_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts")).build(),
-        )
-
-        http_mocker.get(
-            _create_persons_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-        )
 
         http_mocker.get(
             _create_events_request().with_created_gte(start_datetime).with_created_lte(_NOW).with_limit(100).with_types(
@@ -424,12 +348,6 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
-
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
@@ -451,12 +369,6 @@ class PersonsTest(TestCase):
             ]
         )
 
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
-
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
@@ -467,24 +379,6 @@ class PersonsTest(TestCase):
     def test_rate_limited_incremental_events(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
-
-        http_mocker.get(
-            _create_accounts_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts")).build(),
-        )
-
-        http_mocker.get(
-            _create_persons_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-        )
-
-        # Mock when check_availability is run on the persons incremental stream
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
-                record=_create_persons_event_record(event_type="person.created")).build(),
-        )
 
         http_mocker.get(
             _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
@@ -519,47 +413,21 @@ class PersonsTest(TestCase):
 
         http_mocker.get(
             _create_persons_request().with_limit(100).build(),
-            [
-                # Used to pass the initial check_availability before starting the sync
-                _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
                 a_response_with_status(429),  # Returns 429 on all subsequent requests to test the maximum number of retries
-            ]
         )
 
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
+        with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
+            source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+            actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
-        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
-
-        # first error is the actual error, second is to break the Python app with code != 0
-        assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
+            # first error is the actual error, second is to break the Python app with code != 0
+            assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]
+            assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.internal_message
 
     @HttpMocker()
     def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
         state_datetime = _NOW - timedelta(days=5)
         cursor_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES
-
-        http_mocker.get(
-            _create_accounts_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts")).build(),
-        )
-
-        http_mocker.get(
-            _create_persons_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-        )
-
-        # Mock when check_availability is run on the persons incremental stream
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_persons_event_record(event_type="person.created")).with_record(
-                record=_create_persons_event_record(event_type="person.created")).build(),
-        )
 
         http_mocker.get(
             _create_events_request().with_created_gte(cursor_datetime).with_created_lte(_NOW).with_limit(100).with_types(
@@ -569,14 +437,16 @@ class PersonsTest(TestCase):
 
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(sync_mode=SyncMode.incremental), state=state)
-        actual_messages = read(
-            source,
-            config=_CONFIG,
-            catalog=_create_catalog(sync_mode=SyncMode.incremental),
-            state=state,
-        )
+        with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
+            actual_messages = read(
+                source,
+                config=_CONFIG,
+                catalog=_create_catalog(sync_mode=SyncMode.incremental),
+                state=state,
+            )
 
-        assert len(actual_messages.errors) == 2
+            assert len(actual_messages.errors) == 2
+            assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.message
 
     @HttpMocker()
     def test_server_error_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:
@@ -593,11 +463,6 @@ class PersonsTest(TestCase):
             _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
         )
 
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
@@ -620,11 +485,6 @@ class PersonsTest(TestCase):
             ]
         )
 
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
 
         source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
@@ -636,26 +496,12 @@ class PersonsTest(TestCase):
     def test_server_error_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _create_accounts_request().with_limit(100).build(),
-            _create_response().with_record(record=_create_record("accounts")).build(),
+            a_response_with_status(500)
         )
 
-        http_mocker.get(
-            _create_persons_request().with_limit(100).build(),
-            [
-                # Used to pass the initial check_availability before starting the sync
-                _create_response().with_record(record=_create_record("persons")).with_record(record=_create_record("persons")).build(),
-                a_response_with_status(500),  # Returns 429 on all subsequent requests to test the maximum number of retries
-            ]
-        )
-
-        http_mocker.get(
-            _create_events_request().with_created_gte(_NOW - timedelta(days=30)).with_created_lte(_NOW).with_limit(100).with_types(
-                ["person.created", "person.updated", "person.deleted"]).build(),
-            _create_response().with_record(record=_create_record("events")).with_record(record=_create_record("events")).build(),
-        )
-
-        source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
-        actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
+        with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
+            source = SourceStripe(config=_CONFIG, catalog=_create_catalog(), state=_NO_STATE)
+            actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         # first error is the actual error, second is to break the Python app with code != 0
         assert list(map(lambda message: message.trace.error.failure_type, actual_messages.errors)) == [FailureType.system_error, FailureType.config_error]

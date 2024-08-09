@@ -189,6 +189,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     protected abstract fun getSqlOperations(config: JsonNode): SqlOperations
 
+    protected abstract fun getGenerationHandler(): JdbcGenerationHandler
+
     protected abstract fun getDestinationHandler(
         config: JsonNode,
         databaseName: String,
@@ -289,6 +291,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
             outputRecordCollector,
             database,
             getSqlOperations(config),
+            getGenerationHandler(),
             namingResolver,
             config,
             catalog,

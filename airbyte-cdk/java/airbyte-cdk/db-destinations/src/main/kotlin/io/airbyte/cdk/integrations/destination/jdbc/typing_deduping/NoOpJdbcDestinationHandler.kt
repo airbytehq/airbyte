@@ -6,7 +6,7 @@ package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
-import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
@@ -19,14 +19,14 @@ class NoOpJdbcDestinationHandler<DestinationState>(
     jdbcDatabase: JdbcDatabase,
     rawTableSchemaName: String,
     sqlDialect: SQLDialect,
-    sqlOperations: SqlOperations,
+    generationHandler: JdbcGenerationHandler,
 ) :
     JdbcDestinationHandler<DestinationState>(
         databaseName,
         jdbcDatabase,
         rawTableSchemaName,
         sqlDialect,
-        sqlOperations = sqlOperations
+        generationHandler = generationHandler,
     ) {
 
     override fun execute(sql: Sql) {

@@ -153,6 +153,8 @@ class AbstractJdbcDestinationTest {
 
         override fun getSqlOperations(config: JsonNode): SqlOperations = TestJdbcSqlOperations()
 
+        override fun getGenerationHandler(): JdbcGenerationHandler = mock()
+
         override fun getDestinationHandler(
             config: JsonNode,
             databaseName: String,

@@ -185,10 +185,6 @@ class StateManagerStreamStatesTest {
         val eventsStream: Stream = stateManager.feeds.mapNotNull { it as? Stream }.first()
         Assertions.assertEquals("EVENTS", eventsStream.name)
         Assertions.assertEquals(listOf("MSG", "ID", "TS"), eventsStream.fields.map { it.id })
-        Assertions.assertEquals(
-            listOf(listOf("ID")),
-            eventsStream.primaryKeyCandidates.map { col -> col.map { it.id } },
-        )
         Assertions.assertEquals(expectedSyncMode, eventsStream.configuredSyncMode)
         Assertions.assertEquals(
             expectedPrimaryKey,

@@ -13,6 +13,7 @@ LICENSE_FAQ_URL = "https://docs.airbyte.com/developer-guides/licenses/license-fa
 LOW_CODE_MANIFEST_FILE_NAME = "manifest.yaml"
 METADATA_DOCUMENTATION_URL = "https://docs.airbyte.com/connector-development/connector-metadata-file"
 METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
 POETRY_LOCK_FILE_NAME = "poetry.lock"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 SEMVER_FOR_CONNECTORS_DOC_URL = "https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors"

@@ -233,6 +233,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.9   | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410)   | Adopt latest CDK.                                                                                                                                          |
 | 3.6.8   | 2024-07-30 | [42869](https://github.com/airbytehq/airbyte/pull/42869)   | Adopt latest CDK.                                                                                                                                          |
 | 3.6.7   | 2024-07-30 | [42550](https://github.com/airbytehq/airbyte/pull/42550)   | Correctly report stream states.                                                                                                                                            |
 | 3.6.6   | 2024-07-29 | [42852](https://github.com/airbytehq/airbyte/pull/42852)   | Bump CDK version to latest to use new bug fixes on error translation.                                                                                              |

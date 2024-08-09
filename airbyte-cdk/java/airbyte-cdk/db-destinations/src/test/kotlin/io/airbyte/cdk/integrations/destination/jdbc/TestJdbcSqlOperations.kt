@@ -23,15 +23,6 @@ class TestJdbcSqlOperations : JdbcSqlOperations() {
         // Not required for the testing
     }
 
-    override fun getGenerationIdInTable(
-        database: JdbcDatabase,
-        rawNamespace: String,
-        rawName: String
-    ): Long {
-        return -1L
-        // Not required for the testing
-    }
-
     override fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String) {
         // Not required for the testing
     }
