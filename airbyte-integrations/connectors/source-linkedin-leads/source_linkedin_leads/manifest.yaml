@@ -1,0 +1,183 @@
+version: 2.0.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - lead_form
+    - lead_form_response
+
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_linkedin_leads/schemas/{{ parameters['name'] }}.json"
+
+  streams:
+    lead_form:
+      type: DeclarativeStream
+      name: lead_form
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leadForms?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_partition.account_id }})
+          http_method: GET
+          request_headers:
+            LinkedIn-Version: "202406"
+            X-Restli-Protocol-Version: 2.0.0
+          request_parameters:
+            q: owner
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+        partition_router:
+          type: ListPartitionRouter
+          values: '{{ config["account_ids"] }}'
+          cursor_field: account_id
+      primary_key:
+        - id
+
+    lead_form_response:
+      type: DeclarativeStream
+      name: lead_form_response
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: count
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: start
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 1000
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leadFormResponses?owner=(sponsoredAccount:urn%3Ali%3AsponsoredAccount%3A{{stream_partition.account_id }})&leadType=(leadType:SPONSORED)
+          http_method: GET
+          request_headers:
+            LinkedIn-Version: "202406"
+            X-Restli-Protocol-Version: 2.0.0
+          request_parameters:
+            q: owner
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - elements
+        partition_router:
+          type: ListPartitionRouter
+          values: '{{ config["account_ids"] }}'
+          cursor_field: account_id
+      primary_key:
+        - id
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.linkedin.com/rest
+    authenticator:
+      type: OAuthAuthenticator
+      grant_type: refresh_token
+      client_id: '{{ config["client_id"] }}'
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token"] }}'
+      refresh_request_body: {}
+      refresh_token_updater:
+        refresh_token_name: access_token
+        access_token_config_path:
+          - oauth_access_token
+        refresh_token_config_path:
+          - client_refresh_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+      token_refresh_endpoint: https://www.linkedin.com/oauth/v2/accessToken
+
+streams:
+  - $ref: "#/definitions/streams/lead_form_response"
+  - $ref: "#/definitions/streams/lead_form"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+      - account_ids
+    properties:
+      client_id:
+        type: string
+        order: 0
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 1
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 2
+        title: Refresh token
+        airbyte_secret: true
+      oauth_access_token:
+        type: string
+        order: 3
+        title: Access token
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        airbyte_secret: true
+      oauth_token_expiry_date:
+        type: string
+        order: 4
+        title: Token expiry date
+        format: date-time
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+      account_ids:
+        type: array
+        order: 5
+        title: Account IDs
+        description: >-
+          Specify the account IDs to pull data from, separated by a space.
+          See the <a href="https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en">LinkedIn docs</a> to locate these IDs.
+        examples:
+          - 123456789
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    lead_form: true
+    lead_form_response: true
+
+schemas:
+  lead_form_response:
