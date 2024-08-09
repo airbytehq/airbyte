@@ -31,6 +31,7 @@ def common_params():
 
 
 def build_url(resource_path: str, is_regex: bool = False, modified_after: str = None, modified_before: str = None) -> str:
+    """Build a URL for a WooCommerce API endpoint."""
     separator = "." if is_regex else "?"
     url = f"{url_base()}/{resource_path}{separator}{common_params()}"
     if modified_after:

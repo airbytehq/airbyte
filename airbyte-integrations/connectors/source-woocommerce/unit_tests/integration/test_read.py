@@ -41,7 +41,6 @@ def modified_before() -> str:
 
 
 @freeze_time(modified_before())
-@requests_mock.Mocker(kw="mock")
 @pytest.mark.parametrize(
     "stream_name, num_records, http_calls",
     [
@@ -70,30 +69,29 @@ def modified_before() -> str:
         ("shipping_zone_methods", 4, shipping_zone_methods_http_calls()),
     ]
 )
-def test_read_simple_endpoints_successfully(stream_name, num_records, http_calls, **kwargs) -> None:
+def test_read_simple_endpoints_successfully(stream_name, num_records, http_calls) -> None:
     """Test basic read for  all streams that don't have parent streams."""
 
-    register_mock_responses(kwargs["mock"], http_calls)
+    with requests_mock.Mocker() as m:
+        register_mock_responses(m, http_calls)
 
-    output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
+        output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
 
-    assert_good_read(output, num_records)
+        assert_good_read(output, num_records)
 
 
 @freeze_time("2017-02-10T00:00:00")
-@requests_mock.Mocker(kw="mock")
 @pytest.mark.parametrize(
     "stream_name, num_records, http_calls",
-    [
-        ("orders", 2, orders_empty_last_page()),
-    ]
+    [("orders", 2, orders_empty_last_page())]
 )
-def test_read_with_multiple_pages_with_empty_last_page_successfully(stream_name, num_records, http_calls, **kwargs) -> None:
-    """Test basic read for streams that have multiple pages."""
+def test_read_with_multiple_pages_with_empty_last_page_successfully(stream_name, num_records, http_calls) -> None:
+    """Test read with multiple pages and an empty page in last call."""
 
-    register_mock_responses(kwargs["mock"], http_calls)
+    with requests_mock.Mocker() as m:
+        register_mock_responses(m, http_calls)
 
-    output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
+        output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
 
-    assert_good_read(output, num_records)
-    assert is_not_in_logs("StopIteration", output)
+        assert_good_read(output, num_records)
+        assert is_not_in_logs("StopIteration", output)

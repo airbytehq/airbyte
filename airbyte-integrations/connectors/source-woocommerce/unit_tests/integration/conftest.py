@@ -7,6 +7,7 @@ from .common import build_url
 
 def request_response_mapping(stream_name, custom_resource=None, is_regex=False, modified_after=None, modified_before=None,
                              custom_json_filename=None, status_code=200, response=None):
+    """Create an HTTP request-response mapping for a stream."""
     json_filename = f"{stream_name}.json" if custom_json_filename is None else custom_json_filename
     resource = stream_name if custom_resource is None else custom_resource
 
