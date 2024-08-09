@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
 
+import orjson
 from airbyte_cdk.connector_builder.models import (
     AuxiliaryRequest,
     HttpRequest,
@@ -310,7 +310,7 @@ class MessageGrouper:
         # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
         # protocol change is worked on.
         try:
-            json_object: JsonType = json.loads(log_message.message)
+            json_object: JsonType = orjson.loads(log_message.message)
             return json_object
         except JSONDecodeError:
             return None
@@ -348,12 +348,16 @@ class MessageGrouper:
         return False
 
     def _parse_slice_description(self, log_message: str) -> Dict[str, Any]:
-        return json.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))  # type: ignore
+        """Parse slice description from log message.
+
+        Parameters:
+        log_message: str - The log message string to be parsed.
+
+        Returns:
+        Dict[str, Any] - The parsed slice description.
+        """
+        return orjson.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))
 
     @staticmethod
     def _clean_config(config: Dict[str, Any]) -> Dict[str, Any]:
-        cleaned_config = deepcopy(config)
-        for key in config.keys():
-            if key.startswith("__"):
-                del cleaned_config[key]
-        return cleaned_config
+        return {k: v for k, v in config.items() if not k.startswith("__")}

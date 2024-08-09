@@ -159,9 +159,11 @@ class CsvParser(FileTypeParser):
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
         config_format = _extract_format(config)
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
-            lambda: _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
-            if config_format.inference_type != InferenceType.NONE
-            else _DisabledTypeInferrer()
+            lambda: (
+                _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
+                if config_format.inference_type != InferenceType.NONE
+                else _DisabledTypeInferrer()
+            )
         )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         read_bytes = 0
@@ -232,10 +234,12 @@ class CsvParser(FileTypeParser):
     def _to_nullable(
         row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
     ) -> Dict[str, Optional[str]]:
-        nullable = {
-            k: None if CsvParser._value_is_none(v, deduped_property_types.get(k), null_values, strings_can_be_null) else v
-            for k, v in row.items()
-        }
+        # Localize variables to avoid repeated lookups
+        _value_is_none = CsvParser._value_is_none
+        get = deduped_property_types.get
+        nullable = {}
+        for k, v in row.items():
+            nullable[k] = None if _value_is_none(v, get(k), null_values, strings_can_be_null) else v
         return nullable
 
     @staticmethod
@@ -263,11 +267,10 @@ class CsvParser(FileTypeParser):
         output = {}
         for prop, prop_type in property_types.items():
             if isinstance(prop_type, list):
-                prop_type_distinct = set(prop_type)
-                prop_type_distinct.remove("null")
+                prop_type_distinct = {ptype for ptype in prop_type if ptype != "null"}
                 if len(prop_type_distinct) != 1:
                     raise ValueError(f"Could not get non nullable type from {prop_type}")
-                output[prop] = next(iter(prop_type_distinct))
+                output[prop] = prop_type_distinct.pop()
             else:
                 output[prop] = prop_type
         return output
@@ -368,13 +371,19 @@ class _JsonTypeInferrer(_TypeInferrer):
         self._values.add(value)
 
     def infer(self) -> str:
-        types_by_value = {value: self._infer_type(value) for value in self._values}
-        types_excluding_null_values = [types for types in types_by_value.values() if self._NULL_TYPE not in types]
-        if not types_excluding_null_values:
+        types = set()
+        for value in self._values:
+            inferred_types = self._infer_type(value)
+            if self._NULL_TYPE not in inferred_types:
+                if not types:
+                    types = inferred_types
+                else:
+                    types &= inferred_types
+
+        if not types:
             # this is highly unusual but we will consider the column as a string
             return self._STRING_TYPE
 
-        types = set.intersection(*types_excluding_null_values)
         if self._BOOLEAN_TYPE in types:
             return self._BOOLEAN_TYPE
         elif self._INTEGER_TYPE in types:
@@ -384,32 +393,26 @@ class _JsonTypeInferrer(_TypeInferrer):
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
-        inferred_types = set()
+        inferred_types = {self._STRING_TYPE}
 
         if value in self._null_values:
             inferred_types.add(self._NULL_TYPE)
         if self._is_boolean(value):
             inferred_types.add(self._BOOLEAN_TYPE)
         if self._is_integer(value):
-            inferred_types.add(self._INTEGER_TYPE)
-            inferred_types.add(self._NUMBER_TYPE)
+            inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})
         elif self._is_number(value):
             inferred_types.add(self._NUMBER_TYPE)
 
-        inferred_types.add(self._STRING_TYPE)
         return inferred_types
 
     def _is_boolean(self, value: str) -> bool:
-        try:
-            _value_to_bool(value, self._boolean_trues, self._boolean_falses)
-            return True
-        except ValueError:
-            return False
+        return value in self._boolean_trues or value in self._boolean_falses
 
     @staticmethod
     def _is_integer(value: str) -> bool:
         try:
-            _value_to_python_type(value, int)
+            int(value)
             return True
         except ValueError:
             return False
@@ -417,7 +420,7 @@ class _JsonTypeInferrer(_TypeInferrer):
     @staticmethod
     def _is_number(value: str) -> bool:
         try:
-            _value_to_python_type(value, float)
+            float(value)
             return True
         except ValueError:
             return False
@@ -433,9 +436,9 @@ def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) ->
 
 def _value_to_list(value: str) -> List[Any]:
     parsed_value = json.loads(value)
-    if isinstance(parsed_value, list):
+    if type(parsed_value) == list:
         return parsed_value
-    raise ValueError(f"Value {parsed_value} is not a valid list value")
+    raise ValueError("Value is not a valid list value")
 
 
 def _value_to_python_type(value: str, python_type: type) -> Any:

@@ -5,7 +5,7 @@
 import logging
 from abc import abstractmethod
 from json import JSONDecodeError
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Tuple, Union
 
 import backoff
 import pendulum
@@ -74,36 +74,30 @@ class AbstractOauth2Authenticator(AuthBase):
 
         Override to define additional parameters
         """
-        payload: MutableMapping[str, Any] = {
+        base_payload = {
             "grant_type": self.get_grant_type(),
             "client_id": self.get_client_id(),
             "client_secret": self.get_client_secret(),
             "refresh_token": self.get_refresh_token(),
         }
 
-        if self.get_scopes():
-            payload["scopes"] = self.get_scopes()
+        scopes = self.get_scopes()
+        if scopes:
+            base_payload["scopes"] = scopes
 
-        if self.get_refresh_request_body():
-            for key, val in self.get_refresh_request_body().items():
-                # We defer to existing oauth constructs over custom configured fields
-                if key not in payload:
-                    payload[key] = val
-
-        return payload
+        extra_body = self.get_refresh_request_body()
+        # Merge dictionaries efficiently
+        return {**extra_body, **base_payload} if extra_body else base_payload
 
     def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
-        try:
-            if exception.response is not None:
-                exception_content = exception.response.json()
-            else:
-                return False
-        except JSONDecodeError:
-            return False
-        return (
-            exception.response.status_code in self._refresh_token_error_status_codes
-            and exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
-        )
+        response = exception.response
+        if response is not None and response.status_code in self._refresh_token_error_status_codes:
+            try:
+                exception_content = response.json()
+                return exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
+            except JSONDecodeError:
+                pass
+        return False
 
     @backoff.on_exception(
         backoff.expo,

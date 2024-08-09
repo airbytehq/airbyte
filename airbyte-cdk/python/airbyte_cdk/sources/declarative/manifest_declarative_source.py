@@ -5,7 +5,6 @@
 import json
 import logging
 import pkgutil
-import re
 from copy import deepcopy
 from importlib import metadata
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -105,25 +104,26 @@ class ManifestDeclarativeSource(DeclarativeSource):
     def _initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         parent_streams = set()
 
-        def update_with_cache_parent_configs(parent_configs: list[dict[str, Any]]) -> None:
-            for parent_config in parent_configs:
-                parent_streams.add(parent_config["stream"]["name"])
-                parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
-
         for stream_config in stream_configs:
-            if stream_config.get("incremental_sync", {}).get("parent_stream"):
-                parent_streams.add(stream_config["incremental_sync"]["parent_stream"]["name"])
-                stream_config["incremental_sync"]["parent_stream"]["retriever"]["requester"]["use_cache"] = True
+            incremental_sync = stream_config.get("incremental_sync", {})
+            retriever = stream_config.get("retriever", {})
+            partition_router = retriever.get("partition_router", {})
 
-            elif stream_config.get("retriever", {}).get("partition_router", {}):
-                partition_router = stream_config["retriever"]["partition_router"]
-
-                if isinstance(partition_router, dict) and partition_router.get("parent_stream_configs"):
-                    update_with_cache_parent_configs(partition_router["parent_stream_configs"])
+            if "parent_stream" in incremental_sync:
+                parent_stream = incremental_sync["parent_stream"]
+                parent_streams.add(parent_stream["name"])
+                parent_stream["retriever"]["requester"]["use_cache"] = True
+            elif partition_router:
+                if isinstance(partition_router, dict) and "parent_stream_configs" in partition_router:
+                    for parent_config in partition_router["parent_stream_configs"]:
+                        parent_streams.add(parent_config["stream"]["name"])
+                        parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
                 elif isinstance(partition_router, list):
                     for router in partition_router:
-                        if router.get("parent_stream_configs"):
-                            update_with_cache_parent_configs(router["parent_stream_configs"])
+                        if "parent_stream_configs" in router:
+                            for parent_config in router["parent_stream_configs"]:
+                                parent_streams.add(parent_config["stream"]["name"])
+                                parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
 
         for stream_config in stream_configs:
             if stream_config["name"] in parent_streams:
@@ -219,10 +219,10 @@ class ManifestDeclarativeSource(DeclarativeSource):
         """
         Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
         """
-        version_parts = re.split(r"\.", version)
-        if len(version_parts) != 3 or not all([part.isdigit() for part in version_parts]):
+        version_parts = version.split(".")
+        if len(version_parts) != 3 or any(not part.isdigit() for part in version_parts):
             raise ValidationError(f"The {version_type} version {version} specified is not a valid version format (ex. 1.2.3)")
-        return tuple(int(part) for part in version_parts)  # type: ignore # We already verified there were 3 parts and they are all digits
+        return int(version_parts[0]), int(version_parts[1]), int(version_parts[2])
 
     def _stream_configs(self, manifest: Mapping[str, Any]) -> List[Dict[str, Any]]:
         # This has a warning flag for static, but after we finish part 4 we'll replace manifest with self._source_config
