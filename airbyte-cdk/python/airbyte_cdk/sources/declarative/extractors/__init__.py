@@ -3,8 +3,9 @@
 #
 
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.extractors.csv_extractor import CSVExtractor
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 
-__all__ = ["HttpSelector", "DpathExtractor", "RecordFilter", "RecordSelector"]
+__all__ = ["HttpSelector", "DpathExtractor", "RecordFilter", "RecordSelector", "CSVExtractor"]

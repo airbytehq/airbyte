@@ -40,6 +40,8 @@ __pycache__
 .ipynb_checkpoints
 .pytest_
 
+airbyte-cdk/python/dist
+
 # Python unit test / coverage reports
 htmlcov/
 .tox/
