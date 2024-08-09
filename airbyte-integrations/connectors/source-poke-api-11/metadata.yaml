@@ -1,0 +1,36 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+    - *  
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-poke-api-11
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:3.9.2@sha256:aded5b43dfa140f18c55777205bf654690399c3cf0a51aaf26218eba75274eb5
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 55adb78f-c77a-4c19-aab9-f67a331a92c5
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-poke-api-11
+  githubIssueLabel: source-poke-api-11
+  icon: icon.svg
+  license: MIT
+  name: Poke API
+  releaseDate: 2024-07-31
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/poke-api-11.md
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+
+  ab_internal:
+    ql: 100
+    sl: 100
