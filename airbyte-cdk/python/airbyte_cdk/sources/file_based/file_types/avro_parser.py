@@ -146,8 +146,8 @@ class AvroParser(FileTypeParser):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 
         line_no = 0
-        try:
-            with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+            try:
                 avro_reader = fastavro.reader(fp)
                 schema = avro_reader.writer_schema
                 schema_field_name_to_type = {field["name"]: field["type"] for field in schema["fields"]}
@@ -157,8 +157,8 @@ class AvroParser(FileTypeParser):
                         record_field: self._to_output_value(avro_format, schema_field_name_to_type[record_field], record[record_field])
                         for record_field, record_value in schema_field_name_to_type.items()
                     }
-        except Exception as exc:
-            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from exc
+            except Exception as exc:
+                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=line_no) from exc
 
     @property
     def file_read_mode(self) -> FileReadMode:

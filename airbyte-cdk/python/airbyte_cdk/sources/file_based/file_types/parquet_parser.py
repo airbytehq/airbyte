@@ -66,8 +66,8 @@ class ParquetParser(FileTypeParser):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR)
 
         line_no = 0
-        try:
-            with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+        with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
+            try:
                 reader = pq.ParquetFile(fp)
                 partition_columns = {x.split("=")[0]: x.split("=")[1] for x in self._extract_partitions(file.uri)}
                 for row_group in range(reader.num_row_groups):
@@ -81,10 +81,10 @@ class ParquetParser(FileTypeParser):
                             },
                             **partition_columns,
                         }
-        except Exception as exc:
-            raise RecordParseError(
-                FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=f"{row_group=}, {line_no=}"
-            ) from exc
+            except Exception as exc:
+                raise RecordParseError(
+                    FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=f"{row_group=}, {line_no=}"
+                ) from exc
 
     @staticmethod
     def _extract_partitions(filepath: str) -> List[str]:
