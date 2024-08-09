@@ -60,7 +60,7 @@ constructor(
 ) : BaseConnector(), Destination {
     private val destinationColumns = JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION
 
-    override fun check(config: JsonNode): AirbyteConnectionStatus? {
+    override fun check(config: JsonNode): AirbyteConnectionStatus {
         val dataSource = getDataSource(config)
         try {
             val retentionPeriodDays = 1
