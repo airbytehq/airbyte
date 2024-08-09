@@ -1,10 +1,12 @@
 # SurveyMonkey
 
-This page guides you through the process of setting up the SurveyMonkey source connector.
+This page contains the setup guide and reference information for the SurveyMonkey source connector. 
+
+The SurveyMonkey API streams survey data, including surveys, pages, questions, responses, and collectors. For detailed information about the SurveyMonkey API, review the [SurveyMonkey API documentation](https://developer.surveymonkey.com/api/v3/#getting-started).
 
 :::note
 
-OAuth for Survey Monkey is officially supported only for the US. We are testing how to enable it in the EU at the moment. If you run into any issues, please [reach out to us](mailto:product@airbyte.io) so we can promptly assist you.
+OAuth (Open Authentication) for Survey Monkey is officially supported only for the United States. For users outside the US, [reach out to us](mailto:product@airbyte.io) for more information.
 
 :::
 
@@ -21,7 +23,8 @@ OAuth for Survey Monkey is officially supported only for the US. We are testing 
 
 ### Step 1: Set up SurveyMonkey
 
-Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
+1. [Register](https://developer.surveymonkey.com/apps/) your application. 
+2. In your application, go to Settings and copy your access token in the MY APPS tab.
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -30,43 +33,46 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. lick `Authenticate your account`.
-5. Log in and Authorize to the SurveyMonkey account
-6. Choose required Start date
-7. click `Set up source`.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up a new source page, in the Airbyte Connectors tab, select **SurveyMonkey**. 
+4. Enter a source name for this connector.
+5. Click **Authenticate your SurveyMonkey account**.
+6. Log in and authorize to your SurveyMonkey account.
+7. To set a start date and time from which data should be replicated (UTC date and time in the format 2017-01-25T00:00:00Z), click the calendar icon. This field is required.
+8. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
-4. Add **Access Token**
-5. Choose required Start date
-6. Click `Set up source`.
+1. Go to your local Airbyte page.
+2. Click **Sources** and then click **+ New source**.
+3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a source name for this connector.
+4. Add **Access Token**. To obtain your access token, see [Step 1](#step-1-set-up-surveymonkey).
+5. To set a Start date and time from which data should be replicated (UTC date and time in the format 2017-01-25T00:00:00Z), click the calendar icon. This field is required.
+6. Click **Set up source**.
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
 
+The SurveyMonkey source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
 - [Surveys](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys) \(Incremental\)
 - [SurveyPages](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages)
 - [SurveyQuestions](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-pages-page_id-questions)
-- [SurveyResponses](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-id-responses-bulk) \(Incremental\)
+- [SurveyResponses](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-responses) \(Incremental\)
 - [SurveyCollectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-surveys-survey_id-collectors)
 - [Collectors](https://api.surveymonkey.com/v3/docs?shell#api-endpoints-get-collectors-collector_id-)
 
 ### Performance considerations
 
-The SurveyMonkey API applies heavy API quotas for default private apps, which have the following limits:
+To protect against excessive requests, the SurveyMonkey API applies the following API quotas for private apps:
 
 - 125 requests per minute
 - 500 requests per day
 
-To cover more data from this source we use caching.
+To improve performance from this source, Airbyte uses API caching for frequently used requests.
 
 ## Changelog
 
