@@ -40,7 +40,7 @@ definitions:
     url_base: https://holidayapi.com/v1/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: key
