@@ -16,6 +16,7 @@ than that, there are integrations point that are annoying to integrate with usin
 
 import json
 import logging
+import re
 import tempfile
 import traceback
 from io import StringIO
@@ -114,6 +115,14 @@ class EntrypointOutput:
 
     def _get_trace_message_by_trace_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
         return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
+
+    def is_in_logs(self, pattern: str) -> bool:
+        """Check if any log message case-insensitive matches the pattern."""
+        return any(re.search(pattern, entry.log.message, flags=re.IGNORECASE) for entry in self.logs)
+
+    def is_not_in_logs(self, pattern: str) -> bool:
+        """Check if no log message matches the case-insensitive pattern."""
+        return not self.is_in_logs(pattern)
 
 
 def _run_command(source: Source, args: List[str], expecting_exception: bool = False) -> EntrypointOutput:

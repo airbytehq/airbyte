@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import pytest
 import requests_mock
-from airbyte_cdk.test.utils.assertions import assert_good_read, is_not_in_logs
 from airbyte_cdk.test.utils.http_mocking import register_mock_responses
 from airbyte_cdk.test.utils.reading import read_records
 from airbyte_protocol.models import SyncMode
@@ -77,7 +76,9 @@ def test_read_simple_endpoints_successfully(stream_name, num_records, http_calls
 
         output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
 
-        assert_good_read(output, num_records)
+        assert len(output.records) == num_records
+        assert len(output.errors) == 0
+        assert output.is_not_in_logs("error|exception|fail|traceback")
 
 
 @freeze_time("2017-02-10T00:00:00")
@@ -93,5 +94,7 @@ def test_read_with_multiple_pages_with_empty_last_page_successfully(stream_name,
 
         output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
 
-        assert_good_read(output, num_records)
-        assert is_not_in_logs("StopIteration", output)
+        assert len(m.request_history) == len(http_calls)
+        assert len(output.records) == num_records
+        assert len(output.errors) == 0
+        assert output.is_not_in_logs("StopIteration")
