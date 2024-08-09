@@ -99,10 +99,10 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         database!!.execute(
             String.format(
                 """
-            DROP TABLE IF EXISTS "%s"."%s";
-            DROP SCHEMA IF EXISTS "%s" CASCADE
-            
-            """.trimIndent(),
+                DROP TABLE IF EXISTS "%s"."%s";
+                DROP SCHEMA IF EXISTS "%s" CASCADE
+                
+                """.trimIndent(),
                 rawSchema, // Raw table is still lowercase.
                 StreamId.concatenateRawTableName(namespaceOrDefault, streamName),
                 namespaceOrDefault.uppercase(Locale.getDefault()),
