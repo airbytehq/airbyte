@@ -815,6 +815,11 @@ definitions:
         description: Set to True if the target API does not accept queries where the start time equal the end time.
         type: boolean
         default: False
+      global_substream_cursor:
+        title: Whether to store cursor as one value instead of per partition
+        description: If parent stream have thousands of partitions, it can be more efficient to store cursor as one value instead of per partition. Lookback window should be used to avoid missing records that where added during the sync.
+        type: boolean
+        default: false
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
