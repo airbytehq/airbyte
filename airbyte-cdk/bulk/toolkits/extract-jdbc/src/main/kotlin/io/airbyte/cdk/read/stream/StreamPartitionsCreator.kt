@@ -162,9 +162,7 @@ fun CheckpointStreamState?.streamPartitionsCreatorInput(
     ctx: StreamReadContext,
 ): StreamPartitionsCreator.Input {
     if (this == null) {
-        val pkChosenFromCatalog: List<Field> =
-            ctx.stream.configuredPrimaryKey
-                ?: ctx.stream.primaryKeyCandidates.firstOrNull() ?: listOf()
+        val pkChosenFromCatalog: List<Field> = ctx.stream.configuredPrimaryKey ?: listOf()
         if (ctx.stream.configuredSyncMode == SyncMode.FULL_REFRESH || ctx.configuration.global) {
             return StreamPartitionsCreator.SnapshotColdStart(pkChosenFromCatalog)
         }

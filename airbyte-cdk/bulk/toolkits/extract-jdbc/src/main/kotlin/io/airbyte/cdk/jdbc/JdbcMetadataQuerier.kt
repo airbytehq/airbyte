@@ -272,7 +272,7 @@ class JdbcMetadataQuerier(
 
     val memoizedPrimaryKeys = mutableMapOf<TableName, List<List<String>>>()
 
-    override fun primaryKeys(
+    override fun primaryKey(
         streamName: String,
         streamNamespace: String?,
     ): List<List<String>> {
@@ -299,13 +299,10 @@ class JdbcMetadataQuerier(
         } catch (e: Exception) {
             throw RuntimeException("Primary key discovery query failed: ${e.message}", e)
         }
-        return results
-            .groupBy { it.name }
-            .values
-            .map { rowsByPK: List<PrimaryKeyRow> ->
-                rowsByPK.sortedBy { it.ordinal }.map { it.columnName }
-            }
-            .also { memoizedPrimaryKeys[table] = it }
+        val rows: List<PrimaryKeyRow> = results.groupBy { it.name }.values.firstOrNull() ?: listOf()
+        val pk: List<List<String>> = rows.sortedBy { it.ordinal }.map { listOf(it.columnName) }
+        memoizedPrimaryKeys[table] = pk
+        return pk
     }
 
     private data class PrimaryKeyRow(

@@ -551,7 +551,7 @@ Bump source-openweather:
 
 | Argument          | Description                                                            |
 | ----------------- | ---------------------------------------------------------------------- |
-| `BUMP_TYPE`       | major, minor or patch                                                  |
+| `BUMP_TYPE`       | major, minor, patch, or version:<explicit-version>                     |
 | `CHANGELOG_ENTRY` | The changelog entry that will get added to the connector documentation |
 
 #### Options
@@ -788,7 +788,10 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+|---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.31.0  | [#42970](https://github.com/airbytehq/airbyte/pull/42970)  | Add explicit version set to bump version                                                                   |
+| 4.30.1  | [#43386](https://github.com/airbytehq/airbyte/pull/43386)  | Fix 'format' command usage bug in airbyte-enterprise.                                                                        |
+| 4.30.0  | [#42583](https://github.com/airbytehq/airbyte/pull/42583)  | Updated dependencies                                                                                                         |
 | 4.29.0  | [#42576](https://github.com/airbytehq/airbyte/pull/42576)  | New command: `migrate-to-manifest-only`                                                                                      |
 | 4.28.3  | [#42046](https://github.com/airbytehq/airbyte/pull/42046)  | Trigger connector tests on doc change.                                                                                       |
 | 4.28.2  | [#43297](https://github.com/airbytehq/airbyte/pull/43297)  | `migrate-to-inline_schemas` removes unused schema files and empty schema dirs.                                               |

@@ -40,6 +40,7 @@
       "source_defined_cursor": true,
       "default_cursor_field": ["_ab_cdc_lsn"],
       "source_defined_primary_key": [["ID"]],
+      "is_resumable": true,
       "namespace": "PUBLIC"
     },
     {
@@ -77,6 +78,7 @@
       "source_defined_cursor": true,
       "default_cursor_field": ["_ab_cdc_lsn"],
       "source_defined_primary_key": [["K"]],
+      "is_resumable": true,
       "namespace": "PUBLIC"
     }
   ]

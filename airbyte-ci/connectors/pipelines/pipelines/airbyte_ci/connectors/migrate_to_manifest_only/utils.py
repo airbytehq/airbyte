@@ -4,7 +4,7 @@
 
 import subprocess
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Union
+from typing import Any, List, Mapping
 
 import jinja2
 import requests
