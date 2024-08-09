@@ -1,8 +1,10 @@
-from typing import MutableMapping, Any, Optional
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from typing import Any, MutableMapping, Optional
 
 import source_woocommerce
-from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk import AbstractSource
+from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 
 
 def config() -> MutableMapping[str, Any]:

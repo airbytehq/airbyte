@@ -1,9 +1,11 @@
-from typing import Optional, List, Mapping, Any
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk import AbstractSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 
 
 def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
@@ -11,12 +13,12 @@ def catalog(stream_name: str, sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
 
 
 def read_records(
-        source: AbstractSource,
-        config: Mapping[str, Any],
-        stream_name: str,
-        sync_mode: SyncMode,
-        state: Optional[List[AirbyteStateMessage]] = None,
-        expecting_exception: Optional[bool] = False,
+    source: AbstractSource,
+    config: Mapping[str, Any],
+    stream_name: str,
+    sync_mode: SyncMode,
+    state: Optional[List[AirbyteStateMessage]] = None,
+    expecting_exception: Optional[bool] = False,
 ) -> EntrypointOutput:
     _catalog = catalog(stream_name, sync_mode)
     return read(source, config, _catalog, state, expecting_exception)

@@ -1,21 +1,20 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 from __future__ import annotations
 
-import re
-
 import pytest
 import requests_mock
-from freezegun import freeze_time
-
 from airbyte_cdk.test.utils.assertions import assert_good_read, is_not_in_logs
+from airbyte_cdk.test.utils.http_mocking import register_mock_responses
 from airbyte_cdk.test.utils.reading import read_records
 from airbyte_protocol.models import SyncMode
+from freezegun import freeze_time
 
 from .common import config, source
 from .conftest import (
     coupons_http_calls,
     customers_http_calls,
     order_notes_http_calls,
+    orders_empty_last_page,
     orders_http_calls,
     payment_gateways_http_calls,
     product_attribute_terms_http_calls,
@@ -31,7 +30,9 @@ from .conftest import (
     shipping_zone_locations_http_calls,
     shipping_zone_methods_http_calls,
     shipping_zones_http_calls,
-    system_status_tools_http_calls, orders_empty_last_page, tax_classes_http_calls, tax_rates_http_calls,
+    system_status_tools_http_calls,
+    tax_classes_http_calls,
+    tax_rates_http_calls,
 )
 
 
@@ -72,16 +73,10 @@ def modified_before() -> str:
 def test_read_simple_endpoints_successfully(stream_name, num_records, http_calls, **kwargs) -> None:
     """Test basic read for  all streams that don't have parent streams."""
 
-    # Register mock responses
-    for call in http_calls:
-        request, response = call["request"], call["response"]
-        matcher = re.compile(request["url"]) if request["is_regex"] else request["url"]
-        kwargs["mock"].get(matcher, **response)
+    register_mock_responses(kwargs["mock"], http_calls)
 
-    # Read records
     output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
 
-    # Check read was successful
     assert_good_read(output, num_records)
 
 
@@ -96,15 +91,9 @@ def test_read_simple_endpoints_successfully(stream_name, num_records, http_calls
 def test_read_with_multiple_pages_with_empty_last_page_successfully(stream_name, num_records, http_calls, **kwargs) -> None:
     """Test basic read for streams that have multiple pages."""
 
-    # Register mock response
-    for call in http_calls:
-        request, response = call["request"], call["response"]
-        matcher = re.compile(request["url"]) if request["is_regex"] else request["url"]
-        kwargs["mock"].get(matcher, **response)
+    register_mock_responses(kwargs["mock"], http_calls)
 
-    # Read records
     output = read_records(source(), config(), stream_name, SyncMode.full_refresh)
 
-    # Check read was successful
     assert_good_read(output, num_records)
     assert is_not_in_logs("StopIteration", output)

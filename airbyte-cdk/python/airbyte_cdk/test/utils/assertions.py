@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import re
 
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
