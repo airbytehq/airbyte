@@ -31,6 +31,8 @@ ValidAdStatuses = Enum("ValidAdStatuses", Ad.EffectiveStatus.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
 
+TimeIncrement = Union[PositiveInt, Literal["monthly"]]
+
 
 class OAuthCredentials(BaseModel):
     class Config(OneOfOptionConfig):
@@ -121,7 +123,7 @@ class InsightConfig(BaseModel):
         enum=["conversion", "impression", "mixed"],
     )
 
-    time_increment: Optional[PositiveInt] = Field(
+    time_increment: Optional[TimeIncrement] = Field(
         title="Time Increment",
         description=(
             "Time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. "
