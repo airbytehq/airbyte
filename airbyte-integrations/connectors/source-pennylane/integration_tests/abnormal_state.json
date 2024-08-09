@@ -1,0 +1,79 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "categories"
+      },
+      "stream_state": {
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "category_groups"
+      },
+      "stream_state": {
+        "updatedAt": 7945393076000
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "customer_invoices"
+      },
+      "stream_state": {
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "customers"
+      },
+      "stream_state": {
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "products"
+      },
+      "stream_state": {
+        "updatedAt": 7945393076000
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "supplier_invoices"
+      },
+      "stream_state": {
+        "updatedAt": "2200-01-01T00:00:00.000000Z"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "suppliers"
+      },
+      "stream_state": {
+        "lastUpdatedTime": 7945393076000
+      }
+    }
+  }
+]

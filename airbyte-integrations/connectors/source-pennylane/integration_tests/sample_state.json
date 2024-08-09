@@ -1,0 +1,58 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "categories" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "category_groups" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "customer_invoices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "customers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "plan_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "products" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "supplier_invoices" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "createdAt": "2023-01-01T00:00:00Z" },
+      "stream_descriptor": { "name": "suppliers" }
+    }
+  }
+]
