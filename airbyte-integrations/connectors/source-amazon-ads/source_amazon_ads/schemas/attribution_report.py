@@ -16,7 +16,7 @@ class AttributionReportModel(CatalogModel):
     productConversionType: str
     advertiserName: str
     adGroupId: Optional[str]
-    creativeId: Optional[str]
+    creativeId: str
     productName: str
     productCategory: str
     productSubcategory: str

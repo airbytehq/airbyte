@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import json
+import re
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -76,10 +77,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
             ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
         )
         output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
+        assert any([re.search("failed with.+400", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_breaking_error_when_read_ad_groups_then_stream_stop_syncing(self, http_mocker: HttpMocker):
@@ -95,10 +96,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         )
         with patch('time.sleep', return_value=None):
             output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any([breaking_error.build().get("message") in error for error in error_logs])
+        assert any([re.search("retryable.+internal server error", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_one_page_when_read_ad_groups_then_return_records(self, http_mocker: HttpMocker):
@@ -138,13 +139,18 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
 
         self._given_oauth_and_profiles(http_mocker, self._config)
 
+        response1 = _a_response(stream_name, data_field, pagination_strategy).with_record(
+            _a_record(stream_name, data_field, record_id_path)).with_pagination().build()
         http_mocker.post(
-            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY).build(),
-            _a_response(stream_name, data_field, pagination_strategy).with_record(_a_record(stream_name, data_field, record_id_path)).with_pagination().build()
+            SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"],
+                                                             self._config["profiles"][0]).with_request_body(_DEFAULT_REQUEST_BODY).build(),
+            response1
         )
+
+        response2 = _a_response(stream_name, data_field, pagination_strategy).with_record(_a_record(stream_name, data_field, record_id_path)).build()
         http_mocker.post(
             SponsoredBrandsRequestBuilder.ad_groups_endpoint(self._config["client_id"], self._config["access_token"], self._config["profiles"][0]).with_request_body(paginated_request_body).build(),
-            _a_response(stream_name, data_field, pagination_strategy).with_record(_a_record(stream_name, data_field, record_id_path)).build()
+            response2
         )
 
         output = read_stream("sponsored_brands_ad_groups", SyncMode.full_refresh, self._config)
@@ -164,10 +170,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
             ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
         )
         output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
+        assert any([re.search("failed with.+400", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_breaking_error_when_read_campaigns_then_stream_stop_syncing(self, http_mocker: HttpMocker):
@@ -183,10 +189,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         )
         with patch('time.sleep', return_value=None):
             output = read_stream("sponsored_brands_campaigns", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any([breaking_error.build().get("message") in error for error in error_logs])
+        assert any([re.search("retryable.+internal server error", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_one_page_when_read_campaigns_then_return_records(self, http_mocker: HttpMocker):
@@ -251,10 +257,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
             ErrorResponseBuilder.non_breaking_error_response().with_record(non_breaking_error).with_status_code(400).build()
         )
         output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        warning_logs = get_log_messages_by_log_level(output.logs, LogLevel.WARN)
-        assert any([non_breaking_error.build().get("details") in worning for worning in warning_logs])
+        assert any([re.search("failed with.+400", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_breaking_error_when_read_keywords_then_stream_stop_syncing(self, http_mocker: HttpMocker):
@@ -270,10 +276,10 @@ class TestSponsoredBrandsStreamsFullRefresh(TestCase):
         )
         with patch('time.sleep', return_value=None):
             output = read_stream("sponsored_brands_keywords", SyncMode.full_refresh, self._config)
-        assert len(output.records) == 0
 
-        error_logs = get_log_messages_by_log_level(output.logs, LogLevel.ERROR)
-        assert any([breaking_error.build().get("message") in error for error in error_logs])
+        assert any([re.search("retryable.+internal server error", entry.log.message, re.IGNORECASE) is not None
+                    for entry in output.logs])
+        assert len(output.records) == 0
 
     @HttpMocker()
     def test_given_one_page_when_read_keywords_then_return_records(self, http_mocker: HttpMocker):

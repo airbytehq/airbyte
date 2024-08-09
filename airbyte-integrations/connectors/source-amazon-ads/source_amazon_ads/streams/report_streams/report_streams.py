@@ -50,7 +50,7 @@ class ReportInitResponse(BaseModel):
 class ReportStatus(BaseModel):
     status: str
     location: Optional[str]
-    url: Optional[str]
+    url: str
 
 
 @dataclass
@@ -168,6 +168,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
         for report_info in report_info_list:
             for metric_object in report_info.metric_objects:
+                metric_object["campaignId"] = str(metric_object.get("campaignId"))
                 yield self._model(
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
@@ -177,7 +178,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 ).dict()
 
     def get_record_id(self, metric_object: dict, record_type: str) -> str:
-        return metric_object.get(self.metrics_type_to_id_map[record_type]) or str(uuid.uuid4())
+        return str(metric_object.get(self.metrics_type_to_id_map[record_type])) or str(uuid.uuid4())
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
@@ -283,7 +284,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         except ValueError as error:
             raise ReportStatusFailure(error)
 
-        return resp.status, resp.location or resp.url
+        return resp.status, resp.url or resp.location
 
     @backoff.on_exception(
         backoff.expo,

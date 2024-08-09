@@ -1,5 +1,5 @@
 {
   "status": "str",
-  "localtion": "str",
+  "location": "str",
   "url": "str"
 }
