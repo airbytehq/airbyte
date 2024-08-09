@@ -3,21 +3,32 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import Component, ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
+    CursorPaginationStrategy,
+    CursorStopCondition,
+    OffsetIncrement,
+    PageIncrement,
+    StopConditionPaginationStrategyDecorator,
+)
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
+from pydantic import BaseModel
 
 
 @dataclass
-class DefaultPaginator(Paginator):
+class DefaultPaginator(Paginator, ComponentConstructor):
     """
     Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
@@ -94,6 +105,67 @@ class DefaultPaginator(Paginator):
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestPath, RequestOption]] = None
 
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: DefaultPaginatorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        *,
+        url_base: str,
+        cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
+        decoder: Optional[Decoder] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        if decoder:
+            decoder_to_use = decoder
+        elif model.decoder:
+            decoder_to_use = dependency_constructor(model=model.decoder, config=config)
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
+        if not isinstance(decoder_to_use, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
+
+        page_size_option = dependency_constructor(model=model.page_size_option, config=config) if model.page_size_option else None
+        page_token_option = dependency_constructor(model=model.page_token_option, config=config) if model.page_token_option else None
+        pagination_strategy = dependency_constructor(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
+        if cursor_used_for_stop_condition:
+            pagination_strategy = StopConditionPaginationStrategyDecorator(
+                pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
+            )
+        return {
+            "decoder": decoder_to_use,
+            "page_size_option": page_size_option,
+            "page_token_option": page_token_option,
+            "pagination_strategy": pagination_strategy,
+            "url_base": url_base,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
+
+    @classmethod
+    def build(
+        cls,
+        model: BaseModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]],
+        **kwargs,
+    ) -> Component:
+        """
+        Builds up the Component and it's component-specific dependencies.
+        Order of operations:
+        - build the dependencies first
+        - build the component with the resolved dependencies
+        """
+        print(f"Kwargs1: {kwargs}, model: {model},\n config: {config}, \nadditional_flags: {additional_flags}\n\n")
+        paginator = super(DefaultPaginator, cls).build(model, config, dependency_constructor, additional_flags, **kwargs)
+        limit_pages_fetched_per_slice = additional_flags["_limit_pages_fetched_per_slice"]
+        if limit_pages_fetched_per_slice:
+            return PaginatorTestReadDecorator(paginator, limit_pages_fetched_per_slice)
+        return paginator
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if self.page_size_option and not self.pagination_strategy.get_page_size():
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
@@ -113,7 +185,9 @@ class DefaultPaginator(Paginator):
     def path(self) -> Optional[str]:
         if self._token and self.page_token_option and isinstance(self.page_token_option, RequestPath):
             # Replace url base to only return the path
-            return str(self._token).replace(self.url_base.eval(self.config), "")  # type: ignore # url_base is casted to a InterpolatedString in __post_init__
+            return str(self._token).replace(
+                self.url_base.eval(self.config), ""
+            )  # type: ignore # url_base is casted to a InterpolatedString in __post_init__
         else:
             return None
 
@@ -169,13 +243,17 @@ class DefaultPaginator(Paginator):
             and isinstance(self.page_token_option, RequestOption)
             and self.page_token_option.inject_into == option_type
         ):
-            options[self.page_token_option.field_name.eval(config=self.config)] = self._token  # type: ignore # field_name is always cast to an interpolated string
+            options[
+                self.page_token_option.field_name.eval(config=self.config)
+            ] = self._token  # type: ignore # field_name is always cast to an interpolated string
         if self.page_size_option and self.pagination_strategy.get_page_size() and self.page_size_option.inject_into == option_type:
-            options[self.page_size_option.field_name.eval(config=self.config)] = self.pagination_strategy.get_page_size()  # type: ignore # field_name is always cast to an interpolated string
+            options[
+                self.page_size_option.field_name.eval(config=self.config)
+            ] = self.pagination_strategy.get_page_size()  # type: ignore # field_name is always cast to an interpolated string
         return options
 
 
-class PaginatorTestReadDecorator(Paginator):
+class PaginatorTestReadDecorator(Paginator, Component):
     """
     In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
     pages that are queried throughout a read command.

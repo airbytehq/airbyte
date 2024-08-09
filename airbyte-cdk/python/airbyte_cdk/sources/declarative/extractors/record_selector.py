@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.models import SchemaNormalization
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from pydantic import BaseModel
 
 SCHEMA_TRANSFORMER_TYPE_MAPPING = {
     SchemaNormalization.None_: TransformConfig.NoTransform,
@@ -20,8 +21,14 @@ SCHEMA_TRANSFORMER_TYPE_MAPPING = {
 }
 
 
+from airbyte_cdk.sources.declarative.decoders import Decoder
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordSelector as RecordSelectorModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+
+
 @dataclass
-class RecordSelector(HttpSelector):
+class RecordSelector(HttpSelector, ComponentConstructor):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
     records based on a heuristic.
@@ -39,6 +46,37 @@ class RecordSelector(HttpSelector):
     schema_normalization: TypeTransformer
     record_filter: Optional[RecordFilter] = None
     transformations: List[RecordTransformation] = field(default_factory=lambda: [])
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: RecordSelectorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        *,
+        decoder: Optional[Decoder] = None,
+        transformations: List[RecordTransformation] = None,
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        assert model.schema_normalization is not None  # for mypy
+        record_filter = dependency_constructor(model.record_filter, config=config) if model.record_filter else None
+        if client_side_incremental_sync:
+            record_filter = ClientSideIncrementalRecordFilterDecorator(
+                config=config,
+                parameters=model.parameters,
+                condition=model.record_filter.condition if (model.record_filter and hasattr(model.record_filter, "condition")) else None,
+                **client_side_incremental_sync,
+            )
+        return {
+            "extractor": dependency_constructor(model=model.extractor, decoder=decoder, config=config),
+            "config": config,
+            "record_filter": record_filter,
+            "transformations": transformations,
+            "schema_normalization": TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization]),
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._parameters = parameters

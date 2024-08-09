@@ -3,16 +3,19 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.types import Config, Record
+from pydantic import BaseModel
 
 
 @dataclass
-class PageIncrement(PaginationStrategy):
+class PageIncrement(PaginationStrategy, ComponentConstructor):
     """
     Pagination strategy that returns the number of pages reads so far and returns it as the next page token
 
@@ -26,6 +29,23 @@ class PageIncrement(PaginationStrategy):
     parameters: InitVar[Mapping[str, Any]]
     start_from_page: int = 0
     inject_on_first_request: bool = False
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: PageIncrementModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {
+            "page_size": model.page_size,
+            "config": config,
+            "start_from_page": model.start_from_page or 0,
+            "inject_on_first_request": model.inject_on_first_request or False,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._page = self.start_from_page

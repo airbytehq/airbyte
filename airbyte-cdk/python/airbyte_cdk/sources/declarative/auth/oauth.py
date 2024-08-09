@@ -3,19 +3,23 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Callable, List, Mapping, Optional, Union
 
 import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import OAuthAuthenticator as OAuthAuthenticatorModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 
 @dataclass
-class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAuthenticator):
+class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAuthenticator, ComponentConstructor):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
     a declarative connector configuration file. Credentials can be defined explicitly or via interpolation
@@ -55,6 +59,33 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     grant_type: Union[InterpolatedString, str] = "refresh_token"
     message_repository: MessageRepository = NoopMessageRepository()
 
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: OAuthAuthenticatorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {
+            "access_token_name": model.access_token_name or "access_token",
+            "client_id": model.client_id,
+            "client_secret": model.client_secret,
+            "expires_in_name": model.expires_in_name or "expires_in",
+            "grant_type": model.grant_type or "refresh_token",
+            "refresh_request_body": model.refresh_request_body,
+            "refresh_token": model.refresh_token,
+            "scopes": model.scopes,
+            "token_expiry_date": model.token_expiry_date,
+            "token_expiry_date_format": model.token_expiry_date_format,
+            "token_expiry_is_time_of_expiration": bool(model.token_expiry_date_format),
+            "token_refresh_endpoint": model.token_refresh_endpoint,
+            "config": config,
+            "parameters": model.parameters or {},
+            "message_repository": additional_flags["_message_repository"],
+        }
+
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__init__()
         self._token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
@@ -69,7 +100,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         self.grant_type = InterpolatedString.create(self.grant_type, parameters=parameters)
         self._refresh_request_body = InterpolatedMapping(self.refresh_request_body or {}, parameters=parameters)
         self._token_expiry_date: pendulum.DateTime = (
-            pendulum.parse(InterpolatedString.create(self.token_expiry_date, parameters=parameters).eval(self.config))  # type: ignore # pendulum.parse returns a datetime in this context
+            pendulum.parse(
+                InterpolatedString.create(self.token_expiry_date, parameters=parameters).eval(self.config)
+            )  # type: ignore # pendulum.parse returns a datetime in this context
             if self.token_expiry_date
             else pendulum.now().subtract(days=1)  # type: ignore # substract does not have type hints
         )
@@ -139,10 +172,48 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
 
 @dataclass
-class DeclarativeSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator, DeclarativeAuthenticator):
+class DeclarativeSingleUseRefreshTokenOauth2Authenticator(
+    SingleUseRefreshTokenOauth2Authenticator, DeclarativeAuthenticator, ComponentConstructor
+):
     """
     Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
     """
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: OAuthAuthenticatorModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {
+            "connector_config": config,
+            "token_refresh_endpoint": InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters or {}).eval(
+                config
+            ),
+            "access_token_name": InterpolatedString.create(
+                model.access_token_name or "access_token", parameters=model.parameters or {}
+            ).eval(config),
+            "refresh_token_name": model.refresh_token_updater.refresh_token_name,
+            "expires_in_name": InterpolatedString.create(model.expires_in_name or "expires_in", parameters=model.parameters or {}).eval(
+                config
+            ),
+            "client_id": InterpolatedString.create(model.client_id, parameters=model.parameters or {}).eval(config),
+            "client_secret": InterpolatedString.create(model.client_secret, parameters=model.parameters or {}).eval(config),
+            "access_token_config_path": model.refresh_token_updater.access_token_config_path,
+            "refresh_token_config_path": model.refresh_token_updater.refresh_token_config_path,
+            "token_expiry_date_config_path": model.refresh_token_updater.token_expiry_date_config_path,
+            "grant_type": InterpolatedString.create(model.grant_type or "refresh_token", parameters=model.parameters or {}).eval(config),
+            "refresh_request_body": InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters or {}).eval(config),
+            "scopes": model.scopes,
+            "token_expiry_date_format": model.token_expiry_date_format,
+            "message_repository": additional_flags["_message_repository"],
+            "refresh_token_error_status_codes": model.refresh_token_updater.refresh_token_error_status_codes,
+            "refresh_token_error_key": model.refresh_token_updater.refresh_token_error_key,
+            "refresh_token_error_values": model.refresh_token_updater.refresh_token_error_values,
+        }
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

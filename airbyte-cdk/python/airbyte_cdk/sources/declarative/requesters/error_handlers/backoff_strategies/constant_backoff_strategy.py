@@ -3,16 +3,19 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 
 @dataclass
-class ConstantBackoffStrategy(BackoffStrategy):
+class ConstantBackoffStrategy(BackoffStrategy, ComponentConstructor):
     """
     Backoff strategy with a constant backoff interval
 
@@ -23,6 +26,21 @@ class ConstantBackoffStrategy(BackoffStrategy):
     backoff_time_in_seconds: Union[float, InterpolatedString, str]
     parameters: InitVar[Mapping[str, Any]]
     config: Config
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: ConstantBackoffStrategyModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Optional[Mapping[str, Any]]:
+        return {
+            "backoff_time_in_seconds": model.backoff_time_in_seconds,
+            "config": config,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not isinstance(self.backoff_time_in_seconds, InterpolatedString):

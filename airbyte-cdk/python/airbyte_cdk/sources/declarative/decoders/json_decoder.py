@@ -5,21 +5,38 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass
-from typing import Any, Generator, Mapping
+from typing import Any, Callable, Generator, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import IterableDecoder as IterableDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonlDecoderModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.types import Config
+from pydantic import BaseModel
 
 logger = logging.getLogger("airbyte")
 
 
 @dataclass
-class JsonDecoder(Decoder):
+class JsonDecoder(Decoder, ComponentConstructor):
     """
     Decoder strategy that returns the json-encoded content of a response, if any.
     """
 
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: JsonDecoderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"parameters": {}}
 
     def is_stream_response(self) -> bool:
         return False
@@ -42,12 +59,23 @@ class JsonDecoder(Decoder):
 
 
 @dataclass
-class IterableDecoder(Decoder):
+class IterableDecoder(Decoder, ComponentConstructor):
     """
     Decoder strategy that returns the string content of the response, if any.
     """
 
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: IterableDecoderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"parameters": {}}
 
     def is_stream_response(self) -> bool:
         return True
@@ -58,12 +86,23 @@ class IterableDecoder(Decoder):
 
 
 @dataclass
-class JsonlDecoder(Decoder):
+class JsonlDecoder(Decoder, ComponentConstructor):
     """
     Decoder strategy that returns the json-encoded content of the response, if any.
     """
 
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: JsonlDecoderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {"parameters": {}}
 
     def is_stream_response(self) -> bool:
         return True

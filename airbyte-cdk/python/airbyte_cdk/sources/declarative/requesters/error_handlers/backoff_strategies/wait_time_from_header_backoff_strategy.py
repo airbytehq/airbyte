@@ -4,19 +4,22 @@
 
 import re
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
+from pydantic import BaseModel
 
 
 @dataclass
-class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
+class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor):
     """
     Extract wait time from http header
 
@@ -31,6 +34,23 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     config: Config
     regex: Optional[Union[InterpolatedString, str]] = None
     max_waiting_time_in_seconds: Optional[float] = None
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: WaitTimeFromHeaderModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        return {
+            "header": model.header,
+            "parameters": model.parameters or {},
+            "config": config,
+            "regex": model.regex,
+            "max_waiting_time_in_seconds": model.max_waiting_time_in_seconds if model.max_waiting_time_in_seconds is not None else None,
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.regex = InterpolatedString.create(self.regex, parameters=parameters) if self.regex else None
