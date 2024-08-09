@@ -1,11 +1,9 @@
-version: 0.50.2
+version: 4.3.0
 type: DeclarativeSource
-
 check:
   type: CheckStream
   stream_names:
     - docker_hub
-
 streams:
   - type: DeclarativeStream
     name: docker_hub
@@ -55,7 +53,6 @@ streams:
           type: CursorPagination
           cursor_value: '{{ response.get("next", {}) }}'
           stop_condition: '{{ not response.get("next", {}) }}'
-
     schema_loader:
       type: InlineSchemaLoader
       schema:

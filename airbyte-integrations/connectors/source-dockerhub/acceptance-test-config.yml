@@ -3,13 +3,13 @@
 connector_image: airbyte/source-dockerhub:dev
 tests:
   spec:
-    - spec_path: "source_dockerhub/spec.yaml"
+    - spec_path: "manifest.yaml"
       backward_compatibility_tests_config:
         disable_for_version: "0.1.0"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
-    # even with an incorrect username the api still returns 200 so just ignoring the invalid config check for now
+      # even with an incorrect username the api still returns 200 so just ignoring the invalid config check for now
   #    - config_path: "integration_tests/invalid_config.json"
   #      status: "failed"
   discovery:
@@ -22,7 +22,8 @@ tests:
       empty_streams: []
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      # testing sequentially for same results can fail because of pull counts increasing for an image between runs
+      configured_catalog_path:
+        "integration_tests/configured_catalog.json"
+        # testing sequentially for same results can fail because of pull counts increasing for an image between runs
       ignored_fields:
         "docker_hub": ["pull_count", "last_updated"]
