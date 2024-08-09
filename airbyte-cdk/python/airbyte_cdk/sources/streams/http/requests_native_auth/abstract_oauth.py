@@ -93,17 +93,14 @@ class AbstractOauth2Authenticator(AuthBase):
         return payload
 
     def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
-        try:
-            if exception.response is not None:
-                exception_content = exception.response.json()
-            else:
-                return False
-        except JSONDecodeError:
-            return False
-        return (
-            exception.response.status_code in self._refresh_token_error_status_codes
-            and exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
-        )
+        response = exception.response
+        if response is not None and response.status_code in self._refresh_token_error_status_codes:
+            try:
+                exception_content = response.json()
+                return exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
+            except JSONDecodeError:
+                pass
+        return False
 
     @backoff.on_exception(
         backoff.expo,
