@@ -6,7 +6,8 @@
     },
     "account_id": {
       "description": "ID of the account",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "account_name": {
       "description": "Name of the account",
@@ -66,7 +67,8 @@
     },
     "campaign_id": {
       "description": "ID of the campaign",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "campaign_name": {
       "description": "Name of the campaign",
@@ -413,5 +415,9 @@
       "type": ["null", "number"]
     }
   },
-  "type": ["null", "object"]
+  "type": ["null", "object"],
+  "_erd_relations": {
+    "account_id": "ad_account.id",
+    "campaign_id": "campaigns.id"
+  }
 }

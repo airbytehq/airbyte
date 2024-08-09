@@ -2,7 +2,8 @@
   "properties": {
     "account_id": {
       "description": "The ID of the Facebook Ads account associated with the campaign.",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "_erd_constrains": "foreign_key"
     },
     "adlabels": {
       "description": "Labels associated with the ad campaigns.",
@@ -156,5 +157,8 @@
       "format": "date-time"
     }
   },
-  "type": ["null", "object"]
+  "type": ["null", "object"],
+  "_erd_relations": {
+    "account_id": "ad_account.id"
+  }
 }
