@@ -268,6 +268,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.6          | 2024-08-07 | [\#43332](https://github.com/airbytehq/airbyte/pull/43332) | bump Java CDK |
 | 3.11.5          | 2024-08-07 | [\#43348](https://github.com/airbytehq/airbyte/pull/43348) | SnowflakeSqlGen cleanup to Kotlin string interpolation                                                                                                                           |
 | 3.11.4          | 2024-07-18 | [\#41940](https://github.com/airbytehq/airbyte/pull/41940) | Update host regex to allow connecting to LocalStack Snowflake                                                                                                                    |
 | 3.11.3          | 2024-07-15 | [\#41968](https://github.com/airbytehq/airbyte/pull/41968) | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                       |

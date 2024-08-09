@@ -399,6 +399,8 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 "_AIRBYTE_DATA",
                 "_airbyte_meta",
                 "_AIRBYTE_META",
+                "_airbyte_generation_id",
+                "_AIRBYTE_GENERATION_ID",
             )
 
         @Volatile private var cleanedAirbyteInternalTable = false

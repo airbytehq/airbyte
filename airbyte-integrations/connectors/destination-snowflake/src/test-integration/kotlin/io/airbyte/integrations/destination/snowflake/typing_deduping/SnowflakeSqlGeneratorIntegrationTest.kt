@@ -1847,6 +1847,11 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
         super.testLongIdentifierHandling()
     }
 
+    @Test
+    override fun testStateHandling() {
+        return super.testStateHandling()
+    }
+
     companion object {
         private var config =
             Jsons.deserialize(IOs.readFile(Path.of("secrets/1s1t_internal_staging_config.json")))

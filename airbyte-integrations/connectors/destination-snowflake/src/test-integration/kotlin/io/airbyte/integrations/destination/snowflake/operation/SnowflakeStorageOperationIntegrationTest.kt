@@ -16,6 +16,7 @@ import io.airbyte.cdk.integrations.destination.staging.StagingSerializedBufferFa
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.string.Strings
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts
@@ -24,7 +25,6 @@ import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDe
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.*
@@ -56,7 +56,7 @@ class SnowflakeStorageOperationIntegrationTest {
         streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 LinkedHashMap(),
