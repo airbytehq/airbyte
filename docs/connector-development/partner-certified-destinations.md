@@ -58,7 +58,9 @@ We won’t call out every requirement of the Airbyte Protocol (link) but below a
 
 ### Idempotence
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum
+Syncs should always be re-runnable without negative side effects. For instance, if the table is loaded multiple times, the destination should dedupe records according to the provided primary key information if and when available.
+
+If deduping is disabled, then loads should either fully replace or append  to destination tables - according to the user-provided setting in the configured catalog.
 
 ### Exceptions
 
