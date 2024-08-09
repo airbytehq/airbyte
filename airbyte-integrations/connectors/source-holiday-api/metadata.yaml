@@ -1,0 +1,44 @@
+data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  allowedHosts:
+    hosts:
+      - holidayapi.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:3.10.2@sha256:ea85f0270dfda900a16f3dffb247002a2585a4283816edad66b89e6963d376a4
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 87cd13ea-7b3a-477c-bf9d-bd52961c8306
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-holiday-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api
+  githubIssueLabel: source-holiday-api
+  icon: holiday-api.svg
+  license: MIT
+  maxSecondsBetweenMessages: 60
+  name: Holiday-api
+  remoteRegistries:
+    pypi:
+      enabled: false
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:manifest-only
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-HOLIDAY-API__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
