@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.4.12
+  dockerImageTag: 2.4.18
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   githubIssueLabel: source-shopify
@@ -114,6 +114,16 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: shopify_config_dev_null
+          id: 1de7c985-bcce-425a-a762-57389cea3900
+        - name: shopify_config_old_dev_null
+          id: 1f3550b3-740a-4841-8337-0e28a7b23458
+        - name: shopify_config_transactions_with_user_id_dev_null
+          id: 5f1d6da1-87bc-46b4-8de7-1b3fe1a2be90
+        - name: shopify_config_oauth_dev_null
+          id: a08529a9-618c-4bfc-884f-f5dccba1c1ab
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

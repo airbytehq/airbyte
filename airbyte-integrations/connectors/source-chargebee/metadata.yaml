@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.5
   dockerRepository: airbyte/source-chargebee
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   githubIssueLabel: source-chargebee
@@ -46,6 +46,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: chargebee_config_dev_null
+          id: 092f90df-53ab-4822-9811-96603a7dc8b1
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

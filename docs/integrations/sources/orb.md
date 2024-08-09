@@ -65,6 +65,9 @@ an Orb Account and API Key.
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                               |
 |---------|------------| -------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.7 | 2024-08-03 | [43163](https://github.com/airbytehq/airbyte/pull/43163) | Update dependencies |
+| 2.0.6 | 2024-07-20 | [42198](https://github.com/airbytehq/airbyte/pull/42198) | Update dependencies |
+| 2.0.5 | 2024-07-13 | [41720](https://github.com/airbytehq/airbyte/pull/41720) | Update dependencies |
 | 2.0.4 | 2024-07-10 | [41386](https://github.com/airbytehq/airbyte/pull/41386) | Update dependencies |
 | 2.0.3 | 2024-07-09 | [41090](https://github.com/airbytehq/airbyte/pull/41090) | Update dependencies |
 | 2.0.2 | 2024-07-06 | [40826](https://github.com/airbytehq/airbyte/pull/40826) | Update dependencies |

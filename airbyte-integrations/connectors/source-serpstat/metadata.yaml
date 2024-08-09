@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3b2e8fb2-9137-41ff-a1e1-83ecb39e26c8
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/source-serpstat
   githubIssueLabel: source-serpstat
   icon: serpstat.svg

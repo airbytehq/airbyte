@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.16
   dockerRepository: airbyte/source-sonar-cloud
   documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
   githubIssueLabel: source-sonar-cloud
@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sonar-cloud_config_dev_null
+          id: 11b168e2-9dc7-4972-81f8-6cdf948562ba
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SONAR-CLOUD__CREDS

@@ -18,7 +18,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
-  dockerImageTag: 0.4.8
+  dockerImageTag: 0.4.12
   dockerRepository: airbyte/source-datadog
   githubIssueLabel: source-datadog
   icon: datadog.svg
@@ -35,6 +35,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: datadog_config_dev_null
+          id: 168fe6d6-d7fd-4d8e-8efb-db69857d7daf
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-DATADOG__CREDS

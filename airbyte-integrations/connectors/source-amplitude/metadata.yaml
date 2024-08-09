@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
-  dockerImageTag: 0.3.17
+  dockerImageTag: 0.6.0
   dockerRepository: airbyte/source-amplitude
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   githubIssueLabel: source-amplitude
@@ -35,11 +35,16 @@ data:
       - active_users
       - annotations
       - cohorts
+      - events_list
   supportLevel: certified
   tags:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: amplitude_config_dev_null
+          id: 1dbb29a0-973a-49e5-bae3-546e311fd90a
     - suite: unitTests
     - suite: integrationTests
       testSecrets:

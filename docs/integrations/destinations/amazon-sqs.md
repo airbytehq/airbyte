@@ -124,6 +124,10 @@ The output SQS message would contain:
 
 | Version | Date       | Pull Request                                              | Subject                           |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------- |
+| 0.1.16 | 2024-08-03 | [43278](https://github.com/airbytehq/airbyte/pull/43278) | Update dependencies |
+| 0.1.15 | 2024-07-27 | [42795](https://github.com/airbytehq/airbyte/pull/42795) | Update dependencies |
+| 0.1.14 | 2024-07-20 | [42165](https://github.com/airbytehq/airbyte/pull/42165) | Update dependencies |
+| 0.1.13 | 2024-07-13 | [41733](https://github.com/airbytehq/airbyte/pull/41733) | Update dependencies |
 | 0.1.12 | 2024-07-10 | [41439](https://github.com/airbytehq/airbyte/pull/41439) | Update dependencies |
 | 0.1.11 | 2024-07-09 | [41237](https://github.com/airbytehq/airbyte/pull/41237) | Update dependencies |
 | 0.1.10 | 2024-07-06 | [40960](https://github.com/airbytehq/airbyte/pull/40960) | Update dependencies |

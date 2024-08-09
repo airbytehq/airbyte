@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.15
   dockerRepository: airbyte/source-polygon-stock-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
   githubIssueLabel: source-polygon-stock-api
@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: polygon-stock-api_config_dev_null
+          id: 7affa2ff-0b68-428d-bf9a-78fc68d71bd6
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-POLYGON-STOCK-API__CREDS

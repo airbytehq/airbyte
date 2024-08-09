@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6cbea164-3237-433b-9abb-36d384ee4cbf
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-gridly
   githubIssueLabel: source-gridly
   icon: gridly.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gridly_config_dev_null
+          id: 67071749-873b-4e4f-b946-7c14f15199d3
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

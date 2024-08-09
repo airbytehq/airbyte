@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 21cc4a17-a011-4485-8a3e-e2341a91ab9f
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.14
   dockerRepository: airbyte/source-smartengage
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartengage
   githubIssueLabel: source-smartengage
@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: smartengage_config_dev_null
+          id: 801ae179-411b-4d4a-aa33-816121360b38
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SMARTENGAGE__CREDS

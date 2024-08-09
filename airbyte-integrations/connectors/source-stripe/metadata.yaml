@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.4.8
+  dockerImageTag: 5.5.0
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   githubIssueLabel: source-stripe
@@ -54,6 +54,14 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: stripe_config_dev_null
+          id: 0f3c8a84-53e2-4a33-89a9-26bf36a2367c
+        - name: stripe_performance-config_dev_null
+          id: 4f738e2c-a1d2-48b4-9b93-f56e2258068d
+        - name: stripe_connected_account_config_dev_null
+          id: 97d55640-b443-49c5-a9d9-aed28396841d
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
