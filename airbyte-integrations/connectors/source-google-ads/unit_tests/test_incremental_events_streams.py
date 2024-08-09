@@ -121,11 +121,11 @@ def test_incremental_events_stream_slices(config, additional_customers):
     stream_slices = list(stream.stream_slices(stream_state=stream_state))
 
     assert len(stream_slices) == 2
-    assert stream_slices == [{'customer_id': '123', 'updated_ids': {'2', '1'}, 'deleted_ids': {'3', '4'},
+    assert stream_slices == [{'customer_id': '123', 'updated_ids': ['1', '2'], 'deleted_ids': ['3', '4'],
                               'record_changed_time_map': {'1': '2023-06-13 12:36:01.772447', '2': '2023-06-13 12:36:02.772447',
                                                           '3': '2023-06-13 12:36:03.772447', '4': '2023-06-13 12:36:04.772447'},
                               'login_customer_id': None},
-                             {'customer_id': '789', 'updated_ids': set(), 'deleted_ids': set(), 'record_changed_time_map': {},
+                             {'customer_id': '789', 'updated_ids': list(), 'deleted_ids': list(), 'record_changed_time_map': {},
                               'login_customer_id': None}]
 
 
@@ -161,8 +161,8 @@ def test_child_incremental_events_read(config, customers):
     assert stream_slices == [
         {
             "customer_id": "123",
-            "updated_ids": {"2", "1"},
-            "deleted_ids": {"3", "4"},
+            "updated_ids": ["1", "2"],
+            "deleted_ids": ["3", "4"],
             "record_changed_time_map": {
                 "1": "2023-06-13 12:36:01.772447",
                 "2": "2023-06-13 12:36:02.772447",
@@ -467,15 +467,15 @@ def test_incremental_events_stream_get_query(mocker, config, customers):
     # Define a sample stream_slice for the test
     stream_slice = {
         "customer_id": "1234567890",
-        "updated_ids": {
+        "updated_ids": [
             "customers/1234567890/adGroupCriteria/111111111111~1",
             "customers/1234567890/adGroupCriteria/111111111111~2",
             "customers/1234567890/adGroupCriteria/111111111111~3",
-        },
-        "deleted_ids": {
+        ],
+        "deleted_ids": [
             "customers/1234567890/adGroupCriteria/111111111111~4",
             "customers/1234567890/adGroupCriteria/111111111111~5",
-        },
+        ],
         "record_changed_time_map": {
             "customers/1234567890/adGroupCriteria/111111111111~1": "2023-09-18 08:56:53.413023",
             "customers/1234567890/adGroupCriteria/111111111111~2": "2023-09-18 08:56:59.165599",
@@ -509,10 +509,10 @@ def test_read_records_with_slice_splitting(mocker, config):
     """
     # Define a stream_slice with 15,000 ids to ensure it gets split during processing
     stream_slice = {
-        "updated_ids": set(range(15000)),
+        "updated_ids": list(range(15000)),
         "record_changed_time_map": {i: f"time_{i}" for i in range(15000)},
         "customer_id": "sample_customer_id",
-        "deleted_ids": set(),
+        "deleted_ids": list(),
         "login_customer_id": "default",
     }
 
@@ -534,17 +534,17 @@ def test_read_records_with_slice_splitting(mocker, config):
 
     # Define the expected slices after the stream_slice is split
     expected_first_slice = {
-        "updated_ids": set(range(10000)),
+        "updated_ids": list(range(10000)),
         "record_changed_time_map": {i: f"time_{i}" for i in range(10000)},
         "customer_id": "sample_customer_id",
-        "deleted_ids": set(),
+        "deleted_ids": list(),
         "login_customer_id": "default",
     }
     expected_second_slice = {
-        "updated_ids": set(range(10000, 15000)),
+        "updated_ids": list(range(10000, 15000)),
         "record_changed_time_map": {i: f"time_{i}" for i in range(10000, 15000)},
         "customer_id": "sample_customer_id",
-        "deleted_ids": set(),
+        "deleted_ids": list(),
         "login_customer_id": "default",
     }
 

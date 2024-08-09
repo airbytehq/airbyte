@@ -703,8 +703,8 @@ class IncrementalEventsStream(GoogleAdsStream, CheckpointMixin, ABC):
             customer_id = parent_slice.get("customer_id")
             child_slice = {
                 "customer_id": customer_id,
-                "updated_ids": set(),
-                "deleted_ids": set(),
+                "updated_ids": list(),
+                "deleted_ids": list(),
                 "record_changed_time_map": dict(),
                 "login_customer_id": parent_slice.get("login_customer_id"),
             }
@@ -733,7 +733,7 @@ class IncrementalEventsStream(GoogleAdsStream, CheckpointMixin, ABC):
 
         # Add record id to list of changed or deleted items depending on status
         slice_id_list = "deleted_ids" if parent_record.get("change_status.resource_status") == "REMOVED" else "updated_ids"
-        child_slice[slice_id_list].add(substream_id)
+        child_slice[slice_id_list].append(substream_id)
 
         return True
 
@@ -788,14 +788,14 @@ class IncrementalEventsStream(GoogleAdsStream, CheckpointMixin, ABC):
 
         # Split the updated_ids into chunks and yield them
         for i in range(0, len(updated_ids), chunk_size):
-            chunk_ids = set(updated_ids[i : i + chunk_size])
+            chunk_ids = list(updated_ids[i : i + chunk_size])
             chunk_time_map = {k: record_changed_time_map[k] for k in chunk_ids}
 
             yield {
                 "updated_ids": chunk_ids,
                 "record_changed_time_map": chunk_time_map,
                 "customer_id": customer_id,
-                "deleted_ids": set(),
+                "deleted_ids": list(),
                 "login_customer_id": login_customer_id,
             }
 
