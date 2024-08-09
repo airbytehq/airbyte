@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.cdk.integrations.source.jdbc
+
+package io.airbyte.cdk.db.jdbc
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.db.jdbc.JdbcUtils
-import io.airbyte.cdk.db.util.SSLCertificateUtils.keyStoreFromCertificate
-import io.airbyte.cdk.db.util.SSLCertificateUtils.keyStoreFromClientCertificate
+import io.airbyte.cdk.db.util.SSLCertificateUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.net.MalformedURLException
@@ -153,7 +152,7 @@ class JdbcSSLConnectionUtils {
                         val clientKeyPassword = getOrGeneratePassword(encryption)
                         try {
                             val caCertKeyStoreUri =
-                                keyStoreFromCertificate(
+                                SSLCertificateUtils.keyStoreFromCertificate(
                                     encryption[PARAM_CA_CERTIFICATE].asText(),
                                     clientKeyPassword,
                                     null,
@@ -214,7 +213,7 @@ class JdbcSSLConnectionUtils {
                         val clientKeyPassword = getOrGeneratePassword(encryption)
                         try {
                             val clientCertKeyStoreUri =
-                                keyStoreFromClientCertificate(
+                                SSLCertificateUtils.keyStoreFromClientCertificate(
                                     encryption[PARAM_CLIENT_CERTIFICATE].asText(),
                                     encryption[PARAM_CLIENT_KEY].asText(),
                                     clientKeyPassword,
