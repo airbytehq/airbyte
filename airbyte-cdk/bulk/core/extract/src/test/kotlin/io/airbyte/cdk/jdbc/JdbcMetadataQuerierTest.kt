@@ -72,7 +72,7 @@ class JdbcMetadataQuerierTest {
             val tableName = (mdq as JdbcMetadataQuerier).findTableName("KV", "PUBLIC")
             Assertions.assertNotNull(tableName)
             Assertions.assertEquals(expectedColumnMetadata, mdq.columnMetadata(tableName!!))
-            Assertions.assertEquals(listOf(listOf("K")), mdq.primaryKeys("KV", "PUBLIC"))
+            Assertions.assertEquals(listOf(listOf("K")), mdq.primaryKey("KV", "PUBLIC"))
         }
     }
 }
