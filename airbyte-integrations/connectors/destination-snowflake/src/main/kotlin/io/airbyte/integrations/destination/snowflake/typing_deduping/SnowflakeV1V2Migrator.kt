@@ -42,6 +42,7 @@ class SnowflakeV1V2Migrator(
         ).isNotEmpty()
     }
 
+    //TODO: Remove original function, kept for now to simplify testing comparison
     /*
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         return database
@@ -80,53 +81,7 @@ class SnowflakeV1V2Migrator(
         // translates
         // VARIANT as VARCHAR
 
-        println("Entering SnowflakeV1V2Migrator.getTableIfExists")
-
-        /*
-        val columnsFromInfoSchemaQuery =
-            database
-                .queryJsons(
-                    """
-                   SELECT column_name, data_type, is_nullable
-                   FROM information_schema.columns
-                   WHERE table_catalog = ?
-                     AND table_schema = ?
-                     AND table_name = ?
-                   ORDER BY ordinal_position;
-
-                   """.trimIndent(),
-                    databaseName,
-                    namespace!!,
-                    tableName!!,
-                )
-                .stream()
-                .collect(
-                    { LinkedHashMap() },
-                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-                        map[row["COLUMN_NAME"].asText()] =
-                            ColumnDefinition(
-                                row["COLUMN_NAME"].asText(),
-                                row["DATA_TYPE"].asText(),
-                                0,
-                                fromIsNullableIsoString(row["IS_NULLABLE"].asText()),
-                            )
-                    },
-                    { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
-                        obj.putAll(m!!)
-                    },
-                )
-
-        print("columnsFromInfoSchemaQuery=" + columnsFromInfoSchemaQuery)
-
-        return if (columnsFromInfoSchemaQuery.isEmpty()) {
-           Optional.empty()
-        } else {
-           Optional.of(TableDefinition(columnsFromInfoSchemaQuery))
-        }
-
-
-         */
+        //println("Entering SnowflakeV1V2Migrator.getTableIfExists")
 
         try {
 
@@ -140,13 +95,14 @@ class SnowflakeV1V2Migrator(
                     tableName,
                 )
 
-            println("showColumnsQuery=" + showColumnsQuery)
+            //println("showColumnsQuery=" + showColumnsQuery)
 
             val showColumnsResult = database.queryJsons(
                 showColumnsQuery
             )
 
-            println("showColumnsResult=" + showColumnsResult)
+            //println("showColumnsResult=" + showColumnsResult)
+
             val columnsFromShowQuery = showColumnsResult
                 .stream()
                 .collect(
@@ -167,7 +123,7 @@ class SnowflakeV1V2Migrator(
                     },
                 )
 
-            println("columnsFromShowQuery=" + columnsFromShowQuery)
+            //println("columnsFromShowQuery=" + columnsFromShowQuery)
 
             return if (columnsFromShowQuery.isEmpty()) {
                 Optional.empty()
@@ -184,6 +140,11 @@ class SnowflakeV1V2Migrator(
 
             e.printStackTrace()
 
+            //TODO: Need to throw exceptionNot throwing exception during development
+            // Negative tests fail because the schema does not exist but the SHOW table throws error
+            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
+            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
+
             //throw e
 
         }
@@ -194,7 +155,7 @@ class SnowflakeV1V2Migrator(
 
     }
 
-
+    //TODO: Remove original code, kept for now to simplify testing comparison
     /*
     ORIGINAL Code
 
