@@ -24,9 +24,12 @@ if TYPE_CHECKING:
 
 
 def get_manifest_inferred_insights(connector: Connector) -> dict:
+    if connector.manifest_path is None or not connector.manifest_path.exists():
+        return {}
+
     manifest = connector.manifest_path.read_text()
 
-    schemas_directory = connector.code_path / connector.technical_name.replace("-", "_") / "schemas"
+    schemas_directory = connector.code_directory / connector.technical_name.replace("-", "_") / "schemas"
 
     return {
         "manifest_uses_parameters": manifest.find("$parameters") != -1,

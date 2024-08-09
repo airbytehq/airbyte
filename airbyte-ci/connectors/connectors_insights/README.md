@@ -56,6 +56,9 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.3.1
+Skip manifest inferred insights when the connector does not have a `manifest.yaml` file.
+
 ### 0.3.0
 Adding `manifest_uses_parameters`, `manifest_uses_custom_components`, and `manifest_custom_components_classes` insights.
 
