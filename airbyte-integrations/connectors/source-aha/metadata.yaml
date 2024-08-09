@@ -9,13 +9,13 @@ data:
       enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-aha
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.3.3@sha256:8586ff17ed9584435d0e946a5d0ec393435c81d08da2d8e2913f7984836ce452
   connectorSubtype: api
   connectorType: source
   definitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
@@ -29,8 +29,8 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:
