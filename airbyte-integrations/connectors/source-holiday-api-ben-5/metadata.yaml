@@ -26,7 +26,7 @@ data:
   releaseDate: 2024-08-09
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api-ben-5.md
+  documentationUrl: https://docs.airbyte.com/integrations/sources/holiday-api-ben-5
   tags:
     - language:manifest-only
     - cdk:low-code
