@@ -268,6 +268,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.11.8          | 2024-08-09 | [\#43441](https://github.com/airbytehq/airbyte/pull/43441) | speed up initialization by running explicit SHOW commands instad of using metadata.getTables() |
 | 3.11.7          | 2024-08-09 | [\#43440](https://github.com/airbytehq/airbyte/pull/43440) | remove contention on state table by deleting rows ony once every 100 updates |
 | 3.11.6          | 2024-08-09 | [\#43332](https://github.com/airbytehq/airbyte/pull/43332) | bump Java CDK |
 | 3.11.5          | 2024-08-07 | [\#43348](https://github.com/airbytehq/airbyte/pull/43348) | SnowflakeSqlGen cleanup to Kotlin string interpolation                                                                                                                           |
