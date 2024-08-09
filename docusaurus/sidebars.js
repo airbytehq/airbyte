@@ -156,10 +156,15 @@ const destinationS3 = {
   },
   items: [
     {
+       type: "doc",
+       label: "Migration Guide",
+       id: "integrations/destinations/s3-migrations",
+    },
+    {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
-    },
+    }
   ],
 };
 
