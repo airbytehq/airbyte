@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.Optional;
 import org.bson.*;
 import org.bson.conversions.Bson;
+import org.bson.types.Binary;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,9 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
   private final int chunkSize;
 
   private Optional<MongoDbStreamState> currentState;
+
+  // Presents when _id is in binary type. As of now (Aug 2024) we assume there can be only 1 type of
+  // _id.
   private MongoCursor<Document> currentIterator;
 
   private int numSubqueries = 0;
@@ -104,9 +108,18 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
     final var idType = IdType.findByJavaType(currentId.getClass().getSimpleName())
         .orElseThrow(() -> new ConfigErrorException("Unsupported _id type " + currentId.getClass().getSimpleName()));
 
+    Byte binarySubType = 0;
+
+    if (idType.equals(IdType.BINARY)) {
+      final var binCurrentId = (Binary) currentId;
+      binarySubType = binCurrentId.getType();
+    }
+
     final var state = new MongoDbStreamState(idToStringRepresenation(currentId, idType),
         IN_PROGRESS,
-        idType);
+        idType,
+        binarySubType);
+
     return Optional.of(state);
   }
 
@@ -149,7 +162,7 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
             case OBJECT_ID -> new BsonObjectId(new ObjectId(state.id()));
             case INT -> new BsonInt32(Integer.parseInt(state.id()));
             case LONG -> new BsonInt64(Long.parseLong(state.id()));
-            case BINARY -> parseBinaryIdString(state.id());
+            case BINARY -> parseBinaryIdString(state.id(), state.binarySubType());
             }))
         // if nothing was found, return a new BsonDocument
         .orElseGet(BsonDocument::new);
