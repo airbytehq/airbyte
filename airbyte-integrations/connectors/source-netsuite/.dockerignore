@@ -1,7 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_doordash
 !source_netsuite
 !setup.py
 !secrets
