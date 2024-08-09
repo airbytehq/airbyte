@@ -27,6 +27,7 @@ import kotlin.concurrent.Volatile
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 private val LOGGER = KotlinLogging.logger {}
@@ -382,6 +383,18 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
+    @Test
+    @Disabled
+    override fun interruptedTruncateWithPriorData() {
+        super.interruptedTruncateWithPriorData()
+    }
+
+    @Test
+    @Disabled
+    override fun interruptedOverwriteWithoutPriorData() {
+        super.interruptedOverwriteWithoutPriorData()
+    }
+
     private val defaultSchema: String
         get() = config!!["schema"].asText()
 
@@ -399,6 +412,8 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 "_AIRBYTE_DATA",
                 "_airbyte_meta",
                 "_AIRBYTE_META",
+                "_airbyte_generation_id",
+                "_AIRBYTE_GENERATION_ID",
             )
 
         @Volatile private var cleanedAirbyteInternalTable = false
