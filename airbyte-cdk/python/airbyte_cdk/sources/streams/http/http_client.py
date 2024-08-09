@@ -137,20 +137,18 @@ class HttpClient:
         if isinstance(self._session, requests_cache.CachedSession):
             self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
-    def _dedupe_query_params(self, url: str, params: Optional[Mapping[str, str]]) -> Mapping[str, str]:
+    def _dedupe_query_params(self, url: str, params: Optional[Mapping[str, str]] = None) -> Mapping[str, str]:
         """
         Remove query parameters from params mapping if they are already encoded in the URL.
         :param url: URL with
         :param params:
         :return:
         """
-        if params is None:
-            params = {}
-        query_string = urllib.parse.urlparse(url).query
-        query_dict = {k: v[0] for k, v in urllib.parse.parse_qs(query_string).items()}
-
-        duplicate_keys_with_same_value = {k for k in query_dict.keys() if str(params.get(k)) == str(query_dict[k])}
-        return {k: v for k, v in params.items() if k not in duplicate_keys_with_same_value}
+        if params:
+            query_params = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+            deduped_params = {k: v for k, v in params.items() if k not in query_params or str(query_params[k][0]) != str(v)}
+            return deduped_params
+        return {}
 
     def _create_prepared_request(
         self,

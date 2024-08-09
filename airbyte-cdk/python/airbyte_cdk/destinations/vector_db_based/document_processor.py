@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import dpath
+import orjson
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
@@ -56,7 +57,7 @@ class DocumentProcessor:
         if config.text_splitter is not None and config.text_splitter.mode == "separator":
             for s in config.text_splitter.separators:
                 try:
-                    separator = json.loads(s)
+                    separator = orjson.loads(s)
                     if not isinstance(separator, str):
                         return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
                 except json.decoder.JSONDecodeError:
@@ -72,7 +73,7 @@ class DocumentProcessor:
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
-                separators=[json.loads(s) for s in splitter_config.separators],
+                separators=[orjson.loads(s) for s in splitter_config.separators],
                 keep_separator=splitter_config.keep_separator,
                 disallowed_special=(),
             )

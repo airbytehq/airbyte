@@ -7,7 +7,7 @@ import importlib
 import json
 import os
 import pkgutil
-from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Generator, Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
 
 import jsonref
 from airbyte_cdk.models import ConnectorSpecification, FailureType
@@ -39,27 +39,36 @@ class JsonFileLoader:
 
 
 def resolve_ref_links(obj: Any) -> Any:
-    """
-    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+    """Resolve jsonref.JsonRef objects in a JSON schema and convert to JSON serializable dict.
 
-    :param obj - jsonschema object with ref field resolved.
-    :return JSON serializable object with references without external dependencies.
+    Args:
+        obj (Any): The JSON schema object with ref field resolved.
+
+    Returns:
+        Any: JSON serializable object with references converted and without external dependencies.
     """
-    if isinstance(obj, jsonref.JsonRef):
-        obj = resolve_ref_links(obj.__subject__)
-        # Omit existing definitions for external resource since
-        # we dont need it anymore.
-        if isinstance(obj, dict):
-            obj.pop("definitions", None)
-            return obj
+
+    def gen_items(container: Any) -> Generator:
+        if isinstance(container, dict):
+            stack.extend(container.items())
+            return container.items()
+        elif isinstance(container, list):
+            stack.extend(enumerate(container))
+            return enumerate(container)
         else:
-            raise ValueError(f"Expected obj to be a dict. Got {obj}")
-    elif isinstance(obj, dict):
-        return {k: resolve_ref_links(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [resolve_ref_links(item) for item in obj]
-    else:
-        return obj
+            return []
+
+    stack = [obj]
+    while stack:
+        current = stack.pop()
+        if isinstance(current, jsonref.JsonRef):
+            resolved = current.__subject__
+            obj = gen_items(resolved)
+            if isinstance(resolved, dict):
+                resolved.pop("definitions", None)
+        else:
+            gen_items(current)
+    return obj
 
 
 def _expand_refs(schema: Any, ref_resolver: Optional[RefResolver] = None) -> None:
