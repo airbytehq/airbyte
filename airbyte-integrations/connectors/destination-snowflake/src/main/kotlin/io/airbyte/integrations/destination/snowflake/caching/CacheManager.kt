@@ -12,11 +12,9 @@ object CacheManager {
     //TODO: Need to evaluate the benefits vs complexity of caching the metadata
 
     private const val ENABLE_METADATA_CACHE = false
-
     private const val CACHE_DURATION_MILLIS = 60 * 60 * 1000 // 1 hour
 
     private val cache = ConcurrentHashMap<String, CacheEntry>()
-
     private var numberOfMetadataQueriesSentToDatabase = 0;
     private var numberOfMetadataQueriesServedFromCache = 0;
 
