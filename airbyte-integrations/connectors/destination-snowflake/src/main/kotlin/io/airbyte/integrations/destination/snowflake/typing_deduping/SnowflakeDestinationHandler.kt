@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.google.common.base.Stopwatch
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
@@ -27,11 +28,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import java.sql.Connection
-import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.apache.commons.text.StringSubstitutor
@@ -89,37 +90,45 @@ class SnowflakeDestinationHandler(
         suffix: String,
     ): InitialRawTableStatus {
         val rawTableName = id.rawName + suffix
-        val tableExists =
-            database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
-                LOGGER.info(
-                    "Retrieving table from Db metadata: {} {}",
-                    id.rawNamespace,
-                    rawTableName
+        val timer: Stopwatch = Stopwatch.createStarted()
+        LOGGER.info("Retrieving table from Db metadata: {} {}", id.rawNamespace, rawTableName)
+
+        var schemaExists =
+            database
+                .queryStrings(
+                    { conn: Connection ->
+                        conn
+                            .createStatement()
+                            .executeQuery(
+                                "SHOW SCHEMAS LIKE '${id.rawNamespace}' IN DATABASE $databaseName"
+                            )
+                    },
+                    { record: ResultSet -> record.getString("name") }
                 )
-                try {
-                    val rs =
-                        databaseMetaData.getTables(
-                            databaseName,
-                            id.rawNamespace,
-                            rawTableName,
-                            null
-                        )
-                    // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
-                    // interpreted as uppercase
-                    // in db metadata calls. check for both
-                    val rsUppercase =
-                        databaseMetaData.getTables(
-                            databaseName,
-                            id.rawNamespace.uppercase(),
-                            rawTableName.uppercase(),
-                            null
-                        )
-                    rs.next() || rsUppercase.next()
-                } catch (e: SQLException) {
-                    LOGGER.error("Failed to retrieve table metadata", e)
-                    throw RuntimeException(e)
-                }
-            }
+                .contains(id.rawNamespace)
+        var tableExists: Boolean
+        if (schemaExists) {
+            tableExists =
+                database
+                    .queryStrings(
+                        { conn: Connection ->
+                            conn
+                                .createStatement()
+                                .executeQuery(
+                                    "SHOW TABLES LIKE '$rawTableName' IN SCHEMA ${databaseName}.\"${id.rawNamespace}\""
+                                )
+                        },
+                        { record: ResultSet -> record.getString("name") }
+                    )
+                    .contains(rawTableName)
+        } else {
+            tableExists = false
+        }
+        LOGGER.info(
+            "Done retrieving table from Db metadata: {} {}. Took ${timer.elapsed(TimeUnit.MILLISECONDS)}ms",
+            id.rawNamespace,
+            rawTableName
+        )
         if (!tableExists) {
             return InitialRawTableStatus(
                 rawTableExists = false,
@@ -127,6 +136,9 @@ class SnowflakeDestinationHandler(
                 maxProcessedTimestamp = Optional.empty()
             )
         }
+
+        timer.reset()
+        LOGGER.info("Retrieving minUnloadedTimestamp: {} {}.", id.rawNamespace, rawTableName)
         // Snowflake timestamps have nanosecond precision, so decrement by 1ns
         // And use two explicit queries because COALESCE doesn't short-circuit.
         // This first query tries to find the oldest raw record with loaded_at = NULL
@@ -169,6 +181,11 @@ class SnowflakeDestinationHandler(
                     )
                     .first()
             )
+        LOGGER.info(
+            "Done retrieving minUnloadedTimestamp: {} {}. Took ${timer.elapsed(TimeUnit.MILLISECONDS)}ms",
+            id.rawNamespace,
+            rawTableName
+        )
         if (minUnloadedTimestamp.isPresent) {
             return InitialRawTableStatus(
                 rawTableExists = true,
@@ -178,6 +195,8 @@ class SnowflakeDestinationHandler(
             )
         }
 
+        timer.reset()
+        LOGGER.info("Retrieving maxTimestamp: {} {}.", id.rawNamespace, rawTableName)
         // If there are no unloaded raw records, then we can safely skip all existing raw records.
         // This second query just finds the newest raw record.
 
@@ -225,6 +244,11 @@ class SnowflakeDestinationHandler(
                     )
                     .first()
             )
+        LOGGER.info(
+            "Done retrieving maxTimestamp: {} {}. Took ${timer.elapsed(TimeUnit.MILLISECONDS)}ms",
+            id.rawNamespace,
+            rawTableName
+        )
         return InitialRawTableStatus(
             rawTableExists = true,
             hasUnprocessedRecords = false,
