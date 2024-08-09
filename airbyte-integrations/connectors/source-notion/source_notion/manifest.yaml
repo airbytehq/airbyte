@@ -988,6 +988,7 @@ streams:
                             - select
                             - status
                             - title
+                            - unique_id
                             - url
                         name:
                           type: string
