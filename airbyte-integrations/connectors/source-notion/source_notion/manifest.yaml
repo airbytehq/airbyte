@@ -1327,6 +1327,24 @@ streams:
                       properties:
                         id:
                           type: string
+                        name:
+                          type: string
+                        type:
+                          enum:
+                            - unique_id
+                        unique_id:
+                          type: object
+                          properties:
+                            number:
+                              type: number
+                            prefix:
+                              type:
+                                - "null"
+                                - string
+                    - type: object
+                      properties:
+                        id:
+                          type: string
                         type:
                           enum:
                             - url
