@@ -411,6 +411,14 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                             "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
                                             "required": ["filetype"],
                                         },
+                                        {
+                                            "title": "Excel Format",
+                                            "type": "object",
+                                            "properties": {
+                                                "filetype": {"title": "Filetype", "default": "excel", "const": "excel", "type": "string"}
+                                            },
+                                            "required": ["filetype"]
+                                        }
                                     ],
                                 },
                                 "schemaless": {
