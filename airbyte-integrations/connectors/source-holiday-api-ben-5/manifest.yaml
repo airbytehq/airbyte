@@ -1,0 +1,160 @@
+version: 4.3.2
+
+type: DeclarativeSource
+
+description: Test!
+
+check:
+  type: CheckStream
+  stream_names:
+    - holidays
+
+definitions:
+  streams:
+    holidays:
+      type: DeclarativeStream
+      name: holidays
+      primary_key:
+        - uuid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: holidays
+          http_method: GET
+          request_parameters:
+            year: "{{ config['year'] }}"
+            country: "{{ config['country'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - holidays
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/holidays"
+  base_requester:
+    type: HttpRequester
+    url_base: https://holidayapi.com/v1/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: key
+        inject_into: request_parameter
+
+streams:
+  - $ref: "#/definitions/streams/holidays"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - country
+      - number_of_years
+      - year
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      country:
+        type: string
+        description: >-
+          For countries, ISO 3166-1 alpha-2 or ISO 3166-1 alpha-3 format. For
+          states / provinces (with our States & Provinces plan), ISO 3166-2
+          format. Accepts up to 10 comma separated values.
+        order: 1
+        title: Country Or State
+        default: US
+      number_of_years:
+        type: string
+        order: 2
+        title: Number of Years
+        default: "3"
+      year:
+        type: string
+        order: 3
+        title: Year
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    holidays: true
+  testedStreams:
+    holidays:
+      hasRecords: true
+      streamHash: 29073a4a9fa6a4ad125f01ca61fc651396f7238f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+
+schemas:
+  holidays:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      country:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      observed:
+        type:
+          - string
+          - "null"
+      public:
+        type:
+          - boolean
+          - "null"
+      uuid:
+        type: string
+      weekday:
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              numeric:
+                type:
+                  - string
+                  - "null"
+          observed:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              numeric:
+                type:
+                  - string
+                  - "null"
+    required:
+      - uuid
