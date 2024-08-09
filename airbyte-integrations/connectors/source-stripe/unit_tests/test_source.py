@@ -152,6 +152,6 @@ def test_call_budget_passed_to_every_stream(mocker):
     for stream in streams:
         if isinstance(stream, StreamFacade):
             stream = stream._legacy_stream
-        session = stream.request_session()
+        session = stream._http_client._session
         assert isinstance(session, (CachedLimiterSession, LimiterSession))
         assert session._api_budget == get_api_call_budget_mock.return_value
