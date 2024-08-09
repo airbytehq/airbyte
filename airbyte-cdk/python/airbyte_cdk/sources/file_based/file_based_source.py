@@ -61,7 +61,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         spec_class: Type[AbstractFileBasedSpec],
         catalog: Optional[ConfiguredAirbyteCatalog],
         config: Optional[Mapping[str, Any]],
-        state: Optional[MutableMapping[str, Any]],
+        state: Optional[List[AirbyteStateMessage]],
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,

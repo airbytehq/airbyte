@@ -10,12 +10,10 @@ from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStateType,
-    AirbyteStream,
     AirbyteStreamState,
     StreamDescriptor,
 )
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.streams import Stream
 from pydantic import ConfigDict as V2ConfigDict
 
 

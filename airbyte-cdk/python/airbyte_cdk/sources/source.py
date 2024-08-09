@@ -5,7 +5,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
+from typing import Any, Generic, Iterable, List, Mapping, Optional, TypeVar
 
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog

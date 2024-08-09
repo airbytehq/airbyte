@@ -5,7 +5,6 @@
 import copy
 import datetime
 import logging
-from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from unittest.mock import Mock
 

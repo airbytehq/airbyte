@@ -11,10 +11,8 @@ from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStateType,
-    AirbyteStream,
     AirbyteStreamState,
     StreamDescriptor,
-    SyncMode,
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, HashableStreamDescriptor

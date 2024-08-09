@@ -12,7 +12,7 @@ import sys
 import tempfile
 from collections import defaultdict
 from functools import wraps
-from typing import Any, DefaultDict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
 from urllib.parse import urlparse
 
 import requests
