@@ -49,6 +49,7 @@ Generate a API access key ID and token using the [Babelforce documentation](http
 
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.3.0 | 2024-08-09 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Refactor connector to manifest-only format |
 | 0.2.12 | 2024-08-03 | [43191](https://github.com/airbytehq/airbyte/pull/43191) | Update dependencies |
 | 0.2.11 | 2024-07-27 | [42633](https://github.com/airbytehq/airbyte/pull/42633) | Update dependencies |
 | 0.2.10 | 2024-07-20 | [42239](https://github.com/airbytehq/airbyte/pull/42239) | Update dependencies |
