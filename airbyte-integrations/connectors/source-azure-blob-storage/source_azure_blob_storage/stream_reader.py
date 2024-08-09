@@ -15,7 +15,7 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient, ContainerClient
 from smart_open import open
 
-from .spec import SourceAzureBlobStorageSpec
+from source_azure_blob_storage.spec import SourceAzureBlobStorageSpec
 
 
 class AzureOauth2Authenticator(Oauth2Authenticator):
