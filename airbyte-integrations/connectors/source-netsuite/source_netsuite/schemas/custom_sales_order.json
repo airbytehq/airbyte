@@ -50,6 +50,12 @@
       },        
       "quantity": {
         "type": ["null", "number"]
-      }     
+      },
+      "rate": {
+        "type": ["null", "number"]
+      },
+      "status": {
+        "type": ["null", "string"]
+      }
     }
   }
