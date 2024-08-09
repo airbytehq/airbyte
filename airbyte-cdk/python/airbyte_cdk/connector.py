@@ -68,21 +68,43 @@ class BaseConnector(ABC, Generic[TConfig]):
 
         package = self.__class__.__module__.split(".")[0]
 
-        yaml_spec = load_optional_package_file(package, "spec.yaml")
-        json_spec = load_optional_package_file(package, "spec.json")
+        spec_obj = {
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/hardcoded-records",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Hardcoded Records Source Spec",
+    "type": "object",
+    "required": [],
+    "additionalProperties": True,
+    "properties": {
+      "count": {
+        "title": "Count",
+        "description": "How many records per stream should be generated",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1000,
+        "order": 0
+      }
+    }
+  }
+}
 
-        if yaml_spec and json_spec:
-            raise RuntimeError("Found multiple spec files in the package. Only one of spec.yaml or spec.json should be provided.")
 
-        if yaml_spec:
-            spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
-        elif json_spec:
-            try:
-                spec_obj = json.loads(json_spec)
-            except json.JSONDecodeError as error:
-                raise ValueError(f"Could not read json spec file: {error}. Please ensure that it is a valid JSON.")
-        else:
-            raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
+        # yaml_spec = load_optional_package_file(package, "spec.yaml")
+        # json_spec = load_optional_package_file(package, "spec.json")
+
+        # if yaml_spec and json_spec:
+        #     raise RuntimeError("Found multiple spec files in the package. Only one of spec.yaml or spec.json should be provided.")
+
+        # if yaml_spec:
+        #     spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
+        # elif json_spec:
+        #     try:
+        #         spec_obj = json.loads(json_spec)
+        #     except json.JSONDecodeError as error:
+        #         raise ValueError(f"Could not read json spec file: {error}. Please ensure that it is a valid JSON.")
+        # else:
+        #     raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
 
         return ConnectorSpecification.parse_obj(spec_obj)
 
