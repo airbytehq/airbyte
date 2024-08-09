@@ -1,9 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import re
+from typing import Mapping, Any
+from requests_mock import Mocker
 
 
-def register_mock_responses(mocker, http_calls):
+def register_mock_responses(mocker: Mocker, http_calls: list[Mapping[str, Mapping[str, Any]]]):
     """Register a list of HTTP request-response pairs."""
     for call in http_calls:
         request, response = call["request"], call["response"]
