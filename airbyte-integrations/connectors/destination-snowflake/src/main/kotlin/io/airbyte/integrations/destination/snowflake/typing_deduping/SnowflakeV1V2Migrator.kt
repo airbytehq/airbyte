@@ -44,7 +44,7 @@ class SnowflakeV1V2Migrator(
 
     //TODO: Remove original function, kept for now to simplify testing comparison
     /*
-    override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
+    override fun doesAirbyteInternalNamespaceExist_ORIGINAL(streamConfig: StreamConfig?): Boolean {
         return database
             .queryJsons(
                 """
@@ -161,7 +161,7 @@ class SnowflakeV1V2Migrator(
 
     @SneakyThrows
     @Throws(Exception::class)
-    override fun getTableIfExists(
+    override fun getTableIfExists_ORIGINAL(
         namespace: String?,
         tableName: String?
     ): Optional<TableDefinition> {

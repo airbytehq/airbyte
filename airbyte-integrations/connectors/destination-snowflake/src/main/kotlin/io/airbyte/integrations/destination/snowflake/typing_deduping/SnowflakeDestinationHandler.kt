@@ -126,7 +126,7 @@ class SnowflakeDestinationHandler(
     /*
     //TODO: Original code - kept for now to simplify testing, to be removed
     @Throws(SQLException::class)
-    private fun getFinalTableRowCount(
+    private fun getFinalTableRowCount_ORIGINAL(
         streamIds: List<StreamId>
     ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
 
@@ -695,7 +695,7 @@ class SnowflakeDestinationHandler(
     //TODO: Remove Original function, kept for now to simplify testing comparisons
     /*
     @Throws(SQLException::class)
-    fun findExistingTables(
+    fun findExistingTables_ORIGINAL(
         database: JdbcDatabase,
         databaseName: String,
         streamIds: List<StreamId>
