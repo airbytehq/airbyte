@@ -2256,7 +2256,7 @@ class CustomObject(CRMSearchStream, ABC):
     def name(self) -> str:
         """Name of the custom object stream. Use the fully qualified object name (e.g. p1234567_owners) if the stream name collides
         with a standard stream name (e.g. owners) to avoid duplicate stream name error."""
-        return self.fully_qualified_name if self.entity in STANDARD_STREAM_NAMES else self.fully_qualified_name
+        return self.fully_qualified_name if self.entity in STANDARD_STREAM_NAMES else self.entity
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.schema
