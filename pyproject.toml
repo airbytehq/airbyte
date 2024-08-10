@@ -13,7 +13,6 @@ isort = "5.6.4"
 black = "~22.3.0"
 ruff = "^0.4"
 poethepoet = "^0.26.1"
-ipykernel = "^6.29.5"
 
 [tool.poe.tasks]
 isort = { cmd = "poetry run isort --settings-file pyproject.toml ." }

@@ -1524,14 +1524,6 @@ class DealPipelines(ClientSideIncrementalStream):
     primary_key = "pipelineId"
     scopes = {"crm.objects.contacts.read"}
 
-class DealSplits(CRMSearchStream):
-    """Deal splits, API v3"""
-
-    entity = "deal_split"
-    last_modified_field = "hs_lastmodifieddate"
-    primary_key = "id"
-    scopes = {"crm.objects.deals.read"}
-
 
 class TicketPipelines(ClientSideIncrementalStream):
     """Ticket pipelines, API v1
