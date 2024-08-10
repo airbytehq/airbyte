@@ -219,13 +219,9 @@ Follow these instructions to add the Airbyte helm repository:
 ```yaml
 global:
   edition: enterprise
-
-# Optional - enables Airbyte's second generation Workers, which allows for better back pressure and self-healing in resource constrained environments.
-workload-api-server:
-  enabled: true
-
-workload-launcher:
-  enabled:
+  # Optional - enables Airbyte's second generation Workers, which allows for better back pressure and self-healing in resource constrained environments.
+  enterprise:
+    workloadsOptIn: true
 ```
 
 3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
@@ -360,20 +356,19 @@ Set `authenticationType` to `instanceProfile` if the compute infrastructure runn
 </TabItem>
 <TabItem value="GCS" label="GCS" default>
 
-Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
+Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
 
 ```yaml
 global:
   storage:
     type: "GCS"
-    storageSecretName: gcp-cred-secrets
+    storageSecretName: airbyte-config-secrets
     bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
     gcs:
       projectId: <project-id>
-      credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
 </TabItem>
