@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bd14b08f-9f43-400f-b2b6-7248b5c72561
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.11
   dockerRepository: airbyte/source-tvmaze-schedule
   githubIssueLabel: source-tvmaze-schedule
   icon: tvmazeschedule.svg
@@ -26,10 +26,14 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: tvmaze-schedule_config_dev_null
+          id: 61af6e50-3c58-4b66-b005-7e2f255d0d32
   # Disabling acceptance tests for now
   # They are not passing
   # Low/No Airbyte Cloud usage
-  # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-TVMAZE-SCHEDULE__CREDS

@@ -32,6 +32,8 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
+| 0.1.12 | 2024-08-03 | [43097](https://github.com/airbytehq/airbyte/pull/43097) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42829](https://github.com/airbytehq/airbyte/pull/42829) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42189](https://github.com/airbytehq/airbyte/pull/42189) | Update dependencies |
 | 0.1.9 | 2024-07-13 | [41723](https://github.com/airbytehq/airbyte/pull/41723) | Update dependencies |
 | 0.1.8 | 2024-07-10 | [41459](https://github.com/airbytehq/airbyte/pull/41459) | Update dependencies |

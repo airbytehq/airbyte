@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-recruitee
   githubIssueLabel: source-recruitee
   icon: recruitee.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: recruitee_config_dev_null
+          id: f12dfde4-006e-4aa7-83af-0e5059fc6f95
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-RECRUITEE__CREDS

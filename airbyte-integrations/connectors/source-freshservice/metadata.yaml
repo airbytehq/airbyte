@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
-  dockerImageTag: 1.3.14
+  dockerImageTag: 1.3.16
   dockerRepository: airbyte/source-freshservice
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
   githubIssueLabel: source-freshservice
@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshservice_config_dev_null
+          id: e47f94ef-d605-4a50-92d9-f6c873f2b2d2
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-FRESHSERVICE__CREDS

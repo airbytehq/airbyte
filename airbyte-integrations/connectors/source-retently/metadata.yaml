@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: db04ecd1-42e7-4115-9cec-95812905c626
-  dockerImageTag: 0.2.12
+  dockerImageTag: 0.2.14
   dockerRepository: airbyte/source-retently
   documentationUrl: https://docs.airbyte.com/integrations/sources/retently
   githubIssueLabel: source-retently
@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: retently_config_dev_null
+          id: 20c4bd1a-a150-4e92-a2e6-ffb374589e20
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-RETENTLY_CREDS

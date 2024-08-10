@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
-  dockerImageTag: 0.3.10
+  dockerImageTag: 0.3.12
   dockerRepository: airbyte/source-tempo
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   githubIssueLabel: source-tempo
@@ -31,6 +31,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: tempo_accounts_only_config_dev_null
+          id: 1bffaa9d-68f0-4b31-9544-ecd2391551d8
+        - name: tempo_config_dev_null
+          id: 27804e86-37c0-46d3-a863-242ab459ce75
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-TEMPO__CREDS

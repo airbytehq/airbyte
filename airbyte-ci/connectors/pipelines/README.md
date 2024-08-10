@@ -174,21 +174,21 @@ At this point you can run `airbyte-ci` commands.
     - [Examples](#examples-5)
       - [Arguments](#arguments-1)
     - [`connectors migrate-to-base-image` command](#connectors-migrate-to-base-image-command)
-      - [Examples](#examples-7)
+      - [Examples](#examples-6)
     - [`connectors migrate-to-poetry` command](#connectors-migrate-to-poetry-command)
-      - [Examples](#examples-8)
+      - [Examples](#examples-7)
     - [`connectors migrate-to-inline-schemas` command](#connectors-migrate-to-inline-schemas-command)
-      - [Examples](#examples-9)
+      - [Examples](#examples-8)
     - [`connectors pull-request` command](#connectors-pull-request-command)
-      - [Examples](#examples-10)
+      - [Examples](#examples-9)
     - [`format` command subgroup](#format-command-subgroup)
     - [Options](#options-6)
-    - [Examples](#examples-11)
+    - [Examples](#examples-10)
     - [`format check all` command](#format-check-all-command)
     - [`format fix all` command](#format-fix-all-command)
     - [`poetry` command subgroup](#poetry-command-subgroup)
     - [Options](#options-7)
-    - [Examples](#examples-12)
+    - [Examples](#examples-11)
     - [`publish` command](#publish-command)
       - [Options](#options-8)
     - [`metadata` command subgroup](#metadata-command-subgroup)
@@ -197,6 +197,8 @@ At this point you can run `airbyte-ci` commands.
       - [What it runs](#what-it-runs-3)
     - [`tests` command](#tests-command)
       - [Options](#options-9)
+      - [Examples](#examples-12)
+    - [`migrate-to-manifest-only` command](#migrate-to-manifest-only-command)
       - [Examples](#examples-13)
   - [Changelog](#changelog)
   - [More info](#more-info)
@@ -549,7 +551,7 @@ Bump source-openweather:
 
 | Argument          | Description                                                            |
 | ----------------- | ---------------------------------------------------------------------- |
-| `BUMP_TYPE`       | major, minor or patch                                                  |
+| `BUMP_TYPE`       | major, minor, patch, or version:<explicit-version>                     |
 | `CHANGELOG_ENTRY` | The changelog entry that will get added to the connector documentation |
 
 #### Options
@@ -571,8 +573,8 @@ For Python connectors, sets the `airbyte-cdk` dependency in `pyproject.toml` and
 
 #### Arguments
 
-| Argument      | Description                                             |
-| ------------- | ------------------------------------------------------- |
+| Argument      | Description                                                               |
+| ------------- | ------------------------------------------------------------------------- |
 | `CDK_VERSION` | CDK version constraint to set (default to `^{most_recent_patch_version}`) |
 
 #### Notes
@@ -769,10 +771,38 @@ You can pass multiple `--poetry-package-path` options to run poe tasks.
 E.G.: running Poe tasks on the modified internal packages of the current branch:
 `airbyte-ci test --modified`
 
+### <a id="migrate-to-manifest-only-command"></a>`migrate-to-manifest-only` command
+
+This command migrates valid connectors to the `manifest-only` format. It contains two steps:
+
+1. Check: Validates whether a connector is a candidate for the migration. If not, the operation will be skipped.
+2. Migrate: Strips out all unneccessary files/folders, leaving only the root-level manifest, metadata, icon, and acceptance/integration test files. Unwraps the manifest (references and `$parameters`) so it's compatible with Connector Builder.
+
+#### Examples
+
+```bash
+airbyte-ci connectors --name=source-pokeapi migrate-to-manifest-only
+airbyte-ci connectors --language=low-code migrate-to-manifest-only
+```
+
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.31.2  | [#43433](https://github.com/airbytehq/airbyte/pull/43433) | Fix 'changed_file' indentation in 'pull-request' command |
+| 4.31.1  | [#43442](https://github.com/airbytehq/airbyte/pull/43442) | Resolve type check failure in bump version |
+| 4.31.0  | [#42970](https://github.com/airbytehq/airbyte/pull/42970)  | Add explicit version set to bump version                                                                   |
+| 4.30.1  | [#43386](https://github.com/airbytehq/airbyte/pull/43386)  | Fix 'format' command usage bug in airbyte-enterprise.                                                                        |
+| 4.30.0  | [#42583](https://github.com/airbytehq/airbyte/pull/42583)  | Updated dependencies                                                                                                         |
+| 4.29.0  | [#42576](https://github.com/airbytehq/airbyte/pull/42576)  | New command: `migrate-to-manifest-only`                                                                                      |
+| 4.28.3  | [#42046](https://github.com/airbytehq/airbyte/pull/42046)  | Trigger connector tests on doc change.                                                                                       |
+| 4.28.2  | [#43297](https://github.com/airbytehq/airbyte/pull/43297)  | `migrate-to-inline_schemas` removes unused schema files and empty schema dirs.                                               |
+| 4.28.1  | [#42972](https://github.com/airbytehq/airbyte/pull/42972)  | Add airbyte-enterprise support for format commandi                                                                           |
+| 4.28.0  | [#42849](https://github.com/airbytehq/airbyte/pull/42849)  | Couple selection of strict-encrypt variants (e vice versa)                                                                   |
+| 4.27.0  | [#42574](https://github.com/airbytehq/airbyte/pull/42574)  | Live tests: run from connectors test pipeline for connectors with sandbox connections                                        |
+| 4.26.1  | [#42905](https://github.com/airbytehq/airbyte/pull/42905)  | Rename the docker cache volume to avoid using the corrupted previous volume.                                                 |
+| 4.26.0  | [#42849](https://github.com/airbytehq/airbyte/pull/42849)  | Send publish failures messages to `#connector-publish-failures`                                                              |
+| 4.25.4  | [#42463](https://github.com/airbytehq/airbyte/pull/42463) | Add validation before live test runs                                                                                          |
 | 4.25.3  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Ugrade-cdk: Update to work with Python connectors using poetry                                                               |
 | 4.25.2  | [#42077](https://github.com/airbytehq/airbyte/pull/42077)  | Live/regression tests: add status check for regression test runs                                                             |
 | 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410)  | Live/regression tests: disable approval requirement on forks                                                                 |
