@@ -57,6 +57,65 @@ class SnowflakeDestinationHandler(
     // We don't quote the database name in any queries, so just upcase it.
     private val databaseName = databaseName.uppercase(Locale.getDefault())
 
+
+    //TODO: Original code - kept for now to simplify testing, to be removed
+    /*
+    @Throws(SQLException::class)
+    private fun getFinalTableRowCount(
+        streamIds: List<StreamId>
+    ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
+
+        LOGGER.info("Entering getFinalTableRowCount");
+
+        val tableRowCounts = LinkedHashMap<String, LinkedHashMap<String, Int>>()
+        // convert list stream to array
+        val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
+        val names = streamIds.map { it.finalName }.toTypedArray()
+
+
+        // SHOW TABLES LIKE 'USERS_FINAL' IN SQL_GENERATOR_TEST_PNJAYGLBKN;
+
+        val query =
+            """
+                |SELECT table_schema, table_name, row_count
+                |FROM information_schema.tables
+                |WHERE table_catalog = ?
+                |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+                |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+            |""".trimMargin()
+
+        //Dedup the lists to make the snowflake IN clause more efficient
+//          val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
+//          val deduplicatedNames = names.toSet().toTypedArray()
+
+        val deduplicatedNamespaces = namespaces
+        val deduplicatedNames = names
+
+        val bindValues = arrayOf(databaseName) + deduplicatedNamespaces + deduplicatedNames
+
+        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+//        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
+//            + "\n bindValues=" + bindValues)
+//
+//        //val results: List<JsonNode> = CacheManager.queryJsons(database, query, databaseName, namespaces, names)
+//
+//        val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
+
+
+        for (result in results) {
+            val tableSchema = result["TABLE_SCHEMA"].asText()
+            val tableName = result["TABLE_NAME"].asText()
+            val rowCount = result["ROW_COUNT"].asInt()
+            tableRowCounts
+                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
+                rowCount
+        }
+        return tableRowCounts
+    }
+
+    */
+
     @Throws(SQLException::class)
     private fun getFinalTableRowCount(
         streamIds: List<StreamId>
@@ -121,65 +180,6 @@ class SnowflakeDestinationHandler(
 
         return tableRowCountsFromShowQuery
     }
-
-
-    /*
-    //TODO: Original code - kept for now to simplify testing, to be removed
-    @Throws(SQLException::class)
-    private fun getFinalTableRowCount_ORIGINAL(
-        streamIds: List<StreamId>
-    ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
-
-        LOGGER.info("Entering getFinalTableRowCount");
-
-        val tableRowCounts = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-        // convert list stream to array
-        val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-        val names = streamIds.map { it.finalName }.toTypedArray()
-
-
-        // SHOW TABLES LIKE 'USERS_FINAL' IN SQL_GENERATOR_TEST_PNJAYGLBKN;
-
-        val query =
-            """
-                |SELECT table_schema, table_name, row_count
-                |FROM information_schema.tables
-                |WHERE table_catalog = ? 
-                |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }}) 
-                |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-            |""".trimMargin()
-
-        //Dedup the lists to make the snowflake IN clause more efficient
-//          val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
-//          val deduplicatedNames = names.toSet().toTypedArray()
-
-        val deduplicatedNamespaces = namespaces
-        val deduplicatedNames = names
-
-        val bindValues = arrayOf(databaseName) + deduplicatedNamespaces + deduplicatedNames
-
-        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
-
-//        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
-//            + "\n bindValues=" + bindValues)
-//
-//        //val results: List<JsonNode> = CacheManager.queryJsons(database, query, databaseName, namespaces, names)
-//
-//        val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
-
-
-        for (result in results) {
-            val tableSchema = result["TABLE_SCHEMA"].asText()
-            val tableName = result["TABLE_NAME"].asText()
-            val rowCount = result["ROW_COUNT"].asInt()
-            tableRowCounts
-                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
-                rowCount
-        }
-        return tableRowCounts
-    }
-
-     */
 
 
     @Throws(Exception::class)
@@ -611,6 +611,75 @@ class SnowflakeDestinationHandler(
         const val SHOW_SCHEMAS: String = "show schemas;"
         const val NAME: String = "name"
 
+        //TODO: Remove Original function, kept for now to simplify testing comparisons
+
+        //Original Code
+        @Throws(SQLException::class)
+        fun findExistingTables_ORIGINAL(
+            database: JdbcDatabase,
+            databaseName: String,
+            streamIds: List<StreamId>
+        ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
+
+            println("Entering findExistingTables(...)");
+
+            val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+            // convert list stream to array
+            val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
+            val names = streamIds.map { it.finalName }.toTypedArray()
+            val query =
+                """
+    |SELECT table_schema, table_name, column_name, data_type, is_nullable
+    |FROM information_schema.columns
+    |WHERE table_catalog = ?
+    |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+    |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
+    |ORDER BY table_schema, table_name, ordinal_position;
+    |""".trimMargin()
+
+            //            //Dedup the lists to make the snowflake IN clause more efficient
+            //            val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
+            //            val deduplicatedNames = names.toSet().toTypedArray()
+
+
+            //TODO: Temporarily setting same values for testing
+            val deduplicatedNamespaces = namespaces
+            val deduplicatedNames = names
+
+            val bindValues =
+                arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
+
+//            val bindValues =
+//                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
+
+            val results: List<JsonNode> = database.queryJsons(query, *bindValues)
+
+//            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
+//                + "\n bindValues=" + bindValues)
+//
+//            val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
+
+            for (result in results) {
+                val tableSchema = result["TABLE_SCHEMA"].asText()
+                val tableName = result["TABLE_NAME"].asText()
+                val columnName = result["COLUMN_NAME"].asText()
+                val dataType = result["DATA_TYPE"].asText()
+                val isNullable = result["IS_NULLABLE"].asText()
+                val tableDefinition =
+                    existingTables
+                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
+                        .computeIfAbsent(tableName) { _: String? ->
+                            TableDefinition(LinkedHashMap())
+                        }
+                tableDefinition.columns[columnName] =
+                    ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
+            }
+            return existingTables
+        }
+
+
+
+        //NEW CODE
         @Throws(SQLException::class)
         fun findExistingTables(
             database: JdbcDatabase,
@@ -618,9 +687,12 @@ class SnowflakeDestinationHandler(
             streamIds: List<StreamId>
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
-            //LOGGER.info("Entering findExistingTables(...)");
+            LOGGER.info("Entering findExistingTables(...)");
 
-            val existingTablesFromShowCommand =
+            //TODO: Remove the call to the original function added for testing
+            val existingTablesFromInfoSchema = findExistingTables_ORIGINAL(database, databaseName, streamIds)
+
+            val existingTablesFromShowQuery =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
 
             try {
@@ -651,7 +723,7 @@ class SnowflakeDestinationHandler(
                         val dataType = JSONObject(result["data_type"].asText()).getString("type")
                         val isNullable = result["null?"].asText()
                         val tableDefinition =
-                            existingTablesFromShowCommand
+                            existingTablesFromShowQuery
                                 .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
                                 .computeIfAbsent(tableName) { _: String? ->
                                     TableDefinition(LinkedHashMap())
@@ -665,7 +737,7 @@ class SnowflakeDestinationHandler(
                             )
                     }
 
-                    LOGGER.info("existingTablesFromShowCommand=" + existingTablesFromShowCommand)
+                    LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
 
                 }
 
@@ -685,80 +757,13 @@ class SnowflakeDestinationHandler(
 
             }
 
-            //LOGGER.info("existingTablesFromShowCommand=" + existingTablesFromShowCommand)
+            LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
 
-            return existingTablesFromShowCommand
+            LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
+
+            return existingTablesFromShowQuery
 
         }
-
-
-    //TODO: Remove Original function, kept for now to simplify testing comparisons
-    /*
-    @Throws(SQLException::class)
-    fun findExistingTables_ORIGINAL(
-        database: JdbcDatabase,
-        databaseName: String,
-        streamIds: List<StreamId>
-    ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
-
-        println("Entering findExistingTables(...)");
-
-        val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-        // convert list stream to array
-        val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-        val names = streamIds.map { it.finalName }.toTypedArray()
-        val query =
-            """
-    |SELECT table_schema, table_name, column_name, data_type, is_nullable
-    |FROM information_schema.columns
-    |WHERE table_catalog = ?
-    |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-    |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-    |ORDER BY table_schema, table_name, ordinal_position;
-    |""".trimMargin()
-
-    //            //Dedup the lists to make the snowflake IN clause more efficient
-    //            val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
-    //            val deduplicatedNames = names.toSet().toTypedArray()
-
-
-        //TODO: Temporarily setting same values for testing
-        val deduplicatedNamespaces = namespaces
-        val deduplicatedNames = names
-
-        val bindValues =
-            arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
-
-//            val bindValues =
-//                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
-
-        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
-
-//            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
-//                + "\n bindValues=" + bindValues)
-//
-//            val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
-
-        for (result in results) {
-            val tableSchema = result["TABLE_SCHEMA"].asText()
-            val tableName = result["TABLE_NAME"].asText()
-            val columnName = result["COLUMN_NAME"].asText()
-            val dataType = result["DATA_TYPE"].asText()
-            val isNullable = result["IS_NULLABLE"].asText()
-            val tableDefinition =
-                existingTables
-                    .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
-                    .computeIfAbsent(tableName) { _: String? ->
-                        TableDefinition(LinkedHashMap())
-                    }
-            tableDefinition.columns[columnName] =
-                ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
-        }
-        return existingTables
-    }
-
-     */
-
 
     }
 

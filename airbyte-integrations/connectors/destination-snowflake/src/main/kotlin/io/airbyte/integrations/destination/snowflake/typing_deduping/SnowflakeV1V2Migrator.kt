@@ -28,6 +28,30 @@ class SnowflakeV1V2Migrator(
     @SneakyThrows
     @Throws(Exception::class)
 
+
+
+    //TODO: Remove original function, kept for now to simplify testing comparison
+
+    /*
+    override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
+        return database
+            .queryJsons(
+                """
+                SELECT SCHEMA_NAME
+                FROM information_schema.schemata
+                WHERE schema_name = ?
+                AND catalog_name = ?;
+
+                """.trimIndent(),
+                streamConfig!!.id.rawNamespace,
+                databaseName
+            )
+            .isNotEmpty()
+    }
+
+
+    */
+
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         val showSchemaQuery = String.format(
             """
@@ -42,24 +66,7 @@ class SnowflakeV1V2Migrator(
         ).isNotEmpty()
     }
 
-    //TODO: Remove original function, kept for now to simplify testing comparison
-    /*
-    override fun doesAirbyteInternalNamespaceExist_ORIGINAL(streamConfig: StreamConfig?): Boolean {
-        return database
-            .queryJsons(
-                """
-                SELECT SCHEMA_NAME
-                FROM information_schema.schemata
-                WHERE schema_name = ?
-                AND catalog_name = ?;
-                
-                """.trimIndent(),
-                streamConfig!!.id.rawNamespace,
-                databaseName
-            )
-            .isNotEmpty()
-    }
-    */
+
 
     override fun schemaMatchesExpectation(
         existingTable: TableDefinition,
@@ -67,6 +74,68 @@ class SnowflakeV1V2Migrator(
     ): Boolean {
         return containsAllIgnoreCase(existingTable.columns.keys, columns)
     }
+
+
+
+    //TODO: Remove original code, kept for now to simplify testing comparison
+
+    /*
+    //ORIGINAL Code
+
+    @SneakyThrows
+    @Throws(Exception::class)
+    override fun getTableIfExists(
+        namespace: String?,
+        tableName: String?
+    ): Optional<TableDefinition> {
+        // TODO this looks similar to SnowflakeDestinationHandler#findExistingTables, with a twist;
+        // databaseName not upper-cased and rawNamespace and rawTableName as-is (no uppercase).
+        // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC
+        // translates
+        // VARIANT as VARCHAR
+        val columns =
+            database
+                .queryJsons(
+                    """
+            SELECT column_name, data_type, is_nullable
+            FROM information_schema.columns
+            WHERE table_catalog = ?
+              AND table_schema = ?
+              AND table_name = ?
+            ORDER BY ordinal_position;
+
+            """.trimIndent(),
+                    databaseName,
+                    namespace!!,
+                    tableName!!
+                )
+                .stream()
+                .collect(
+                    { LinkedHashMap() },
+                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
+                        map[row["COLUMN_NAME"].asText()] =
+                            ColumnDefinition(
+                                row["COLUMN_NAME"].asText(),
+                                row["DATA_TYPE"].asText(),
+                                0,
+                                fromIsNullableIsoString(row["IS_NULLABLE"].asText())
+                            )
+                    },
+                    {
+                        obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                        m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                        obj.putAll(m!!)
+                    }
+                )
+        return if (columns.isEmpty()) {
+            Optional.empty()
+        } else {
+            Optional.of(TableDefinition(columns))
+        }
+    }
+
+
+   */
 
 
     @SneakyThrows
@@ -151,67 +220,9 @@ class SnowflakeV1V2Migrator(
 
         return Optional.empty()
 
-
-
     }
 
-    //TODO: Remove original code, kept for now to simplify testing comparison
-    /*
-    ORIGINAL Code
 
-    @SneakyThrows
-    @Throws(Exception::class)
-    override fun getTableIfExists_ORIGINAL(
-        namespace: String?,
-        tableName: String?
-    ): Optional<TableDefinition> {
-        // TODO this looks similar to SnowflakeDestinationHandler#findExistingTables, with a twist;
-        // databaseName not upper-cased and rawNamespace and rawTableName as-is (no uppercase).
-        // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC
-        // translates
-        // VARIANT as VARCHAR
-        val columns =
-            database
-                .queryJsons(
-                    """
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_catalog = ?
-              AND table_schema = ?
-              AND table_name = ?
-            ORDER BY ordinal_position;
-            
-            """.trimIndent(),
-                    databaseName,
-                    namespace!!,
-                    tableName!!
-                )
-                .stream()
-                .collect(
-                    { LinkedHashMap() },
-                    { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-                        map[row["COLUMN_NAME"].asText()] =
-                            ColumnDefinition(
-                                row["COLUMN_NAME"].asText(),
-                                row["DATA_TYPE"].asText(),
-                                0,
-                                fromIsNullableIsoString(row["IS_NULLABLE"].asText())
-                            )
-                    },
-                    {
-                        obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-                        m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
-                        obj.putAll(m!!)
-                    }
-                )
-        return if (columns.isEmpty()) {
-            Optional.empty()
-        } else {
-            Optional.of(TableDefinition(columns))
-        }
-    }
-
-    */
 
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {
         // The implicit upper-casing happens for this in the SqlGenerator
@@ -219,7 +230,7 @@ class SnowflakeV1V2Migrator(
         val tableName = namingConventionTransformer.getRawTableName(streamConfig.id.originalName)
         return NamespacedTableName(
             namingConventionTransformer.getIdentifier(streamConfig.id.originalNamespace),
-            tableName,
+            tableName
         )
     }
 
@@ -229,7 +240,9 @@ class SnowflakeV1V2Migrator(
         // In v2 we preserve cases
         return super.doesValidV1RawTableExist(
             namespace!!.uppercase(Locale.getDefault()),
-            tableName!!.uppercase(Locale.getDefault()),
+            tableName!!.uppercase(Locale.getDefault())
         )
     }
+
+
 }
