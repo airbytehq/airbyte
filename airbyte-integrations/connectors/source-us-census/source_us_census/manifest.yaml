@@ -18,8 +18,6 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: "{{ config['query_path'] }}?{{ config['query_params'] }}"
           http_method: GET
-          request_parameters:
-            key: "{{ config['api_key'] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -32,6 +30,20 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.census.gov/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: request_parameter
+        field_name: key
+      api_token: "{{ config[\"api_key\"] }}"
+    error_handler:
+      type: CustomErrorHandler
+      class_name: source_us_census.components.USCensusErrorHandler
+      response_filters:
+        - type: HttpResponseFilter
+          action: FAIL
+          error_message: "Failed to perform request. Error: Valid API Key needed."
 
 streams:
   - $ref: "#/definitions/streams/us_census_stream"

@@ -3,10 +3,15 @@
 #
 
 
-from typing import List
+from typing import List, Optional, Union
 
 import requests
+
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.declarative.types import Record
 
 
@@ -94,3 +99,31 @@ class USCensusRecordExtractor(RecordExtractor):
             else:
                 buffer += response_chunk
             is_prev_escape = False
+
+class USCensusErrorHandler(DefaultErrorHandler):
+    """
+    This Custom Error Handler raises an error when an invalid API key is used.
+    
+    In such cases, the status code is 200, so airbyte doesn't raise an error.
+    """
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+
+        if self.response_filters:
+            for response_filter in self.response_filters:
+                matched_error_resolution = response_filter.matches(response_or_exception=response_or_exception)
+                if matched_error_resolution:
+                    return matched_error_resolution
+        if isinstance(response_or_exception, requests.Response):
+            if response_or_exception.ok:
+                if "Invalid Key" in response_or_exception.text:
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.config_error,
+                        error_message="Failed to perform request. Error: Valid API Key needed.",
+                    )
+                return SUCCESS_RESOLUTION
+
+        default_reponse_filter = DefaultHttpResponseFilter(parameters={}, config=self.config)
+        default_response_filter_resolution = default_reponse_filter.matches(response_or_exception)
+
+        return default_response_filter_resolution if default_response_filter_resolution else DEFAULT_ERROR_RESOLUTION
