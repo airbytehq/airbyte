@@ -25,6 +25,7 @@ TODO
 
 | Version | Date       | Pull Request                                              | Subject                                                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------- |
+| 0.1.11 | 2024-08-10 | [41498](https://github.com/airbytehq/airbyte/pull/41498) | Update dependencies |
 | 0.1.10 | 2024-07-09 | [41285](https://github.com/airbytehq/airbyte/pull/41285) | Update dependencies |
 | 0.1.9 | 2024-07-06 | [40796](https://github.com/airbytehq/airbyte/pull/40796) | Update dependencies |
 | 0.1.8 | 2024-06-25 | [40409](https://github.com/airbytehq/airbyte/pull/40409) | Update dependencies |
