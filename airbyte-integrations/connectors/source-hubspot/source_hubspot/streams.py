@@ -29,7 +29,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError, codes
-from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS, STANDARD_STREAM_NAMES
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import (
     APIPropertiesWithHistory,
@@ -2245,17 +2245,18 @@ class CustomObject(CRMSearchStream, ABC):
     primary_key = "id"
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
-    def __init__(self, entity: str, name: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs):
+    def __init__(self, entity: str, schema: Mapping[str, Any], fully_qualified_name: str, custom_properties: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.entity = entity
-        self.name = name
         self.schema = schema
         self.fully_qualified_name = fully_qualified_name
         self.custom_properties = custom_properties
 
     @property
     def name(self) -> str:
-        return self.entity
+        """Name of the custom object stream. Use the fully qualified object name (e.g. p1234567_owners) if the stream name collides
+        with a standard stream name (e.g. owners) to avoid duplicate stream name error."""
+        return self.fully_qualified_name if self.entity in STANDARD_STREAM_NAMES else self.fully_qualified_name
 
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.schema
