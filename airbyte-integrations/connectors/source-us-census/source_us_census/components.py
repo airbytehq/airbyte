@@ -6,13 +6,17 @@
 from typing import List, Optional, Union
 
 import requests
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
+    DEFAULT_ERROR_RESOLUTION,
+    SUCCESS_RESOLUTION,
+    ErrorResolution,
+    ResponseAction,
+)
 
 
 class USCensusRecordExtractor(RecordExtractor):
@@ -100,12 +104,14 @@ class USCensusRecordExtractor(RecordExtractor):
                 buffer += response_chunk
             is_prev_escape = False
 
+
 class USCensusErrorHandler(DefaultErrorHandler):
     """
     This Custom Error Handler raises an error when an invalid API key is used.
-    
+
     In such cases, the status code is 200, so airbyte doesn't raise an error.
     """
+
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
 
         if self.response_filters:

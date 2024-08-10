@@ -36,7 +36,7 @@ definitions:
         type: RequestOption
         inject_into: request_parameter
         field_name: key
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
     error_handler:
       type: CustomErrorHandler
       class_name: source_us_census.components.USCensusErrorHandler
