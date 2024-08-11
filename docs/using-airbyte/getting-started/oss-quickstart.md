@@ -156,6 +156,12 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 
 Ensure that Docker Desktop is up and running. Then, with abctl installed, the following command gets Airbyte running:
 
+:::tip
+By default, `abctl` only configures an ingress rule for the host `localhost`. If you plan to access Airbyte outside of `localhost`, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
+
+By specifying the `--host` flag, Airbyte will be accessible to both `localhost` and the FDQN passed to the `--host` flag.
+:::
+
 ```
 abctl local install
 ```
@@ -242,11 +248,6 @@ If you're using a version of Airbyte that you've installed with `abctl`, you can
 
 This guide will assume that you are using the Amazon Linux distribution. However. any distribution that supports a docker engine should work with `abctl`. The launching and connecting to your EC2 Instance is outside the scope of this guide. You can find more information on how to launch and connect to EC2 Instances in the [Get started with Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html) documentation from Amazon.
 
-:::tip
-`abctl` runs by default on port 8000. You can change the port by passing the `--port` flag to the `local install` command. Make sure that the security group that you have configured for the EC2 Instance allows traffic in on the port that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
-:::
-
-
 1. Install the docker engine:
 
 ```shell
@@ -280,12 +281,27 @@ curl -LsfS https://get.airbyte.com | bash -
 ```
 
 6. Run the `abctl` command and install Airbyte:
+:::tip
+By default, `abctl` only configures an ingress rule for the host `localhost`. In order to ensure that Airbyte can be accessed outside of the EC2 instance, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
+:::
+:::tip
+By default, `abctl` will listen on port 8000. If port 8000 is already in used or you require a different port, you can specify this by passing the `--port` flag to the `local install` command. For example, `abctl local install --port 6598`
+
+Ensure the security group configured for the EC2 Instance allows traffic in on the port (8000 by default, or whatever port was passed to `--port`) that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
+:::
 
 ```shell
-abctl local install
+abctl local install --host [HOSTNAME]
 ```
 
 ### Editing the Ingress
+
+:::note
+The latest versions of `abctl` support a `--host` flag replacing the need to manually modify the ingress rules.
+
+For example, if you are hosting Airbyte on the FDQN of `airbyte.company.example`, you would execute the following command:
+`abctl local install --host airbyte.company.example`
+:::
 
 By default `abctl` will install and Nginx Ingress and set the host name to `localhost`. You will need to edit this to
 match the host name that you have deployed Airbyte to. To do this you will need to have the `kubectl` command installed
