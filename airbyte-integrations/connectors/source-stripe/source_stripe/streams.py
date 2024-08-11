@@ -734,7 +734,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         slice_data_retriever: Optional[str] = None,
         response_filter: Optional[Callable] = None,
         **kwargs,
-    ):   
+    ):
         super().__init__(*args, **kwargs)
         self.slice_data_retriever = slice_data_retriever
         self._cursor_field = cursor_field
