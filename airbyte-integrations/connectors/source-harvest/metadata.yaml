@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 1.0.8
+  dockerImageTag: 1.0.12
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   githubIssueLabel: source-harvest
@@ -62,6 +62,16 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: harvest_old_config_dev_null
+          id: 00bcab35-5c37-4b5d-b026-3cb23d71946a
+        - name: harvest_config_with_date_range_dev_null
+          id: 2a1834a4-b9b7-4613-9409-dc348b5fd735
+        - name: harvest_config_oauth_dev_null
+          id: 33b1f04d-ccc0-4b47-9b50-a889b136c0a8
+        - name: harvest_config_dev_null
+          id: 833888cc-1bc4-4126-970a-47edff5e0f00
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

@@ -54,6 +54,10 @@ When using the connector, keep in mind that increasing the `batch_size` paramete
 
 | Version | Date       | Pull Request                                             | Subject                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 0.3.11 | 2024-08-10 | [43474](https://github.com/airbytehq/airbyte/pull/43474) | Update dependencies |
+| 0.3.10 | 2024-08-03 | [43088](https://github.com/airbytehq/airbyte/pull/43088) | Update dependencies |
+| 0.3.9 | 2024-07-27 | [42679](https://github.com/airbytehq/airbyte/pull/42679) | Update dependencies |
+| 0.3.8 | 2024-07-20 | [42156](https://github.com/airbytehq/airbyte/pull/42156) | Update dependencies |
 | 0.3.7 | 2024-07-13 | [41805](https://github.com/airbytehq/airbyte/pull/41805) | Update dependencies |
 | 0.3.6 | 2024-07-10 | [41484](https://github.com/airbytehq/airbyte/pull/41484) | Update dependencies |
 | 0.3.5 | 2024-07-09 | [41198](https://github.com/airbytehq/airbyte/pull/41198) | Update dependencies |

@@ -152,7 +152,7 @@ def create_or_update_github_pull_request(
                 content = base64.b64encode(file.read()).decode("utf-8")  # Encode file content to base64
                 blob = repo.create_git_blob(content, "base64")
                 changed_file = ChangedFile(path=str(modified_file), sha=blob.sha)
-        changed_files.append(changed_file)
+            changed_files.append(changed_file)
     existing_ref = None
     try:
         existing_ref = repo.get_git_ref(f"heads/{branch_id}")
@@ -220,3 +220,10 @@ def create_or_update_github_pull_request(
         logger.info(f"Added label {label} to pull request")
 
     return pull_request
+
+
+def is_automerge_pull_request(pull_request: Optional[github_sdk.PullRequest.PullRequest]) -> bool:
+    labels = [label.name for label in pull_request.get_labels()] if pull_request else []
+    if labels and "auto-merge" in labels:
+        return True
+    return False

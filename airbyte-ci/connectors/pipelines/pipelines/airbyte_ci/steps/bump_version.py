@@ -137,6 +137,12 @@ class BumpConnectorVersion(SetConnectorVersion):
             new_version = current_version.bump_minor()
         elif bump_type == "major":
             new_version = current_version.bump_major()
+        elif bump_type.startswith("version:"):
+            version_str = bump_type.split("version:", 1)[1]
+            if semver.VersionInfo.is_valid(version_str):
+                return version_str
+            else:
+                raise ValueError(f"Invalid version: {version_str}")
         else:
             raise ValueError(f"Unknown bump type: {bump_type}")
         return str(new_version)

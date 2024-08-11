@@ -12,14 +12,15 @@ import requests
 from airbyte_cdk.models import AirbyteMessage, FailureType, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.call_rate import APIBudget
-from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
+from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.http_client import HttpClient
-from airbyte_cdk.sources.types import Record
+from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.sources.utils.types import JsonType
 from deprecated import deprecated
 from requests.auth import AuthBase
@@ -28,7 +29,7 @@ from requests.auth import AuthBase
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
-class HttpStream(Stream, ABC):
+class HttpStream(Stream, CheckpointMixin, ABC):
     """
     Base abstract class for an Airbyte Stream using the HTTP protocol. Basic building block for users building an Airbyte source for a HTTP API.
     """
@@ -48,6 +49,14 @@ class HttpStream(Stream, ABC):
             backoff_strategy=self.get_backoff_strategy(),
             message_repository=InMemoryMessageRepository(),
         )
+
+        # There are three conditions that dictate if RFR should automatically be applied to a stream
+        # 1. Streams that explicitly initialize their own cursor should defer to it and not automatically apply RFR
+        # 2. Streams with at least one cursor_field are incremental and thus a superior sync to RFR.
+        # 3. Streams overriding read_records() do not guarantee that they will call the parent implementation which can perform
+        #    per-page checkpointing so RFR is only supported if a stream use the default `HttpStream.read_records()` method
+        if not self.cursor and len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+            self.cursor = ResumableFullRefreshCursor()
 
     @property
     def exit_on_rate_limit(self) -> bool:
@@ -121,11 +130,6 @@ class HttpStream(Stream, ABC):
         Override if needed. Specifies factor for backoff policy.
         """
         return 5
-
-    @property
-    @deprecated(version="3.7.0", reason="This functionality is handled by combination of HttpClient.ErrorHandler and AirbyteStreamStatus")
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -326,11 +330,45 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
-            stream_slice,
-            stream_state,
-        )
+        # A cursor_field indicates this is an incremental stream which offers better checkpointing than RFR enabled via the cursor
+        if self.cursor_field or not isinstance(self.get_cursor(), ResumableFullRefreshCursor):
+            yield from self._read_pages(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+        else:
+            yield from self._read_single_page(
+                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
+                stream_slice,
+                stream_state,
+            )
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        cursor = self.get_cursor()
+        if cursor:
+            return cursor.get_stream_state()  # type: ignore
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]) -> None:
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.set_initial_state(value)
+        self._state = value
+
+    def get_cursor(self) -> Optional[Cursor]:
+        # I don't love that this is semi-stateful but not sure what else to do. We don't know exactly what type of cursor to
+        # instantiate when creating the class. We can make a few assumptions like if there is a cursor_field which implies
+        # incremental, but we don't know until runtime if this is a substream. Ideally, a stream should explicitly define
+        # its cursor, but because we're trying to automatically apply RFR we're stuck with this logic where we replace the
+        # cursor at runtime once we detect this is a substream based on self.has_multiple_slices being reassigned
+        if self.has_multiple_slices and isinstance(self.cursor, ResumableFullRefreshCursor):
+            self.cursor = SubstreamResumableFullRefreshCursor()
+            return self.cursor
+        else:
+            return self.cursor
 
     def _read_pages(
         self,
@@ -340,6 +378,8 @@ class HttpStream(Stream, ABC):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
+        partition, _, _ = self._extract_slice_fields(stream_slice=stream_slice)
+
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
@@ -351,8 +391,56 @@ class HttpStream(Stream, ABC):
             if not next_page_token:
                 pagination_complete = True
 
+        cursor = self.get_cursor()
+        if cursor and isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            # Substreams checkpoint state by marking an entire parent partition as completed so that on the subsequent attempt
+            # after a failure, completed parents are skipped and the sync can make progress
+            cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
+
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+    def _read_single_page(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Optional[Mapping[str, Any]]], Iterable[StreamData]
+        ],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        partition, cursor_slice, remaining_slice = self._extract_slice_fields(stream_slice=stream_slice)
+        stream_state = stream_state or {}
+        next_page_token = cursor_slice or None
+
+        request, response = self._fetch_next_page(remaining_slice, stream_state, next_page_token)
+        yield from records_generator_fn(request, response, stream_state, remaining_slice)
+
+        next_page_token = self.next_page_token(response) or {"__ab_full_refresh_sync_complete": True}
+
+        cursor = self.get_cursor()
+        if cursor:
+            cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=partition))
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
+    @staticmethod
+    def _extract_slice_fields(stream_slice: Optional[Mapping[str, Any]]) -> tuple[Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+        if not stream_slice:
+            return {}, {}, {}
+
+        if isinstance(stream_slice, StreamSlice):
+            partition = stream_slice.partition
+            cursor_slice = stream_slice.cursor_slice
+            remaining = {k: v for k, v in stream_slice.items()}
+        else:
+            # RFR streams that implement stream_slices() to generate stream slices in the legacy mapping format are converted into a
+            # structured stream slice mapping by the LegacyCursorBasedCheckpointReader. The structured mapping object has separate
+            # fields for the partition and cursor_slice value
+            partition = stream_slice.get("partition", {})
+            cursor_slice = stream_slice.get("cursor_slice", {})
+            remaining = {key: val for key, val in stream_slice.items() if key != "partition" and key != "cursor_slice"}
+        return partition, cursor_slice, remaining
 
     def _fetch_next_page(
         self,
@@ -394,6 +482,15 @@ class HttpSubStream(HttpStream, ABC):
         """
         super().__init__(**kwargs)
         self.parent = parent
+        self.has_multiple_slices = True  # Substreams are based on parent records which implies there are multiple slices
+
+        # There are three conditions that dictate if RFR should automatically be applied to a stream
+        # 1. Streams that explicitly initialize their own cursor should defer to it and not automatically apply RFR
+        # 2. Streams with at least one cursor_field are incremental and thus a superior sync to RFR.
+        # 3. Streams overriding read_records() do not guarantee that they will call the parent implementation which can perform
+        #    per-page checkpointing so RFR is only supported if a stream use the default `HttpStream.read_records()` method
+        if not self.cursor and len(self.cursor_field) == 0 and type(self).read_records is HttpStream.read_records:
+            self.cursor = SubstreamResumableFullRefreshCursor()
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
@@ -418,9 +515,11 @@ class HttpStreamAdapterBackoffStrategy(BackoffStrategy):
         self.stream = stream
 
     def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
     ) -> Optional[float]:
-        return self.stream.backoff_time(response_or_exception)  # type: ignore # noqa
+        return self.stream.backoff_time(response_or_exception)  # type: ignore # noqa  # HttpStream.backoff_time has been deprecated
 
 
 @deprecated(version="3.0.0", reason="You should set error_handler explicitly in HttpStream.get_error_handler() instead.")

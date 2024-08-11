@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 69d9eb65-8026-47dc-baf1-e4bf67901fd6
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.13
   dockerRepository: airbyte/source-pexels-api
   githubIssueLabel: source-pexels-api
   icon: pexels.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pexels-api_config_dev_null
+          id: 0db7dc91-997c-4ee7-abbd-4793086e7836
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PEXELS-API__CREDS

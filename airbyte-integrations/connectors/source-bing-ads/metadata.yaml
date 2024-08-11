@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.6.10
+  dockerImageTag: 2.7.2
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   githubIssueLabel: source-bing-ads
@@ -62,6 +62,16 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: bing-ads_config_old_dev_null
+          id: 21c29326-2309-4226-97f0-5b1bad621887
+        - name: bing-ads_config_dev_null
+          id: 3434a551-958c-49e2-acae-c19b57b69500
+        - name: bing-ads_config_no_date_dev_null
+          id: 4684190a-bf8b-4b1b-8d95-4744e4c0a070
+        - name: bing-ads_config_full_refresh_dev_null
+          id: b4f2dd3d-3ae8-4341-84f9-9abd9f700e50
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

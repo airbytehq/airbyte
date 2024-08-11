@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8e1ae2d2-4790-44d3-9d83-75b3fc3940ff
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-datascope
   githubIssueLabel: source-datascope
   icon: datascope.svg
@@ -26,11 +26,14 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: datascope_config_dev_null
+          id: 17f5b107-4256-48f8-916b-0f61df1ff14f
   # Disable acceptance tests for now
   # They are not passing
   # Low/No Airbyte Cloud usage
-  #
-  # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-DATASCOPE_CREDS

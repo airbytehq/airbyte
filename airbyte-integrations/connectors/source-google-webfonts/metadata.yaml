@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: a68fbcde-b465-4ab3-b2a6-b0590a875835
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.15
   dockerRepository: airbyte/source-google-webfonts
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-webfonts
   githubIssueLabel: source-google-webfonts
@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-webfonts_config_dev_null
+          id: 63a92515-377b-46fe-b5a7-99b4e02c1b6f
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GOOGLE-WEBFONTS__CREDS
