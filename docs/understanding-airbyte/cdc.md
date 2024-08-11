@@ -26,7 +26,7 @@ We add some metadata columns for CDC sources which all begin with the `_ab_cdc_`
 - The modifications you are trying to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made from `TRUNCATE`/`ALTER` won't appear in logs and therefore in your destination.
 - There are database-specific limitations. See the documentation pages for individual connectors for more information.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
-- For `Incremental | Append + Dedupe` sync modes, records produced by `DELETE` will be removed from the final table during dedupelication. To retain these records in the final table, use `Incremental | Append` sync mode. Records produced by `DELETE` will be still be accessible in the `airbyte_internal` schema.
+- For `Append + Dedupe` destination sync modes, records produced by `DELETE` will be removed from the final table during dedupelication, if the destination supports it. To retain these records in the final table, use `Incremental | Append` sync mode. Records produced by `DELETE` will be still be accessible in the `airbyte_internal` schema.
 
 ## Current Support
 
