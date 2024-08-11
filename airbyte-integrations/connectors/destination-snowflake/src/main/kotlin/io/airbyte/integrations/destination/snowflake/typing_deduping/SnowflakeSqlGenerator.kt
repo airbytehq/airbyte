@@ -7,24 +7,14 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.collect.ImmutableList
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
-import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
-import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.concat
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.transactionally
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
-import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.SOFT_RESET_SUFFIX
-import io.airbyte.integrations.base.destination.typing_deduping.Union
-import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.time.Instant
 import java.util.*
 
@@ -113,7 +103,7 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
             insertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting)
         var dedupFinalTable = ""
         var cdcDeletes = ""
-        if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+        if (stream.postImportAction == ImportType.DEDUPE) {
             dedupFinalTable =
                 dedupFinalTable(stream.id, finalSuffix, stream.primaryKey, stream.cursor)
             cdcDeletes = cdcDeletes(stream, finalSuffix)
@@ -251,7 +241,7 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
         val columnList = stream.columns.keys.joinToString("\n") { "${it.name(QUOTE)}," }
         val extractedAtCondition = buildExtractedAtCondition(minRawTimestamp)
 
-        if (stream.destinationSyncMode == DestinationSyncMode.APPEND_DEDUP) {
+        if (stream.postImportAction == ImportType.DEDUPE) {
             var cdcConditionalOrIncludeStatement = ""
             if (stream.columns.containsKey(cdcDeletedAtColumn)) {
                 cdcConditionalOrIncludeStatement =
@@ -382,7 +372,7 @@ class SnowflakeSqlGenerator(private val retentionPeriodDays: Int) : SqlGenerator
     }
 
     private fun cdcDeletes(stream: StreamConfig, finalSuffix: String): String {
-        if (stream.destinationSyncMode != DestinationSyncMode.APPEND_DEDUP) {
+        if (stream.postImportAction != ImportType.DEDUPE) {
             return ""
         }
         if (!stream.columns.containsKey(cdcDeletedAtColumn)) {

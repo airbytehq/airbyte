@@ -43,6 +43,7 @@ Please read [How to find your API key](https://apidocs.persistiq.com/#introducti
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------|
+| 0.2.13 | 2024-08-10 | [43656](https://github.com/airbytehq/airbyte/pull/43656) | Update dependencies |
 | 0.2.12 | 2024-08-03 | [43104](https://github.com/airbytehq/airbyte/pull/43104) | Update dependencies |
 | 0.2.11 | 2024-07-27 | [42661](https://github.com/airbytehq/airbyte/pull/42661) | Update dependencies |
 | 0.2.10 | 2024-07-20 | [42374](https://github.com/airbytehq/airbyte/pull/42374) | Update dependencies |

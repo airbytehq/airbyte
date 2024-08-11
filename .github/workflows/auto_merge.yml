@@ -25,7 +25,7 @@ jobs:
           # We need a custom Github Token as some API endpoints
           # are not available from GHA auto generated tokens
           # like the one to list branch protection rules...
-          GITHUB_TOKEN: ${{ secrets.AUTO_MERGE_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           AUTO_MERGE_PRODUCTION: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE }}
         run: |
           poetry install
