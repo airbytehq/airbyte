@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 74cbd708-46c3-4512-9c93-abd5c3e9a94d
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-statuspage
   githubIssueLabel: source-statuspage
   icon: statuspage.svg
