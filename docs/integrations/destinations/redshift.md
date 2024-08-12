@@ -4,7 +4,7 @@ This page guides you through the process of setting up the Redshift destination 
 
 ## Prerequisites
 
-The Airbyte Redshift destination allows you to sync data to Redshift. Aairbyte replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html). Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file.
+The Airbyte Redshift destination allows you to sync data to Redshift. Airbyte replicates data by first uploading data to an S3 bucket and issuing a COPY command. This is the recommended loading approach described by Redshift [best practices](https://docs.aws.amazon.com/redshift/latest/dg/c_best-practices-single-copy-command.html). Requires an S3 bucket and credentials. Data is copied into S3 as multiple files with a manifest file.
 
 ### Configuration Options
 
