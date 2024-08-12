@@ -173,7 +173,6 @@ def _get_unit_test_folder(execution_folder: str) -> FilePath:
     return get_unit_test_folder(execution_folder)
 
 
-
 def get_unit_test_folder(execution_folder: str) -> FilePath:
     path = FilePath(execution_folder)
     while path.name != "unit_tests":
