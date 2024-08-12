@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dd4d317e-7537-456c-b6ba-264b17ce6daa
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-northpass-lms
   githubIssueLabel: source-northpass-lms
   icon: icon.svg
