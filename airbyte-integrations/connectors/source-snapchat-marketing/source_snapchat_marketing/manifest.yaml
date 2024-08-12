@@ -4119,15 +4119,3 @@ schemas:
         type:
           - "null"
           - number
-      stats:
-        description: test
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-        properties:
-          spend:
-            description: Total spend for marketing activities.
-            type:
-              - "null"
-              - number
