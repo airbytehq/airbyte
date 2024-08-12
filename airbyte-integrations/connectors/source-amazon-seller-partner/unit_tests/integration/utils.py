@@ -11,7 +11,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http.response_builder import get_unit_test_folder
+from airbyte_cdk.test.mock_http.response_builder import _get_unit_test_folder
 from airbyte_protocol.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, Level, SyncMode
 from source_amazon_seller_partner import SourceAmazonSellerPartner
 
@@ -53,7 +53,8 @@ def get_stream_by_name(stream_name: str, config_: Mapping[str, Any]) -> Stream:
 
 def find_template(resource: str, execution_folder: str, template_format: Optional[str] = "csv") -> str:
     response_template_filepath = str(
-        get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.{template_format}"
+        # FIXME: the below function should be replaced with the public version after next CDK release
+        _get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.{template_format}"
     )
     with open(response_template_filepath, "r") as template_file:
         if template_file == "json":

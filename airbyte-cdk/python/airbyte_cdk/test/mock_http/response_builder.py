@@ -168,6 +168,12 @@ class HttpResponseBuilder:
         return HttpResponse(json.dumps(self._response), self._status_code)
 
 
+def _get_unit_test_folder(execution_folder: str) -> FilePath:
+    # FIXME: This function should be removed after the next CDK release to avoid breaking amazon-seller-partner test code.
+    return get_unit_test_folder(execution_folder)
+
+
+
 def get_unit_test_folder(execution_folder: str) -> FilePath:
     path = FilePath(execution_folder)
     while path.name != "unit_tests":
