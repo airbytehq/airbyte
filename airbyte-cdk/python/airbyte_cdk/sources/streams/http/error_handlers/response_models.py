@@ -39,12 +39,15 @@ def _format_response_error_message(response: requests.Response) -> str:
     return f"Unexpected response with HTTP status {response.status_code}"
 
 
-def create_fallback_error_resolution(response_or_exception: Union[requests.Response, Exception]) -> ErrorResolution:
-    error_message = (
-        _format_exception_error_message(response_or_exception)
-        if isinstance(response_or_exception, Exception)
-        else _format_response_error_message(response_or_exception)
-    )
+def create_fallback_error_resolution(response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+    if response_or_exception is None:
+        # We do not expect this case to happen but if it does, it would be good to understand the cause and improve the error message
+        error_message = "Unexpected argument while handling error"
+    elif isinstance(response_or_exception, Exception):
+        error_message = _format_exception_error_message(response_or_exception)
+    else:
+        error_message = _format_response_error_message(response_or_exception)
+
     return ErrorResolution(
         response_action=ResponseAction.RETRY,
         failure_type=FailureType.system_error,

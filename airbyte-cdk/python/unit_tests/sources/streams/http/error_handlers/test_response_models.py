@@ -20,6 +20,13 @@ class DefaultErrorResolutionTest(TestCase):
         # to avoid other tests being impacted by added secrets
         update_secrets([])
 
+    def test_given_none_when_create_fallback_error_resolution_then_return_error_resolution(self) -> None:
+        error_resolution = create_fallback_error_resolution(None)
+
+        assert error_resolution.failure_type == FailureType.system_error
+        assert error_resolution.response_action == ResponseAction.RETRY
+        assert error_resolution.error_message == "Unexpected argument while handling error"
+
     def test_given_exception_when_create_fallback_error_resolution_then_return_error_resolution(self) -> None:
         exception = ValueError("This is an exception")
 
