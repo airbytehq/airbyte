@@ -127,22 +127,22 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, m
     stale_connectors_df = pd.DataFrame(stale_connectors)
 
     # If any stale files exist, report to slack
-    channel = os.getenv("STALE_REPORT_CHANNEL")
+    stale_report_channel = os.getenv("STALE_REPORT_CHANNEL")
+    publish_update_channel = os.getenv("PUBLISH_UPDATE_CHANNEL")
     any_stale = len(stale_connectors_df) > 0
-    if channel:
-        if any_stale:
-            stale_report_md = stale_connectors_df.to_markdown(index=False)
-            send_slack_message(context, channel, f"🚨 Stale metadata detected! (cc. <!subteam^{TOOLING_TEAM_SLACK_TEAM_ID}>)")
-            send_slack_message(context, channel, stale_report_md, enable_code_block_wrapping=True)
-        else:
-            message = textwrap.dedent(
-                f"""
-            Analyzed {len(latest_versions_on_github)} metadata files on our master branch and {len(latest_versions_on_gcs)} latest metadata files hosted in GCS.
-            All dockerImageTag value on master match the latest metadata files on GCS.
-            No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
-            """
-            )
-            send_slack_message(context, channel, message)
+    if any_stale and stale_report_channel:
+        stale_report_md = stale_connectors_df.to_markdown(index=False)
+        send_slack_message(context, stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{TOOLING_TEAM_SLACK_TEAM_ID}>)")
+        send_slack_message(context, stale_report_channel, stale_report_md, enable_code_block_wrapping=True)
+    if not any_stale and publish_update_channel:
+        message = textwrap.dedent(
+            f"""
+        Analyzed {len(latest_versions_on_github)} metadata files on our master branch and {len(latest_versions_on_gcs)} latest metadata files hosted in GCS.
+        All dockerImageTag value on master match the latest metadata files on GCS.
+        No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
+        """
+        )
+        send_slack_message(context, publish_update_channel, message)
     return output_dataframe(stale_connectors_df)
 
 
