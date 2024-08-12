@@ -14,7 +14,7 @@ data:
   icon: k6cloud.svg
   license: MIT
   name: K6 Cloud
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

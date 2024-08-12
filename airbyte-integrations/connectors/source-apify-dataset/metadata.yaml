@@ -14,7 +14,7 @@ data:
   icon: apify.svg
   license: MIT
   name: Apify Dataset
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

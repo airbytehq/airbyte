@@ -16,7 +16,7 @@ data:
   icon: faker.svg
   license: MIT
   name: Hardcoded Records
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

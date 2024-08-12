@@ -14,7 +14,7 @@ data:
   icon: coinapi.svg
   license: MIT
   name: Coin API
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

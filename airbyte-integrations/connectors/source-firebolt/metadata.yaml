@@ -14,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-firebolt
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

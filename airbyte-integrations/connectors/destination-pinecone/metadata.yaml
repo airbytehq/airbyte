@@ -24,7 +24,7 @@ data:
     pypi:
       enabled: false # TODO: enable once the CLI is working
       packageName: airbyte-destination-pinecone
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

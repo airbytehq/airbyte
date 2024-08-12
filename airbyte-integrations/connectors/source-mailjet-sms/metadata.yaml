@@ -14,7 +14,7 @@ data:
   icon: mailjetsms.svg
   license: MIT
   name: Mailjet SMS
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

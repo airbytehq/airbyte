@@ -17,7 +17,7 @@ data:
   icon: strava.svg
   license: MIT
   name: Strava
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -26,7 +26,7 @@ data:
   icon: freshcaller.svg
   license: MIT
   name: Freshcaller
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

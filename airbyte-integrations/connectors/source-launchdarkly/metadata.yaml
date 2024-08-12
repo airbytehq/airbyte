@@ -20,7 +20,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-launchdarkly
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
