@@ -1,4 +1,4 @@
-# Tvmaze schedule source connector
+# TVmaze Schedule source connector
 
 This directory contains the manifest-only connector for `source-tvmaze-schedule`.
 This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
