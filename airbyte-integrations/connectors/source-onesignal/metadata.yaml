@@ -19,7 +19,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
-  dockerImageTag: 1.1.5
+  dockerImageTag: 1.1.7
   dockerRepository: airbyte/source-onesignal
   documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
   githubIssueLabel: source-onesignal

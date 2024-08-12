@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
-  dockerImageTag: 1.0.9
+  dockerImageTag: 1.0.11
   dockerRepository: airbyte/source-paystack
   githubIssueLabel: source-paystack
   icon: paystack.svg
