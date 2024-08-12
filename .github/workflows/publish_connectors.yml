@@ -70,19 +70,6 @@ jobs:
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
           max_attempts: 2
 
-  set-instatus-incident-on-failure:
-    name: Create Instatus Incident on Failure
-    runs-on: ubuntu-latest
-    needs:
-      - publish_connectors
-    if: ${{ failure() && github.ref == 'refs/heads/master' }}
-    steps:
-      - name: Call Instatus Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.INSTATUS_CONNECTOR_PUBLISH_PIPELINE_WEBHOOK_URL }}
-          body: '{ "trigger": "down", "status": "HASISSUES" }'
-
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-latest
@@ -107,7 +94,25 @@ jobs:
             {
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
-              "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              "text": "🚨 Publish workflow failed:\n ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \n merged by ${{ github.actor }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>). "
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+
+  notify-failure-pager-duty:
+    name: "Notify PagerDuty on Publish Failures"
+    runs-on: ubuntu-latest
+    needs:
+      - publish_connectors
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+      - name: Notify PagerDuty
+        id: pager-duty
+        uses: ./.github/actions/send-pager-duty-event
+        with:
+          integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
+          summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
+          severity: "critical"
+          source: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
