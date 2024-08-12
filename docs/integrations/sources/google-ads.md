@@ -310,6 +310,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.5 | 2024-08-12 | [43882](https://github.com/airbytehq/airbyte/pull/43882) | Update dependencies |
 | 3.6.4 | 2024-08-10 | [43628](https://github.com/airbytehq/airbyte/pull/43628) | Update dependencies |
 | 3.6.3 | 2024-08-03 | [43138](https://github.com/airbytehq/airbyte/pull/43138) | Update dependencies |
 | `3.6.2`  | 2024-08-02 | [42971](https://github.com/airbytehq/airbyte/pull/42971) | Fix attribute error on check connection                                                                                              |
