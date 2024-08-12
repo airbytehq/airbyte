@@ -12,7 +12,7 @@ def _get_unit_tests_root_folder(execution_folder: FilePath) -> FilePath:
     return path
 
 
-def read_json_contents(resource: str, test_location: FilePath) -> str:
+def read_resource_file_contents(resource: str, test_location: FilePath) -> str:
     """Read the contents of a json file from the test resource folder."""
     json_path = str(_get_unit_tests_root_folder(test_location) / "resource" / "http" / "response" / f"{resource}")
     with open(json_path) as f:

@@ -1,6 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from airbyte_cdk.test.utils.data import read_json_contents
+from airbyte_cdk.test.utils.data import read_resource_file_contents
 
 from .common import build_url
 
@@ -13,7 +13,7 @@ def request_response_mapping(stream_name, method="GET", custom_resource=None, is
 
     response_map = response
     if response is None:
-        response_map = {"text": read_json_contents(json_filename, __file__), "status_code": status_code}
+        response_map = {"text": read_resource_file_contents(json_filename, __file__), "status_code": status_code}
 
     return {
         "request": {
