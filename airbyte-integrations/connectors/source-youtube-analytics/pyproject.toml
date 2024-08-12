@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_youtube_analytics"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^3.8.2"
+python = "^3.10"
+airbyte-cdk = "^4.0.1"
 
 [tool.poetry.scripts]
 source-youtube-analytics = "source_youtube_analytics.run:run"
