@@ -25,7 +25,7 @@ class DefaultErrorResolutionTest(TestCase):
 
         assert error_resolution.failure_type == FailureType.system_error
         assert error_resolution.response_action == ResponseAction.RETRY
-        assert error_resolution.error_message == "Unexpected argument while handling error"
+        assert error_resolution.error_message ==  "Error handler did not receive a valid response or exception. This is unexpected please contact Airbyte Support"
 
     def test_given_exception_when_create_fallback_error_resolution_then_return_error_resolution(self) -> None:
         exception = ValueError("This is an exception")
