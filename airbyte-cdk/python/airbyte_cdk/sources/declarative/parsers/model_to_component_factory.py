@@ -404,11 +404,8 @@ class ModelToComponentFactory:
     def create_check_stream(model: CheckStreamModel, config: Config, **kwargs: Any) -> CheckStream:
         return CheckStream(stream_names=model.stream_names, parameters={})
 
-    def create_composite_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs: Any) -> DefaultErrorHandler:
-        error_handlers = [
-            self._create_component_from_model(model=error_handler_model, config=config) for error_handler_model in model.error_handlers
-        ]
-        return DefaultErrorHandler(error_handlers=error_handlers, parameters=model.parameters or {})
+    def create_composite_error_handler(self, model: DefaultErrorHandlerModel) -> DefaultErrorHandler:
+        return DefaultErrorHandler(parameters=model.parameters or {})
 
     @staticmethod
     def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs: Any) -> ConstantBackoffStrategy:
