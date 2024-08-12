@@ -45,6 +45,7 @@ jobs:
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           max_attempts: 2
+          retry_wait_seconds: 600 # 10 minutes
 
       - name: Publish connectors [manual]
         id: publish-connectors
