@@ -354,29 +354,33 @@ class TestAllStreams:
 class TestSourceZendeskSupportStream:
     @pytest.mark.parametrize(
         "stream_cls",
-        [(Macros), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (TicketMetrics), (Topics)],
-        ids=["Macros", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
+        [(Macros), (Posts), (Groups), (SatisfactionRatings), (TicketFields), (Topics)],
+        ids=["Macros", "Posts", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
     )
     def test_parse_response(self, requests_mock, stream_cls):
-        if stream_cls in TICKET_SUBSTREAMS:
-            parent = Tickets(**STREAM_ARGS)
-            stream = stream_cls(parent=parent, **STREAM_ARGS)
-            expected = {"ticket_id": 13, "generated_timestamp": 1647532987}
-            response_field = stream.response_list_name
-
-        else:
-            stream = stream_cls(**STREAM_ARGS)
-            expected = [{"updated_at": "2022-03-17T16:03:07Z"}]
-            response_field = stream.name
+        stream = stream_cls(**STREAM_ARGS)
+        expected = [{"updated_at": "2022-03-17T16:03:07Z"}]
+        response_field = stream.name
 
         requests_mock.get(STREAM_URL, json={response_field: expected})
         test_response = requests.get(STREAM_URL)
 
-        if isinstance(stream, TicketMetrics):
-            stream_slice = {"ticket_id": 13, "generated_timestamp": 1647532987}
-            output = list(stream.parse_response(response=test_response, stream_state=None, stream_slice=stream_slice))
-        else:
-            output = list(stream.parse_response(test_response, None))
+        output = list(stream.parse_response(test_response, None))
+
+        expected = expected if isinstance(expected, list) else [expected]
+        assert expected == output
+
+    def test_ticket_metrics_parse_response(self, requests_mock):
+        parent = Tickets(**STREAM_ARGS)
+        stream = TicketMetrics(parent=parent, **STREAM_ARGS)
+        expected = {"ticket_id": 13, "generated_timestamp": 1647532987}
+        response_field = stream.response_list_name
+
+        requests_mock.get(STREAM_URL, json={response_field: expected})
+        test_response = requests.get(STREAM_URL)
+
+        stream_slice = {"ticket_id": 13, "generated_timestamp": 1647532987}
+        output = list(stream.parse_response(response=test_response, stream_state=None, stream_slice=stream_slice))
 
         expected = expected if isinstance(expected, list) else [expected]
         assert expected == output
