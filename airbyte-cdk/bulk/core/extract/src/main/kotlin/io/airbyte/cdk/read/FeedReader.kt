@@ -2,9 +2,6 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.source.PartitionReadCheckpoint
-import io.airbyte.cdk.source.PartitionReader
-import io.airbyte.cdk.source.PartitionsCreator
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
