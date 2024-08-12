@@ -182,7 +182,7 @@ class CheckDocumentationLinks(CheckDocumentationContent):
 class CheckDocumentationHeadersOrder(CheckDocumentationContent):
     name = "Connectors documentation headers structure, naming and order follow our guidelines"
 
-    CONNECTOR_SPECIFIC_HEADINGS = "<Connector-specific features>"
+    CONNECTOR_SPECIFIC_HEADINGS = "{ Connector-specific features }"
 
     @property
     def description(self) -> str:

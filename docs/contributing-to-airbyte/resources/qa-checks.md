@@ -66,7 +66,7 @@ This check expects the following order of headers in the documentation:
 
   ### For Airbyte Open Source:
 
-  ### <Connector-specific features>
+  ### { Connector-specific features }
 
   ## Set up the <CONNECTOR_NAME_FROM_METADATA> connector in Airbyte
 
@@ -74,13 +74,13 @@ This check expects the following order of headers in the documentation:
 
   ### For Airbyte Open Source:
 
-  ## <Connector-specific features>
+  ## { Connector-specific features }
 
   ## Supported sync modes
 
   ## Supported Streams
 
-  ## <Connector-specific features>
+  ## { Connector-specific features }
 
   ### Performance considerations
 
@@ -88,7 +88,7 @@ This check expects the following order of headers in the documentation:
 
   ## Limitations & Troubleshooting
 
-  ### <Connector-specific features>
+  ### { Connector-specific features }
 
   ### Tutorials
 
@@ -106,7 +106,7 @@ List of not required headers, which can be not exist in the documentation and th
 
   - For Airbyte Open Source: *(as subtitle of Set up <CONNECTOR_NAME_FROM_METADATA)>
 
-  - <Connector-specific features> (but this headers should be on a right place according to expected order)
+  - { Connector-specific features } (but this headers should be on a right place according to expected order)
 
   - Performance considerations
 
@@ -375,6 +375,7 @@ Python connectors must have [PyPi](https://pypi.org/) publishing enabled in thei
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: manifest-only_
 _Applies to connector with any support level_
+_Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
 Manifest-only connectors must use `airbyte/source-declarative-manifest` as their base image.
