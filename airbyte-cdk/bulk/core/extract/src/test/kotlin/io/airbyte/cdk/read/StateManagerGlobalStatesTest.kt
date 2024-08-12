@@ -4,8 +4,8 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.consumers.BufferingCatalogValidationFailureHandler
-import io.airbyte.cdk.consumers.CatalogValidationFailure
+import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
+import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
