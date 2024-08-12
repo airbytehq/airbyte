@@ -507,9 +507,7 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_state = None
-        cursor_value = (stream_state or {}).get(self.cursor_field, self._start_date)
-        if isinstance(cursor_value, str):
-            cursor_value = pendulum.parse(cursor_value).int_timestamp
+        cursor_value = (stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
         parent_stream_state = {self.parent.cursor_field: cursor_value}
         parent_records = self.parent.read_records(
             sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=None, stream_state=parent_stream_state
