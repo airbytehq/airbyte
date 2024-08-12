@@ -122,7 +122,7 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     Returns:
         dict: The metadata data field with the overrides applied.
     """
-    override_registry = metadata_data["registries"][override_registry_key]
+    override_registry = metadata_data["registryOverrides"][override_registry_key]
     del override_registry["enabled"]
 
     # remove any None values from the override registry
@@ -222,7 +222,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
 
     # remove fields that are not needed in the registry
-    del overridden_metadata_data["registries"]
+    del overridden_metadata_data["registryOverrides"]
     del overridden_metadata_data["connectorType"]
 
     # rename field connectorSubtype to sourceType
