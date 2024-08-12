@@ -112,6 +112,7 @@ jobs:
         id: pager-duty
         uses: ./.github/actions/send-pager-duty-event
         with:
+          # Integration URL: https://airbyte.pagerduty.com/services/P5GNI5T/integrations/PGKH9JV
           integration_key: ${{ secrets.PAGER_DUTY_PUBLISH_FAILURES_INTEGRATION_KEY }}
           summary: "Publish workflow failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} merged by ${{ github.actor }}"
           severity: "critical"
