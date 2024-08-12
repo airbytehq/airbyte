@@ -19,6 +19,12 @@ from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
 GROUP_NAME = "github"
 TOOLING_TEAM_SLACK_TEAM_ID = "S077R8636CV"
+# We give 6 hours for the metadata to be updated
+# This is an empirical value that we can adjust if needed
+# When our auto-merge pipeline runs it can merge hundreds of up-to-date PRs following.
+# Given our current publish concurrency of 10 runners, it can take up to 6 hours to publish all the connectors.
+# A shorter grace period could lead to false positives in stale metadata detection.
+PUBLISH_GRACE_PERIOD = datetime.timedelta(hours=int(os.getenv("PUBLISH_GRACE_PERIOD_HOURS", 6)))
 
 
 def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: Repository, path: str) -> str:
@@ -113,7 +119,7 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, m
         if metadata_entry.metadata_definition.data.supportLevel
         != "archived"  # We give a 2 hour grace period for the metadata to be updated
         and datetime.datetime.strptime(metadata_entry.last_modified, "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=datetime.timezone.utc)
-        > now - datetime.timedelta(hours=2)
+        > now - PUBLISH_GRACE_PERIOD
     }
 
     stale_connectors = []
