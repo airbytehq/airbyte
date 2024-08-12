@@ -29,7 +29,8 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
             // The raw table doesn't exist. No migration necessary. Update the state.
             log.info {
                 "Skipping airbyte_meta/generation_id migration for ${stream.id.originalNamespace}.${stream.id.originalName} " +
-                    "because the raw table doesn't exist for sync mode ${stream.destinationSyncMode}"
+                    "because the raw table doesn't exist. GenerationId=${stream.generationId}, " +
+                    "minimumGenerationId = ${stream.minimumGenerationId}, postImportAction=${stream.postImportAction}"
             }
             return Migration.MigrationResult(
                 state.destinationState.copy(isAirbyteMetaPresentInRaw = true),

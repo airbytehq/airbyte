@@ -130,7 +130,7 @@ def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntr
         metadata_entry = LatestMetadataEntry(
             metadata_definition=metadata_def,
             icon_url=icon_url,
-            last_modified=blob.last_modified,
+            last_modified=blob.updated.isoformat(),
             etag=blob.etag,
             file_path=blob.name,
             bucket_name=blob.bucket.name,
