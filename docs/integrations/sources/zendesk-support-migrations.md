@@ -10,7 +10,7 @@ Airbyte Open Source users must manually update the connector image in their loca
 
 1. Select **Settings** in the main navbar.
     - Select **Sources**.
-2. Find <CONNECTOR-NAME> in the list of connectors.
+2. Find Zendesk Support in the list of connectors.
 
 :::note
 You will see two versions listed, the current in-use version and the latest version available.
