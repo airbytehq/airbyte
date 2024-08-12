@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import sys
 import traceback
@@ -42,9 +43,13 @@ def get_source(args: List[str]):
         return None
 
 
-def run():
-    _args = sys.argv[1:]
-    source = get_source(_args)
+def run_with_args(*args: str) -> None:
+    source = get_source(list(args))
+    if not source:
+        raise RuntimeError("Could not initialize source.")
 
-    if source:
-        launch(source, _args)
+    launch(source, list(args))
+
+
+def run() -> None:
+    run_with_args(*sys.argv[1:])
