@@ -38,6 +38,7 @@ None
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.0.13 | 2024-08-12 | [43883](https://github.com/airbytehq/airbyte/pull/43883) | Update dependencies |
 | 1.0.12 | 2024-08-10 | [43687](https://github.com/airbytehq/airbyte/pull/43687) | Update dependencies |
 | 1.0.11 | 2024-08-03 | [43073](https://github.com/airbytehq/airbyte/pull/43073) | Update dependencies |
 | 1.0.10 | 2024-07-27 | [42687](https://github.com/airbytehq/airbyte/pull/42687) | Update dependencies |
