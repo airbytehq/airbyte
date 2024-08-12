@@ -4,7 +4,7 @@
   "name": "S3 Source Connector DevContainer (Python)",
 
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/python:0-3.10",
+  "image": "mcr.microsoft.com/devcontainers/universal:2.9.0",
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
@@ -70,7 +70,7 @@
   // 1. Create a symlink directory.
   // 2. Create symlinks for the devcontainer.json and docs markdown file.
   // 3. Install the Python/Poetry dependencies.
-  "postCreateCommand": "mkdir -p ./.symlinks && echo '*' > ./.symlinks/.gitignore && ln -sf /workspaces/airbyte/.devcontainer/destination-duckdb/devcontainer.json ./.symlinks/devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/sources/s3.md ./.symlinks/s3-source-docs.md && poetry install"
+  "postCreateCommand": "mkdir -p ./.symlinks && echo '*' > ./.symlinks/.gitignore && ln -sf /workspaces/airbyte/.devcontainer/source-s3/devcontainer.json ./.symlinks/devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/sources/s3.md ./.symlinks/s3-source-docs.md && poetry install"
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
