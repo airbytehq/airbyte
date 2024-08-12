@@ -78,11 +78,17 @@ The connector is restricted by normal OneSignal [rate limits](https://documentat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------- |
-| 1.1.0   | 2023-08-31 | [28941](https://github.com/airbytehq/airbyte/pull/28941) | Migrate connector to low-code                |
-| 1.0.1   | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Fix schema and add additionalProperties true |
-| 1.0.0   | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Update connectors spec; fix incremental sync |
-| 0.1.2   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description    |
-| 0.1.1   | 2021-11-10 | [7617](https://github.com/airbytehq/airbyte/pull/7617)   | Fix get_update state                         |
-| 0.1.0   | 2021-10-13 | [6998](https://github.com/airbytehq/airbyte/pull/6998)   | Initial Release                              |
+| 1.1.6 | 2024-08-10 | [43468](https://github.com/airbytehq/airbyte/pull/43468) | Update dependencies |
+| 1.1.5 | 2024-08-03 | [42742](https://github.com/airbytehq/airbyte/pull/42742) | Update dependencies |
+| 1.1.4 | 2024-07-20 | [42293](https://github.com/airbytehq/airbyte/pull/42293) | Update dependencies |
+| 1.1.3 | 2024-07-13 | [41785](https://github.com/airbytehq/airbyte/pull/41785) | Update dependencies |
+| 1.1.2 | 2024-07-10 | [41317](https://github.com/airbytehq/airbyte/pull/41317) | Update dependencies |
+| 1.1.1 | 2024-07-09 | [41033](https://github.com/airbytehq/airbyte/pull/41033) | Migrate to poetry base |
+| 1.1.0 | 2023-08-31 | [28941](https://github.com/airbytehq/airbyte/pull/28941) | Migrate connector to low-code |
+| 1.0.1 | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Fix schema and add additionalProperties true |
+| 1.0.0 | 2023-03-14 | [24076](https://github.com/airbytehq/airbyte/pull/24076) | Update connectors spec; fix incremental sync |
+| 0.1.2 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
+| 0.1.1 | 2021-11-10 | [7617](https://github.com/airbytehq/airbyte/pull/7617) | Fix get_update state |
+| 0.1.0 | 2021-10-13 | [6998](https://github.com/airbytehq/airbyte/pull/6998) | Initial Release |
 
 </details>

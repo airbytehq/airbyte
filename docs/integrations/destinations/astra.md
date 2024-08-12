@@ -43,6 +43,13 @@ This page contains the setup guide and reference information for the destination
 
 | Version | Date       | Pull Request | Subject                                                   |
 | :------ | :--------- | :----------- | :-------------------------------------------------------- |
+| 0.1.17 | 2024-08-10 | [43598](https://github.com/airbytehq/airbyte/pull/43598) | Update dependencies |
+| 0.1.16 | 2024-08-03 | [43075](https://github.com/airbytehq/airbyte/pull/43075) | Update dependencies |
+| 0.1.15 | 2024-07-27 | [42805](https://github.com/airbytehq/airbyte/pull/42805) | Update dependencies |
+| 0.1.14 | 2024-07-20 | [42251](https://github.com/airbytehq/airbyte/pull/42251) | Update dependencies |
+| 0.1.13 | 2024-07-13 | [41698](https://github.com/airbytehq/airbyte/pull/41698) | Update dependencies |
+| 0.1.12 | 2024-07-10 | [41451](https://github.com/airbytehq/airbyte/pull/41451) | Update dependencies |
+| 0.1.11 | 2024-07-09 | [41095](https://github.com/airbytehq/airbyte/pull/41095) | Update dependencies |
 | 0.1.10 | 2024-07-06 | [40779](https://github.com/airbytehq/airbyte/pull/40779) | Update dependencies |
 | 0.1.9 | 2024-06-29 | [40626](https://github.com/airbytehq/airbyte/pull/40626) | Update dependencies |
 | 0.1.8 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |

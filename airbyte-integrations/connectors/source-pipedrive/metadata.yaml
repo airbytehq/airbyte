@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.2.7
+  dockerImageTag: 2.2.13
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -38,6 +38,12 @@ data:
     - cdk:low-code
     - language:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pipedrive_old_config_dev_null
+          id: 7bd5c95e-ead8-42a7-8c5a-6cfd50b1f0e0
+        - name: pipedrive_config_dev_null
+          id: 8278c55c-e9e9-4403-a001-b47aaac3535f
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
@@ -57,5 +63,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

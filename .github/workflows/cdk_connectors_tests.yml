@@ -13,11 +13,10 @@ concurrency:
 
 on:
   workflow_dispatch:
-  # TODO uncomment when we will be ready to enable this
-  #pull_request:
-  #  types:
-  #    - opened
-  #    - synchronize
+  pull_request:
+    types:
+      - opened
+      - synchronize
 jobs:
   cdk_changes:
     runs-on: ubuntu-latest
@@ -54,11 +53,11 @@ jobs:
             }' \
 
   connectors_ci:
-    needs: changes
+    needs: cdk_changes
     # We only run the Connectors CI job if there are changes to the connectors on a non-forked PR
     # Forked PRs are handled by the community_ci.yml workflow
     # If the condition is not met the job will be skipped (it will not fail)
-    if: github.event_name == 'pull_request' && needs.changes.outputs.python_cdk == 'true' && github.event.pull_request.head.repo.fork != true
+    if: (github.event_name == 'pull_request' && needs.cdk_changes.outputs.python_cdk == 'true' && github.event.pull_request.head.repo.fork != true) || github.event_name == 'workflow_dispatch'
     name: Connectors CI
     runs-on: connector-test-large
     timeout-minutes: 360 # 6 hours
@@ -78,19 +77,19 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
-      - name: Test connectors [PULL REQUESTS]
+      - name: Test connectors
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "pull_request"
+          context: ${{ github.event_name == 'pull_request' && 'pull_request' || 'manual' }}
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ github.head_ref }}
-          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          git_revision: ${{ github.event_name == 'pull_request' && steps.fetch_last_commit_id_pr.outputs.commit_id || steps.fetch_last_commit_id_wd.outputs.commit_id }}
           github_token: ${{ env.PAT }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # A connector test can't take more than 5 hours to run (5 * 60 * 60 = 18000 seconds)
-          subcommand: "connectors --execute-timeout=18000 --global-status-check-context='CDK Changes - Connectors Tests' --name source-shopify  test"
+          subcommand: "connectors --use-local-cdk --name source-shopify --name source-zendesk-support --execute-timeout=18000 test --global-status-check-context='CDK Changes - Connectors Tests'"

@@ -3,7 +3,7 @@
 connector_image: airbyte/source-zapier-supported-storage:dev
 tests:
   spec:
-    - spec_path: "source_zapier_supported_storage/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

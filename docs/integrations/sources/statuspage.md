@@ -38,6 +38,13 @@ Mailjet APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                         |
 |:--------|:-----------| :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.12 | 2024-08-10 | [43525](https://github.com/airbytehq/airbyte/pull/43525) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43208](https://github.com/airbytehq/airbyte/pull/43208) | Update dependencies |
+| 0.1.10 | 2024-07-27 | [42596](https://github.com/airbytehq/airbyte/pull/42596) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42324](https://github.com/airbytehq/airbyte/pull/42324) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41828](https://github.com/airbytehq/airbyte/pull/41828) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41413](https://github.com/airbytehq/airbyte/pull/41413) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [41290](https://github.com/airbytehq/airbyte/pull/41290) | Update dependencies |
 | 0.1.5 | 2024-07-06 | [40902](https://github.com/airbytehq/airbyte/pull/40902) | Update dependencies |
 | 0.1.4 | 2024-06-26 | [40182](https://github.com/airbytehq/airbyte/pull/40182) | Update dependencies |
 | 0.1.3   | 2024-06-20 | [#38662](https://github.com/airbytehq/airbyte/pull/38662) | Make connector compatible with Builder          |

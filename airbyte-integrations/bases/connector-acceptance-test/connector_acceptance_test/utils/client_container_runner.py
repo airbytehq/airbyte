@@ -11,6 +11,7 @@ from typing import List
 import dagger
 from connector_acceptance_test.utils import SecretDict
 
+IN_CONTAINER_CONNECTOR_PATH = Path("/connector")
 IN_CONTAINER_CONFIG_PATH = Path("/tmp/config.json")
 IN_CONTAINER_OUTPUT_PATH = Path("/tmp/output.txt")
 
@@ -27,7 +28,7 @@ async def _build_container(dagger_client: dagger.Client, dockerfile_path: Path) 
 async def _build_client_container(dagger_client: dagger.Client, connector_path: Path, dockerfile_path: Path) -> dagger.Container:
     container = await _build_container(dagger_client, dockerfile_path)
     return container.with_mounted_directory(
-        "/connector", dagger_client.host().directory(str(connector_path), exclude=get_default_excluded_files())
+        str(IN_CONTAINER_CONNECTOR_PATH), dagger_client.host().directory(str(connector_path), exclude=get_default_excluded_files())
     )
 
 
@@ -60,8 +61,10 @@ async def get_client_container(dagger_client: dagger.Client, connector_path: Pat
     return await _build_client_container(dagger_client, connector_path, dockerfile_path)
 
 
-async def do_setup(container: dagger.Container, command: List[str], connector_config: SecretDict):
-    return await _run_with_config(container, command, connector_config)
+async def do_setup(container: dagger.Container, command: List[str], connector_config: SecretDict, connector_path: Path):
+    container = await _run_with_config(container, command, connector_config)
+    await container.directory(str(IN_CONTAINER_CONNECTOR_PATH / "integration_tests")).export(str(connector_path / "integration_tests"))
+    return container
 
 
 async def do_teardown(container: dagger.Container, command: List[str]):

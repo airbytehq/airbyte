@@ -6,11 +6,11 @@ data:
     hosts:
       - ${subdomain}.zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 325e0640-e7b3-4e24-b823-3361008f603f
-  dockerImageTag: 0.2.8
+  dockerImageTag: 0.2.15
   dockerRepository: airbyte/source-zendesk-sunshine
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
   githubIssueLabel: source-zendesk-sunshine
@@ -33,6 +33,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-sunshine_config_oauth_dev_null
+          id: 3bf2af38-8489-4938-8d5e-2245fa0e22ee
+        - name: zendesk-sunshine_config_api_token_dev_null
+          id: 4320214d-cda0-4859-a4f0-dc123c1b8523
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-ZENDESK-SUNSHINE_API_TOKEN__CREDS

@@ -72,6 +72,13 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.16 | 2024-08-10 | [43646](https://github.com/airbytehq/airbyte/pull/43646) | Update dependencies |
+| 0.2.15 | 2024-08-03 | [43206](https://github.com/airbytehq/airbyte/pull/43206) | Update dependencies |
+| 0.2.14 | 2024-07-27 | [42785](https://github.com/airbytehq/airbyte/pull/42785) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42203](https://github.com/airbytehq/airbyte/pull/42203) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41747](https://github.com/airbytehq/airbyte/pull/41747) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41596](https://github.com/airbytehq/airbyte/pull/41596) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41249](https://github.com/airbytehq/airbyte/pull/41249) | Update dependencies |
 | 0.2.9 | 2024-07-06 | [40887](https://github.com/airbytehq/airbyte/pull/40887) | Update dependencies |
 | 0.2.8 | 2024-06-25 | [40271](https://github.com/airbytehq/airbyte/pull/40271) | Update dependencies |
 | 0.2.7 | 2024-06-22 | [40153](https://github.com/airbytehq/airbyte/pull/40153) | Update dependencies |

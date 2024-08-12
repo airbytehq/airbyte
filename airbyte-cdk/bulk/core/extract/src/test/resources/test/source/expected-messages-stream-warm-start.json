@@ -1,0 +1,58 @@
+[
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "status": "STARTED"
+      }
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "KV",
+          "namespace": "PUBLIC"
+        },
+        "status": "STARTED"
+      }
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "KV",
+          "namespace": "PUBLIC"
+        },
+        "status": "COMPLETE"
+      }
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "status": "COMPLETE"
+      }
+    }
+  }
+]

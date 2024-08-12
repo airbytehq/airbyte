@@ -42,6 +42,13 @@ Rate Limiting information is updated [here](https://www.aha.io/api#rate-limiting
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------|
+| 0.3.13 | 2024-08-10 | [43556](https://github.com/airbytehq/airbyte/pull/43556) | Update dependencies |
+| 0.3.12 | 2024-08-03 | [43186](https://github.com/airbytehq/airbyte/pull/43186) | Update dependencies |
+| 0.3.11 | 2024-07-27 | [42737](https://github.com/airbytehq/airbyte/pull/42737) | Update dependencies |
+| 0.3.10 | 2024-07-20 | [42306](https://github.com/airbytehq/airbyte/pull/42306) | Update dependencies |
+| 0.3.9 | 2024-07-13 | [41914](https://github.com/airbytehq/airbyte/pull/41914) | Update dependencies |
+| 0.3.8 | 2024-07-10 | [41568](https://github.com/airbytehq/airbyte/pull/41568) | Update dependencies |
+| 0.3.7 | 2024-07-09 | [41170](https://github.com/airbytehq/airbyte/pull/41170) | Update dependencies |
 | 0.3.6 | 2024-07-06 | [40774](https://github.com/airbytehq/airbyte/pull/40774) | Update dependencies |
 | 0.3.5 | 2024-06-25 | [40435](https://github.com/airbytehq/airbyte/pull/40435) | Update dependencies |
 | 0.3.4 | 2024-06-22 | [40000](https://github.com/airbytehq/airbyte/pull/40000) | Update dependencies |

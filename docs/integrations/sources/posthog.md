@@ -71,6 +71,13 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| 1.1.5 | 2024-08-10 | [43488](https://github.com/airbytehq/airbyte/pull/43488) | Update dependencies |
+| 1.1.4 | 2024-08-03 | [43232](https://github.com/airbytehq/airbyte/pull/43232) | Update dependencies |
+| 1.1.3 | 2024-07-27 | [42769](https://github.com/airbytehq/airbyte/pull/42769) | Update dependencies |
+| 1.1.2 | 2024-07-20 | [42151](https://github.com/airbytehq/airbyte/pull/42151) | Update dependencies |
+| 1.1.1 | 2024-07-13 | [41823](https://github.com/airbytehq/airbyte/pull/41823) | Update dependencies |
+| 1.1.0   | 2024-06-20 | [39763](https://github.com/airbytehq/airbyte/pull/39763) | Add `properties` and `uuid` 
+attributes to persons stream |
 | 1.0.0   | 2023-12-04 | [28593](https://github.com/airbytehq/airbyte/pull/28593) | Fix events.event type                                                                                              |
 | 0.1.15  | 2023-10-28 | [31265](https://github.com/airbytehq/airbyte/pull/31265) | Fix Events stream datetime format                                                                                  |
 | 0.1.14  | 2023-08-29 | [29947](https://github.com/airbytehq/airbyte/pull/29947) | Add optional field to spec: `events_time_step`                                                                     |

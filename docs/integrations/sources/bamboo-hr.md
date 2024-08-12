@@ -25,8 +25,9 @@ This page contains the setup guide and reference information for the [BambooHR](
 4. Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
 5. Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
 6. (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
-7. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
-8. Click **Set up source**
+7. (Optional) Enter a `Start date` to define the start period for getting data for TimeOff Requests. The default start_date will be 30 days from today's date. 
+8. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
+9. Click **Set up source**
 
 <!-- /env:cloud -->
 
@@ -39,8 +40,9 @@ This page contains the setup guide and reference information for the [BambooHR](
 3. Enter your `subdomain`. If you access BambooHR at https://mycompany.bamboohr.com, then the subdomain is "mycompany".
 4. Enter your `api_key`. To generate an API key, log in and click your name in the upper right-hand corner of any page to get to the user context menu. If you have sufficient administrator permissions, there will be an "API Keys" option in that menu to go to the page.
 5. (Optional) Enter any `Custom Report Fields` as a comma-separated list of fields to include in your custom reports. Example: `firstName,lastName`. If none are listed, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned.
-6. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
-7. Click **Set up source**
+6. (Optional) Enter a `Start date` to define the start period for getting data for TimeOff Requests. The default start_date will be 30 days from today's date. 
+7. Toggle `Custom Reports Include Default Fields`. If true, then the [default fields](https://documentation.bamboohr.com/docs/list-of-field-names) will be returned. If false, then the values defined in `Custom Report Fields` will be returned.
+8. Click **Set up source**
 
 <!-- /env:oss -->
 
@@ -51,9 +53,9 @@ This page contains the setup guide and reference information for the [BambooHR](
 The BambooHR source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                   | Supported? |
-|:--------------------------|:-----------|
+| :------------------------ | :--------- |
 | Full Refresh Sync         | Yes        |
-| Incremental - Append Sync | No         |
+| Incremental - Append Sync | Yes        |
 | SSL connection            | Yes        |
 | Namespaces                | No         |
 
@@ -88,7 +90,15 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.3 | 2024-08-10 | [43467](https://github.com/airbytehq/airbyte/pull/43467) | Update dependencies |
+| 0.4.2 | 2024-08-03 | [43154](https://github.com/airbytehq/airbyte/pull/43154) | Update dependencies |
+| 0.4.1 | 2024-07-27 | [42779](https://github.com/airbytehq/airbyte/pull/42779) | Update dependencies |
+| 0.4.0 | 2024-07-18 | [41443](https://github.com/airbytehq/airbyte/pull/41443) | Add TimeOff Requests stream |
+| 0.3.8 | 2024-07-20 | [42200](https://github.com/airbytehq/airbyte/pull/42200) | Update dependencies |
+| 0.3.7 | 2024-07-13 | [41780](https://github.com/airbytehq/airbyte/pull/41780) | Update dependencies |
+| 0.3.6 | 2024-07-10 | [41437](https://github.com/airbytehq/airbyte/pull/41437) | Update dependencies |
+| 0.3.5 | 2024-07-09 | [41088](https://github.com/airbytehq/airbyte/pull/41088) | Update dependencies |
 | 0.3.4 | 2024-07-06 | [40818](https://github.com/airbytehq/airbyte/pull/40818) | Update dependencies |
 | 0.3.3 | 2024-06-25 | [40288](https://github.com/airbytehq/airbyte/pull/40288) | Update dependencies |
 | 0.3.2 | 2024-06-22 | [40156](https://github.com/airbytehq/airbyte/pull/40156) | Update dependencies |

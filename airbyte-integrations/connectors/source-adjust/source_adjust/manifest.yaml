@@ -35,7 +35,7 @@ definitions:
         cursor_field: day
         cursor_datetime_formats:
           - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['ingest_start'] }}"

@@ -6,7 +6,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.40.7'
+    cdkVersionRequired = '0.44.4'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -45,4 +45,10 @@ jsonSchema2Pojo {
     generateBuilders = true
     includeConstructors = false
     includeSetters = true
+}
+
+compileKotlin {
+    dependsOn {
+        generateJsonSchema2Pojo
+    }
 }

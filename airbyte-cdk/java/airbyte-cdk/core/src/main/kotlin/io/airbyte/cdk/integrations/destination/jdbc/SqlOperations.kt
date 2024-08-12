@@ -80,7 +80,7 @@ interface SqlOperations {
      * @param tableName Name of table
      * @return Query
      */
-    fun truncateTableQuery(database: JdbcDatabase?, schemaName: String?, tableName: String?): String
+    fun truncateTableQuery(database: JdbcDatabase, schemaName: String, tableName: String): String
 
     /**
      * Insert records into table. Assumes the table exists.
@@ -96,7 +96,9 @@ interface SqlOperations {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long,
     )
 
     /**
@@ -115,7 +117,7 @@ interface SqlOperations {
         database: JdbcDatabase?,
         schemaName: String?,
         sourceTableName: String?,
-        destinationTableName: String?
+        destinationTableName: String?,
     ): String?
 
     /**
@@ -129,6 +131,9 @@ interface SqlOperations {
 
     /** Check if the data record is valid and ok to be written to destination */
     fun isValidData(data: JsonNode?): Boolean
+
+    /** overwrite the raw table with the temporary raw table */
+    fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String)
 
     /**
      * Denotes whether the destination has the concept of schema or not

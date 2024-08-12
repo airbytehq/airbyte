@@ -68,6 +68,14 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.0.10 | 2024-08-10 | [43464](https://github.com/airbytehq/airbyte/pull/43464) | Update dependencies |
+| 1.0.9 | 2024-08-03 | [43106](https://github.com/airbytehq/airbyte/pull/43106) | Update dependencies |
+| 1.0.8 | 2024-07-31 | [42901](https://github.com/airbytehq/airbyte/pull/42901) | New field added for `transfers` stream |
+| 1.0.7 | 2024-07-27 | [42655](https://github.com/airbytehq/airbyte/pull/42655) | Update dependencies |
+| 1.0.6 | 2024-07-20 | [42323](https://github.com/airbytehq/airbyte/pull/42323) | Update dependencies |
+| 1.0.5 | 2024-07-13 | [41694](https://github.com/airbytehq/airbyte/pull/41694) | Update dependencies |
+| 1.0.4 | 2024-07-10 | [41424](https://github.com/airbytehq/airbyte/pull/41424) | Update dependencies |
+| 1.0.3 | 2024-07-09 | [41214](https://github.com/airbytehq/airbyte/pull/41214) | Update dependencies |
 | 1.0.2 | 2024-07-06 | [40783](https://github.com/airbytehq/airbyte/pull/40783) | Update dependencies |
 | 1.0.1 | 2024-06-26 | [40453](https://github.com/airbytehq/airbyte/pull/40453) | Update dependencies |
 | 1.0.0 | 2024-06-25 | [39395](https://github.com/airbytehq/airbyte/pull/39395) | Migrate python cdk to low code |

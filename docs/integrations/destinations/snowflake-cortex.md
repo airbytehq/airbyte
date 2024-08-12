@@ -84,6 +84,13 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.16 | 2024-08-10 | [43584](https://github.com/airbytehq/airbyte/pull/43584) | Update dependencies |
+| 0.2.15 | 2024-08-03 | [43093](https://github.com/airbytehq/airbyte/pull/43093) | Update dependencies |
+| 0.2.14 | 2024-07-27 | [42684](https://github.com/airbytehq/airbyte/pull/42684) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42263](https://github.com/airbytehq/airbyte/pull/42263) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41758](https://github.com/airbytehq/airbyte/pull/41758) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41368](https://github.com/airbytehq/airbyte/pull/41368) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41173](https://github.com/airbytehq/airbyte/pull/41173) | Update dependencies |
 | 0.2.9 | 2024-07-06 | [40836](https://github.com/airbytehq/airbyte/pull/40836) | Update dependencies |
 | 0.2.8 | 2024-06-29 | [40630](https://github.com/airbytehq/airbyte/pull/40630) | Update dependencies |
 | 0.2.7 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |

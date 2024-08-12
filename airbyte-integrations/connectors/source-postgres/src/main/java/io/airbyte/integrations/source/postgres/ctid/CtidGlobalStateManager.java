@@ -68,7 +68,10 @@ public class CtidGlobalStateManager extends CtidStateManager {
       }
 
       if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        if (fileNodeHandler.hasFileNode(
+        // Note some streams still do not have `isResumable` field set.
+        if (configuredAirbyteStream.getStream().getIsResumable() != null && configuredAirbyteStream.getStream().getIsResumable()) {
+          this.resumableFullRefreshStreams.add(pair);
+        } else if (fileNodeHandler.hasFileNode(
             new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()))) {
           this.resumableFullRefreshStreams.add(pair);
         } else {
@@ -107,8 +110,10 @@ public class CtidGlobalStateManager extends CtidStateManager {
     });
 
     resumableFullRefreshStreams.forEach(stream -> {
-      final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(stream);
-      streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(ctidStatusForFullRefreshStream))));
+      if (getCtidStatus(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace())) != null) {
+        final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(stream);
+        streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(ctidStatusForFullRefreshStream))));
+      }
     });
 
     nonResumableFullRefreshStreams.forEach(stream -> {
@@ -144,10 +149,14 @@ public class CtidGlobalStateManager extends CtidStateManager {
 
   }
 
+  private boolean isIncrementalStream(final AirbyteStreamNameNamespacePair pair) {
+    return !resumableFullRefreshStreams.contains(pair) && !nonResumableFullRefreshStreams.contains(pair);
+  }
+
   @Override
   public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
     // Only incremental streams can be transformed into the next phase.
-    if (!resumableFullRefreshStreams.contains(pair)) {
+    if (isIncrementalStream(pair)) {
       streamsThatHaveCompletedSnapshot.add(pair);
     }
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
