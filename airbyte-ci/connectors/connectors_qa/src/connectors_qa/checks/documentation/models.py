@@ -105,7 +105,7 @@ class DocumentationContent(Content):
         return self.connector.documentation_file_path.read_text().rstrip()
 
     def _links(self) -> list[str]:
-        return re.findall("(https?://[^\s\`)]+)", self.content)
+        return re.findall("(?<!example: )(https?://[^\s\`)]+)", self.content)
 
     def _sections(self) -> list[SectionContent]:
         sections_list = []

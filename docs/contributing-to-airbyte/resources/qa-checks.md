@@ -37,7 +37,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should update invalid links in connector documentation.
+The user facing connector documentation should update invalid links in connector documentation. For links that are used as example and return 404 status code, use `example: ` before link to skip it.
 
 ### Connectors documentation headers structure, naming and order follow our guidelines
 

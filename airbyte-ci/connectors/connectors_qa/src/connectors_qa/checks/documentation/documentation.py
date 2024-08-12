@@ -126,8 +126,8 @@ class CheckDocumentationContent(DocumentationCheck):
 
 class CheckDocumentationLinks(CheckDocumentationContent):
     name = "Links used in connector documentation are valid"
-    description = f"The user facing connector documentation should update invalid links in connector documentation."
-    valid_status_codes = [200, 403, 401, 405, 429, 503]  # we skip 4xx due to needed access
+    description = f"The user facing connector documentation should update invalid links in connector documentation. For links that are used as example and return 404 status code, use `example: ` before link to skip it."
+    valid_status_codes = [200, 403, 401, 405, 406, 429, 503]  # we skip 4xx due to needed access
 
     def validate_links(self, connector: Connector) -> List[str]:
         errors = []
