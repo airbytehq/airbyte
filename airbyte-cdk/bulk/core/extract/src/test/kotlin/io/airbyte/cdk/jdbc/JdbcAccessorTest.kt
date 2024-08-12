@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.jdbc
 
+import io.airbyte.cdk.h2.H2TestFixture
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.sql.Connection

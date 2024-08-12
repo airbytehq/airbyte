@@ -1,8 +1,8 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import io.airbyte.cdk.source.Field
-import io.airbyte.cdk.source.FieldOrMetaField
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode

@@ -789,7 +789,8 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.31.4  | [#43724](https://github.com/airbytehq/airbyte/pull/43724)      | Do not send slack message on connector pre-release.                                                                          |
+| 4.31.5  | [#43934](https://github.com/airbytehq/airbyte/pull/43934)  | Track deleted files when generating pull-request                                                                             |
+| 4.31.4  | [#43724](https://github.com/airbytehq/airbyte/pull/43724)  | Do not send slack message on connector pre-release.                                                                          |
 | 4.31.3  | [#43426](https://github.com/airbytehq/airbyte/pull/43426)  | Ignore archived connectors on connector selection from modified files.                                                       |
 | 4.31.2  | [#43433](https://github.com/airbytehq/airbyte/pull/43433)  | Fix 'changed_file' indentation in 'pull-request' command                                                                     |
 | 4.31.1  | [#43442](https://github.com/airbytehq/airbyte/pull/43442)  | Resolve type check failure in bump version                                                                                   |
