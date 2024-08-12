@@ -46,6 +46,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomAuthenticator as CustomAuthenticatorModel
@@ -404,7 +405,7 @@ class ModelToComponentFactory:
     def create_check_stream(model: CheckStreamModel, config: Config, **kwargs: Any) -> CheckStream:
         return CheckStream(stream_names=model.stream_names, parameters={})
 
-    def create_composite_error_handler(self, model: DefaultErrorHandlerModel) -> DefaultErrorHandler:
+    def create_composite_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs: Any) -> DefaultErrorHandler:
         return DefaultErrorHandler(parameters=model.parameters or {})
 
     @staticmethod
