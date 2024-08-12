@@ -165,8 +165,7 @@
                 "default": 8,
                 "min": 4,
                 "max": 24,
-                "order": 6,
-                "always_show": true
+                "order": 6
               }
             }
           },

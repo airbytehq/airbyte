@@ -40,22 +40,6 @@ spec:
                   number: 80 # service port, example: 8080
             path: /
             pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-keycloak-svc
-                name: airbyte-airbyte-keycloak-svc
-                port:
-                  number: 8180
-            path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte--server-svc
-                name: airbyte-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
-            pathType: Prefix
 ```
 </TabItem>
 <TabItem value="Amazon ALB" label="Amazon ALB">
@@ -77,7 +61,7 @@ If you intend to use Amazon Application Load Balancer (ALB) for ingress, this in
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: # ingress name, e.g. airbyte-production
+  name: airbyte-ingress # ingress name, e.g. airbyte-production-ingress
   annotations:
     # Specifies that the Ingress should use an AWS ALB.
     kubernetes.io/ingress.class: "alb"
@@ -94,7 +78,7 @@ metadata:
     # alb.ingress.kubernetes.io/security-groups: <SECURITY_GROUP>
 spec:
   rules:
-    - host: # e.g. airbyte.company.example
+    - host: localhost # e.g. airbyte.company.example
       http:
         paths:
           - backend:
@@ -103,21 +87,6 @@ spec:
                 port:
                   number: 80
             path: /
-            pathType: Prefix
-          - backend:
-              service:
-                name: airbyte-airbyte-keycloak-svc
-                port:
-                  number: 8180
-            path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
             pathType: Prefix
 ```
 

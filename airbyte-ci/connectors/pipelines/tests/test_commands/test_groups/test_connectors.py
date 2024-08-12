@@ -14,7 +14,7 @@ from pipelines.airbyte_ci.connectors.publish import commands as connectors_publi
 from pipelines.airbyte_ci.connectors.test import commands as connectors_test_command
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.models.secrets import InMemorySecretStore
-from tests.utils import pick_a_random_connector
+from tests.utils import pick_a_random_connector, pick_a_strict_encrypt_variant_pair
 
 
 @pytest.fixture(scope="session")
@@ -133,8 +133,11 @@ def test_get_selected_connectors_with_modified_and_language():
         metadata_query=None,
         modified_files=modified_files,
     )
-
-    assert len(selected_connectors) == 1
+    has_strict_encrypt_variant = any("-strict-encrypt" in c.technical_name for c in selected_connectors)
+    if has_strict_encrypt_variant:
+        assert len(selected_connectors) == 2
+    else:
+        assert len(selected_connectors) == 1
     assert selected_connectors[0].technical_name == second_modified_connector.technical_name
 
 
@@ -225,6 +228,40 @@ def test_get_selected_connectors_with_metadata_query():
     assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
     assert selected_connectors[0].technical_name == connector.technical_name
     assert not selected_connectors[0].modified_files
+
+
+def test_strict_encrypt_variant_is_selected():
+    main_connector, strict_encrypt_variant = pick_a_strict_encrypt_variant_pair()
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
+        selected_names=(main_connector.technical_name,),
+        selected_support_levels=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        metadata_query=None,
+        modified_files={},
+    )
+    assert len(selected_connectors) == 2
+    selected_names = [c.technical_name for c in selected_connectors]
+    assert main_connector.technical_name in selected_names
+    assert strict_encrypt_variant.technical_name in selected_names
+
+
+def test_main_connector_selected_when_variant_is_selected():
+    main_connector, strict_encrypt_variant = pick_a_strict_encrypt_variant_pair()
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
+        selected_names=(strict_encrypt_variant.technical_name,),
+        selected_support_levels=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        metadata_query=None,
+        modified_files={},
+    )
+    assert len(selected_connectors) == 2
+    selected_names = [c.technical_name for c in selected_connectors]
+    assert main_connector.technical_name in selected_names
+    assert strict_encrypt_variant.technical_name in selected_names
 
 
 @pytest.fixture()

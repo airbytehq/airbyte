@@ -55,6 +55,10 @@ data:
     - language:python
     - cdk:python
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: amazon-seller-partner_config_dev_null
+          id: 17415432-092c-4020-ab55-fbb77cf5196e
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

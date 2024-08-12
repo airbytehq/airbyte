@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.15
   dockerRepository: airbyte/source-glassfrog
   documentationUrl: https://docs.airbyte.com/integrations/sources/glassfrog
   githubIssueLabel: source-glassfrog
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: glassfrog_config_dev_null
+          id: 08ee4e0c-60c1-4b0b-b05f-5be2302a550d
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GLASSFROG_CREDS

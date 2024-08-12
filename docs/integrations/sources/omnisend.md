@@ -36,6 +36,9 @@ The connector has a rate limit of 400 requests per 1 minute.
 
 | Version | Date       | Pull Request                                             | Subject        |
 |:--------|:-----------| :------------------------------------------------------- | :------------- |
+| 0.1.11 | 2024-08-10 | [43581](https://github.com/airbytehq/airbyte/pull/43581) | Update dependencies |
+| 0.1.10 | 2024-08-03 | [42745](https://github.com/airbytehq/airbyte/pull/42745) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42325](https://github.com/airbytehq/airbyte/pull/42325) | Update dependencies |
 | 0.1.8 | 2024-07-13 | [41697](https://github.com/airbytehq/airbyte/pull/41697) | Update dependencies |
 | 0.1.7 | 2024-07-10 | [41454](https://github.com/airbytehq/airbyte/pull/41454) | Update dependencies |
 | 0.1.6 | 2024-07-09 | [41319](https://github.com/airbytehq/airbyte/pull/41319) | Update dependencies |

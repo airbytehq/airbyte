@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 87c58f70-6f7a-4f70-aba5-bab1a458f5ba
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/source-wikipedia-pageviews
   githubIssueLabel: source-wikipedia-pageviews
   icon: wikipedia-pageviews.svg
@@ -36,6 +36,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: wikipedia-pageviews_config_dev_null
+          id: 4c4d6da5-9b4e-4201-86e2-11504073bede
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-WIKIPEDIA-PAGEVIEWS__CREDS

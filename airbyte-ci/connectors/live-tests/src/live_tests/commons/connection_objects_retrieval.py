@@ -180,7 +180,6 @@ def get_connection_objects(
                 destination_id=None,
                 connection_id=None,
                 source_docker_image=None,
-                connection_subset=connection_subset,
             )
 
     if fail_if_missing_objects:

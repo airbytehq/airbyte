@@ -25,6 +25,7 @@ The Amplitude source connector supports the following streams:
 - [Average Session Length](https://www.docs.developers.amplitude.com/analytics/apis/dashboard-rest-api/#get-average-session-length) \(Incremental sync\)
 - [Cohorts](https://www.docs.developers.amplitude.com/analytics/apis/behavioral-cohorts-api/#get-all-cohorts-response)
 - [Events](https://www.docs.developers.amplitude.com/analytics/apis/export-api/#response-schema) \(Incremental sync\)
+- [Events List](https://amplitude.com/docs/apis/analytics/dashboard-rest#get-events-list)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -57,6 +58,13 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.6.1 | 2024-08-10 | [43473](https://github.com/airbytehq/airbyte/pull/43473) | Update dependencies |
+| 0.6.0 | 2024-08-08 | [43400](https://github.com/airbytehq/airbyte/pull/43400) | Add Events List Stream |
+| 0.5.1 | 2024-08-03 | [43267](https://github.com/airbytehq/airbyte/pull/43267) | Update dependencies |
+| 0.5.0 | 2024-08-01 | [42565](https://github.com/airbytehq/airbyte/pull/42565) | Migrate to CDK v4.0.2 |
+| 0.4.2 | 2024-07-27 | [42618](https://github.com/airbytehq/airbyte/pull/42618) | Update dependencies |
+| 0.4.1 | 2024-07-20 | [42302](https://github.com/airbytehq/airbyte/pull/42302) | Update dependencies |
+| 0.4.0 | 2024-07-17 | [42074](https://github.com/airbytehq/airbyte/pull/42074) | Migrate to CDK v1.8.0 |
 | 0.3.18 | 2024-07-13 | [41767](https://github.com/airbytehq/airbyte/pull/41767) | Update dependencies |
 | 0.3.17 | 2024-07-10 | [41537](https://github.com/airbytehq/airbyte/pull/41537) | Update dependencies |
 | 0.3.16 | 2024-07-09 | [41097](https://github.com/airbytehq/airbyte/pull/41097) | Update dependencies |

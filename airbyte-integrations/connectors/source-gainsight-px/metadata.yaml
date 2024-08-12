@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0da3b186-8879-4e94-8738-55b48762f1e8
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-gainsight-px
   githubIssueLabel: source-gainsight-px
   icon: gainsight-px.svg
@@ -32,6 +32,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gainsight-px_config_dev_null
+          id: b7c7c482-039e-49ef-8dc2-b5ad34d6ef65
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-GAINSIGHT-PX__CREDS

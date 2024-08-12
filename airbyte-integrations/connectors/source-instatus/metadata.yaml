@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1901024c-0249-45d0-bcac-31a954652927
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-instatus
   githubIssueLabel: source-instatus
   icon: instatus.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: instatus_config_dev_null
+          id: 6c2e5836-6ed5-400d-987e-4d6d37fad4b4
     - suite: unitTests
     # Disabling acceptance tests for now
     # No / Low airbyte cloud usage
