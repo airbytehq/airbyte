@@ -75,6 +75,7 @@ pytest-cov = "*"
 pytest-httpserver = "*"
 pytest-mock = "*"
 requests-mock = "*"
+codeflash = "*"
 
 [tool.poetry.extras]
 file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown"]
@@ -111,3 +112,10 @@ optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
 poe_tasks = ["check-ci"]
 mount_docker_socket = true
+
+[tool.codeflash]
+# All paths are relative to this pyproject.toml's directory.
+module-root = "airbyte_cdk"
+tests-root = "unit_tests"
+test-framework = "pytest"
+ignore-paths = []
