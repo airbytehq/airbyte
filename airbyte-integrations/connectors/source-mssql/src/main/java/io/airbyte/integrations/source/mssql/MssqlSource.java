@@ -41,6 +41,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
@@ -238,8 +239,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         try {
           return super.discoverInternal(database, schema).stream();
         } catch (Exception e) {
-          LOGGER.error("Error getting columns for schema: {}", schema, e);
-          return Stream.empty();
+          throw new ConfigErrorException(String.format("Error getting columns for schema: %s", schema), e);
         }
       }).collect(toList());
     } else {
