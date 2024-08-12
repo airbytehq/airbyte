@@ -168,7 +168,7 @@ class HttpResponseBuilder:
         return HttpResponse(json.dumps(self._response), self._status_code)
 
 
-def _get_unit_test_folder(execution_folder: str) -> FilePath:
+def get_unit_test_folder(execution_folder: str) -> FilePath:
     path = FilePath(execution_folder)
     while path.name != "unit_tests":
         if path.name == path.root or path.name == path.drive:
@@ -178,7 +178,7 @@ def _get_unit_test_folder(execution_folder: str) -> FilePath:
 
 
 def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
-    response_template_filepath = str(_get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.json")
+    response_template_filepath = str(get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.json")
     with open(response_template_filepath, "r") as template_file:
         return json.load(template_file)  # type: ignore  # we assume the dev correctly set up the resource file
 
