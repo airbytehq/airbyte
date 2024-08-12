@@ -371,8 +371,8 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
     """
     metadata_data_dict = registry_entry.metadata_definition.dict()
 
-    # get data.registries fiield, handling the case where it is not present or none
-    registries_field = get(metadata_data_dict, "data.registries") or {}
+    # get data.registryOverrides fiield, handling the case where it is not present or none
+    registries_field = get(metadata_data_dict, "data.registryOverrides") or {}
 
     # registries is a dict of registry_name -> {enabled: bool}
     all_enabled_registries = [

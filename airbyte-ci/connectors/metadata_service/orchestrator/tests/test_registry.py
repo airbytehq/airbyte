@@ -215,7 +215,9 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
     Test if the definitionId in the metadata is successfully converted to
     destinationDefinitionId or sourceDefinitionId in the registry entry.
     """
-    metadata = {"data": {"connectorType": connector_type, "definitionId": "test-id", "registryOverrides": {registry_type: {"enabled": True}}}}
+    metadata = {
+        "data": {"connectorType": connector_type, "definitionId": "test-id", "registryOverrides": {registry_type: {"enabled": True}}}
+    }
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
