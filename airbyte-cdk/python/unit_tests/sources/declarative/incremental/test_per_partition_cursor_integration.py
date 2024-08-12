@@ -232,12 +232,12 @@ def test_substream_without_input_state():
 
     stream_instance = test_source.streams({})[1]
 
-    stream_slice = StreamSlice(partition={"parent_id": "1"},
-                               cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
+    parent_stream_slice = StreamSlice(partition={}, cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
 
+    # This mocks the resulting records of the Rates stream which acts as the parent stream of the SubstreamPartitionRouter being tested
     with patch.object(
-            SimpleRetriever, "_read_pages", side_effect=[[Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, stream_slice)],
-                                                         [Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, stream_slice)]]
+            SimpleRetriever, "_read_pages", side_effect=[[Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, parent_stream_slice)],
+                                                         [Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, parent_stream_slice)]]
     ):
         slices = list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
         assert list(slices) == [

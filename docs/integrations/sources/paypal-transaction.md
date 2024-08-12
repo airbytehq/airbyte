@@ -264,6 +264,7 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.5.7 | 2024-06-25 | [40269](https://github.com/airbytehq/airbyte/pull/40269) | Update dependencies |
 | 2.5.6 | 2024-06-22 | [40110](https://github.com/airbytehq/airbyte/pull/40110) | Update dependencies |
 | 2.5.5 | 2024-06-04 | [38983](https://github.com/airbytehq/airbyte/pull/38983) | [autopull] Upgrade base image to v1.2.1 |
 | 2.5.4 | 2024-05-20 | [38265](https://github.com/airbytehq/airbyte/pull/38265) | Replace AirbyteLogger with logging.Logger |

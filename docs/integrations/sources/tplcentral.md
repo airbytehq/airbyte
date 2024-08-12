@@ -49,6 +49,15 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 0.1.15 | 2024-08-10 | [43476](https://github.com/airbytehq/airbyte/pull/43476) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43095](https://github.com/airbytehq/airbyte/pull/43095) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42725](https://github.com/airbytehq/airbyte/pull/42725) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42138](https://github.com/airbytehq/airbyte/pull/42138) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41894](https://github.com/airbytehq/airbyte/pull/41894) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41418](https://github.com/airbytehq/airbyte/pull/41418) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41087](https://github.com/airbytehq/airbyte/pull/41087) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40909](https://github.com/airbytehq/airbyte/pull/40909) | Update dependencies |
+| 0.1.7 | 2024-06-25 | [40322](https://github.com/airbytehq/airbyte/pull/40322) | Update dependencies |
 | 0.1.6 | 2024-06-22 | [40069](https://github.com/airbytehq/airbyte/pull/40069) | Update dependencies |
 | 0.1.5 | 2024-06-06 | [39150](https://github.com/airbytehq/airbyte/pull/39150) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.4 | 2024-06-03 | [38919](https://github.com/airbytehq/airbyte/pull/38919) | Replace AirbyteLogger with logging.Logger |

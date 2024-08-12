@@ -68,6 +68,14 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.2.17 | 2024-08-10 | [43501](https://github.com/airbytehq/airbyte/pull/43501) | Update dependencies |
+| 0.2.16 | 2024-08-03 | [43098](https://github.com/airbytehq/airbyte/pull/43098) | Update dependencies |
+| 0.2.15 | 2024-07-27 | [42716](https://github.com/airbytehq/airbyte/pull/42716) | Update dependencies |
+| 0.2.14 | 2024-07-20 | [42241](https://github.com/airbytehq/airbyte/pull/42241) | Update dependencies |
+| 0.2.13 | 2024-07-13 | [41890](https://github.com/airbytehq/airbyte/pull/41890) | Update dependencies |
+| 0.2.12 | 2024-07-10 | [41582](https://github.com/airbytehq/airbyte/pull/41582) | Update dependencies |
+| 0.2.11 | 2024-07-06 | [40790](https://github.com/airbytehq/airbyte/pull/40790) | Update dependencies |
+| 0.2.10 | 2024-06-25 | [40491](https://github.com/airbytehq/airbyte/pull/40491) | Update dependencies |
 | 0.2.9 | 2024-06-22 | [40106](https://github.com/airbytehq/airbyte/pull/40106) | Update dependencies |
 | 0.2.8 | 2024-06-06 | [39229](https://github.com/airbytehq/airbyte/pull/39229) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.7 | 2024-05-28 | [38176](https://github.com/airbytehq/airbyte/pull/38176) | Make connector compatible with Builder |

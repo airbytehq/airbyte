@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 400
-    sl: 200
+    sl: 300
   allowedHosts:
     hosts:
       - graph.microsoft.com
@@ -16,11 +16,11 @@ data:
     cloud:
       enabled: true
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: file
   connectorType: source
   definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.4.3
   dockerRepository: airbyte/source-microsoft-sharepoint
   githubIssueLabel: source-microsoft-sharepoint
   icon: microsoft-sharepoint.svg

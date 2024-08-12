@@ -71,6 +71,15 @@ Yotpo [API reference](https://api.yotpo.com/v1/) has v1 at present. The connecto
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.1.11 | 2024-08-10 | [43658](https://github.com/airbytehq/airbyte/pull/43658) | Update dependencies |
+| 0.1.10 | 2024-08-03 | [43198](https://github.com/airbytehq/airbyte/pull/43198) | Update dependencies |
+| 0.1.9 | 2024-07-27 | [42610](https://github.com/airbytehq/airbyte/pull/42610) | Update dependencies |
+| 0.1.8 | 2024-07-20 | [42275](https://github.com/airbytehq/airbyte/pull/42275) | Update dependencies |
+| 0.1.7 | 2024-07-13 | [41815](https://github.com/airbytehq/airbyte/pull/41815) | Update dependencies |
+| 0.1.6 | 2024-07-10 | [41444](https://github.com/airbytehq/airbyte/pull/41444) | Update dependencies |
+| 0.1.5 | 2024-07-09 | [41250](https://github.com/airbytehq/airbyte/pull/41250) | Update dependencies |
+| 0.1.4 | 2024-07-06 | [40795](https://github.com/airbytehq/airbyte/pull/40795) | Update dependencies |
+| 0.1.3 | 2024-06-25 | [40488](https://github.com/airbytehq/airbyte/pull/40488) | Update dependencies |
 | 0.1.2 | 2024-06-21 | [39945](https://github.com/airbytehq/airbyte/pull/39945) | Update dependencies |
 | 0.1.1 | 2024-05-20 | [38390](https://github.com/airbytehq/airbyte/pull/38390) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2023-04-14 | [Init](https://github.com/airbytehq/airbyte/pull/25532) | Initial commit |

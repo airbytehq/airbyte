@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "connectors-qa"
-version = "1.4.0"
+version = "1.6.0"
 description = "A package to run QA checks on Airbyte connectors, generate reports and documentation."
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
@@ -38,5 +38,6 @@ type_check = "mypy src --disallow-untyped-defs"
 lint = "ruff check src"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["type_check", "test"]

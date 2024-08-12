@@ -75,6 +75,15 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
+| 0.4.12 | 2024-08-10 | [43567](https://github.com/airbytehq/airbyte/pull/43567) | Update dependencies |
+| 0.4.11 | 2024-08-03 | [43166](https://github.com/airbytehq/airbyte/pull/43166) | Update dependencies |
+| 0.4.10 | 2024-07-27 | [42751](https://github.com/airbytehq/airbyte/pull/42751) | Update dependencies |
+| 0.4.9 | 2024-07-20 | [42224](https://github.com/airbytehq/airbyte/pull/42224) | Update dependencies |
+| 0.4.8 | 2024-07-13 | [41868](https://github.com/airbytehq/airbyte/pull/41868) | Update dependencies |
+| 0.4.7 | 2024-07-10 | [41584](https://github.com/airbytehq/airbyte/pull/41584) | Update dependencies |
+| 0.4.6 | 2024-07-09 | [41261](https://github.com/airbytehq/airbyte/pull/41261) | Update dependencies |
+| 0.4.5 | 2024-07-06 | [40799](https://github.com/airbytehq/airbyte/pull/40799) | Update dependencies |
+| 0.4.4 | 2024-06-25 | [40305](https://github.com/airbytehq/airbyte/pull/40305) | Update dependencies |
 | 0.4.3 | 2024-06-22 | [40038](https://github.com/airbytehq/airbyte/pull/40038) | Update dependencies |
 | 0.4.2 | 2024-06-06 | [39210](https://github.com/airbytehq/airbyte/pull/39210) | [autopull] Upgrade base image to v1.2.2 |
 | 0.4.1 | 2024-05-21 | [38485](https://github.com/airbytehq/airbyte/pull/38485) | [autopull] base image + poetry + up_to_date |

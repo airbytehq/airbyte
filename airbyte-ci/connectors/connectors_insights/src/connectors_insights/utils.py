@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Set, Tuple, List, Callable
+    from typing import Callable, List, Set, Tuple
+
     from dagger import Container
 
 from connector_ops.utils import METADATA_FILE_NAME, Connector  # type: ignore
@@ -45,8 +46,12 @@ def get_all_connectors_in_directory(directory: Path) -> Set[Connector]:
     """
     connectors = []
     for connector_directory in directory.iterdir():
-        if connector_directory.is_dir() and (connector_directory / METADATA_FILE_NAME).exists():
-            connectors.append(Connector(connector_directory.name))
+        if (
+            connector_directory.is_dir()
+            and (connector_directory / METADATA_FILE_NAME).exists()
+            and "scaffold" not in str(connector_directory)
+        ):
+            connectors.append(Connector(remove_strict_encrypt_suffix(connector_directory.name)))
     return set(connectors)
 
 

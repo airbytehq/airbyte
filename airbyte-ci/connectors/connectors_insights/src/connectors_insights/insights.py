@@ -1,5 +1,4 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
 from __future__ import annotations
 
 import datetime
@@ -14,6 +13,7 @@ from connectors_insights.models import ConnectorInsights
 from connectors_insights.pylint import get_pylint_output
 from connectors_insights.result_backends import FileToPersist, ResultBackend
 from connectors_insights.sbom import get_json_sbom
+from typing_extensions import Mapping
 
 if TYPE_CHECKING:
     from typing import Dict, List, Tuple
@@ -21,6 +21,22 @@ if TYPE_CHECKING:
     import dagger
     from anyio import Semaphore
     from connector_ops.utils import Connector  # type: ignore
+
+
+def get_manifest_inferred_insights(connector: Connector) -> dict:
+    if connector.manifest_path is None or not connector.manifest_path.exists():
+        return {}
+
+    manifest = connector.manifest_path.read_text()
+
+    schemas_directory = connector.code_directory / connector.technical_name.replace("-", "_") / "schemas"
+
+    return {
+        "manifest_uses_parameters": manifest.find("$parameters") != -1,
+        "manifest_uses_custom_components": manifest.find("class_name:") != -1,
+        "manifest_custom_component_classes": re.findall(r"class_name: (.+)", manifest),
+        "has_json_schemas": schemas_directory.is_dir() and any(schemas_directory.iterdir()),
+    }
 
 
 def get_metadata_inferred_insights(connector: Connector) -> Dict:
@@ -155,6 +171,7 @@ def generate_insights(connector: Connector, sbom: str | None, pylint_output: str
     return ConnectorInsights(
         **{
             **get_metadata_inferred_insights(connector),
+            **get_manifest_inferred_insights(connector),
             **get_pylint_inferred_insights(pylint_output),
             **get_sbom_inferred_insights(sbom, connector),
             "ci_on_master_report": ci_on_master_report,

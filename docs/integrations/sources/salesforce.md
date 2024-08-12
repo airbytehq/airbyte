@@ -217,6 +217,16 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.26 | 2024-08-10 | [43673](https://github.com/airbytehq/airbyte/pull/43673) | Update dependencies |
+| 2.5.25 | 2024-08-03 | [43211](https://github.com/airbytehq/airbyte/pull/43211) | Update dependencies |
+| 2.5.24 | 2024-07-27 | [42685](https://github.com/airbytehq/airbyte/pull/42685) | Update dependencies |
+| 2.5.23 | 2024-07-20 | [42166](https://github.com/airbytehq/airbyte/pull/42166) | Update dependencies |
+| 2.5.22 | 2024-07-13 | [41752](https://github.com/airbytehq/airbyte/pull/41752) | Update dependencies |
+| 2.5.21 | 2024-07-10 | [41529](https://github.com/airbytehq/airbyte/pull/41529) | Update dependencies |
+| 2.5.20 | 2024-07-09 | [41255](https://github.com/airbytehq/airbyte/pull/41255) | Update dependencies |
+| 2.5.19 | 2024-07-08 | [41043](https://github.com/airbytehq/airbyte/pull/41043) | Use the latest `CDK` version possible |
+| 2.5.18 | 2024-07-06 | [40835](https://github.com/airbytehq/airbyte/pull/40835) | Update dependencies |
+| 2.5.17 | 2024-06-25 | [40329](https://github.com/airbytehq/airbyte/pull/40329) | Update dependencies |
 | 2.5.16 | 2024-06-21 | [39927](https://github.com/airbytehq/airbyte/pull/39927) | Update dependencies |
 | 2.5.15 | 2024-06-16 | [39517](https://github.com/airbytehq/airbyte/pull/39517) | Salesforce refactor: add CheckpointMixin for state management |
 | 2.5.14 | 2024-06-06 | [39269](https://github.com/airbytehq/airbyte/pull/39269) | [autopull] Upgrade base image to v1.2.2 |

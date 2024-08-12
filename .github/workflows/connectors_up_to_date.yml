@@ -5,13 +5,13 @@ concurrency:
 
 on:
   schedule:
-    # Runs everyday at 12:00 UTC
-    - cron: "0 12 * * *"
+    # Runs everyday Saturday at 12:00 UTC
+    - cron: "0 12 * * 6"
   workflow_dispatch:
     inputs:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--concurrency=10 --language=python --language=low-code"
+        default: "--concurrency=10 --language=python --language=low-code --language=manifest-only"
       auto-merge:
         description: "Whether to auto-merge the PRs created by the action."
         default: "false"
@@ -35,7 +35,7 @@ jobs:
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ secrets.AUTO_MERGE_GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}

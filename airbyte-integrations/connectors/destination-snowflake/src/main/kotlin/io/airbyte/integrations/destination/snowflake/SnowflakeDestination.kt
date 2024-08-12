@@ -27,12 +27,7 @@ import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.staging.operation.StagingStreamOperations
 import io.airbyte.integrations.base.destination.operation.DefaultFlush
 import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
-import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
-import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.Sql
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeAbMetaAndGenIdMigration
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeDV2Migration
@@ -46,7 +41,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -100,7 +94,7 @@ constructor(
             val streamConfig =
                 StreamConfig(
                     id = streamId,
-                    destinationSyncMode = DestinationSyncMode.OVERWRITE,
+                    postImportAction = ImportType.APPEND,
                     primaryKey = listOf(),
                     cursor = Optional.empty(),
                     columns = linkedMapOf(),
@@ -122,10 +116,18 @@ constructor(
                             hasUnprocessedRecords = true,
                             maxProcessedTimestamp = Optional.empty()
                         ),
+                    initialTempRawTableStatus =
+                        InitialRawTableStatus(
+                            rawTableExists = false,
+                            hasUnprocessedRecords = true,
+                            maxProcessedTimestamp = Optional.empty()
+                        ),
                     isSchemaMismatch = true,
                     isFinalTableEmpty = true,
                     destinationState =
-                        SnowflakeState(needsSoftReset = false, isAirbyteMetaPresentInRaw = false)
+                        SnowflakeState(needsSoftReset = false, isAirbyteMetaPresentInRaw = false),
+                    finalTableGenerationId = null,
+                    finalTempTableGenerationId = null,
                 )
             // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
             snowflakeDestinationHandler.createNamespaces(setOf(rawTableSchemaName, outputSchema))

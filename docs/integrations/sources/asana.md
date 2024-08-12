@@ -106,6 +106,17 @@ The connector is restricted by [Asana rate limits](https://developers.asana.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.2.2 | 2024-08-10 | [43532](https://github.com/airbytehq/airbyte/pull/43532) | Update dependencies |
+| 1.2.1 | 2024-08-03 | [43079](https://github.com/airbytehq/airbyte/pull/43079) | Update dependencies |
+| 1.2.0 | 2024-07-27 | [42856](https://github.com/airbytehq/airbyte/pull/42856) | Add task & target data to stories compact stream |
+| 1.1.1 | 2024-07-27 | [42801](https://github.com/airbytehq/airbyte/pull/42801) | Update dependencies |
+| 1.1.0 | 2024-07-24 | [42488](https://github.com/airbytehq/airbyte/pull/42488) | Add task data to stories stream |
+| 1.0.9 | 2024-07-20 | [42144](https://github.com/airbytehq/airbyte/pull/42144) | Update dependencies |
+| 1.0.8 | 2024-07-13 | [41839](https://github.com/airbytehq/airbyte/pull/41839) | Update dependencies |
+| 1.0.7 | 2024-07-10 | [41573](https://github.com/airbytehq/airbyte/pull/41573) | Update dependencies |
+| 1.0.6 | 2024-07-09 | [41142](https://github.com/airbytehq/airbyte/pull/41142) | Update dependencies |
+| 1.0.5 | 2024-07-06 | [40865](https://github.com/airbytehq/airbyte/pull/40865) | Update dependencies |
+| 1.0.4 | 2024-06-25 | [40392](https://github.com/airbytehq/airbyte/pull/40392) | Update dependencies |
 | 1.0.3 | 2024-06-22 | [40092](https://github.com/airbytehq/airbyte/pull/40092) | Update dependencies |
 | 1.0.2 | 2024-06-18 | [39551](https://github.com/airbytehq/airbyte/pull/39551) | Fix pagination from offset to cursor based, Increment airbyte_cdk to ^1 |
 | 1.0.1 | 2024-06-06 | [39249](https://github.com/airbytehq/airbyte/pull/39249) | [autopull] Upgrade base image to v1.2.2 |

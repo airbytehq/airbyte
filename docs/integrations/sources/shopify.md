@@ -35,13 +35,14 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 
 #### Connect using OAuth2.0
 
-1. Click **Authenticate your Shopify account**.
-2. Click **Install** to install the Airbyte application.
-3. Log in to your account, if you are not already logged in.
-4. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
-5. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
-6. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
-7. Click **Set up source** and wait for the connection test to complete.
+1. Select a **Source name**.
+2. Click **Authenticate your Shopify account**.
+3. Click **Install** to install the Airbyte application.
+4. Log in to your account, if you are not already logged in.
+5. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
+6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
+7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+8. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -185,7 +186,7 @@ Check the following Shopify documentation for more information about [retrieving
 ## Data type map
 
 | Integration Type | Airbyte Type |
-| :--------------- | :----------- |
+|:-----------------|:-------------|
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -229,7 +230,22 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-| :------ |:-----------| :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.19 | 2024-08-10 | [43194](https://github.com/airbytehq/airbyte/pull/43194) | Update dependencies |
+| 2.4.18 | 2024-08-06 | [43326](https://github.com/airbytehq/airbyte/pull/43326) | Added missing `type` type for `customer_journey_summary` field for `Customer Journey Summary` stream schema |
+| 2.4.17 | 2024-08-02 | [42973](https://github.com/airbytehq/airbyte/pull/42973) | Fixed `FAILED` Job handling for `no-checkpointing` BULK Streams, fixed STATE collision for REST Streams with `Deleted Events` |
+| 2.4.16 | 2024-07-21 | [42095](https://github.com/airbytehq/airbyte/pull/42095) | Added the `Checkpointing` for the `BULK` streams, fixed the `store` redirection |
+| 2.4.15 | 2024-07-27 | [42806](https://github.com/airbytehq/airbyte/pull/42806) | Update dependencies |
+| 2.4.14 | 2024-07-20 | [42150](https://github.com/airbytehq/airbyte/pull/42150) | Update dependencies |
+| 2.4.13 | 2024-07-13 | [41809](https://github.com/airbytehq/airbyte/pull/41809) | Update dependencies |
+| 2.4.12 | 2024-07-10 | [41103](https://github.com/airbytehq/airbyte/pull/41103) | Update dependencies |
+| 2.4.11 | 2024-07-09 | [41068](https://github.com/airbytehq/airbyte/pull/41068) | Added `options` field to `Product Variants` stream |
+| 2.4.10 | 2024-07-09 | [41042](https://github.com/airbytehq/airbyte/pull/41042) | Use latest `CDK`: 3.0.0 |
+| 2.4.9 | 2024-07-06 | [40768](https://github.com/airbytehq/airbyte/pull/40768) | Update dependencies |
+| 2.4.8 | 2024-07-03 | [40707](https://github.com/airbytehq/airbyte/pull/40707) | Fixed the bug when `product_images` stream emitted records with no `primary_key` |
+| 2.4.7 | 2024-06-27 | [40593](https://github.com/airbytehq/airbyte/pull/40593) | Use latest `CDK` version possible |
+| 2.4.6 | 2024-06-26 | [40526](https://github.com/airbytehq/airbyte/pull/40526) | Made `BULK Job termination threshold` limit adjustable from `input configuration`, increased the default value to `1 hour`. |
+| 2.4.5 | 2024-06-25 | [40484](https://github.com/airbytehq/airbyte/pull/40484) | Update dependencies |
 | 2.4.4 | 2024-06-19 | [39594](https://github.com/airbytehq/airbyte/pull/39594) | Extended the `Discount Codes`, `Fulfillment Orders`, `Inventory Items`, `Inventory Levels`, `Products`, `Product Variants` and `Transactions` stream schemas |
 | 2.4.3 | 2024-06-06 | [38084](https://github.com/airbytehq/airbyte/pull/38084) | add resiliency on some transient errors using the HttpClient |
 | 2.4.1 | 2024-06-20 | [39651](https://github.com/airbytehq/airbyte/pull/39651) | Update dependencies |

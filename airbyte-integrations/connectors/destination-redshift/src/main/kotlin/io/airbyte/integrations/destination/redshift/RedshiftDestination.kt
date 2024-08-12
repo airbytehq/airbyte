@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations
 import io.airbyte.cdk.db.jdbc.JdbcUtils
+import io.airbyte.cdk.integrations.BaseConnector
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility.emitConfigErrorTrace
 import io.airbyte.cdk.integrations.base.Destination
@@ -24,37 +25,42 @@ import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.getRawNamespaceOve
 import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+import io.airbyte.cdk.integrations.destination.StreamSyncSummary
+import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
+import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
-import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
+import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination.Companion.DISABLE_TYPE_DEDUPE
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination.Companion.RAW_SCHEMA_OVERRIDE
 import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption
 import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig
 import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig.Companion.fromJson
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.NoEncryption
 import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks.attemptS3WriteAndDelete
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
-import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory.Companion.builder
-import io.airbyte.commons.exceptions.ConnectionErrorException
+import io.airbyte.cdk.integrations.destination.staging.operation.StagingStreamOperations
 import io.airbyte.commons.json.Jsons.deserialize
-import io.airbyte.commons.json.Jsons.emptyObject
 import io.airbyte.commons.json.Jsons.jsonNode
 import io.airbyte.commons.resources.MoreResources.readResource
+import io.airbyte.integrations.base.destination.operation.DefaultFlush
+import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
-import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
-import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations
-import io.airbyte.integrations.base.destination.typing_deduping.NoopV2TableMigrator
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
+import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
+import io.airbyte.integrations.base.destination.typing_deduping.Sql
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants
-import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations
-import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations
+import io.airbyte.integrations.destination.redshift.operation.RedshiftStagingStorageOperation
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDV2Migration
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftDestinationHandler
+import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftGenerationIdMigration
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftRawTableAirbyteMetaMigration
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSqlGenerator
 import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftState
@@ -62,24 +68,25 @@ import io.airbyte.integrations.destination.redshift.typing_deduping.RedshiftSupe
 import io.airbyte.integrations.destination.redshift.util.RedshiftUtil
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
+import io.airbyte.protocol.models.v0.DestinationSyncMode
+import java.sql.SQLException
 import java.time.Duration
+import java.util.Objects
 import java.util.Optional
+import java.util.UUID
+import java.util.concurrent.Executors
 import java.util.function.Consumer
 import javax.sql.DataSource
 import org.apache.commons.lang3.NotImplementedException
-import org.apache.commons.lang3.StringUtils
+import org.jetbrains.annotations.VisibleForTesting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class RedshiftDestination :
-    AbstractJdbcDestination<RedshiftState>(
-        DRIVER_CLASS,
-        RedshiftSQLNameTransformer(),
-        RedshiftSqlOperations()
-    ),
-    Destination {
+class RedshiftDestination : BaseConnector(), Destination {
     private fun isEphemeralKeysAndPurgingStagingData(
         config: JsonNode,
         encryptionConfig: EncryptionConfig
@@ -114,36 +121,137 @@ class RedshiftDestination :
                     "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt."
                 )
         }
-        attemptS3WriteAndDelete(
-            S3StorageOperations(RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config),
-            s3Config,
-            s3Config.bucketPath
-        )
+        attemptS3WriteAndDelete(getS3StorageOperations(s3Config), s3Config, s3Config.bucketPath)
 
-        val nameTransformer = namingResolver
-        val redshiftS3StagingSqlOperations =
-            RedshiftS3StagingSqlOperations(
-                nameTransformer,
-                s3Config.getS3Client(),
-                s3Config,
-                encryptionConfig
-            )
         val dataSource = getDataSource(config)
         try {
             val database: JdbcDatabase = DefaultJdbcDatabase(dataSource)
-            val outputSchema =
-                super.namingResolver.getIdentifier(config[JdbcUtils.SCHEMA_KEY].asText())
-            attemptTableOperations(
-                outputSchema,
-                database,
-                nameTransformer,
-                redshiftS3StagingSqlOperations,
-                false
+            val outputSchema = namingResolver.getIdentifier(config[JdbcUtils.SCHEMA_KEY].asText())
+            val rawTableSchemaName: String =
+                if (getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent) {
+                    getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get()
+                } else {
+                    JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
+                }
+            val finalTableName =
+                namingResolver.getIdentifier(
+                    "_airbyte_connection_test_" +
+                        UUID.randomUUID().toString().replace("-".toRegex(), "")
+                )
+
+            val sqlGenerator = getSqlGenerator(config)
+            val streamId =
+                sqlGenerator.buildStreamId(outputSchema, finalTableName, rawTableSchemaName)
+            val streamConfig =
+                StreamConfig(
+                    id = streamId,
+                    destinationSyncMode = DestinationSyncMode.APPEND,
+                    primaryKey = listOf(),
+                    cursor = Optional.empty(),
+                    columns = linkedMapOf(),
+                    generationId = 0,
+                    minimumGenerationId = 0,
+                    syncId = 0
+                )
+
+            val databaseName = getDatabaseName(config)
+            val destinationHandler =
+                RedshiftDestinationHandler(databaseName, database, rawTableSchemaName)
+            val storageOperation =
+                RedshiftStagingStorageOperation(
+                    s3Config,
+                    keepStagingFiles = false,
+                    getS3StorageOperations(s3Config),
+                    sqlGenerator,
+                    destinationHandler,
+                    RedshiftSqlGenerator.isDropCascade(config),
+                )
+
+            // We simulate a mini-sync to see the raw table code path is exercised. and disable T+D
+            destinationHandler.createNamespaces(setOf(rawTableSchemaName, outputSchema))
+            val streamOperation: StagingStreamOperations<RedshiftState> =
+                StagingStreamOperations(
+                    storageOperation,
+                    // None of the fields in destination initial status matter
+                    // for a dummy sync with type-dedupe disabled. We only look at these
+                    // when we perform final table related setup operations.
+                    // We just need the streamId to perform the calls in streamOperation.
+                    DestinationInitialStatus(
+                        streamConfig = streamConfig,
+                        isFinalTablePresent = false,
+                        initialRawTableStatus =
+                            InitialRawTableStatus(
+                                rawTableExists = false,
+                                hasUnprocessedRecords = true,
+                                maxProcessedTimestamp = Optional.empty(),
+                            ),
+                        initialTempRawTableStatus =
+                            InitialRawTableStatus(
+                                rawTableExists = false,
+                                hasUnprocessedRecords = true,
+                                maxProcessedTimestamp = Optional.empty(),
+                            ),
+                        isSchemaMismatch = true,
+                        isFinalTableEmpty = true,
+                        destinationState =
+                            RedshiftState(
+                                needsSoftReset = false,
+                                isAirbyteMetaPresentInRaw = true,
+                                isGenerationIdPresent = true,
+                            ),
+                    ),
+                    FileUploadFormat.CSV,
+                    destinationColumns,
+                    disableTypeDedupe = true,
+                )
+            streamOperation.writeRecords(
+                streamConfig,
+                listOf(
+                        // Dummy message
+                        PartialAirbyteMessage()
+                            .withSerialized("""{"testKey": "testValue"}""")
+                            .withRecord(
+                                PartialAirbyteRecordMessage()
+                                    .withEmittedAt(System.currentTimeMillis())
+                                    .withMeta(
+                                        AirbyteRecordMessageMeta(),
+                                    ),
+                            )
+                    )
+                    .stream()
             )
-            RedshiftUtil.checkSvvTableAccess(database)
+            streamOperation.finalizeTable(
+                streamConfig,
+                StreamSyncSummary(recordsWritten = 1, AirbyteStreamStatus.COMPLETE),
+            )
+
+            // And now that we have a table, simulate the next sync startup.
+            destinationHandler.gatherInitialState(listOf(streamConfig))
+            // (not bothering to verify the return value, maybe we should?)
+
+            // clean up the raw table, this is intentionally not part of actual sync code
+            // because we avoid dropping original tables directly.
+            destinationHandler.execute(
+                Sql.of(
+                    "DROP TABLE IF EXISTS \"${streamId.rawNamespace}\".\"${streamId.rawName}\";",
+                ),
+            )
+
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
-        } catch (e: ConnectionErrorException) {
-            val message = getErrorMessage(e.stateCode, e.errorCode, e.exceptionMessage, e)
+        } catch (e: SQLException) {
+            // copied from AbstractJdbcDestination's attemptTableOperations
+            val stateCode: String = e.sqlState
+            val errorCode: Int
+            val exceptionMessage: String?
+            if (Objects.isNull(e.cause) || e.cause !is SQLException) {
+                errorCode = e.errorCode
+                exceptionMessage = e.message
+            } else {
+                val cause = e.cause as SQLException
+                errorCode = cause.errorCode
+                exceptionMessage = cause.message
+            }
+            val message = getErrorMessage(stateCode, errorCode, exceptionMessage, e)
             emitConfigErrorTrace(e, message)
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
@@ -154,9 +262,9 @@ class RedshiftDestination :
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage(
                     """
-    Could not connect with provided configuration. 
-    ${e.message}
-    """.trimIndent()
+                    Could not connect with provided configuration. 
+                    ${e.message}
+                    """.trimIndent()
                 )
         } finally {
             try {
@@ -169,7 +277,8 @@ class RedshiftDestination :
 
     override val isV2Destination: Boolean = true
 
-    override fun getDataSource(config: JsonNode): DataSource {
+    @VisibleForTesting
+    fun getDataSource(config: JsonNode): DataSource {
         val jdbcConfig: JsonNode = getJdbcConfig(config)
         return create(
             jdbcConfig[JdbcUtils.USERNAME_KEY].asText(),
@@ -177,12 +286,13 @@ class RedshiftDestination :
             else null,
             DRIVER_CLASS,
             jdbcConfig[JdbcUtils.JDBC_URL_KEY].asText(),
-            getDefaultConnectionProperties(config),
+            getDefaultConnectionProperties(),
             Duration.ofMinutes(2)
         )
     }
 
-    override fun getDatabase(dataSource: DataSource): JdbcDatabase {
+    @VisibleForTesting
+    fun getDatabase(dataSource: DataSource): JdbcDatabase {
         return DefaultJdbcDatabase(dataSource)
     }
 
@@ -190,10 +300,10 @@ class RedshiftDestination :
         return DefaultJdbcDatabase(dataSource, sourceOperations)
     }
 
-    override val namingResolver: NamingConventionTransformer
+    private val namingResolver: NamingConventionTransformer
         get() = RedshiftSQLNameTransformer()
 
-    override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
+    private fun getDefaultConnectionProperties(): Map<String, String> {
         // The following properties can be overriden through jdbcUrlParameters in the config.
         val connectionOptions: MutableMap<String, String> = HashMap()
         // Redshift properties
@@ -213,36 +323,29 @@ class RedshiftDestination :
         return connectionOptions
     }
 
-    // this is a no op since we override getDatabase.
-    override fun toJdbcConfig(config: JsonNode): JsonNode {
-        return emptyObject()
-    }
-
-    override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
+    private fun getSqlGenerator(config: JsonNode): RedshiftSqlGenerator {
         return RedshiftSqlGenerator(namingResolver, config)
     }
 
-    override fun getDestinationHandler(
-        databaseName: String,
-        database: JdbcDatabase,
-        rawTableSchema: String
-    ): JdbcDestinationHandler<RedshiftState> {
-        return RedshiftDestinationHandler(databaseName, database, rawTableSchema)
-    }
-
-    override fun getMigrations(
+    private fun getMigrations(
         database: JdbcDatabase,
         databaseName: String,
-        sqlGenerator: SqlGenerator,
-        destinationHandler: DestinationHandler<RedshiftState>
+        sqlGenerator: RedshiftSqlGenerator
     ): List<Migration<RedshiftState>> {
-        return listOf<Migration<RedshiftState>>(
-            RedshiftRawTableAirbyteMetaMigration(database, databaseName)
+        return listOf(
+            RedshiftDV2Migration(
+                namingResolver,
+                database,
+                databaseName,
+                sqlGenerator,
+            ),
+            RedshiftRawTableAirbyteMetaMigration(database, databaseName),
+            RedshiftGenerationIdMigration(database, databaseName)
         )
     }
 
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-    override fun getDataTransformer(
+    private fun getDataTransformer(
         parsedCatalog: ParsedCatalog?,
         defaultNamespace: String?
     ): StreamAwareDataTransformer {
@@ -267,88 +370,81 @@ class RedshiftDestination :
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer {
-        val encryptionConfig =
-            if (config.has(RedshiftDestinationConstants.UPLOADING_METHOD))
-                fromJson(
-                    config[RedshiftDestinationConstants.UPLOADING_METHOD][JdbcUtils.ENCRYPTION_KEY]
-                )
-            else NoEncryption()
+        if (config.has(RedshiftDestinationConstants.UPLOADING_METHOD))
+            fromJson(
+                config[RedshiftDestinationConstants.UPLOADING_METHOD][JdbcUtils.ENCRYPTION_KEY]
+            )
+        else NoEncryption()
         val s3Options = RedshiftUtil.findS3Options(config)
         val s3Config: S3DestinationConfig = S3DestinationConfig.getS3DestinationConfig(s3Options)
-
         val defaultNamespace = config["schema"].asText()
-        for (stream in catalog.streams) {
-            if (StringUtils.isEmpty(stream.stream.namespace)) {
-                stream.stream.namespace = defaultNamespace
-            }
-        }
 
         val sqlGenerator = RedshiftSqlGenerator(namingResolver, config)
         val parsedCatalog: ParsedCatalog
-        val typerDeduper: TyperDeduper
         val database = getDatabase(getDataSource(config))
         val databaseName = config[JdbcUtils.DATABASE_KEY].asText()
         val catalogParser: CatalogParser
         val rawNamespace: String
         if (getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent) {
             rawNamespace = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).get()
-            catalogParser = CatalogParser(sqlGenerator, rawNamespace)
+            catalogParser = CatalogParser(sqlGenerator, defaultNamespace, rawNamespace)
         } else {
             rawNamespace = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
-            catalogParser = CatalogParser(sqlGenerator, rawNamespace)
+            catalogParser = CatalogParser(sqlGenerator, defaultNamespace, rawNamespace)
         }
         val redshiftDestinationHandler =
             RedshiftDestinationHandler(databaseName, database, rawNamespace)
         parsedCatalog = catalogParser.parseCatalog(catalog)
-        val migrator = JdbcV1V2Migrator(namingResolver, database, databaseName)
-        val v2TableMigrator = NoopV2TableMigrator()
         val disableTypeDedupe =
             config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
         val redshiftMigrations: List<Migration<RedshiftState>> =
-            getMigrations(database, databaseName, sqlGenerator, redshiftDestinationHandler)
-        typerDeduper =
-            if (disableTypeDedupe) {
-                NoOpTyperDeduperWithV1V2Migrations(
-                    sqlGenerator,
-                    redshiftDestinationHandler,
-                    parsedCatalog,
-                    migrator,
-                    v2TableMigrator,
-                    redshiftMigrations
-                )
-            } else {
-                DefaultTyperDeduper(
-                    sqlGenerator,
-                    redshiftDestinationHandler,
-                    parsedCatalog,
-                    migrator,
-                    v2TableMigrator,
-                    redshiftMigrations
-                )
-            }
+            getMigrations(database, databaseName, sqlGenerator)
 
-        return builder(
-                outputRecordCollector,
-                database,
-                RedshiftS3StagingSqlOperations(
-                    namingResolver,
-                    s3Config.getS3Client(),
-                    s3Config,
-                    encryptionConfig
-                ),
-                namingResolver,
-                config,
-                catalog,
+        val s3StorageOperations = getS3StorageOperations(s3Config)
+
+        val redshiftStagingStorageOperation =
+            RedshiftStagingStorageOperation(
+                s3Config,
                 isPurgeStagingData(s3Options),
-                typerDeduper,
-                parsedCatalog,
-                defaultNamespace,
-                JavaBaseConstants.DestinationColumns.V2_WITH_META
+                s3StorageOperations,
+                sqlGenerator,
+                redshiftDestinationHandler,
+                RedshiftSqlGenerator.isDropCascade(config),
             )
-            .setDataTransformer(getDataTransformer(parsedCatalog, defaultNamespace))
-            .build()
-            .createAsync()
+        val syncOperation =
+            DefaultSyncOperation(
+                parsedCatalog,
+                redshiftDestinationHandler,
+                defaultNamespace,
+                { initialStatus, disableTD ->
+                    StagingStreamOperations(
+                        redshiftStagingStorageOperation,
+                        initialStatus,
+                        FileUploadFormat.CSV,
+                        destinationColumns,
+                        disableTD
+                    )
+                },
+                redshiftMigrations,
+                disableTypeDedupe,
+            )
+        return AsyncStreamConsumer(
+            outputRecordCollector,
+            onStart = {},
+            onClose = { _, streamSyncSummaries ->
+                syncOperation.finalizeStreams(streamSyncSummaries)
+            },
+            onFlush = DefaultFlush(OPTIMAL_FLUSH_BATCH_SIZE, syncOperation),
+            catalog,
+            BufferManager(defaultNamespace, bufferMemoryLimit),
+            FlushFailure(),
+            Executors.newFixedThreadPool(5),
+            AirbyteMessageDeserializer(getDataTransformer(parsedCatalog, defaultNamespace)),
+        )
     }
+
+    private fun getS3StorageOperations(s3Config: S3DestinationConfig) =
+        S3StorageOperations(namingResolver, s3Config.getS3Client(), s3Config)
 
     private fun isPurgeStagingData(config: JsonNode?): Boolean {
         return !config!!.has("purge_staging_data") || config["purge_staging_data"].asBoolean()
@@ -365,6 +461,15 @@ class RedshiftDestination :
                 "sslfactory",
                 "com.amazon.redshift.ssl.NonValidatingFactory"
             )
+
+        private val destinationColumns = JavaBaseConstants.DestinationColumns.V2_WITH_GENERATION
+
+        private const val OPTIMAL_FLUSH_BATCH_SIZE: Long = 50 * 1024 * 1024
+        private val bufferMemoryLimit: Long = (Runtime.getRuntime().maxMemory() * 0.5).toLong()
+
+        private fun getDatabaseName(config: JsonNode): String {
+            return config[JdbcUtils.DATABASE_KEY].asText()
+        }
 
         private fun sshWrappedDestination(): Destination {
             return SshWrappedDestination(

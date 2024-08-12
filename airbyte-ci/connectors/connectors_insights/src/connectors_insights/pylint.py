@@ -10,7 +10,6 @@ from connector_ops.utils import ConnectorLanguage  # type: ignore
 from connectors_insights.utils import never_fail_exec
 
 if TYPE_CHECKING:
-
     import dagger
     from connector_ops.utils import Connector  # type: ignore
 
@@ -38,13 +37,15 @@ async def get_pylint_output(dagger_client: dagger.Client, connector: Connector) 
     Returns:
         str | None: Pylint output.
     """
-    if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+    if connector.language not in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE, ConnectorLanguage.MANIFEST_ONLY]:
         return None
     cdk_deprecation_checker_path = Path(os.path.abspath(__file__)).parent / "pylint_plugins/cdk_deprecation_checkers.py"
+    pip_cache_volume: dagger.CacheVolume = dagger_client.cache_volume("pip_cache")
 
     return await (
         dagger_client.container()
         .from_(connector.image_address)
+        .with_mounted_cache("/root/.cache/pip", pip_cache_volume)
         .with_new_file("__init__.py", contents="")
         .with_exec(["pip", "install", "pylint"], skip_entrypoint=True)
         .with_workdir(connector.technical_name.replace("-", "_"))

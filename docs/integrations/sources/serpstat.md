@@ -52,6 +52,14 @@ The maximum sync speed is limited by the number of requests per second per API k
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
+| 0.1.10 | 2024-08-10 | [43510](https://github.com/airbytehq/airbyte/pull/43510) | Update dependencies |
+| 0.1.9 | 2024-08-03 | [43076](https://github.com/airbytehq/airbyte/pull/43076) | Update dependencies |
+| 0.1.8 | 2024-07-27 | [42697](https://github.com/airbytehq/airbyte/pull/42697) | Update dependencies |
+| 0.1.7 | 2024-07-20 | [42214](https://github.com/airbytehq/airbyte/pull/42214) | Update dependencies |
+| 0.1.6 | 2024-07-13 | [41714](https://github.com/airbytehq/airbyte/pull/41714) | Update dependencies |
+| 0.1.5 | 2024-07-10 | [41550](https://github.com/airbytehq/airbyte/pull/41550) | Update dependencies |
+| 0.1.4 | 2024-07-06 | [40767](https://github.com/airbytehq/airbyte/pull/40767) | Update dependencies |
+| 0.1.3 | 2024-06-25 | [40400](https://github.com/airbytehq/airbyte/pull/40400) | Update dependencies |
 | 0.1.2 | 2024-06-23 | [40221](https://github.com/airbytehq/airbyte/pull/40221) | Update dependencies |
 | 0.1.1 | 2024-05-30 | [38690](https://github.com/airbytehq/airbyte/pull/38690) | Make compatible with the builder |
 | 0.1.0 | 2023-08-21 | [28147](https://github.com/airbytehq/airbyte/pull/28147) | Release Serpstat Connector |

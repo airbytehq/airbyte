@@ -77,6 +77,16 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.12 | 2024-08-10 | [43685](https://github.com/airbytehq/airbyte/pull/43685) | Update dependencies |
+| 2.0.11 | 2024-08-03 | [43156](https://github.com/airbytehq/airbyte/pull/43156) | Update dependencies |
+| 2.0.10 | 2024-07-27 | [42798](https://github.com/airbytehq/airbyte/pull/42798) | Update dependencies |
+| 2.0.9 | 2024-07-20 | [42314](https://github.com/airbytehq/airbyte/pull/42314) | Update dependencies |
+| 2.0.8 | 2024-07-16 | [38347](https://github.com/airbytehq/airbyte/pull/38347) | Make connector compatible with the builder |
+| 2.0.7 | 2024-07-13 | [41816](https://github.com/airbytehq/airbyte/pull/41816) | Update dependencies |
+| 2.0.6 | 2024-07-10 | [41471](https://github.com/airbytehq/airbyte/pull/41471) | Update dependencies |
+| 2.0.5 | 2024-07-09 | [41171](https://github.com/airbytehq/airbyte/pull/41171) | Update dependencies |
+| 2.0.4 | 2024-07-06 | [40940](https://github.com/airbytehq/airbyte/pull/40940) | Update dependencies |
+| 2.0.3 | 2024-06-26 | [40528](https://github.com/airbytehq/airbyte/pull/40528) | Update dependencies |
 | 2.0.2 | 2024-06-22 | [40117](https://github.com/airbytehq/airbyte/pull/40117) | Update dependencies |
 | 2.0.1 | 2024-06-06 | [39205](https://github.com/airbytehq/airbyte/pull/39205) | [autopull] Upgrade base image to v1.2.2 |
 | 2.0.0 | 2024-03-01 | [35680](https://github.com/airbytehq/airbyte/pull/35680) | Updates `dashboards` stream, Base image migration: remove Dockerfile and use the python-connector-base image, migrated to poetry |

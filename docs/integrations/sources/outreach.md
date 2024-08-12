@@ -56,6 +56,15 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.0.11 | 2024-08-10 | [43648](https://github.com/airbytehq/airbyte/pull/43648) | Update dependencies |
+| 1.0.10 | 2024-08-08 | [41107](https://github.com/airbytehq/airbyte/pull/41107) | Fix pagination |
+| 1.0.9 | 2024-08-03 | [43128](https://github.com/airbytehq/airbyte/pull/43128) | Update dependencies |
+| 1.0.8 | 2024-07-20 | [42254](https://github.com/airbytehq/airbyte/pull/42254) | Update dependencies |
+| 1.0.7 | 2024-07-13 | [41786](https://github.com/airbytehq/airbyte/pull/41786) | Update dependencies |
+| 1.0.6 | 2024-07-10 | [41490](https://github.com/airbytehq/airbyte/pull/41490) | Update dependencies |
+| 1.0.5 | 2024-07-09 | [41236](https://github.com/airbytehq/airbyte/pull/41236) | Update dependencies |
+| 1.0.4 | 2024-07-06 | [40910](https://github.com/airbytehq/airbyte/pull/40910) | Update dependencies |
+| 1.0.3 | 2024-06-25 | [40341](https://github.com/airbytehq/airbyte/pull/40341) | Update dependencies |
 | 1.0.2 | 2024-06-22 | [39977](https://github.com/airbytehq/airbyte/pull/39977) | Update dependencies |
 | 1.0.1 | 2024-06-04 | [38972](https://github.com/airbytehq/airbyte/pull/38972) | [autopull] Upgrade base image to v1.2.1 |
 | 1.0.0 | 2024-04-15 | [36602](https://github.com/airbytehq/airbyte/pull/36602) | Migrate to low code |

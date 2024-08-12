@@ -108,6 +108,18 @@ poe lint
 
 ## Changelog
 
+### 1.6.0
+
+Added `manifest-only` connectors support — they will run basic assets and metadata checks.
+
+### 1.5.1
+
+Bumped dependencies.
+
+### 1.5.0
+
+Added `AIRBYTE ENTERPRISE` to the list of allowed licenses, for use by Airbyte Enterprise connectors.
+
 ### 1.4.0
 
 Added the `IntegrationTestsEnabledCheck` check that verifies if the integration tests are enabled for connectors with higher cloud usage.

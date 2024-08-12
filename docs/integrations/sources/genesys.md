@@ -31,6 +31,14 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.11 | 2024-08-10 | [43651](https://github.com/airbytehq/airbyte/pull/43651) | Update dependencies |
+| 0.1.10 | 2024-08-03 | [43187](https://github.com/airbytehq/airbyte/pull/43187) | Update dependencies |
+| 0.1.9 | 2024-07-27 | [42797](https://github.com/airbytehq/airbyte/pull/42797) | Update dependencies |
+| 0.1.8 | 2024-07-20 | [42370](https://github.com/airbytehq/airbyte/pull/42370) | Update dependencies |
+| 0.1.7 | 2024-07-13 | [41902](https://github.com/airbytehq/airbyte/pull/41902) | Update dependencies |
+| 0.1.6 | 2024-07-10 | [41438](https://github.com/airbytehq/airbyte/pull/41438) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [40945](https://github.com/airbytehq/airbyte/pull/40945) | Update dependencies |
+| 0.1.4 | 2024-06-25 | [40383](https://github.com/airbytehq/airbyte/pull/40383) | Update dependencies |
 | 0.1.3 | 2024-06-22 | [40142](https://github.com/airbytehq/airbyte/pull/40142) | Update dependencies |
 | 0.1.2 | 2024-06-06 | [39256](https://github.com/airbytehq/airbyte/pull/39256) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.1 | 2024-05-20 | [38450](https://github.com/airbytehq/airbyte/pull/38450) | [autopull] base image + poetry + up_to_date |

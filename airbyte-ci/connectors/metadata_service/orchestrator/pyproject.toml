@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "orchestrator"
-version = "0.1.4"
+version = "0.2.0"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
@@ -11,6 +11,9 @@ python = "^3.10, <3.12"
 dagit = "^1.5.14"
 dagster = "^1.5.14"
 pandas = "^1.5.3"
+# Pinning numpy to fix https://github.com/airbytehq/oncall/issues/5818
+# ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject
+numpy = "==1.26.4"
 dagster-gcp = "^0.21.14"
 google = "^3.0.0"
 jinja2 = "^3.1.2"
@@ -45,5 +48,6 @@ module_name = "orchestrator"
 test = "pytest tests"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]

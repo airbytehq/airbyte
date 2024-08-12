@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.snowflake.operation
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -42,10 +42,10 @@ class SnowflakeStorageOperationTest {
     @Test
     fun verifyPrepareStageCreatesTableAndStage() {
         val inOrder = inOrder(destinationHandler, stagingClient)
-        storageOperation.prepareStage(streamId, DestinationSyncMode.APPEND)
+        storageOperation.prepareStage(streamId, "", false)
         inOrder
             .verify(destinationHandler)
-            .execute(Sql.of(storageOperation.createTableQuery(streamId)))
+            .execute(Sql.of(storageOperation.createTableQuery(streamId, "")))
         inOrder
             .verify(stagingClient)
             .createStageIfNotExists(storageOperation.getStageName(streamId))
@@ -55,13 +55,13 @@ class SnowflakeStorageOperationTest {
     @Test
     fun verifyPrepareStageOverwriteTruncatesTable() {
         val inOrder = inOrder(destinationHandler, stagingClient)
-        storageOperation.prepareStage(streamId, DestinationSyncMode.OVERWRITE)
+        storageOperation.prepareStage(streamId, "", true)
         inOrder
             .verify(destinationHandler)
-            .execute(Sql.of(storageOperation.createTableQuery(streamId)))
+            .execute(Sql.of(storageOperation.createTableQuery(streamId, "")))
         inOrder
             .verify(destinationHandler)
-            .execute(Sql.of(storageOperation.truncateTableQuery(streamId)))
+            .execute(Sql.of(storageOperation.truncateTableQuery(streamId, "")))
         inOrder
             .verify(stagingClient)
             .createStageIfNotExists(storageOperation.getStageName(streamId))
@@ -80,12 +80,18 @@ class SnowflakeStorageOperationTest {
         val storageOperation =
             SnowflakeStorageOperation(sqlGenerator, destinationHandler, 1, stagingClient)
 
-        storageOperation.writeToStage(streamConfig, data)
+        storageOperation.writeToStage(streamConfig, "", data)
         val inOrder = inOrder(stagingClient)
         inOrder.verify(stagingClient).uploadRecordsToStage(any(), eq(stageName), any())
         inOrder
             .verify(stagingClient)
-            .copyIntoTableFromStage(eq(stageName), any(), eq(listOf(mockTmpFileName)), eq(streamId))
+            .copyIntoTableFromStage(
+                eq(stageName),
+                any(),
+                eq(listOf(mockTmpFileName)),
+                eq(streamId),
+                eq("")
+            )
         verifyNoMoreInteractions(stagingClient)
     }
 
@@ -110,7 +116,7 @@ class SnowflakeStorageOperationTest {
         val streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.OVERWRITE,
+                ImportType.APPEND,
                 listOf(),
                 Optional.empty(),
                 linkedMapOf(),

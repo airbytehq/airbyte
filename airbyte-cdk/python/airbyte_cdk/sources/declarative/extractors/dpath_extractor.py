@@ -65,18 +65,18 @@ class DpathExtractor(RecordExtractor):
                 self._field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
-        response_body = self.decoder.decode(response)
-        if len(self._field_path) == 0:
-            extracted = response_body
-        else:
-            path = [path.eval(self.config) for path in self._field_path]
-            if "*" in path:
-                extracted = dpath.values(response_body, path)
+        for body in self.decoder.decode(response):
+            if len(self._field_path) == 0:
+                extracted = body
             else:
-                extracted = dpath.get(response_body, path, default=[])
-        if isinstance(extracted, list):
-            yield from extracted
-        elif extracted:
-            yield extracted
-        else:
-            yield from []
+                path = [path.eval(self.config) for path in self._field_path]
+                if "*" in path:
+                    extracted = dpath.values(body, path)
+                else:
+                    extracted = dpath.get(body, path, default=[])
+            if isinstance(extracted, list):
+                yield from extracted
+            elif extracted:
+                yield extracted
+            else:
+                yield from []

@@ -57,6 +57,14 @@ Here are some optional fields for different streams:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.11 | 2024-08-10 | [43065](https://github.com/airbytehq/airbyte/pull/43065) | Update dependencies |
+| 0.1.10 | 2024-07-27 | [42647](https://github.com/airbytehq/airbyte/pull/42647) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [41927](https://github.com/airbytehq/airbyte/pull/41927) | Update dependencies |
+| 0.1.8 | 2024-07-15 | [38344](https://github.com/airbytehq/airbyte/pull/38344) | Make connector compatible with builder |
+| 0.1.7 | 2024-07-10 | [41397](https://github.com/airbytehq/airbyte/pull/41397) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [41301](https://github.com/airbytehq/airbyte/pull/41301) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [40936](https://github.com/airbytehq/airbyte/pull/40936) | Update dependencies |
+| 0.1.4 | 2024-06-25 | [40478](https://github.com/airbytehq/airbyte/pull/40478) | Update dependencies |
 | 0.1.3 | 2024-06-22 | [40061](https://github.com/airbytehq/airbyte/pull/40061) | Update dependencies |
 | 0.1.2 | 2024-05-21 | [38501](https://github.com/airbytehq/airbyte/pull/38501) | [autopull] base image + poetry + up_to_date |
 | 0.1.1 | 2023-02-10 | [23951](https://github.com/airbytehq/airbyte/pull/23951) | Add optional include Closed Tasks |

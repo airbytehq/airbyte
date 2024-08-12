@@ -42,10 +42,20 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |---------|------------| -------------------------------------------------------- |---------------------------------------------|
-| 0.1.4   | 2024-06-24 | [39911](https://github.com/airbytehq/airbyte/pull/39911) | Migrate connector to low code               |
-| 0.1.3   | 2024-06-21 | [39923](https://github.com/airbytehq/airbyte/pull/39923) | Update dependencies                         |
-| 0.1.2   | 2024-06-06 | [39287](https://github.com/airbytehq/airbyte/pull/39287) | [autopull] Upgrade base image to v1.2.2     |
-| 0.1.1   | 2024-05-20 | [38373](https://github.com/airbytehq/airbyte/pull/38373) | [autopull] base image + poetry + up_to_date |
-| 0.1.0   | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version.                            |
+| 0.1.14 | 2024-08-10 | [43492](https://github.com/airbytehq/airbyte/pull/43492) | Update dependencies |
+| 0.1.13 | 2024-08-03 | [43055](https://github.com/airbytehq/airbyte/pull/43055) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42698](https://github.com/airbytehq/airbyte/pull/42698) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42155](https://github.com/airbytehq/airbyte/pull/42155) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41852](https://github.com/airbytehq/airbyte/pull/41852) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41055](https://github.com/airbytehq/airbyte/pull/41055) | Update datetime format |
+| 0.1.8 | 2024-07-10 | [41460](https://github.com/airbytehq/airbyte/pull/41460) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41182](https://github.com/airbytehq/airbyte/pull/41182) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40947](https://github.com/airbytehq/airbyte/pull/40947) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40470](https://github.com/airbytehq/airbyte/pull/40470) | Update dependencies |
+| 0.1.4 | 2024-06-24 | [39911](https://github.com/airbytehq/airbyte/pull/39911) | Migrate connector to low code |
+| 0.1.3 | 2024-06-21 | [39923](https://github.com/airbytehq/airbyte/pull/39923) | Update dependencies |
+| 0.1.2 | 2024-06-06 | [39287](https://github.com/airbytehq/airbyte/pull/39287) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1 | 2024-05-20 | [38373](https://github.com/airbytehq/airbyte/pull/38373) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-08-26 | [16051](https://github.com/airbytehq/airbyte/pull/16051) | Initial version. |
 
 </details>

@@ -1,15 +1,41 @@
 # CDK Migration Guide
 
-## Importing classes
-Starting from 1.0.0, CDK classes and functions should be imported directly from `airbyte_cdk` (example: `from airbyte_cdk import HttpStream`). Lower-level `__init__` files are not considered stable, and will be modified without introducing a major release.
+## Upgrading to 4.1.0
+We are unifying the `BackoffStrategy` interface as it currently differs from the Python CDK package to the declarative one. The different is that the interface will require the attempt_count to be passed.
 
-Introducing breaking changes to a class or function exported from the top level `__init__.py` will require a major version bump and a migration note to help developer upgrade.
+Main impact: This change is mostly internal but we spotted a couple of tests that expect `backoff_time` to not have the `attempt_count` parameter so these tests would fail ([example](https://github.com/airbytehq/airbyte/blob/c9f45a0b85735f58102fcd78385f6f673e731aa6/airbyte-integrations/connectors/source-github/unit_tests/test_stream.py#L99)).
 
-Note that the following packages are not part of the top level init because they require extras dependencies, but are still considered stable:
-- `destination.vector_db_based`
-- `source.file_based`
+This change should not impact the following classes even though they have a different interface as they accept `kwargs` and  `attempt_count` is currently passed as a keyword argument within the CDK. However, once there is a CDK change where `backoff_time` is called not as a keyword argument, they will fail: 
+* Zendesk Support: ZendeskSupportBackoffStrategy (this one will be updated shortly after as it is used for CI to validate CDK changes)
+* Klaviyo: KlaviyoBackoffStrategy (the logic has been generified so we will remove this custom component shortly after this update)
+* GitHub: GithubStreamABCBackoffStrategy and ContributorActivityBackoffStrategy
+* Airtable: AirtableBackoffStrategy
+* Slack: SlackBackoffStrategy
 
-The `test` package is not included in the top level init either. The `test` package is still evolving and isn't considered stable.
+This change should not impact `WaitUntilMidnightBackoffStrategy` from source-gnews as well but it is interesting to note that its interface is also wrong as it considers the first parameter as a `requests.Response` instead of a `Optional[Union[requests.Response, requests.RequestException]]`. 
+
+## Upgrading to 4.0.0
+
+Updated the codebase to utilize new Python syntax features. As a result, support for Python 3.9 has been dropped. The minimum required Python version is now 3.10.
+
+## Upgrading to 3.0.0
+Version 3.0.0 of the CDK updates the `HTTPStream` class by reusing the `HTTPClient` under the hood.
+
+- `backoff_time` and `should_retry` methods are removed from HttpStream
+- `HttpStreamAdapterHttpStatusErrorHandler` and `HttpStreamAdapterBackoffStrategy` adapters are marked as `deprecated`
+- `raise_on_http_errors`, `max_retries`, `max_time`, `retry_factor` are marked as `deprecated`
+
+Exceptions from the `requests` library should no longer be raised when calling `read_records`.
+Therefore, catching exceptions should be updated, and error messages might change.
+See [Migration of Source Zendesk Support](https://github.com/airbytehq/airbyte/pull/41032/commits/4d3a247f36b9826dcea4b98d30fc19802b03d014) as an example.
+
+### Migration of `should_retry` method
+In case the connector uses custom logic for backoff based on the response from the server, a new method `get_error_handler` should be implemented.
+This method should return instance of [`ErrorHandler`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/error_handlers/error_handler.py).
+
+### Migration of `backoff_time` method
+In case the connector uses custom logic for backoff time calculation, a new method `get_backoff_strategy` should be implemented.
+This method should return instance(s) of [`BackoffStrategy`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/error_handlers/backoff_strategy.py).
 
 ## Upgrading to 2.0.0
 Version 2.0.0 of the CDK updates the `pydantic` dependency to from Pydantic v1 to Pydantic v2. It also
@@ -63,12 +89,25 @@ assert stream_read.slices[1].state[0].stream.stream_state.dict() == {"a_timestam
 
 
 ## Upgrading to 1.0.0
+Starting from 1.0.0, CDK classes and functions should be imported directly from `airbyte_cdk` (example: `from airbyte_cdk import HttpStream`). Lower-level `__init__` files are not considered stable, and will be modified without introducing a major release.
+
+Introducing breaking changes to a class or function exported from the top level `__init__.py` will require a major version bump and a migration note to help developer upgrade.
+
+Note that the following packages are not part of the top level init because they require extras dependencies, but are still considered stable:
+- `destination.vector_db_based`
+- `source.file_based`
+
+The `test` package is not included in the top level init either. The `test` package is still evolving and isn't considered stable.
+
+
 A few classes were deleted from the Airbyte CDK in version 1.0.0:
 - AirbyteLogger
 - AirbyteSpec
 - Authenticators in the `sources.streams.http.auth` module
 
-## Migrating off AirbyteLogger
+
+
+### Migrating off AirbyteLogger
 No connectors should still be using `AirbyteLogger` directly, but the class is still used in some interfaces. The only required change is to update the type annotation from `AirbyteLogger` to `logging.Logger`. For example:
 
 ```
@@ -82,10 +121,10 @@ def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) ->
 ```
 Don't forget to also update the imports. You can delete `from airbyte_cdk import AirbyteLogger` and replace it with `import logging`.
 
-## Migrating off AirbyteSpec
+### Migrating off AirbyteSpec
 AirbyteSpec isn't used by any connectors in the repository, and I don't expect any custom connectors to use the class either. This should be a no-op.
 
-## Migrating off Authenticators
+### Migrating off Authenticators
 Replace usage of authenticators in the `airbyte_cdk.sources.streams.http.auth` module with their sister classes in the `airbyte_cdk.sources.streams.http.requests_native_auth` module.
 
 If any of your streams reference `self.authenticator`, you'll also need to update these references to `self._session.auth` as the authenticator is embedded in the session object.

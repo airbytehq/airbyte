@@ -49,6 +49,14 @@ In order to get access token, follow these steps:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.14 | 2024-08-10 | [43652](https://github.com/airbytehq/airbyte/pull/43652) | Update dependencies |
+| 0.2.13 | 2024-08-03 | [43147](https://github.com/airbytehq/airbyte/pull/43147) | Update dependencies |
+| 0.2.12 | 2024-07-27 | [42303](https://github.com/airbytehq/airbyte/pull/42303) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41924](https://github.com/airbytehq/airbyte/pull/41924) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41556](https://github.com/airbytehq/airbyte/pull/41556) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41172](https://github.com/airbytehq/airbyte/pull/41172) | Update dependencies |
+| 0.2.8 | 2024-07-06 | [40975](https://github.com/airbytehq/airbyte/pull/40975) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40481](https://github.com/airbytehq/airbyte/pull/40481) | Update dependencies |
 | 0.2.6 | 2024-06-22 | [40064](https://github.com/airbytehq/airbyte/pull/40064) | Update dependencies |
 | 0.2.5 | 2024-06-04 | [39093](https://github.com/airbytehq/airbyte/pull/39093) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.4 | 2024-05-28 | [38695](https://github.com/airbytehq/airbyte/pull/38695) | Make compatibility with builder |

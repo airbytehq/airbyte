@@ -64,6 +64,15 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.15 | 2024-08-10 | [43515](https://github.com/airbytehq/airbyte/pull/43515) | Update dependencies |
+| 0.2.14 | 2024-08-03 | [43112](https://github.com/airbytehq/airbyte/pull/43112) | Update dependencies |
+| 0.2.13 | 2024-07-27 | [42722](https://github.com/airbytehq/airbyte/pull/42722) | Update dependencies |
+| 0.2.12 | 2024-07-20 | [42179](https://github.com/airbytehq/airbyte/pull/42179) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41755](https://github.com/airbytehq/airbyte/pull/41755) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41441](https://github.com/airbytehq/airbyte/pull/41441) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41176](https://github.com/airbytehq/airbyte/pull/41176) | Update dependencies |
+| 0.2.8 | 2024-07-06 | [41003](https://github.com/airbytehq/airbyte/pull/41003) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40399](https://github.com/airbytehq/airbyte/pull/40399) | Update dependencies |
 | 0.2.6 | 2024-06-22 | [40197](https://github.com/airbytehq/airbyte/pull/40197) | Update dependencies |
 | 0.2.5 | 2024-06-04 | [39066](https://github.com/airbytehq/airbyte/pull/39066) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.4 | 2024-04-19 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | Updating to 0.80.0 CDK |

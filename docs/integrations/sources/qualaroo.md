@@ -46,6 +46,16 @@ Please read [How to get your APIs Token and Key](https://help.qualaroo.com/hc/en
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| 0.3.13 | 2024-08-10 | [43683](https://github.com/airbytehq/airbyte/pull/43683) | Update dependencies |
+| 0.3.12 | 2024-08-03 | [43199](https://github.com/airbytehq/airbyte/pull/43199) | Update dependencies |
+| 0.3.11 | 2024-07-27 | [42730](https://github.com/airbytehq/airbyte/pull/42730) | Update dependencies |
+| 0.3.10 | 2024-07-25 | [42539](https://github.com/airbytehq/airbyte/pull/42539) | Update manifest with proper param structure |
+| 0.3.9 | 2024-07-20 | [42321](https://github.com/airbytehq/airbyte/pull/42321) | Update dependencies |
+| 0.3.8 | 2024-07-13 | [41830](https://github.com/airbytehq/airbyte/pull/41830) | Update dependencies |
+| 0.3.7 | 2024-07-10 | [41380](https://github.com/airbytehq/airbyte/pull/41380) | Update dependencies |
+| 0.3.6 | 2024-07-10 | [41331](https://github.com/airbytehq/airbyte/pull/41331) | Update dependencies |
+| 0.3.5 | 2024-07-06 | [40822](https://github.com/airbytehq/airbyte/pull/40822) | Update dependencies |
+| 0.3.4 | 2024-06-25 | [40365](https://github.com/airbytehq/airbyte/pull/40365) | Update dependencies |
 | 0.3.3 | 2024-06-22 | [40139](https://github.com/airbytehq/airbyte/pull/40139) | Update dependencies |
 | 0.3.2 | 2024-06-06 | [39259](https://github.com/airbytehq/airbyte/pull/39259) | [autopull] Upgrade base image to v1.2.2 |
 | 0.3.1 | 2024-05-20 | [38381](https://github.com/airbytehq/airbyte/pull/38381) | [autopull] base image + poetry + up_to_date |

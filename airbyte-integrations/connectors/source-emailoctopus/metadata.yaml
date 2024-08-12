@@ -3,11 +3,11 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.15
   dockerRepository: airbyte/source-emailoctopus
   documentationUrl: https://docs.airbyte.com/integrations/sources/emailoctopus
   githubIssueLabel: source-emailoctopus
@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: emailoctopus_config_dev_null
+          id: 8480109d-c0a1-42ca-a442-66f665a39683
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-EMAILOCTOPUS__CREDS

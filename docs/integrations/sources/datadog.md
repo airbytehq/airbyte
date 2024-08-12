@@ -76,6 +76,15 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 0.4.13 | 2024-08-10 | [43555](https://github.com/airbytehq/airbyte/pull/43555) | Update dependencies |
+| 0.4.12 | 2024-08-03 | [43141](https://github.com/airbytehq/airbyte/pull/43141) | Update dependencies |
+| 0.4.11 | 2024-07-27 | [42776](https://github.com/airbytehq/airbyte/pull/42776) | Update dependencies |
+| 0.4.10 | 2024-07-20 | [42341](https://github.com/airbytehq/airbyte/pull/42341) | Update dependencies |
+| 0.4.9 | 2024-07-13 | [41783](https://github.com/airbytehq/airbyte/pull/41783) | Update dependencies |
+| 0.4.8 | 2024-07-10 | [41416](https://github.com/airbytehq/airbyte/pull/41416) | Update dependencies |
+| 0.4.7 | 2024-07-09 | [41168](https://github.com/airbytehq/airbyte/pull/41168) | Update dependencies |
+| 0.4.6 | 2024-07-06 | [40985](https://github.com/airbytehq/airbyte/pull/40985) | Update dependencies |
+| 0.4.5 | 2024-06-25 | [40306](https://github.com/airbytehq/airbyte/pull/40306) | Update dependencies |
 | 0.4.4 | 2024-06-22 | [40063](https://github.com/airbytehq/airbyte/pull/40063) | Update dependencies |
 | 0.4.3 | 2024-06-13 | [37590](https://github.com/airbytehq/airbyte/pull/37590) | Change `last_records` to `last_record` |
 | 0.4.2 | 2024-06-04 | [39060](https://github.com/airbytehq/airbyte/pull/39060) | [autopull] Upgrade base image to v1.2.1 |

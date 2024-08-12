@@ -74,9 +74,9 @@ internal class BigQueryDestinationTest {
                 "User does not have bigquery.datasets.create permission"
             ),
             Arguments.of(
-                "nonBillableConfig",
-                "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier"
-            )
+                "gcsStagingConfigWithBadCopyPermission",
+                "Permission bigquery.tables.updateData denied on table"
+            ),
         )
     }
 
@@ -152,6 +152,7 @@ internal class BigQueryDestinationTest {
     fun testCheckFailures(configName: String, error: String?) {
         // TODO: this should always throw ConfigErrorException
         val testConfig = configs!![configName]
+
         val ex =
             org.junit.jupiter.api.Assertions.assertThrows(Exception::class.java) {
                 BigQueryDestination().check(testConfig!!)
@@ -494,6 +495,8 @@ internal class BigQueryDestinationTest {
             Path.of("secrets/credentials-no-edit-public-schema-role.json")
         protected val CREDENTIALS_WITH_GCS_STAGING_PATH: Path =
             Path.of("secrets/credentials-gcs-staging.json")
+        protected val CREDENTIALS_WITH_GCS_BAD_COPY_PERMISSION_PATH: Path =
+            Path.of("secrets/credentials-1s1t-gcs-bad-copy-permission.json")
 
         protected val ALL_PATHS: Array<Path> =
             arrayOf(
@@ -502,7 +505,8 @@ internal class BigQueryDestinationTest {
                 CREDENTIALS_NO_DATASET_CREATION_PATH,
                 CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH,
                 CREDENTIALS_NON_BILLABLE_PROJECT_PATH,
-                CREDENTIALS_WITH_GCS_STAGING_PATH
+                CREDENTIALS_WITH_GCS_STAGING_PATH,
+                CREDENTIALS_WITH_GCS_BAD_COPY_PERMISSION_PATH
             )
 
         private val LOGGER: Logger = LoggerFactory.getLogger(BigQueryDestinationTest::class.java)
@@ -597,6 +601,8 @@ internal class BigQueryDestinationTest {
         protected var nonBillableConfig: JsonNode? = null
         protected var gcsStagingConfig: JsonNode? =
             null // default BigQuery config. Also used for setup/teardown
+        protected var gcsStagingConfigWithBadCopyPermission: JsonNode? = null
+
         protected var configs: Map<String, JsonNode>? = null
         protected var catalog: ConfiguredAirbyteCatalog? = null
 
@@ -678,6 +684,13 @@ internal class BigQueryDestinationTest {
                     stagingPath
                 )
 
+            gcsStagingConfigWithBadCopyPermission =
+                BigQueryDestinationTestUtils.createConfig(
+                    CREDENTIALS_WITH_GCS_BAD_COPY_PERMISSION_PATH,
+                    datasetId,
+                    stagingPath
+                )
+
             MESSAGE_USERS1.record.namespace = datasetId
             MESSAGE_USERS2.record.namespace = datasetId
             MESSAGE_TASKS1.record.namespace = datasetId
@@ -711,6 +724,8 @@ internal class BigQueryDestinationTest {
                     "noEditPublicSchemaRoleConfig" to noEditPublicSchemaRoleConfig!!,
                     "nonBillableConfig" to nonBillableConfig!!,
                     "gcsStagingConfig" to gcsStagingConfig!!,
+                    "gcsStagingConfigWithBadCopyPermission" to
+                        gcsStagingConfigWithBadCopyPermission!!,
                 )
         }
     }

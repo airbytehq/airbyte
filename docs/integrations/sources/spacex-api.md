@@ -75,6 +75,15 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.2.0 | 2024-08-09 | [43431](https://github.com/airbytehq/airbyte/pull/43431) | Refactor connector to manifest-only format |
+| 0.1.13 | 2024-08-03 | [43176](https://github.com/airbytehq/airbyte/pull/43176) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42792](https://github.com/airbytehq/airbyte/pull/42792) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42261](https://github.com/airbytehq/airbyte/pull/42261) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41909](https://github.com/airbytehq/airbyte/pull/41909) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41569](https://github.com/airbytehq/airbyte/pull/41569) | Update dependencies |
+| 0.1.8 | 2024-07-09 | [41089](https://github.com/airbytehq/airbyte/pull/41089) | Update dependencies |
+| 0.1.7 | 2024-07-06 | [40771](https://github.com/airbytehq/airbyte/pull/40771) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40463](https://github.com/airbytehq/airbyte/pull/40463) | Update dependencies |
 | 0.1.5 | 2024-06-22 | [40165](https://github.com/airbytehq/airbyte/pull/40165) | Update dependencies |
 | 0.1.4 | 2024-06-04 | [38976](https://github.com/airbytehq/airbyte/pull/38976) | [autopull] Upgrade base image to v1.2.1 |
 | 0.1.3 | 2024-05-30 | [38504](https://github.com/airbytehq/airbyte/pull/38504) | [autopull] base image + poetry + up_to_date |

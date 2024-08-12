@@ -47,6 +47,17 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                              | Subject                          |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------- |
+| 0.2.8 | 2024-08-10 | [43486](https://github.com/airbytehq/airbyte/pull/43486) | Update dependencies |
+| 0.2.7 | 2024-08-03 | [43085](https://github.com/airbytehq/airbyte/pull/43085) | Update dependencies |
+| 0.2.6 | 2024-07-27 | [42665](https://github.com/airbytehq/airbyte/pull/42665) | Update dependencies |
+| 0.2.5 | 2024-07-20 | [42187](https://github.com/airbytehq/airbyte/pull/42187) | Update dependencies |
+| 0.2.4 | 2024-07-13 | [41898](https://github.com/airbytehq/airbyte/pull/41898) | Update dependencies |
+| 0.2.3 | 2024-07-10 | [41525](https://github.com/airbytehq/airbyte/pull/41525) | Update dependencies |
+| 0.2.2 | 2024-07-09 | [41232](https://github.com/airbytehq/airbyte/pull/41232) | Update dependencies |
+| 0.2.1 | 2024-07-06 | [40791](https://github.com/airbytehq/airbyte/pull/40791) | Update dependencies |
+| 0.2.0 | 2024-06-27 | [40216](https://github.com/airbytehq/airbyte/pull/40216) | Migrate connector to Low Code |
+| 0.1.9 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 0.1.8 | 2024-06-25 | [40324](https://github.com/airbytehq/airbyte/pull/40324) | Update dependencies |
 | 0.1.7 | 2024-06-22 | [40145](https://github.com/airbytehq/airbyte/pull/40145) | Update dependencies |
 | 0.1.6 | 2024-06-06 | [39228](https://github.com/airbytehq/airbyte/pull/39228) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.5 | 2024-06-03 | [38916](https://github.com/airbytehq/airbyte/pull/38916) | Replace AirbyteLogger with logging.Logger |
