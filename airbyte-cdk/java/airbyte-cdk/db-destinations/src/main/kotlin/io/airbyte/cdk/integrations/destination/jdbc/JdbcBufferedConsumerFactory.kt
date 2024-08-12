@@ -55,6 +55,7 @@ object JdbcBufferedConsumerFactory {
         outputRecordCollector: Consumer<AirbyteMessage>,
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         namingResolver: NamingConventionTransformer,
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
@@ -77,12 +78,19 @@ object JdbcBufferedConsumerFactory {
             onStartFunction(
                 database,
                 sqlOperations,
+                generationIdHandler,
                 writeConfigs,
                 typerDeduper,
                 namingResolver,
                 parsedCatalog
             ),
-            onCloseFunction(database, sqlOperations, parsedCatalog, typerDeduper),
+            onCloseFunction(
+                database,
+                sqlOperations,
+                generationIdHandler,
+                parsedCatalog,
+                typerDeduper
+            ),
             JdbcInsertFlushFunction(
                 defaultNamespace,
                 recordWriterFunction(database, sqlOperations, writeConfigs, catalog),
@@ -98,7 +106,7 @@ object JdbcBufferedConsumerFactory {
 
     private fun createWriteConfigs(
         database: JdbcDatabase,
-        sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         namingResolver: NamingConventionTransformer,
         parsedCatalog: ParsedCatalog,
     ): List<WriteConfig> {
@@ -106,7 +114,7 @@ object JdbcBufferedConsumerFactory {
             val rawSuffix: String =
                 if (
                     it.minimumGenerationId == 0L ||
-                        sqlOperations.getGenerationIdInTable(
+                        generationIdHandler.getGenerationIdInTable(
                             database,
                             it.id.rawNamespace,
                             it.id.rawName
@@ -162,6 +170,7 @@ object JdbcBufferedConsumerFactory {
     private fun onStartFunction(
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         writeConfigs: MutableList<WriteConfig>,
         typerDeduper: TyperDeduper,
         namingResolver: NamingConventionTransformer,
@@ -170,7 +179,7 @@ object JdbcBufferedConsumerFactory {
         return OnStartFunction {
             typerDeduper.prepareSchemasAndRunMigrations()
             writeConfigs.addAll(
-                createWriteConfigs(database, sqlOperations, namingResolver, parsedCatalog)
+                createWriteConfigs(database, generationIdHandler, namingResolver, parsedCatalog)
             )
             LOGGER.info {
                 "Preparing raw tables in destination started for ${writeConfigs.size} streams"
@@ -194,7 +203,7 @@ object JdbcBufferedConsumerFactory {
                     0L -> {}
                     writeConfig.generationId ->
                         if (
-                            sqlOperations.getGenerationIdInTable(
+                            generationIdHandler.getGenerationIdInTable(
                                 database,
                                 schemaName,
                                 dstTableName + writeConfig.rawTableSuffix
@@ -268,6 +277,7 @@ object JdbcBufferedConsumerFactory {
     private fun onCloseFunction(
         database: JdbcDatabase,
         sqlOperations: SqlOperations,
+        generationIdHandler: JdbcGenerationHandler,
         catalog: ParsedCatalog,
         typerDeduper: TyperDeduper
     ): OnCloseFunction {
@@ -278,7 +288,7 @@ object JdbcBufferedConsumerFactory {
                 catalog.streams.forEach {
                     if (
                         it.minimumGenerationId != 0L &&
-                            sqlOperations.getGenerationIdInTable(
+                            generationIdHandler.getGenerationIdInTable(
                                 database,
                                 it.id.rawNamespace,
                                 it.id.rawName

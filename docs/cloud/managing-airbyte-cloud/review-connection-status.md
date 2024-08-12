@@ -6,7 +6,7 @@ products: all
 
 Each connection you've set up in your Workspace has a **Status** page that displays the connection's current status, timing of the next scheduled sync, and a summary of historic sync trends. Reviewing this page allows you to monitor the health of your connection. 
 
-![Connection Status](./assets/connection-status-page.png)
+![Connection Status](./assets/cloud-status-page.png)
 
 :::note
 The Streams status and Records loaded graphs are available in Airbyte Cloud and Airbyte Enterprise.

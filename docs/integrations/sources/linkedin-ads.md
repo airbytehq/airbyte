@@ -176,8 +176,10 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 <details>
   <summary>Expand to review</summary>
 
-| Version  | Date       | Pull Request                                             | Subject                                                                                                         |
-|:---------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                         |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 4.0.1 | 2024-08-10 | [43629](https://github.com/airbytehq/airbyte/pull/43629) | Update dependencies |
+| 4.0.0 | 2024-08-07 | [43359](https://github.com/airbytehq/airbyte/pull/43359) | Revert low code migration |
 | 3.0.1 | 2024-08-03 | [43087](https://github.com/airbytehq/airbyte/pull/43087) | Update dependencies |
 | 3.0.0 | 2024-06-18 | [38314](https://github.com/airbytehq/airbyte/pull/38314) | Migrate to low-code |
 | 2.1.12 | 2024-07-27 | [42728](https://github.com/airbytehq/airbyte/pull/42728) | Update dependencies |
