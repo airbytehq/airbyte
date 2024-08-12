@@ -3,7 +3,7 @@
 connector_image: airbyte/source-babelforce:dev
 tests:
   spec:
-    - spec_path: "source_babelforce/spec.yaml"
+    - spec_path: "manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
