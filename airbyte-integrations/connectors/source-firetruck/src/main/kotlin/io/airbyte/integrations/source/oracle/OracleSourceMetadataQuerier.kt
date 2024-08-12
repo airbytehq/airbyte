@@ -2,17 +2,17 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.jdbc.GenericUserDefinedType
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.GenericUserDefinedType
+import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.discover.SourceDatabaseType
+import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.discover.UserDefinedArray
+import io.airbyte.cdk.discover.UserDefinedType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.jdbc.JdbcMetadataQuerier
-import io.airbyte.cdk.jdbc.SourceDatabaseType
-import io.airbyte.cdk.jdbc.SystemType
-import io.airbyte.cdk.jdbc.UserDefinedArray
-import io.airbyte.cdk.jdbc.UserDefinedType
-import io.airbyte.cdk.source.Field
-import io.airbyte.cdk.source.MetadataQuerier
-import io.airbyte.cdk.source.TableName
-import io.airbyte.cdk.source.select.SelectQueryGenerator
+import io.airbyte.cdk.read.SelectQueryGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton

@@ -4,11 +4,11 @@ package io.airbyte.integrations.source.oracle
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.consumers.BufferingOutputConsumer
 import io.airbyte.cdk.data.AirbyteType
 import io.airbyte.cdk.data.ArrayAirbyteType
 import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage

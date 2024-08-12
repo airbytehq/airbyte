@@ -4,15 +4,15 @@ package io.airbyte.integrations.source.oracle
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.Feed
 import io.airbyte.cdk.read.Global
+import io.airbyte.cdk.read.PartitionsCreator
+import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.airbyte.cdk.read.StateQuerier
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.stream.StreamPartitionReader
-import io.airbyte.cdk.read.stream.StreamPartitionsCreator
-import io.airbyte.cdk.read.stream.StreamReadContext
-import io.airbyte.cdk.read.stream.StreamReadContextManager
-import io.airbyte.cdk.read.stream.streamPartitionsCreatorInput
-import io.airbyte.cdk.source.PartitionsCreator
-import io.airbyte.cdk.source.PartitionsCreatorFactory
+import io.airbyte.cdk.read.StreamPartitionReader
+import io.airbyte.cdk.read.StreamPartitionsCreator
+import io.airbyte.cdk.read.StreamReadContext
+import io.airbyte.cdk.read.StreamReadContextManager
+import io.airbyte.cdk.read.streamPartitionsCreatorInput
 import jakarta.inject.Singleton
 
 @Singleton

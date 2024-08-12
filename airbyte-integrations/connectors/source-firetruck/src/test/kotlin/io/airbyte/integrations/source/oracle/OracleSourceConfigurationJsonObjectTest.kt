@@ -1,8 +1,8 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.oracle
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
-import io.airbyte.cdk.exceptions.ConfigErrorException
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Property
