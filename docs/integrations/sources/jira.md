@@ -1,6 +1,10 @@
 # Jira
 
-This page contains the setup guide and reference information for the Jira source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Jira](https://developer.atlassian.com/cloud/jira/platform/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -16,20 +20,40 @@ This page contains the setup guide and reference information for the Jira source
 
 ### Step 2: Set up the Jira connector in Airbyte
 
-**For Airbyte Cloud:**
+<!-- env:cloud -->
+
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
-4. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
-5. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
-6. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
-7. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
-8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Jira from the Source type dropdown.
+4. Enter a name for the Jira connector.
+5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
+6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
+7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
+8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
+9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Jira from the Source type dropdown.
+4. Enter a name for the Jira connector.
+5. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
+6. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
+7. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
+8. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
+9. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue Remote Links, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
+
+<!-- /env:oss -->
 
 ## Supported sync modes
 
-The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)

@@ -25,6 +25,8 @@ To use this connector, you'll need at least the Enterprise edition of Salesforce
 
 ## Setup guide
 
+### Set up Salesforce
+
 ### Step 1: (Optional, Recommended) Create a dedicated Salesforce user
 
 Follow the instructions below to create a Minimum Access standard profile and assign custom permission sets to grant the new user the read access needed for data you want to access with Airbyte.

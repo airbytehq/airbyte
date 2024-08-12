@@ -2,10 +2,11 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Microsoft SharePoint source connector.
+This page contains the setup guide and reference information for the [Microsoft SharePoint](https://portal.azure.com) source connector.
 
 </HideInUI>
-### Requirements
+
+### Prerequisites
 
 - Application \(client\) ID
 - Directory \(tenant\) ID
@@ -15,16 +16,16 @@ This page contains the setup guide and reference information for the Microsoft S
 
 ## Setup guide
 
+### Set up Microsoft SharePoint
+
 <!-- env:cloud -->
-<HideInUI>
 
-**For Airbyte Cloud:**
+### For Airbyte Cloud:
 
-</HideInUI>
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Microsoft SharePoint** from the Source type dropdown.
-4. Enter the name for the Microsoft SharePoint connector.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
+4. Enter a name for the Microsoft SharePoint connector.
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
 6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
 7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
@@ -40,11 +41,14 @@ This page contains the setup guide and reference information for the Microsoft S
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-<HideInUI>
 
-**For Airbyte Open Source:**
+### For Airbyte Open Source:
 
-</HideInUI>
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
+4. Enter a name for the Microsoft SharePoint connector.
+
 ### Step 1: Set up SharePoint application
 
 The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes granular permissions that control the access that apps have to resources, like users, groups, and mail. When a user signs in to your app, they or in some cases an administrator are given a chance to consent to these permissions. If the user consents, your app is given access to the resources and APIs that it has requested. For apps that don't take a signed-in user, permissions can be pre-consented to by an administrator when the app is installed.
@@ -106,9 +110,24 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 <HideInUI>
 
-## Sync overview
+### Supported sync modes
 
-### Data type mapping
+The Microsoft SharePoint source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+| Feature           | Supported?\(Yes/No\) |
+| :---------------- | :------------------- |
+| Full Refresh Sync | Yes                  |
+| Incremental Sync  | Yes                  |
+
+### Supported Streams
+
+There is no predefined streams. The streams are based on content of files were added on the Set up page.
+
+### Performance considerations
+
+The connector is restricted by normal Microsoft Graph [requests limitation](https://docs.microsoft.com/en-us/graph/throttling).
+
+### Data type map
 
 | Integration Type | Airbyte Type |
 | :--------------- | :----------- |
@@ -116,17 +135,6 @@ This source requires **Application permissions**. Follow these [instructions](ht
 | `number`         | `number`     |
 | `array`          | `array`      |
 | `object`         | `object`     |
-
-### Features
-
-| Feature           | Supported?\(Yes/No\) |
-| :---------------- | :------------------- |
-| Full Refresh Sync | Yes                  |
-| Incremental Sync  | Yes                  |
-
-### Performance considerations
-
-The connector is restricted by normal Microsoft Graph [requests limitation](https://docs.microsoft.com/en-us/graph/throttling).
 
 ## Changelog
 
