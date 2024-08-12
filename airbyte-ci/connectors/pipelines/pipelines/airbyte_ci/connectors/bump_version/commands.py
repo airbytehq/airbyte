@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import TYPE_CHECKING
+from typing import Optional
 
 import asyncclick as click
 import semver
@@ -10,9 +10,6 @@ from pipelines.airbyte_ci.connectors.bump_version.pipeline import run_connector_
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-
-if TYPE_CHECKING:
-    from typing import Optional
 
 
 class BumpType(click.ParamType):
