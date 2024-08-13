@@ -1,7 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.ssh
 
-import io.airbyte.cdk.exceptions.ConfigErrorException
+import io.airbyte.cdk.ConfigErrorException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.StringReader
 import java.net.InetSocketAddress

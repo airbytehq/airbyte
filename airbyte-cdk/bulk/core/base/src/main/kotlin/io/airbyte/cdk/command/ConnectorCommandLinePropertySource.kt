@@ -1,7 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
-import io.airbyte.cdk.operation.Operation
+import io.airbyte.cdk.Operation
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.env.MapPropertySource
 import io.micronaut.core.cli.CommandLine

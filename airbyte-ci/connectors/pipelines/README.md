@@ -788,11 +788,13 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-|---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.31.5  | [#43934](https://github.com/airbytehq/airbyte/pull/43934)  | Track deleted files when generating pull-request                                                                             |
+| 4.31.4  | [#43724](https://github.com/airbytehq/airbyte/pull/43724)  | Do not send slack message on connector pre-release.                                                                          |
 | 4.31.3  | [#43426](https://github.com/airbytehq/airbyte/pull/43426)  | Ignore archived connectors on connector selection from modified files.                                                       |
-| 4.31.2  | [#43433](https://github.com/airbytehq/airbyte/pull/43433) | Fix 'changed_file' indentation in 'pull-request' command |
-| 4.31.1  | [#43442](https://github.com/airbytehq/airbyte/pull/43442) | Resolve type check failure in bump version |
-| 4.31.0  | [#42970](https://github.com/airbytehq/airbyte/pull/42970)  | Add explicit version set to bump version                                                                   |
+| 4.31.2  | [#43433](https://github.com/airbytehq/airbyte/pull/43433)  | Fix 'changed_file' indentation in 'pull-request' command                                                                     |
+| 4.31.1  | [#43442](https://github.com/airbytehq/airbyte/pull/43442)  | Resolve type check failure in bump version                                                                                   |
+| 4.31.0  | [#42970](https://github.com/airbytehq/airbyte/pull/42970)  | Add explicit version set to bump version                                                                                     |
 | 4.30.1  | [#43386](https://github.com/airbytehq/airbyte/pull/43386)  | Fix 'format' command usage bug in airbyte-enterprise.                                                                        |
 | 4.30.0  | [#42583](https://github.com/airbytehq/airbyte/pull/42583)  | Updated dependencies                                                                                                         |
 | 4.29.0  | [#42576](https://github.com/airbytehq/airbyte/pull/42576)  | New command: `migrate-to-manifest-only`                                                                                      |
@@ -803,7 +805,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 | 4.27.0  | [#42574](https://github.com/airbytehq/airbyte/pull/42574)  | Live tests: run from connectors test pipeline for connectors with sandbox connections                                        |
 | 4.26.1  | [#42905](https://github.com/airbytehq/airbyte/pull/42905)  | Rename the docker cache volume to avoid using the corrupted previous volume.                                                 |
 | 4.26.0  | [#42849](https://github.com/airbytehq/airbyte/pull/42849)  | Send publish failures messages to `#connector-publish-failures`                                                              |
-| 4.25.4  | [#42463](https://github.com/airbytehq/airbyte/pull/42463) | Add validation before live test runs                                                                                          |
+| 4.25.4  | [#42463](https://github.com/airbytehq/airbyte/pull/42463)  | Add validation before live test runs                                                                                         |
 | 4.25.3  | [#42437](https://github.com/airbytehq/airbyte/pull/42437)  | Ugrade-cdk: Update to work with Python connectors using poetry                                                               |
 | 4.25.2  | [#42077](https://github.com/airbytehq/airbyte/pull/42077)  | Live/regression tests: add status check for regression test runs                                                             |
 | 4.25.1  | [#42410](https://github.com/airbytehq/airbyte/pull/42410)  | Live/regression tests: disable approval requirement on forks                                                                 |
