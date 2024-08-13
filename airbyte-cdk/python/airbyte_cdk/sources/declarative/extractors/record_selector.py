@@ -6,10 +6,13 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.decoders import Decoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.models import SchemaNormalization
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordSelector as RecordSelectorModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -19,12 +22,6 @@ SCHEMA_TRANSFORMER_TYPE_MAPPING = {
     SchemaNormalization.None_: TransformConfig.NoTransform,
     SchemaNormalization.Default: TransformConfig.DefaultSchemaNormalization,
 }
-
-
-from airbyte_cdk.sources.declarative.decoders import Decoder
-from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordSelector as RecordSelectorModel
-from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 
 
 @dataclass

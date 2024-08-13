@@ -3,10 +3,12 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
+from airbyte_cdk.sources.types import Config
 
 
 @dataclass
@@ -29,8 +31,20 @@ class DeclarativeAuthenticator(AbstractHeaderAuthenticator):
 
 
 @dataclass
-class NoAuth(DeclarativeAuthenticator, ComponentConstructor):
+class NoAuth(DeclarativeAuthenticator, ComponentConstructor[NoAuthModel, NoAuthModel]):
     parameters: InitVar[Mapping[str, Any]]
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: NoAuthModel,
+        config: Config,
+        dependency_constructor: Callable[[NoAuthModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        print(f"Model: {model}, type: {type(model)}")
+        return {"parameters": model.parameters or {}}
 
     @property
     def auth_header(self) -> str:

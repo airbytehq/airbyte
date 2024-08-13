@@ -5,30 +5,35 @@ import json
 from dataclasses import InitVar, dataclass, field
 from functools import partial
 from itertools import islice
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import requests
 from airbyte_cdk.models import AirbyteMessage
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.incremental import ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
+from pydantic import BaseModel
 
 FULL_REFRESH_SYNC_COMPLETE_KEY = "__ab_full_refresh_sync_complete"
 
 
 @dataclass
-class SimpleRetriever(Retriever):
+class SimpleRetriever(Retriever, ComponentConstructor[SimpleRetrieverModel, BaseModel]):
     """
     Retrieves records by synchronously sending requests to fetch records.
 
@@ -63,6 +68,110 @@ class SimpleRetriever(Retriever):
     stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
     cursor: Optional[DeclarativeCursor] = None
     ignore_stream_slicer_parameters_on_paginated_requests: bool = False
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: SimpleRetrieverModel,
+        config: Config,
+        name: str,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        stream_slicer: Optional[StreamSlicer],
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        stop_condition_on_cursor: bool = False,
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
+        transformations: List[RecordTransformation] = [],
+        **kwargs: Any,
+    ) -> dict:
+        decoder = dependency_constructor(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        requester = dependency_constructor(model=model.requester, decoder=decoder, config=config, name=name)
+        record_selector = dependency_constructor(
+            model=model.record_selector,
+            config=config,
+            decoder=decoder,
+            transformations=transformations,
+            client_side_incremental_sync=client_side_incremental_sync,
+        )
+        url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+
+        # Define cursor only if per partition or common incremental support is needed
+        cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
+
+        cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
+        paginator = (
+            dependency_constructor(
+                model=model.paginator,
+                config=config,
+                url_base=url_base,
+                decoder=decoder,
+                cursor_used_for_stop_condition=cursor_used_for_stop_condition,
+            )
+            if model.paginator
+            else NoPagination(parameters={})
+        )
+
+        ignore_stream_slicer_parameters_on_paginated_requests = model.ignore_stream_slicer_parameters_on_paginated_requests or False
+        return {
+            "name": name,
+            "paginator": paginator,
+            "primary_key": primary_key,
+            "requester": requester,
+            "record_selector": record_selector,
+            "stream_slicer": stream_slicer,
+            "cursor": cursor,
+            "config": config,
+            "ignore_stream_slicer_parameters_on_paginated_requests": ignore_stream_slicer_parameters_on_paginated_requests,
+            "parameters": model.parameters or {},
+        }
+
+    @classmethod
+    def build(
+        cls,
+        model: BaseModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]],
+        **kwargs,
+    ) -> ComponentConstructor:
+        """
+        Builds up the Component and it's component-specific dependencies.
+        Order of operations:
+        - build the dependencies first
+        - build the component with the resolved dependencies
+        """
+        resolved_dependencies: Mapping[str, Any] = cls.resolve_dependencies(
+            model=model,
+            config=config,
+            dependency_constructor=dependency_constructor,
+            additional_flags=additional_flags,
+            **kwargs,
+        )
+
+        if additional_flags["_limit_slices_fetched"] or additional_flags["_emit_connector_builder_messages"]:
+            resolved_dependencies["maximum_number_of_slices"] = additional_flags["_limit_slices_fetched"] or 5
+            return SimpleRetrieverTestReadDecorator(**resolved_dependencies)
+        return SimpleRetriever(**resolved_dependencies)
+        #
+        # # returns the instance of the component class,
+        # # with resolved dependencies and model-specific arguments.
+        # return cls(**resolved_dependencies)
+        #
+        # simple_retriever = super(SimpleRetriever, cls).build(model, config, dependency_constructor, additional_flags, **kwargs)
+        # limit_pages_fetched_per_slice = additional_flags["_limit_pages_fetched_per_slice"]
+        # if limit_pages_fetched_per_slice:
+        #     return PaginatorTestReadDecorator(paginator, limit_pages_fetched_per_slice)
+        # return paginator
+        #
+        #
+        # simple_retriever_args = self._prepare_simple_retriever_dependencies(
+        #     model, config, name, primary_key, stream_slicer, stop_condition_on_cursor, client_side_incremental_sync, transformations
+        # )
+        # if self._limit_slices_fetched or self._emit_connector_builder_messages:
+        #     simple_retriever_args["maximum_number_of_slices"] = self._limit_slices_fetched or 5
+        #     return SimpleRetrieverTestReadDecorator(**simple_retriever_args)
+        # return SimpleRetriever(**simple_retriever_args)
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._paginator = self.paginator or NoPagination(parameters=parameters)

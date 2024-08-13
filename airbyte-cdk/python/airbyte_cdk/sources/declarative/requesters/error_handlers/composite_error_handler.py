@@ -7,15 +7,17 @@ from typing import Any, Callable, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class CompositeErrorHandler(ErrorHandler, ComponentConstructor):
+class CompositeErrorHandler(
+    ErrorHandler, ComponentConstructor[CompositeErrorHandlerModel, Union[CompositeErrorHandlerModel, DefaultErrorHandlerModel]]
+):
     """
     Error handler that sequentially iterates over a list of `ErrorHandler`s
 
@@ -47,11 +49,11 @@ class CompositeErrorHandler(ErrorHandler, ComponentConstructor):
         cls,
         model: CompositeErrorHandlerModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[Union[CompositeErrorHandlerModel, DefaultErrorHandlerModel], Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
-        error_handlers = [dependency_constructor(model=error_handler_model, config=config) for error_handler_model in model.error_handlers]
+    ) -> Mapping[str, Any]:
+        error_handlers = [dependency_constructor(error_handler_model, config) for error_handler_model in model.error_handlers]
         return {
             "error_handlers": error_handlers,
             "parameters": model.parameters or {},

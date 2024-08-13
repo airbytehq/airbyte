@@ -14,13 +14,12 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonlDecoderModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 logger = logging.getLogger("airbyte")
 
 
 @dataclass
-class JsonDecoder(Decoder, ComponentConstructor):
+class JsonDecoder(Decoder, ComponentConstructor[JsonDecoderModel, JsonDecoderModel]):
     """
     Decoder strategy that returns the json-encoded content of a response, if any.
     """
@@ -32,7 +31,7 @@ class JsonDecoder(Decoder, ComponentConstructor):
         cls,
         model: JsonDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[JsonDecoderModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -59,7 +58,7 @@ class JsonDecoder(Decoder, ComponentConstructor):
 
 
 @dataclass
-class IterableDecoder(Decoder, ComponentConstructor):
+class IterableDecoder(Decoder, ComponentConstructor[IterableDecoderModel, IterableDecoderModel]):
     """
     Decoder strategy that returns the string content of the response, if any.
     """
@@ -71,7 +70,7 @@ class IterableDecoder(Decoder, ComponentConstructor):
         cls,
         model: IterableDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[IterableDecoderModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -86,7 +85,7 @@ class IterableDecoder(Decoder, ComponentConstructor):
 
 
 @dataclass
-class JsonlDecoder(Decoder, ComponentConstructor):
+class JsonlDecoder(Decoder, ComponentConstructor[JsonlDecoderModel, JsonlDecoderModel]):
     """
     Decoder strategy that returns the json-encoded content of the response, if any.
     """
@@ -98,7 +97,7 @@ class JsonlDecoder(Decoder, ComponentConstructor):
         cls,
         model: JsonlDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[JsonlDecoderModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

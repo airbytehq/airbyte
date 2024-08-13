@@ -12,11 +12,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, FieldPointer, Record, StreamSlice, StreamState
-from pydantic import BaseModel
 
 
 @dataclass
-class AddedFieldDefinition(ComponentConstructor):
+class AddedFieldDefinition(ComponentConstructor[AddedFieldDefinitionModel, AddedFieldDefinitionModel]):
     """Defines the field to add on a record"""
 
     path: FieldPointer
@@ -29,7 +28,7 @@ class AddedFieldDefinition(ComponentConstructor):
         cls,
         model: AddedFieldDefinitionModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[AddedFieldDefinitionModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -52,7 +51,7 @@ class ParsedAddFieldDefinition:
 
 
 @dataclass
-class AddFields(RecordTransformation, ComponentConstructor):
+class AddFields(RecordTransformation, ComponentConstructor[AddFieldsModel, AddFieldsModel]):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
@@ -112,15 +111,15 @@ class AddFields(RecordTransformation, ComponentConstructor):
         cls,
         model: AddFieldsModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[AddFieldsModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
         added_field_definitions = [
             dependency_constructor(
-                model=added_field_definition_model,
+                added_field_definition_model,
+                config,
                 value_type=cls._json_schema_type_name_to_type(added_field_definition_model.value_type),
-                config=config,
             )
             for added_field_definition_model in model.fields
         ]

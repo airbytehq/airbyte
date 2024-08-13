@@ -104,7 +104,7 @@ class DefaultErrorHandler(ErrorHandler, ComponentConstructor):
         dependency_constructor: Callable[[BaseModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         backoff_strategies = []
         if model.backoff_strategies:
             for backoff_strategy_model in model.backoff_strategies:

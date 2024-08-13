@@ -36,7 +36,7 @@ class CheckStream(ConnectionChecker, ComponentConstructor):
         dependency_constructor: Callable[[BaseModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         return {
             "stream_names": model.stream_names,
             "parameters": {},

@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Callable, Mapping, Optional
+from typing import Any, Callable, Mapping, Optional, TypeVar
 
 from airbyte_cdk.models.airbyte_protocol import AdvancedAuth, ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow
@@ -12,9 +12,11 @@ from airbyte_cdk.sources.declarative.parsers.component_constructor import Compon
 from airbyte_cdk.sources.types import Config
 from pydantic import BaseModel
 
+D = TypeVar("D", bound=BaseModel)
+
 
 @dataclass
-class Spec(ComponentConstructor):
+class Spec(ComponentConstructor[SpecModel, SpecModel]):
     """
     Returns a connection specification made up of information about the connector and how it can be configured
 
@@ -33,7 +35,7 @@ class Spec(ComponentConstructor):
         cls,
         model: SpecModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[SpecModel, Mapping[str, Any]], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

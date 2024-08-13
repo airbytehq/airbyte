@@ -3,23 +3,28 @@
 #
 import logging
 from dataclasses import InitVar, dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Mapping, Optional, Union
 
 import dpath
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ParentStreamConfig as ParentStreamConfigModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 @dataclass
-class ParentStreamConfig:
+class ParentStreamConfig(ComponentConstructor[ParentStreamConfigModel, Union[DeclarativeStreamModel, RequestOptionModel]]):
     """
     Describes how to create a stream slice from a parent stream
 
@@ -37,6 +42,27 @@ class ParentStreamConfig:
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
     incremental_dependency: bool = False
+
+    @classmethod
+    def resolve_dependencies(
+        cls,
+        model: ParentStreamConfigModel,
+        config: Config,
+        dependency_constructor: Callable[[BaseModel, Config], Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Mapping[str, Any]:
+        declarative_stream = dependency_constructor(model.stream, config=config)
+        request_option = dependency_constructor(model.request_option, config=config) if model.request_option else None
+        return {
+            "parent_key": model.parent_key,
+            "request_option": request_option,
+            "stream": declarative_stream,
+            "partition_field": model.partition_field,
+            "config": config,
+            "incremental_dependency": model.incremental_dependency or False,
+            "parameters": model.parameters or {},
+        }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)

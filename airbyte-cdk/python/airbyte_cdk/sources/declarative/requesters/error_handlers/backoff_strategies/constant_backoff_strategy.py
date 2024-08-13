@@ -35,7 +35,7 @@ class ConstantBackoffStrategy(BackoffStrategy, ComponentConstructor):
         dependency_constructor: Callable[[BaseModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         return {
             "backoff_time_in_seconds": model.backoff_time_in_seconds,
             "config": config,

@@ -10,11 +10,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
-from pydantic import BaseModel
 
 
 @dataclass
-class NoPagination(Paginator, ComponentConstructor):
+class NoPagination(Paginator, ComponentConstructor[NoPaginationModel, NoPaginationModel]):
     """
     Pagination implementation that never returns a next page.
     """
@@ -26,11 +25,10 @@ class NoPagination(Paginator, ComponentConstructor):
         cls,
         model: NoPaginationModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[NoPaginationModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
-        print(f"Model: {model}, type: {type(model)}")
         return {"parameters": {}}
 
     def path(self) -> Optional[str]:

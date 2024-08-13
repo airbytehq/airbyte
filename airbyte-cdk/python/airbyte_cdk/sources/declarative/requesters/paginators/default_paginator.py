@@ -11,15 +11,9 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
-from airbyte_cdk.sources.declarative.parsers.component_constructor import Component, ComponentConstructor
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
-    CursorPaginationStrategy,
-    CursorStopCondition,
-    OffsetIncrement,
-    PageIncrement,
-    StopConditionPaginationStrategyDecorator,
-)
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition, StopConditionPaginationStrategyDecorator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
@@ -28,7 +22,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class DefaultPaginator(Paginator, ComponentConstructor):
+class DefaultPaginator(Paginator, ComponentConstructor[DefaultPaginatorModel, BaseModel]):
     """
     Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
@@ -117,7 +111,7 @@ class DefaultPaginator(Paginator, ComponentConstructor):
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
         decoder: Optional[Decoder] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         if decoder:
             decoder_to_use = decoder
         elif model.decoder:
@@ -152,14 +146,13 @@ class DefaultPaginator(Paginator, ComponentConstructor):
         dependency_constructor: Callable[[BaseModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]],
         **kwargs,
-    ) -> Component:
+    ) -> ComponentConstructor:
         """
         Builds up the Component and it's component-specific dependencies.
         Order of operations:
         - build the dependencies first
         - build the component with the resolved dependencies
         """
-        print(f"Kwargs1: {kwargs}, model: {model},\n config: {config}, \nadditional_flags: {additional_flags}\n\n")
         paginator = super(DefaultPaginator, cls).build(model, config, dependency_constructor, additional_flags, **kwargs)
         limit_pages_fetched_per_slice = additional_flags["_limit_pages_fetched_per_slice"]
         if limit_pages_fetched_per_slice:
@@ -253,7 +246,7 @@ class DefaultPaginator(Paginator, ComponentConstructor):
         return options
 
 
-class PaginatorTestReadDecorator(Paginator, Component):
+class PaginatorTestReadDecorator(Paginator, ComponentConstructor):
     """
     In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
     pages that are queried throughout a read command.

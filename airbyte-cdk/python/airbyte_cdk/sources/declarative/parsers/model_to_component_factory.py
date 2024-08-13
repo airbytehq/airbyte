@@ -7,12 +7,11 @@ from __future__ import annotations
 import importlib
 import inspect
 import re
-from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Callable, Dict, List, Mapping, Optional, Type, TypeVar, Union, get_args, get_origin, get_type_hints
 
-from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
-from airbyte_cdk.sources.declarative.auth.jwt import JwtAlgorithm
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.selective_authenticator import SelectiveAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
@@ -27,17 +26,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
-from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
-from airbyte_cdk.sources.declarative.incremental import (
-    CursorFactory,
-    DatetimeBasedCursor,
-    DeclarativeCursor,
-    PerPartitionCursor,
-    ResumableFullRefreshCursor,
-)
-from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
 from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
@@ -77,8 +66,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonlDecoder as JsonlDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
 )
@@ -103,15 +90,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
-from airbyte_cdk.sources.declarative.partition_routers import (
-    CartesianProductStreamSlicer,
-    ListPartitionRouter,
-    SinglePartitionRouter,
-    SubstreamPartitionRouter,
-)
+from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
+from airbyte_cdk.sources.declarative.partition_routers import CartesianProductStreamSlicer, ListPartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
@@ -121,34 +103,24 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
-    CursorPaginationStrategy,
-    CursorStopCondition,
-    OffsetIncrement,
-    PageIncrement,
-    StopConditionPaginationStrategyDecorator,
-)
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
-from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
+from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
-from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
+from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
-from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
 
-from airbyte_cdk.sources.declarative.parsers.component_constructor import Component
+M = TypeVar("M", bound=BaseModel)
+D = TypeVar("D", bound=BaseModel)
 
 
 class ModelToComponentFactory:
@@ -184,7 +156,7 @@ class ModelToComponentFactory:
         }
 
     def _init_mappings(self) -> None:
-        self.MODEL_TO_COMPONENT: Mapping[Type[BaseModel], Type[Component]] = {
+        self.MODEL_TO_COMPONENT: Dict[Type[BaseModel], Union[Type[ComponentConstructor], Callable[[BaseModel, Mapping[str, Any]], Any]]] = {
             AddedFieldDefinitionModel: AddedFieldDefinition,
             AddFieldsModel: AddFields,
             ApiKeyAuthenticatorModel: ApiKeyAuthenticator,
@@ -232,7 +204,7 @@ class ModelToComponentFactory:
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
             OffsetIncrementModel: OffsetIncrement,
             PageIncrementModel: PageIncrement,
-            ParentStreamConfigModel: self.create_parent_stream_config,
+            ParentStreamConfigModel: ParentStreamConfig,
             RecordFilterModel: RecordFilter,
             RecordSelectorModel: RecordSelector,
             RemoveFieldsModel: RemoveFields,
@@ -240,7 +212,7 @@ class ModelToComponentFactory:
             RequestOptionModel: RequestOption,
             LegacySessionTokenAuthenticatorModel: LegacySessionTokenAuthenticator,
             SelectiveAuthenticatorModel: self.create_selective_authenticator,
-            SimpleRetrieverModel: self.create_simple_retriever,
+            SimpleRetrieverModel: SimpleRetriever,
             SpecModel: Spec,
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
             WaitTimeFromHeaderModel: WaitTimeFromHeaderBackoffStrategy,
@@ -273,94 +245,26 @@ class ModelToComponentFactory:
             raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
         return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
 
-    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs: Any) -> Type[Component]:
+    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs: Any) -> ComponentConstructor[BaseModel, BaseModel]:
         if model.__class__ not in self.MODEL_TO_COMPONENT:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
 
-        component: Optional[Type[Component]] = self.MODEL_TO_COMPONENT.get(model.__class__)
+        component = self.MODEL_TO_COMPONENT.get(model.__class__)
         if not component:
             raise ValueError(f"Could not find constructor for {model.__class__}")
 
-        if not hasattr(component, "is_default_component"):
-            # Custom components flow
-            return component(model=model, config=config, **kwargs)
-        else:
+        if inspect.isclass(component) and issubclass(component, ComponentConstructor):
             # Default components flow
-            return component.build(
+            component_instance: ComponentConstructor[BaseModel, BaseModel] = component.build(
                 model=model,
                 config=config,
                 dependency_constructor=self._create_component_from_model,
                 additional_flags=self._flags,
                 **kwargs,
             )
-
-    # @staticmethod
-    # def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs: Any) -> AddedFieldDefinition:
-    #     interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters or {})
-    #     return AddedFieldDefinition(
-    #         path=model.path,
-    #         value=interpolated_value,
-    #         value_type=ModelToComponentFactory._json_schema_type_name_to_type(model.value_type),
-    #         parameters=model.parameters or {},
-    #     )
-
-    # def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs: Any) -> AddFields:
-    #     added_field_definitions = [
-    #         self._create_component_from_model(
-    #             model=added_field_definition_model,
-    #             value_type=ModelToComponentFactory._json_schema_type_name_to_type(added_field_definition_model.value_type),
-    #             config=config,
-    #         )
-    #         for added_field_definition_model in model.fields
-    #     ]
-    #     return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
-
-    # @staticmethod
-    # def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
-    #     if not value_type:
-    #         return None
-    #     names_to_types = {
-    #         ValueType.string: str,
-    #         ValueType.number: float,
-    #         ValueType.integer: int,
-    #         ValueType.boolean: bool,
-    #     }
-    #     return names_to_types[value_type]
-
-    # @staticmethod
-    # def create_api_key_authenticator(
-    #     model: ApiKeyAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
-    # ) -> ApiKeyAuthenticator:
-    #     if model.inject_into is None and model.header is None:
-    #         raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
-
-    #     if model.inject_into is not None and model.header is not None:
-    #         raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
-
-    #     if token_provider is not None and model.api_token != "":
-    #         raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
-
-    #     request_option = (
-    #         RequestOption(
-    #             inject_into=RequestOptionType(model.inject_into.inject_into.value),
-    #             field_name=model.inject_into.field_name,
-    #             parameters=model.parameters or {},
-    #         )
-    #         if model.inject_into
-    #         else RequestOption(
-    #             inject_into=RequestOptionType.header,
-    #             field_name=model.header or "",
-    #             parameters=model.parameters or {},
-    #         )
-    #     )
-    #     return ApiKeyAuthenticator(
-    #         token_provider=token_provider
-    #         if token_provider is not None
-    #         else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
-    #         request_option=request_option,
-    #         config=config,
-    #         parameters=model.parameters or {},
-    #     )
+            return component_instance
+        else:
+            return component(model=model, config=config, **kwargs)
 
     def create_legacy_to_per_partition_state_migration(
         self,
@@ -413,12 +317,6 @@ class ModelToComponentFactory:
                 token_provider=token_provider,
             )
 
-    # @staticmethod
-    # def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs: Any) -> BasicHttpAuthenticator:
-    #     return BasicHttpAuthenticator(
-    #         password=model.password or "", username=model.username, config=config, parameters=model.parameters or {}
-    #     )
-
     @staticmethod
     def create_bearer_authenticator(
         model: BearerAuthenticatorModel, config: Config, token_provider: Optional[TokenProvider] = None, **kwargs: Any
@@ -433,40 +331,7 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    # @staticmethod
-    # def create_check_stream(model: CheckStreamModel, config: Config, **kwargs: Any) -> CheckStream:
-    #     return CheckStream(stream_names=model.stream_names, parameters={})
-
-    # def create_composite_error_handler(self, model: CompositeErrorHandlerModel, config: Config, **kwargs: Any) -> CompositeErrorHandler:
-    #     error_handlers = [
-    #         self._create_component_from_model(model=error_handler_model, config=config) for error_handler_model in model.error_handlers
-    #     ]
-    #     return CompositeErrorHandler(error_handlers=error_handlers, parameters=model.parameters or {})
-
-    # @staticmethod
-    # def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config, **kwargs: Any) -> ConstantBackoffStrategy:
-    #     return ConstantBackoffStrategy(
-    #         backoff_time_in_seconds=model.backoff_time_in_seconds,
-    #         config=config,
-    #         parameters=model.parameters or {},
-    #     )
-
-    # def create_cursor_pagination(
-    #     self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
-    # ) -> CursorPaginationStrategy:
-    #     if not isinstance(decoder, JsonDecoder):
-    #         raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
-
-    #     return CursorPaginationStrategy(
-    #         cursor_value=model.cursor_value,
-    #         decoder=decoder,
-    #         page_size=model.page_size,
-    #         stop_condition=model.stop_condition,
-    #         config=config,
-    #         parameters=model.parameters or {},
-    #     )
-
-    def create_custom_component(self, model: Any, config: Config, **kwargs: Any) -> Any:
+    def create_custom_component(self, model: BaseModel, config: Config, **kwargs: Any) -> Any:
         """
         Generically creates a custom component based on the model type and a class_name reference to the custom Python class being
         instantiated. Only the model's additional properties that match the custom class definition are passed to the constructor
@@ -593,58 +458,6 @@ class ModelToComponentFactory:
     def _is_component(model_value: Any) -> bool:
         return isinstance(model_value, dict) and model_value.get("type") is not None
 
-    def create_datetime_based_cursor(self, model: DatetimeBasedCursorModel, config: Config, **kwargs: Any) -> DatetimeBasedCursor:
-        start_datetime: Union[str, MinMaxDatetime] = (
-            model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
-        )
-        end_datetime: Union[str, MinMaxDatetime, None] = None
-        if model.is_data_feed and model.end_datetime:
-            raise ValueError("Data feed does not support end_datetime")
-        if model.is_data_feed and model.is_client_side_incremental:
-            raise ValueError("`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them.")
-        if model.end_datetime:
-            end_datetime = (
-                model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
-            )
-
-        end_time_option = (
-            RequestOption(
-                inject_into=RequestOptionType(model.end_time_option.inject_into.value),
-                field_name=model.end_time_option.field_name,
-                parameters=model.parameters or {},
-            )
-            if model.end_time_option
-            else None
-        )
-        start_time_option = (
-            RequestOption(
-                inject_into=RequestOptionType(model.start_time_option.inject_into.value),
-                field_name=model.start_time_option.field_name,
-                parameters=model.parameters or {},
-            )
-            if model.start_time_option
-            else None
-        )
-
-        return DatetimeBasedCursor(
-            cursor_field=model.cursor_field,
-            cursor_datetime_formats=model.cursor_datetime_formats if model.cursor_datetime_formats else [],
-            cursor_granularity=model.cursor_granularity,
-            datetime_format=model.datetime_format,
-            end_datetime=end_datetime,
-            start_datetime=start_datetime,
-            step=model.step,
-            end_time_option=end_time_option,
-            lookback_window=model.lookback_window,
-            start_time_option=start_time_option,
-            partition_field_end=model.partition_field_end,
-            partition_field_start=model.partition_field_start,
-            message_repository=self._message_repository,
-            is_compare_strictly=model.is_compare_strictly,
-            config=config,
-            parameters=model.parameters or {},
-        )
-
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs: Any) -> DeclarativeStream:
         # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
         # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
@@ -757,210 +570,6 @@ class ModelToComponentFactory:
 
         return stream_slicer
 
-    def create_default_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs: Any) -> DefaultErrorHandler:
-        backoff_strategies = []
-        if model.backoff_strategies:
-            for backoff_strategy_model in model.backoff_strategies:
-                backoff_strategies.append(self._create_component_from_model(model=backoff_strategy_model, config=config))
-
-        response_filters = []
-        if model.response_filters:
-            for response_filter_model in model.response_filters:
-                response_filters.append(self._create_component_from_model(model=response_filter_model, config=config))
-        response_filters.append(HttpResponseFilter(config=config, parameters=model.parameters or {}))
-
-        return DefaultErrorHandler(
-            backoff_strategies=backoff_strategies,
-            max_retries=model.max_retries,
-            response_filters=response_filters,
-            config=config,
-            parameters=model.parameters or {},
-        )
-
-    # def create_default_paginator(
-    #     self,
-    #     model: DefaultPaginatorModel,
-    #     config: Config,
-    #     *,
-    #     url_base: str,
-    #     decoder: Optional[Decoder] = None,
-    #     cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
-    # ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
-    #     if decoder:
-    #         decoder_to_use = decoder
-    #     elif model.decoder:
-    #         decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
-    #     else:
-    #         decoder_to_use = JsonDecoder(parameters={})
-    #     if not isinstance(decoder_to_use, JsonDecoder):
-    #         raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
-    #
-    #     page_size_option = (
-    #         self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
-    #     )
-    #     page_token_option = (
-    #         self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
-    #     )
-    #     pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
-    #     if cursor_used_for_stop_condition:
-    #         pagination_strategy = StopConditionPaginationStrategyDecorator(
-    #             pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
-    #         )
-    #     paginator = DefaultPaginator(
-    #         decoder=decoder_to_use,
-    #         page_size_option=page_size_option,
-    #         page_token_option=page_token_option,
-    #         pagination_strategy=pagination_strategy,
-    #         url_base=url_base,
-    #         config=config,
-    #         parameters=model.parameters or {},
-    #     )
-    #     if self._limit_pages_fetched_per_slice:
-    #         return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
-    #     return paginator
-
-    def create_dpath_extractor(
-        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any
-    ) -> DpathExtractor:
-        if decoder:
-            decoder_to_use = decoder
-        elif model.decoder:
-            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
-        else:
-            decoder_to_use = JsonDecoder(parameters={})
-        model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
-        return DpathExtractor(decoder=decoder_to_use, field_path=model_field_path, config=config, parameters=model.parameters or {})
-
-    @staticmethod
-    def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
-        return ExponentialBackoffStrategy(factor=model.factor or 5, parameters=model.parameters or {}, config=config)
-
-    def create_http_requester(self, model: HttpRequesterModel, decoder: Decoder, config: Config, *, name: str) -> HttpRequester:
-        authenticator = (
-            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name, decoder=decoder)
-            if model.authenticator
-            else None
-        )
-        error_handler = (
-            self._create_component_from_model(model=model.error_handler, config=config)
-            if model.error_handler
-            else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, parameters=model.parameters or {})
-        )
-
-        request_options_provider = InterpolatedRequestOptionsProvider(
-            request_body_data=model.request_body_data,
-            request_body_json=model.request_body_json,
-            request_headers=model.request_headers,
-            request_parameters=model.request_parameters,
-            config=config,
-            parameters=model.parameters or {},
-        )
-
-        assert model.use_cache is not None  # for mypy
-        assert model.http_method is not None  # for mypy
-
-        return HttpRequester(
-            name=name,
-            url_base=model.url_base,
-            path=model.path,
-            authenticator=authenticator,
-            error_handler=error_handler,
-            http_method=HttpMethod[model.http_method.value],
-            request_options_provider=request_options_provider,
-            config=config,
-            disable_retries=self._disable_retries,
-            parameters=model.parameters or {},
-            message_repository=self._message_repository,
-            use_cache=model.use_cache,
-            decoder=decoder,
-            stream_response=decoder.is_stream_response() if decoder else False,
-        )
-
-    @staticmethod
-    def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs: Any) -> HttpResponseFilter:
-        if model.action:
-            action = ResponseAction(model.action.value)
-        else:
-            action = None
-
-        failure_type = FailureType(model.failure_type.value) if model.failure_type else None
-
-        http_codes = (
-            set(model.http_codes) if model.http_codes else set()
-        )  # JSON schema notation has no set data type. The schema enforces an array of unique elements
-
-        return HttpResponseFilter(
-            action=action,
-            failure_type=failure_type,
-            error_message=model.error_message or "",
-            error_message_contains=model.error_message_contains or "",
-            http_codes=http_codes,
-            predicate=model.predicate or "",
-            config=config,
-            parameters=model.parameters or {},
-        )
-
-    # @staticmethod
-    # def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config, **kwargs: Any) -> InlineSchemaLoader:
-    #     return InlineSchemaLoader(schema=model.schema_ or {}, parameters={})
-
-    # @staticmethod
-    # def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:
-    #     return JsonDecoder(parameters={})
-    #
-    # @staticmethod
-    # def create_jsonl_decoder(model: JsonlDecoderModel, config: Config, **kwargs: Any) -> JsonlDecoder:
-    #     return JsonlDecoder(parameters={})
-    #
-    # @staticmethod
-    # def create_iterable_decoder(model: IterableDecoderModel, config: Config, **kwargs: Any) -> IterableDecoder:
-    #     return IterableDecoder(parameters={})
-
-    @staticmethod
-    def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
-        return JsonFileSchemaLoader(file_path=model.file_path or "", config=config, parameters=model.parameters or {})
-
-    @staticmethod
-    def create_jwt_authenticator(model: JwtAuthenticatorModel, config: Config, **kwargs: Any) -> JwtAuthenticator:
-        jwt_headers = model.jwt_headers or JwtHeadersModel(kid=None, typ="JWT", cty=None)
-        jwt_payload = model.jwt_payload or JwtPayloadModel(iss=None, sub=None, aud=None)
-        return JwtAuthenticator(
-            config=config,
-            parameters=model.parameters or {},
-            algorithm=JwtAlgorithm(model.algorithm.value),
-            secret_key=model.secret_key,
-            base64_encode_secret_key=model.base64_encode_secret_key,
-            token_duration=model.token_duration,
-            header_prefix=model.header_prefix,
-            kid=jwt_headers.kid,
-            typ=jwt_headers.typ,
-            cty=jwt_headers.cty,
-            iss=jwt_payload.iss,
-            sub=jwt_payload.sub,
-            aud=jwt_payload.aud,
-            additional_jwt_headers=model.additional_jwt_headers,
-            additional_jwt_payload=model.additional_jwt_payload,
-        )
-
-    # @staticmethod
-    # def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs: Any) -> ListPartitionRouter:
-    #     request_option = (
-    #         RequestOption(
-    #             inject_into=RequestOptionType(model.request_option.inject_into.value),
-    #             field_name=model.request_option.field_name,
-    #             parameters=model.parameters or {},
-    #         )
-    #         if model.request_option
-    #         else None
-    #     )
-    #     return ListPartitionRouter(
-    #         cursor_field=model.cursor_field,
-    #         request_option=request_option,
-    #         values=model.values,
-    #         config=config,
-    #         parameters=model.parameters or {},
-    #     )
-
     @staticmethod
     def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config, **kwargs: Any) -> MinMaxDatetime:
         return MinMaxDatetime(
@@ -970,14 +579,6 @@ class ModelToComponentFactory:
             min_datetime=model.min_datetime or "",
             parameters=model.parameters or {},
         )
-
-    # @staticmethod
-    # def create_no_auth(model: NoAuthModel, config: Config, **kwargs: Any) -> NoAuth:
-    #     return NoAuth(parameters=model.parameters or {})
-    #
-    # @staticmethod
-    # def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs: Any) -> NoPagination:
-    #     return NoPagination(parameters={})
 
     def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
@@ -1035,89 +636,6 @@ class ModelToComponentFactory:
         #     message_repository=self._message_repository,
         # )
 
-    # @staticmethod
-    # def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
-    #     if not isinstance(decoder, JsonDecoder):
-    #         raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
-    #     return OffsetIncrement(
-    #         page_size=model.page_size,
-    #         config=config,
-    #         decoder=decoder,
-    #         inject_on_first_request=model.inject_on_first_request or False,
-    #         parameters=model.parameters or {},
-    #     )
-
-    # @staticmethod
-    # def create_page_increment(model: PageIncrementModel, config: Config, **kwargs: Any) -> PageIncrement:
-    #     return PageIncrement(
-    #         page_size=model.page_size,
-    #         config=config,
-    #         start_from_page=model.start_from_page or 0,
-    #         inject_on_first_request=model.inject_on_first_request or False,
-    #         parameters=model.parameters or {},
-    #     )
-
-    def create_parent_stream_config(self, model: ParentStreamConfigModel, config: Config, **kwargs: Any) -> ParentStreamConfig:
-        declarative_stream = self._create_component_from_model(model.stream, config=config)
-        request_option = self._create_component_from_model(model.request_option, config=config) if model.request_option else None
-        return ParentStreamConfig(
-            parent_key=model.parent_key,
-            request_option=request_option,
-            stream=declarative_stream,
-            partition_field=model.partition_field,
-            config=config,
-            incremental_dependency=model.incremental_dependency or False,
-            parameters=model.parameters or {},
-        )
-
-    # @staticmethod
-    # def create_record_filter(model: RecordFilterModel, config: Config, **kwargs: Any) -> RecordFilter:
-    #     return RecordFilter(condition=model.condition or "", config=config, parameters=model.parameters or {})
-
-    # @staticmethod
-    # def create_request_path(model: RequestPathModel, config: Config, **kwargs: Any) -> RequestPath:
-    #     return RequestPath(parameters={})
-
-    # @staticmethod
-    # def create_request_option(model: RequestOptionModel, config: Config, **kwargs: Any) -> RequestOption:
-    #     inject_into = RequestOptionType(model.inject_into.value)
-    #     return RequestOption(field_name=model.field_name, inject_into=inject_into, parameters={})
-
-    # def create_record_selector(
-    #     self,
-    #     model: RecordSelectorModel,
-    #     config: Config,
-    #     *,
-    #     decoder: Optional[Decoder] = None,
-    #     transformations: List[RecordTransformation],
-    #     client_side_incremental_sync: Optional[Dict[str, Any]] = None,
-    #     **kwargs: Any,
-    # ) -> RecordSelector:
-    #     assert model.schema_normalization is not None  # for mypy
-    #     extractor = self._create_component_from_model(model=model.extractor, decoder=decoder, config=config)
-    #     record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
-    #     if client_side_incremental_sync:
-    #         record_filter = ClientSideIncrementalRecordFilterDecorator(
-    #             config=config,
-    #             parameters=model.parameters,
-    #             condition=model.record_filter.condition if (model.record_filter and hasattr(model.record_filter, "condition")) else None,
-    #             **client_side_incremental_sync,
-    #         )
-    #     schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
-
-    #     return RecordSelector(
-    #         extractor=extractor,
-    #         config=config,
-    #         record_filter=record_filter,
-    #         transformations=transformations,
-    #         schema_normalization=schema_normalization,
-    #         parameters=model.parameters or {},
-    #     )
-
-    # @staticmethod
-    # def create_remove_fields(model: RemoveFieldsModel, config: Config, **kwargs: Any) -> RemoveFields:
-    #     return RemoveFields(field_pointers=model.field_pointers, condition=model.condition or "", parameters={})
-
     def create_selective_authenticator(self, model: SelectiveAuthenticatorModel, config: Config, **kwargs: Any) -> DeclarativeAuthenticator:
         authenticators = {name: self._create_component_from_model(model=auth, config=config) for name, auth in model.authenticators.items()}
         # SelectiveAuthenticator will return instance of DeclarativeAuthenticator or raise ValueError error
@@ -1127,105 +645,6 @@ class ModelToComponentFactory:
             authenticator_selection_path=model.authenticator_selection_path,
             **kwargs,
         )
-
-    # @staticmethod
-    # def create_legacy_session_token_authenticator(
-    #     model: LegacySessionTokenAuthenticatorModel, config: Config, *, url_base: str, **kwargs: Any
-    # ) -> LegacySessionTokenAuthenticator:
-    #     return LegacySessionTokenAuthenticator(
-    #         api_url=url_base,
-    #         header=model.header,
-    #         login_url=model.login_url,
-    #         password=model.password or "",
-    #         session_token=model.session_token or "",
-    #         session_token_response_key=model.session_token_response_key or "",
-    #         username=model.username or "",
-    #         validate_session_url=model.validate_session_url,
-    #         config=config,
-    #         parameters=model.parameters or {},
-    #     )
-
-    def _prepare_simple_retriever_dependencies(
-        self,
-        model: SimpleRetrieverModel,
-        config: Config,
-        name: str,
-        primary_key: Optional[Union[str, List[str], List[List[str]]]],
-        stream_slicer: Optional[StreamSlicer],
-        stop_condition_on_cursor: bool = False,
-        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
-        transformations: List[RecordTransformation] = [],
-    ) -> dict:
-        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-        requester = self._create_component_from_model(model=model.requester, decoder=decoder, config=config, name=name)
-        record_selector = self._create_component_from_model(
-            model=model.record_selector,
-            config=config,
-            decoder=decoder,
-            transformations=transformations,
-            client_side_incremental_sync=client_side_incremental_sync,
-        )
-        url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
-        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
-
-        # Define cursor only if per partition or common incremental support is needed
-        cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
-
-        cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
-        paginator = (
-            self._create_component_from_model(
-                model=model.paginator,
-                config=config,
-                url_base=url_base,
-                decoder=decoder,
-                cursor_used_for_stop_condition=cursor_used_for_stop_condition,
-            )
-            if model.paginator
-            else NoPagination(parameters={})
-        )
-
-        ignore_stream_slicer_parameters_on_paginated_requests = model.ignore_stream_slicer_parameters_on_paginated_requests or False
-        return {
-            "name": name,
-            "paginator": paginator,
-            "primary_key": primary_key,
-            "requester": requester,
-            "record_selector": record_selector,
-            "stream_slicer": stream_slicer,
-            "cursor": cursor,
-            "config": config,
-            "ignore_stream_slicer_parameters_on_paginated_requests": ignore_stream_slicer_parameters_on_paginated_requests,
-            "parameters": model.parameters or {},
-        }
-
-    def create_simple_retriever(
-        self,
-        model: SimpleRetrieverModel,
-        config: Config,
-        *,
-        name: str,
-        primary_key: Optional[Union[str, List[str], List[List[str]]]],
-        stream_slicer: Optional[StreamSlicer],
-        stop_condition_on_cursor: bool = False,
-        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
-        transformations: List[RecordTransformation],
-    ) -> SimpleRetriever:
-        simple_retriever_args = self._prepare_simple_retriever_dependencies(
-            model, config, name, primary_key, stream_slicer, stop_condition_on_cursor, client_side_incremental_sync, transformations
-        )
-        if self._limit_slices_fetched or self._emit_connector_builder_messages:
-            simple_retriever_args["maximum_number_of_slices"] = self._limit_slices_fetched or 5
-            return SimpleRetrieverTestReadDecorator(**simple_retriever_args)
-        return SimpleRetriever(**simple_retriever_args)
-
-    # @staticmethod
-    # def create_spec(model: SpecModel, config: Config, **kwargs: Any) -> Spec:
-    #     return Spec(
-    #         connection_specification=model.connection_specification,
-    #         documentation_url=model.documentation_url,
-    #         advanced_auth=model.advanced_auth,
-    #         parameters={},
-    #     )
 
     def create_substream_partition_router(
         self, model: SubstreamPartitionRouterModel, config: Config, **kwargs: Any
@@ -1254,24 +673,6 @@ class ModelToComponentFactory:
             ),
         )
         return substream_factory._create_component_from_model(model=model, config=config)
-
-    # @staticmethod
-    # def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs: Any) -> WaitTimeFromHeaderBackoffStrategy:
-    #     return WaitTimeFromHeaderBackoffStrategy(
-    #         header=model.header,
-    #         parameters=model.parameters or {},
-    #         config=config,
-    #         regex=model.regex,
-    #         max_waiting_time_in_seconds=model.max_waiting_time_in_seconds if model.max_waiting_time_in_seconds is not None else None,
-    #     )
-
-    # @staticmethod
-    # def create_wait_until_time_from_header(
-    #     model: WaitUntilTimeFromHeaderModel, config: Config, **kwargs: Any
-    # ) -> WaitUntilTimeFromHeaderBackoffStrategy:
-    #     return WaitUntilTimeFromHeaderBackoffStrategy(
-    #         header=model.header, parameters=model.parameters or {}, config=config, min_wait=model.min_wait, regex=model.regex
-    #     )
 
     def get_message_repository(self) -> MessageRepository:
         return self._message_repository

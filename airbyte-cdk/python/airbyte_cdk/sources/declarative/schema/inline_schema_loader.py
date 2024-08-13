@@ -9,11 +9,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class InlineSchemaLoader(SchemaLoader, ComponentConstructor):
+class InlineSchemaLoader(SchemaLoader, ComponentConstructor[InlineSchemaLoaderModel, InlineSchemaLoaderModel]):
     """Describes a stream's schema"""
 
     schema: Dict[str, Any]
@@ -24,7 +23,7 @@ class InlineSchemaLoader(SchemaLoader, ComponentConstructor):
         cls,
         model: InlineSchemaLoaderModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[InlineSchemaLoaderModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

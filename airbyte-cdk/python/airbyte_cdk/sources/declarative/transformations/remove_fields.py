@@ -12,11 +12,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamState
-from pydantic import BaseModel
 
 
 @dataclass
-class RemoveFields(RecordTransformation, ComponentConstructor):
+class RemoveFields(RecordTransformation, ComponentConstructor[RemoveFieldsModel, RemoveFieldsModel]):
     """
     A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
@@ -51,7 +50,7 @@ class RemoveFields(RecordTransformation, ComponentConstructor):
         cls,
         model: RemoveFieldsModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[RemoveFieldsModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

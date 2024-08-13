@@ -1,21 +1,19 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 
-from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Callable, Iterator, List, Mapping, Optional, Type, TypeVar
+from typing import Any, Callable, Generic, Mapping, Optional, Type, TypeVar
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.types import Config
 from pydantic.v1 import BaseModel
 
+M = TypeVar("M", bound=BaseModel)
+D = TypeVar("D", bound=BaseModel)
+
 
 @dataclass
-class Component:
-    """
-    Abstract representation of the abstract component.
-    """
-
+class ComponentConstructor(Generic[M, D]):
     @property
     def is_default_component(self) -> bool:
         """
@@ -27,43 +25,28 @@ class Component:
     @classmethod
     def resolve_dependencies(
         cls,
-        model: BaseModel,
+        model: M,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[D, Mapping[str, Any]], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         """
         Resolves the component's dependencies, this method should be created in the component,
         if there are any dependencies on other components, or we need to adopt / change / adjust / fine-tune
-        specific component's behaiour.
+        specific component's behaviour.
         """
         return {}
-
-
-@dataclass
-class ComponentConstructor(Component):
-    @staticmethod
-    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
-        if not value_type:
-            return None
-        names_to_types = {
-            ValueType.string: str,
-            ValueType.number: float,
-            ValueType.integer: int,
-            ValueType.boolean: bool,
-        }
-        return names_to_types[value_type]
 
     @classmethod
     def build(
         cls,
-        model: BaseModel,
+        model: M,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[[D, Config], Any],
         additional_flags: Optional[Mapping[str, Any]],
-        **kwargs,
-    ) -> Component:
+        **kwargs: Any,
+    ) -> "ComponentConstructor[M, D]":
         """
         Builds up the Component and it's component-specific dependencies.
         Order of operations:
@@ -83,3 +66,15 @@ class ComponentConstructor(Component):
         # returns the instance of the component class,
         # with resolved dependencies and model-specific arguments.
         return cls(**resolved_dependencies)
+
+    @staticmethod
+    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
+        if not value_type:
+            return None
+        names_to_types = {
+            ValueType.string: str,
+            ValueType.number: float,
+            ValueType.integer: int,
+            ValueType.boolean: bool,
+        }
+        return names_to_types[value_type]

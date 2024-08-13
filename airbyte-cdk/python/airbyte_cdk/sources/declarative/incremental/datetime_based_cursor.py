@@ -81,7 +81,7 @@ class DatetimeBasedCursor(DeclarativeCursor, ComponentConstructor):
         dependency_constructor: Callable[[BaseModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         start_datetime: Union[str, MinMaxDatetime] = (
             model.start_datetime if isinstance(model.start_datetime, str) else dependency_constructor(model.start_datetime, config)
         )

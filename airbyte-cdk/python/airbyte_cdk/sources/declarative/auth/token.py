@@ -9,7 +9,7 @@ from typing import Any, Callable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, SessionTokenProvider, TokenProvider
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider, TokenProvider
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
@@ -146,7 +146,7 @@ class BearerAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
         additional_flags: Optional[Mapping[str, Any]] = None,
         token_provider: Optional[TokenProvider] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return {
@@ -195,12 +195,12 @@ class BasicHttpAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
         dependency_constructor: Callable[[BaseModel, Config], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         return {
             "username": model.username,
             "config": config,
             "parameters": model.parameters or {},
-            "password": model.password,
+            "password": model.password or "",
         }
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
