@@ -9,6 +9,7 @@ import pkgutil
 import re
 import uuid
 from abc import ABC
+from datetime import timedelta
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Type, Union
 
@@ -101,6 +102,20 @@ class GoogleAnalyticsDataApiBackoffStrategy(BackoffStrategy):
 
 
 class GoogleAnalyticsDatApiErrorHandler(HttpStatusErrorHandler):
+    QUOTA_RECOVERY_TIME = 3600
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        error_mapping: Optional[Mapping[Union[int, str, type[Exception]], ErrorResolution]] = None,
+    ) -> None:
+        super().__init__(
+            logger=logger,
+            error_mapping=error_mapping,
+            max_retries=5,
+            max_time=timedelta(seconds=GoogleAnalyticsDatApiErrorHandler.QUOTA_RECOVERY_TIME),
+        )
+
     @GoogleAnalyticsQuotaHandler.handle_quota()
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if not isinstance(response_or_exception, Exception) and response_or_exception.status_code == requests.codes.too_many_requests:
