@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
-  dockerImageTag: 0.3.7
+  dockerImageTag: 0.3.10
   dockerRepository: airbyte/source-braintree
   documentationUrl: https://docs.airbyte.com/integrations/sources/braintree
   githubIssueLabel: source-braintree
@@ -32,6 +32,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: braintree_config_dev_null
+          id: 8f679466-dfd0-4ebf-ac56-29516fdb7a84
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-BRAINTREE__CREDS

@@ -140,11 +140,7 @@ class AbstractJdbcDestinationTest {
     internal class TestJdbcDestination
     @JvmOverloads
     constructor(private val defaultProperties: Map<String, String> = HashMap()) :
-        AbstractJdbcDestination<MinimumDestinationState.Impl>(
-            "",
-            StandardNameTransformer(),
-            TestJdbcSqlOperations()
-        ) {
+        AbstractJdbcDestination<MinimumDestinationState.Impl>("", StandardNameTransformer()) {
         override fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
             return defaultProperties
         }
@@ -155,7 +151,12 @@ class AbstractJdbcDestinationTest {
 
         override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator = mock()
 
+        override fun getSqlOperations(config: JsonNode): SqlOperations = TestJdbcSqlOperations()
+
+        override fun getGenerationHandler(): JdbcGenerationHandler = mock()
+
         override fun getDestinationHandler(
+            config: JsonNode,
             databaseName: String,
             database: JdbcDatabase,
             rawTableSchema: String

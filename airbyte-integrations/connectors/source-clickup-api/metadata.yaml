@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-clickup-api
   githubIssueLabel: source-clickup-api
   icon: clickup.svg
@@ -31,6 +31,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: clickup-api_config_dev_null
+          id: 09475337-b056-46ad-a8c2-a885d61d3125
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-CLICKUP-API__CREDS

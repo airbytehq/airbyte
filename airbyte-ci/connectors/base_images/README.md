@@ -6,7 +6,7 @@ Our connector build pipeline ([`airbyte-ci`](https://github.com/airbytehq/airbyt
 Our base images are declared in code, using the [Dagger Python SDK](https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/).
 
 - [Python base image code declaration](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/base_images/python/bases.py)
-- ~Java base image code declaration~ *TODO* 
+- ~Java base image code declaration~ *TODO*
 
 
 ## Where are the Dockerfiles?
@@ -39,7 +39,7 @@ RUN mkdir /usr/share/nltk_data
 
 ### `airbyte/python-connector-base`
 
-| Version | Published | Docker Image Address | Changelog | 
+| Version | Published | Docker Image Address | Changelog |
 |---------|-----------|--------------|-----------|
 |  2.0.0 | ✅| docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916 | Use Python 3.10 |
 |  1.2.3 | ✅| docker.io/airbyte/python-connector-base:1.2.3@sha256:a8abfdc75f8e22931657a1ae15069e7b925e74bb7b5ef36371a85e4caeae5696 | Use latest root image version and update system packages |
@@ -92,3 +92,8 @@ poetry run pytest
 # Static typing checks
 poetry run mypy base_images --check-untyped-defs
 ```
+## CHANGELOG
+
+### 1.0.1
+
+- Bumped dependencies ([#42581](https://github.com/airbytehq/airbyte/pull/42581))

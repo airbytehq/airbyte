@@ -33,6 +33,9 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
         val config = this.getConfig()
         val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
 
         for (stream in catalog.streams) {

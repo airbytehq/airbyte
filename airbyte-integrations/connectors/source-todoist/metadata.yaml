@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a3d38e4-dc6b-4154-b56b-582f9e978ecd
-  dockerImageTag: 0.2.13
+  dockerImageTag: 0.2.16
   dockerRepository: airbyte/source-todoist
   githubIssueLabel: source-todoist
   icon: todoist.svg
@@ -33,6 +33,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: todoist_config_dev_null
+          id: 2fe1267b-52cf-4f76-88f0-7e99a52992fc
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-TODOIST__CREDS

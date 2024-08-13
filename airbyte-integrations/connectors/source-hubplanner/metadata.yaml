@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8097ceb9-383f-42f6-9f92-d3fd4bcc7689
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.2.11
   dockerRepository: airbyte/source-hubplanner
   githubIssueLabel: source-hubplanner
   icon: hubplanner.svg
@@ -31,6 +31,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: hubplanner_config_dev_null
+          id: 38013098-1955-4daf-9143-630c45670dfb
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-HUBPLANNER__CREDS

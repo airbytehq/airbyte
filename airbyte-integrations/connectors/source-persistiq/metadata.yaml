@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.14
   dockerRepository: airbyte/source-persistiq
   githubIssueLabel: source-persistiq
   icon: persistiq.svg
@@ -30,6 +30,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: persistiq_config_dev_null
+          id: 4e03433a-ea59-42a5-b922-81372f438a69
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PERSISTIQ__CREDS

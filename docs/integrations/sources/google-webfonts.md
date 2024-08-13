@@ -68,6 +68,8 @@ Google Webfont's [API reference](https://developers.google.com/fonts/docs/develo
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.1.15 | 2024-08-10 | [43552](https://github.com/airbytehq/airbyte/pull/43552) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43181](https://github.com/airbytehq/airbyte/pull/43181) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42774](https://github.com/airbytehq/airbyte/pull/42774) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42365](https://github.com/airbytehq/airbyte/pull/42365) | Update dependencies |
 | 0.1.11 | 2024-07-13 | [41761](https://github.com/airbytehq/airbyte/pull/41761) | Update dependencies |

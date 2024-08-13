@@ -4,12 +4,12 @@
 
 """Module declaring context related classes."""
 
-from typing import Optional
+from typing import List, Optional
 
 import asyncclick as click
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import ContextState
+from pipelines.consts import PUBLISH_FAILURE_SLACK_CHANNEL, PUBLISH_UPDATES_SLACK_CHANNEL, ContextState
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX
 from pipelines.helpers.utils import format_duration
@@ -29,7 +29,6 @@ class PublishConnectorContext(ConnectorContext):
         docker_hub_password: Secret,
         ci_gcp_credentials: Secret,
         slack_webhook: str,
-        reporting_slack_channel: str,
         ci_report_bucket: str,
         report_output_prefix: str,
         is_local: bool,
@@ -78,7 +77,6 @@ class PublishConnectorContext(ConnectorContext):
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
             slack_webhook=slack_webhook,
-            reporting_slack_channel=reporting_slack_channel,
             ci_gcp_credentials=ci_gcp_credentials,
             should_save_report=True,
             use_local_cdk=use_local_cdk,
@@ -107,6 +105,21 @@ class PublishConnectorContext(ConnectorContext):
             return f"{metadata_tag}-dev.{self.pre_release_suffix}"
         else:
             return metadata_tag
+
+    @property
+    def should_send_slack_message(self) -> bool:
+        should_send = super().should_send_slack_message
+        if not should_send:
+            return False
+        if self.pre_release:
+            return False
+        return True
+
+    def get_slack_channels(self) -> List[str]:
+        if self.state in [ContextState.FAILURE, ContextState.ERROR]:
+            return [PUBLISH_UPDATES_SLACK_CHANNEL, PUBLISH_FAILURE_SLACK_CHANNEL]
+        else:
+            return [PUBLISH_UPDATES_SLACK_CHANNEL]
 
     def create_slack_message(self) -> str:
 

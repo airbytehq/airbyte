@@ -203,6 +203,10 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.11 | 2024-08-12 | [43838](https://github.com/airbytehq/airbyte/pull/43838) | Update dependencies |
+| 2.0.10 | 2024-08-10 | [43642](https://github.com/airbytehq/airbyte/pull/43642) | Update dependencies |
+| 2.0.9 | 2024-08-03 | [43280](https://github.com/airbytehq/airbyte/pull/43280) | Update dependencies |
+| 2.0.8 | 2024-07-30 | [39559](https://github.com/airbytehq/airbyte/pull/39559) | Ensure config_error when state has improper format and update CDK version |
 | 2.0.7 | 2024-07-27 | [42603](https://github.com/airbytehq/airbyte/pull/42603) | Update dependencies |
 | 2.0.6 | 2024-07-20 | [42343](https://github.com/airbytehq/airbyte/pull/42343) | Update dependencies |
 | 2.0.5 | 2024-07-13 | [41765](https://github.com/airbytehq/airbyte/pull/41765) | Update dependencies |
@@ -249,5 +253,4 @@ The connector is restricted by the Pinterest
 | 0.1.2 | 2021-12-22 | [10223](https://github.com/airbytehq/airbyte/pull/10223) | Fix naming of `AD_ID` and `AD_ACCOUNT_ID` fields |
 | 0.1.1 | 2021-12-22 | [9043](https://github.com/airbytehq/airbyte/pull/9043) | Update connector fields title/description |
 | 0.1.0 | 2021-10-29 | [7493](https://github.com/airbytehq/airbyte/pull/7493) | Release Pinterest CDK Connector |
-
 </details>

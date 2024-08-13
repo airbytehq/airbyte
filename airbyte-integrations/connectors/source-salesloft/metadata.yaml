@@ -22,7 +22,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
-  dockerImageTag: 1.2.11
+  dockerImageTag: 1.2.14
   dockerRepository: airbyte/source-salesloft
   githubIssueLabel: source-salesloft
   icon: icon.svg
@@ -36,6 +36,12 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: salesloft_config_oauth_dev_null
+          id: 1b6c8a60-5505-49b6-9d33-e9163b0c12b2
+        - name: salesloft_config_dev_null
+          id: 3c4e1c30-251d-4ff5-9534-3be0f7c8fa17
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

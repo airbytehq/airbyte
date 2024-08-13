@@ -110,8 +110,11 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.2.5 | 2024-08-12 | [43768](https://github.com/airbytehq/airbyte/pull/43768) | Update dependencies |
+| 0.2.4 | 2024-08-05 | [42851](https://github.com/airbytehq/airbyte/pull/42851) | Updated schema of Analytics AWS opportunities table |
+| 0.2.3 | 2024-08-03 | [43155](https://github.com/airbytehq/airbyte/pull/43155) | Update dependencies |
 | 0.2.2 | 2024-07-27 | [42617](https://github.com/airbytehq/airbyte/pull/42617) | Update dependencies |
 | 0.2.1 | 2024-07-20 | [42315](https://github.com/airbytehq/airbyte/pull/42315) | Update dependencies |
 | 0.2.0 | 2024-07-18 | [41657](https://github.com/airbytehq/airbyte/pull/41657) | removed redundant columns from streams, added documentation for analytics |

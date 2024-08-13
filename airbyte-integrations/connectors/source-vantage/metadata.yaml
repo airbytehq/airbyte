@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.14
   dockerRepository: airbyte/source-vantage
   githubIssueLabel: source-vantage
   icon: vantage.svg
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: vantage_config_dev_null
+          id: 28e38531-1fd2-4bce-8f99-fd1f73b82539
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-VANTAGE__CREDS

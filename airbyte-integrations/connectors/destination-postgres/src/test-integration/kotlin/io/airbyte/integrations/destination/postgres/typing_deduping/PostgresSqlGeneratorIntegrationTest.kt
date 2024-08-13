@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
 
 class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<PostgresState>() {
     override val supportsSafeCast: Boolean
@@ -37,7 +38,7 @@ class PostgresSqlGeneratorIntegrationTest : JdbcSqlGeneratorIntegrationTest<Post
         get() = PostgresSqlGenerator(PostgresSQLNameTransformer(), false)
 
     override val destinationHandler: DestinationHandler<PostgresState>
-        get() = PostgresDestinationHandler(databaseName, Companion.database!!, namespace)
+        get() = PostgresDestinationHandler(databaseName, Companion.database!!, namespace, mock())
 
     override val sqlDialect: SQLDialect
         get() = SQLDialect.POSTGRES

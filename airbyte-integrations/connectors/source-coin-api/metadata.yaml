@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
-  dockerImageTag: 0.2.14
+  dockerImageTag: 0.2.16
   dockerRepository: airbyte/source-coin-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
   githubIssueLabel: source-coin-api
@@ -29,6 +29,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: coin-api_config_dev_null
+          id: 3999ec4a-cb58-4bce-b508-7b23e94e1360
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-COIN-API__CREDS

@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.13
   dockerRepository: airbyte/source-shortio
   githubIssueLabel: source-shortio
   icon: shortio.svg
@@ -34,6 +34,10 @@ data:
     sl: 100
     ql: 100
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: shortio_config_dev_null
+          id: a894245b-5471-4f6c-9a97-699199047bf9
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-SHORTIO__CREDS
