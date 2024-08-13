@@ -49,6 +49,7 @@ In order to get access token, follow these steps:
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.0 | 2024-08-13 | [43973](https://github.com/airbytehq/airbyte/pull/43973) | Refactor connector to manifest-only format |
 | 0.2.14 | 2024-08-10 | [43652](https://github.com/airbytehq/airbyte/pull/43652) | Update dependencies |
 | 0.2.13 | 2024-08-03 | [43147](https://github.com/airbytehq/airbyte/pull/43147) | Update dependencies |
 | 0.2.12 | 2024-07-27 | [42303](https://github.com/airbytehq/airbyte/pull/42303) | Update dependencies |
