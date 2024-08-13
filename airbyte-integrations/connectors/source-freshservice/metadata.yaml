@@ -14,7 +14,7 @@ data:
   icon: freshservice.svg
   license: MIT
   name: Freshservice
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

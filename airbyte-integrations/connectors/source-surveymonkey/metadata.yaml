@@ -18,7 +18,7 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 86400
   name: SurveyMonkey
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -13,7 +13,7 @@ data:
       enabled: false
       # TODO: Set enabled=true after `airbyte-lib-validate-source` is passing.
       packageName: airbyte-source-kustomer-singer
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

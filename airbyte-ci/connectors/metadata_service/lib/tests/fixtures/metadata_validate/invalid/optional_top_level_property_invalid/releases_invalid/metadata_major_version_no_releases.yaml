@@ -9,7 +9,7 @@ data:
   icon: onesignal.svg
   license: MIT
   name: OneSignal
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

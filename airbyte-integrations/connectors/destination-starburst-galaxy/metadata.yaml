@@ -8,7 +8,7 @@ data:
   icon: starburst-galaxy.svg
   license: MIT
   name: Starburst Galaxy
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

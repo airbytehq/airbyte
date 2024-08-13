@@ -17,7 +17,7 @@ data:
   icon: insightly.svg
   license: MIT
   name: Insightly
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
       dockerImageTag: 0.2.16

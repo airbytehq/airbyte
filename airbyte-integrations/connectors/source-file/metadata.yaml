@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-file
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -14,7 +14,7 @@ data:
   icon: visma-economic.svg
   license: MIT
   name: Visma Economic
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
