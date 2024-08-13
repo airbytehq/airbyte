@@ -31,7 +31,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-mailerlite
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

@@ -16,7 +16,7 @@ data:
   icon: faker.svg
   license: MIT
   name: Sample Data (Faker)
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

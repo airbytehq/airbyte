@@ -17,7 +17,7 @@ data:
   icon: sonarcloud.svg
   license: MIT
   name: Sonar Cloud
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
