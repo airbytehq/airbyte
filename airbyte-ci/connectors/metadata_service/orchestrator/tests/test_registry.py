@@ -327,14 +327,14 @@ def test_erd_url():
             "connectorType": "source",
             "definitionId": "test-id",
             "registries": {"oss": {"enabled": True}},
-            "erd_url": "https://an-erd.com",
+            "erdUrl": "https://an-erd.com",
         }
     }
     mock_metadata_entry.icon_url = "test-icon-url"
     mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
-    assert result["erd_url"] == "https://an-erd.com"
+    assert result["erdUrl"] == "https://an-erd.com"
 
 
 def test_support_level_default():
