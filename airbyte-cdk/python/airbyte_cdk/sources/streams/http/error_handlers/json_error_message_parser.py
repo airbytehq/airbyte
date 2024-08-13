@@ -27,6 +27,10 @@ class JsonErrorMessageParser(ErrorMessageParser):
                 or value.get("failure")
                 or value.get("detail")
                 or value.get("err")
+                or value.get("error_message")
+                or value.get("msg")
+                or value.get("reason")
+                or value.get("status_message")
             )
             return self._try_get_error(new_value) or value
         return None
