@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-facebook-marketing
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

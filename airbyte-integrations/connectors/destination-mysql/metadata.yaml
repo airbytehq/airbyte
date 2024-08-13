@@ -8,7 +8,7 @@ data:
   icon: mysql.svg
   license: ELv2
   name: MySQL
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-mysql-strict-encrypt
       enabled: true

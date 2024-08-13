@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.northpass.com
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

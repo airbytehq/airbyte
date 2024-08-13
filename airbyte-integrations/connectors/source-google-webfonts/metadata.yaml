@@ -14,7 +14,7 @@ data:
   icon: googleworkpace.svg
   license: MIT
   name: Google Webfonts
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

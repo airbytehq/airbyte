@@ -12,7 +12,7 @@ data:
   icon: snowflake.svg
   license: ELv2
   name: Snowflake
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

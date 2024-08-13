@@ -14,7 +14,7 @@ data:
   icon: fastbill.svg
   license: MIT
   name: Fastbill
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

@@ -8,7 +8,7 @@ data:
   icon: file-json.svg
   license: MIT
   name: Local JSON
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

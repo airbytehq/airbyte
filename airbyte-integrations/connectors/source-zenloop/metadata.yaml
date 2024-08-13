@@ -17,7 +17,7 @@ data:
   icon: zenloop.svg
   license: MIT
   name: Zenloop
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

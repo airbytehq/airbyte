@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-babelforce
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

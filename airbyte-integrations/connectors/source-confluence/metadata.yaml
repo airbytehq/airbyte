@@ -17,7 +17,7 @@ data:
   icon: confluence.svg
   license: MIT
   name: Confluence
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

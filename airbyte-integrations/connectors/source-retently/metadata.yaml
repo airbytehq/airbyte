@@ -17,7 +17,7 @@ data:
   icon: retently.svg
   license: MIT
   name: Retently
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
