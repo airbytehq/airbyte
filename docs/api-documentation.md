@@ -21,6 +21,6 @@ Navigate to our full API documentation to learn how to retrieve your access toke
 Our full API documentation is located here: [api.airbyte.com](https://reference.airbyte.com/reference/getting-started).
 
 ## Configuration API (Deprecated)
-The configuration API is now deprecated and no longer supported. It is an internal API that is designed for communications between different Airbyte components ratther than.
+The configuration API is now deprecated and no longer supported. It is an internal API that is designed for communications between different Airbyte components ratther than managing your Airbyte workspace.
 
 Users utilize the Config API at their own risk. This API is utilized internally by the Airbyte Engineering team and may be modified in the future if the need arises. 

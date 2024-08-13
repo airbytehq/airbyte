@@ -6,13 +6,15 @@ products: all
 
 You can specify for each connection how Airbyte should handle any change of schema in the source. This process helps ensure accurate and efficient data syncs, minimizing errors and saving you time and effort in managing your data pipelines.
 
-To set or edit this connection, navigate to a connection's Settings tab. You'll see the following available options: 
+To set or edit this setting, navigate to a connection's Settings tab. You'll see the following available options:
 
 ![Schema Propagation Options](./assets/schema-propagation-options.png)
 
 ## Detecting Schema Changes
 
-For Cloud users, Airbyte automatically checks for any changes in your source schema immediately before syncing. For Self-hosted users, Airbyte checks for any changes in your source schema immediately before syncing, at most every 24 hours. This means your source schema changes may not be automatically propagated if it has been less than 24 hours since the previous schema check.
+For Cloud users, Airbyte automatically checks for any changes in your source schema immediately before syncing, at a maximum of every 15 minutes per source. If it is requested within 15 minutes, it will use the previous result.
+
+For self-managed users, Airbyte checks for any changes in your source schema immediately before syncing, at most every 24 hours. This means your source schema changes may not be automatically propagated if it has been less than 24 hours since the previous schema check.
 
 You may also manually refresh the schema at any time.
 
@@ -74,9 +76,9 @@ To re-enable the streams:
 
 1. In the Airbyte UI, click **Connections**. Select a connection and navigate to the **Schema** tab. If schema changes have been detected, you'll see a red "i" icon next to the `Schema` tab.
 
-2. Click the stream to open the field details for that stream. Ensure your cursor and primary key are selected. Changes are automatically saved as soon as the fields are selected.
+2. Click the stream to open the field details for that stream. Ensure your cursor and primary key are selected. 
 
-5. Exit the field selection pane and click **Save changes** to ensure the schema changes are applied to the next sync. You will be prompted to refresh or clear the affected streams so that Airbyte can ensure future syncs are successful. Airbyte highly recommends refreshing or clearing streams and sync all historical data again.
+3. Exit the field selection pane and click **Save changes** to ensure the schema changes are applied to the next sync. You will be prompted to refresh or clear the affected streams so that Airbyte can ensure future syncs are successful. Airbyte highly recommends refreshing or clearing streams and sync all historical data again.
 
 ## Backfill new or renamed columns connection setting
 
