@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-lemlist
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

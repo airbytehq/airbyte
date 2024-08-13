@@ -10,7 +10,7 @@ data:
   icon: duckdb.svg
   license: MIT
   name: DuckDB
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

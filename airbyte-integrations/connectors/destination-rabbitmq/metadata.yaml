@@ -8,7 +8,7 @@ data:
   icon: pulsar.svg
   license: MIT
   name: RabbitMQ
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
     oss:

@@ -26,7 +26,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-sentry
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

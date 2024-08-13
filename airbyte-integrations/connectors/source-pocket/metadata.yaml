@@ -14,7 +14,7 @@ data:
   icon: pocket.svg
   license: MIT
   name: Pocket
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

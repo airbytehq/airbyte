@@ -27,7 +27,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-amazon-seller-partner
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
