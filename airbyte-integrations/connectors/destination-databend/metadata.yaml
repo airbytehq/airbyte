@@ -8,7 +8,7 @@ data:
   icon: databend.svg
   license: MIT
   name: Databend
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

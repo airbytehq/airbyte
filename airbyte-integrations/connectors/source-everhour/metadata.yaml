@@ -5,7 +5,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

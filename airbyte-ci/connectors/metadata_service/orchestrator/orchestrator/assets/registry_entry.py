@@ -122,7 +122,7 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     Returns:
         dict: The metadata data field with the overrides applied.
     """
-    override_registry = metadata_data["registries"][override_registry_key]
+    override_registry = metadata_data["registryOverrides"][override_registry_key]
     del override_registry["enabled"]
 
     # remove any None values from the override registry
@@ -221,7 +221,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
 
     # remove fields that are not needed in the registry
-    del overridden_metadata_data["registries"]
+    del overridden_metadata_data["registryOverrides"]
     del overridden_metadata_data["connectorType"]
 
     # rename field connectorSubtype to sourceType
@@ -370,8 +370,8 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
     """
     metadata_data_dict = registry_entry.metadata_definition.dict()
 
-    # get data.registries fiield, handling the case where it is not present or none
-    registries_field = get(metadata_data_dict, "data.registries") or {}
+    # get data.registryOverrides fiield, handling the case where it is not present or none
+    registries_field = get(metadata_data_dict, "data.registryOverrides") or {}
 
     # registries is a dict of registry_name -> {enabled: bool}
     all_enabled_registries = [

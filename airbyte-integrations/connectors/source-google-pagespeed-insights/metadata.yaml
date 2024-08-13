@@ -14,7 +14,7 @@ data:
   icon: google-pagespeed-insights.svg
   license: MIT
   name: Google PageSpeed Insights
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

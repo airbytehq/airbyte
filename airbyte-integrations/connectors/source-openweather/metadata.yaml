@@ -14,7 +14,7 @@ data:
   icon: openweather.svg
   license: MIT
   name: Openweather
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

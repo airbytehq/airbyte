@@ -14,7 +14,7 @@ data:
   icon: zapiersupportedstorage.svg
   license: MIT
   name: Zapier Supported Storage
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

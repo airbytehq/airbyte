@@ -17,7 +17,7 @@ data:
   icon: drift.svg
   license: MIT
   name: Drift
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

@@ -17,7 +17,7 @@ data:
   icon: delighted.svg
   license: MIT
   name: Delighted
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

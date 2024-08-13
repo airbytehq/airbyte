@@ -8,7 +8,7 @@ data:
   icon: dynamodb.svg
   license: MIT
   name: DynamoDB
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

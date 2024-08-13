@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - pro-api.coinmarketcap.com
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

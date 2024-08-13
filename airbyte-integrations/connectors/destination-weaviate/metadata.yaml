@@ -20,7 +20,7 @@ data:
   icon: weaviate.svg
   license: MIT
   name: Weaviate
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

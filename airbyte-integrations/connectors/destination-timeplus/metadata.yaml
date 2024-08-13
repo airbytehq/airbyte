@@ -8,7 +8,7 @@ data:
   icon: timeplus.svg
   license: MIT
   name: Timeplus
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

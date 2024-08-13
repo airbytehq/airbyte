@@ -44,7 +44,7 @@ VALID_METADATA_DICT = {
         "connectorSubtype": "api",
         "supportLevel": "community",
         "releaseStage": "alpha",
-        "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+        "registryOverrides": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
     },
 }
 INVALID_METADATA_DICT = {"invalid": "metadata"}
@@ -131,7 +131,7 @@ def test_get_registry_status_lists(registries_data, expected_enabled, expected_d
             "connectorSubtype": "api",
             "releaseStage": "alpha",
             "supportLevel": "community",
-            "registries": registries_data,
+            "registryOverrides": registries_data,
         },
     }
     metadata_definition = MetadataDefinition.parse_obj(metadata_dict)
@@ -215,7 +215,9 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
     Test if the definitionId in the metadata is successfully converted to
     destinationDefinitionId or sourceDefinitionId in the registry entry.
     """
-    metadata = {"data": {"connectorType": connector_type, "definitionId": "test-id", "registries": {registry_type: {"enabled": True}}}}
+    metadata = {
+        "data": {"connectorType": connector_type, "definitionId": "test-id", "registryOverrides": {registry_type: {"enabled": True}}}
+    }
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
@@ -230,7 +232,7 @@ def test_tombstone_custom_public_set():
     """
     Test if tombstone, custom and public are set correctly in the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
@@ -247,7 +249,7 @@ def test_fields_deletion():
     """
     Test if registries, connectorType, and definitionId fields were deleted from the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
@@ -255,7 +257,7 @@ def test_fields_deletion():
     mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
-    assert "registries" not in result
+    assert "registryOverrides" not in result
     assert "connectorType" not in result
     assert "definitionId" not in result
 
@@ -274,7 +276,7 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
             "connectorType": "source",
             "definitionId": "test-id",
             "dockerImageTag": "base_tag",
-            "registries": {
+            "registryOverrides": {
                 "oss": {"enabled": True, "dockerImageTag": "oss_tag", "additionalField": "oss_value"},
                 "cloud": {"enabled": True, "dockerImageTag": "cloud_tag", "additionalField": "cloud_value"},
             },
@@ -304,7 +306,7 @@ def test_source_type_extraction():
             "connectorType": "source",
             "connectorSubtype": "database",
             "definitionId": "test-id",
-            "registries": {"oss": {"enabled": True}},
+            "registryOverrides": {"oss": {"enabled": True}},
         }
     }
 
@@ -341,7 +343,7 @@ def test_support_level_default():
     """
     Test if supportLevel is defaulted to alpha in the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
@@ -361,7 +363,7 @@ def test_migration_documentation_url_default():
             "connectorType": "source",
             "definitionId": "test-id",
             "documentationUrl": "test-doc-url",
-            "registries": {"oss": {"enabled": True}},
+            "registryOverrides": {"oss": {"enabled": True}},
             "releases": {"migrationDocumentationUrl": None, "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": None}}},
         }
     }
@@ -388,7 +390,7 @@ def test_breaking_changes_migration_documentation_url():
             "connectorType": "source",
             "definitionId": "test-id",
             "documentationUrl": "test-doc-url",
-            "registries": {"oss": {"enabled": True}},
+            "registryOverrides": {"oss": {"enabled": True}},
             "releases": {
                 "migrationDocumentationUrl": "test-migration-doc-url",
                 "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": "test-migration-doc-url-version"}},
@@ -410,7 +412,7 @@ def test_icon_url():
     """
     Test if the iconUrl in the metadata entry is correctly set in the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
