@@ -9,7 +9,7 @@ data:
   icon: postgresql.svg
   license: ELv2
   name: Postgres
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

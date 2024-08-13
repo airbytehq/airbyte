@@ -17,7 +17,7 @@ data:
   icon: icon.svg
   license: MIT
   name: Zenefits
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

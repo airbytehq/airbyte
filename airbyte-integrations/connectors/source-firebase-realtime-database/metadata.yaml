@@ -14,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-firebase-realtime-database
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

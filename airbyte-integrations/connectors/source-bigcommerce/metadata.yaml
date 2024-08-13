@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-bigcommerce
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:

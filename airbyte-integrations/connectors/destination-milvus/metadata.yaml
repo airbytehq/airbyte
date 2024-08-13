@@ -5,7 +5,7 @@ data:
       - api.openai.com
       - api.cohere.ai
       - "${embedding.api_base}"
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

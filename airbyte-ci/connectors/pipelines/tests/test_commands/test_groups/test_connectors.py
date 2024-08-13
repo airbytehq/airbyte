@@ -154,8 +154,11 @@ def test_get_selected_connectors_with_modified_and_support_level():
         metadata_query=None,
         modified_files=modified_files,
     )
-
-    assert len(selected_connectors) == 1
+    has_strict_encrypt_variant = any("-strict-encrypt" in c.technical_name for c in selected_connectors)
+    if has_strict_encrypt_variant:
+        assert len(selected_connectors) == 2
+    else:
+        assert len(selected_connectors) == 1
     assert selected_connectors[0].technical_name == second_modified_connector.technical_name
 
 

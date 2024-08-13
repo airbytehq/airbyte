@@ -9,7 +9,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-shortio
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

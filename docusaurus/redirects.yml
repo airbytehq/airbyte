@@ -33,6 +33,8 @@
   to: /cloud/managing-airbyte-cloud/manage-connection-state
 - from: /cloud/managing-airbyte-cloud/edit-stream-configuration
   to: /cloud/managing-airbyte-cloud/configuring-connections
+- from: /cloud/managing-airbyte-cloud/manage-schema-changes
+  to: /using-airbyte/schema-change-management
 # November 2023 documentation restructure:
 - from:
     - /project-overview/product-support-levels

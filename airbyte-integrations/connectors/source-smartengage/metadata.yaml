@@ -14,7 +14,7 @@ data:
   icon: smartengage.svg
   license: MIT
   name: SmartEngage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

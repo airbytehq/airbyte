@@ -7,8 +7,12 @@ import re
 import pendulum
 import pytest
 import responses
-from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import SyncMode
 from conftest import find_stream
+from responses import matchers
 from source_jira.source import SourceJira
 from source_jira.streams import IssueFields, Issues, PullRequests
 from source_jira.utils import read_full_refresh, read_incremental
@@ -20,12 +24,11 @@ def test_application_roles_stream_401_error(config, caplog):
     responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/applicationrole", status=401)
 
     authenticator = SourceJira().get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = find_stream("application_roles", config)
 
     with pytest.raises(
-        ReadException,
-        match="Request to https://test_application_domain/rest/api/3/applicationrole failed with status code 401 and error message None",
+        AirbyteTracedException,
+        match="Unauthorized. Please ensure you are authenticated correctly.",
     ):
         list(read_full_refresh(stream))
 
@@ -51,7 +54,7 @@ def test_application_roles_stream_http_error(config, application_roles_response)
 
     stream = find_stream("application_roles", config)
     with pytest.raises(
-        ReadException, match="Request to https://domain/rest/api/3/applicationrole failed with status code 404 and error message not found"
+        AirbyteTracedException, match="Not found. The requested resource was not found on the server"
     ):
         list(read_full_refresh(stream))
 
@@ -82,14 +85,9 @@ def test_board_stream_forbidden(config, boards_response, caplog):
     )
     stream = find_stream("boards", config)
 
-    expected_url = "https://test_boards_domain/rest/agile/1.0/board?maxResults=50"
-    escaped_url = re.escape(expected_url)
-
     with pytest.raises(
-        ReadException,
-        match=(
-            f"Request to {escaped_url} failed with status code 403 and error message 403 Client Error: " f"Forbidden for url: {escaped_url}"
-        ),
+        AirbyteTracedException,
+        match="Forbidden. You don't have permission to access this resource."
     ):
         list(read_full_refresh(stream))
 
@@ -405,10 +403,9 @@ def test_screen_tabs_stream(config, mock_screen_response, screen_tabs_response):
 
 @responses.activate
 def test_sprints_stream(config, mock_board_response, mock_sprints_response):
-    stream = find_stream("sprints", config)
-    records = list(read_full_refresh(stream))
+    output = read(SourceJira(), config, CatalogBuilder().with_stream("sprints", SyncMode.full_refresh).build())
 
-    assert len(records) == 3
+    assert len(output.records) == 3
     assert len(responses.calls) == 4
 
 
@@ -434,15 +431,11 @@ def test_board_does_not_support_sprints(config, mock_board_response, sprints_res
     records = list(read_full_refresh(stream))
     assert len(records) == 2
 
-    # No matter what the error_message value is, it is displayed as 'Ignoring response for failed request with error message None'
-    # Feature request is added to fix this problem.
-    # assert (
-    #     "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
-    #     "does it have sprints enabled under project settings? If it's a company-managed one,"
-    #     " check that it has at least one Scrum board associated with it."
-    # ) in caplog.text
-
-    assert "Ignoring response for failed request" in caplog.text
+    assert (
+        "The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+        "does it have sprints enabled under project settings? If it's a company-managed one,"
+        " check that it has at least one Scrum board associated with it."
+    ) in caplog.text
 
 
 @responses.activate
@@ -453,10 +446,9 @@ def test_sprint_issues_stream(config, mock_board_response, mock_fields_response,
         json=sprints_issues_response,
     )
 
-    stream = find_stream("sprint_issues", config)
-    records = list(read_full_refresh(stream))
+    output = read(SourceJira(), config, CatalogBuilder().with_stream("sprint_issues", SyncMode.full_refresh).build())
 
-    assert len(records) == 3
+    assert len(output.records) == 3
     assert len(responses.calls) == 8
 
 
@@ -603,7 +595,7 @@ def test_avatars_stream_should_retry(config, caplog):
     records = list(read_full_refresh(stream))
 
     assert len(records) == 0
-    assert "Ignoring response for failed request" in caplog.text
+    assert "Bad request. Please check your request parameters" in caplog.text
 
 
 @responses.activate
@@ -617,8 +609,7 @@ def test_declarative_issues_stream(config, mock_projects_responses_additional_pr
     assert "non_empty_field" in records[0]["fields"]
 
     assert len(responses.calls) == 3
-    # error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
-    assert "Ignoring response for failed request with error message None" in caplog.messages
+    assert "The user doesn't have permission to the project. Please grant the user to the project." in caplog.messages
 
 
 @responses.activate
@@ -634,8 +625,65 @@ def test_python_issues_stream(config, mock_projects_responses_additional_project
     assert "non_empty_field" in records[0]["fields"]
 
     assert len(responses.calls) == 3
-    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"]. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
+    error_message = ("Stream `issues`. An error occurred, details: The user doesn't have "
+                     'permission to the project. Please grant the user to the project. Errors: '
+                     '["The value \'3\' does not exist for the field \'project\'."]')
     assert error_message in caplog.messages
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "status_code, response_errorMessages, expected_log_message",
+    (
+            (400,
+             ["The value 'incorrect_project' does not exist for the field 'project'."],
+             (
+                 "Stream `issues`. An error occurred, details: The user doesn't have permission to the project."
+                 " Please grant the user to the project. "
+                 "Errors: [\"The value \'incorrect_project\' does not exist for the field \'project\'.\"]"
+             )
+             ),
+            (
+                403,
+                ["The value 'incorrect_project' doesn't have permission for the field 'project'."],
+                (
+                    'Stream `issues`. An error occurred, details:'
+                    ' Errors: ["The value \'incorrect_project\' doesn\'t have permission for the field \'project\'."]'
+                )
+            ),
+    )
+)
+def test_python_issues_stream_skip_on_http_codes_error_handling(config, status_code, response_errorMessages, expected_log_message, caplog):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json={"values": [{"key": "incorrect_project", "id": "incorrect_project"}]},
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[
+            matchers.query_param_matcher(
+                {
+                    "maxResults": 50,
+                    "fields": "*all",
+                    "jql": "updated >= '2021/01/01 00:00' and project in (incorrect_project) ORDER BY updated asc",
+                    "expand": "renderedFields,transitions,changelog",
+                }
+            )
+        ],
+        json={"errorMessages": response_errorMessages},
+        status=status_code,
+    )
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": "incorrect_project"}
+    stream = Issues(**args)
+
+    records = list(read_incremental(stream, {"updated": "2021-01-01T00:00:00Z"}))
+
+    assert len(records) == 0
+    assert expected_log_message in caplog.messages
 
 
 def test_python_issues_stream_updated_state(config):
@@ -777,10 +825,9 @@ def test_project_permissions_stream(config, mock_non_deleted_projects_responses,
 
 @responses.activate
 def test_project_email_stream(config, mock_non_deleted_projects_responses, mock_project_emails):
-    stream = find_stream("project_email", config)
-    records = list(read_full_refresh(stream))
+    output = read(SourceJira(), config, CatalogBuilder().with_stream("project_email", SyncMode.full_refresh).build())
 
-    assert len(records) == 2
+    assert len(output.records) == 2
     assert len(responses.calls) == 2
 
 
@@ -792,10 +839,9 @@ def test_project_components_stream(config, mock_non_deleted_projects_responses, 
         json=project_components_response,
     )
 
-    stream = find_stream("project_components", config)
-    records = list(read_full_refresh(stream))
+    output = read(SourceJira(), config, CatalogBuilder().with_stream("project_components", SyncMode.full_refresh).build())
 
-    assert len(records) == 2
+    assert len(output.records) == 2
     assert len(responses.calls) == 2
 
 
@@ -807,10 +853,9 @@ def test_permissions_stream(config, permissions_response):
         json=permissions_response,
     )
 
-    stream = find_stream("permissions", config)
-    records = list(read_full_refresh(stream))
+    output = read(SourceJira(), config, CatalogBuilder().with_stream("permissions", SyncMode.full_refresh).build())
 
-    assert len(records) == 1
+    assert len(output.records) == 1
     assert len(responses.calls) == 1
 
 
@@ -827,10 +872,9 @@ def test_labels_stream(config, labels_response):
         json={},
     )
 
-    stream = find_stream("labels", config)
-    records = list(read_full_refresh(stream))
+    output = read(SourceJira(), config, CatalogBuilder().with_stream("labels", SyncMode.full_refresh).build())
 
-    assert len(records) == 2
+    assert len(output.records) == 2
     assert len(responses.calls) == 2
 
 
@@ -918,37 +962,34 @@ def test_project_versions_stream(config, mock_non_deleted_projects_responses, pr
             "issues",
             2,
             4,
-            "Ignoring response for failed request with error message None"
-            # "Stream `issues`. An error occurred, details: [\"The value '3' does not "
-            # "exist for the field 'project'.\"]. Skipping for now. The user doesn't have "
-            # "permission to the project. Please grant the user to the project.",
+            "The user doesn't have permission to the project. Please grant the user to the project."
         ),
         (
             "issue_custom_field_contexts",
             2,
             4,
-            "Ignoring response for failed request with error message None"
+            "Not found. The requested resource was not found on the server."
             # "Stream `issue_custom_field_contexts`. An error occurred, details: ['Not found issue custom field context for issue fields issuetype2']. Skipping for now. ",
         ),
         (
             "issue_custom_field_options",
             1,
             6,
-            "Ignoring response for failed request with error message None"
+            "Not found. The requested resource was not found on the server."
             # "Stream `issue_custom_field_options`. An error occurred, details: ['Not found issue custom field options for issue fields issuetype3']. Skipping for now. ",
         ),
         (
             "issue_watchers",
             1,
             6,
-            "Ignoring response for failed request with error message None"
+            "Not found. The requested resource was not found on the server."
             # "Stream `issue_watchers`. An error occurred, details: ['Not found watchers for issue TESTKEY13-2']. Skipping for now. ",
         ),
         (
             "project_email",
             4,
             4,
-            "Ignoring response for failed request with error message None"
+            "Forbidden. You don't have permission to access this resource."
             # "Stream `project_email`. An error occurred, details: ['No access to emails for project 3']. Skipping for now. ",
         ),
     ],
@@ -971,9 +1012,8 @@ def test_skip_slice(
     log_message,
 ):
     config["projects"] = config.get("projects", []) + ["Project3", "Project4"]
-    stream = find_stream(stream, config)
-    records = list(read_full_refresh(stream))
-    assert len(records) == expected_records_number
+    output = read(SourceJira(), config, CatalogBuilder().with_stream(stream, SyncMode.full_refresh).build())
+    assert len(output.records) == expected_records_number
 
     assert len(responses.calls) == expected_calls_number
     assert log_message in caplog.messages

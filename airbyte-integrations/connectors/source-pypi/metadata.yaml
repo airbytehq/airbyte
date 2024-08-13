@@ -14,7 +14,7 @@ data:
   icon: pypi.svg
   license: MIT
   name: PyPI
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

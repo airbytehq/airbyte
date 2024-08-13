@@ -13,7 +13,7 @@ data:
   icon: google-sheets.svg
   license: Elv2
   name: Google Sheets
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
