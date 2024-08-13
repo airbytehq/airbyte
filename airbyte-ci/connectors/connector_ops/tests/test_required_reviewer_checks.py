@@ -112,9 +112,9 @@ def test_find_mandatory_reviewers_breaking_change_release(capsys, test_breaking_
 def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_tracked_change_expected_team):
     check_review_requirements_file(capsys, not_tracked_change_expected_team)
 
-
-def test_find_reviewers_manifest_only_community_connector(capsys, test_community_manifest_only_connector_expected_team):
-    check_review_requirements_file(capsys, test_community_manifest_only_connector_expected_team)
+# TODO: Re-enable this test when we have migrated our existing connectors to manifest-only and no longer need to automerge
+# def test_find_reviewers_manifest_only_community_connector(capsys, test_community_manifest_only_connector_expected_team):
+#     check_review_requirements_file(capsys, test_community_manifest_only_connector_expected_team)
 
 
 def test_find_reviewers_manifest_only_certified_connector(capsys, test_certified_manifest_only_connector_expected_team):

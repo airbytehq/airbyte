@@ -37,6 +37,8 @@ poetry run pytest
 ```
 
 ## Changelog
+
+- 0.7.1: Temporarily disable required reviews for community manifest-only connectors.
 - 0.7.0: Added required reviewers for manifest-only connector changes/additions.
 - 0.6.1: Simplified gradle dependency discovery logic.
 - 0.6.0: Added manifest-only build.
