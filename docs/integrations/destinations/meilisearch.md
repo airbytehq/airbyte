@@ -48,7 +48,6 @@ the MeiliSearch docs.
 
 | Version | Date       | Pull Request                                              | Subject                                                |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------- |
-| 1.0.4 | 2024-08-12 | [43836](https://github.com/airbytehq/airbyte/pull/43836) | Update dependencies |
 | 1.0.3   | 2024-07-08 | [#TODO](https://github.com/airbytehq/airbyte/pull/TODO) | Switching to Poetry and base image                                   |
 | 1.0.2   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                   |
 | 1.0.1   | 2023-12-19 | [27692](https://github.com/airbytehq/airbyte/pull/27692)  | Fix incomplete data indexing                           |
