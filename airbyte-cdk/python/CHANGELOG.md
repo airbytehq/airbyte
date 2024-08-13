@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.3.3
+Have better fallback error message on HTTP error
+
 ## 4.3.2
 Ensure at least one element returned by decoder
 

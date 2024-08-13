@@ -156,6 +156,12 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 
 Ensure that Docker Desktop is up and running. Then, with abctl installed, the following command gets Airbyte running:
 
+:::tip
+By default, `abctl` only configures an ingress rule for the host `localhost`. If you plan to access Airbyte outside of `localhost`, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
+
+By specifying the `--host` flag, Airbyte will be accessible to both `localhost` and the FDQN passed to the `--host` flag.
+:::
+
 ```
 abctl local install
 ```
@@ -242,11 +248,6 @@ If you're using a version of Airbyte that you've installed with `abctl`, you can
 
 This guide will assume that you are using the Amazon Linux distribution. However. any distribution that supports a docker engine should work with `abctl`. The launching and connecting to your EC2 Instance is outside the scope of this guide. You can find more information on how to launch and connect to EC2 Instances in the [Get started with Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html) documentation from Amazon.
 
-:::tip
-`abctl` runs by default on port 8000. You can change the port by passing the `--port` flag to the `local install` command. Make sure that the security group that you have configured for the EC2 Instance allows traffic in on the port that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
-:::
-
-
 1. Install the docker engine:
 
 ```shell
@@ -280,12 +281,27 @@ curl -LsfS https://get.airbyte.com | bash -
 ```
 
 6. Run the `abctl` command and install Airbyte:
+:::tip
+By default, `abctl` only configures an ingress rule for the host `localhost`. In order to ensure that Airbyte can be accessed outside of the EC2 instance, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
+:::
+:::tip
+By default, `abctl` will listen on port 8000. If port 8000 is already in used or you require a different port, you can specify this by passing the `--port` flag to the `local install` command. For example, `abctl local install --port 6598`
+
+Ensure the security group configured for the EC2 Instance allows traffic in on the port (8000 by default, or whatever port was passed to `--port`) that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
+:::
 
 ```shell
-abctl local install
+abctl local install --host [HOSTNAME]
 ```
 
 ### Editing the Ingress
+
+:::note
+The latest versions of `abctl` support a `--host` flag replacing the need to manually modify the ingress rules.
+
+For example, if you are hosting Airbyte on the FDQN of `airbyte.company.example`, you would execute the following command:
+`abctl local install --host airbyte.company.example`
+:::
 
 By default `abctl` will install and Nginx Ingress and set the host name to `localhost`. You will need to edit this to
 match the host name that you have deployed Airbyte to. To do this you will need to have the `kubectl` command installed
@@ -321,6 +337,22 @@ rm -rf ~/.airbyte/abctl
 ```
 
 ## Troubleshooting
+
+### Unable To Locate User Email
+:::note
+In `abctl` [v0.11.0](https://github.com/airbytehq/abctl/releases/tag/v0.11.0), support for basic-auth was removed (as basic-auth support was removed from the `Airbyte Platform` in [v0.63.11](https://github.com/airbytehq/airbyte-platform/releases/tag/v0.63.11), and replaced with a more secure randomly generated password.  When logging into Airbyte, the email (provided during registration) should be automatically populated and the randomly generated password can be fetched by running `abctl local credentials`.
+
+Airbyte is aware of situations where the email is not be automatically populated and we are working on addressing this within the `abctl` tool.  In the interim, some manually steps are required to retrieve the authentication email address when it is unknown.
+:::
+
+If the email address for authenticating is not automatically populated, and you are unsure what the login email should be, the email can be retrieved from the database used by Airbyte. If using an external database, you will need to connect to the database and execute the query `SELECT "email" FROM "user"`.  If using the database automatically included with the `abctl local install` command, you will need to install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and execute the following command:
+```
+kubectl exec --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl -it airbyte-db-0 -- psql -U airbyte -d db-airbyte -t -A -c 'SELECT "email" FROM "user"'
+```
+
+The password for this user can be retrieved by running `abctl local credentials`.
+
+### Additional Resources
 
 There are several channels for community support of local setup and deployment. 
 

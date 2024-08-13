@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5db8292c-5f5a-11ed-9b6a-0242ac120002
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.2
   dockerRepository: airbyte/source-weatherstack
   githubIssueLabel: source-weatherstack
   icon: weatherstack.svg

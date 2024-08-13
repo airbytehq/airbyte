@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d7e23ea6-d741-4314-9209-a33c91a2e945
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-trustpilot
   githubIssueLabel: source-trustpilot
   icon: trustpilot.svg
