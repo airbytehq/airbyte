@@ -1,4 +1,4 @@
-# Survey sparrow source connector
+# Survey Sparrow source connector
 
 This directory contains the manifest-only connector for `source-survey-sparrow`.
 This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
