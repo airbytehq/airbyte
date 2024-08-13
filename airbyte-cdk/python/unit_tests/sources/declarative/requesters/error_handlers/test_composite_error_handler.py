@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpRespon
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
+from airbyte_protocol.models import FailureType
 
 SOME_BACKOFF_TIME = 60
 
@@ -95,6 +96,24 @@ def test_composite_error_handler(test_name, first_handler_behavior, second_handl
     response_mock = MagicMock()
     response_mock.ok = first_handler_behavior.response_action == ResponseAction.SUCCESS or second_handler_behavior == ResponseAction.SUCCESS
     assert retrier.interpret_response(response_mock) == expected_behavior
+
+
+def test_given_unmatched_response_or_exception_then_return_default_error_resolution():
+    composite_error_handler = CompositeErrorHandler(
+        error_handlers=[
+            DefaultErrorHandler(
+                response_filters=[],
+                parameters={},
+                config={},
+            )
+        ],
+        parameters={},
+    )
+
+    error_resolution = composite_error_handler.interpret_response(ValueError("Any error"))
+
+    assert error_resolution.response_action == ResponseAction.RETRY
+    assert error_resolution.failure_type == FailureType.system_error
 
 
 def test_composite_error_handler_no_handlers():
