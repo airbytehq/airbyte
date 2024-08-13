@@ -14,11 +14,10 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.sync.Semaphore
 
 /**
- * A [StreamReadContextManager] may be injected in a
- * [io.airbyte.cdk.read.PartitionsCreatorFactory] to provide it, and the
- * [io.airbyte.cdk.read.PartitionsCreator] and [io.airbyte.cdk.read.PartitionReader] instances
- * it creates, with a set of global singletons useful for implementing stream READs for a JDBC
- * source.
+ * A [StreamReadContextManager] may be injected in a [io.airbyte.cdk.read.PartitionsCreatorFactory]
+ * to provide it, and the[io.airbyte.cdk.read.PartitionsCreator] and
+ * [io.airbyte.cdk.read.PartitionReader] instances it creates, with a set of global singletons
+ * useful for implementing stream READs for a JDBC source.
  *
  * For each stream in the configured catalog, these global singletons are packaged in a
  * [StreamReadContext] which bundles them with the corresponding [Stream] as well as a couple
