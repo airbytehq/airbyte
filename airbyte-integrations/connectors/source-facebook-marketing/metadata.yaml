@@ -14,6 +14,7 @@ data:
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
+  erdUrl: https://dbdocs.io/maximec5e237b90b/source-facebook-marketing
   icon: facebook.svg
   license: ELv2
   maxSecondsBetweenMessages: 86400
