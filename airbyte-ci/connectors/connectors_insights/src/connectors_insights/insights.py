@@ -56,8 +56,8 @@ def get_metadata_inferred_insights(connector: Connector) -> Dict:
         "connector_support_level": connector.metadata.get("supportLevel"),
         "ab_internal_sl": connector.metadata.get("ab_internal", {}).get("sl"),
         "ab_internal_ql": connector.metadata.get("ab_internal", {}).get("ql"),
-        "is_cloud_enabled": connector.metadata.get("registries", {}).get("cloud", {}).get("enabled", False),
-        "is_oss_enabled": connector.metadata.get("registries", {}).get("oss", {}).get("enabled", False),
+        "is_cloud_enabled": connector.metadata.get("registryOverrides", {}).get("cloud", {}).get("enabled", False),
+        "is_oss_enabled": connector.metadata.get("registryOverrides", {}).get("oss", {}).get("enabled", False),
     }
 
 
