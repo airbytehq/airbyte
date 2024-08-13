@@ -26,8 +26,9 @@ class JsonErrorMessageParser(ErrorMessageParser):
                 or value.get("failures")
                 or value.get("failure")
                 or value.get("detail")
+                or value.get("err")
             )
-            return self._try_get_error(new_value)
+            return self._try_get_error(new_value) or value
         return None
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
