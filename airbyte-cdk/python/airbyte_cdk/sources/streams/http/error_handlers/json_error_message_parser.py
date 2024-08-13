@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
 import json
+from typing import Optional
 
 import requests
-from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorMessageParser
+from airbyte_cdk.sources.utils.types import JsonType
 
 
 class JsonErrorMessageParser(ErrorMessageParser):
