@@ -1195,7 +1195,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever_no_pagination_use_cache"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "#/definitions/selector_base"
         record_filter:
           condition: "{{ record.name in ['Story Points', 'Story point estimate'] }}"
 
