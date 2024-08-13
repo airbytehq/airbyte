@@ -41,6 +41,7 @@ You need to setup a personal access token within the Rocket.chat workspace, see 
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.0 | 2024-08-13 | [43989](https://github.com/airbytehq/airbyte/pull/43989) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-12 | [43884](https://github.com/airbytehq/airbyte/pull/43884) | Update dependencies |
 | 0.1.12 | 2024-08-10 | [43649](https://github.com/airbytehq/airbyte/pull/43649) | Update dependencies |
 | 0.1.11 | 2024-08-03 | [43157](https://github.com/airbytehq/airbyte/pull/43157) | Update dependencies |
