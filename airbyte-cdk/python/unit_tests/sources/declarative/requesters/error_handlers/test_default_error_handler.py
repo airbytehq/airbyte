@@ -12,12 +12,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
-    DEFAULT_ERROR_RESOLUTION,
-    ErrorResolution,
-    FailureType,
-    ResponseAction,
-)
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 
 SOME_BACKOFF_TIME = 60
 
@@ -55,7 +50,7 @@ SOME_BACKOFF_TIME = 60
                 ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.system_error,
-                    error_message="The request failed due to an unknown error.",
+                    error_message="Unexpected response with HTTP status 418",
                 ),
             )
         ],
@@ -246,7 +241,9 @@ def test_default_error_handler_with_unmapped_http_code():
     response_mock.ok = False
     response_mock.headers = {}
     actual_error_resolution = error_handler.interpret_response(response_mock)
-    assert actual_error_resolution == DEFAULT_ERROR_RESOLUTION
+    assert actual_error_resolution
+    assert actual_error_resolution.failure_type == FailureType.system_error
+    assert actual_error_resolution.response_action == ResponseAction.RETRY
 
 
 def test_predicate_takes_precedent_over_default_mapped_error():
