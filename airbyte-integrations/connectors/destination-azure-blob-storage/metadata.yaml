@@ -8,7 +8,7 @@ data:
   icon: azureblobstorage.svg
   license: MIT
   name: Azure Blob Storage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

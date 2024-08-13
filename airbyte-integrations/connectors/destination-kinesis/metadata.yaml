@@ -8,7 +8,7 @@ data:
   icon: kinesis.svg
   license: MIT
   name: Kinesis
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

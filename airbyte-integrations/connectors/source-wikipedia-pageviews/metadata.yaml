@@ -21,7 +21,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-wikipedia-pageviews
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -11,7 +11,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-trello
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

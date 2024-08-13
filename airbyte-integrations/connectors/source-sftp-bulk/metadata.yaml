@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-sftp-bulk
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

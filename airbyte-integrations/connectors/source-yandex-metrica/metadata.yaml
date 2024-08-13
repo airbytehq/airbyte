@@ -17,7 +17,7 @@ data:
   icon: yandexmetrica.svg
   license: MIT
   name: Yandex Metrica
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

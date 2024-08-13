@@ -10,7 +10,7 @@ data:
   icon: typesense.svg
   license: MIT
   name: Typesense
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

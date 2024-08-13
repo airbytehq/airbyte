@@ -14,7 +14,7 @@ data:
   icon: nytimes.svg
   license: MIT
   name: New York Times
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

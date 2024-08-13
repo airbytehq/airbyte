@@ -11,9 +11,7 @@ from metadata_service.validators import metadata_validator
 
 @pytest.fixture
 def metadata_definition():
-    metadata_file_url = (
-        "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors/source-faker/metadata.yaml"
-    )
+    metadata_file_url = "https://raw.githubusercontent.com/airbytehq/airbyte/8f0a6afe41cd1f9e70e954255749b7867592f863/airbyte-integrations/connectors/source-faker/metadata.yaml"
     response = requests.get(metadata_file_url)
     response.raise_for_status()
 
