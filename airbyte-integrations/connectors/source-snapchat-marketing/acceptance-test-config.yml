@@ -5,7 +5,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_snapchat_marketing/spec.json"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"

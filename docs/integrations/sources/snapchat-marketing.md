@@ -143,6 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.3.0 | 2024-08-13 | [43978](https://github.com/airbytehq/airbyte/pull/43978) | Refactor connector to manifest-only format |
 | 1.2.3 | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
 | 1.2.2 | 2024-08-10 | [43539](https://github.com/airbytehq/airbyte/pull/43539) | Update dependencies |
 | 1.2.1 | 2024-08-03 | [43174](https://github.com/airbytehq/airbyte/pull/43174) | Update dependencies |
