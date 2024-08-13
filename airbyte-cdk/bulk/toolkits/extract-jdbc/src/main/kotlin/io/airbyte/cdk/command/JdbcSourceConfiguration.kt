@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
-import io.airbyte.cdk.read.LimitState
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -19,10 +18,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
     /** Ordered set of schemas for the connector to consider. */
     val schemas: Set<String>
 
-    /** How many rows to query in the first batch. */
-    val initialLimit: LimitState
-        get() = LimitState.minimum
-
+    /** When set, each table is queried individually to check for SELECT privileges. */
     val checkPrivileges: Boolean
         get() = true
 

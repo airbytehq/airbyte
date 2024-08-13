@@ -15,8 +15,8 @@ import kotlinx.coroutines.sync.Semaphore
 
 /**
  * A [StreamReadContextManager] may be injected in a
- * [io.airbyte.cdk.source.PartitionsCreatorFactory] to provide it, and the
- * [io.airbyte.cdk.source.PartitionsCreator] and [io.airbyte.cdk.source.PartitionReader] instances
+ * [io.airbyte.cdk.read.PartitionsCreatorFactory] to provide it, and the
+ * [io.airbyte.cdk.read.PartitionsCreator] and [io.airbyte.cdk.read.PartitionReader] instances
  * it creates, with a set of global singletons useful for implementing stream READs for a JDBC
  * source.
  *
@@ -61,7 +61,7 @@ class StreamReadContext(
     val outputConsumer: OutputConsumer,
     val stream: Stream,
 ) {
-    val transientLimitState: TransientState<LimitState> = TransientState(configuration.initialLimit)
+    val transientLimitState: TransientState<LimitState> = TransientState(LimitState.minimum)
 
     val transientCursorUpperBoundState: TransientState<JsonNode?> = TransientState(null)
 
