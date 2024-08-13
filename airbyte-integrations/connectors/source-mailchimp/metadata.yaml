@@ -23,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-mailchimp
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

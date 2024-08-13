@@ -14,7 +14,7 @@ data:
   icon: zoom.svg
   license: MIT
   name: Zoom
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

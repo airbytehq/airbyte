@@ -13,7 +13,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-kyve
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

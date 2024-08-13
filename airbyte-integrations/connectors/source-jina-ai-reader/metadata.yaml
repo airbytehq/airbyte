@@ -3,7 +3,7 @@ data:
     hosts:
       - "https://s.jina.ai"
       - "https://r.jina.ai"
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

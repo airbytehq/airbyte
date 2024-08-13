@@ -27,7 +27,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-sendgrid
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

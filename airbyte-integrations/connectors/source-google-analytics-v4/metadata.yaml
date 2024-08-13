@@ -25,7 +25,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-google-analytics-v4
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-hellobaton
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
