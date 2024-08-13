@@ -12,10 +12,10 @@ import kotlin.math.min
 class MemoryFetchSizeEstimator(
     val maxMemoryBytes: Long,
     val maxConcurrency: Int,
-) : StreamPartitionsCreatorUtils.FetchSizeEstimator {
+) {
     private val log = KotlinLogging.logger {}
 
-    override fun apply(rowByteSizeSample: Sample<Long>): Int {
+    fun apply(rowByteSizeSample: Sample<Long>): Int {
         val maxRowBytes: Long = rowByteSizeSample.sampledValues.maxOrNull() ?: 0L
         log.info {
             "maximum row size in ${rowByteSizeSample.kind.name} table is $maxRowBytes bytes"

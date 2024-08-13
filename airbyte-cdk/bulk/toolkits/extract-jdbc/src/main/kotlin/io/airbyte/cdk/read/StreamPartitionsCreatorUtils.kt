@@ -73,8 +73,6 @@ class StreamPartitionsCreatorUtils(
         return lbs.zip(ubs)
     }
 
-    fun interface FetchSizeEstimator : Function<Sample<Long>, Int>
-
     fun rowByteSizeEstimator(): (ObjectNode) -> Long {
         val countingOutputStream =
             object : OutputStream() {
