@@ -780,11 +780,10 @@ public class CdcMysqlSourceTest extends CdcSourceTest<MySqlSource, MySQLTestData
   }
 
   /**
-   * This test creates lots of tables increasing the schema history size above the limit of
-   * {@link AirbyteSchemaHistoryStorage#SIZE_LIMIT_TO_COMPRESS_MB} forcing the
-   * {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part of
-   * the state message which allows us to test that the next sync is able to work fine when provided
-   * with a compressed blob in the state.
+   * This test creates lots of tables increasing the schema history size above the limit of forcing
+   * the {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part
+   * of the state message which allows us to test that the next sync is able to work fine when
+   * provided with a compressed blob in the state.
    */
   @Test
   @Timeout(value = 120)

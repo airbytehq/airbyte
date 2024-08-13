@@ -22,12 +22,12 @@ import io.airbyte.cdk.integrations.debezium.internals.RelationalDbDebeziumProper
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
-import io.debezium.connector.mysql.gtid.MySqlGtidSet;
 import io.debezium.connector.common.OffsetReader;
 import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.connector.mysql.MySqlOffsetContext;
 import io.debezium.connector.mysql.MySqlOffsetContext.Loader;
 import io.debezium.connector.mysql.MySqlPartition;
+import io.debezium.connector.mysql.gtid.MySqlGtidSet;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
@@ -238,7 +238,7 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
     // We use the schema_only_recovery property cause using this mode will instruct Debezium to
     // construct the db schema history.
-    properties.setProperty("snapshot.mode", "schema_only_recovery");
+    properties.setProperty("snapshot.mode", "recovery");
     final String dbName = database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText();
     // Topic.prefix is sanitized version of database name. At this stage properties does not have this
     // value - it's set in RelationalDbDebeziumPropertiesManager.
