@@ -523,6 +523,7 @@ Options:
   --open-reports    Auto open reports in the browser.
   --create-prs      Create pull requests for each updated connector.
   --auto-merge    Set the auto-merge label on created PRs.
+  --ignore-connector TEXT  Ignore a connector by its technical name (can be used multiple times).
   --help      Show this message and exit.
 ```
 
@@ -789,7 +790,9 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| 4.31.4  | [#43724](https://github.com/airbytehq/airbyte/pull/43724)      | Do not send slack message on connector pre-release.                                                                          |
+| 4.32.0  | [#43969](https://github.com/airbytehq/airbyte/pull/43969)  | Add an `--ignore-connector` option to `up-to-date`                                                                           |
+| 4.31.5  | [#43934](https://github.com/airbytehq/airbyte/pull/43934)  | Track deleted files when generating pull-request                                                                             |
+| 4.31.4  | [#43724](https://github.com/airbytehq/airbyte/pull/43724)  | Do not send slack message on connector pre-release.                                                                          |
 | 4.31.3  | [#43426](https://github.com/airbytehq/airbyte/pull/43426)  | Ignore archived connectors on connector selection from modified files.                                                       |
 | 4.31.2  | [#43433](https://github.com/airbytehq/airbyte/pull/43433)  | Fix 'changed_file' indentation in 'pull-request' command                                                                     |
 | 4.31.1  | [#43442](https://github.com/airbytehq/airbyte/pull/43442)  | Resolve type check failure in bump version                                                                                   |
