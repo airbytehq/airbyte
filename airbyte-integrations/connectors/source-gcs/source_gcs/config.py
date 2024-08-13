@@ -19,12 +19,12 @@ class SourceGCSStreamConfig(FileBasedStreamConfig):
         'pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
         order=1,
     )
-    format: CsvFormat = Field(
-        title="Format",
-        description="The configuration options that are used to alter how to read incoming files that deviate from "
-        "the standard formatting.",
-        order=2,
-    )
+    # format: CsvFormat = Field(
+    #     title="Format",
+    #     description="The configuration options that are used to alter how to read incoming files that deviate from "
+    #     "the standard formatting.",
+    #     order=2,
+    # )
     legacy_prefix: Optional[str] = Field(
         title="Legacy Prefix",
         description="The path prefix configured in previous versions of the GCS connector. "
