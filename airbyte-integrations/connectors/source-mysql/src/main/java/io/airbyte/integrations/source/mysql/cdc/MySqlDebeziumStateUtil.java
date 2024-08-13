@@ -236,8 +236,9 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-    // We use the schema_only_recovery property cause using this mode will instruct Debezium to
+    // We use the recovery property cause using this mode will instruct Debezium to
     // construct the db schema history.
+    // Note that we used to use schema_only_recovery mode, but this mode has been deprecated.
     properties.setProperty("snapshot.mode", "recovery");
     final String dbName = database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText();
     // Topic.prefix is sanitized version of database name. At this stage properties does not have this
