@@ -49,6 +49,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.0 | 2024-08-13 | [43972](https://github.com/airbytehq/airbyte/pull/43972) | Refactor connector to manifest-only format |
 | 0.3.14 | 2024-08-12 | [43843](https://github.com/airbytehq/airbyte/pull/43843) | Update dependencies |
 | 0.3.13 | 2024-08-10 | [43466](https://github.com/airbytehq/airbyte/pull/43466) | Update dependencies |
 | 0.3.12 | 2024-08-03 | [43152](https://github.com/airbytehq/airbyte/pull/43152) | Update dependencies |
