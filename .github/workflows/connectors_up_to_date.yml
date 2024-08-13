@@ -39,4 +39,4 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors  ${{ github.event.inputs.connectors-options || '--concurrency=10 --language=python --language=low-code' }} up-to-date --ignore-connector=source-declarative-manifest --create-prs ${{ github.event.inputs.auto-merge == 'false' && '' || '--auto-merge' }}"
+          subcommand: "connectors  ${{ github.event.inputs.connectors-options || '--concurrency=10 --language=python --language=low-code --support-level=community --support-level=certified' }} up-to-date --ignore-connector=source-declarative-manifest --create-prs ${{ github.event.inputs.auto-merge == 'false' && '' || '--auto-merge' }}"

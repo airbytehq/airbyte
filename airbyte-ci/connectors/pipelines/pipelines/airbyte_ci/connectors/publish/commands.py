@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -90,6 +89,9 @@ async def publish(
     python_registry_url: str,
     python_registry_check_url: str,
 ) -> bool:
+
+    if not ctx.obj["selected_connectors_with_modified_files"]:
+        return True
 
     if ctx.obj["is_local"]:
         confirm(
