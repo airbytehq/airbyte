@@ -57,17 +57,24 @@ The Status page offers users visibility into the recent history of your syncs. F
 
 ### Resolving Connection Errors
 
-If the most recent sync failed, you'll see the error message that will help to diagnose whether the failure is due to a configuration or system error. 
+If the most recent sync failed, you'll see the error message that will help to diagnose next steps. If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
 
-Configuration errors are highlighted in red. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.
+#### Rate-Limited Syncs
+If a source is being rate-limited by Airbyte trying to extract data, an informational message will be displayed. This can occur more frequently when Airbyte is attempting to pull a large amount of data. If available from the source, Airbyte will also show a countdown to when the sync will attempt to start syncing again. 
+
+![Rate Limited Status](./assets/rate_limited.png)
+
+Airbyte will not continue attempting to sync until the rate limit is lifted. The Active Streams section will indicate which specific streams have been rate limited. The sync will automatically start attempting to sync again once the rate limit has lifted. 
+
+#### Configuration Errors
+Configuration errors are shown in red. If the failure is due to a configuration error, Airbyte recommends navigating to the related source or destination to re-test and save before attempting another sync.
 
 ![Configuration Error](./assets/configuration-error.png)
 
-All other errors are highlighted in yellow. These can range from transient errors to warnings from the source (e.g. rate limits). These types of errors usually resolve themselves without any action required. 
+#### System Errors
+Sync errors can also be shown in yellow. These can range from transient errors to warnings from the source (e.g. rate limits). These types of errors usually resolve themselves without any action required. 
 
 ![Warning Error](./assets/warning-error.png)
-
-If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
 
 ### Major Version Upgrades (Cloud only)
 If a new major version of the connector has been released in Cloud, you will also see a banner on this page indicating the cutoff date for the version upgrade. Airbyte recommends upgrading before the cutoff date to ensure your data continues syncing. If you do not upgrade before the cutoff date, Airbyte will automatically disable your connection.
