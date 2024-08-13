@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -107,7 +108,7 @@ class StreamPartitionsCreatorUtils(
             ctx.selectQuerier.executeQuery(q).use { if (it.hasNext()) it.next() else return null }
         val value: JsonNode = record[cursor.id] ?: Jsons.nullNode()
         if (value.isNull) {
-            throw IllegalStateException("NULL value found for cursor ${cursor.id}")
+            throw ConfigErrorException("NULL value found for cursor ${cursor.id}")
         }
         return ctx.transientCursorUpperBoundState.update { value }
     }
