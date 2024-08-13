@@ -328,7 +328,7 @@ def test_erd_url():
         "data": {
             "connectorType": "source",
             "definitionId": "test-id",
-            "registries": {"oss": {"enabled": True}},
+            "registryOverrides": {"oss": {"enabled": True}},
             "erdUrl": "https://an-erd.com",
         }
     }
