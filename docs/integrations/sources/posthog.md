@@ -71,7 +71,7 @@ Want to use the PostHog API beyond these limits? Email Posthog at `customers@pos
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| 1.1.6   | 2024-08-13 | [44012](https://github.com/airbytehq/airbyte/pull/44012) | Fix `events` stream pagniator to workaround PostHog API issue [#13508](https://github.com/PostHog/posthog/issues/13508) |
+| 1.1.6   | 2024-08-13 | [44016](https://github.com/airbytehq/airbyte/pull/44016) | Fix `events` stream pagniator to workaround PostHog API issue [#13508](https://github.com/PostHog/posthog/issues/13508) |
 | 1.1.5   | 2024-08-10 | [43488](https://github.com/airbytehq/airbyte/pull/43488) | Update dependencies                                                                                                     |
 | 1.1.4   | 2024-08-03 | [43232](https://github.com/airbytehq/airbyte/pull/43232) | Update dependencies                                                                                                     |
 | 1.1.3   | 2024-07-27 | [42769](https://github.com/airbytehq/airbyte/pull/42769) | Update dependencies                                                                                                     |
