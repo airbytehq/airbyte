@@ -207,8 +207,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     """Convert the metadata definition to a registry entry.
 
     Args:
-        metadata_definition (dict): The metadata definition.
-        connector_type (str): One of "source" or "destination".
+        metadata_entry (LatestMetadataEntry): The metadata definition.
         override_registry_key (str): The key of the registry to override the metadata with.
 
     Returns:
