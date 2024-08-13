@@ -8,7 +8,6 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.OutputStream
-import java.util.function.Function
 import kotlin.random.Random
 
 /** Utilities for [StreamPartitionsCreator] that don't rely directly on its input state. */
@@ -72,8 +71,6 @@ class StreamPartitionsCreatorUtils(
         val ubs: List<List<JsonNode>?> = splitBoundaries + listOf(globalUpperBound)
         return lbs.zip(ubs)
     }
-
-    fun interface FetchSizeEstimator : Function<Sample<Long>, Int>
 
     fun rowByteSizeEstimator(): (ObjectNode) -> Long {
         val countingOutputStream =
