@@ -1,6 +1,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from airbyte_cdk.test.mock_http.response_builder import get_unit_test_folder
+from pydantic import FilePath
+
+
+def get_unit_test_folder(execution_folder: str) -> FilePath:
+    path = FilePath(execution_folder)
+    while path.name != "unit_tests":
+        if path.name == path.root or path.name == path.drive:
+            raise ValueError(f"Could not find `unit_tests` folder as a parent of {execution_folder}")
+        path = path.parent
+    return path
 
 
 def read_resource_file_contents(resource: str, test_location: str) -> str:

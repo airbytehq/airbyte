@@ -7,6 +7,7 @@ from pathlib import Path as FilePath
 from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpResponse
+from airbyte_cdk.test.utils.data import get_unit_test_folder
 
 
 def _extract(path: List[str], response_template: Dict[str, Any]) -> Any:
@@ -171,15 +172,6 @@ class HttpResponseBuilder:
 def _get_unit_test_folder(execution_folder: str) -> FilePath:
     # FIXME: This function should be removed after the next CDK release to avoid breaking amazon-seller-partner test code.
     return get_unit_test_folder(execution_folder)
-
-
-def get_unit_test_folder(execution_folder: str) -> FilePath:
-    path = FilePath(execution_folder)
-    while path.name != "unit_tests":
-        if path.name == path.root or path.name == path.drive:
-            raise ValueError(f"Could not find `unit_tests` folder as a parent of {execution_folder}")
-        path = path.parent
-    return path
 
 
 def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
