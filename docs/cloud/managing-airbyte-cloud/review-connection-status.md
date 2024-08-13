@@ -60,7 +60,7 @@ The Status page offers users visibility into the recent history of your syncs. F
 If the most recent sync failed, you'll see the error message that will help to diagnose next steps. If a sync starts to fail, it will automatically be disabled after multiple consecutive failures or several consecutive days of failure.
 
 #### Rate-Limited Syncs
-If a source is being rate-limited by Airbyte trying to extract data, an informational message will be displayed. This can occure more frequently when Airbyte is attempting to pull a large amount of data. If available from the source, Airbyte will also show a countdown to when the sync will attempt to start syncing again. 
+If a source is being rate-limited by Airbyte trying to extract data, an informational message will be displayed. This can occur more frequently when Airbyte is attempting to pull a large amount of data. If available from the source, Airbyte will also show a countdown to when the sync will attempt to start syncing again. 
 
 ![Rate Limited Status](./assets/rate_limited.png)
 
