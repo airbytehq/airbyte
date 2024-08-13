@@ -4,6 +4,12 @@
 
 `cursor_field` for `TicketsMetric` stream is changed to `generated_timestamp`. It is necessary to refresh the data and schema for the affected stream.
 
+### Schema Changes - Added Field
+
+| Stream Name        | Added Fields            |
+| -------------------|------------------------ |
+| `TicketMetrics`    | `generated_timestamp`   |
+
 ### For Airbyte Open Source: Update the local connector image
 
 Airbyte Open Source users must manually update the connector image in their local registry before proceeding with the migration. To do so:
