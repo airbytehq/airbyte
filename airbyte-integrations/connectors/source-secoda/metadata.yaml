@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-secoda
   githubIssueLabel: source-secoda
   icon: secoda.svg
@@ -10,9 +10,9 @@ data:
   name: Secoda
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-secoda
-  registryOverrides:
+  registries:
     cloud:
       enabled: true
     oss:
@@ -20,8 +20,8 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
@@ -42,5 +42,5 @@ data:
   #           type: GSM
   #           alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.3.3@sha256:e419617922204b537d53e6d9c18bd86a5f72e47c329c3d6fd66dc0d238527d27
 metadataSpecVersion: "1.0"
