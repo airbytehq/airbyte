@@ -1,5 +1,4 @@
-version: "0.29.0"
-
+version: "4.3.0"
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -862,3 +861,4 @@ spec:
             type: string
             path_in_connector_config:
               - client_secret
+  type: Spec
