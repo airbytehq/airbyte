@@ -166,6 +166,7 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.7.3 | 2024-08-12 | [43921](https://github.com/airbytehq/airbyte/pull/43921) | Update dependencies |
 | 0.7.2 | 2024-08-10 | [43544](https://github.com/airbytehq/airbyte/pull/43544) | Update dependencies |
 | 0.7.1 | 2024-08-03 | [43290](https://github.com/airbytehq/airbyte/pull/43290) | Update dependencies |
 | 0.7.0 | 2024-08-02 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate to CDK v4.3.0 |

@@ -234,6 +234,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.5.7 | 2024-08-12 | [43896](https://github.com/airbytehq/airbyte/pull/43896) | Update dependencies |
 | 0.5.6 | 2024-08-10 | [43675](https://github.com/airbytehq/airbyte/pull/43675) | Update dependencies |
 | 0.5.5 | 2024-08-03 | [39978](https://github.com/airbytehq/airbyte/pull/39978) | Update dependencies |
 | 0.5.4 | 2024-07-01 | [39909](https://github.com/airbytehq/airbyte/pull/39909) | Fix error with zip files and encoding. |
