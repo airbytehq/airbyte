@@ -7,32 +7,17 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ### Prerequisites
 
-**To iterate on this connector, make sure to complete this prerequisites section.**
+* Python (`^3.9`)
+* Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-#### Build & Activate Virtual Environment and install dependencies
+### Installing the connector
 
-From this connector directory, create a virtual environment:
-
-```
-python -m venv .venv
-```
-
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-
-```
-source .venv/bin/activate
-pip install -r requirements.txt
+From this connector directory, run:
+```bash
+poetry install --with dev
 ```
 
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
-
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
-
-#### Create credentials
+### Create credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/posthog)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_posthog/spec.json` file.
@@ -45,31 +30,23 @@ and place them into `secrets/config.json`.
 ### Locally running the connector
 
 ```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-posthog spec
+poetry run source-posthog check --config secrets/config.json
+poetry run source-posthog discover --config secrets/config.json
+poetry run source-posthog read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
-### Locally running the connector docker image
+### Building the docker image
 
-#### Build
-
-**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
-
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
 ```bash
 airbyte-ci connectors --name=source-posthog build
 ```
 
-An image will be built with the tag `airbyte/source-posthog:dev`.
+An image will be available on your host with the tag `airbyte/source-posthog:dev`.
 
-**Via `docker build`:**
-
-```bash
-docker build -t airbyte/source-posthog:dev .
-```
-
-#### Run
+### Running as a docker container
 
 Then run any of the connector commands as follows:
 
@@ -80,10 +57,9 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-posthog:dev discover -
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-posthog:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
-## Testing
+### Running our CI test suite
 
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
-
 ```bash
 airbyte-ci connectors --name=source-posthog test
 ```
