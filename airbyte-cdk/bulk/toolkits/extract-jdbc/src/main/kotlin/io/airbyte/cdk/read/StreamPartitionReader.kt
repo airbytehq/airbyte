@@ -185,7 +185,6 @@ fun StreamPartitionReader.Input.querySpec(
                 checkpointUpperBound = primaryKeyUpperBound,
                 isOrdered,
                 limit,
-                extraConjWhereClauses = arrayOf(LesserOrEqual(cursor, cursorUpperBound)),
             )
         is StreamPartitionReader.CursorIncrementalInput ->
             querySpecForStreamPartitionReader(
@@ -205,7 +204,6 @@ private fun querySpecForStreamPartitionReader(
     checkpointUpperBound: List<JsonNode>?,
     isOrdered: Boolean,
     limit: Long?,
-    vararg extraConjWhereClauses: WhereClauseNode,
 ): SelectQuerySpec {
     val selectColumns: List<Field> =
         if (isOrdered) {
@@ -240,11 +238,10 @@ private fun querySpecForStreamPartitionReader(
                 } + listOf(lastLeaf),
             )
         }
-    val whereClause = And(listOf(Or(lowerBoundDisj), Or(upperBoundDisj)) + extraConjWhereClauses)
     return SelectQuerySpec(
         SelectColumns(selectColumns),
         From(stream.name, stream.namespace),
-        Where(whereClause),
+        Where(And(Or(lowerBoundDisj), Or(upperBoundDisj))),
         if (isOrdered) OrderBy(checkpointColumns) else NoOrderBy,
         if (limit == null) NoLimit else Limit(limit),
     )
