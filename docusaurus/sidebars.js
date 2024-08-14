@@ -528,7 +528,7 @@ module.exports = {
       label: "Managing Syncs",
       items: [
         "cloud/managing-airbyte-cloud/review-connection-status",
-        "cloud/managing-airbyte-cloud/review-sync-history",
+        "cloud/managing-airbyte-cloud/review-connection-timeline",
         "operator-guides/browsing-output-logs",
         "operator-guides/clear",
         "operator-guides/refreshes",
@@ -625,6 +625,7 @@ module.exports = {
       type: "category",
       label: "Integrating with Airbyte",
       items: [
+        "using-airbyte/configuring-api-access",
         "operator-guides/using-the-airflow-airbyte-operator",
         "operator-guides/using-prefect-task",
         "operator-guides/using-dagster-integration",
