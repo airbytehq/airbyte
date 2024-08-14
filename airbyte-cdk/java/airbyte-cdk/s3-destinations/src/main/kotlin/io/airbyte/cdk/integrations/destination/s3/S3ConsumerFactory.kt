@@ -69,19 +69,20 @@ class S3ConsumerFactory {
                 val stream = writeConfig.streamName
                 val outputBucketPath = writeConfig.outputBucketPath
                 val pathFormat = writeConfig.pathFormat
-                if (mustCleanUpExistingObjects(writeConfig, storageOperations)) {
+                if (!isAppendSync(writeConfig)) {
                     LOGGER.info {
-                        "Clearing storage area in destination started for namespace $namespace " +
+                        "Listing objects to cleanup for namespace $namespace " +
                             "stream $stream bucketObject $outputBucketPath pathFormat $pathFormat"
                     }
-                    storageOperations.cleanUpBucketObject(
-                        namespace,
-                        stream,
-                        outputBucketPath,
-                        pathFormat
+                    writeConfig.objectsFromOldGeneration.addAll(
+                        keysForOverwriteDeletion(
+                            writeConfig,
+                            storageOperations,
+                        ),
                     )
                     LOGGER.info {
-                        "Clearing storage area in destination completed for namespace $namespace stream $stream bucketObject $outputBucketPath"
+                        "Marked ${writeConfig.objectsFromOldGeneration.size} keys for deletion at end of sync " +
+                            "for namespace $namespace stream $stream bucketObject $outputBucketPath"
                     }
                 } else {
                     LOGGER.info {
@@ -140,17 +141,43 @@ class S3ConsumerFactory {
         storageOperations: BlobStorageOperations,
         writeConfigs: List<WriteConfig>
     ): OnCloseFunction {
-        return OnCloseFunction { hasFailed: Boolean, _: Map<StreamDescriptor, StreamSyncSummary> ->
-            if (hasFailed) {
-                LOGGER.info { "Cleaning up destination started for ${writeConfigs.size} streams" }
-                for (writeConfig in writeConfigs) {
-                    storageOperations.cleanUpBucketObject(
-                        writeConfig.fullOutputPath,
-                        writeConfig.storedFiles
-                    )
-                    writeConfig.clearStoredFiles()
+
+        val streamDescriptorToWriteConfig =
+            writeConfigs.associateBy {
+                StreamDescriptor().withNamespace(it.namespace).withName(it.streamName)
+            }
+        return OnCloseFunction {
+            _: Boolean,
+            streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
+            // On stream success clean up the objects marked for deletion per stream. This is done
+            // on per-stream basis
+            streamSyncSummaries.forEach { (streamDescriptor, streamSummary) ->
+                val streamSuccessful =
+                    streamSummary.terminalStatus ==
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                if (streamSuccessful) {
+                    val writeConfig = streamDescriptorToWriteConfig[streamDescriptor]!!
+                    if (writeConfig.objectsFromOldGeneration.isNotEmpty()) {
+                        // Although S3API is safe to send empty list of keys, just avoiding
+                        // unnecessary S3 call
+                        // Logic to determine what to delete is in onStart so not doing any
+                        // redundant checks for
+                        // destinationSyncMode.
+                        LOGGER.info {
+                            "Found ${writeConfig.objectsFromOldGeneration.size} marked for deletion in namespace: ${streamDescriptor.namespace},stream: ${streamDescriptor.name} " +
+                                "Proceeding with cleaning up the objects"
+                        }
+                        storageOperations.cleanUpObjects(writeConfig.objectsFromOldGeneration)
+                        LOGGER.info {
+                            "Cleaning up completed for namespace: ${streamDescriptor.namespace},stream: ${streamDescriptor.name}"
+                        }
+                    }
+                } else {
+                    LOGGER.info {
+                        "Stream not successful with status ${streamSummary.terminalStatus} for namespace: ${streamDescriptor.namespace}, name: ${streamDescriptor.name} " +
+                            "Skipping deletion of any old objects marked for deletion."
+                    }
                 }
-                LOGGER.info { "Cleaning up destination completed." }
             }
         }
     }
@@ -225,56 +252,74 @@ class S3ConsumerFactory {
         )
     }
 
-    private fun mustCleanUpExistingObjects(
+    private fun isAppendSync(writeConfig: WriteConfig): Boolean {
+        // This is an additional safety check, that this really is OVERWRITE
+        // mode, this avoids bad things happening like deleting all objects
+        // in APPEND mode.
+        return writeConfig.minimumGenerationId == 0L &&
+            writeConfig.syncMode != DestinationSyncMode.OVERWRITE
+    }
+
+    private fun keysForOverwriteDeletion(
         writeConfig: WriteConfig,
         storageOperations: BlobStorageOperations
-    ): Boolean {
-        return when (writeConfig.minimumGenerationId) {
-            // This is an additional safety check, that this really is OVERWRITE
-            // mode, this avoids bad things happening like deleting all objects
-            // in APPEND mode.
-            0L -> writeConfig.syncMode == DestinationSyncMode.OVERWRITE
-            writeConfig.generationId -> {
-                // This is truncate sync and try to determine if the current generation
-                // data is already present
-                val namespace = writeConfig.namespace
-                val stream = writeConfig.streamName
-                val outputBucketPath = writeConfig.outputBucketPath
-                val pathFormat = writeConfig.pathFormat
-                // generationId is missing, assume the last sync was ran in non-resumeable refresh
-                // mode,
-                // cleanup files
-                val currentGenerationId =
-                    storageOperations.getStageGeneration(
-                        namespace,
-                        stream,
-                        outputBucketPath,
-                        pathFormat
-                    )
-                if (currentGenerationId == null) {
-                    LOGGER.info {
-                        "Missing generationId from the lastModified object, proceeding with cleanup for stream ${writeConfig.streamName}"
-                    }
-                    return true
+    ): List<String> {
+        // Guards to fail fast
+        if (writeConfig.minimumGenerationId == 0L) {
+            throw IllegalArgumentException(
+                "Keys should not be marked for deletion when not in OVERWRITE mode"
+            )
+        }
+        if (writeConfig.minimumGenerationId != writeConfig.generationId) {
+            throw IllegalArgumentException("Hybrid refreshes are not yet supported.")
+        }
+
+        // This is truncate sync and try to determine if the current generation
+        // data is already present
+        val namespace = writeConfig.namespace
+        val stream = writeConfig.streamName
+        val outputBucketPath = writeConfig.outputBucketPath
+        val pathFormat = writeConfig.pathFormat
+        // generationId is missing, assume the last sync was ran in non-resumeable refresh
+        // mode,
+        // cleanup files
+        val currentGenerationId =
+            storageOperations.getStageGeneration(namespace, stream, outputBucketPath, pathFormat)
+        var filterByCurrentGen = false
+        if (currentGenerationId != null) {
+            // if minGen = gen = retrievedGen and skip clean up
+            val hasDataFromCurrentGeneration = currentGenerationId == writeConfig.generationId
+            if (hasDataFromCurrentGeneration) {
+                LOGGER.info {
+                    "Preserving data from previous sync for stream ${writeConfig.streamName} since it matches the current generation ${writeConfig.generationId}"
                 }
-                // if minGen = gen = retrievedGen and skip clean up
-                val hasDataFromCurrentGeneration = currentGenerationId == writeConfig.generationId
-                if (hasDataFromCurrentGeneration) {
-                    LOGGER.info {
-                        "Preserving data from previous sync for stream ${writeConfig.streamName} since it matches the current generation ${writeConfig.generationId}"
-                    }
-                } else {
-                    LOGGER.info {
-                        "No data exists from previous sync for stream ${writeConfig.streamName} from current generation ${writeConfig.generationId}, " +
-                            "proceeding to clean up existing data"
-                    }
+                // There could be data dangling from T-2 sync if current generation failed in T-1
+                // sync.
+                filterByCurrentGen = true
+            } else {
+                LOGGER.info {
+                    "No data exists from previous sync for stream ${writeConfig.streamName} from current generation ${writeConfig.generationId}, " +
+                        "proceeding to clean up existing data"
                 }
-                return !hasDataFromCurrentGeneration
             }
-            else -> {
-                throw IllegalArgumentException("Hybrid refreshes are not yet supported.")
+        } else {
+            LOGGER.info {
+                "Missing generationId from the lastModified object, proceeding with cleanup for stream ${writeConfig.streamName}"
             }
         }
+
+        return storageOperations.listExistingObjects(
+            namespace,
+            stream,
+            outputBucketPath,
+            pathFormat,
+            currentGenerationId =
+                if (filterByCurrentGen) {
+                    writeConfig.generationId
+                } else {
+                    null
+                },
+        )
     }
 
     companion object {

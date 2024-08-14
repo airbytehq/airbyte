@@ -118,11 +118,11 @@ If your files are in a folder, include the folder in your glob pattern, like `my
 The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 | Feature                        | Support | Notes |
-| :----------------------------- | :-----: | :---- |
-| Full Refresh - Overwrite       |   ✅    |       |
-| Full Refresh - Append Sync     |   ✅    |       |
-| Incremental - Append           |   ✅    |       |
-| Incremental - Append + Deduped |   ❌    |       |
+|:-------------------------------|:-------:|:------|
+| Full Refresh - Overwrite       |    ✅    |       |
+| Full Refresh - Append Sync     |    ✅    |       |
+| Incremental - Append           |    ✅    |       |
+| Incremental - Append + Deduped |    ❌    |       |
 
 ## Supported Streams
 
@@ -134,6 +134,7 @@ This source provides a single stream per file with a dynamic schema. The current
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.1.0   | 2024-08-14 | [44028](https://github.com/airbytehq/airbyte/pull/44028) | Update dependency to CDK v4                                 |
 | 1.0.1   | 2024-05-29 | [38703](https://github.com/airbytehq/airbyte/pull/38703) | Avoid error on empty stream when running discover           |
 | 1.0.0   | 2024-03-22 | [36256](https://github.com/airbytehq/airbyte/pull/36256) | Migrate to File-Based CDK. Manage dependencies with Poetry. |
 | 0.1.2   | 2023-04-19 | [19224](https://github.com/airbytehq/airbyte/pull/19224) | Support custom CSV separators                               |
