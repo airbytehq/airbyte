@@ -47,40 +47,40 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 This check expects the following order of headers in the documentation:
 
 ````
 
 
-  # <CONNECTOR_NAME_FROM_METADATA>
+  # CONNECTOR_NAME_FROM_METADATA
 
   ## Prerequisites
 
   ## Setup guide
 
-  ## Set up <CONNECTOR_NAME_FROM_METADATA>
+  ## Set up CONNECTOR_NAME_FROM_METADATA
 
   ### For Airbyte Cloud:
 
   ### For Airbyte Open Source:
 
-  ### { Connector-specific features }
+  ### CONNECTOR_SPECIFIC_FEATURES
 
-  ## Set up the <CONNECTOR_NAME_FROM_METADATA> connector in Airbyte
+  ## Set up the CONNECTOR_NAME_FROM_METADATA connector in Airbyte
 
   ### For Airbyte Cloud:
 
   ### For Airbyte Open Source:
 
-  ## { Connector-specific features }
+  ## CONNECTOR_SPECIFIC_FEATURES
 
   ## Supported sync modes
 
   ## Supported Streams
 
-  ## { Connector-specific features }
+  ## CONNECTOR_SPECIFIC_FEATURES
 
   ### Performance considerations
 
@@ -88,7 +88,7 @@ This check expects the following order of headers in the documentation:
 
   ## Limitations & Troubleshooting
 
-  ### { Connector-specific features }
+  ### CONNECTOR_SPECIFIC_FEATURES
 
   ### Tutorials
 
@@ -100,13 +100,13 @@ This check expects the following order of headers in the documentation:
 
 List of not required headers, which can be not exist in the documentation and their strict check will be skipped:
 
-  - Set up the <CONNECTOR_NAME_FROM_METADATA> connector in Airbyte
+  - Set up the CONNECTOR_NAME_FROM_METADATA connector in Airbyte
 
-  - For Airbyte Cloud: *(as subtitle of Set up <CONNECTOR_NAME_FROM_METADATA)>
+  - For Airbyte Cloud: (as subtitle of Set up CONNECTOR_NAME_FROM_METADATA)
 
-  - For Airbyte Open Source: *(as subtitle of Set up <CONNECTOR_NAME_FROM_METADATA)>
+  - For Airbyte Open Source: (as subtitle of Set up CONNECTOR_NAME_FROM_METADATA)
 
-  - { Connector-specific features } (but this headers should be on a right place according to expected order)
+  - CONNECTOR_SPECIFIC_FEATURES (but this headers should be on a right place according to expected order)
 
   - Performance considerations
 
@@ -136,15 +136,15 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
-Check verifies that <CONNECTOR_NAME_FROM_METADATA> header section content follows standard template:
+Check verifies that CONNECTOR_NAME_FROM_METADATA header section content follows standard template:
 
 ````
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the [<CONNECTOR_NAME_FROM_METADATA>]({docs_link}) source connector.
+This page contains the setup guide and reference information for the [CONNECTOR_NAME_FROM_METADATA]({docs_link}) source connector.
 
 </HideInUI>
 
@@ -159,7 +159,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that For Airbyte Cloud: header section content follows standard template:
 
@@ -167,8 +167,8 @@ Check verifies that For Airbyte Cloud: header section content follows standard t
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
-3. On the Set up the source page, select <CONNECTOR_NAME_FROM_METADATA> from the Source type dropdown.
-4. Enter a name for the <CONNECTOR_NAME_FROM_METADATA> connector.
+3. On the Set up the source page, select CONNECTOR_NAME_FROM_METADATA from the Source type dropdown.
+4. Enter a name for the CONNECTOR_NAME_FROM_METADATA connector.
 
 ````
 
@@ -180,7 +180,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that For Airbyte Open Source: header section content follows standard template:
 
@@ -198,13 +198,13 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Supported sync modes header section content follows standard template:
 
 ````
 
-The <CONNECTOR_NAME_FROM_METADATA> source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+The CONNECTOR_NAME_FROM_METADATA source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 
 ````
@@ -217,13 +217,13 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Tutorials header section content follows standard template:
 
 ````
 
-Now that you have set up the <CONNECTOR_NAME_FROM_METADATA> source connector, check out the following <CONNECTOR_NAME_FROM_METADATA> tutorials:
+Now that you have set up the CONNECTOR_NAME_FROM_METADATA source connector, check out the following CONNECTOR_NAME_FROM_METADATA tutorials:
 
 
 ````
@@ -236,7 +236,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw).
+The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Changelog header section content follows standard template:
 

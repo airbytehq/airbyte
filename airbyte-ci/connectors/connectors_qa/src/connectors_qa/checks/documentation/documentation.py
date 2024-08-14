@@ -182,15 +182,15 @@ class CheckDocumentationLinks(CheckDocumentationContent):
 class CheckDocumentationHeadersOrder(CheckDocumentationContent):
     name = "Connectors documentation headers structure, naming and order follow our guidelines"
 
-    CONNECTOR_SPECIFIC_HEADINGS = "{ Connector-specific features }"
+    CONNECTOR_SPECIFIC_HEADINGS = "CONNECTOR_SPECIFIC_FEATURES"
 
     @property
     def description(self) -> str:
-        ordered_headers = TemplateContent("<CONNECTOR_NAME_FROM_METADATA>").headers_with_tag()
+        ordered_headers = TemplateContent("CONNECTOR_NAME_FROM_METADATA").headers_with_tag()
         not_required_headers = [
-            f"Set up the <CONNECTOR_NAME_FROM_METADATA> connector in Airbyte",
-            "For Airbyte Cloud: *(as subtitle of Set up <CONNECTOR_NAME_FROM_METADATA)>",
-            "For Airbyte Open Source: *(as subtitle of Set up <CONNECTOR_NAME_FROM_METADATA)>",
+            f"Set up the CONNECTOR_NAME_FROM_METADATA connector in Airbyte",
+            "For Airbyte Cloud: (as subtitle of Set up CONNECTOR_NAME_FROM_METADATA)",
+            "For Airbyte Open Source: (as subtitle of Set up CONNECTOR_NAME_FROM_METADATA)",
             self.CONNECTOR_SPECIFIC_HEADINGS + " (but this headers should be on a right place according to expected order)",
             "Performance considerations",
             "Data type map",
@@ -379,7 +379,7 @@ class CheckSection(CheckDocumentationContent):
 
     @property
     def description(self) -> str:
-        templates = TemplateContent("<CONNECTOR_NAME_FROM_METADATA>").section(self.header)
+        templates = TemplateContent("CONNECTOR_NAME_FROM_METADATA").section(self.header)
         if len(templates) > 1:
             template = templates[1]
         else:
@@ -449,9 +449,9 @@ class CheckSourceSectionContent(CheckDocumentationContent):
 
     @property
     def description(self) -> str:
-        template = TemplateContent("<CONNECTOR_NAME_FROM_METADATA>").section("<CONNECTOR_NAME_FROM_METADATA>")[0]
+        template = TemplateContent("CONNECTOR_NAME_FROM_METADATA").section("CONNECTOR_NAME_FROM_METADATA")[0]
 
-        return generate_description("section_content_description.md.j2", {"header": "<CONNECTOR_NAME_FROM_METADATA>", "template": template})
+        return generate_description("section_content_description.md.j2", {"header": "CONNECTOR_NAME_FROM_METADATA", "template": template})
 
     def check_source_follows_template(self, connector: Connector) -> List[str]:
         documentation = DocumentationContent(connector=connector)
