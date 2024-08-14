@@ -14,7 +14,7 @@ data:
   icon: linnworks.svg
   license: MIT
   name: Linnworks
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

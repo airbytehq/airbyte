@@ -8,7 +8,7 @@ data:
   icon: databricks.svg
   license: ELv2
   name: Databricks Lakehouse
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

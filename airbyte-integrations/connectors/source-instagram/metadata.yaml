@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-instagram
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
