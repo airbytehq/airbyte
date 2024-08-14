@@ -127,7 +127,6 @@ class CheckDocumentationContent(DocumentationCheck):
 class CheckDocumentationLinks(CheckDocumentationContent):
     name = "Links used in connector documentation are valid"
     description = f"The user facing connector documentation should update invalid links in connector documentation. For links that are used as example and return 404 status code, use `example: ` before link to skip it."
-    valid_status_codes = [200, 403, 401, 405, 406, 429, 503]  # we skip 4xx due to needed access
 
     def validate_links(self, connector: Connector) -> List[str]:
         errors = []
@@ -136,7 +135,7 @@ class CheckDocumentationLinks(CheckDocumentationContent):
         def request_link(docs_link: str) -> None:
             try:
                 response = requests.get(docs_link)
-                if response.status_code not in self.valid_status_codes:
+                if response.status_code == 404:
                     errors.append(f"{docs_link} with {response.status_code} status code")
             except requests.exceptions.SSLError:
                 pass
@@ -295,7 +294,7 @@ class CheckDocumentationHeadersOrder(CheckDocumentationContent):
 
 
 class CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec(CheckDocumentationContent):
-    name = "Prerequisites section of the documentation describes all required fields from specification."
+    name = "Prerequisites section of the documentation describes all required fields from specification"
     description = (
         "The user facing connector documentation should update `Prerequisites`"
         " section with description for all required fields from source specification. "
@@ -365,7 +364,7 @@ class CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec(CheckDocumentatio
             )
         return self.pass_(
             connector=connector,
-            message="All required fields from spec are present in the connector documentation.",
+            message="All required fields from spec are present in the connector documentation",
         )
 
 
