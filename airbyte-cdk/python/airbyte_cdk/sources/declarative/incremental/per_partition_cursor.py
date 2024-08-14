@@ -106,6 +106,7 @@ class PerPartitionCursor(DeclarativeCursor):
 
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
 
