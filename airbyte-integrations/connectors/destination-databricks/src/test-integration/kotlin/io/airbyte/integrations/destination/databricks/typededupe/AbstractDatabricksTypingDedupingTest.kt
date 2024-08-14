@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.databricks.typededupe
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations
@@ -15,16 +16,18 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupi
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.databricks.DatabricksConnectorClientsFactory
-import io.airbyte.integrations.destination.databricks.DatabricksIntegrationTestUtils
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksNamingTransformer
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksSqlGenerator
 import io.airbyte.integrations.destination.databricks.model.DatabricksConnectorConfig
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.ResultSet
+import java.util.Locale
+import org.apache.commons.lang3.RandomStringUtils
 
 abstract class AbstractDatabricksTypingDedupingTest(
     private val jdbcDatabase: JdbcDatabase,
+    private val jsonConfig: JsonNode,
     private val connectorConfig: DatabricksConnectorConfig,
 ) : BaseTypingDedupingTest() {
     override val imageName: String
@@ -33,9 +36,21 @@ abstract class AbstractDatabricksTypingDedupingTest(
     companion object {
         fun setupDatabase(
             connectorConfigPath: String
-        ): Pair<JdbcDatabase, DatabricksConnectorConfig> {
-            val config = Jsons.deserialize(IOs.readFile(Path.of(connectorConfigPath)))
-            val connectorConfig = DatabricksConnectorConfig.deserialize(config)
+        ): Triple<JdbcDatabase, JsonNode, DatabricksConnectorConfig> {
+            var jsonConfig = Jsons.deserialize(IOs.readFile(Path.of(connectorConfigPath)))
+
+            // Randomize the default namespace to avoid collisions between
+            // concurrent test runs.
+            // Technically, we should probably do this in `generateConfig`,
+            // because there could be concurrent test runs within a single class,
+            // but we currently only have a single test that uses the default
+            // namespace anyway.
+            val uniqueSuffix = RandomStringUtils.randomAlphabetic(10).lowercase(Locale.getDefault())
+            val defaultSchema = "typing_deduping_default_schema_$uniqueSuffix"
+            val connectorConfig =
+                DatabricksConnectorConfig.deserialize(jsonConfig).copy(schema = defaultSchema)
+            (jsonConfig as ObjectNode).put("schema", defaultSchema)
+
             val jdbcDatabase =
                 DefaultJdbcDatabase(
                     DatabricksConnectorClientsFactory.createDataSource(connectorConfig)
@@ -43,13 +58,13 @@ abstract class AbstractDatabricksTypingDedupingTest(
             // This will trigger warehouse start
             jdbcDatabase.execute("SELECT 1")
 
-            return Pair(jdbcDatabase, connectorConfig)
+            return Triple(jdbcDatabase, jsonConfig, connectorConfig)
         }
     }
 
     override fun generateConfig(): JsonNode {
         // This method is called in BeforeEach so setup any other references needed per test
-        return DatabricksIntegrationTestUtils.oauthConfigJson.deepCopy()
+        return jsonConfig.deepCopy()
     }
 
     private fun rawTableIdentifier(
