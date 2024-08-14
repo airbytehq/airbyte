@@ -139,49 +139,6 @@ class RedshiftS3StagingStorageOperationTest {
         )
     }
 
-    @Test
-    fun testOverwriteStageDropCascade() {
-        // create a new storage op with dropCascade = true
-        val storageOperationWithCascade = getStorageOperation(dropCascade = true)
-
-        // Create the real+temp tables, and write a record to the temp table
-        storageOperation.prepareStage(streamId, "")
-        storageOperation.prepareStage(streamId, TMP_TABLE_SUFFIX)
-        writeRecords(suffix = TMP_TABLE_SUFFIX, record(5))
-        // Create a view on top of the real table
-        jdbcDatabase.execute(
-            """CREATE VIEW ${streamId.rawNamespace}.test_view AS SELECT * FROM ${streamId.rawNamespace}.${streamId.rawName}"""
-        )
-
-        // Check that we're set up correctly: Trying to drop the real table without cascade should
-        // fail
-        val configError =
-            assertThrows<ConfigErrorException> {
-                storageOperation.overwriteStage(
-                    streamId,
-                    TMP_TABLE_SUFFIX,
-                )
-            }
-        assertEquals(
-            "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
-            configError.message,
-        )
-        // Then check that dropping with CASCADE succeeds
-        assertDoesNotThrow {
-            storageOperationWithCascade.overwriteStage(streamId, TMP_TABLE_SUFFIX)
-        }
-        // And verify that we still correctly moved the record to the real table
-        assertEquals(
-            listOf("""{"record_number":5}"""),
-            dumpRawRecords("").map { it["_airbyte_data"].asText() },
-        )
-        // And verify that the temp table is gone
-        assertEquals(
-            """ERROR: relation "${streamId.rawNamespace}.${streamId.rawName}$TMP_TABLE_SUFFIX" does not exist""",
-            assertThrows<RedshiftException> { dumpRawRecords(TMP_TABLE_SUFFIX) }.message,
-        )
-    }
-
     private fun dumpRawRecords(suffix: String): List<JsonNode> {
         return jdbcDatabase.queryJsons(
             "SELECT * FROM ${streamId.rawNamespace}.${streamId.rawName}$suffix"

@@ -129,18 +129,6 @@ class RedshiftDestinationHandler(
                 }
             } catch (e: SQLException) {
                 log.error(e) { "Sql $queryId-$transactionId failed" }
-                // This is a big hammer for something that should be much more targetted, only when
-                // executing the
-                // DROP TABLE command.
-                if (
-                    e.message!!.contains("ERROR: cannot drop table") &&
-                        e.message!!.contains("because other objects depend on it")
-                ) {
-                    throw ConfigErrorException(
-                        "Failed to drop table without the CASCADE option. Consider changing the drop_cascade configuration parameter",
-                        e
-                    )
-                }
                 throw e
             }
 
