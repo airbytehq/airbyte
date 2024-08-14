@@ -26,7 +26,7 @@ constructor(
      * This probably doesn't belong here, but it's the easiest place where both [BufferEnqueue] and
      * [io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer] can both get to it.
      */
-    public val defaultNamespace: String?,
+    val defaultNamespace: String?,
     maxMemory: Long = (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO).toLong(),
 ) {
     @get:VisibleForTesting val buffers: ConcurrentMap<StreamDescriptor, StreamAwareQueue>

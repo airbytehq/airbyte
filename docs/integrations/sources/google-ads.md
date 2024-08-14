@@ -1,6 +1,10 @@
 # Google Ads
 
-This page contains the setup guide and reference information for the Google Ads source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Google Ads](https://developers.google.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -13,9 +17,11 @@ This page contains the setup guide and reference information for the Google Ads 
 
 ## Setup guide
 
+### Set up Google Ads
+
 <!-- env:oss -->
 
-### Step 1: (For Airbyte Open Source) Apply for a developer token
+#### Step 1: (For Airbyte Open Source) Apply for a developer token
 
 To set up the Google Ads source connector with Airbyte Open Source, you will need to obtain a developer token. This token allows you to access your data from the Google Ads API. Please note that Google is selective about which software and use cases are issued this token. The Airbyte team has worked with the Google Ads team to allowlist Airbyte and ensure you can get a developer token (see [issue 1981](https://github.com/airbytehq/airbyte/issues/1981) for more information on this topic).
 
@@ -33,7 +39,7 @@ To set up the Google Ads source connector with Airbyte Open Source, you will nee
 You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
 :::
 
-### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
+#### Step 2: (For Airbyte Open Source) Obtain your OAuth credentials
 
 If you are using Airbyte Open Source, you will need to obtain the following OAuth credentials to authenticate your Google Ads account:
 
@@ -52,16 +58,15 @@ Each Google Ads API developer token is assigned an access level and "permissible
 ### Step 3: Set up the Google Ads connector in Airbyte
 
 <!-- /env:oss -->
+
 <!-- env:cloud -->
 
 #### For Airbyte Cloud:
 
-To set up Google Ads as a source in Airbyte Cloud:
-
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Ads** from the list of available sources.
-4. Enter a **Source name** of your choosing.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Ads from the Source type dropdown.
+4. Enter a name for the Google Ads connector.
 5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
 6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus) for more info.
@@ -81,9 +86,7 @@ To set up Google Ads as a source in Airbyte Cloud:
 
 #### For Airbyte Open Source:
 
-To set up Google Ads as a source in Airbyte Open Source:
-
-1. Log in to your Airbyte Open Source account.
+1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
@@ -100,16 +103,16 @@ To set up Google Ads as a source in Airbyte Open Source:
 
 <!-- /env:oss -->
 
-## Supported Sync Modes
+## Supported sync modes
 
-The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-#### Incremental Events Streams
+**Incremental Events Streams:**
 
 List of stream:
 
@@ -188,7 +191,7 @@ Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, wh
 
 ### Report Tables
 
-- [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
+- [account_performance_report](https://developers.google.com/google-ads/api/fields/v15/overview)
 
 Provides in-depth metrics related to ads interactions, including viewability, click-through rates, and conversions. Segments data by various factors, offering a granular look into how ads perform across different contexts.
 
