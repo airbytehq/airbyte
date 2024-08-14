@@ -7,8 +7,10 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import base64
+import hashlib
 from datetime import datetime
 from logging import Logger
+from dateutil.relativedelta import relativedelta
 import requests
 import pytz
 from airbyte_cdk.models import SyncMode
@@ -147,22 +149,31 @@ class MgramsevaBills(MgramsevaStream):
             yield from consumer_code_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
 
-class MgramsevaTenantExpenses(MgramsevaStream):
-    """object for tenant payments"""
+class MgramsevaTenantExpense(MgramsevaStream):
+    """object for a single tenant expense"""
 
-    def __init__(self, headers: dict, request_info: dict, user_request: dict, tenantid: str, fromdate: int, todate: int, **kwargs):
-        """
-        specify endpoint for demands and call super
-        1672531200000 = 2023-01-01 00:00
-        1830297600000 = 2028-01-01 00:00
-        """
+    def __init__(
+        self,
+        endpoint: str,
+        headers: dict,
+        request_info: dict,
+        user_request: dict,
+        tenantid: str,
+        month_start: datetime,
+        next_month_start: datetime,
+        response_key: str,
+        **kwargs,
+    ):
+        """call super"""
         self.tenantid = tenantid
-        self.fromdate = fromdate
-        self.todate = todate
-        params = {"tenantId": self.tenantid, "fromDate": self.fromdate, "toDate": self.todate}
-        super().__init__(
-            "echallan-services/eChallan/v1/_expenseDashboard", headers, request_info, user_request, params, "ExpenseDashboard", **kwargs
-        )
+        self.month_start = month_start
+        self.next_month_start = next_month_start
+        params = {
+            "tenantId": self.tenantid,
+            "fromDate": int(month_start.timestamp() * 1000),
+            "toDate": int(next_month_start.timestamp() * 1000),
+        }
+        super().__init__(endpoint, headers, request_info, user_request, params, response_key, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -170,9 +181,59 @@ class MgramsevaTenantExpenses(MgramsevaStream):
         """
         expenses = response.json()[self.response_key]
         expenses["tenantId"] = self.tenantid
-        expenses["fromDate"] = self.fromdate
-        expenses["toDate"] = self.todate
-        return [{"data": expenses, "id": "1"}]
+        expenses["fromDate"] = self.month_start.strftime("%Y-%m-%d")
+        expenses["toDate"] = self.next_month_start.strftime("%Y-%m-%d")
+        combined_string = f"{self.tenantid}{expenses['fromDate']}{expenses['toDate']}"
+        id_hash = hashlib.sha256(combined_string.encode())
+        return [{"data": expenses, "id": id_hash.hexdigest()}]
+
+
+class MgramsevaTenantExpenses(MgramsevaStream):
+    """object for tenant payments"""
+
+    def __init__(
+        self, headers: dict, request_info: dict, user_request: dict, tenantid: str, fromdate: datetime, todate: datetime, **kwargs
+    ):
+        """
+        specify endpoint for demands and call super
+        1672531200000 = 2023-01-01 00:00
+        1830297600000 = 2028-01-01 00:00
+        """
+        self.headers = headers
+        self.request_info = request_info
+        self.user_request = user_request
+        self.tenantid = tenantid
+        self.fromdate = fromdate
+        self.todate = todate
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        """override"""
+
+        month_start = self.fromdate.replace(day=1)
+
+        while month_start < self.todate:
+
+            next_month_start = month_start + relativedelta(months=1)
+
+            stream = MgramsevaTenantExpense(
+                "echallan-services/eChallan/v1/_expenseDashboard",
+                self.headers,
+                self.request_info,
+                self.user_request,
+                self.tenantid,
+                month_start,
+                next_month_start,
+                "ExpenseDashboard",
+            )
+            yield from stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+
+            month_start = next_month_start
 
 
 class MgramsevaPayments(MgramsevaStream):
@@ -268,8 +329,8 @@ class SourceMgramseva(AbstractSource):
         self.setup(config)
         self.get_auth_token()
 
-        tenant_expenses_from = datetime.strptime(config.get("tenant_expenses_from", "2022-01-01"), "%Y-%m-%d")
-        tenant_expenses_to = datetime.strptime(config.get("tenant_expenses_to", "2022-01-01"), "%Y-%m-%d")
+        # tenant_expenses_from = datetime.strptime(config.get("tenant_expenses_from", "2022-01-01"), "%Y-%m-%d")
+        # tenant_expenses_to = datetime.strptime(config.get("tenant_expenses_to", "2022-01-01"), "%Y-%m-%d")
 
         start_date = datetime.strptime(config.get("start_date", "2022-01-01"), "%Y-%m-%d").replace(tzinfo=pytz.UTC)
         end_date = datetime.today().replace(tzinfo=pytz.UTC)
@@ -278,14 +339,7 @@ class SourceMgramseva(AbstractSource):
             # Generate streams for each object type
             streams = [
                 MgramsevaPayments(self.headers, self.request_info, self.user_request, tenantid),
-                MgramsevaTenantExpenses(
-                    self.headers,
-                    self.request_info,
-                    self.user_request,
-                    tenantid,
-                    int(tenant_expenses_from.timestamp() * 1000),
-                    int(tenant_expenses_to.timestamp() * 1000),
-                ),
+                MgramsevaTenantExpenses(self.headers, self.request_info, self.user_request, tenantid, start_date, end_date),
             ]
 
             demand_stream = MgramsevaDemands(self.headers, self.request_info, self.user_request, tenantid, start_date, end_date)
