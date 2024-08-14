@@ -44,11 +44,14 @@ def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
             "teams": list(CERTIFIED_MANIFEST_ONLY_CONNECTOR_REVIEWERS),
             "is_required": find_changed_manifest_only_connectors(support_level="certified"),
         },
-        {
-            "name": "Manifest-only community connectors",
-            "teams": list(COMMUNITY_MANIFEST_ONLY_CONNECTOR_REVIEWERS),
-            "is_required": find_changed_manifest_only_connectors(support_level="community"),
-        },
+        # TODO: We are disabling this requirement to unblock automerging of the manifest-only migrations.
+        # We should re-enable this requirement when we have migrated our existing connectors to manifest-only
+        # and are ready to enforce reviews for community connectors again.
+        # {
+        #     "name": "Manifest-only community connectors",
+        #     "teams": list(COMMUNITY_MANIFEST_ONLY_CONNECTOR_REVIEWERS),
+        #     "is_required": find_changed_manifest_only_connectors(support_level="community"),
+        # },
     ]
 
     return [{"name": r["name"], "teams": r["teams"]} for r in requirements if r["is_required"]]
