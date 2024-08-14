@@ -16,7 +16,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-workable
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

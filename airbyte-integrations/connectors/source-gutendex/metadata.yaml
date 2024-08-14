@@ -11,7 +11,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-gutendex
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

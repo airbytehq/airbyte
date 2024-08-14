@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.primetric.com
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

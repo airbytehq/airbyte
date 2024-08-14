@@ -17,7 +17,7 @@ data:
   icon: metabase.svg
   license: MIT
   name: Metabase
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -20,7 +20,7 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-spacex-api
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

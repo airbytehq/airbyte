@@ -17,7 +17,7 @@ data:
   icon: mailgun.svg
   license: MIT
   name: Mailgun
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
