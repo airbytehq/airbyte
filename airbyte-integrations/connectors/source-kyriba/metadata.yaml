@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-kyriba
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

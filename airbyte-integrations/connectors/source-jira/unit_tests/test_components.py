@@ -83,8 +83,8 @@ def test_stream_slices(records, expected_slices):
         (
             [{"partition_id": "field_value"}],  # fields parent stream output
             [{"partition_id": "other_value"}],  # other parent stream output
-            ["field_value"],  # expected fields value in stream slices
-            "other_value",  # expected partition value in stream slices
+            [1, "key", "status", "created", "updated"],  # expected fields value in stream slices
+            2,  # expected partition value in stream slices
         )
     ],
 )
@@ -92,9 +92,11 @@ def test_sprint_issues_substream_partition_router(fields_data, other_data, expec
     fields_parent_stream = MagicMock()
     fields_parent_stream_config = MagicMock(stream=fields_parent_stream, partition_field=MagicMock())
     fields_parent_stream_config.partition_field.eval.return_value = "partition_id"
+    fields_parent_stream_config.parent_key.eval.return_value = "id"
     other_parent_stream = MagicMock()
     other_parent_stream_config = MagicMock(stream=other_parent_stream, partition_field=MagicMock())
     other_parent_stream_config.partition_field.eval.return_value = "partition_id"
+    other_parent_stream_config.parent_key.eval.return_value = "id"
 
     # Initialize the router inside the test
     router = SprintIssuesSubstreamPartitionRouter(
@@ -103,19 +105,20 @@ def test_sprint_issues_substream_partition_router(fields_data, other_data, expec
 
     # Mocking fields_parent_stream to return specific stream slices
     fields_parent_stream.stream_slices.return_value = [StreamSlice(partition={"partition_id": val}, cursor_slice={}) for val in fields_data]
-    fields_parent_stream.read_records.return_value = [{"id": 1, "partition_id": val} for val in fields_data]
+    fields_parent_stream.read_only_records.return_value = [{"id": 1, "partition_id": val} for val in fields_data]
 
     # Mocking other_parent_stream to return specific stream slices
     other_parent_stream.stream_slices.return_value = [StreamSlice(partition={"partition_id": val}, cursor_slice={}) for val in other_data]
-    other_parent_stream.read_records.return_value = [{"id": 2, "partition_id": val} for val in other_data]
+    other_parent_stream.read_only_records.return_value = [{"id": 2, "partition_id": val} for val in other_data]
 
     # Collecting results from stream_slices
     slices = list(router.stream_slices())
 
+    assert slices, "There should be at least one slice generated"
     # Asserting the correct parent stream fields are set in slices
     assert all(
-        slice.parent_stream_fields == expected_fields for slice in slices
-    ), f"Expected parent stream fields {expected_fields}, but got {slice.parent_stream_fields}"
+        _slice.parent_stream_fields == expected_fields for _slice in slices
+    ), f"Expected parent stream fields {expected_fields}, but got {slices}"
     assert all(
-        slice.partition["partition_id"] == expected_partition for slice in slices
-    ), f"Expected partition ID {expected_partition}, but got {slice.partition['partition_id']}"
+        _slice.partition["partition_id"] == expected_partition for _slice in slices
+    ), f"Expected partition ID {expected_partition}, but got {slices}"

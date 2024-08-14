@@ -433,6 +433,6 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
         tmp_metadata, error = gcs_upload.validate_and_load(tmp_metadata_file_path, [], validator_opts=ValidatorOptions(docs_path=DOCS_PATH))
         tmp_metadata_dict = to_json_sanitized_dict(tmp_metadata, exclude_none=True)
         assert tmp_metadata_dict["data"]["dockerImageTag"] == prerelease_image_tag
-        for registry in get(tmp_metadata_dict, "data.registries", {}).values():
+        for registry in get(tmp_metadata_dict, "data.registryOverrides", {}).values():
             if "dockerImageTag" in registry:
                 assert registry["dockerImageTag"] == prerelease_image_tag

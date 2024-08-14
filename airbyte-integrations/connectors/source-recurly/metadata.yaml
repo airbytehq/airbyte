@@ -14,7 +14,7 @@ data:
   icon: recurly.svg
   license: MIT
   name: Recurly
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

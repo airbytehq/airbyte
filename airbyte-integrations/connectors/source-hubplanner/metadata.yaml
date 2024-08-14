@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-hubplanner
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

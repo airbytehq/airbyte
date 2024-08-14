@@ -3,7 +3,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-younium
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

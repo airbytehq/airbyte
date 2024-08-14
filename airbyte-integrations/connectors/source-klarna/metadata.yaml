@@ -20,7 +20,7 @@ data:
   icon: klarna.svg
   license: MIT
   name: Klarna
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

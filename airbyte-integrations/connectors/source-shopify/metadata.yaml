@@ -23,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-shopify
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -14,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-coingecko-coins
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # Did not pass acceptance tests
     oss:

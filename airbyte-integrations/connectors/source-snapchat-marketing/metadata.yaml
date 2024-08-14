@@ -19,7 +19,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-snapchat-marketing
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

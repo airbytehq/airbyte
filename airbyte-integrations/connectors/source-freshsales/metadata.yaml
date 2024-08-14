@@ -5,7 +5,7 @@ data:
   allowedHosts:
     hosts:
       - "*.myfreshworks.com"
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
