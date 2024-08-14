@@ -14,7 +14,7 @@ data:
   icon: emailoctopus.svg
   license: MIT
   name: EmailOctopus
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

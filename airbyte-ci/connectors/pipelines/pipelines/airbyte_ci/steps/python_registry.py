@@ -26,6 +26,7 @@ class PackageType(Enum):
 class PublishToPythonRegistry(Step):
     context: PythonRegistryPublishContext
     title = "Publish package to python registry"
+    max_retries = 3
 
     def _get_base_container(self) -> Container:
         return with_poetry(self.context)
@@ -120,6 +121,10 @@ class PublishToPythonRegistry(Step):
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(["poetry", "config", "repositories.mypypi", self.context.registry])
             .with_exec(sh_dash_c(["poetry config pypi-token.mypypi $PYTHON_REGISTRY_TOKEN"]))
+            # Default timeout is set to 15 seconds
+            # We sometime face 443 HTTP read timeout responses from PyPi
+            # Setting it to 60 seconds to avoid transient publish failures
+            .with_env_variable("POETRY_REQUESTS_TIMEOUT", "60")
             .with_exec(sh_dash_c(["poetry publish --build --repository mypypi -vvv --no-interaction"]))
         )
 

@@ -8,7 +8,7 @@ data:
   icon: bigquery.svg
   license: ELv2
   name: BigQuery (denormalized typed struct)
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

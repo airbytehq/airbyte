@@ -8,7 +8,7 @@ data:
   icon: firestore.svg
   license: MIT
   name: Google Firestore
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
