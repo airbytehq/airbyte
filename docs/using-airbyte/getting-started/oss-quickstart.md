@@ -338,6 +338,16 @@ rm -rf ~/.airbyte/abctl
 
 ## Troubleshooting
 
+### Using standard tools to interact with an Airbyte instance that was installed with `abctl`
+
+`abctl` install Airbyte into a kind cluster on your local machine. If you'd like to interact directly with any of the underlying infrastructure, you can use standard tooling. You will need to make sure these tools are installed (or install them yourself). Any of these out of the box tools will work with an Airbyte instance installed with `abctl`.
+
+If you want to interact with the pods or resources inside the cluster you can use [kubectl](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) and [helm](https://helm.sh/). Just make sure you are pointing at the correct K8s configuration e.g. `kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl get pods`
+
+[kind](https://kind.sigs.k8s.io/) is a tool for creating a K8s cluster using docker instead of having to install a local K8s cluster. You only need to think about kind if you want to make an adjustment to the cluster itself.
+
+For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](../../contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
+
 ### Unable To Locate User Email
 :::note
 In `abctl` [v0.11.0](https://github.com/airbytehq/abctl/releases/tag/v0.11.0), support for basic-auth was removed (as basic-auth support was removed from the `Airbyte Platform` in [v0.63.11](https://github.com/airbytehq/airbyte-platform/releases/tag/v0.63.11), and replaced with a more secure randomly generated password.  When logging into Airbyte, the email (provided during registration) should be automatically populated and the randomly generated password can be fetched by running `abctl local credentials`.
