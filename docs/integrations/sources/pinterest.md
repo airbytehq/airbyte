@@ -203,6 +203,7 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.11 | 2024-08-12 | [43838](https://github.com/airbytehq/airbyte/pull/43838) | Update dependencies |
 | 2.0.10 | 2024-08-10 | [43642](https://github.com/airbytehq/airbyte/pull/43642) | Update dependencies |
 | 2.0.9 | 2024-08-03 | [43280](https://github.com/airbytehq/airbyte/pull/43280) | Update dependencies |
 | 2.0.8 | 2024-07-30 | [39559](https://github.com/airbytehq/airbyte/pull/39559) | Ensure config_error when state has improper format and update CDK version |

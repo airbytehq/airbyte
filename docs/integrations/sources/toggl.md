@@ -38,6 +38,7 @@ Toggl APIs are under rate limits for the number of API calls allowed per API key
 
 | Version | Date       | Pull Request                                              | Subject                                 |
 |:--------|:-----------| :-------------------------------------------------------- | :-------------------------------------- |
+| 0.1.14 | 2024-08-12 | [43860](https://github.com/airbytehq/airbyte/pull/43860) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43485](https://github.com/airbytehq/airbyte/pull/43485) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [43064](https://github.com/airbytehq/airbyte/pull/43064) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42755](https://github.com/airbytehq/airbyte/pull/42755) | Update dependencies |

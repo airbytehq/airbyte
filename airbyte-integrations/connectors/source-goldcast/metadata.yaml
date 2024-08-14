@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - customapi.goldcast.io
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/source-goldcast
   githubIssueLabel: source-goldcast
   icon: goldcast.svg
