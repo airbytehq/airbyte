@@ -9,10 +9,7 @@ This page contains the setup guide and reference information for the [File (CSV,
 ## Prerequisites
 
 - A file hosted on AWS S3, GCS, HTTPS, or an SFTP server
-- Dataset Name
-- File Format
-- URL
-- Storage Provider
+
 
 ## Setup guide
 
