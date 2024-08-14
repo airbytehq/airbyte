@@ -24,6 +24,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.*
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.concurrent.Executors
 import java.util.function.Consumer
 import java.util.function.Function
 import org.joda.time.DateTime
@@ -158,7 +159,9 @@ class S3ConsumerFactory {
         outputRecordCollector: Consumer<AirbyteMessage>,
         storageOps: S3StorageOperations,
         s3Config: S3DestinationConfig,
-        catalog: ConfiguredAirbyteCatalog
+        catalog: ConfiguredAirbyteCatalog,
+        memoryRatio: Double,
+        nThreads: Int
     ): SerializedAirbyteMessageConsumer {
         val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
         // Buffer creation function: yields a file buffer that converts
@@ -190,7 +193,11 @@ class S3ConsumerFactory {
             // S3 has no concept of default namespace
             // In the "namespace from destination case", the namespace
             // is simply omitted from the path.
-            BufferManager(defaultNamespace = null)
+            BufferManager(
+                defaultNamespace = null,
+                maxMemory = (Runtime.getRuntime().maxMemory() * memoryRatio).toLong()
+            ),
+            workerPool = Executors.newFixedThreadPool(nThreads)
         )
     }
 
