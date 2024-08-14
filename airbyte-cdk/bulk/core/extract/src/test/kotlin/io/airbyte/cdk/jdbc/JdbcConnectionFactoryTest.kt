@@ -1,9 +1,10 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.jdbc
 
+import io.airbyte.cdk.fakesource.FakeSourceConfigurationFactory
+import io.airbyte.cdk.fakesource.FakeSourceConfigurationJsonObject
+import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.ssh.SshBastionContainer
-import io.airbyte.cdk.test.source.FakeSourceConfigurationFactory
-import io.airbyte.cdk.test.source.FakeSourceConfigurationJsonObject
 import io.airbyte.cdk.testcontainers.DOCKER_HOST_FROM_WITHIN_CONTAINER
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

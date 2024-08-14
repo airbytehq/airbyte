@@ -12,7 +12,7 @@ data:
   icon: redshift.svg
   license: MIT
   name: Redshift
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

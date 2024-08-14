@@ -91,7 +91,7 @@ properties:
         items:
           type: string
         default: []
-      registries:
+      registryOverrides:
         anyOf:
           - type: object
             additionalProperties: false

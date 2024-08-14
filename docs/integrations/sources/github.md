@@ -215,6 +215,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.4 | 2024-08-12 | [43749](https://github.com/airbytehq/airbyte/pull/43749) | Update dependencies |
 | 1.8.3 | 2024-08-10 | [42671](https://github.com/airbytehq/airbyte/pull/42671) | Update dependencies |
 | 1.8.2 | 2024-08-20 | [42966](https://github.com/airbytehq/airbyte/pull/42966) | Bump cdk version and enable RFR for all non-incremental streams |
 | 1.8.1 | 2024-07-20 | [42342](https://github.com/airbytehq/airbyte/pull/42342) | Update dependencies |

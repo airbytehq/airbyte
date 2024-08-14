@@ -255,7 +255,7 @@ class ConnectorBreakingChanges(BaseModel):
     )
 
 
-class Registry(BaseModel):
+class RegistryOverride(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -302,7 +302,7 @@ class Data(BaseModel):
     tags: Optional[List[str]] = Field(
         [], description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
     )
-    registries: Optional[Registry] = None
+    registryOverrides: Optional[RegistryOverride] = None
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None

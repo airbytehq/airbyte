@@ -14,7 +14,7 @@ data:
   icon: gong.svg
   license: MIT
   name: Gong
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

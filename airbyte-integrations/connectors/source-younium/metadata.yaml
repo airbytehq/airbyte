@@ -3,7 +3,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-younium
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
-  dockerImageTag: 0.3.13
+  dockerImageTag: 0.3.14
   dockerRepository: airbyte/source-younium
   githubIssueLabel: source-younium
   icon: younium.svg
