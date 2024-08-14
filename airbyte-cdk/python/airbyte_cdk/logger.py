@@ -9,6 +9,7 @@ from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from orjson import orjson
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -60,7 +61,9 @@ class AirbyteLogFormatter(logging.Formatter):
             message = super().format(record)
             message = filter_secrets(message)
             log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
-            return log_message.model_dump_json(exclude_unset=True)  # type: ignore
+            # return log_message.model_dump_json(exclude_unset=True)  # type: ignore
+            return orjson.dumps(log_message).decode()
+
 
     @staticmethod
     def extract_extra_args_from_record(record: logging.LogRecord) -> Mapping[str, Any]:

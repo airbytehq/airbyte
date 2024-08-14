@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from orjson import orjson
 
 
 class AirbyteTracedException(Exception):
@@ -85,7 +86,8 @@ class AirbyteTracedException(Exception):
         Prints the exception as an AirbyteTraceMessage.
         Note that this will be called automatically on uncaught exceptions when using the airbyte_cdk entrypoint.
         """
-        message = self.as_airbyte_message().model_dump_json(exclude_unset=True)
+        # message = self.as_airbyte_message().model_dump_json(exclude_unset=True)
+        message = orjson.dumps(self.as_airbyte_message()).decode()
         filtered_message = filter_secrets(message)
         print(filtered_message)
 

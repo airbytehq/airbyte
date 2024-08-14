@@ -29,7 +29,7 @@ from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import PreparedRequest, Response, Session
-
+from orjson import orjson
 logger = init_logger("airbyte")
 
 VALID_URL_SCHEMES = ["https"]
@@ -200,7 +200,8 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
-        return airbyte_message.model_dump_json(exclude_unset=True)
+        # return airbyte_message.model_dump_json(exclude_unset=True)
+        return orjson.dumps(airbyte_message).decode()
 
     @classmethod
     def extract_state(cls, args: List[str]) -> Optional[Any]:

@@ -4,7 +4,7 @@
 
 import copy
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
-
+from dataclasses import dataclass
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteStateBlob,
@@ -19,13 +19,15 @@ from airbyte_cdk.sources.streams import Stream
 from pydantic import ConfigDict as V2ConfigDict
 
 
-class HashableStreamDescriptor(StreamDescriptor):
+@dataclass(frozen=True)
+class HashableStreamDescriptor:
     """
     Helper class that overrides the existing StreamDescriptor class that is auto generated from the Airbyte Protocol and
     freezes its fields so that it be used as a hash key. This is only marked public because we use it outside for unit tests.
     """
-
-    model_config = V2ConfigDict(extra="allow", frozen=True)
+    name: str
+    namespace: Optional[str] = None
+    # model_config = V2ConfigDict(extra="allow", frozen=True)
 
 
 class ConnectorStateManager:
@@ -73,7 +75,7 @@ class ConnectorStateManager:
         :param value: A stream state mapping that is being updated for a stream
         """
         stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-        self.per_stream_states[stream_descriptor] = AirbyteStateBlob.parse_obj(value)
+        self.per_stream_states[stream_descriptor] = AirbyteStateBlob(value)
 
     def create_state_message(self, stream_name: str, namespace: Optional[str]) -> AirbyteMessage:
         """
@@ -163,7 +165,7 @@ class ConnectorStateManager:
         for stream_name, state_value in state.items():
             namespace = stream_to_instance_map[stream_name].namespace if stream_name in stream_to_instance_map else None
             stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-            streams[stream_descriptor] = AirbyteStateBlob.parse_obj(state_value or {})
+            streams[stream_descriptor] = AirbyteStateBlob(state_value or {})
         return streams
 
     @staticmethod
