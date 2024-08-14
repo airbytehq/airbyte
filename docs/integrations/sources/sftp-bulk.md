@@ -1,6 +1,10 @@
 # SFTP Bulk
 
-This page contains the setup guide and reference information for the SFTP Bulk source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [SFTP Bulk](https://docs.airbyte.com/integrations/sources/sftp-bulk#file-specific-configuration) source connector.
+
+</HideInUI>
 
 The SFTP Bulk connector offers several features that are not available in the standard SFTP source connector:
 
@@ -16,7 +20,9 @@ The SFTP Bulk connector offers several features that are not available in the st
 
 ## Setup guide
 
-### Step 1: Set up SFTP authentication
+### Set up SFTP Bulk
+
+#### Step 1: Set up SFTP authentication
 
 To set up the SFTP connector, you will need to select at least _one_ of the following authentication methods:
 
@@ -52,12 +58,14 @@ ssh <username>@<server_ip_address>
 For more information on SSH key pair authentication, please refer to the
 [official documentation](https://www.ssh.com/academy/ssh/keygen).
 
-### Step 2: Set up the SFTP connector in Airbyte
+### Set up the SFTP Bulk connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **SFTP Bulk** from the list of available sources.
-4. Enter a **Source name** of your choosing.
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
+4. Enter a name for the SFTP Bulk connector.
 5. Enter the **Host Address**.
 6. Enter your **Username**
 7. Enter your authentication credentials for the SFTP server (**Password** or **Private Key**). If you are authenticating with a private key, you can upload the file containing the private key (usually named `rsa_id`) using the Upload file button.
@@ -88,6 +96,13 @@ This pattern will filter for files that match the format `log-YYYYMMDD`, where `
 
 14. Click **Set up source** to complete setup. A test will run to verify the configuration.
 
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select SFTP Bulk from the Source type dropdown.
+4. Enter a name for the SFTP Bulk connector.
+
 #### File-specific Configuration
 
 Depending on your **File Type** selection, you will be presented with a few configuration options specific to that file type. 
@@ -100,7 +115,7 @@ If your files are in a folder, include the folder in your glob pattern, like `my
 
 ## Supported sync modes
 
-The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The SFTP Bulk source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 | Feature                        | Support | Notes |
 | :----------------------------- | :-----: | :---- |
@@ -109,7 +124,7 @@ The SFTP Bulk source connector supports the following [sync modes](https://docs.
 | Incremental - Append           |   ✅    |       |
 | Incremental - Append + Deduped |   ❌    |       |
 
-## Supported streams
+## Supported Streams
 
 This source provides a single stream per file with a dynamic schema. The current supported type files are Avro, CSV, JSONL, Parquet, and Document File Type Format. 
 
