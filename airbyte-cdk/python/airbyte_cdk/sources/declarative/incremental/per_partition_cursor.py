@@ -46,7 +46,7 @@ class PerPartitionCursor(DeclarativeCursor):
     _KEY = 0
     _VALUE = 1
 
-    def __init__(self, cursor_factory: Union[CursorFactory, DeclarativeCursor], partition_router: PartitionRouter):
+    def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
         self._cursor_per_partition: MutableMapping[str, DeclarativeCursor] = {}
@@ -106,7 +106,6 @@ class PerPartitionCursor(DeclarativeCursor):
 
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
-
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
 
@@ -171,10 +170,8 @@ class PerPartitionCursor(DeclarativeCursor):
         return self._get_state_for_partition(stream_slice.partition)
 
     def _create_cursor(self, cursor_state: Any) -> DeclarativeCursor:
-        if isinstance(self._cursor_factory, DeclarativeCursor):
-            cursor = self._cursor_factory
-        elif isinstance(self._cursor_factory, CursorFactory):
-            cursor = self._cursor_factory.create()
+        cursor = self._cursor_factory.create()
+        cursor.set_initial_state(cursor_state)
         return cursor
 
     def get_request_params(
