@@ -27,6 +27,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
+from source_amazon_seller_partner.utils import STREAM_THRESHOLD_PERIOD, threshold_period_decorator
 
 REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
@@ -222,6 +223,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         period_in_days: Optional[int],
         replication_end_date: Optional[str],
         report_options: Optional[List[Mapping[str, Any]]] = None,
+        wait_to_avoid_fatal_errors: Optional[bool] = False,
         *args,
         **kwargs,
     ):
@@ -234,6 +236,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._report_options = report_options
         self._http_method = "GET"
         self._stream_name = stream_name
+
+        self.wait_to_avoid_fatal_errors = wait_to_avoid_fatal_errors
 
     @property
     def name(self):
@@ -382,6 +386,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             }
             start_date = end_date_slice
 
+    @threshold_period_decorator
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -480,6 +485,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
                     f" for period {stream_slice['dataStartTime']}-{stream_slice['dataEndTime']}. "
                     f"This will be read during the next sync. Report ID: {report_id}."
                     f" Error: {error_response}"
+                    " Visit https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting for more info."
                 )
             raise AirbyteTracedException(internal_message=exception_message)
         elif processing_status == ReportProcessingStatus.CANCELLED:
@@ -582,6 +588,10 @@ class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
 class FulfilledShipmentsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+
+    Threshold 12
+    Period (minutes) 480
+
     """
 
     report_name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
@@ -681,6 +691,13 @@ class GetXmlBrowseTreeData(IncrementalReportsAmazonSPStream):
 
 
 class FbaEstimatedFbaFeesTxtReport(IncrementalReportsAmazonSPStream):
+    """
+
+    Threshold 2000
+    Period (minutes) 60
+
+    """
+
     report_name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
 
 
@@ -1110,6 +1127,10 @@ class FbaAfnInventoryReports(IncrementalReportsAmazonSPStream):
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
     Report has a long-running issue (fails when requested frequently):
     https://github.com/amzn/selling-partner-api-docs/issues/2231
+
+    Threshold 2
+    Period (minutes) 25
+
     """
 
     report_name = "GET_AFN_INVENTORY_DATA"
