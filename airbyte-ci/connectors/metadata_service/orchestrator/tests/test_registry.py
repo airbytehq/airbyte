@@ -319,6 +319,26 @@ def test_source_type_extraction():
     assert result["sourceType"] == "database"
 
 
+def test_erd_url():
+    """
+    Test that if when defined in the metadata, the erd_url will be populated in the registry
+    """
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "erdUrl": "https://an-erd.com",
+        }
+    }
+    mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["erdUrl"] == "https://an-erd.com"
+
+
 def test_support_level_default():
     """
     Test if supportLevel is defaulted to alpha in the registry entry.
