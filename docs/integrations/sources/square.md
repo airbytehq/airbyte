@@ -103,6 +103,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.0 | 2024-08-14 | [44062](https://github.com/airbytehq/airbyte/pull/44062) | Refactor connector to manifest-only format |
 | 1.6.16 | 2024-08-12 | [43915](https://github.com/airbytehq/airbyte/pull/43915) | Update dependencies |
 | 1.6.15 | 2024-08-10 | [43498](https://github.com/airbytehq/airbyte/pull/43498) | Update dependencies |
 | 1.6.14 | 2024-08-03 | [43110](https://github.com/airbytehq/airbyte/pull/43110) | Update dependencies |
