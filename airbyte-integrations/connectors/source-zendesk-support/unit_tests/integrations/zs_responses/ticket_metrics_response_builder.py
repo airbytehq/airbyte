@@ -1,11 +1,18 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 202 Airbyte, Inc., all rights reserved.
 
-from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseBuilder, find_template
+import json
+
+from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponse, HttpResponseBuilder, RecordBuilder, find_template
 
 from .pagination_strategies import CursorBasedPaginationStrategy
 
 
-class PostCommentVotesResponseBuilder(HttpResponseBuilder):
+class TicketMetricsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def post_comment_votes_response(cls) -> "PostCommentVotesResponseBuilder":
-        return cls(find_template("votes", __file__), FieldPath("votes"), CursorBasedPaginationStrategy())
+    def ticket_metrics_response(cls) -> "TicketMetricsResponseBuilder":
+        return cls(find_template("ticket_metrics", __file__), FieldPath("ticket_metric"), CursorBasedPaginationStrategy())
+
+    def build(self) -> HttpResponse:
+        for record in self._records:
+            self._records_path.update(self._response, record.build())
+        return HttpResponse(json.dumps(self._response), self._status_code)

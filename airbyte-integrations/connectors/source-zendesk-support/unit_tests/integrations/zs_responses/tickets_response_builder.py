@@ -5,7 +5,7 @@ from airbyte_cdk.test.mock_http.response_builder import FieldPath, HttpResponseB
 from .pagination_strategies import CursorBasedPaginationStrategy
 
 
-class PostCommentVotesResponseBuilder(HttpResponseBuilder):
+class TicketsResponseBuilder(HttpResponseBuilder):
     @classmethod
-    def post_comment_votes_response(cls) -> "PostCommentVotesResponseBuilder":
-        return cls(find_template("votes", __file__), FieldPath("votes"), CursorBasedPaginationStrategy())
+    def tickets_response(cls) -> "TicketsResponseBuilder":
+        return cls(find_template("tickets", __file__), FieldPath("tickets"), CursorBasedPaginationStrategy())
