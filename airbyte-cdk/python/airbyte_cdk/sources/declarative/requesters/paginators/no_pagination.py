@@ -25,7 +25,7 @@ class NoPagination(Paginator, ComponentConstructor[NoPaginationModel, NoPaginati
         cls,
         model: NoPaginationModel,
         config: Config,
-        dependency_constructor: Callable[[NoPaginationModel, Config], Any],
+        dependency_constructor: Callable[[NoPaginationModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

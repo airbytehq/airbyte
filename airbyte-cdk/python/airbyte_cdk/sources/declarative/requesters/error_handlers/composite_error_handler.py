@@ -49,7 +49,7 @@ class CompositeErrorHandler(
         cls,
         model: CompositeErrorHandlerModel,
         config: Config,
-        dependency_constructor: Callable[[Union[CompositeErrorHandlerModel, DefaultErrorHandlerModel], Config], Any],
+        dependency_constructor: Callable[[Union[CompositeErrorHandlerModel, DefaultErrorHandlerModel], Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

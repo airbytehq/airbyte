@@ -2,7 +2,7 @@
 
 
 from dataclasses import dataclass
-from typing import Any, Callable, Generic, Mapping, Optional, Type, TypeVar
+from typing import Any, Callable, Dict, Generic, Mapping, Optional, Type, TypeVar
 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.types import Config
@@ -27,7 +27,7 @@ class ComponentConstructor(Generic[M, D]):
         cls,
         model: M,
         config: Config,
-        dependency_constructor: Callable[[D, Mapping[str, Any]], Any],
+        dependency_constructor: Callable[[D, Config, Optional[Dict[str, Any]]], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -43,7 +43,7 @@ class ComponentConstructor(Generic[M, D]):
         cls,
         model: M,
         config: Config,
-        dependency_constructor: Callable[[D, Config], Any],
+        dependency_constructor: Callable[[D, Config, Optional[Dict[str, Any]]], Any],
         additional_flags: Optional[Mapping[str, Any]],
         **kwargs: Any,
     ) -> "ComponentConstructor[M, D]":

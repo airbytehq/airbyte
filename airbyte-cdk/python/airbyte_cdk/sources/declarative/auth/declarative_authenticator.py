@@ -39,7 +39,7 @@ class NoAuth(DeclarativeAuthenticator, ComponentConstructor[NoAuthModel, NoAuthM
         cls,
         model: NoAuthModel,
         config: Config,
-        dependency_constructor: Callable[[NoAuthModel, Config], Any],
+        dependency_constructor: Callable[[NoAuthModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

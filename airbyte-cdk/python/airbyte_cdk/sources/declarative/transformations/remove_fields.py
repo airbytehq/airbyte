@@ -50,7 +50,7 @@ class RemoveFields(RecordTransformation, ComponentConstructor[RemoveFieldsModel,
         cls,
         model: RemoveFieldsModel,
         config: Config,
-        dependency_constructor: Callable[[RemoveFieldsModel, Config], Any],
+        dependency_constructor: Callable[[RemoveFieldsModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

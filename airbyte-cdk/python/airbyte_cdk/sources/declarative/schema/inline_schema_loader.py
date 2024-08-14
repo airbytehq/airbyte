@@ -23,7 +23,7 @@ class InlineSchemaLoader(SchemaLoader, ComponentConstructor[InlineSchemaLoaderMo
         cls,
         model: InlineSchemaLoaderModel,
         config: Config,
-        dependency_constructor: Callable[[InlineSchemaLoaderModel, Config], Any],
+        dependency_constructor: Callable[[InlineSchemaLoaderModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

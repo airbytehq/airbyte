@@ -31,7 +31,7 @@ class JsonDecoder(Decoder, ComponentConstructor[JsonDecoderModel, JsonDecoderMod
         cls,
         model: JsonDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[JsonDecoderModel, Config], Any],
+        dependency_constructor: Callable[[JsonDecoderModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -70,7 +70,7 @@ class IterableDecoder(Decoder, ComponentConstructor[IterableDecoderModel, Iterab
         cls,
         model: IterableDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[IterableDecoderModel, Config], Any],
+        dependency_constructor: Callable[[IterableDecoderModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -97,7 +97,7 @@ class JsonlDecoder(Decoder, ComponentConstructor[JsonlDecoderModel, JsonlDecoder
         cls,
         model: JsonlDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[JsonlDecoderModel, Config], Any],
+        dependency_constructor: Callable[[JsonlDecoderModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

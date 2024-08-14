@@ -35,7 +35,7 @@ class Spec(ComponentConstructor[SpecModel, SpecModel]):
         cls,
         model: SpecModel,
         config: Config,
-        dependency_constructor: Callable[[SpecModel, Mapping[str, Any]], Any],
+        dependency_constructor: Callable[[SpecModel, Mapping[str, Any], Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

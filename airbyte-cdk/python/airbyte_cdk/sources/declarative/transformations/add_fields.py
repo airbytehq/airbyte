@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Callable, List, Mapping, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union
 
 import dpath
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -28,7 +28,7 @@ class AddedFieldDefinition(ComponentConstructor[AddedFieldDefinitionModel, Added
         cls,
         model: AddedFieldDefinitionModel,
         config: Config,
-        dependency_constructor: Callable[[AddedFieldDefinitionModel, Config], Any],
+        dependency_constructor: Callable[[AddedFieldDefinitionModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -51,7 +51,7 @@ class ParsedAddFieldDefinition:
 
 
 @dataclass
-class AddFields(RecordTransformation, ComponentConstructor[AddFieldsModel, AddFieldsModel]):
+class AddFields(RecordTransformation, ComponentConstructor[AddFieldsModel, AddedFieldDefinitionModel]):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
@@ -111,7 +111,7 @@ class AddFields(RecordTransformation, ComponentConstructor[AddFieldsModel, AddFi
         cls,
         model: AddFieldsModel,
         config: Config,
-        dependency_constructor: Callable[[AddFieldsModel, Config], Any],
+        dependency_constructor: Callable[[AddedFieldDefinitionModel, Config, Optional[Dict[str, Any]]], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -119,7 +119,7 @@ class AddFields(RecordTransformation, ComponentConstructor[AddFieldsModel, AddFi
             dependency_constructor(
                 added_field_definition_model,
                 config,
-                value_type=cls._json_schema_type_name_to_type(added_field_definition_model.value_type),
+                **{"value_type": cls._json_schema_type_name_to_type(added_field_definition_model.value_type)}
             )
             for added_field_definition_model in model.fields
         ]

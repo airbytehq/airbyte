@@ -23,7 +23,7 @@ class RequestPath(ComponentConstructor[RequestPathModel, RequestPathModel]):
         cls,
         model: RequestPathModel,
         config: Config,
-        dependency_constructor: Callable[[RequestPathModel, Config], Any],
+        dependency_constructor: Callable[[RequestPathModel, Config, Any], Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
