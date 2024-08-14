@@ -6,10 +6,10 @@
 import itertools
 import json
 import logging
+import re
 from datetime import datetime, timedelta
 from io import IOBase
 from typing import Iterable, List, Optional
-import re
 
 import pytz
 import smart_open
