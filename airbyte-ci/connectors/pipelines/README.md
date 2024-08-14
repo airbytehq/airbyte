@@ -790,6 +790,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.32.2  | [#43970](https://github.com/airbytehq/airbyte/pull/43970)  | Make `connectors publish` early exit if no connectors are selected.   |
 | 4.32.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642)  | Avoid transient publish failures by increasing `POETRY_REQUESTS_TIMEOUT` and setting retries on `PublishToPythonRegistry`.   |
 | 4.32.0  | [#43969](https://github.com/airbytehq/airbyte/pull/43969)  | Add an `--ignore-connector` option to `up-to-date`                                                                           |
 | 4.31.5  | [#43934](https://github.com/airbytehq/airbyte/pull/43934)  | Track deleted files when generating pull-request                                                                             |

@@ -90,6 +90,9 @@ def github_metadata_definitions(context):
     for metadata_file in github_connectors_metadata_files:
         metadata_raw = _get_content_of_github_file(context, github_connector_repo, metadata_file["path"])
         metadata_dict = yaml.safe_load(metadata_raw.decoded_content)
+        if metadata_dict.get("data").get("supportLevel") == "archived":
+            print(f"Skipping archived connector: {metadata_dict.get('data').get('dockerRepository')}")
+            continue
         metadata_definitions.append(
             LatestMetadataEntry(
                 metadata_definition=MetadataDefinition.parse_obj(metadata_dict), last_modified=metadata_file["last_modified"]
