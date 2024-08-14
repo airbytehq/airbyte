@@ -2,11 +2,34 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import time
 from typing import Any, Generator, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
+
+
+class Timer:
+    """
+    A simple timer class that measures elapsed time in seconds using a high-resolution performance counter.
+    """
+
+    def __init__(self) -> None:
+        self._start: Optional[int] = None
+
+    def start(self) -> None:
+        self._start = time.perf_counter_ns()
+
+    def finish(self) -> int:
+        if self._start:
+            return int((time.perf_counter_ns() - self._start) // 1e9)
+        else:
+            raise RuntimeError("Global substream cursor timer not started")
+
+    @property
+    def is_started(self) -> bool:
+        return self._start is not None
 
 
 class GlobalCursorStreamSlice(StreamSlice):
@@ -41,6 +64,8 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     def __init__(self, stream_cursor: DeclarativeCursor, partition_router: PartitionRouter):
         self._stream_cursor = stream_cursor
         self._partition_router = partition_router
+        self._timer = Timer()
+        self._lookback_window: Optional[int] = None
 
     def stream_slices(self) -> Iterable[GlobalCursorStreamSlice]:
         """
@@ -56,8 +81,9 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             if previous is not None:
                 yield GlobalCursorStreamSlice(partition=previous.partition, cursor_slice=previous.cursor_slice, last_slice=True)
 
+        self._timer.start()
         slices = (
-            StreamSlice(partition=partition, cursor_slice=cursor_slice)
+            GlobalCursorStreamSlice(partition=partition, cursor_slice=cursor_slice)
             for partition in self._partition_router.stream_slices()
             for cursor_slice in self._stream_cursor.stream_slices()
         )
@@ -83,16 +109,39 @@ class GlobalSubstreamCursor(DeclarativeCursor):
                         "parent_stream_name": {
                             "last_updated": "2023-05-27T00:00:00Z"
                         }
-                    }
+                    },
+                    "lookback_window": 132
                 }
         """
         if not stream_state:
             return
 
+        if "lookback_window" in stream_state:
+            self._lookback_window = stream_state["lookback_window"]
+            self._inject_lookback_into_stream_cursor(stream_state["lookback_window"])
+
         self._stream_cursor.set_initial_state(stream_state["state"])
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
+
+    def _inject_lookback_into_stream_cursor(self, lookback_window: int) -> None:
+        """
+        Modifies the stream cursor's lookback window based on the duration of the previous sync.
+        This adjustment ensures the cursor is set to the minimal lookback window necessary for
+        avoiding missing data.
+
+        Parameters:
+            lookback_window (int): The lookback duration in seconds to be set, derived from
+                                   the previous sync.
+
+        Raises:
+            ValueError: If the cursor does not support dynamic lookback window adjustments.
+        """
+        if hasattr(self._stream_cursor, "set_runtime_lookback_window"):
+            self._stream_cursor.set_runtime_lookback_window(lookback_window)
+        else:
+            raise ValueError("The cursor class for Global Substream Cursor does not have a set_runtime_lookback_window method")
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         self._stream_cursor.observe(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), record)
@@ -111,6 +160,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         """
         if isinstance(stream_slice, GlobalCursorStreamSlice):
             if stream_slice.last_slice:
+                self._lookback_window = self._timer.finish()
                 self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
         else:
             raise ValueError(f"Stream slice must be a GlobalCursorStreamSlice, got {type(stream_slice)}")
@@ -121,6 +171,9 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         parent_state = self._partition_router.get_stream_state()
         if parent_state:
             state["parent_state"] = parent_state
+
+        if self._lookback_window is not None:
+            state["lookback_window"] = self._lookback_window
 
         return state
 

@@ -961,7 +961,8 @@ SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR_NO_DEPENDENCY["definitions"]["post_comme
                                         "parent_state": {"posts": {"updated_at": "2024-01-05T00:00:00Z"}},
                                     }
                                 },
-                                "state": {"created_at": "2024-01-03T00:00:00Z"},
+                                "state": {"created_at": "2024-01-04T02:03:04Z"},
+                                "lookback_window": 93784,
                             }
                         ),
                     ),
@@ -1095,7 +1096,8 @@ SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR_NO_DEPENDENCY["definitions"]["post_comme
                                         "parent_state": {"posts": {"updated_at": "2024-01-05T00:00:00Z"}},
                                     }
                                 },
-                                "state": {"created_at": "2024-01-03T00:00:00Z"},
+                                "state": {"created_at": "2024-01-04T02:03:04Z"},
+                                "lookback_window": 93784,
                             }
                         ),
                     ),
@@ -1118,5 +1120,7 @@ def test_incremental_global_parent_state(test_name, manifest, mock_requests, exp
         output_data = [message.record.data for message in output if message.record]
 
         assert output_data == expected_records
-        final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
-        assert final_state[-1] == expected_state
+        final_state = [message.state.stream.stream_state.dict() for message in output if message.state][-1]
+        assert "lookback_window" in final_state
+        final_state.pop("lookback_window")
+        assert final_state == expected_state
