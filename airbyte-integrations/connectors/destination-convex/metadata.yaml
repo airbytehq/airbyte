@@ -8,7 +8,7 @@ data:
   icon: convex.svg
   license: MIT
   name: Convex
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

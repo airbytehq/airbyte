@@ -19,7 +19,7 @@ data:
   license: MIT
   maxSecondsBetweenMessages: 86400
   name: TikTok Marketing
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -15,7 +15,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-clickup-api
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -3,7 +3,7 @@ data:
     hosts:
       - app.sandbox.hibob.com
       - app.hibob.com
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

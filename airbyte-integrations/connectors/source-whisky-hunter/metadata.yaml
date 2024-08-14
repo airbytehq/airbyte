@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-whisky-hunter
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

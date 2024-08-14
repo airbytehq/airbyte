@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-coingecko-coins
   githubIssueLabel: source-coingecko-coins
   icon: coingeckocoins.svg
@@ -14,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-coingecko-coins
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # Did not pass acceptance tests
     oss:
