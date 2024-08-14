@@ -28,7 +28,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-bing-ads
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
