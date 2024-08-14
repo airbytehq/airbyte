@@ -3,6 +3,7 @@
 #
 
 import functools
+import json
 import logging
 import os
 import re
@@ -368,6 +369,26 @@ class Connector:
         if not file_path.is_file():
             return None
         return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
+
+    @property
+    def connector_spec_file_content(self) -> Optional[dict]:
+        """
+        The spec source of truth is the actual output of the spec command, as connector can mutate their spec.
+        But this is the best effort approach at statically fetching a spec without running the command on the connector.
+        Which is "good enough" in some cases.
+        """
+        yaml_spec = Path(self.python_source_dir_path / "spec.yaml")
+        json_spec = Path(self.python_source_dir_path / "spec.json")
+
+        if yaml_spec.exists():
+            return yaml.safe_load(yaml_spec.read_text())
+        elif json_spec.exists():
+            with open(json_spec) as f:
+                return json.load(f)
+        elif self.manifest_path.exists():
+            return yaml.safe_load(self.manifest_path.read_text())["spec"]
+
+        return None
 
     @property
     def language(self) -> ConnectorLanguage:
