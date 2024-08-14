@@ -8,7 +8,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-persistiq
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

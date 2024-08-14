@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-google-directory
-  registries:
+  registryOverrides:
     cloud:
       dockerImageTag: 0.2.12
       enabled: true

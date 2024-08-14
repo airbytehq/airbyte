@@ -18,7 +18,7 @@ data:
   license: MIT
   releaseDate: 2021-08-27
   name: BambooHR
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

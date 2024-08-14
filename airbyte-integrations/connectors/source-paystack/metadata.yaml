@@ -21,7 +21,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-paystack
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

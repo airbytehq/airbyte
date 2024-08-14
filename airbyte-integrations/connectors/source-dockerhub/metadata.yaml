@@ -18,7 +18,7 @@ data:
   icon: dockerhub.svg
   license: MIT
   name: Dockerhub
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

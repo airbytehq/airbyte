@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - "cloudtrail.*.amazonaws.com"
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

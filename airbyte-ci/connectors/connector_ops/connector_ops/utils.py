@@ -577,7 +577,7 @@ class Connector:
         Returns:
             bool: True if the connector is enabled, False otherwise.
         """
-        registries = self.metadata.get("registries")
+        registries = self.metadata.get("registryOverrides")
         if not registries:
             return False
 
