@@ -14,7 +14,7 @@ data:
   icon: ip2whois.svg
   license: MIT
   name: IP2Whois
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

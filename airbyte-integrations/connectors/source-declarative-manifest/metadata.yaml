@@ -15,7 +15,7 @@ data:
   githubIssueLabel: source-declarative-manifest
   license: MIT
   name: Low-Code Source
-  registries:
+  registryOverrides:
     # The path for using this source in the Airbyte UI is still with the connector builder for now.
     cloud:
       enabled: false

@@ -10,7 +10,7 @@ data:
   icon: firebolt.svg
   license: MIT
   name: Firebolt
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

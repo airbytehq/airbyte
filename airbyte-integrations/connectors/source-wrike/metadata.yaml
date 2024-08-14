@@ -10,7 +10,7 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-wrike
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

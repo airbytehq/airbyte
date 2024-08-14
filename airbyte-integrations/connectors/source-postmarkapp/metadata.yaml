@@ -14,7 +14,7 @@ data:
   icon: postmark.svg
   license: MIT
   name: Postmark App
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

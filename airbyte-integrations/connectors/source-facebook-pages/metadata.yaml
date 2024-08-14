@@ -17,7 +17,7 @@ data:
   icon: facebook.svg
   license: ELv2
   name: Facebook Pages
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
