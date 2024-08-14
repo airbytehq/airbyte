@@ -56,8 +56,21 @@ private val LOGGER = KotlinLogging.logger {}
  * * Get the format config from [.getFormatConfig]
  */
 abstract class S3DestinationAcceptanceTest
-protected constructor(protected val outputFormat: FileUploadFormat) :
-    DestinationAcceptanceTest(verifyIndividualStateAndCounts = true) {
+protected constructor(
+    protected val outputFormat: FileUploadFormat,
+    supportsChangeCapture: Boolean = false,
+    expectNumericTimestamps: Boolean = false,
+    expectSchemalessObjectsCoercedToStrings: Boolean = false,
+    expectUnionsPromotedToDisjointRecords: Boolean = false
+) :
+    DestinationAcceptanceTest(
+        verifyIndividualStateAndCounts = true,
+        useV2Fields = true,
+        supportsChangeCapture = supportsChangeCapture,
+        expectNumericTimestamps = expectNumericTimestamps,
+        expectSchemalessObjectsCoercedToStrings = expectSchemalessObjectsCoercedToStrings,
+        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
+    ) {
     protected val secretFilePath: String = "secrets/config.json"
     protected var configJson: JsonNode? = null
     protected var s3DestinationConfig: S3DestinationConfig = mock()

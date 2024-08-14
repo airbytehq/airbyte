@@ -166,13 +166,34 @@ class S3ConsumerFactory {
         val writeConfigs = createWriteConfigs(storageOps, s3Config, catalog)
         // Buffer creation function: yields a file buffer that converts
         // incoming data to the correct format for the destination.
+
+        val generationAndSyncIds =
+            catalog.streams.associate { stream ->
+                val descriptor =
+                    StreamDescriptor()
+                        .withNamespace(stream.stream.namespace)
+                        .withName(stream.stream.name)
+                descriptor to Pair(stream.generationId, stream.syncId)
+            }
+
         val createFunction =
             getCreateFunction(
                 s3Config,
                 Function<String, BufferStorage> { fileExtension: String ->
                     FileBuffer(fileExtension)
-                }
+                },
+                useV2FieldNames = true
             )
+
+        // Parquet has significantly higher overhead. This small adjustment
+        // results in a ~5x performance improvement.
+        val adjustedMemoryRatio =
+            if (s3Config.formatConfig!!.format == FileUploadFormat.PARQUET) {
+                memoryRatio * 0.6 // ie 0.5 => 0.3
+            } else {
+                memoryRatio
+            }
+
         return AsyncStreamConsumer(
             outputRecordCollector,
             onStartFunction(storageOps, writeConfigs),
@@ -180,22 +201,25 @@ class S3ConsumerFactory {
             S3DestinationFlushFunction(
                 // Ensure the file buffer is always larger than the memory buffer,
                 // as the file buffer will be flushed at the end of the memory flush.
-                optimalBatchSizeBytes = (FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES * 0.9).toLong()
-            ) {
-                // Yield a new BufferingStrategy every time we flush (for thread-safety).
-                SerializedBufferingStrategy(
-                    createFunction,
-                    catalog,
-                    flushBufferFunction(storageOps, writeConfigs, catalog)
-                )
-            },
+                optimalBatchSizeBytes =
+                    (FileBuffer.MAX_PER_STREAM_BUFFER_SIZE_BYTES * 0.9).toLong(),
+                {
+                    // Yield a new BufferingStrategy every time we flush (for thread-safety).
+                    SerializedBufferingStrategy(
+                        createFunction,
+                        catalog,
+                        flushBufferFunction(storageOps, writeConfigs, catalog)
+                    )
+                },
+                generationAndSyncIds
+            ),
             catalog,
             // S3 has no concept of default namespace
             // In the "namespace from destination case", the namespace
             // is simply omitted from the path.
             BufferManager(
                 defaultNamespace = null,
-                maxMemory = (Runtime.getRuntime().maxMemory() * memoryRatio).toLong()
+                maxMemory = (Runtime.getRuntime().maxMemory() * adjustedMemoryRatio).toLong()
             ),
             workerPool = Executors.newFixedThreadPool(nThreads)
         )
