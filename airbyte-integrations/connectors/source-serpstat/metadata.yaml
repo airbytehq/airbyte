@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-serpstat
-  registries:
+  registryOverrides:
     oss:
       enabled: true
   connectorBuildOptions:
