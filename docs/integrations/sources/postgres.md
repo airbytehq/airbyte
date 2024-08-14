@@ -1,4 +1,5 @@
 # Postgres
+<HideInUI>
 
 Airbyte's certified Postgres connector offers the following features:
 
@@ -9,9 +10,11 @@ Airbyte's certified Postgres connector offers the following features:
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs). See [here](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting) to troubleshooting issues with the Postgres connector.
 
-**Please note the required minimum platform version is v0.58.0 for this connector.**
+</HideInUI>
 
-![Airbyte Postgres Connection](https://raw.githubusercontent.com/airbytehq/airbyte/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_postgres_source.png?raw=true)
+<!-- env:oss -->
+**Please note the required minimum platform version is v0.58.0 for this connector.**
+<!-- /env:oss -->
 
 ## Quick Start
 
@@ -23,6 +26,7 @@ Here is an outline of the minimum required steps to configure a Postgres connect
 
 Once this is complete, you will be able to select Postgres as a source for replicating data.
 
+<FieldAnchor field="username, password">
 #### Step 1: Create a dedicated read-only Postgres user
 
 These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing Postgres user in your database.
@@ -40,19 +44,21 @@ GRANT USAGE ON SCHEMA <schema_name> TO <user_name>;
 GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
 ```
+</FieldAnchor>
 
 #### Step 2: Create a new Postgres source in Airbyte UI
 
 From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
 
-![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
-
 To fill out the required information:
-
+<FieldAnchor field="host, port, database">
 1. Enter the hostname, port number, and name for your Postgres database.
+</FieldAnchor>
+<FieldAnchor field="schemas">
 2. You may optionally opt to list each of the schemas you want to sync. These are case-sensitive, and multiple schemas may be entered. By default, `public` is the only selected schema.
+</FieldAnchor>
 3. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user).
-4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. See here to learn about other SSL modes and SSH tunneling.
+4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. 
 5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
 
@@ -129,7 +135,7 @@ az postgres server restart --resource-group group --name server
 ```
 
 #### Step 4: Create a replication slot on your Postgres database
-
+<FieldAnchor path="replication_method.replication_slot">
 Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
 
 For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, run as the user with the newly granted `REPLICATION` role:
@@ -139,9 +145,10 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
 The output of this command will include the name of the replication slot to fill into the Airbyte source setup page.
+</FieldAnchor>
 
 #### Step 5: Create publication and replication identities for each Postgres table
-
+<FieldAnchor path="replication_method.publication">
 For each table you want to replicate with CDC, follow the steps below:
 
 1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
@@ -160,6 +167,7 @@ CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`
 ```
 
 The publication name is customizable. Refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
+</FieldAnchor>
 
 :::note
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
@@ -173,6 +181,7 @@ In your Postgres source, change the replication mode to `Logical Replication (CD
 
 The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
 
+<FieldAnchor field="replication_method[CDC]">
 #### CDC
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/). We recommend configuring your Postgres source with CDC when:
@@ -182,7 +191,9 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
 - Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (`updated_at`).
 
 If your goal is to maintain a snapshot of your table in the destination but the limitations prevent you from using CDC, consider using the xmin replication method.
+</FieldAnchor>
 
+<FieldAnchor field="replication_method[Xmin]">
 #### Xmin
 
 Xmin replication is the new cursor-less replication method for Postgres. Cursorless syncs enable syncing new or updated rows without explicitly choosing a cursor field. The xmin system column which (available in all Postgres databases) is used to track inserts and updates to your source data.
@@ -193,12 +204,13 @@ This is a good solution if:
 - You want to replace a previously configured full-refresh sync.
 - Your database doesn't incur heavy writes that would lead to transaction ID wraparound.
 - You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication.
+</FieldAnchor>
 
 ## Connecting with SSL or SSH Tunneling
 
 ### SSL Modes
-
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud.
+<FieldAnchor field="ssl_mode">
+Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database. 
 
 Here is a breakdown of available SSL connection modes:
 
@@ -208,6 +220,7 @@ Here is a breakdown of available SSL connection modes:
 - `require` to always require encryption. Note: The connection will fail if the source doesn't support encryption.
 - `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
 - `verify-full` to always require encryption and verify the identity of the source
+</FieldAnchor>
 
 ### SSH Tunneling
 
@@ -247,6 +260,7 @@ ssh-keygen -t rsa -m PEM -f myuser_rsa
 
 The command produces the private key in PEM format and the public key remains in the standard format used by the `authorized_keys` file on your bastion server. Add the public key to your bastion host to the user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen to allow it to log into the bastion server.
 
+<HideInUI>
 ## Limitations & Troubleshooting
 
 To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](/integrations/sources/postgres/postgres-troubleshooting).
@@ -303,6 +317,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `tsrange`                             | string         |                                                                                                                                                      |
 | `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                    |
 | composite type                        | string         |                                                                                                                                                      |
+
+
+</HideInUI>
 
 ## Changelog
 
