@@ -14,7 +14,7 @@ data:
   icon: copper.svg
   license: MIT
   name: Copper
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

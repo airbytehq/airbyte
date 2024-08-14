@@ -3,7 +3,7 @@ data:
     hosts:
       - api.vectara.io
       - "vectara-prod-${self.customer_id}.auth.us-west-2.amazoncognito.com"
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
