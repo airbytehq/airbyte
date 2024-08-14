@@ -43,12 +43,12 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**.
-3. On the source selection page, select **GitHub** from the list of Sources.
-4. Add a name for your GitHub connector.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select GitHub from the Source type dropdown.
+4. Enter a name for the GitHub connector.
 5. To authenticate:
 <!-- env:cloud -->
 
@@ -72,6 +72,13 @@ Repositories with the wrong name or repositories that do not exist or have the w
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+Click Sources and then click + New source.
+3. On the Set up the source page, select GitHub from the Source type dropdown.
+4. Enter a name for the GitHub connector.
 
 <HideInUI>
 
