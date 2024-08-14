@@ -17,7 +17,7 @@ data:
   icon: timely.svg
   license: MIT
   name: Timely
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

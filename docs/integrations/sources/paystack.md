@@ -68,6 +68,7 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.0.11 | 2024-08-12 | [43809](https://github.com/airbytehq/airbyte/pull/43809) | Update dependencies |
 | 1.0.10 | 2024-08-10 | [43464](https://github.com/airbytehq/airbyte/pull/43464) | Update dependencies |
 | 1.0.9 | 2024-08-03 | [43106](https://github.com/airbytehq/airbyte/pull/43106) | Update dependencies |
 | 1.0.8 | 2024-07-31 | [42901](https://github.com/airbytehq/airbyte/pull/42901) | New field added for `transfers` stream |

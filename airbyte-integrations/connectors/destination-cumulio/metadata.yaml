@@ -8,7 +8,7 @@ data:
   icon: cumulio.svg
   license: MIT
   name: Cumul.io
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

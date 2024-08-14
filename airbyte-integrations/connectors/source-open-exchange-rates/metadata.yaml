@@ -14,7 +14,7 @@ data:
   icon: open-exchange-rates.svg
   license: MIT
   name: Open Exchange Rates
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
