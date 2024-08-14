@@ -117,7 +117,7 @@ List of not required headers, which can be not exist in the documentation and th
   - Tutorials
 
 
-### Prerequisites section of the documentation describes all required fields from specification.
+### Prerequisites section of the documentation describes all required fields from specification
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_

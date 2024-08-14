@@ -365,7 +365,7 @@ class TestCheckDocumentationContent:
 
         # Assert
         assert result.status == CheckStatus.PASSED
-        assert "All required fields from spec are present in the connector documentation." in result.message
+        assert "All required fields from spec are present in the connector documentation" in result.message
 
     def test_pass_when_documentation_file_has_correct_source_section_content(
             self,
