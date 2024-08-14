@@ -44,18 +44,25 @@ object DatabricksConnectorClientsFactory {
         // EnableArrow=0 flag is undocumented and disables ArrowBuf when reading data
         // Destinations only reads data for metadata or for comparison of actual data in tests. so
         // we don't need it to be optimized.
-        val jdbcUrl =
-            "jdbc:databricks://${config.hostname}:${config.port}/${config.database};transportMode=http;httpPath=${config.httpPath};EnableArrow=0"
+        datasource.host = config.hostname
+        datasource.port = config.port
+        datasource.httpPath = config.httpPath
+        datasource.properties["catalog"] = config.database
+        datasource.properties["schema"] = config.schema
+        datasource.properties["EnableArrow"] = 0
+        // TODO this is supposed to be the default???
+        datasource.properties["statement_timeout"] = 172800
         when (config.authentication) {
             is BasicAuthentication -> {
-                datasource.setURL(
-                    "$jdbcUrl;AuthMech=3;UID=token;PWD=${config.authentication.personalAccessToken}"
-                )
+                datasource.properties["AuthMech"] = 3
+                datasource.username = "token"
+                datasource.password = config.authentication.personalAccessToken
             }
             is OAuth2Authentication -> {
-                datasource.setURL(
-                    "$jdbcUrl;AuthMech=11;Auth_Flow=1;OAuth2ClientId=${config.authentication.clientId};OAuth2Secret=${config.authentication.secret}"
-                )
+                datasource.properties["AuthMech"] = 11
+                datasource.properties["Auth_Flow"] = 1
+                datasource.properties["OAuth2ClientId"] = config.authentication.clientId
+                datasource.properties["OAuth2Secret"] = config.authentication.secret
             }
         }
         return datasource
