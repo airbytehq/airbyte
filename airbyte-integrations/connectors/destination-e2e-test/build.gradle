@@ -1,4 +1,5 @@
 plugins {
+    id 'application'
     id 'airbyte-java-connector'
 }
 
@@ -9,9 +10,31 @@ airbyteJavaConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.e2e_test.TestingDestinations'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.destination.e2e_test.E2EDestination'
+    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+
+    // Uncomment and replace to run locally
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+// Uncomment to run locally
+run {
+    standardInput = System.in
 }
 
 dependencies {
+    def vBulkCDK = '0.9'
+    def vMicronaut = '4.3.13'
+
+    ksp "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
+
+    //implementation "io.airbyte.bulk-cdk:bulk-cdk-core-base:${vBulkCDK}"
+    implementation project(":airbyte-cdk:bulk:core:bulk-cdk-core-base")
+    //implementation "io.airbyte.bulk-cdk:bulk-cdk-core-load:${vBulkCDK}"
+    implementation project(":airbyte-cdk:bulk:core:bulk-cdk-core-load")
+
+    kspTest "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
+
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+    testImplementation project(":airbyte-cdk:bulk:core:bulk-cdk-core-load")
 }
