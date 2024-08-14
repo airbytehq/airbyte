@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-zendesk-sell
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:

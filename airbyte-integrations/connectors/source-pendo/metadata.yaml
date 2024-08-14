@@ -14,7 +14,7 @@ data:
   icon: pendo.svg
   license: MIT
   name: Pendo
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

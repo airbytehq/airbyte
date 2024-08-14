@@ -17,7 +17,7 @@ data:
   icon: coda.svg
   license: MIT
   name: Coda
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -14,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-orb
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

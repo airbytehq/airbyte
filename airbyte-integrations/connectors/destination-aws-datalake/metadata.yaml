@@ -10,7 +10,7 @@ data:
   icon: awsdatalake.svg
   license: MIT
   name: AWS Datalake
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

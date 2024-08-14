@@ -5,7 +5,7 @@ data:
   allowedHosts:
     hosts:
       - api.chartmogul.com
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
