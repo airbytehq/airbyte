@@ -15,7 +15,6 @@ import io.airbyte.cdk.db.jdbc.JdbcSourceOperations
 import io.airbyte.cdk.db.jdbc.JdbcUtils.DATABASE_KEY
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.standardtest.destination.typing_deduping.JdbcSqlGeneratorIntegrationTest
-import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.json.Jsons.deserializeExact
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
