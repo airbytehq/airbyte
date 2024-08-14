@@ -38,11 +38,11 @@ class InterpolatedString:
         :param kwargs: Optional parameters used for interpolation
         :return: The interpolated string
         """
-        if (self._just_string):
+        if self._just_string:
             return self.string
-        if (self._just_string is None):
+        if self._just_string is None:
             evaluated = self._interpolation.eval(self.string, config, self.default, parameters=self._parameters, **kwargs)
-            self._just_string = (self.string == evaluated)
+            self._just_string = self.string == evaluated
             return evaluated
         return self._interpolation.eval(self.string, config, self.default, parameters=self._parameters, **kwargs)
 
