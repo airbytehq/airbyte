@@ -82,6 +82,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.3 | 2024-08-12 | [43806](https://github.com/airbytehq/airbyte/pull/43806) | Update dependencies |
+| 2.9.2 | 2024-08-10 | [43613](https://github.com/airbytehq/airbyte/pull/43613) | Update dependencies |
 | 2.9.1 | 2024-08-03 | [43247](https://github.com/airbytehq/airbyte/pull/43247) | Update dependencies |
 | 2.9.0 | 2024-08-01 | [42891](https://github.com/airbytehq/airbyte/pull/42891) | Migrate to CDK v4.X and remove custom BackoffStrategy implementation |
 | 2.8.2 | 2024-07-31 | [42895](https://github.com/airbytehq/airbyte/pull/42895) | Add config option disable_fetching_predictive_analytics to prevent 503 Service Unavailable errors |

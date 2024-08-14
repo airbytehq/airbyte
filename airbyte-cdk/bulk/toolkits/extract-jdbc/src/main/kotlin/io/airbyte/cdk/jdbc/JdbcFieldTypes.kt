@@ -29,8 +29,8 @@ import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
-import io.airbyte.cdk.source.FieldType
-import io.airbyte.cdk.source.LosslessFieldType
+import io.airbyte.cdk.discover.FieldType
+import io.airbyte.cdk.discover.LosslessFieldType
 import java.math.BigDecimal
 import java.net.URL
 import java.nio.ByteBuffer

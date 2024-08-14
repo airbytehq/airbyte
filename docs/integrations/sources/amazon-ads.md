@@ -131,25 +131,27 @@ Information about expected report generation waiting time can be found [here](ht
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 5.0.9 | 2024-07-13 | [41876](https://github.com/airbytehq/airbyte/pull/41876) | Update dependencies |
-| 5.0.8 | 2024-07-10 | [41487](https://github.com/airbytehq/airbyte/pull/41487) | Update dependencies |
-| 5.0.7 | 2024-07-09 | [41143](https://github.com/airbytehq/airbyte/pull/41143) | Update dependencies |
-| 5.0.6 | 2024-07-06 | [40798](https://github.com/airbytehq/airbyte/pull/40798) | Update dependencies |
-| 5.0.5 | 2024-06-25 | [40403](https://github.com/airbytehq/airbyte/pull/40403) | Update dependencies |
-| 5.0.4 | 2024-06-21 | [39926](https://github.com/airbytehq/airbyte/pull/39926) | Update dependencies |
-| 5.0.3 | 2024-06-04 | [38962](https://github.com/airbytehq/airbyte/pull/38962) | [autopull] Upgrade base image to v1.2.1 |
-| 5.0.2 | 2024-05-29 | [38737](https://github.com/airbytehq/airbyte/pull/38737) | Update authenticator to `requests_native_auth` package |
-| 5.0.1 | 2024-04-29 | [37655](https://github.com/airbytehq/airbyte/pull/37655) | Update error messages and spec with info about `agency` profile type. |
-| 5.0.0 | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation |
-| 4.1.0 | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0` |
-| 4.0.4 | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection` |
-| 4.0.3 | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry |
-| 4.0.2 | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream |
-| 4.0.1 | 2023-12-28 | [33833](https://github.com/airbytehq/airbyte/pull/33833) | Updated oauth spec to put region, so we can choose oauth consent url based on it |
-| 4.0.0 | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords` |
-| 3.4.2 | 2023-12-12 | [33361](https://github.com/airbytehq/airbyte/pull/33361) | Fix unexpected crash when handling error messages which don't have `requestId` field |
-| 3.4.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 5.0.11  | 2024-08-12 | [43354](https://github.com/airbytehq/airbyte/pull/43354) | Fix download request for `sponsored_products_report_stream`                                                     |
+| 5.0.10  | 2024-08-10 | [42162](https://github.com/airbytehq/airbyte/pull/42162) | Update dependencies                                                                                             |
+| 5.0.9   | 2024-07-13 | [41876](https://github.com/airbytehq/airbyte/pull/41876) | Update dependencies                                                                                             |
+| 5.0.8   | 2024-07-10 | [41487](https://github.com/airbytehq/airbyte/pull/41487) | Update dependencies                                                                                             |
+| 5.0.7   | 2024-07-09 | [41143](https://github.com/airbytehq/airbyte/pull/41143) | Update dependencies                                                                                             |
+| 5.0.6   | 2024-07-06 | [40798](https://github.com/airbytehq/airbyte/pull/40798) | Update dependencies                                                                                             |
+| 5.0.5   | 2024-06-25 | [40403](https://github.com/airbytehq/airbyte/pull/40403) | Update dependencies                                                                                             |
+| 5.0.4   | 2024-06-21 | [39926](https://github.com/airbytehq/airbyte/pull/39926) | Update dependencies                                                                                             |
+| 5.0.3   | 2024-06-04 | [38962](https://github.com/airbytehq/airbyte/pull/38962) | [autopull] Upgrade base image to v1.2.1                                                                         |
+| 5.0.2   | 2024-05-29 | [38737](https://github.com/airbytehq/airbyte/pull/38737) | Update authenticator to `requests_native_auth` package                                                          |
+| 5.0.1   | 2024-04-29 | [37655](https://github.com/airbytehq/airbyte/pull/37655) | Update error messages and spec with info about `agency` profile type.                                           |
+| 5.0.0   | 2024-03-22 | [36169](https://github.com/airbytehq/airbyte/pull/36169) | Update `SponsoredBrand` and `SponsoredProduct` streams due to API endpoint deprecation                          |
+| 4.1.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                                                 |
+| 4.0.4   | 2024-02-23 | [35481](https://github.com/airbytehq/airbyte/pull/35481) | Migrate source to `YamlDeclarativeSource` with custom `check_connection`                                        |
+| 4.0.3   | 2024-02-12 | [35180](https://github.com/airbytehq/airbyte/pull/35180) | Manage dependencies with Poetry                                                                                 |
+| 4.0.2   | 2024-02-08 | [35013](https://github.com/airbytehq/airbyte/pull/35013) | Add missing field to `sponsored_display_budget_rules` stream                                                    |
+| 4.0.1   | 2023-12-28 | [33833](https://github.com/airbytehq/airbyte/pull/33833) | Updated oauth spec to put region, so we can choose oauth consent url based on it                                |
+| 4.0.0   | 2023-12-28 | [33817](https://github.com/airbytehq/airbyte/pull/33817) | Fix schema for streams: `SponsoredBrandsAdGroups` and `SponsoredBrandsKeywords`                                 |
+| 3.4.2   | 2023-12-12 | [33361](https://github.com/airbytehq/airbyte/pull/33361) | Fix unexpected crash when handling error messages which don't have `requestId` field                            |
+| 3.4.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                 |
 | 3.4.0   | 2023-06-09 | [25913](https://github.com/airbytehq/airbyte/pull/26203) | Add Stream `DisplayCreatives`                                                                                   |
 | 3.3.0   | 2023-09-22 | [30679](https://github.com/airbytehq/airbyte/pull/30679) | Fix unexpected column for `SponsoredProductCampaigns` and `SponsoredBrandsKeywords`                             |
 | 3.2.0   | 2023-09-18 | [30517](https://github.com/airbytehq/airbyte/pull/30517) | Add suggested streams; fix unexpected column issue                                                              |

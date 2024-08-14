@@ -78,6 +78,8 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.19 | 2024-08-12 | [43878](https://github.com/airbytehq/airbyte/pull/43878) | Update dependencies |
+| 0.6.18 | 2024-08-10 | [43500](https://github.com/airbytehq/airbyte/pull/43500) | Update dependencies |
 | 0.6.17 | 2024-08-03 | [43276](https://github.com/airbytehq/airbyte/pull/43276) | Update dependencies |
 | 0.6.16 | 2024-07-29 | [42094](https://github.com/airbytehq/airbyte/pull/42094) | Use latest CDK, raise config error on `Active subscription needed` error and transient errors for `Companies` stream. |
 | 0.6.15 | 2024-07-27 | [42654](https://github.com/airbytehq/airbyte/pull/42654) | Update dependencies |

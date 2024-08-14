@@ -5,7 +5,7 @@ data:
       - api.sandbox.lever.co
       - api.lever.co
       - auth.lever.co
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

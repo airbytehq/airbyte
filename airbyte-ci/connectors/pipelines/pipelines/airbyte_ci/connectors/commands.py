@@ -169,7 +169,12 @@ def validate_environment(is_local: bool) -> None:
     help="Filter connectors to test by support_level.",
     type=click.Choice(SupportLevelEnum),
 )
-@click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option(
+    "--modified/--not-modified",
+    help="Only test modified connectors in the current branch. Archived connectors are ignored",
+    default=False,
+    type=bool,
+)
 @click.option(
     "--metadata-changes-only/--not-metadata-changes-only",
     help="Only test connectors with modified metadata files in the current branch.",
