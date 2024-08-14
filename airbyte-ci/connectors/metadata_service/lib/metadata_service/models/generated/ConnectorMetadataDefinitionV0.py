@@ -296,6 +296,7 @@ class Data(BaseModel):
     )
     releaseDate: Optional[date] = Field(None, description="The date when this connector was first released, in yyyy-mm-dd format.")
     protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
+    erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
     connectorSubtype: Literal["api", "database", "datalake", "file", "custom", "message_queue", "unknown", "vectorstore"]
     releaseStage: ReleaseStage
     supportLevel: Optional[SupportLevel] = None
