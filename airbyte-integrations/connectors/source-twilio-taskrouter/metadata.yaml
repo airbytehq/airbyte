@@ -14,7 +14,7 @@ data:
   icon: twilio.svg
   license: MIT
   name: Twilio Taskrouter
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

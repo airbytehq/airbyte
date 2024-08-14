@@ -17,7 +17,7 @@ data:
   icon: zendesk-sunshine.svg
   license: MIT
   name: Zendesk Sunshine
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
