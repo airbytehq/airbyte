@@ -1,0 +1,2 @@
+{"stream":"test","data":{"column 1":"text 1","column 2":1,"_ab_source_file_last_modified":"2024-08-06T16:41:42.000000Z","_ab_source_file_url":"simple_test.xlsx"},"emitted_at":1723656301631}
+{"stream":"test","data":{"column 1":"text 2","column 2":2,"_ab_source_file_last_modified":"2024-08-06T16:41:42.000000Z","_ab_source_file_url":"simple_test.xlsx"},"emitted_at":1723656301632}

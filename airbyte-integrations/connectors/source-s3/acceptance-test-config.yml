@@ -173,6 +173,16 @@ acceptance_tests:
           path: integration_tests/expected_records/unstructured.jsonl
           exact_order: false
         timeout_seconds: 1800
+      - config_path: secrets/excel_xlsx_config.json
+        expect_records:
+          path: integration_tests/expected_records/excel_xlsx.jsonl
+          exact_order: false
+        timeout_seconds: 1800
+      - config_path: secrets/excel_xls_config.json
+        expect_records:
+          path: integration_tests/expected_records/excel_xls.jsonl
+          exact_order: false
+        timeout_seconds: 1800
 
   connection:
     tests:
@@ -301,6 +311,12 @@ acceptance_tests:
       - config_path: secrets/zip_config_parquet.json
         configured_catalog_path: integration_tests/configured_catalogs/parquet.json
         timeout_seconds: 1800
+      - config_path: secrets/excel_xlsx_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/excel_xlsx.json
+        timeout_seconds: 1800
+      - config_path: secrets/excel_xls_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/excel_xls.json
+        timeout_seconds: 1800
 
   incremental:
     tests:
@@ -356,6 +372,16 @@ acceptance_tests:
         timeout_seconds: 1800
       - config_path: secrets/zip_config_parquet.json
         configured_catalog_path: integration_tests/configured_catalogs/parquet.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
+      - config_path: secrets/excel_xlsx_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/excel_xlsx.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+        timeout_seconds: 1800
+      - config_path: secrets/excel_xls_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/excel_xls.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
         timeout_seconds: 1800
