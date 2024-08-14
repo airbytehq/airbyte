@@ -80,7 +80,7 @@ class SnowflakeSqlGeneratorTest {
         Assertions.assertEquals(
             StreamConfig(
                 StreamId("BAR", "FOO", "airbyte_internal", "bar_raw__stream_foo", "bar", "foo"),
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 expectedColumns,

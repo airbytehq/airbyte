@@ -40,7 +40,7 @@ definitions:
           $ref: "#/schemas/stats"
   base_requester:
     type: HttpRequester
-    url_base: https://plausible.io/api/v1/stats
+    url_base: "{{ config['api_url'] or 'https://plausible.io/api/v1/stats' }}"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
@@ -79,6 +79,16 @@ spec:
           - airbyte.com
           - docs.airbyte.com
         order: 1
+      api_url:
+        type: string
+        title: API URL
+        description: >-
+          The API URL of your plausible instance.
+          Change this if you self-host plausible. The default is https://plausible.io/api/v1/stats
+        pattern: ^[A-Za-z0-9-.]+\.[A-Z-a-z0-9-.]+
+        examples:
+          - https://plausible.example.com/api/v1/stats
+        order: 2
       start_date:
         type: string
         title: Data start date
@@ -86,7 +96,7 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
         examples:
           - YYYY-MM-DD
-        order: 2
+        order: 3
     additionalProperties: true
 
 metadata:

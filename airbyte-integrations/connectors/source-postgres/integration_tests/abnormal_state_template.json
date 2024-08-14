@@ -7,7 +7,7 @@
         "state_type": "cursor_based",
         "stream_name": "id_and_name_cat",
         "cursor_field": ["id"],
-        "cursor": "4",
+        "cursor": "6",
         "cursor_record_count": 1,
         "stream_namespace": "%s"
       },

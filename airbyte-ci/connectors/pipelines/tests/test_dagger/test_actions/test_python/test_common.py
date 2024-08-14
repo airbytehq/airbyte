@@ -27,7 +27,11 @@ def latest_cdk_version():
 def python_connector_with_setup_not_latest_cdk(all_connectors):
     for connector in all_connectors:
         if (
-            connector.metadata.get("connectorBuildOptions", {}).get("baseImage", False)
+            connector.metadata.get("connectorBuildOptions", False)
+            # We want to select a connector with a base image version >= 2.0.0 to use Python 3.10
+            and not connector.metadata.get("connectorBuildOptions", {})
+            .get("baseImage", "")
+            .startswith("docker.io/airbyte/python-connector-base:1.")
             and connector.language == "python"
             and connector.code_directory.joinpath("setup.py").exists()
         ):

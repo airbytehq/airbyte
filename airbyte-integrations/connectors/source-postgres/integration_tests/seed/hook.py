@@ -20,7 +20,9 @@ abnormal_state_write_file = "/connector/integration_tests/temp/abnormal_state_co
 abnormal_state_file = "/connector/integration_tests/abnormal_state_template.json"
 
 secret_config_file = '/connector/secrets/config.json'
-secret_active_config_file = '/connector/integration_tests/config_active.json'
+secret_active_config_file = '/connector/integration_tests/temp/config_active.json'
+secret_config_cdc_file = '/connector/secrets/config_cdc.json'
+secret_active_config_cdc_file = '/connector/integration_tests/temp/config_cdc_active.json'
 
 def connect_to_db() -> extensions.connection:
     with open(secret_config_file) as f:
@@ -92,6 +94,16 @@ def write_supporting_file(schema_name: str) -> None:
         with open(secret_active_config_file, 'w') as f:
             json.dump(secret, f)
 
+    with open(secret_config_cdc_file) as base_config:
+        secret = json.load(base_config)
+        secret["schemas"] = [schema_name]
+        secret["replication_method"]["replication_slot"] = schema_name
+        secret["replication_method"]["publication"] = schema_name
+        secret["ssl_mode"] = {}
+        secret["ssl_mode"]["mode"] = "require"
+        with open(secret_active_config_cdc_file, 'w') as f:
+            json.dump(secret, f)
+
 def create_table(conn: extensions.connection, schema_name: str, table_name: str) -> None:
     try:
         cursor = conn.cursor()
@@ -114,39 +126,107 @@ def create_table(conn: extensions.connection, schema_name: str, table_name: str)
 def generate_schema_date_with_suffix() -> str:
     current_date = datetime.datetime.now().strftime("%Y%m%d")
     suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    return f"{current_date}-{suffix}"
+    return f"{current_date}_{suffix}"
 
 def prepare() -> None:
     schema_name = generate_schema_date_with_suffix()
+    print(f"schema_name: {schema_name}")
     with open("./generated_schema.txt", "w") as f:
         f.write(schema_name)
 
-def setup() -> None:
+def cdc_insert():
+    schema_name = load_schema_name_from_catalog()
+    new_records = [
+        ('4', 'four'),
+        ('5', 'five')
+    ]
+    connection = connect_to_db()
+    table_name = 'id_and_name_cat'
+    if connection:
+        insert_records(connection, schema_name, table_name, new_records)
+        connection.close()
+
+def setup(with_cdc=False):
     schema_name = load_schema_name_from_catalog()
     write_supporting_file(schema_name)
     table_name = "id_and_name_cat"
 
+    # Define the records to be inserted
     records = [
         ('1', 'one'),
         ('2', 'two'),
         ('3', 'three')
     ]
 
-    conn = connect_to_db()
+    # Connect to the database
+    connection = connect_to_db()
 
-    if conn:
-        create_schema(conn, schema_name)
-        create_table(conn, schema_name, table_name)
-        insert_records(conn, schema_name, table_name, records)
-        conn.close()
+    # Create the schema
+    create_schema(connection, schema_name)
+    create_table(connection, schema_name, table_name)
+    if (with_cdc):
+        setup_cdc(connection, replication_slot_and_publication_name=schema_name)
+    # Insert the records
+    insert_records(connection, schema_name, table_name, records)
 
-def load_schema_name_from_catalog() -> str:
+    # Close the connection
+    connection.close()
+
+def replication_slot_existed(connection, replication_slot_name):
+    cursor = connection.cursor()
+    cursor.execute("SELECT slot_name FROM pg_replication_slots;")
+    # Fetch all results
+    slots = cursor.fetchall()
+    for slot in slots:
+        if slot[0] == replication_slot_name:
+            return True
+    return False
+
+def setup_cdc(connection, replication_slot_and_publication_name):
+    cursor = connection.cursor()
+    if replication_slot_existed(connection, replication_slot_and_publication_name):
+        return
+    create_logical_replication_query = sql.SQL("SELECT pg_create_logical_replication_slot({}, 'pgoutput')").format(sql.Literal(replication_slot_and_publication_name))
+    cursor.execute(create_logical_replication_query)
+    alter_table_replica_query = sql.SQL("ALTER TABLE {}.id_and_name_cat REPLICA IDENTITY DEFAULT").format(sql.Identifier(replication_slot_and_publication_name))
+    cursor.execute(alter_table_replica_query)
+    create_publication_query = sql.SQL("CREATE PUBLICATION {} FOR TABLE {}.id_and_name_cat").format(sql.Identifier(replication_slot_and_publication_name), sql.Identifier(replication_slot_and_publication_name))
+    cursor.execute(create_publication_query)
+    connection.commit()
+
+def load_schema_name_from_catalog():
     with open("./generated_schema.txt", "r") as f:
         return f.read()
 
-def delete_schemas_with_prefix(conn: extensions.connection, date_prefix: str) -> None:
+def delete_cdc_with_prefix(conn, prefix):
     try:
+        # Connect to the PostgreSQL database
         cursor = conn.cursor()
+        cursor.execute("SELECT slot_name FROM pg_replication_slots;")
+        # Fetch all results
+        slots = cursor.fetchall()
+        for slot in slots:
+            if slot[0].startswith(prefix):
+                print(f"Start dropping replication slot and publication {slot[0]}")
+                drop_replication_slot_query = sql.SQL("SELECT pg_drop_replication_slot({});").format(sql.Literal(slot[0]))
+                drop_publication_query = sql.SQL("DROP PUBLICATION {};").format(sql.Identifier(slot[0]))
+                cursor.execute(drop_publication_query)
+                cursor.execute(drop_replication_slot_query)
+                print(f"Dropping {slot[0]} done")
+        conn.commit()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        exit(1)
+    finally:
+        if cursor:
+            cursor.close()
+
+def delete_schemas_with_prefix(conn, date_prefix):
+    try:
+        # Connect to the PostgreSQL database
+        cursor = conn.cursor()
+
+        # Query to find all schemas that start with the specified date prefix
         query = sql.SQL("""
             SELECT schema_name
             FROM information_schema.schemata
@@ -156,6 +236,7 @@ def delete_schemas_with_prefix(conn: extensions.connection, date_prefix: str) ->
         cursor.execute(query, (f"{date_prefix}%",))
         schemas = cursor.fetchall()
 
+        # Generate and execute DROP SCHEMA statements for each matching schema
         for schema in schemas:
             drop_query = sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE;").format(sql.Identifier(schema[0]))
             cursor.execute(drop_query)
@@ -167,23 +248,36 @@ def delete_schemas_with_prefix(conn: extensions.connection, date_prefix: str) ->
         sys.exit(1)
     finally:
         cursor.close()
-        conn.close()
 
 def teardown() -> None:
     conn = connect_to_db()
     today = datetime.datetime.now()
     yesterday = today - timedelta(days=1)
     formatted_yesterday = yesterday.strftime('%Y%m%d')
-    print(f"formatted_yesterday: {formatted_yesterday}")
     delete_schemas_with_prefix(conn, formatted_yesterday)
+    delete_cdc_with_prefix(conn, formatted_yesterday)
+
+def final_teardown() -> None:
+    conn = connect_to_db()
+    schema_name = load_schema_name_from_catalog()
+    print(f"delete schema {schema_name}")
+    delete_schemas_with_prefix(conn, schema_name)
+    delete_cdc_with_prefix(conn, schema_name)
 
 if __name__ == "__main__":
     command = sys.argv[1]
     if command == "setup":
-        setup()
+        setup(with_cdc=False)
+    elif command == "setup_cdc":
+        setup(with_cdc=True)
     elif command == "teardown":
         teardown()
+    elif command == "final_teardown":
+        final_teardown()
     elif command == "prepare":
         prepare()
+    elif command == "insert":
+        cdc_insert()
     else:
-        ra
+        print(f"Unrecognized command {command}.")
+        exit(1)

@@ -467,12 +467,14 @@ def spec_control_execution_inputs(
 
 @pytest.fixture(scope="session")
 def spec_control_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     spec_control_execution_inputs: ExecutionInputs,
 ) -> ConnectorRunner:
     runner = ConnectorRunner(
         dagger_client,
         spec_control_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
     )
     return runner
 
@@ -507,12 +509,14 @@ def spec_target_execution_inputs(
 
 @pytest.fixture(scope="session")
 def spec_target_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     spec_target_execution_inputs: ExecutionInputs,
 ) -> ConnectorRunner:
     runner = ConnectorRunner(
         dagger_client,
         spec_target_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
     )
     return runner
 
@@ -551,6 +555,7 @@ def check_control_execution_inputs(
 
 @pytest.fixture(scope="session")
 async def check_control_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     check_control_execution_inputs: ExecutionInputs,
     connection_id: str,
@@ -560,6 +565,7 @@ async def check_control_connector_runner(
     runner = ConnectorRunner(
         dagger_client,
         check_control_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     yield runner
@@ -600,6 +606,7 @@ def check_target_execution_inputs(
 
 @pytest.fixture(scope="session")
 async def check_target_connector_runner(
+    request: SubRequest,
     check_control_execution_result: ExecutionResult,
     dagger_client: dagger.Client,
     check_target_execution_inputs: ExecutionInputs,
@@ -614,6 +621,7 @@ async def check_target_connector_runner(
     runner = ConnectorRunner(
         dagger_client,
         check_target_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     yield runner
@@ -685,6 +693,7 @@ def discover_target_execution_inputs(
 
 @pytest.fixture(scope="session")
 async def discover_control_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     discover_control_execution_inputs: ExecutionInputs,
     connection_id: str,
@@ -694,6 +703,7 @@ async def discover_control_connector_runner(
     yield ConnectorRunner(
         dagger_client,
         discover_control_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     await proxy.clear_cache_volume()
@@ -701,6 +711,7 @@ async def discover_control_connector_runner(
 
 @pytest.fixture(scope="session")
 async def discover_target_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     discover_control_execution_result: ExecutionResult,
     discover_target_execution_inputs: ExecutionInputs,
@@ -716,6 +727,7 @@ async def discover_target_connector_runner(
     yield ConnectorRunner(
         dagger_client,
         discover_target_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     await proxy.clear_cache_volume()
@@ -776,6 +788,7 @@ def read_target_execution_inputs(
 
 @pytest.fixture(scope="session")
 async def read_control_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     read_control_execution_inputs: ExecutionInputs,
     connection_id: str,
@@ -785,6 +798,7 @@ async def read_control_connector_runner(
     yield ConnectorRunner(
         dagger_client,
         read_control_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     await proxy.clear_cache_volume()
@@ -806,6 +820,7 @@ async def read_control_execution_result(
 
 @pytest.fixture(scope="session")
 async def read_target_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     read_target_execution_inputs: ExecutionInputs,
     read_control_execution_result: ExecutionResult,
@@ -821,6 +836,7 @@ async def read_target_connector_runner(
     yield ConnectorRunner(
         dagger_client,
         read_target_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     await proxy.clear_cache_volume()
@@ -890,6 +906,7 @@ def read_with_state_target_execution_inputs(
 
 @pytest.fixture(scope="session")
 async def read_with_state_control_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     read_with_state_control_execution_inputs: ExecutionInputs,
     connection_id: str,
@@ -899,6 +916,7 @@ async def read_with_state_control_connector_runner(
     yield ConnectorRunner(
         dagger_client,
         read_with_state_control_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     await proxy.clear_cache_volume()
@@ -922,6 +940,7 @@ async def read_with_state_control_execution_result(
 
 @pytest.fixture(scope="session")
 async def read_with_state_target_connector_runner(
+    request: SubRequest,
     dagger_client: dagger.Client,
     read_with_state_target_execution_inputs: ExecutionInputs,
     read_with_state_control_execution_result: ExecutionResult,
@@ -936,6 +955,7 @@ async def read_with_state_target_connector_runner(
     yield ConnectorRunner(
         dagger_client,
         read_with_state_target_execution_inputs,
+        request.config.stash[stash_keys.RUN_IN_AIRBYTE_CI],
         http_proxy=proxy,
     )
     await proxy.clear_cache_volume()

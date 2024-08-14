@@ -279,6 +279,28 @@ class PostgresDestinationTest {
                     )
             )
         consumer.accept(stateMessage, stateMessage.toByteArray(StandardCharsets.UTF_8).size)
+
+        val finalMessage =
+            serialize(
+                AirbyteMessage()
+                    .withType(AirbyteMessage.Type.TRACE)
+                    .withTrace(
+                        AirbyteTraceMessage()
+                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withStreamStatus(
+                                AirbyteStreamStatusTraceMessage()
+                                    .withStreamDescriptor(
+                                        StreamDescriptor()
+                                            .withNamespace(SCHEMA_NAME)
+                                            .withName(STREAM_NAME),
+                                    )
+                                    .withStatus(
+                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
+                                    ),
+                            )
+                    )
+            )
+        consumer.accept(finalMessage, finalMessage.toByteArray(StandardCharsets.UTF_8).size)
         consumer.close()
 
         val database = getJdbcDatabaseFromConfig(getDataSourceFromConfig(config))
@@ -386,11 +408,14 @@ class PostgresDestinationTest {
                 .withStreams(
                     java.util.List.of(
                         CatalogHelpers.createConfiguredAirbyteStream(
-                            STREAM_NAME,
-                            SCHEMA_NAME,
-                            Field.of("id", JsonSchemaType.NUMBER),
-                            Field.of("name", JsonSchemaType.STRING)
-                        )
+                                STREAM_NAME,
+                                SCHEMA_NAME,
+                                Field.of("id", JsonSchemaType.NUMBER),
+                                Field.of("name", JsonSchemaType.STRING)
+                            )
+                            .withGenerationId(43)
+                            .withSyncId(42)
+                            .withMinimumGenerationId(43)
                     )
                 )
 

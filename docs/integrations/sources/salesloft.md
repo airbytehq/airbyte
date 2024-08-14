@@ -105,6 +105,9 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 1.2.14 | 2024-08-12 | [43910](https://github.com/airbytehq/airbyte/pull/43910) | Update dependencies |
+| 1.2.13 | 2024-08-10 | [43524](https://github.com/airbytehq/airbyte/pull/43524) | Update dependencies |
+| 1.2.12 | 2024-08-03 | [43051](https://github.com/airbytehq/airbyte/pull/43051) | Update dependencies |
 | 1.2.11 | 2024-07-27 | [42800](https://github.com/airbytehq/airbyte/pull/42800) | Update dependencies |
 | 1.2.10 | 2024-07-20 | [42258](https://github.com/airbytehq/airbyte/pull/42258) | Update dependencies |
 | 1.2.9 | 2024-07-13 | [41699](https://github.com/airbytehq/airbyte/pull/41699) | Update dependencies |

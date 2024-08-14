@@ -18,8 +18,7 @@ data class DatabricksConnectorConfig(
     @JsonProperty("http_path") val httpPath: String,
     val database: String,
     val schema: String = "default",
-    val rawSchemaOverride: String = "airbyte_internal",
-    val enableSchemaEvolution: Boolean = false,
+    @JsonProperty("raw_schema_override") val rawSchemaOverride: String = "airbyte_internal",
     @JsonProperty("authentication") val authentication: Authentication,
     @JsonProperty("purge_staging_data") val purgeStagingData: Boolean = true,
 ) {

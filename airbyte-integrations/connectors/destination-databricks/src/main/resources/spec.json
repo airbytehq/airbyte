@@ -59,13 +59,6 @@
         "default": "default",
         "order": 6
       },
-      "enable_schema_evolution": {
-        "title": "Support schema evolution for all streams.",
-        "type": "boolean",
-        "description": "Support schema evolution for all streams. If \"false\", the connector might fail when a stream's schema changes.",
-        "default": false,
-        "order": 7
-      },
       "authentication": {
         "title": "Authentication",
         "type": "object",
@@ -131,6 +124,13 @@
         "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
         "default": true,
         "order": 9
+      },
+      "raw_schema_override": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "default": "airbyte_internal",
+        "order": 10
       }
     }
   }

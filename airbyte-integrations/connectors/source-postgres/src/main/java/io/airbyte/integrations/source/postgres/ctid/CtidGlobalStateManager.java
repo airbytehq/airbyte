@@ -110,8 +110,10 @@ public class CtidGlobalStateManager extends CtidStateManager {
     });
 
     resumableFullRefreshStreams.forEach(stream -> {
-      final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(stream);
-      streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(ctidStatusForFullRefreshStream))));
+      if (getCtidStatus(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace())) != null) {
+        final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(stream);
+        streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(ctidStatusForFullRefreshStream))));
+      }
     });
 
     nonResumableFullRefreshStreams.forEach(stream -> {

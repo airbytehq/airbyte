@@ -1,4 +1,4 @@
-version: 2.3.0
+version: 2.4.0
 
 type: DeclarativeSource
 
@@ -810,6 +810,126 @@ metadata:
     analytics_gcp_marketplace_incremental_daily_insights: false
     analytics_gcp_marketplace_monthly_insights: false
     analytics_gcp_marketplace_incremental_monthly_insights: false
+  testedStreams:
+    buyers:
+      hasRecords: true
+      streamHash: ad3b77e5e4bc0f26045868015a0212df38310005
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    listings:
+      hasRecords: true
+      streamHash: 9e391351ec531c781570e3cf80e5cd68f4e5d8ca
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    contracts:
+      hasRecords: true
+      streamHash: 8f77ac2973f513cc2024ed1dbfd5a4117e30bdc5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    opportunities:
+      hasRecords: true
+      streamHash: f266453b1a7e60ea94a6ad084e94adf4a042391e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_aws_marketplace_disbursements:
+      hasRecords: true
+      streamHash: 84530af873052bb523db4c0586505cfb7c1e759a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_aws_marketplace_revenue:
+      hasRecords: true
+      streamHash: eb6e7dbe54b355cb95d4a19e2f52096304dad07f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_aws_cosell_opportunities:
+      hasRecords: true
+      streamHash: 1eeeea6f1e1e0a200413788adc6f5aa3fc1cf3c6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_azure_marketplace_revenue:
+      hasRecords: true
+      streamHash: c0469ee2d8ed745c1ba0d3bc7965db40360043b1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_azure_marketplace_customers:
+      hasRecords: true
+      streamHash: cf973ea368545ef684868505fbcbe1b3c75199ef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_azure_marketplace_orders:
+      hasRecords: true
+      streamHash: 497f69a37c50c4fd56d438b5eec20cbeb3d6e7b3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_azure_marketplace_metered_usage:
+      hasRecords: true
+      streamHash: 44abc84ec2672c4b329531b34c6e6baa335b142f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_azure_cosell_opportunities:
+      hasRecords: true
+      streamHash: 8071cbf3690e6968c711a23b7ee364aa2d4ccbe2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_gcp_marketplace_disbursements:
+      hasRecords: false
+      streamHash: c46f61da59ecad24b01ac56f74951e82aba6fcb0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_gcp_marketplace_disbursements_summary:
+      hasRecords: false
+      streamHash: 658824422d77db198900cff2786352aae2af5e4d
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_gcp_marketplace_charges_and_usage:
+      hasRecords: true
+      streamHash: c6e130d127a9515269bd2ef2a8bf05b115bed977
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_gcp_marketplace_daily_insights:
+      hasRecords: true
+      streamHash: 90362d00e0e9c3c7f57fe74a949d5fc4db8c4f5b
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    analytics_gcp_marketplace_incremental_monthly_insights:
+      hasRecords: false
+      streamHash: 9d2f4e5c90adc766e4a20442b4ee76c67502beca
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
 
 schemas:
   buyers:
@@ -1624,11 +1744,67 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      age:
+      accept_by:
         type:
-          - number
+          - string
+          - "null"
+      additional_comments:
+        type:
+          - string
+          - "null"
+      apn_crm_unique_identifier:
+        type:
+          - string
+          - "null"
+      apn_disqualified_reason:
+        type:
+          - string
+          - "null"
+      apn_reviewer_comments:
+        type:
+          - string
+          - "null"
+      aws_account_owner_email:
+        type:
+          - string
+          - "null"
+      aws_account_owner_name:
+        type:
+          - string
+          - "null"
+      aws_close_date:
+        type:
+          - string
+          - "null"
+      aws_isv_success_manager_email:
+        type:
+          - string
+          - "null"
+      aws_isv_success_manager_name:
+        type:
+          - string
           - "null"
       aws_marketplace_engagement_score:
+        type:
+          - string
+          - "null"
+      aws_partner_success_manager_email:
+        type:
+          - string
+          - "null"
+      aws_partner_success_manager_name:
+        type:
+          - string
+          - "null"
+      aws_products:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      aws_sales_rep_email:
         type:
           - string
           - "null"
@@ -1644,7 +1820,25 @@ schemas:
         type:
           - string
           - "null"
+      campaign_name:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
       closed_lost_reason:
+        type:
+          - string
+          - "null"
+      cloud_created_date:
+        type:
+          - string
+          - "null"
+      contract_end_date:
+        type:
+          - string
+          - "null"
+      contract_start_date:
         type:
           - string
           - "null"
@@ -1652,15 +1846,43 @@ schemas:
         type:
           - string
           - "null"
-      created_date:
-        type:
-          - string
-          - "null"
       customer_company_name:
         type:
           - string
           - "null"
-      estimated_aws_mrr:
+      customer_email:
+        type:
+          - string
+          - "null"
+      customer_first_name:
+        type:
+          - string
+          - "null"
+      customer_last_name:
+        type:
+          - string
+          - "null"
+      customer_phone:
+        type:
+          - string
+          - "null"
+      customer_software_value:
+        type:
+          - number
+          - "null"
+      customer_website:
+        type:
+          - string
+          - "null"
+      delivery_model:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      expected_monthly_aws_revenue:
         type:
           - number
           - "null"
@@ -1680,19 +1902,11 @@ schemas:
         type:
           - boolean
           - "null"
-      is_net_new_business_for_company:
-        type:
-          - boolean
-          - "null"
       is_opp_from_marketing_activity:
         type:
           - boolean
           - "null"
-      is_this_for_marketplace:
-        type:
-          - boolean
-          - "null"
-      last_activity_date:
+      last_modified_date:
         type:
           - string
           - "null"
@@ -1700,7 +1914,19 @@ schemas:
         type:
           - string
           - "null"
-      opportunity_id:
+      next_step_details:
+        type:
+          - array
+          - "null"
+      offers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      opportunity_owner_email:
         type:
           - string
           - "null"
@@ -1712,15 +1938,61 @@ schemas:
         type:
           - string
           - "null"
-      partner_primary_need_from_aws:
+      other_solution_offered:
         type:
-          - array
+          - string
           - "null"
-        items:
-          type:
-            - string
-            - "null"
-      primary_campaign_source:
+      partner_acceptance_status:
+        type:
+          - string
+          - "null"
+      partner_developer_manager_email:
+        type:
+          - string
+          - "null"
+      partner_developer_manager_name:
+        type:
+          - string
+          - "null"
+      partner_primary_need_from_aws:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+      partner_project_title:
+        type:
+          - string
+          - "null"
+      postal_code:
+        type:
+          - string
+          - "null"
+      primary_contact_email:
+        type:
+          - string
+          - "null"
+      primary_contact_first_name:
+        type:
+          - string
+          - "null"
+      primary_contact_last_name:
+        type:
+          - string
+          - "null"
+      primary_contact_phone:
+        type:
+          - string
+          - "null"
+      procurement_type:
+        type:
+          - string
+          - "null"
+      project_description:
+        type:
+          - string
+          - "null"
+      recommended_next_best_actions:
         type:
           - string
           - "null"
@@ -1728,14 +2000,34 @@ schemas:
         type:
           - string
           - "null"
+      rejection_reason:
+        type:
+          - string
+          - "null"
+      sale_stage:
+        type:
+          - string
+          - "null"
+      sales_activities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       segment:
         type:
           - string
           - "null"
-      stage:
+      solution_offered:
         type:
-          - string
+          - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       state:
         type:
           - string
@@ -1749,6 +2041,10 @@ schemas:
           - string
           - "null"
       use_case:
+        type:
+          - string
+          - "null"
+      uuid:
         type:
           - string
           - "null"
@@ -2709,27 +3005,6 @@ schemas:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            email:
-              type:
-                - string
-                - "null"
-            first_name:
-              type:
-                - string
-                - "null"
-            last_name:
-              type:
-                - string
-                - "null"
-            phone_number:
-              type:
-                - string
-                - "null"
       customer_duns_number:
         type:
           - string
@@ -2818,27 +3093,6 @@ schemas:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            email:
-              type:
-                - string
-                - "null"
-            first_name:
-              type:
-                - string
-                - "null"
-            last_name:
-              type:
-                - string
-                - "null"
-            phone_number:
-              type:
-                - string
-                - "null"
       postal_code:
         type:
           - string
@@ -2871,60 +3125,10 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          assistance_type:
-            type:
-              - string
-              - "null"
-          closed_date_time:
-            type:
-              - string
-              - "null"
-          created_date_time:
-            type:
-              - string
-              - "null"
-          expiration_date_time:
-            type:
-              - string
-              - "null"
-          referral_id:
-            type:
-              - string
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
-          status_reason:
-            type:
-              - string
-              - "null"
-          sub_status:
-            type:
-              - string
-              - "null"
-          updated_date_time:
-            type:
-              - string
-              - "null"
       solutions:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
       state:
         type:
           - string
@@ -2945,11 +3149,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          error:
-            type:
-              - string
-              - "null"
       tags:
         type:
           - array
@@ -2962,23 +3161,6 @@ schemas:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
       updated_at:
         type:
           - string

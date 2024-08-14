@@ -50,7 +50,7 @@ class ZendeskConfigException(AirbyteTracedException):
 
 class ZendeskSupportBackoffStrategy(BackoffStrategy):
     def backoff_time(
-        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], **kwargs: Any
+        self, response_or_exception: Optional[Union[requests.Response, requests.RequestException]], attempt_count: int
     ) -> Optional[float]:
         if isinstance(response_or_exception, requests.Response):
             retry_after = int(to_int(response_or_exception.headers.get("Retry-After", 0)))

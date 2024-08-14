@@ -62,10 +62,7 @@ class InMemoryRecordBufferingStrategy(
     }
 
     @Throws(Exception::class)
-    override fun flushSingleBuffer(
-        stream: AirbyteStreamNameNamespacePair,
-        buffer: SerializableBuffer
-    ) {
+    override fun flushSingleStream(stream: AirbyteStreamNameNamespacePair) {
         LOGGER.info {
             "Flushing single stream ${stream.name}: ${streamBuffer[stream]!!.size} records"
         }

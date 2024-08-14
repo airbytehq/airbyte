@@ -7,7 +7,7 @@ definitions:
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
-    token_refresh_endpoint: "https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/accesstoken?response_type=token"
+    token_refresh_endpoint: "https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh"
     grant_type: refresh_token
     access_token_name: access_token
 

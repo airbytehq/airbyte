@@ -11,7 +11,7 @@ They are by no mean replacing the need for a manual review of the connector code
 ### Breaking changes must be accompanied by a migration guide
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -21,7 +21,7 @@ This document should contain a section for each breaking change, in order of the
 ### Connectors must have user facing documentation
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -30,7 +30,7 @@ The user facing connector documentation should be stored under `./docs/integrati
 ### Connectors must have a changelog entry for each version
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -41,7 +41,7 @@ Each new version of a connector must have a changelog entry defined in the user 
 ### Connectors must have valid metadata.yaml file
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -50,7 +50,7 @@ Connectors must have a `metadata.yaml` file at the root of their directory. This
 ### Connector must have a language tag in metadata
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -68,7 +68,7 @@ Python connectors must have a CDK tag in their metadata. It must be set in the `
 ### Breaking change deadline should be a week in the future
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -77,7 +77,7 @@ If the connector version has a breaking change, the deadline field must be set t
 ### Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata
 
 _Applies to the following connector types: source_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with certified support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -97,7 +97,7 @@ Connectors must use [Poetry](https://python-poetry.org/) for dependency manageme
 ### Connectors must be licensed under MIT or Elv2
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -115,7 +115,7 @@ Connectors license in metadata.yaml and pyproject.toml file must match. This is 
 ### Connector version must follow Semantic Versioning
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -139,12 +139,21 @@ _Applies to connector with any Airbyte usage level_
 
 Python connectors must have [PyPi](https://pypi.org/) publishing enabled in their `metadata.yaml` file. This is declared by setting `remoteRegistries.pypi.enabled` to `true` in metadata.yaml. This is to ensure that all connectors can be published to PyPi and can be used in `PyAirbyte`.
 
+### Manifest-only connectors must use `source-declarative-manifest` as their base image
+
+_Applies to the following connector types: source, destination_
+_Applies to the following connector languages: manifest-only_
+_Applies to connector with any support level_
+_Applies to connector with any Airbyte usage level_
+
+Manifest-only connectors must use `airbyte/source-declarative-manifest` as their base image.
+
 ## 💼 Assets
 
 ### Connectors must have an icon
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -155,7 +164,7 @@ Each connector must have an icon available in at the root of the connector code 
 ### Connectors must use HTTPS only
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -164,7 +173,7 @@ Connectors must use HTTPS only when making requests to external services.
 ### Python connectors must not use a Dockerfile and must declare their base image in metadata.yaml file
 
 _Applies to the following connector types: source, destination_
-_Applies to the following connector languages: python, low-code_
+_Applies to the following connector languages: python, low-code, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -176,7 +185,7 @@ This is to ensure that all connectors use a base image which is maintained and h
 ### Medium to High Use Connectors must enable acceptance tests
 
 _Applies to the following connector types: source_
-_Applies to the following connector languages: java, low-code, python_
+_Applies to the following connector languages: java, low-code, python, manifest-only_
 _Applies to connector with any support level_
 _Applies to connector with medium, high Airbyte usage level_
 
