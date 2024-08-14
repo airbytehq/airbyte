@@ -18,7 +18,7 @@ data:
   icon: square.svg
   license: MIT
   name: Square
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
