@@ -22,7 +22,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class DatetimeBasedCursor(DeclarativeCursor, ComponentConstructor):
+class DatetimeBasedCursor(DeclarativeCursor, ComponentConstructor[DatetimeBasedCursorModel, DatetimeBasedCursorModel]):
     """
     Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 

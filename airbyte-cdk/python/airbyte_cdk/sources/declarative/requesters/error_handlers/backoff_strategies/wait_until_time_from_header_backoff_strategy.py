@@ -19,7 +19,9 @@ from pydantic import BaseModel
 
 
 @dataclass
-class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor):
+class WaitUntilTimeFromHeaderBackoffStrategy(
+    BackoffStrategy, ComponentConstructor[WaitUntilTimeFromHeaderModel, WaitUntilTimeFromHeaderModel]
+):
     """
     Extract time at which we can retry the request from response header
     and wait for the difference between now and that time

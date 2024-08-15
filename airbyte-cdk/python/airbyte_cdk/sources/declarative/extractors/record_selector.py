@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders import Decoder
@@ -11,6 +11,10 @@ from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelecto
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.models import SchemaNormalization
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordFilter as CustomRecordFilterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordFilter as RecordFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordSelector as RecordSelectorModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
@@ -25,7 +29,12 @@ SCHEMA_TRANSFORMER_TYPE_MAPPING = {
 
 
 @dataclass
-class RecordSelector(HttpSelector, ComponentConstructor):
+class RecordSelector(
+    HttpSelector,
+    ComponentConstructor[
+        RecordSelectorModel, Union[RecordFilterModel, CustomRecordFilterModel, DpathExtractorModel, CustomRecordExtractorModel]
+    ],
+):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
     records based on a heuristic.

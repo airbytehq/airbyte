@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class RecordFilter(ComponentConstructor):
+class RecordFilter(ComponentConstructor[RecordFilterModel, RecordFilterModel]):
     """
     Filter applied on a list of Records
 

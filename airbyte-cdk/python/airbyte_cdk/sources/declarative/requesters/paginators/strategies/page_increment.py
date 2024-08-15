@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class PageIncrement(PaginationStrategy, ComponentConstructor):
+class PageIncrement(PaginationStrategy, ComponentConstructor[PageIncrementModel, PageIncrementModel]):
     """
     Pagination strategy that returns the number of pages reads so far and returns it as the next page token
 

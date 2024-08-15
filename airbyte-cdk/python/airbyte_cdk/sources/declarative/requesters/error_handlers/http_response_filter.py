@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class HttpResponseFilter(ComponentConstructor):
+class HttpResponseFilter(ComponentConstructor[HttpResponseFilterModel, HttpResponseFilterModel]):
     """
     Filter to select a response based on its HTTP status code, error message or a predicate.
     If a response matches the filter, the response action, failure_type, and error message are returned as an ErrorResolution object.

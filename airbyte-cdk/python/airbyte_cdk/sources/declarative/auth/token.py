@@ -25,7 +25,7 @@ from pydantic.v1 import BaseModel
 
 
 @dataclass
-class ApiKeyAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
+class ApiKeyAuthenticator(DeclarativeAuthenticator, ComponentConstructor[ApiKeyAuthenticatorModel, ApiKeyAuthenticatorModel]):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent.
 

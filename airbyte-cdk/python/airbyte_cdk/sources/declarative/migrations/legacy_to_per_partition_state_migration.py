@@ -22,7 +22,9 @@ def _is_already_migrated(stream_state: Mapping[str, Any]) -> bool:
     return "states" in stream_state
 
 
-class LegacyToPerPartitionStateMigration(StateMigration, ComponentConstructor):
+class LegacyToPerPartitionStateMigration(
+    StateMigration, ComponentConstructor[LegacyToPerPartitionStateMigrationModel, LegacyToPerPartitionStateMigrationModel]
+):
     """
     Transforms the input state for per-partitioned streams from the legacy format to the low-code format.
     The cursor field and partition ID fields are automatically extracted from the stream's DatetimebasedCursor and SubstreamPartitionRouter.

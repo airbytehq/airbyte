@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class DefaultErrorHandler(ErrorHandler, ComponentConstructor):
+class DefaultErrorHandler(ErrorHandler, ComponentConstructor[DefaultErrorHandlerModel, DefaultErrorHandlerModel]):
     """
     Default error handler.
 

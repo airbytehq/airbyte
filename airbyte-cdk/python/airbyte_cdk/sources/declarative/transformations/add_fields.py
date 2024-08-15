@@ -119,7 +119,7 @@ class AddFields(RecordTransformation, ComponentConstructor[AddFieldsModel, Added
             dependency_constructor(
                 added_field_definition_model,
                 config,
-                **{"value_type": cls._json_schema_type_name_to_type(added_field_definition_model.value_type)}
+                **{"value_type": cls._json_schema_type_name_to_type(added_field_definition_model.value_type)},
             )
             for added_field_definition_model in model.fields
         ]

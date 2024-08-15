@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class CursorPaginationStrategy(PaginationStrategy, ComponentConstructor):
+class CursorPaginationStrategy(PaginationStrategy, ComponentConstructor[CursorPaginationModel, CursorPaginationModel]):
     """
     Pagination strategy that evaluates an interpolated string to define the next page token
 

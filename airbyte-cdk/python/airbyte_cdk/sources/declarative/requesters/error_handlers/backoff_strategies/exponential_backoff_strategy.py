@@ -16,7 +16,7 @@ from airbyte_cdk.sources.types import Config
 
 
 @dataclass
-class ExponentialBackoffStrategy(BackoffStrategy, ComponentConstructor):
+class ExponentialBackoffStrategy(BackoffStrategy, ComponentConstructor[ExponentialBackoffStrategyModel, ExponentialBackoffStrategyModel]):
     """
     Backoff strategy with an exponential backoff interval
 

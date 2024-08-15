@@ -42,7 +42,7 @@ class JwtAlgorithm(str):
 
 
 @dataclass
-class JwtAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
+class JwtAuthenticator(DeclarativeAuthenticator, ComponentConstructor[JwtAuthenticatorModel, JwtAuthenticatorModel]):
     """
     Generates a JSON Web Token (JWT) based on a declarative connector configuration file. The generated token is attached to each request via the Authorization header.
 

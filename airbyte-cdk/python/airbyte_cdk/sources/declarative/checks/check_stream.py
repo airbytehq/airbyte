@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class CheckStream(ConnectionChecker, ComponentConstructor):
+class CheckStream(ConnectionChecker, ComponentConstructor[CheckStreamModel, CheckStreamModel]):
     """
     Checks the connections by checking availability of one or many streams selected by the developer
 

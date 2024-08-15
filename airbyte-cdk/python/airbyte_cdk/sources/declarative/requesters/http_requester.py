@@ -29,7 +29,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class HttpRequester(Requester, ComponentConstructor):
+class HttpRequester(Requester, ComponentConstructor[HttpRequesterModel, HttpRequesterModel]):
     """
     Default implementation of a Requester
 

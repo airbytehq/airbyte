@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class ConstantBackoffStrategy(BackoffStrategy, ComponentConstructor):
+class ConstantBackoffStrategy(BackoffStrategy, ComponentConstructor[ConstantBackoffStrategyModel, ConstantBackoffStrategyModel]):
     """
     Backoff strategy with a constant backoff interval
 

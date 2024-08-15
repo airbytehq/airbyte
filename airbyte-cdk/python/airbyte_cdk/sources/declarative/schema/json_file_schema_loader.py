@@ -33,7 +33,7 @@ def _default_file_path() -> str:
 
 
 @dataclass
-class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, ComponentConstructor):
+class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, ComponentConstructor[JsonFileSchemaLoaderModel, JsonFileSchemaLoaderModel]):
     """
     Loads the schema from a json file
 

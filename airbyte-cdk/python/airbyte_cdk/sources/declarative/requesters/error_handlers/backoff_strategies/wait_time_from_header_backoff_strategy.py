@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor):
+class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor[WaitTimeFromHeaderModel, WaitTimeFromHeaderModel]):
     """
     Extract wait time from http header
 

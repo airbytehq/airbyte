@@ -12,13 +12,18 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import IterableDecoder as IterableDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonlDecoder as JsonlDecoderModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config
 from pydantic import BaseModel
 
 
 @dataclass
-class DpathExtractor(RecordExtractor, ComponentConstructor):
+class DpathExtractor(
+    RecordExtractor, ComponentConstructor[DpathExtractorModel, Union[JsonDecoderModel, JsonlDecoderModel, IterableDecoderModel]]
+):
     """
     Record extractor that searches a decoded response over a path defined as an array of fields.
 

@@ -10,7 +10,13 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition, StopConditionPaginationStrategyDecorator
@@ -22,7 +28,20 @@ from pydantic import BaseModel
 
 
 @dataclass
-class DefaultPaginator(Paginator, ComponentConstructor[DefaultPaginatorModel, BaseModel]):
+class DefaultPaginator(
+    Paginator,
+    ComponentConstructor[
+        DefaultPaginatorModel,
+        Union[
+            RequestOptionModel,
+            JsonDecoderModel,
+            PageIncrementModel,
+            OffsetIncrementModel,
+            CursorPaginationModel,
+            CustomPaginationStrategyModel,
+        ],
+    ],
+):
     """
     Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 

@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class OffsetIncrement(PaginationStrategy, ComponentConstructor):
+class OffsetIncrement(PaginationStrategy, ComponentConstructor[OffsetIncrementModel, OffsetIncrementModel]):
     """
     Pagination strategy that returns the number of records reads so far and returns it as the next page token
     Examples:

@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 
 @dataclass
-class ListPartitionRouter(PartitionRouter, ComponentConstructor):
+class ListPartitionRouter(PartitionRouter, ComponentConstructor[ListPartitionRouterModel, ListPartitionRouterModel]):
     """
     Partition router that iterates over the values of a list
     If values is a string, then evaluate it as literal and assert the resulting literal is a list
