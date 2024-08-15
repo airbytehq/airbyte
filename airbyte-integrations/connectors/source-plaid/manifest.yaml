@@ -1,4 +1,4 @@
-version: 0.50.0
+version: 4.3.0
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -70,26 +70,31 @@ streams:
           - path:
               - available
             value: "{{record['balances']['available']}}"
+            type: AddedFieldDefinition
       - type: AddFields
         fields:
           - path:
               - current
             value: "{{record['balances']['current']}}"
+            type: AddedFieldDefinition
       - type: AddFields
         fields:
           - path:
               - iso_currency_code
             value: "{{record['balances']['iso_currency_code']}}"
+            type: AddedFieldDefinition
       - type: AddFields
         fields:
           - path:
               - limit
             value: "{{record['balances']['limit']}}"
+            type: AddedFieldDefinition
       - type: AddFields
         fields:
           - path:
               - unofficial_currency_code
             value: "{{record['balances']['unofficial_currency_code']}}"
+            type: AddedFieldDefinition
       - type: RemoveFields
         field_pointers:
           - - balances
