@@ -27,7 +27,7 @@ on:
         description: Streams to include in regression tests
       use_local_cdk:
         description: Use the local CDK when building the target connector
-        default: "false"
+        default: "true"
         type: boolean
       connection_subset:
         description: The subset of connections to select from.
