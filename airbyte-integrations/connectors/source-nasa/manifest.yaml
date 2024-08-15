@@ -1,12 +1,9 @@
-version: 0.79.1
-
+version: 4.3.0
 type: DeclarativeSource
-
 check:
   type: CheckStream
   stream_names:
     - nasa_apod
-
 definitions:
   streams:
     nasa_apod:
@@ -15,7 +12,8 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: https://api.nasa.gov/
           path: planetary/apod
           http_method: GET
           request_parameters:
@@ -50,14 +48,201 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/nasa_apod"
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            concept_tags:
+              type:
+                - "null"
+                - boolean
+            concepts:
+              type:
+                - "null"
+                - object
+                - string
+              patternProperties:
+                ^[0-9]+$:
+                  type:
+                    - "null"
+                    - string
+            copyright:
+              type:
+                - "null"
+                - string
+            date:
+              type:
+                - "null"
+                - string
+              format: "%Y-%m-%d"
+            explanation:
+              type:
+                - "null"
+                - string
+            hdurl:
+              type:
+                - "null"
+                - string
+              format: uri
+            media_type:
+              type:
+                - "null"
+                - string
+              enum:
+                - image
+                - video
+            resource:
+              type:
+                - "null"
+                - object
+              properties:
+                image_set:
+                  type:
+                    - "null"
+                    - string
+                planet:
+                  type:
+                    - "null"
+                    - string
+            service_version:
+              type:
+                - "null"
+                - string
+              pattern: ^v[0-9]$
+            thumbnail_url:
+              type:
+                - "null"
+                - string
+              format: uri
+            title:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+              format: uri
   base_requester:
     type: HttpRequester
     url_base: https://api.nasa.gov/
-
 streams:
-  - $ref: "#/definitions/streams/nasa_apod"
-
+  - type: DeclarativeStream
+    name: nasa_apod
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.nasa.gov/
+        path: planetary/apod
+        http_method: GET
+        request_parameters:
+          api_key: "{{ config['api_key'] }}"
+          start_date: >-
+            {{ stream_interval.start_time if stream_interval else
+            config['start_date'] }}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date
+      lookback_window: P31D
+      incremental_cursor: date
+      path: planetary/apod
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1M
+      cursor_granularity: PT0.000001S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          concept_tags:
+            type:
+              - "null"
+              - boolean
+          concepts:
+            type:
+              - "null"
+              - object
+              - string
+            patternProperties:
+              ^[0-9]+$:
+                type:
+                  - "null"
+                  - string
+          copyright:
+            type:
+              - "null"
+              - string
+          date:
+            type:
+              - "null"
+              - string
+            format: "%Y-%m-%d"
+          explanation:
+            type:
+              - "null"
+              - string
+          hdurl:
+            type:
+              - "null"
+              - string
+            format: uri
+          media_type:
+            type:
+              - "null"
+              - string
+            enum:
+              - image
+              - video
+          resource:
+            type:
+              - "null"
+              - object
+            properties:
+              image_set:
+                type:
+                  - "null"
+                  - string
+              planet:
+                type:
+                  - "null"
+                  - string
+          service_version:
+            type:
+              - "null"
+              - string
+            pattern: ^v[0-9]$
+          thumbnail_url:
+            type:
+              - "null"
+              - string
+            format: uri
+          title:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+            format: uri
 spec:
   type: Spec
   connection_specification:
@@ -122,11 +307,9 @@ spec:
           If an APOD is not a video, this parameter is ignored.
         order: 5
     additionalProperties: true
-
 metadata:
   autoImportSchema:
     nasa_apod: false
-
 schemas:
   nasa_apod:
     type: object
