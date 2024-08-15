@@ -1109,7 +1109,7 @@ class DatetimeBasedCursor(BaseModel):
     )
     global_substream_cursor: Optional[bool] = Field(
         False,
-        description='If parent stream have thousands of partitions, it can be more efficient to store cursor as one value instead of per partition. Lookback window should be used to avoid missing records that where added during the sync.',
+        description='This setting optimizes performance when the parent stream has thousands of partitions by storing the cursor as a single value rather than per partition. Notably, the substream state is updated only at the end of the sync, which helps prevent data loss in case of a sync failure. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/incremental-syncs).',
         title='Whether to store cursor as one value instead of per partition',
     )
     lookback_window: Optional[str] = Field(
