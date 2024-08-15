@@ -26,11 +26,11 @@ def request_response_mapping(stream_name, method="GET", custom_resource=None, is
 
 
 def orders_http_calls():
-    return [request_response_mapping("orders", is_regex=True)]
+    return [request_response_mapping("orders")]
 
 
 def coupons_http_calls():
-    return [request_response_mapping("coupons", is_regex=True)]
+    return [request_response_mapping("coupons")]
 
 
 def customers_http_calls():
@@ -54,7 +54,7 @@ def product_reviews_http_calls():
 
 
 def products_http_calls():
-    return [request_response_mapping("products", is_regex=True)]
+    return [request_response_mapping("products")]
 
 
 def product_shipping_classes_http_calls():
@@ -86,7 +86,7 @@ def order_notes_http_calls():
 
 def product_attribute_terms_http_calls():
     return [
-        request_response_mapping("product_attributes", custom_resource="products/attributes", is_regex=True),
+        request_response_mapping("product_attributes", custom_resource="products/attributes"),
         request_response_mapping("product_attribute_terms", custom_resource="products/attributes/.+/terms", is_regex=True),
     ]
 
