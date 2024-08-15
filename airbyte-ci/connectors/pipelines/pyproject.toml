@@ -18,6 +18,9 @@ more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
 airbyte-protocol-models = "*"
+# In an ideal world, we would import the version of airbyte-ci for the connector airbyte-ci will interact with
+# Also note that the version that this will currently import is <2 because of the version clash with pydantic
+airbyte-cdk = "*"
 jinja2 = "^3.0.2"
 requests = "^2.31"
 airbyte-connectors-base-images = {path = "../base_images", develop = true}

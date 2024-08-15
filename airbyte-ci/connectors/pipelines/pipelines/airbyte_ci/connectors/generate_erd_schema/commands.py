@@ -15,6 +15,13 @@ from pipelines.helpers.connectors.format import verify_formatters
     short_help="Generate ERD schema",
 )
 @click.option(
+    "--publish",
+    is_flag=True,
+    type=bool,
+    default=False,
+    help="Automatically publish the ERD to dbdocs.",
+)
+@click.option(
     "--report",
     is_flag=True,
     type=bool,
@@ -22,11 +29,12 @@ from pipelines.helpers.connectors.format import verify_formatters
     help="Auto open report browser.",
 )
 @click.pass_context
-async def generate_erd_schema(ctx: click.Context, report: bool) -> bool:
+async def generate_erd_schema(ctx: click.Context, report: bool, publish: bool) -> bool:
     verify_formatters()
     return await run_connector_pipeline(
         ctx,
         "Generate ERD schema",
         report,
         run_connector_generate_erd_schema_pipeline,
+        publish,
     )
