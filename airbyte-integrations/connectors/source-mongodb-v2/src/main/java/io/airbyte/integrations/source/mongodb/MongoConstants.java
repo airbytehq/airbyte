@@ -25,6 +25,7 @@ public class MongoConstants {
   public static final String DATABASE_CONFIG_CONFIGURATION_KEY = MongoDbDebeziumConstants.Configuration.DATABASE_CONFIG_CONFIGURATION_KEY;
   public static final String DEFAULT_AUTH_SOURCE = "admin";
   public static final Integer DEFAULT_DISCOVER_SAMPLE_SIZE = 10000;
+  public static final String SCHEMA_CONFIGURATION_KEY = "schema";
   public static final String DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY = "discover_sample_size";
   public static final String DRIVER_NAME = "Airbyte";
   public static final String ID_FIELD = "_id";

@@ -189,6 +189,13 @@
           "default": [],
           "order": 12,
           "group": "advanced"
+      },
+      "schema": {
+          "title": "Schema",
+          "description": "Hardcoded schema for a stream. If matched with a stream name, will force the schema to confirm to this.",
+          "type": "string",
+          "default": "",
+          "group": "advanced"
       }
     },
     "groups": [

@@ -6,6 +6,8 @@ package io.airbyte.integrations.source.mongodb;
 
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,6 +19,10 @@ public class MongoField extends Field {
 
   public MongoField(final String name, final JsonSchemaType type) {
     super(name, type);
+  }
+
+  public MongoField(final String name, final JsonSchemaType type, final List<Field> subFields) {
+    super(name, type, subFields);
   }
 
   public boolean equals(Object o) {

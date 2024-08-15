@@ -26,6 +26,7 @@ import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,8 +113,9 @@ public class MongoDbSource extends BaseConnector implements Source {
         final Integer sampleSize = sourceConfig.getSampleSize();
         final boolean isSchemaEnforced = sourceConfig.getEnforceSchema();
         final List<String> collections = sourceConfig.filterCollections() ? sourceConfig.getCollections() : null;
+        final JsonNode schemas = sourceConfig.hasSchema() ? sourceConfig.getSchema() : null;
         final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize, isSchemaEnforced, 
-            collections);
+            collections, schemas);
         return new AirbyteCatalog().withStreams(streams);
       }
     } catch (final IllegalArgumentException e) {

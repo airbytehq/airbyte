@@ -1,5 +1,27 @@
 # MongoDb Source
 
+## Schema
+
+For each collection, if you want to define a schema in order to propagate type the destination, specify the schema for the collection as a unique string. 
+
+Example:
+
+{"embedded_movies":{"fields":[{"name":"_id","type":"string"},{"name":"tomatoes","type":"object","subfields":[{"name":"production","type":"string"}]}]}}
+
+This means that the collection `embedded_movies` has a schema with a field `_id` of type `string` and a field `tomatoes` of type `object` with a subfield `production` of type `string`.
+
+Valid types are:
+private static JsonSchemaType convertToSchemaType(final String type) {
+    return switch (type) {
+      case "boolean" -> JsonSchemaType.BOOLEAN;
+      case "int", "long", "double", "decimal" -> JsonSchemaType.NUMBER;
+      case "array" -> JsonSchemaType.ARRAY;
+      case "object", "javascriptWithScope" -> JsonSchemaType.OBJECT;
+      case "null" -> JsonSchemaType.NULL;
+      default -> JsonSchemaType.STRING;
+    };
+  }
+
 ## Documentation
 This is the repository for the MongoDb source connector in Java.
 For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/mongodb-v2)
