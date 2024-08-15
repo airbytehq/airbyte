@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.4.1
+Added test utils for integration tests
+
 ## 4.4.0
 file-based cdk: add excel file type support
 
