@@ -642,7 +642,7 @@ class LiveTests(Step):
                 exc_info=exc,
             )
 
-        container = await self._build_test_container(await connector_under_test_container.id())
+        container = self._build_test_container(await connector_under_test_container.id())
         container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
         tests_artifacts_dir = str(self.local_tests_artifacts_dir)
         path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
