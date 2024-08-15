@@ -199,8 +199,8 @@ Check the following Shopify documentation for more information about [retrieving
 
 ## Limitations & Troubleshooting
 
-<details>
 </HideInUI>
+<details>
 <summary>
 
 Expand to see details about Shopify connector limitations and troubleshooting
