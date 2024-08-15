@@ -122,7 +122,7 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, m
         if metadata_entry.metadata_definition.data.supportLevel
         != "archived"  # We give a 2 hour grace period for the metadata to be updated
         and datetime.datetime.strptime(metadata_entry.last_modified, "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=datetime.timezone.utc)
-        > now - PUBLISH_GRACE_PERIOD
+        < now - PUBLISH_GRACE_PERIOD
     }
 
     stale_connectors = []
