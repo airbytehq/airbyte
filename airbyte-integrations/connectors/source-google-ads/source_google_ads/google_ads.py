@@ -94,7 +94,6 @@ class GoogleAds:
         client = self.get_client(login_customer_id)
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query
-        search_request.page_size = self.DEFAULT_PAGE_SIZE
         search_request.customer_id = customer_id
         return [self.ga_service(login_customer_id).search(search_request)]
 
