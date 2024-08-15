@@ -106,7 +106,6 @@ public class CtidGlobalStateManager extends CtidStateManager {
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
       final DbStreamState state = getFinalState(stream);
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
-
     });
 
     resumableFullRefreshStreams.forEach(stream -> {
@@ -166,8 +165,10 @@ public class CtidGlobalStateManager extends CtidStateManager {
     });
 
     resumableFullRefreshStreams.forEach(stream -> {
-      final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(pair);
-      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ctidStatusForFullRefreshStream)));
+      final CtidStatus ctidStatusForFullRefreshStream = generateCtidStatusForState(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()));
+      if (ctidStatusForFullRefreshStream != null) {
+        streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ctidStatusForFullRefreshStream)));
+      }
     });
 
     nonResumableFullRefreshStreams.forEach(stream -> {
