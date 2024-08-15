@@ -17,7 +17,7 @@ data:
   icon: orbit.svg
   license: MIT
   name: Orbit
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

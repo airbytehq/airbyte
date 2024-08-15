@@ -18,13 +18,20 @@ This page contains the setup guide and reference information for the [Shopify](h
 
 This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
+### Set up Shopify
+
 <!-- env:cloud -->
 
 :::note
 For existing **Airbyte Cloud** customers, if you are currently using the **API Password** authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated shortly. This change will not affect **Airbyte Open Source** connections.
 :::
 
-### Airbyte Cloud
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Shopify from the Source type dropdown.
+4. Enter a name for the Shopify connector.
 
 #### Connect using OAuth2.0
 
@@ -40,7 +47,12 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 
 <!-- env:oss -->
 
-### Airbyte Open Source
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Shopify from the Source type dropdown.
+4. Enter a name for the Shopify connector.
 
 #### Create a custom app
 
@@ -106,11 +118,18 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 
 ## Supported sync modes
 
+The Shopify source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
+
+| Feature           | Supported? |
+|:------------------|:-----------|
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+
 The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql) and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries)
 
-## Supported streams
+## Supported Streams
 
 - [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2024-04/resources/abandoned-checkouts#top)
 - [Articles](https://shopify.dev/api/admin-rest/2024-04/resources/article)
@@ -156,7 +175,15 @@ When a record is deleted, the connector outputs a record with the `ID` of that r
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
-## Data type mapping
+## Features
+
+| Feature                   | Supported?\(Yes/No\) |
+| :------------------------ | :------------------- |
+| Full Refresh Sync         | Yes                  |
+| Incremental - Append Sync | Yes                  |
+| Namespaces                | No                   |
+
+## Data type map
 
 | Integration Type | Airbyte Type |
 |:-----------------|:-------------|
@@ -165,14 +192,6 @@ Check the following Shopify documentation for more information about [retrieving
 | `array`          | `array`      |
 | `object`         | `object`     |
 | `boolean`        | `boolean`    |
-
-## Features
-
-| Feature                   | Supported?\(Yes/No\) |
-|:--------------------------|:---------------------|
-| Full Refresh Sync         | Yes                  |
-| Incremental - Append Sync | Yes                  |
-| Namespaces                | No                   |
 
 ## Limitations & Troubleshooting
 

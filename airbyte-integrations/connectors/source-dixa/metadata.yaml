@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-dixa
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

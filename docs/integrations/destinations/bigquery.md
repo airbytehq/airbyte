@@ -81,7 +81,12 @@ You cannot change the location later.
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
-10. For **Transformation Query Run Type (Optional)**, select **interactive** to have
+
+:::note
+Be sure to copy all contents in the Account Key JSON file including the brackets.
+:::
+
+11. For **Transformation Query Run Type (Optional)**, select **interactive** to have
     [BigQuery run interactive query jobs](https://cloud.google.com/bigquery/docs/running-queries#queries)
     or **batch** to have
     [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).

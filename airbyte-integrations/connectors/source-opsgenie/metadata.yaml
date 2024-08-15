@@ -13,7 +13,7 @@ data:
   githubIssueLabel: source-opsgenie
   license: MIT
   name: Opsgenie
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
