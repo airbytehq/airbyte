@@ -53,6 +53,7 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 | Version | Date       | Pull Request                                                   | Subject                              |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------- |
+| 0.3.0 | 2024-08-15 | [44102](https://github.com/airbytehq/airbyte/pull/44102) | Refactor connector to manifest-only format |
 | 0.2.12 | 2024-08-03 | [43061](https://github.com/airbytehq/airbyte/pull/43061) | Update dependencies |
 | 0.2.11 | 2024-07-27 | [42713](https://github.com/airbytehq/airbyte/pull/42713) | Update dependencies |
 | 0.2.10 | 2024-07-20 | [42267](https://github.com/airbytehq/airbyte/pull/42267) | Update dependencies |
