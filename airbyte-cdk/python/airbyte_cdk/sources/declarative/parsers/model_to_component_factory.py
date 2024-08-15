@@ -701,17 +701,16 @@ class ModelToComponentFactory:
                 ),
                 partition_router=stream_slicer,
             )
-        elif model.incremental_sync:
-            return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
-        elif hasattr(model.retriever, "paginator") and model.retriever.paginator and stream_slicer:
-            # For the Full-Refresh sub-streams, we use the nested `ResumableFullRefreshCursor`,
-            # as an instance of `ChildPartitionResumableFullRefreshCursor`
+        elif not model.incremental_sync and stream_slicer:
+            # For the Full-Refresh sub-streams, we use the nested `ChildPartitionResumableFullRefreshCursor`
             return PerPartitionCursor(
                 cursor_factory=CursorFactory(create_function=partial(ChildPartitionResumableFullRefreshCursor, {})),
                 partition_router=stream_slicer,
             )
+        elif model.incremental_sync:
+            return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
-            # For the regular Full-Refresh streams, we use the high lvl `ResumableFullRefreshCursor`
+            # For the regular Full-Refresh streams, we use the high level `ResumableFullRefreshCursor`
             return ResumableFullRefreshCursor(parameters={})
         elif stream_slicer:
             return stream_slicer
