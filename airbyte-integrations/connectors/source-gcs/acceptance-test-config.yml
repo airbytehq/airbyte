@@ -6,7 +6,7 @@ acceptance_tests:
     tests:
       - spec_path: integration_tests/spec.json
         backward_compatibility_tests_config:
-          disable_for_version: 0.2.0
+          disable_for_version: 0.5.0
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -20,6 +20,8 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        expect_trace_message_on_failure: false
+      - config_path: "secrets/config_jsonl.json"
         expect_trace_message_on_failure: false
   incremental:
     tests:

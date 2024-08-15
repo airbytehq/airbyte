@@ -6,7 +6,6 @@
 import itertools
 import json
 import logging
-import re
 from datetime import datetime, timedelta
 from io import IOBase
 from typing import Iterable, List, Optional
@@ -24,7 +23,6 @@ ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
 )
-FILE_FORMATS = "avro|csv|jsonl|tsv|parquet"
 
 
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
@@ -78,7 +76,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                 for blob in blobs:
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
-                    if re.search(FILE_FORMATS, blob.name.lower()) and (not start_date or last_modified >= start_date):
+                    if not start_date or last_modified >= start_date:
                         uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
