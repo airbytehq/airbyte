@@ -74,6 +74,7 @@ Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 a
 
 | Version | Date       | Pull Request                                             | Subject                                 |
 | :------ | :--------- | :------------------------------------------------------- |:----------------------------------------|
+| 0.2.0 | 2024-08-15 | [44147](https://github.com/airbytehq/airbyte/pull/44147) | Refactor connector to manifest-only format |
 | 0.1.13 | 2024-08-12 | [43902](https://github.com/airbytehq/airbyte/pull/43902) | Update dependencies |
 | 0.1.12 | 2024-08-10 | [43117](https://github.com/airbytehq/airbyte/pull/43117) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42732](https://github.com/airbytehq/airbyte/pull/42732) | Update dependencies |
