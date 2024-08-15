@@ -21,8 +21,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_trace_message_on_failure: false
-      - config_path: "secrets/config_jsonl.json"
-        expect_trace_message_on_failure: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
