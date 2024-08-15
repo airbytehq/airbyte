@@ -1,12 +1,9 @@
-version: 0.78.1
-
+version: 4.3.0
 type: DeclarativeSource
-
 check:
   type: CheckStream
   stream_names:
     - stock_api
-
 definitions:
   streams:
     stock_api:
@@ -15,7 +12,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: https://api.polygon.io
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['apiKey'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-CoinAPI-Key
+              inject_into: header
           path: >-
             /v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{
             config['multiplier']         }}/{{ config['timespan'] }}/{{
@@ -34,7 +39,55 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/stock_api"
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            c:
+              type:
+                - "null"
+                - number
+              description: Closing price of the stock at a specific time
+            h:
+              type:
+                - "null"
+                - number
+              description: Highest price the stock reached during a given period
+            l:
+              type:
+                - "null"
+                - number
+              description: Lowest price the stock dropped to within a certain timeframe
+            "n":
+              type:
+                - "null"
+                - number
+              description: Name of the stock or company
+            o:
+              type:
+                - "null"
+                - number
+              description: Opening price of the stock at a particular time
+            t:
+              type:
+                - "null"
+                - integer
+              description: Type of stock (common stock, preferred stock, etc.)
+            v:
+              type:
+                - "null"
+                - number
+              description: Volume of stocks traded at a specific time
+            vw:
+              type:
+                - "null"
+                - number
+              description: Volume-weighted average price of the stock
+            otc:
+              type:
+                - "null"
+                - boolean
+              description: Time when the stock transaction occurred
+          additionalProperties: true
   base_requester:
     type: HttpRequester
     url_base: https://api.polygon.io
@@ -45,10 +98,88 @@ definitions:
         type: RequestOption
         field_name: X-CoinAPI-Key
         inject_into: header
-
 streams:
-  - $ref: "#/definitions/streams/stock_api"
-
+  - type: DeclarativeStream
+    name: stock_api
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.polygon.io
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['apiKey'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-CoinAPI-Key
+            inject_into: header
+        path: >-
+          /v2/aggs/ticker/{{ config['stocksTicker'] }}/range/{{
+          config['multiplier']         }}/{{ config['timespan'] }}/{{
+          config['start_date'] }}/{{ config['end_date']         }}?adjusted={{
+          config['adjusted'] }}&sort={{ config['sort']
+          }}&limit=120&apiKey={{         config['apiKey'] }}
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+    primary_key:
+      - t
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          c:
+            type:
+              - "null"
+              - number
+            description: Closing price of the stock at a specific time
+          h:
+            type:
+              - "null"
+              - number
+            description: Highest price the stock reached during a given period
+          l:
+            type:
+              - "null"
+              - number
+            description: Lowest price the stock dropped to within a certain timeframe
+          "n":
+            type:
+              - "null"
+              - number
+            description: Name of the stock or company
+          o:
+            type:
+              - "null"
+              - number
+            description: Opening price of the stock at a particular time
+          t:
+            type:
+              - "null"
+              - integer
+            description: Type of stock (common stock, preferred stock, etc.)
+          v:
+            type:
+              - "null"
+              - number
+            description: Volume of stocks traded at a specific time
+          vw:
+            type:
+              - "null"
+              - number
+            description: Volume-weighted average price of the stock
+          otc:
+            type:
+              - "null"
+              - boolean
+            description: Time when the stock transaction occurred
+        additionalProperties: true
 spec:
   type: Spec
   connection_specification:
@@ -140,11 +271,9 @@ spec:
           - MSFT
         description: The exchange symbol that this item is traded under.
     additionalProperties: true
-
 metadata:
   autoImportSchema:
     stock_api: true
-
 schemas:
   stock_api:
     type: object
