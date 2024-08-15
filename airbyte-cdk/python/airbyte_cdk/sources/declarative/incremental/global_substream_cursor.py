@@ -56,7 +56,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     This cursor is activated by setting the `global_substream_cursor` parameter for incremental sync.
 
     Warnings:
-    - This cursor must be used with a lookback window. Without it, child records added during the sync to already processed parent records will be missed.
+    - This class enforces a minimal lookback window for substream based on the duration of the previous sync to avoid losing records. This lookback ensures that any records added or updated during the sync are captured in subsequent syncs.
     - The global cursor is updated only at the end of the sync. If the sync ends prematurely (e.g., due to an exception), the state will not be updated.
     - When using the `incremental_dependency` option, the sync will progress through parent records, preventing the sync from getting infinitely stuck. However, it is crucial to understand the requirements for both the `global_substream_cursor` and `incremental_dependency` options to avoid data loss.
     """
