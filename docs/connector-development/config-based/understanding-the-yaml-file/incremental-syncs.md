@@ -209,8 +209,9 @@ The default state format is **per partition**, but there are options to enhance 
   ```
 
 #### Global Substream Cursor
-- **Description**: This option uses a single global cursor for all partitions, significantly reducing the state size. The child state is updated only at the end of the sync, so progress depends on the parent stream state when using the incremental dependency option.
+- **Description**: This option uses a single global cursor for all partitions, significantly reducing the state size. It enforces a minimal lookback window for substream based on the duration of the previous sync to avoid losing records. This lookback ensures that any records added or updated during the sync are captured in subsequent syncs.
 - **When to Use**: Use this option if the number of partitions in the parent stream is significantly higher than the 10,000 partition limit (e.g., millions of records per sync). This prevents the inefficiency of reading most partitions in full refresh and avoids duplicates during the next sync.
+- **Operational Detail**: The global cursor's value is updated only at the end of the sync. If the sync fails, only the parent state is updated if the incremental dependency is enabled.
 - **Example State**:
   ```json
   [
@@ -221,7 +222,7 @@ The default state format is **per partition**, but there are options to enhance 
 ### Summary
 - **Per Partition**: Default, use for manageable partitions (<10k).
 - **Incremental Dependency**: Use for incremental parent streams with a dependent child cursor. Ensure API updates parent cursor with child records.
-- **Global Substream Cursor**: Use for large-scale parent streams with many partitions.
+- **Global Substream Cursor**: Ideal for large-scale parent streams with many partitions to optimize performance.
 
 Choose the option that best fits your data structure and sync requirements to optimize performance and data integrity.
 
