@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
 import dpath
 import google.generativeai as genai
@@ -17,8 +17,8 @@ from markdown_it import MarkdownIt
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.connectors.generate_erd_schema.dbml_assembler import Source, DbmlAssembler
-from pipelines.airbyte_ci.connectors.generate_erd_schema.relationships import RelationshipsMerger, Relationships
+from pipelines.airbyte_ci.connectors.generate_erd.dbml_assembler import Source, DbmlAssembler
+from pipelines.airbyte_ci.connectors.generate_erd.relationships import RelationshipsMerger, Relationships
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers.connectors.command import run_connector_steps
@@ -221,41 +221,44 @@ class UploadDbmlSchema(Step):
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
 
-async def run_connector_generate_erd_schema_pipeline(context: ConnectorContext, semaphore: "Semaphore", publish: bool = False) -> Report:
+async def run_connector_generate_erd_pipeline(context: ConnectorContext, semaphore: "Semaphore", skip_steps: Optional[List[str]] = None) -> Report:
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
-
     steps_to_run: STEP_TREE = []
+    if not skip_steps:
+        skip_steps = []
 
     steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))])
 
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_ERD_GENERATE,
-                step=GenerateErdSchema(context),
-                args=lambda results: {"connector_to_discover": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
-                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-            ),
-        ]
-    )
-
-    steps_to_run.append(
-        [
-            StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.AIRBYTE_DBML_GENERATE,
-                step=GenerateDbmlSchema(context),
-                depends_on=[CONNECTOR_TEST_STEP_ID.AIRBYTE_ERD_GENERATE],
-            ),
-        ]
-    )
-
-    if publish:
+    if CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS not in skip_steps:
         steps_to_run.append(
             [
                 StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.AIRBYTE_DBML_UPLOAD,
+                    id=CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS,
+                    step=GenerateErdSchema(context),
+                    args=lambda results: {"connector_to_discover": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+                    depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+                ),
+            ]
+        )
+
+    if CONNECTOR_TEST_STEP_ID.DBML_FILE not in skip_steps:
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.DBML_FILE,
+                    step=GenerateDbmlSchema(context),
+                    depends_on=[CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS],
+                ),
+            ]
+        )
+
+    if CONNECTOR_TEST_STEP_ID.PUBLISH_ERD not in skip_steps:
+        steps_to_run.append(
+            [
+                StepToRun(
+                    id=CONNECTOR_TEST_STEP_ID.PUBLISH_ERD,
                     step=UploadDbmlSchema(context),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.AIRBYTE_DBML_GENERATE],
+                    depends_on=[CONNECTOR_TEST_STEP_ID.DBML_FILE],
                 ),
             ]
         )
