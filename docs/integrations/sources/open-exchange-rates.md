@@ -48,6 +48,7 @@ If you have `free` subscription plan \(you may check it [here](https://openexcha
 
 | Version | Date       | Pull Request                                               | Subject                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.0 | 2024-08-15 | [44108](https://github.com/airbytehq/airbyte/pull/44108) | Refactor connector to manifest-only format |
 | 0.2.16 | 2024-08-10 | [43582](https://github.com/airbytehq/airbyte/pull/43582) | Update dependencies |
 | 0.2.15 | 2024-08-03 | [43120](https://github.com/airbytehq/airbyte/pull/43120) | Update dependencies |
 | 0.2.14 | 2024-07-27 | [42656](https://github.com/airbytehq/airbyte/pull/42656) | Update dependencies |
