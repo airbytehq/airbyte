@@ -31,12 +31,12 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFil
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
+    ChildPartitionResumableFullRefreshCursor,
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
-    SubstreamResumableFullRefreshCursor,
 )
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -704,15 +704,13 @@ class ModelToComponentFactory:
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif hasattr(model.retriever, "paginator") and model.retriever.paginator and stream_slicer:
-            # For the Full-Refresh substreams, we use the nested `ResumableFullRefreshCursor`,
-            # as an instance of `SubstreamResumableFullRefreshCursor`, in order to hide the implementation details.
+            # For the Full-Refresh sub-streams, we use the nested `ResumableFullRefreshCursor`,
+            # as an instance of `ChildPartitionResumableFullRefreshCursor`
             return PerPartitionCursor(
-                cursor_factory=CursorFactory(create_function=partial(SubstreamResumableFullRefreshCursor, {})),
+                cursor_factory=CursorFactory(create_function=partial(ChildPartitionResumableFullRefreshCursor, {})),
                 partition_router=stream_slicer,
             )
         elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
-            # To incrementally deliver RFR for low-code we're first implementing this for streams that do not use
-            # nested state like substreams or those using list partition routers
             # For the regular Full-Refresh streams, we use the high lvl `ResumableFullRefreshCursor`
             return ResumableFullRefreshCursor(parameters={})
         elif stream_slicer:

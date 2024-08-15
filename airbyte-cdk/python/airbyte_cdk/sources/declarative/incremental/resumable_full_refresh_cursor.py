@@ -98,7 +98,7 @@ class ResumableFullRefreshCursor(DeclarativeCursor):
 
 
 @dataclass
-class SubstreamResumableFullRefreshCursor(ResumableFullRefreshCursor):
+class ChildPartitionResumableFullRefreshCursor(ResumableFullRefreshCursor):
     def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         """
         Once the current slice has finished syncing (paginator returns None),

@@ -1045,7 +1045,7 @@ def _create_page(response_body):
             ),
             [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
             [
-                call({'states': []}, {"partition": "0"}, None), 
+                call({'states': []}, {"partition": "0"}, None),
                 call({'states': [{'partition': {'partition': '0'}, 'cursor': {'__ab_full_refresh_sync_complete': True}}]}, {"partition": "1"}, None),
             ],
         ),

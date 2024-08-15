@@ -62,17 +62,17 @@ _A_STATE = [
 
 _A_PER_PARTITION_STATE = [
     AirbyteStateMessage(
-        type="STREAM", 
+        type="STREAM",
         stream=AirbyteStreamState(
-            stream_descriptor=StreamDescriptor(name=_stream_name), 
+            stream_descriptor=StreamDescriptor(name=_stream_name),
             stream_state={
                 "states": [
                     {
-                        "partition": {"key": "value"}, 
+                        "partition": {"key": "value"},
                         "cursor": {"item_id": 0},
                     },
                 ],
-                "parent_state": {},   
+                "parent_state": {},
             }
         )
     )
