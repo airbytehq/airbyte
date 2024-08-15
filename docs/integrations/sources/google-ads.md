@@ -60,26 +60,42 @@ Each Google Ads API developer token is assigned an access level and "permissible
 <!-- /env:oss -->
 
 <!-- env:cloud -->
-
+<HideInUI>
 #### For Airbyte Cloud:
+</HideInUI>
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Ads from the Source type dropdown.
 4. Enter a name for the Google Ads connector.
 5. Click **Sign in with Google** to authenticate your Google Ads account. In the pop-up, select the appropriate Google account and click **Continue** to proceed.
+<FieldAnchor field="customer_id">
 6. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
+
+:::note
+If you are accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
+:::
+</FieldAnchor>
+
+<FieldAnchor field="customer_status_filter">
 7. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus) for more info.
+</FieldAnchor>
+
+<FieldAnchor field="start_date">
 8. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
+</FieldAnchor>
+
 9. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 
-10. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
+<FieldAnchor field="conversion_window_days">
+10. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
+</FieldAnchor>
 
-11. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
+<FieldAnchor field="end_date">
+11. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
+</FieldAnchor>
 
-12. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
-
-13. Click **Set up source** and wait for the tests to complete.
+12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -102,7 +118,7 @@ Each Google Ads API developer token is assigned an access level and "permissible
 14. Click **Set up source** and wait for the tests to complete.
 
 <!-- /env:oss -->
-
+<HideInUI>
 ## Supported sync modes
 
 The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
@@ -114,7 +130,7 @@ The Google Ads source connector supports the following [sync modes](https://docs
 
 **Incremental Events Streams:**
 
-List of stream:
+List of streams:
 
 - [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion)
 - [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v15/ad_group_criterion)
@@ -243,10 +259,13 @@ More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discu
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v15/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
 
-### Reasoning Behind Primary Key Selection
+### Primary Key Selection Method
 
 Primary keys are chosen to uniquely identify records within streams. In this selection, we considered the scope of ID uniqueness as detailed in [the Google Ads API structure documentation](https://developers.google.com/google-ads/api/docs/concepts/api-structure#object_ids). This approach guarantees that each record remains unique across various scopes and contexts. Moreover, in the Google Ads API, segmentation is crucial for dissecting performance data. As pointed out in [the Google Ads support documentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation), segments offer a granular insight into data based on specific criteria, like device type or click interactions.
 
+</HideInUI>
+
+<FieldAnchor field="custom_queries_array">
 ## Custom Query: Understanding Google Ads Query Language
 
 Additional streams for Google Ads can be dynamically created using custom queries.
@@ -272,7 +291,9 @@ Follow Google's guidance on [Selectability between segments and metrics](https:/
 :::info
 For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also subsequently refresh your source schema to pull in any changes.
 :::
+</FieldAnchor>
 
+<HideInUI>
 ## Difference between manager and client accounts
 
 A manager account isn't an "upgrade" of your Google Ads account. Instead, it's an entirely new Google Ads account you create. Think of a manager account as an umbrella Google Ads account with several individual Google Ads accounts linked to it. You can link new and existing Google Ads accounts, as well as other manager accounts.
@@ -305,6 +326,7 @@ In the case of configuring the Google Ads source connector, each time a sync is 
 This source is constrained by the [Google Ads API limits](https://developers.google.com/google-ads/api/docs/best-practices/quotas)
 
 Due to a limitation in the Google Ads API which does not allow getting performance data at a granularity level smaller than a day, the Google Ads connector usually pulls data up until the previous day. For example, if the sync runs on Wednesday at 5 PM, then data up until Tuesday midnight is pulled. Data for Wednesday is exported only if a sync runs after Wednesday (for example, 12:01 AM on Thursday) and so on. This avoids syncing partial performance data, only to have to resync it again once the full day's data has been recorded by Google. For example, without this functionality, a sync which runs on Wednesday at 5 PM would get ads performance data for Wednesday between 12:01 AM - 5 PM on Wednesday, then it would need to run again at the end of the day to get all of Wednesday's data.
+</HideInUI>
 
 ## Changelog
 
