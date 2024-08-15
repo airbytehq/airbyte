@@ -1,4 +1,4 @@
-version: 0.44.0
+version: 4.3.0
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -403,7 +403,8 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/members?$top={{ config.get('page_size', 20) }}
+          groups/{{ stream_partition.group_id }}/members?$top={{ config.get('page_size',
+          20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -747,7 +748,8 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/owners?$top={{ config.get('page_size', 20) }}
+          groups/{{ stream_partition.group_id }}/owners?$top={{ config.get('page_size',
+          20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -1069,7 +1071,8 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/conversations?$top={{ config.get('page_size', 20) }}
+          groups/{{ stream_partition.group_id }}/conversations?$top={{ config.get('page_size',
+          20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -1738,7 +1741,8 @@ streams:
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
           teams/{{ stream_partition.group_id }}/channels/{{
-          stream_partition.channel_id }}/members?$top={{ config.get('page_size', 20) }}
+          stream_partition.channel_id }}/members?$top={{ config.get('page_size', 20)
+          }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -2329,7 +2333,9 @@ streams:
                                 authenticator:
                                   type: OAuthAuthenticator
                                   client_id: "{{ config['credentials']['client_id'] }}"
-                                  client_secret: "{{ config['credentials']['client_secret'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
@@ -3035,7 +3041,9 @@ streams:
                                 authenticator:
                                   type: OAuthAuthenticator
                                   client_id: "{{ config['credentials']['client_id'] }}"
-                                  client_secret: "{{ config['credentials']['client_secret'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
@@ -3122,7 +3130,8 @@ streams:
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
           groups/{{ stream_partition.group_id }}/conversations/{{
-          stream_partition.conversation_id }}/threads?$top={{ config.get('page_size', 20) }}
+          stream_partition.conversation_id }}/threads?$top={{ config.get('page_size',
+          20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -3719,7 +3728,9 @@ streams:
                                 authenticator:
                                   type: OAuthAuthenticator
                                   client_id: "{{ config['credentials']['client_id'] }}"
-                                  client_secret: "{{ config['credentials']['client_secret'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
@@ -4466,7 +4477,9 @@ streams:
                                 authenticator:
                                   type: OAuthAuthenticator
                                   client_id: "{{ config['credentials']['client_id'] }}"
-                                  client_secret: "{{ config['credentials']['client_secret'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
@@ -4559,7 +4572,8 @@ streams:
                     url_base: https://graph.microsoft.com/v1.0/
                     path: >-
                       groups/{{ stream_partition.group_id }}/conversations/{{
-                      stream_partition.conversation_id }}/threads?$top={{ config.get('page_size', 20) }}
+                      stream_partition.conversation_id }}/threads?$top={{ config.get('page_size',
+                      20) }}
                     http_method: GET
                     request_parameters: {}
                     request_headers: {}
@@ -4819,7 +4833,9 @@ streams:
                                 authenticator:
                                   type: OAuthAuthenticator
                                   client_id: "{{ config['credentials']['client_id'] }}"
-                                  client_secret: "{{ config['credentials']['client_secret'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
@@ -4911,7 +4927,9 @@ streams:
                                 authenticator:
                                   type: OAuthAuthenticator
                                   client_id: "{{ config['credentials']['client_id'] }}"
-                                  client_secret: "{{ config['credentials']['client_secret'] }}"
+                                  client_secret:
+                                    "{{ config['credentials']['client_secret']
+                                    }}"
                                   refresh_request_body:
                                     scope: https://graph.microsoft.com/.default
                                   token_refresh_endpoint: >-
@@ -5163,8 +5181,12 @@ streams:
                                             request_headers: {}
                                             authenticator:
                                               type: OAuthAuthenticator
-                                              client_id: "{{ config['credentials']['client_id'] }}"
-                                              client_secret: "{{ config['credentials']['client_secret'] }}"
+                                              client_id:
+                                                "{{ config['credentials']['client_id']
+                                                }}"
+                                              client_secret:
+                                                "{{ config['credentials']['client_secret']
+                                                }}"
                                               refresh_request_body:
                                                 scope: https://graph.microsoft.com/.default
                                               token_refresh_endpoint: >-
@@ -5322,7 +5344,8 @@ streams:
         type: HttpRequester
         url_base: https://graph.microsoft.com/v1.0/
         path: >-
-          groups/{{ stream_partition.group_id }}/drives?$top={{ config.get('page_size', 20) }}
+          groups/{{ stream_partition.group_id }}/drives?$top={{ config.get('page_size',
+          20) }}
         http_method: GET
         request_parameters: {}
         request_headers: {}
@@ -5771,11 +5794,11 @@ spec:
                 title: Directory (tenant) ID
                 type: string
                 description:
-                  "A globally unique identifier (GUID) that is different than
-                  your organization name or domain. Follow these steps to obtain: open
-                  one of the Teams where you belong inside the Teams Application -> Click
-                  on the … next to the Team title -> Click on Get link to team -> Copy
-                  the link to the team and grab the tenant ID form the URL"
+                  "A globally unique identifier (GUID) that is different
+                  than your organization name or domain. Follow these steps to obtain:
+                  open one of the Teams where you belong inside the Teams Application
+                  -> Click on the … next to the Team title -> Click on Get link to team
+                  -> Copy the link to the team and grab the tenant ID form the URL"
                 airbyte_secret: true
               client_id:
                 title: Client ID
@@ -5809,11 +5832,11 @@ spec:
                 title: Directory (tenant) ID
                 type: string
                 description:
-                  "A globally unique identifier (GUID) that is different than
-                  your organization name or domain. Follow these steps to obtain: open
-                  one of the Teams where you belong inside the Teams Application -> Click
-                  on the … next to the Team title -> Click on Get link to team -> Copy
-                  the link to the team and grab the tenant ID form the URL"
+                  "A globally unique identifier (GUID) that is different
+                  than your organization name or domain. Follow these steps to obtain:
+                  open one of the Teams where you belong inside the Teams Application
+                  -> Click on the … next to the Team title -> Click on Get link to team
+                  -> Copy the link to the team and grab the tenant ID form the URL"
                 airbyte_secret: true
               client_id:
                 title: Client ID
