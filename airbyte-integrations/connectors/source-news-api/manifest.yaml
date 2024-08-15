@@ -1,13 +1,10 @@
-version: 0.78.1
-
+version: 4.3.0
 type: DeclarativeSource
-
 check:
   type: CheckStream
   stream_names:
     - everything
     - top_headlines
-
 definitions:
   streams:
     everything:
@@ -18,7 +15,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: https://newsapi.org/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_key'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Api-Key
+              inject_into: header
           path: /everything
           http_method: GET
           request_parameters:
@@ -66,7 +71,38 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/everything"
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            author:
+              type:
+                - "null"
+                - string
+            publishedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            source:
+              type: object
+              properties:
+                Id:
+                  type:
+                    - "null"
+                    - string
+                Name:
+                  type:
+                    - "null"
+                    - string
+            title:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
     top_headlines:
       type: DeclarativeStream
       name: top_headlines
@@ -75,7 +111,15 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: https://newsapi.org/v2
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "{{ config['api_key'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: X-Api-Key
+              inject_into: header
           path: /top-headlines
           http_method: GET
           request_parameters:
@@ -88,8 +132,12 @@ definitions:
             to: "{{ config['end_date'] }}"
             language: "{{ config['language'] }}"
             sortBy: "{{ config['sort_by'] }}"
-            country: "{{ config['country'] if not config.get('sources') else None }}"
-            category: "{{ config['category'] if not config.get('sources') else None }}"
+            country:
+              "{{ config['country'] if not config.get('sources') else None
+              }}"
+            category:
+              "{{ config['category'] if not config.get('sources') else None
+              }}"
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -125,7 +173,38 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/top_headlines"
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            author:
+              type:
+                - "null"
+                - string
+            publishedAt:
+              type:
+                - "null"
+                - string
+              format: date-time
+            source:
+              type: object
+              properties:
+                Id:
+                  type:
+                    - "null"
+                    - string
+                Name:
+                  type:
+                    - "null"
+                    - string
+            title:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
   base_requester:
     type: HttpRequester
     url_base: https://newsapi.org/v2
@@ -136,11 +215,199 @@ definitions:
         type: RequestOption
         field_name: X-Api-Key
         inject_into: header
-
 streams:
-  - $ref: "#/definitions/streams/everything"
-  - $ref: "#/definitions/streams/top_headlines"
-
+  - type: DeclarativeStream
+    name: everything
+    primary_key:
+      - publishedAt
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://newsapi.org/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Api-Key
+            inject_into: header
+        path: /everything
+        http_method: GET
+        request_parameters:
+          q: "{{ config['search_query'] }}"
+          searchIn: "{{ ','.join(config.get('search_in', [])) }}"
+          sources: "{{ ','.join(config.get('sources', [])) }}"
+          domains: "{{ ','.join(config.get('domains', [])) }}"
+          excludeDomains: "{{ ','.join(config.get('exclude_domains', [])) }}"
+          from: "{{ config['start_date'] }}"
+          to: "{{ config['end_date'] }}"
+          language: "{{ config['language'] }}"
+          sortBy: "{{ config['sort_by'] }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 426
+                  error_message_contains: requested too many results
+                  error_message: >-
+                    Number of requests exceeded. Please upgrade your plan to
+                    get more number of requests per sync.
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - articles
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pageSize
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          author:
+            type:
+              - "null"
+              - string
+          publishedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          source:
+            type: object
+            properties:
+              Id:
+                type:
+                  - "null"
+                  - string
+              Name:
+                type:
+                  - "null"
+                  - string
+          title:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+  - type: DeclarativeStream
+    name: top_headlines
+    primary_key:
+      - publishedAt
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://newsapi.org/v2
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Api-Key
+            inject_into: header
+        path: /top-headlines
+        http_method: GET
+        request_parameters:
+          q: "{{ config['search_query'] }}"
+          searchIn: "{{ ','.join(config.get('search_in', [])) }}"
+          sources: "{{ ','.join(config.get('sources', [])) }}"
+          domains: "{{ ','.join(config.get('domains', [])) }}"
+          excludeDomains: "{{ ','.join(config.get('exclude_domains', [])) }}"
+          from: "{{ config['start_date'] }}"
+          to: "{{ config['end_date'] }}"
+          language: "{{ config['language'] }}"
+          sortBy: "{{ config['sort_by'] }}"
+          country: "{{ config['country'] if not config.get('sources') else None }}"
+          category: "{{ config['category'] if not config.get('sources') else None }}"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 426
+                  error_message_contains: requested too many results
+                  error_message: >-
+                    Number of requests exceeded. Please upgrade your plan to
+                    get more number of requests per sync.
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - articles
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: pageSize
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          author:
+            type:
+              - "null"
+              - string
+          publishedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          source:
+            type: object
+            properties:
+              Id:
+                type:
+                  - "null"
+                  - string
+              Name:
+                type:
+                  - "null"
+                  - string
+          title:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
 spec:
   type: Spec
   connection_specification:
@@ -333,12 +600,10 @@ spec:
         default: publishedAt
         order: 11
     additionalProperties: true
-
 metadata:
   autoImportSchema:
     everything: false
     top_headlines: false
-
 schemas:
   everything:
     type: object
