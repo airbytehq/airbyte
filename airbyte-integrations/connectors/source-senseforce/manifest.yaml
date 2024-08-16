@@ -1,12 +1,9 @@
-version: 1.0.0
-
+version: 4.3.0
 type: DeclarativeSource
-
 check:
   type: CheckStream
   stream_names:
     - dataset
-
 definitions:
   streams:
     dataset:
@@ -17,7 +14,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: "{{ config['backend_url'] }}"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['access_token'] }}"
           path: /api/dataset/execute/{{ config['dataset_id']}}
           http_method: POST
           request_headers:
@@ -76,17 +77,112 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/dataset"
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            airbyte_cursor:
+              type: number
+            id:
+              type:
+                - "null"
+                - string
+            thing:
+              type: string
+            timestamp:
+              type: integer
   base_requester:
     type: HttpRequester
     url_base: "{{ config['backend_url'] }}"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
-
 streams:
-  - $ref: "#/definitions/streams/dataset"
-
+  - type: DeclarativeStream
+    name: dataset
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['backend_url'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['access_token'] }}"
+        path: /api/dataset/execute/{{ config['dataset_id']}}
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+        request_body_data: |
+          [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
+              [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
+               {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
+              ]
+              
+            }, "orderBy": 1, "columnName": "Timestamp"}]/
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 10000
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: airbyte_cursor
+      name: dataset
+      primary_key:
+        - id
+      path: /api/dataset/execute/{{ config['dataset_id']}}
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      step: P100D
+      cursor_granularity: PT1S
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - airbyte_cursor
+            value: "{{ record['timestamp'] | int / 1000 }}"
+            type: AddedFieldDefinition
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          airbyte_cursor:
+            type: number
+          id:
+            type:
+              - "null"
+              - string
+          thing:
+            type: string
+          timestamp:
+            type: integer
 spec:
   type: Spec
   connection_specification:
@@ -172,11 +268,9 @@ spec:
         format: date
         order: 4
     additionalProperties: true
-
 metadata:
   autoImportSchema:
     dataset: false
-
 schemas:
   dataset:
     type: object
