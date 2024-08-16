@@ -28,6 +28,7 @@ No documented strict rate limit.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.0 | 2024-08-15 | [44152](https://github.com/airbytehq/airbyte/pull/44152) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-10 | [43580](https://github.com/airbytehq/airbyte/pull/43580) | Update dependencies |
 | 0.1.14 | 2024-08-03 | [43069](https://github.com/airbytehq/airbyte/pull/43069) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42799](https://github.com/airbytehq/airbyte/pull/42799) | Update dependencies |

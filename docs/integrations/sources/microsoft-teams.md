@@ -164,6 +164,7 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.2.0 | 2024-08-15 | [44116](https://github.com/airbytehq/airbyte/pull/44116) | Refactor connector to manifest-only format |
 | 1.1.11 | 2024-08-12 | [43772](https://github.com/airbytehq/airbyte/pull/43772) | Update dependencies |
 | 1.1.10 | 2024-08-10 | [43547](https://github.com/airbytehq/airbyte/pull/43547) | Update dependencies |
 | 1.1.9 | 2024-08-03 | [43251](https://github.com/airbytehq/airbyte/pull/43251) | Update dependencies |
