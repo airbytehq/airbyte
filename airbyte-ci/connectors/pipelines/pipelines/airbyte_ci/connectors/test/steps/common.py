@@ -511,7 +511,7 @@ class LiveTests(Step):
         if self.run_id:
             command_options += ["--run-id", self.run_id]
         if self.should_read_with_state:
-            command_options += ["--should-read-with-state", self.should_read_with_state]
+            command_options += ["--should-read-with-state"]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
         if self.selected_streams:
