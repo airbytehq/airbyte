@@ -123,6 +123,7 @@ The Stripe source connector supports the following streams:
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
+- [Tax Rates](https://docs.stripe.com/api/tax_rates/list) \(Incremental\)
 - [Top Ups](https://stripe.com/docs/api/topups/list) \(Incremental\)
 - [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
@@ -163,6 +164,7 @@ However, not all the entities are supported by the Events API, so the Stripe con
 - `Refunds`
 - `Setup Attempts`
 - `Shipping Rates`
+- `Tax Rates`
 
 On the other hand, the following streams use the `updated` field value as a cursor:
 
@@ -236,6 +238,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 5.5.2 | 2024-08-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Added stream `tax_rates` (incremental sync)|
 | 5.5.1 | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105) | Update dependencies |
 | 5.5.0 | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302) | Fix problem with state not updating and upgrade cdk 4
 | 5.4.12 | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985) | Expand Invoice discounts and tax rates

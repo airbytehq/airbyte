@@ -811,3 +811,12 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
         return ParentIncrementalStripeSubStreamErrorHandler(
             logger=self.logger, error_mapping=PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
         )
+
+
+class TaxRates(CreatedCursorIncrementalStripeStream):
+    """
+    API docs: https://docs.stripe.com/api/tax_rates/list
+    """
+
+    def path(self, **kwargs):
+        return "tax_rates"

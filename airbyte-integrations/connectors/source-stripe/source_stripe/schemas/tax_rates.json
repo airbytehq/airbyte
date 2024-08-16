@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tax rates schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "country": {
+      "type": "string"
+    },
+    "created": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "inclusive": {
+      "type": "boolean"
+    },
+    "jurisdiction": {
+      "type": "string"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {}
+    },
+    "percentage": {
+      "type": "number"
+    },
+    "state": {
+      "type": "string"
+    },
+    "tax_type": {
+      "type": "string",
+      "enum": [
+        "amusement_tax",
+        "communications_tax",
+        "gst",
+        "hst",
+        "igst",
+        "jct",
+        "lease_tax",
+        "pst",
+        "qst",
+        "rst",
+        "sales_tax",
+        "vat"
+      ]
+    }
+  }
+}
