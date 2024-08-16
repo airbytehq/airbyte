@@ -291,8 +291,7 @@ Ensure the security group configured for the EC2 Instance allows traffic in on t
 :::
 
 :::warning
-If you're accessing a non-HTTPs address, such as creating a network rule to access a private EC2 address from your local computer, make sure to configure the cookie settings to allow login on non-secure connections.
-Read more about [here](../../deploying-airbyte/integrations/authentication.md#cookie-security-settings)
+If you're accessing a non-HTTPs address, such as creating a network rule to access a private EC2 address from your local computer, make sure to configure the cookie settings to allow login on non-secure connections: `abctl local install --insecure-cookies`
 :::
 
 ```shell
@@ -371,7 +370,8 @@ The password for this user can be retrieved by running `abctl local credentials`
 
 Some users reported trouble accessing the UI with the correct username and password.
 This can happen if you're trying to access a non-localhost address that doesn't have an HTTPS connection configured.
-We strongly recommend configuring an HTTPS connection to access Airbyte. However, if this isn't possible, please check [here](../../deploying-airbyte/integrations/authentication.md#cookie-security-settings) how to configure the Cookie Security to allow access to HTTP.
+We strongly recommend configuring an HTTPS connection to access Airbyte. 
+You can install Airbyte disabling the Cookie security: `abctl local install --insecure-cookies`
 
 
 ### Additional Resources
