@@ -790,6 +790,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 |---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.32.4  | [#44025](https://github.com/airbytehq/airbyte/pull/44025)  | Ignore third party connectors on `publish`.                                                                                  |
 | 4.32.3  | [#44118](https://github.com/airbytehq/airbyte/pull/44118)  | Improve error handling in live tests.                                                                                        |
 | 4.32.2  | [#43970](https://github.com/airbytehq/airbyte/pull/43970)  | Make `connectors publish` early exit if no connectors are selected.                                                          |
 | 4.32.1  | [#41642](https://github.com/airbytehq/airbyte/pull/41642)  | Avoid transient publish failures by increasing `POETRY_REQUESTS_TIMEOUT` and setting retries on `PublishToPythonRegistry`.   |
