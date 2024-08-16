@@ -57,6 +57,7 @@ Here are some optional fields for different streams:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.0 | 2024-08-16 | [44182](https://github.com/airbytehq/airbyte/pull/44182) | Refactor connector to manifest-only format |
 | 0.1.12 | 2024-08-12 | [43844](https://github.com/airbytehq/airbyte/pull/43844) | Update dependencies |
 | 0.1.11 | 2024-08-10 | [43065](https://github.com/airbytehq/airbyte/pull/43065) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42647](https://github.com/airbytehq/airbyte/pull/42647) | Update dependencies |
