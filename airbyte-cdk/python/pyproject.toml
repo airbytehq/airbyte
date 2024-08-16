@@ -22,9 +22,19 @@ classifiers = [
 ]
 keywords = ["airbyte", "connector-development-kit", "cdk"]
 
+########################
+#TODO: remove
+[[tool.poetry.source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+priority = "explicit"
+########################
+
+
 [tool.poetry.dependencies]
 python = "^3.10"
 airbyte-protocol-models-pdv2 = "^0.12.2"
+airbyte-protocol-models-dataclasses = { version = "0.12.2.dev1723741286", source = "testpypi" }
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
@@ -116,3 +126,4 @@ optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
 poe_tasks = ["check-ci"]
 mount_docker_socket = true
+
