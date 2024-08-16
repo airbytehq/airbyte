@@ -187,7 +187,7 @@ Which should output something similar to:
 ```
 
 Use the value in the password field to authenticate to your new Airbyte instance. If you wish to configure 
-authentication follow the documentation on the [Authentication Integration](../../deploying-airbyte/configurations/authentication)
+authentication follow the documentation on the [Authentication Configuration](../../deploying-airbyte/configurations/authentication)
 page.
 
 As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost:8000](http://localhost:8000). 
