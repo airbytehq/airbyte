@@ -1,30 +1,34 @@
-version: 0.73.0
+version: 4.3.0
 type: DeclarativeSource
-
 definitions:
   bearer_authenticator:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
-
   oauth_authenticator:
     type: OAuthAuthenticator
     client_id: "{{ config['credentials']['client_id'] }}"
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
-
   selective_authenticator:
     type: SelectiveAuthenticator
-    authenticator_selection_path: ["credentials", "auth_method"]
+    authenticator_selection_path:
+      - "credentials"
+      - "auth_method"
     authenticators:
-      oAuth2.0: "#/definitions/oauth_authenticator"
-      access_token: "#/definitions/bearer_authenticator"
-
+      oAuth2.0:
+        type: OAuthAuthenticator
+        client_id: "{{ config['credentials']['client_id'] }}"
+        client_secret: "{{ config['credentials']['client_secret'] }}"
+        refresh_token: "{{ config['credentials']['refresh_token'] }}"
+        token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+      access_token:
+        type: BearerAuthenticator
+        api_token: "{{ config['credentials']['access_token'] }}"
 check:
   type: CheckStream
   stream_names:
     - organization_lookup
-
 streams:
   - type: DeclarativeStream
     name: organization_lookup
@@ -161,7 +165,20 @@ streams:
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
-          $ref: "#/definitions/selective_authenticator"
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_method"
+          authenticators:
+            oAuth2.0:
+              type: OAuthAuthenticator
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: "{{ config['credentials']['refresh_token'] }}"
+              token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+            access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -189,7 +206,6 @@ streams:
       paginator:
         type: NoPagination
       partition_router: []
-
   - type: DeclarativeStream
     name: follower_statistics
     primary_key: []
@@ -245,7 +261,20 @@ streams:
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
-          $ref: "#/definitions/selective_authenticator"
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_method"
+          authenticators:
+            oAuth2.0:
+              type: OAuthAuthenticator
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: "{{ config['credentials']['refresh_token'] }}"
+              token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+            access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -274,7 +303,6 @@ streams:
       paginator:
         type: NoPagination
       partition_router: []
-
   - type: DeclarativeStream
     name: share_statistics
     primary_key: []
@@ -343,7 +371,20 @@ streams:
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
-          $ref: "#/definitions/selective_authenticator"
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_method"
+          authenticators:
+            oAuth2.0:
+              type: OAuthAuthenticator
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: "{{ config['credentials']['refresh_token'] }}"
+              token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+            access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -372,7 +413,6 @@ streams:
       paginator:
         type: NoPagination
       partition_router: []
-
   - type: DeclarativeStream
     name: total_follower_count
     primary_key: []
@@ -399,7 +439,20 @@ streams:
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
-          $ref: "#/definitions/selective_authenticator"
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_method"
+          authenticators:
+            oAuth2.0:
+              type: OAuthAuthenticator
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: "{{ config['credentials']['refresh_token'] }}"
+              token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+            access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -427,7 +480,6 @@ streams:
       paginator:
         type: NoPagination
       partition_router: []
-
   - type: DeclarativeStream
     name: follower_statistics_time_bound
     primary_key: []
@@ -505,11 +557,26 @@ streams:
         request_parameters:
           q: organizationalEntity
           organizationalEntity: urn:li:organization:{{ config['org_id'] }}
-          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] or 'DAY' }}"
+          timeIntervals.timeGranularityType:
+            "{{ config['time_granularity_type'] or
+            'DAY' }}"
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
-          $ref: "#/definitions/selective_authenticator"
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_method"
+          authenticators:
+            oAuth2.0:
+              type: OAuthAuthenticator
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: "{{ config['credentials']['refresh_token'] }}"
+              token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+            access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -556,6 +623,7 @@ streams:
           - path:
               - timeRangeStart
             value: "{{ record['timeRange']['start'] }}"
+            type: AddedFieldDefinition
       - type: RemoveFields
         field_pointers:
           - - timeRange
@@ -565,6 +633,7 @@ streams:
           - path:
               - timeRangeEnd
             value: "{{ record['timeRange']['end'] }}"
+            type: AddedFieldDefinition
       - type: RemoveFields
         field_pointers:
           - - timeRange
@@ -577,7 +646,10 @@ streams:
       datetime_format: "%ms"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date'])) if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime:
+          "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date']))
+          if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ')
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
@@ -591,7 +663,6 @@ streams:
         type: MinMaxDatetime
         datetime: "{{ day_delta(-2, format='%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-
   - type: DeclarativeStream
     name: share_statistics_time_bound
     primary_key: []
@@ -661,11 +732,26 @@ streams:
         request_parameters:
           q: organizationalEntity
           organizationalEntity: urn:li:organization:{{ config['org_id'] }}
-          timeIntervals.timeGranularityType: "{{ config['time_granularity_type'] or 'DAY' }}"
+          timeIntervals.timeGranularityType:
+            "{{ config['time_granularity_type'] or
+            'DAY' }}"
         request_headers:
           Linkedin-Version: "202403"
         authenticator:
-          $ref: "#/definitions/selective_authenticator"
+          type: SelectiveAuthenticator
+          authenticator_selection_path:
+            - "credentials"
+            - "auth_method"
+          authenticators:
+            oAuth2.0:
+              type: OAuthAuthenticator
+              client_id: "{{ config['credentials']['client_id'] }}"
+              client_secret: "{{ config['credentials']['client_secret'] }}"
+              refresh_token: "{{ config['credentials']['refresh_token'] }}"
+              token_refresh_endpoint: "https://www.linkedin.com/oauth/v2/accessToken"
+            access_token:
+              type: BearerAuthenticator
+              api_token: "{{ config['credentials']['access_token'] }}"
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
@@ -694,7 +780,8 @@ streams:
                     {{ "\n\n" }}Stream Share Statistics Time Bound: Start Date
                     must be atmost 12 months before the request date (UTC) and
                     atleast 2 days prior to the request date (UTC). {{ "\n"
-                    }}See https://bit.ly/linkedin-pages-date-rules {{ "\n" }} {{ response.errorDetails }}
+                    }}See https://bit.ly/linkedin-pages-date-rules {{ "\n" }} {{ response.errorDetails
+                    }}
                   error_message_contains: Invalid timeIntervals parameter
         request_body_json: {}
       record_selector:
@@ -712,6 +799,7 @@ streams:
           - path:
               - timeRangeStart
             value: "{{ record['timeRange']['start'] }}"
+            type: AddedFieldDefinition
       - type: RemoveFields
         field_pointers:
           - - timeRange
@@ -721,6 +809,7 @@ streams:
           - path:
               - timeRangeEnd
             value: "{{ record['timeRange']['end'] }}"
+            type: AddedFieldDefinition
       - type: RemoveFields
         field_pointers:
           - - timeRange
@@ -733,7 +822,10 @@ streams:
       datetime_format: "%ms"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date'])) if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime:
+          "{{ (max(day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ'), config['start_date']))
+          if 'start_date' in config else day_delta(-365, format='%Y-%m-%dT%H:%M:%SZ')
+          }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
@@ -823,7 +915,8 @@ spec:
         description: >-
           Start date for getting metrics per time period. Must be atmost 12
           months before the request date (UTC) and atleast 2 days prior to the
-          request date (UTC). See https://bit.ly/linkedin-pages-date-rules {{ "\n" }} {{ response.errorDetails }}
+          request date (UTC). See https://bit.ly/linkedin-pages-date-rules {{ "\n"
+          }} {{ response.errorDetails }}
       time_granularity_type:
         enum:
           - DAY
