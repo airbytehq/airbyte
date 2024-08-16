@@ -6,6 +6,9 @@ from abc import abstractmethod
 from functools import cache, cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
 
+import pandas as pd
+from deprecated import deprecated
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
@@ -19,7 +22,6 @@ from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.checkpoint import Cursor
-from deprecated import deprecated
 
 
 class AbstractFileBasedStream(Stream):
@@ -104,6 +106,13 @@ class AbstractFileBasedStream(Stream):
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
+        """
+        ...
+
+    @abstractmethod
+    def read_records_from_slice_as_dataframes(self, stream_slice: StreamSlice) -> Iterable[pd.DataFrame]:
+        """
+        Yield dataframes from from all remote files in `list_files_for_this_sync`.
         """
         ...
 

@@ -7,6 +7,9 @@ import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+import pandas as pd
+from deprecated.classic import deprecated
+
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteStream, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -33,7 +36,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from deprecated.classic import deprecated
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
@@ -148,6 +150,9 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         yield from self._legacy_stream.read_records_from_slice(stream_slice)
+
+    def read_records_from_slice_as_dataframes(self, stream_slice: StreamSlice) -> Iterable[pd.DataFrame]:
+        yield from self._legacy_stream.read_records_from_slice_as_dataframes(stream_slice)
 
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
         return self._legacy_stream.compute_slices()

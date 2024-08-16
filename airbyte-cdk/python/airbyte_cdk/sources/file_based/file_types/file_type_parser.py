@@ -6,6 +6,8 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
+import pandas as pd
+
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -71,6 +73,19 @@ class FileTypeParser(ABC):
     ) -> Iterable[Record]:
         """
         Parse and emit each record.
+        """
+        ...
+
+    def parse_records_to_dataframes(
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
+        discovered_schema: Optional[Mapping[str, SchemaType]],
+    ) -> Iterable[pd.Dataframe]:
+        """
+        Parse records and emit as iterable of Pandas DataFrames.
         """
         ...
 

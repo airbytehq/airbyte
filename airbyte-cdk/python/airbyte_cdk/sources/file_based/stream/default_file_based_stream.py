@@ -9,6 +9,8 @@ from copy import deepcopy
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
+import pandas as pd
+
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
@@ -75,6 +77,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         sorted_files_to_read = sorted(files_to_read, key=lambda f: (f.last_modified, f.uri))
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
+
+    def read_records_from_slice_as_dataframes(self, stream_slice: StreamSlice) -> Iterable[pd.DataFrame]:
+        """
+        Yield dataframes from from all remote files in `list_files_for_this_sync`.
+        """
+        ...
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
         """
