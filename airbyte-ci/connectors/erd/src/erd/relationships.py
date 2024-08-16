@@ -13,9 +13,6 @@ Relationships = TypedDict("Relationships", {"streams": List[Relationship]})
 
 
 class RelationshipsMerger:
-    def __init__(self) -> None:
-        pass
-
     def merge(self, estimated_relationships: Relationships, confirmed_relationships: Relationships) -> Relationships:
         streams = []
         for estimated_stream in estimated_relationships["streams"]:
