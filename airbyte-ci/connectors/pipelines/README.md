@@ -661,15 +661,12 @@ Generates a couple of files and publish a new ERD to dbdocs. The generated files
 
 Pre-requisites:
 * The config file use to discover the catalog should be available in `<source code_directory>/secrets/config.json`
-* The following secrets should be copy/pasted in `airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/connectors/generate_erd/pipeline.py`:
-  * Gemini API key: can be found [here](https://aistudio.google.com/app/apikey)
-  * dbdocs token: for Airbyte employee, use integration-test in our secret manager
 
 #### Create initial diagram workflow or on connector's schema change
 
 Steps
 * Ensure the pre-requisites mentioned above are met
-* Run `connectors --name=<source name> generate-erd`
+* Run `DBDOCS_TOKEN=<token> GENAI_API_KEY=<api key> airbyte-ci connectors --name=<source name> generate-erd`
 * Create a PR with files `<source code_directory>/erd/estimated_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
 
 Expected Outcome
@@ -699,7 +696,7 @@ Steps
 }
 ```
 * Ensure the pre-requisites mentioned above are met
-* Run `connectors --name=<source name> generate-erd -x llm_relationships`
+* Run `DBDOCS_TOKEN=<token> airbyte-ci connectors --name=<source name> generate-erd -x llm_relationships`
 * Create a PR with files `<source code_directory>/erd/confirmed_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
 
 #### Options

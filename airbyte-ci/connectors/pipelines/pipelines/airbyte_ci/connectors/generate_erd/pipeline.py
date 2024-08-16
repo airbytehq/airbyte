@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
@@ -18,16 +17,11 @@ from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
+from pipelines.models.secrets import Secret
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 if TYPE_CHECKING:
     from anyio import Semaphore
-
-# TODO: pass secret in dagger?
-API_KEY = "API_KEY"
-
-# TODO: pass secret in dagger
-DBDOCS_TOKEN = "TOKEN"
 
 
 def _get_erd_folder(code_directory: Path) -> Path:
@@ -50,19 +44,10 @@ class GenerateDbml(Step):
         self._skip_relationship_generation = skip_relationship_generation
 
     async def _run(self, connector_to_discover: Container) -> StepResult:
-        connector = self.context.connector
-        python_path = connector.code_directory
-        file_path = Path(os.path.abspath(os.path.join(python_path)))
+        if not self._skip_relationship_generation and not self.context.genai_api_key:
+            raise ValueError("GENAI_API_KEY needs to be provided if the relationship generation is not skipped")
 
-        # TODO extract that in a method
-        source_config_path_in_container = "/data/config.json"
-        config_secret = open(file_path / "secrets" / "config.json").read()
-        discover_output = (
-            await connector_to_discover.with_new_file(source_config_path_in_container, contents=config_secret)
-            .with_exec(["discover", "--config", source_config_path_in_container])
-            .stdout()
-        )
-        discovered_catalog = self._get_schema_from_discover_output(discover_output)
+        discovered_catalog = await self._get_discovered_catalog(connector_to_discover)
 
         connector_directory = await self.context.get_connector_dir()
         command = ["poetry", "run", "erd", "--source-path", "/source"]
@@ -72,30 +57,47 @@ class GenerateDbml(Step):
         await (self._build_erd_container(connector_directory, discovered_catalog)
            .with_exec(command)
            .directory("/source/erd")
-           .export(str(_get_erd_folder(python_path)))
+           .export(str(_get_erd_folder(self.context.connector.code_directory)))
        )
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
+    async def _get_discovered_catalog(self, connector_to_discover: Container) -> str:
+        source_config_path_in_container = "/data/config.json"
+        discover_output = (
+            await connector_to_discover.with_new_file(source_config_path_in_container, contents=self._get_default_config().value)
+            .with_exec(["discover", "--config", source_config_path_in_container])
+            .stdout()
+        )
+        return self._get_schema_from_discover_output(discover_output)
+
+    def _get_default_config(self) -> Secret:
+        if not self.context.local_secret_store:
+            raise ValueError("Expecting local secret store to be set up but couldn't find it")
+
+        filtered_secrets = [secret for secret in self.context.local_secret_store.get_all_secrets() if secret.file_name == "config.json"]
+        if not filtered_secrets:
+            raise ValueError("Expecting at least one secret to match name `config.json`")
+        elif len(filtered_secrets) > 1:
+            print(f"Expecting only one secret with name `config.json but got {len(filtered_secrets)}. Will take one randomly...")
+
+        return filtered_secrets[0]
+
     @staticmethod
-    def _get_schema_from_discover_output(discover_output: str):
-        """
-        :param discover_output:
-        :return:
-        """
+    def _get_schema_from_discover_output(discover_output: str) -> str:
         for line in discover_output.split("\n"):
             json_line = json.loads(line)
             if json_line.get("type") == "CATALOG":
-                return json.loads(line).get("catalog")
+                return json.dumps(json.loads(line).get("catalog"))
         raise ValueError("No catalog was found in output")
 
-    def _build_erd_container(self, connector_directory: Directory, discovered_catalog) -> Container:
+    def _build_erd_container(self, connector_directory: Directory, discovered_catalog: str) -> Container:
         """Create a container to run ERD generation."""
         container = (
             with_poetry(self.context)
-            .with_env_variable("GENAI_API_KEY", API_KEY)  # FIXME pass using context
+            .with_env_variable("GENAI_API_KEY", self.context.genai_api_key.value)
             .with_mounted_directory("/source", connector_directory)
-            .with_new_file("/source/erd/discovered_catalog.json", contents=json.dumps(discovered_catalog))
+            .with_new_file("/source/erd/discovered_catalog.json", contents=discovered_catalog)
             .with_mounted_directory("/app", self.context.erd_dir)
             .with_workdir("/app")
         )
@@ -112,6 +114,9 @@ class UploadDbmlSchema(Step):
         super().__init__(context)
 
     async def _run(self, connector_to_discover: Container = None) -> StepResult:
+        if not self.context.dbdocs_token:
+            raise ValueError("In order to publish to dbdocs, DBDOCS_TOKEN needs to be provided. Either pass the value or skip the publish step")
+
         connector = self.context.connector
         source_dbml_content = open(_get_dbml_file(connector.code_directory)).read()
 
@@ -119,30 +124,32 @@ class UploadDbmlSchema(Step):
             self.dagger_client.container()
             .from_("node:lts-bullseye-slim")
             .with_exec(["npm", "install", "-g", "dbdocs"])
-            .with_env_variable("DBDOCS_TOKEN", DBDOCS_TOKEN)
+            .with_env_variable("DBDOCS_TOKEN", self.context.dbdocs_token.value)
             .with_workdir("/airbyte_dbdocs")
             .with_new_file("/airbyte_dbdocs/dbdocs.dbml", contents=source_dbml_content)
         )
 
         db_docs_build = ["dbdocs", "build", "dbdocs.dbml", f"--project={connector.technical_name}"]
-        output = await dbdocs_container.with_exec(db_docs_build).stdout()
+        await dbdocs_container.with_exec(db_docs_build).stdout()
         # TODO: produce link to dbdocs in output logs
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
 
-async def run_connector_generate_erd_pipeline(context: ConnectorContext, semaphore: "Semaphore", skip_steps: Optional[List[str]] = None) -> Report:
+async def run_connector_generate_erd_pipeline(
+    context: ConnectorContext,
+    semaphore: "Semaphore",
+    skip_steps: List[str],
+) -> Report:
     context.targeted_platforms = [LOCAL_BUILD_PLATFORM]
     steps_to_run: STEP_TREE = []
-    if not skip_steps:
-        skip_steps = []
 
     steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))])
 
     steps_to_run.append(
         [
             StepToRun(
-                id=CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS,
+                id=CONNECTOR_TEST_STEP_ID.DBML_FILE,
                 step=GenerateDbml(context, CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS in skip_steps),
                 args=lambda results: {"connector_to_discover": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
                 depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
