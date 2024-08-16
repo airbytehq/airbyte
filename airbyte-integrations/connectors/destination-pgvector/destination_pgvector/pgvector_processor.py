@@ -1,18 +1,17 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-"""A Snowflake vector store implementation of the SQL processor."""
+"""A PGVector implementation of the SQL processor."""
 
 from __future__ import annotations
 
 import uuid
 from pathlib import Path
-from textwrap import dedent, indent
-from typing import TYPE_CHECKING, Any
+from textwrap import dedent
+from typing import Any
 
 import dpath
 import sqlalchemy
 from airbyte._processors.file.jsonl import JsonlWriter
 from airbyte.secrets import SecretString
-from airbyte.types import SQLTypeConverter
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     DocumentProcessor as DocumentSplitter,
@@ -22,10 +21,6 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
 )
 from airbyte_protocol.models import AirbyteRecordMessage
 from overrides import overrides
-from pydantic import Field
-from snowflake import connector
-from snowflake.sqlalchemy import URL, VARIANT
-from sqlalchemy.engine import Connection
 from typing_extensions import Protocol
 
 from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
@@ -76,14 +71,14 @@ class EmbeddingConfig(Protocol):
     mode: str
 
 
-class SnowflakeCortexSqlProcessor(SqlProcessorBase):
-    """A Snowflake implementation for use with Cortex functions."""
+class PGVectorProcessor(SqlProcessorBase):
+    """A PGVector implementation of the SQL Processor."""
 
     supports_merge_insert = False
     """We use the emulated merge code path because each primary key has multiple rows (chunks)."""
 
     sql_config: PostgresConfig
-    """The configuration for the Snowflake processor, including the vector length."""
+    """The configuration for the PGVector processor, including the vector length."""
 
     splitter_config: DocumentSplitterConfig
     """The configuration for the document splitter."""
@@ -101,7 +96,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         temp_dir: Path,
         temp_file_cleanup: bool = True,
     ) -> None:
-        """Initialize the Snowflake processor."""
+        """Initialize the PGVector processor."""
         self.splitter_config = splitter_config
         self.embedder_config = embedder_config
         super().__init__(
@@ -117,94 +112,42 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     ) -> dict[str, sqlalchemy.types.TypeEngine]:
         """Return the column definitions for the given stream.
 
-        Return the static column definitions for cortex streams.
+        Return the static column definitions for vector index tables.
         """
         _ = stream_name  # unused
         return {
             DOCUMENT_ID_COLUMN: self.type_converter_class.get_string_type(),
             CHUNK_ID_COLUMN: self.type_converter_class.get_string_type(),
             METADATA_COLUMN: self.type_converter_class.get_json_type(),
-            DOCUMENT_CONTENT_COLUMN: self.type_converter_class.get_json_type(),
+            DOCUMENT_CONTENT_COLUMN: self.type_converter_class.get_string_type(),
             EMBEDDING_COLUMN: f"VECTOR(FLOAT, {self.embedding_dimensions})",
         }
 
-    @overrides
-    def _write_files_to_new_table(
-        self,
-        files: list[Path],
-        stream_name: str,
-        batch_id: str,
-    ) -> str:
-        """Write files to a new table.
+    # TODO: Delete if not needed.
+    # @overrides
+    # def _write_files_to_new_table(
+    #     self,
+    #     files: list[Path],
+    #     stream_name: str,
+    #     batch_id: str,
+    # ) -> str:
+    #     """Write files to a new table and return the name of the created table.
 
-        This is the same as PyAirbyte's SnowflakeSqlProcessor implementation, migrated here for
-        stability. The main differences lie within `_get_sql_column_definitions()`, whose logic is
-        abstracted out of this method.
-        """
-        temp_table_name = self._create_table_for_loading(
-            stream_name=stream_name,
-            batch_id=batch_id,
-        )
-        internal_sf_stage_name = f"@%{temp_table_name}"
+    #     This is the same as PyAirbyte's SqlProcessor implementation, migrated here for
+    #     stability. The main differences lie within `_get_sql_column_definitions()`, whose logic is
+    #     abstracted out of this method.
+    #     """
+    #     ...
 
-        def path_str(path: Path) -> str:
-            return str(path.absolute()).replace("\\", "\\\\")
+    #     # Everything above is same. Unchanged.
 
-        for file_path in files:
-            query = f"PUT 'file://{path_str(file_path)}' {internal_sf_stage_name};"
-            self._execute_sql(query)
+    #     # following block is different from SqlProcessor (TODO: Keep?)
+    #     vector_suffix = f"::Vector(Float, {self.embedding_dimensions})"
+    #     variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
+    #         f"$1:{col}{vector_suffix if 'embedding' in col else ''}" for col in columns_list
+    #     ])
+    #     ...
 
-        columns_list = [
-            self._quote_identifier(c)
-            for c in list(self._get_sql_column_definitions(stream_name).keys())
-        ]
-        files_list = ", ".join([f"'{f.name}'" for f in files])
-        columns_list_str: str = indent("\n, ".join(columns_list), " " * 12)
-
-        # following block is different from SnowflakeSqlProcessor
-        vector_suffix = f"::Vector(Float, {self.embedding_dimensions})"
-        variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
-            f"$1:{col}{vector_suffix if 'embedding' in col else ''}" for col in columns_list
-        ])
-        if self.sql_config.cortex_embedding_model:  # Currently always false
-            # WARNING: This is untested and may not work as expected.
-            variant_cols_str += f"snowflake.cortex.embed('{self.sql_config.cortex_embedding_model}', $1:{DOCUMENT_CONTENT_COLUMN})"
-
-        copy_statement = dedent(
-            f"""
-            COPY INTO {temp_table_name}
-            (
-                {columns_list_str}
-            )
-            FROM (
-                SELECT {variant_cols_str}
-                FROM {internal_sf_stage_name}
-            )
-            FILES = ( {files_list} )
-            FILE_FORMAT = ( TYPE = JSON, COMPRESSION = GZIP )
-            ;
-            """
-        )
-        self._execute_sql(copy_statement)
-        return temp_table_name
-
-    @overrides
-    def _init_connection_settings(self, connection: Connection) -> None:
-        """We set Snowflake-specific settings for the session.
-
-        This sets QUOTED_IDENTIFIERS_IGNORE_CASE setting to True, which is necessary because
-        Snowflake otherwise will treat quoted table and column references as case-sensitive.
-        More info: https://docs.snowflake.com/en/sql-reference/identifiers-syntax
-
-        This also sets MULTI_STATEMENT_COUNT to 0, which allows multi-statement commands.
-        """
-        connection.execute(
-            """
-            ALTER SESSION SET
-            QUOTED_IDENTIFIERS_IGNORE_CASE = TRUE
-            MULTI_STATEMENT_COUNT = 0
-            """
-        )
 
     def _emulated_merge_temp_table_to_final_table(
         self,
@@ -214,7 +157,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     ) -> None:
         """Emulate the merge operation using a series of SQL commands.
 
-        This method varies from the SnowflakeSqlProcessor implementation in that multiple rows will exist for each
+        This method varies from the default SqlProcessor implementation in that multiple rows will exist for each
         primary key. And we need to remove all rows (chunks) for a given primary key before inserting new ones.
 
         So instead of using UPDATE and then INSERT, we will DELETE all rows for included primary keys and then call
@@ -243,7 +186,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         )
 
         with self.get_sql_connection() as conn:
-            # This is a transactional operation to avoid outages, in case
+            # This is a transactional operation to avoid "outages", in case
             # a user queries the data during the operation.
             conn.execute(delete_statement)
             conn.execute(append_statement)
@@ -261,24 +204,19 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
         """
         document_chunks, id_to_delete = self.splitter.process(record_msg)
 
-        # TODO: Decide if we need to incorporate this into the final implementation:
-        _ = id_to_delete
+        _ = id_to_delete  # unused
 
-        if not self.sql_config.cortex_embedding_model:
-            embeddings = self.embedder.embed_documents(
-                # TODO: Check this: Expects a list of documents, not chunks (docs are inconsistent)
-                documents=document_chunks,
-            )
+        embeddings = self.embedder.embed_documents(
+            documents=document_chunks,
+        )
         for i, chunk in enumerate(document_chunks, start=0):
             new_data: dict[str, Any] = {
                 DOCUMENT_ID_COLUMN: self._create_document_id(record_msg),
                 CHUNK_ID_COLUMN: str(uuid.uuid4().int),
                 METADATA_COLUMN: chunk.metadata,
                 DOCUMENT_CONTENT_COLUMN: chunk.page_content,
-                EMBEDDING_COLUMN: None,
+                EMBEDDING_COLUMN: embeddings[i],
             }
-            if not self.sql_config.cortex_embedding_model:
-                new_data[EMBEDDING_COLUMN] = embeddings[i]
 
             self.file_writer.process_record_message(
                 record_msg=AirbyteRecordMessage(
@@ -311,10 +249,12 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     ) -> sqlalchemy.Table:
         """Return a table object from a table name.
 
-        Workaround: Until `VECTOR` type is supported by the Snowflake SQLAlchemy dialect, we will
+        Workaround: Until `VECTOR` type is supported by the SQLAlchemy dialect, we will
         return a table with fixed columns. This is a temporary solution until the dialect is updated.
 
-        Tracking here: https://github.com/snowflakedb/snowflake-sqlalchemy/issues/499
+        TODO: Confirm if this is still needed. Specifically, if deleting this method doesn't break
+        anything, that means SQLAlchemy understands the VECTOR type and we don't need to hardcode
+        the detection process.
         """
         _ = force_refresh, shallow_okay  # unused
         table = sqlalchemy.Table(
