@@ -6,7 +6,7 @@ This source can sync data from [N8n](https://docs.n8n.io/api/). At present this 
 
 ## This Source Supports the Following Streams
 
-- [execitions](https://docs.n8n.io/api/api-reference/#tag/Execution/paths/~1executions/get)
+- [executions](https://docs.n8n.io/api/api-reference/#tag/Execution/paths/~1executions/get)
 
 ### Features
 
