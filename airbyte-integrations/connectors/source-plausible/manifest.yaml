@@ -1,12 +1,9 @@
-version: 0.78.1
-
+version: 4.3.0
 type: DeclarativeSource
-
 check:
   type: CheckStream
   stream_names:
     - stats
-
 definitions:
   streams:
     stats:
@@ -17,7 +14,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: "{{ config['api_url'] or 'https://plausible.io/api/v1/stats' }}"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
           path: /timeseries
           http_method: GET
           request_parameters:
@@ -37,17 +38,110 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/stats"
+          type: object
+          description: Timeseries data over a given time period.
+          properties:
+            bounce_rate:
+              type:
+                - integer
+                - "null"
+              description: Bounce rate percentage.
+              title: Bounce Rate
+            date:
+              type: string
+              description: The date, in your site's time zone, in ISO 8601 format.
+              title: Date
+            pageviews:
+              type: integer
+              description: The number of pageview events.
+              title: Pageviews
+            visit_duration:
+              type:
+                - integer
+                - "null"
+              description: Visit duration in seconds.
+              title: Visit Duration
+            visitors:
+              type: integer
+              description: The number of unique visitors.
+              title: Visitors
+            visits:
+              type: integer
+              description: The number of visits/sessions.
+              title: Visits
+          title: Stats
+          additionalProperties: true
   base_requester:
     type: HttpRequester
     url_base: "{{ config['api_url'] or 'https://plausible.io/api/v1/stats' }}"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_key'] }}"
-
 streams:
-  - $ref: "#/definitions/streams/stats"
-
+  - type: DeclarativeStream
+    name: stats
+    primary_key:
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['api_url'] or 'https://plausible.io/api/v1/stats' }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /timeseries
+        http_method: GET
+        request_parameters:
+          site_id: "{{ config['site_id'] }}"
+          period: custom
+          metrics: visitors,pageviews,bounce_rate,visit_duration,visits
+          date: "{{ config['start_date'] or '2019-01-01' }},{{ today_utc() }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['bounce_rate'] is not none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        description: Timeseries data over a given time period.
+        properties:
+          bounce_rate:
+            type:
+              - integer
+              - "null"
+            description: Bounce rate percentage.
+            title: Bounce Rate
+          date:
+            type: string
+            description: The date, in your site's time zone, in ISO 8601 format.
+            title: Date
+          pageviews:
+            type: integer
+            description: The number of pageview events.
+            title: Pageviews
+          visit_duration:
+            type:
+              - integer
+              - "null"
+            description: Visit duration in seconds.
+            title: Visit Duration
+          visitors:
+            type: integer
+            description: The number of unique visitors.
+            title: Visitors
+          visits:
+            type: integer
+            description: The number of visits/sessions.
+            title: Visits
+        title: Stats
+        additionalProperties: true
 spec:
   type: Spec
   connection_specification:
@@ -98,11 +192,9 @@ spec:
           - YYYY-MM-DD
         order: 3
     additionalProperties: true
-
 metadata:
   autoImportSchema:
     stats: false
-
 schemas:
   stats:
     type: object
