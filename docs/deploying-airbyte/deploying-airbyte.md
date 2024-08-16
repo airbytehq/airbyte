@@ -107,10 +107,10 @@ Before you can configure this stuff in a cloud provider, you need to set up your
 
 After your policies are set up, here's a list of customizations.
 
-- [State and Logging Storage](./integrations/storage)
-- [Secret Management](./integrations/secrets)
-- [External Database](./integrations/database)
-- [Ingress](./integrations/ingress)
+- [State and Logging Storage](./configurations/storage)
+- [Secret Management](./configurations/secrets)
+- [External Database](./configurations/database)
+- [Ingress](./configurations/ingress)
 
 ### 5. Installing Airbyte
 
@@ -125,7 +125,7 @@ airbyte/airbyte \
 --values ./values.yaml
 ```
 
-After the installation has completed, you can configure your [Ingress](./integrations/ingress) by following the directions for your specific Ingress provider.
+After the installation has completed, you can configure your [Ingress](./configurations/ingress) by following the directions for your specific Ingress provider.
 
 ### 6. Set up port forward for UI access
 
@@ -140,7 +140,7 @@ export POD_NAME=$(kubectl get pods --namespace airbyte -l "app.kubernetes.io/nam
 
 You can now access the UI in your browser at: http://127.0.0.1:8080.
 
-If you'd like to set up a more permanent ingress checkout our ingress customization. For a deployment to a local machine we recommend using [nginx](./integrations/ingress.md) as an easy-to-setup option.
+If you'd like to set up a more permanent ingress checkout our ingress customization. For a deployment to a local machine we recommend using [nginx](./configurations/ingress.md) as an easy-to-setup option.
 
 :::note
 As part of maintainging your Airbyte instance, you'll need to do periodic upgrades. See our documentation on [when and how to upgrade Airbyte](../operator-guides/upgrading-airbyte.md) for details. 

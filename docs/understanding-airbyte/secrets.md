@@ -2,7 +2,7 @@
 
 Airbyte store secrets in the configured secret persistence layer as Source and Destinations are created.
 
-This page focuses on understanding how Airbyte uses secrets. Please refer to the [Secret Management](../deploying-airbyte/integrations/secrets.md)
+This page focuses on understanding how Airbyte uses secrets. Please refer to the [Secret Management](../deploying-airbyte/configurations/secrets.md)
 for more information on how to configure various secret persistence layers.
 
 ## Handling Secrets

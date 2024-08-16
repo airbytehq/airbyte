@@ -417,14 +417,14 @@ const deployAirbyte = {
 
     {
       type: "category",
-      label: "Integrations",
+      label: "Configurations",
       items: [
-        "deploying-airbyte/integrations/authentication",
-        "deploying-airbyte/integrations/storage",
-        "deploying-airbyte/integrations/secrets",
-        "deploying-airbyte/integrations/database",
-        // "deploying-airbyte/integrations/monitoring",
-        "deploying-airbyte/integrations/ingress",
+        "deploying-airbyte/configurations/authentication",
+        "deploying-airbyte/configurations/storage",
+        "deploying-airbyte/configurations/secrets",
+        "deploying-airbyte/configurations/database",
+        // "deploying-airbyte/configurations/monitoring",
+        "deploying-airbyte/configurations/ingress",
       ],
     },
 

@@ -187,7 +187,7 @@ Which should output something similar to:
 ```
 
 Use the value in the password field to authenticate to your new Airbyte instance. If you wish to configure 
-authentication follow the documentation on the [Authentication Integration](../../deploying-airbyte/integrations/authentication) 
+authentication follow the documentation on the [Authentication Integration](../../deploying-airbyte/configurations/authentication)
 page.
 
 As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost:8000](http://localhost:8000). 
@@ -214,9 +214,9 @@ abctl local install --values ./values.yaml
 
 Here's a list of common customizations.
 
-- [External Database](../../deploying-airbyte/integrations/database)
-- [State and Logging Storage](../../deploying-airbyte/integrations/storage)
-- [Secret Management](../../deploying-airbyte/integrations/secrets)
+- [External Database](../../deploying-airbyte/configurations/database)
+- [State and Logging Storage](../../deploying-airbyte/configurations/storage)
+- [Secret Management](../../deploying-airbyte/configurations/secrets)
 
 ## Migrating from Docker Compose (Optional)
 
