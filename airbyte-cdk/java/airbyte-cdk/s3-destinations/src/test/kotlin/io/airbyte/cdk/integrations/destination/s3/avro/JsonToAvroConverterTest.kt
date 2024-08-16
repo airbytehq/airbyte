@@ -244,10 +244,11 @@ class JsonToAvroConverterTest {
 
         val schemaParser = Schema.Parser()
         val actualAvroObject =
-            AvroConstants.JSON_CONVERTER.convertToGenericDataRecord(
-                WRITER.writeValueAsBytes(jsonObject),
-                schemaParser.parse(Jsons.serialize(avroSchema)),
-            )
+            AvroRecordFactory.createV1JsonToAvroConverter()
+                .convertToGenericDataRecord(
+                    WRITER.writeValueAsBytes(jsonObject),
+                    schemaParser.parse(Jsons.serialize(avroSchema)),
+                )
         assertEquals(
             avroObject,
             Jsons.deserialize(actualAvroObject.toString()),
@@ -287,10 +288,11 @@ class JsonToAvroConverterTest {
 
         val schemaParser = Schema.Parser()
         val actualAvroObject =
-            AvroConstants.JSON_CONVERTER.convertToGenericDataRecord(
-                WRITER.writeValueAsBytes(jsonObject),
-                schemaParser.parse(Jsons.serialize(avroSchema)),
-            )
+            AvroRecordFactory.createV1JsonToAvroConverter()
+                .convertToGenericDataRecord(
+                    WRITER.writeValueAsBytes(jsonObject),
+                    schemaParser.parse(Jsons.serialize(avroSchema)),
+                )
         assertEquals(
             avroObject,
             Jsons.deserialize(actualAvroObject.toString()),

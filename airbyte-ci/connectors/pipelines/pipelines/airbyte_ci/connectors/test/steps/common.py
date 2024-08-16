@@ -15,6 +15,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any, ClassVar, Dict, List, Optional, Set
 
+import dagger
 import requests  # type: ignore
 import semver
 import yaml  # type: ignore
@@ -649,18 +650,25 @@ class LiveTests(Step):
 
         exit_code, stdout, stderr = await get_exec_result(container)
 
-        if (
-            f"session_{self.run_id}" not in await container.directory(f"{tests_artifacts_dir}").entries()
-            or "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries()
-        ):
-            main_logger.exception(
-                "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
-            )
+        try:
+            if (
+                f"session_{self.run_id}" not in await container.directory(f"{tests_artifacts_dir}").entries()
+                or "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries()
+            ):
+                main_logger.exception(
+                    "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
+                )
+                regression_test_report = None
+            else:
+                await container.file(path_to_report).export(path_to_report)
+                with open(path_to_report, "r") as fp:
+                    regression_test_report = fp.read()
+        except dagger.QueryError as exc:
             regression_test_report = None
-        else:
-            await container.file(path_to_report).export(path_to_report)
-            with open(path_to_report, "r") as fp:
-                regression_test_report = fp.read()
+            main_logger.exception(
+                "The test artifacts directory was not generated, an unhandled error likely happened during setup, please check the step stderr and stdout for more details",
+                exc_info=exc,
+            )
 
         return StepResult(
             step=self,
