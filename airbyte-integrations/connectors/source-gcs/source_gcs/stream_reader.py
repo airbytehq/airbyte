@@ -23,7 +23,6 @@ ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
 )
-FILE_FORMAT = "csv"  # TODO: Change if other file formats are implemented
 
 
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
@@ -77,7 +76,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                 for blob in blobs:
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
-                    if FILE_FORMAT in blob.name.lower() and (not start_date or last_modified >= start_date):
+                    if not start_date or last_modified >= start_date:
                         uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
