@@ -20,14 +20,14 @@ from airbyte_cdk.models import (
     Status,
 )
 
-from destination_snowflake_cortex import cortex_processor
-from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
-from destination_snowflake_cortex.config import ConfigModel
+from destination_pgvector import cortex_processor
+from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
+from destination_pgvector.config import ConfigModel
 
 BATCH_SIZE = 150
 
 
-class DestinationSnowflakeCortex(Destination):
+class DestinationPGVector(Destination):
     sql_processor: cortex_processor.SnowflakeCortexSqlProcessor
 
     def _init_sql_processor(

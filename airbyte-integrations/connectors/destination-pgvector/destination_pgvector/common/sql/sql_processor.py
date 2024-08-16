@@ -41,8 +41,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.sql.elements import TextClause
 
-from destination_snowflake_cortex.common.destinations.record_processor import RecordProcessorBase
-from destination_snowflake_cortex.common.state.state_writers import StdOutStateWriter
+from destination_pgvector.common.destinations.record_processor import RecordProcessorBase
+from destination_pgvector.common.state.state_writers import StdOutStateWriter
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -60,8 +60,8 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.base import Executable
     from sqlalchemy.sql.type_api import TypeEngine
 
-    from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
-    from destination_snowflake_cortex.common.state.state_writers import StateWriterBase
+    from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
+    from destination_pgvector.common.state.state_writers import StateWriterBase
 
 
 class RecordDedupeMode(enum.Enum):

@@ -3,6 +3,6 @@
 #
 
 
-from .destination import DestinationSnowflakeCortex
+from .destination import DestinationPGVector
 
-__all__ = ["DestinationSnowflakeCortex"]
+__all__ = ["DestinationPGVector"]

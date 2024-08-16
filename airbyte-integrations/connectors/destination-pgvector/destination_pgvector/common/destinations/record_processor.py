@@ -25,7 +25,7 @@ from airbyte_protocol.models import (
     Type,
 )
 
-from destination_snowflake_cortex.common.state.state_writers import (
+from destination_pgvector.common.state.state_writers import (
     StateWriterBase,
     StdOutStateWriter,
 )
@@ -35,8 +35,8 @@ if TYPE_CHECKING:
 
     from airbyte._batch_handles import BatchHandle
 
-    from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
-    from destination_snowflake_cortex.common.state.state_writers import StateWriterBase
+    from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
+    from destination_pgvector.common.state.state_writers import StateWriterBase
 
 
 class AirbyteMessageParsingError(Exception):

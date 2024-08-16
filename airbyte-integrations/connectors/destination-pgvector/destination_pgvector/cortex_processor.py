@@ -28,9 +28,9 @@ from snowflake.sqlalchemy import URL, VARIANT
 from sqlalchemy.engine import Connection
 from typing_extensions import Protocol
 
-from destination_snowflake_cortex.common.catalog.catalog_providers import CatalogProvider
-from destination_snowflake_cortex.common.sql.sql_processor import SqlConfig, SqlProcessorBase
-from destination_snowflake_cortex.globals import (
+from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
+from destination_pgvector.common.sql.sql_processor import SqlConfig, SqlProcessorBase
+from destination_pgvector.globals import (
     CHUNK_ID_COLUMN,
     DOCUMENT_CONTENT_COLUMN,
     DOCUMENT_ID_COLUMN,
