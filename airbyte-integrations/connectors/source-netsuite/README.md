@@ -32,7 +32,7 @@ and place them into `secrets/config.json`.
 poetry run source-netsuite spec
 poetry run source-netsuite check --config secrets/config.json
 poetry run source-netsuite discover --config secrets/config.json
-poetry run source-netsuite read --config secrets/config.json --catalog integration_tests/basic_read_catalog.json
+poetry run source-netsuite read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests
