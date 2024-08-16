@@ -5,7 +5,7 @@
 
 import sys
 
-from destination_snowflake_cortex import DestinationSnowflakeCortex
+from destination_pgvector import DestinationPGVector
 
 if __name__ == "__main__":
-    DestinationSnowflakeCortex().run(sys.argv[1:])
+    DestinationPGVector().run(sys.argv[1:])
