@@ -57,7 +57,7 @@ Here are some optional fields:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
-| 0.2.0 | 2024-08-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `time_tracking`, `time_tracking_tags`, `team_goals`, `space_tags`, `team_custom_fields`, `list_custom_fields`, `list_comments`, Parent ids passed from responses, Add error handlers|
+| 0.2.0 | 2024-08-15 | [44180](https://github.com/airbytehq/airbyte/pull/44180) | Add `time_tracking`, `time_tracking_tags`, `team_goals`, `space_tags`, `team_custom_fields`, `list_custom_fields`, `list_comments`, Parent ids passed from responses, Add error handlers|
 | 0.1.12 | 2024-08-12 | [43844](https://github.com/airbytehq/airbyte/pull/43844) | Update dependencies |
 | 0.1.11 | 2024-08-10 | [43065](https://github.com/airbytehq/airbyte/pull/43065) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42647](https://github.com/airbytehq/airbyte/pull/42647) | Update dependencies |
