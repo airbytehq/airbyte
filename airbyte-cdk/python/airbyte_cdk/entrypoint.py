@@ -200,7 +200,6 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
-        # return airbyte_message.model_dump_json(exclude_unset=True)
         return orjson.dumps(airbyte_message).decode()
 
     @classmethod
