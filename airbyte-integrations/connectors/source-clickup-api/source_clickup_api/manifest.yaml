@@ -367,8 +367,6 @@ definitions:
     list_custom_fields:
       type: DeclarativeStream
       name: list_custom_fields
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
         requester:
