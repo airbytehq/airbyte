@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.4.2
+Move the @deprecated decorator to the class level.
+
+## 4.4.1
+Added test utils for integration tests
+
+## 4.4.0
+file-based cdk: add excel file type support
+
+## 4.3.3
+Have better fallback error message on HTTP error
+
 ## 4.3.2
 Ensure at least one element returned by decoder
 

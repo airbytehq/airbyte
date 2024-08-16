@@ -1,7 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
-import io.airbyte.cdk.exceptions.ConfigErrorException
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
