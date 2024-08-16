@@ -38,93 +38,39 @@ from destination_pgvector.globals import (
     METADATA_COLUMN,
 )
 
-if TYPE_CHECKING:
-    from pathlib import Path
 
+class PostgresConfig(SqlConfig):
+    """Configuration for the Postgres cache.
 
-class SnowflakeCortexConfig(SqlConfig):
-    """A Snowflake configuration for use with Cortex functions."""
+    Also inherits config from the JsonlWriter, which is responsible for writing files to disk.
+    """
 
     host: str
-    username: str
-    password: SecretString
-    warehouse: str
+    port: int
     database: str
-    role: str
-    schema_name: str = Field(default="PUBLIC")
+    username: str
+    password: SecretString | str
 
-    @property
-    def cortex_embedding_model(self) -> str | None:
-        """Return the Cortex embedding model name.
-
-        If 'None', then we are loading pre-calculated embeddings.
-
-        TODO: Implement this property or remap.
-        """
-        return None
+    @overrides
+    def get_sql_alchemy_url(self) -> SecretString:
+        """Return the SQLAlchemy URL to use."""
+        return SecretString(
+            f"postgresql+psycopg2://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}"
+        )
 
     @overrides
     def get_database_name(self) -> str:
         """Return the name of the database."""
         return self.database
 
-    @overrides
-    def get_sql_alchemy_url(self) -> SecretString:
-        """Return the SQLAlchemy URL to use."""
-        return SecretString(
-            URL(
-                account=self.host,
-                user=self.username,
-                password=self.password,
-                database=self.database,
-                warehouse=self.warehouse,
-                schema=self.schema_name,
-                role=self.role,
-            )
-        )
-
-    def get_vendor_client(self) -> object:
-        """Return the Snowflake connection object."""
-        return connector.connect(
-            user=self.username,
-            password=self.password,
-            account=self.host,
-            warehouse=self.warehouse,
-            database=self.database,
-            schema=self.schema_name,
-            role=self.role,
-        )
-
-
-class SnowflakeTypeConverter(SQLTypeConverter):
-    """A class to convert types for Snowflake."""
-
-    @overrides
-    def to_sql_type(
-        self,
-        json_schema_property_def: dict[str, str | dict | list],
-    ) -> sqlalchemy.types.TypeEngine:
-        """Convert a value to a SQL type.
-
-        We first call the parent class method to get the type. Then if the type JSON, we
-        replace it with VARIANT.
-        """
-        sql_type = super().to_sql_type(json_schema_property_def)
-        if isinstance(sql_type, sqlalchemy.types.JSON):
-            return VARIANT()
-
-        return sql_type
-
-    @staticmethod
-    def get_json_type() -> sqlalchemy.types.TypeEngine:
-        """Get the type to use for nested JSON data."""
-        return VARIANT()
 
 
 class EmbeddingConfig(Protocol):
     """A protocol for embedding configuration.
 
     This is necessary because embedding configs do not have a shared base class.
+
+    TODO: Confirm if this class is needed.
     """
 
     mode: str
@@ -136,18 +82,19 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     supports_merge_insert = False
     """We use the emulated merge code path because each primary key has multiple rows (chunks)."""
 
-    sql_config: SnowflakeCortexConfig
+    sql_config: PostgresConfig
     """The configuration for the Snowflake processor, including the vector length."""
 
     splitter_config: DocumentSplitterConfig
     """The configuration for the document splitter."""
 
     file_writer_class = JsonlWriter
-    type_converter_class: type[SnowflakeTypeConverter] = SnowflakeTypeConverter
+
+    # No need to override `type_converter_class`.
 
     def __init__(
         self,
-        sql_config: SnowflakeCortexConfig,
+        sql_config: PostgresConfig,
         splitter_config: DocumentSplitterConfig,
         embedder_config: EmbeddingConfig,
         catalog_provider: CatalogProvider,
@@ -170,7 +117,7 @@ class SnowflakeCortexSqlProcessor(SqlProcessorBase):
     ) -> dict[str, sqlalchemy.types.TypeEngine]:
         """Return the column definitions for the given stream.
 
-        Return the static static column definitions for cortex streams.
+        Return the static column definitions for cortex streams.
         """
         _ = stream_name  # unused
         return {
