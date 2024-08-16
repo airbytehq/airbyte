@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk==0.90.0", # Version in 1.0.0+ are not compatible with the current code
     "requests-oauthlib",
 ]
 
