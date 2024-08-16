@@ -44,7 +44,9 @@ def test_should_retry_403_error(requests_mock):
         "GET", "https://adsapi.snapchat.com/v1/me/organizations", [{"status_code": 403, "json": {"organizations": []}}]
     )
     stream = find_stream("organizations", config_mock)
-
+    # make a single retry to save time
+    stream.retriever.requester.error_handler.max_retries = 1
+    
     with pytest.raises(UserDefinedBackoffException):
         list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
@@ -168,6 +170,7 @@ response_ads_stats_lifetime_1 = {
                 "stats": {
                     "impressions": 0,
                     "swipes": 0,
+                    "spend": 1,
                 },
                 "start_time": "2016-09-26T00:00:00.000-07:00",
                 "end_time": "2022-07-01T07:00:00.000-07:00",
@@ -191,6 +194,7 @@ response_ads_stats_lifetime_2 = {
                 "stats": {
                     "impressions": 0,
                     "swipes": 0,
+                    "spend": 2,
                 },
                 "start_time": "2016-09-26T00:00:00.000-07:00",
                 "end_time": "2022-07-01T07:00:00.000-07:00",
@@ -242,6 +246,7 @@ def test_ads_stats_lifetime(requests_mock):
             "screen_time_millis": None,
             "swipe_up_percent": None,
             "swipes": 0,
+            "spend": 1,
             "total_installs": None,
             "video_views": None,
             "video_views_time_based": None,
@@ -320,6 +325,7 @@ def test_ads_stats_lifetime(requests_mock):
             "screen_time_millis": None,
             "swipe_up_percent": None,
             "swipes": 0,
+            "spend": 2,
             "total_installs": None,
             "video_views": None,
             "video_views_time_based": None,

@@ -3,12 +3,13 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
-from airbyte_cdk.sources.source import TState
+from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -19,16 +20,9 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import (
-    AirbyteStateBlob,
-    AirbyteStateMessage,
-    AirbyteStreamState,
-    ConfiguredAirbyteCatalog,
-    FailureType,
-    StreamDescriptor,
-    SyncMode,
-)
+from airbyte_protocol.models import AirbyteStateBlob, AirbyteStateMessage, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from integration.config import ConfigBuilder
+from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
@@ -101,20 +95,6 @@ def _application_fees_response() -> HttpResponseBuilder:
     )
 
 
-def _given_application_fees_availability_check(http_mocker: HttpMocker) -> None:
-    http_mocker.get(
-        StripeRequestBuilder.application_fees_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _application_fees_response().build()
-    )
-
-
-def _given_events_availability_check(http_mocker: HttpMocker) -> None:
-    http_mocker.get(
-        StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
-        _events_response().build()
-    )
-
-
 def _read(
     config_builder: ConfigBuilder,
     sync_mode: SyncMode,
@@ -131,7 +111,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response().with_record(_an_application_fee()).with_record(_an_application_fee()).build(),
@@ -143,7 +122,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_many_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response().with_pagination().with_record(_an_application_fee().with_id("last_record_id_from_first_page")).build(),
@@ -159,7 +137,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_no_state_when_read_then_return_ignore_lookback(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response().with_record(_an_application_fee()).build(),
@@ -171,7 +148,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_when_read_then_add_cursor_field(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
             _application_fees_response().with_record(_an_application_fee()).build(),
@@ -187,7 +163,6 @@ class FullRefreshTest(TestCase):
         slice_range = timedelta(days=20)
         slice_datetime = start_date + slice_range
 
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_created_gte(start_date).with_created_lte(slice_datetime).with_limit(100).build(),
             _application_fees_response().build(),
@@ -202,26 +177,27 @@ class FullRefreshTest(TestCase):
         # request matched http_mocker
 
     @HttpMocker()
-    def test_given_http_status_400_when_read_then_stream_is_ignored(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_400_when_read_then_stream_did_not_run(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
             a_response_with_status(400),
         )
         output = self._read(_config())
-        assert len(output.get_stream_statuses(_STREAM_NAME)) == 0
+        assert_stream_did_not_run(output, _STREAM_NAME, "Your account is not set up to use Issuing")
 
     @HttpMocker()
-    def test_given_http_status_401_when_read_then_system_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_401_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
             a_response_with_status(401),
         )
         output = self._read(_config(), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        # entrypoint caught unexpected exception as availability strategy was just raising http exceptions for not 400 and 403.
+        # now default_error_mapping will classify 401 as config error which seems correct
+        assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
             [
@@ -234,7 +210,6 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_http_status_500_once_before_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
             [a_response_with_status(500), _application_fees_response().with_record(_an_application_fee()).build()],
@@ -243,30 +218,16 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 1
 
     @HttpMocker()
-    def test_given_http_status_500_on_availability_when_read_then_raise_system_error(self, http_mocker: HttpMocker) -> None:
+    def test_given_http_status_500_when_read_then_raise_config_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             _application_fees_request().with_any_query_params().build(),
             a_response_with_status(500),
         )
-        output = self._read(_config(), expecting_exception=True)
-        assert output.errors[-1].trace.error.failure_type == FailureType.system_error
+        with patch.object(HttpStatusErrorHandler, 'max_retries', new=0):
+            output = self._read(_config(), expecting_exception=True)
+            # concurrent read processor handles exceptions as config errors after complete the max_retries
+            assert output.errors[-1].trace.error.failure_type == FailureType.config_error
 
-    @HttpMocker()
-    def test_given_small_slice_range_when_read_then_availability_check_performs_too_many_queries(self, http_mocker: HttpMocker) -> None:
-        # see https://github.com/airbytehq/airbyte/issues/33499
-        events_requests = StripeRequestBuilder.events_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build()
-        http_mocker.get(
-            events_requests,
-            _events_response().build()  # it is important that the event response does not have a record. This is not far fetched as this is what would happend 30 days before now
-        )
-        http_mocker.get(
-            _application_fees_request().with_any_query_params().build(),
-            _application_fees_response().build(),
-        )
-
-        self._read(_config().with_start_date(_NOW - timedelta(days=60)).with_slice_range_in_days(1))
-
-        http_mocker.assert_number_of_calls(events_requests, 30)
 
     def _read(self, config: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return _read(config, SyncMode.full_refresh, expecting_exception=expecting_exception)
@@ -277,7 +238,6 @@ class IncrementalTest(TestCase):
 
     @HttpMocker()
     def test_given_no_state_when_read_then_use_application_fees_endpoint(self, http_mocker: HttpMocker) -> None:
-        _given_events_availability_check(http_mocker)
         cursor_value = int(_A_START_DATE.timestamp()) + 1
         http_mocker.get(
             _application_fees_request().with_created_gte(_A_START_DATE).with_created_lte(_NOW).with_limit(100).build(),
@@ -294,8 +254,6 @@ class IncrementalTest(TestCase):
         state_datetime = _NOW - timedelta(days=5)
         cursor_value = int(state_datetime.timestamp()) + 1
 
-        _given_application_fees_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)
         http_mocker.get(
             _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(
@@ -314,8 +272,6 @@ class IncrementalTest(TestCase):
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        _given_application_fees_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)
         state_datetime = _NOW - timedelta(days=5)
         http_mocker.get(
             _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
@@ -343,8 +299,6 @@ class IncrementalTest(TestCase):
         slice_range = timedelta(days=3)
         slice_datetime = state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES + slice_range
 
-        _given_application_fees_availability_check(http_mocker)
-        _given_events_availability_check(http_mocker)  # the availability check does not consider the state so we need to define a generic availability check
         http_mocker.get(
             _events_request().with_created_gte(state_datetime + _AVOIDING_INCLUSIVE_BOUNDARIES).with_created_lte(slice_datetime).with_limit(100).with_types(_EVENT_TYPES).build(),
             _events_response().with_record(self._an_application_fee_event()).build(),
@@ -365,7 +319,6 @@ class IncrementalTest(TestCase):
     def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(self, http_mocker: HttpMocker) -> None:
         # this seems odd as we would miss some data between start_date and events_lower_boundary. In that case, we should hit the
         # application fees endpoint
-        _given_application_fees_availability_check(http_mocker)
         start_date = _NOW - timedelta(days=40)
         state_value = _NOW - timedelta(days=39)
         events_lower_boundary = _NOW - timedelta(days=30)

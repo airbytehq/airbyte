@@ -121,7 +121,10 @@ maximum number of seconds between API calls.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
-|:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+|:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.4.2 | 2024-08-12 | [43786](https://github.com/airbytehq/airbyte/pull/43786) | Update dependencies |
+| 0.4.1 | 2024-08-10 | [43487](https://github.com/airbytehq/airbyte/pull/43487) | Update dependencies |
+| 0.4.0 | 2024-08-06 | [43323](https://github.com/airbytehq/airbyte/pull/43323) | Update CDK to v4, Python 3.10 |
 | 0.3.1 | 2024-08-03 | [43054](https://github.com/airbytehq/airbyte/pull/43054) | Update dependencies |
 | 0.3.0 | 2024-07-26 | [42551](https://github.com/airbytehq/airbyte/pull/42551) | Make builder compatible |
 | 0.2.13 | 2024-07-27 | [42637](https://github.com/airbytehq/airbyte/pull/42637) | Update dependencies |

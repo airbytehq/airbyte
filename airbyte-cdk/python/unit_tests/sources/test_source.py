@@ -83,7 +83,7 @@ def abstract_source(mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
-    class MockHttpStream(HttpStream, mocker.MagicMock):
+    class MockHttpStream(mocker.MagicMock, HttpStream):
         url_base = "http://example.com"
         path = "/dummy/path"
         get_json_schema = mocker.MagicMock()

@@ -105,6 +105,12 @@ class StreamClassification:
     has_multiple_slices: bool
 
 
+# Moved to class declaration since get_updated_state is called on every record for incremental syncs, and thus the @deprecated decorator as well.
+@deprecated(
+    version="0.1.49",
+    reason="Deprecated method get_updated_state, You should use explicit state property instead, see IncrementalMixin docs.",
+    action="ignore",
+)
 class Stream(ABC):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
@@ -398,7 +404,6 @@ class Stream(ABC):
         """
         return None
 
-    @deprecated(version="0.1.49", reason="You should use explicit state property instead, see IncrementalMixin docs.", action="ignore")
     def get_updated_state(
         self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
     ) -> MutableMapping[str, Any]:
