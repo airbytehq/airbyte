@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [Google She
 </HideInUI>
 
 :::info
-The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet within a spreadsheet can be replicated. To replicate multiple spreadsheets, use our Google Drive connector or set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
+The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet within a spreadsheet can be synced. To sync multiple spreadsheets, use our Google Drive connector or set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
 :::
 
 ### Prerequisites
