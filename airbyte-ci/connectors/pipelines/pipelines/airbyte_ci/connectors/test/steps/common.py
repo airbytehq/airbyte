@@ -511,7 +511,7 @@ class LiveTests(Step):
         if self.run_id:
             command_options += ["--run-id", self.run_id]
         if self.should_read_with_state:
-            command_options += ["--should-read-with-state", self.should_read_with_state]
+            command_options += ["--should-read-with-state=1"]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
         if self.selected_streams:
@@ -565,7 +565,7 @@ class LiveTests(Step):
         self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
-        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
+        self.should_read_with_state = "should-read-with-state" in options
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
         self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
@@ -644,7 +644,9 @@ class LiveTests(Step):
             )
 
         container = await self._build_test_container(await connector_under_test_container.id())
-        container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
+        command = self._run_command_with_proxy(" ".join(self._test_command()))
+        main_logger.info(f"Running command {command}")
+        container = container.with_(hacks.never_fail_exec(command))
         tests_artifacts_dir = str(self.local_tests_artifacts_dir)
         path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
 
