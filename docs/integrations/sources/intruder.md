@@ -35,6 +35,7 @@ Intruder.io APIs are under rate limits for the number of API calls allowed per A
 
 | Version | Date       | Pull Request                                              | Subject                                       |
 | :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------- |
+| 0.2.0 | 2024-08-15 | [44139](https://github.com/airbytehq/airbyte/pull/44139) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43792](https://github.com/airbytehq/airbyte/pull/43792) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43665](https://github.com/airbytehq/airbyte/pull/43665) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [43241](https://github.com/airbytehq/airbyte/pull/43241) | Update dependencies |
