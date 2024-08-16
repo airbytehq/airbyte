@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.4.2
+Move the @deprecated decorator to the class level.
+
 ## 4.4.1
 Added test utils for integration tests
 
