@@ -60,6 +60,8 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 0.1.13 | 2024-08-12 | [43912](https://github.com/airbytehq/airbyte/pull/43912) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43514](https://github.com/airbytehq/airbyte/pull/43514) | Update dependencies |
 | 0.1.11 | 2024-08-03 | [43195](https://github.com/airbytehq/airbyte/pull/43195) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42660](https://github.com/airbytehq/airbyte/pull/42660) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [42225](https://github.com/airbytehq/airbyte/pull/42225) | Update dependencies |

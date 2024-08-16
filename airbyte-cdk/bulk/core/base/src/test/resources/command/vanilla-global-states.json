@@ -1,0 +1,24 @@
+[
+  {
+    "type": "GLOBAL",
+    "global": {
+      "shared_state": {
+        "cdc": {}
+      },
+      "stream_states": [
+        {
+          "stream_descriptor": {
+            "name": "bar",
+            "namespace": "foo"
+          },
+          "stream_state": {
+            "primary_key": {
+              "k1": 10,
+              "k2": 20
+            }
+          }
+        }
+      ]
+    }
+  }
+]

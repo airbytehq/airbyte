@@ -38,7 +38,7 @@ jobs:
           # Note: expressions within a filter are OR'ed
           filters: |
             connectors:
-              - '*'
+              - 'docs/integrations/**/*'
               - 'airbyte-ci/**/*'
               - 'airbyte-integrations/connectors/**/*'
               - 'airbyte-cdk/java/**/*'

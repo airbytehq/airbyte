@@ -36,7 +36,7 @@ We recommend Private App authentication.
 More information on HubSpot authentication methods can be found
 [here](https://developers.hubspot.com/docs/api/intro-to-auth).
 
-### Step 1: Set up Hubspot
+### Step 1: Set up HubSpot
 
 <!-- env:cloud -->
 
@@ -94,25 +94,26 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 | `tickets`                   | `tickets`                                                                                                    |
 | `workflows`                 | `automation`                                                                                                 |
 
-### Step 3: Set up the HubSpot source connector in Airbyte
+### Step 3: Set up the HubSpot connector in Airbyte
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
-3. Enter a **Source name** of your choosing.
-4. From the **Authentication** dropdown, select your chosen authentication method:
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select HubSpot from the Source type dropdown.
+4. Enter a name for the HubSpot connector.
+5. From the **Authentication** dropdown, select your chosen authentication method:
    - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
      :::tip HubSpot Authentication issues
      You might encounter errors during the connection process in the popup window, such as `An invalid scope name was provided`.
      To resolve this, close the window and attempt authentication again.
      :::
    - **Not Recommended:**To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
-5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
+6. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (Hubspot creation date) will be used as start date. It's recommended to provide relevant to your data start date value to optimize synchronization.
-6. Click **Set up source** and wait for the tests to complete.
+7. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -157,7 +158,7 @@ Then, go to the replication settings of your connection and click **refresh sour
 
 ## Supported sync modes
 
-The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
@@ -169,7 +170,7 @@ There are two types of incremental sync:
 2. Client-Side Incremental (API returns all available data and connector filters out only new records)
    :::
 
-## Supported streams
+## Supported Streams
 
 The HubSpot source connector supports the following streams:
 

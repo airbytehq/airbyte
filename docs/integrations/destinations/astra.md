@@ -43,6 +43,8 @@ This page contains the setup guide and reference information for the destination
 
 | Version | Date       | Pull Request | Subject                                                   |
 | :------ | :--------- | :----------- | :-------------------------------------------------------- |
+| 0.1.18 | 2024-08-12 | [43811](https://github.com/airbytehq/airbyte/pull/43811) | Update dependencies |
+| 0.1.17 | 2024-08-10 | [43598](https://github.com/airbytehq/airbyte/pull/43598) | Update dependencies |
 | 0.1.16 | 2024-08-03 | [43075](https://github.com/airbytehq/airbyte/pull/43075) | Update dependencies |
 | 0.1.15 | 2024-07-27 | [42805](https://github.com/airbytehq/airbyte/pull/42805) | Update dependencies |
 | 0.1.14 | 2024-07-20 | [42251](https://github.com/airbytehq/airbyte/pull/42251) | Update dependencies |

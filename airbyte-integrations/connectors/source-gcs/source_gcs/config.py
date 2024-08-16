@@ -8,7 +8,7 @@ from typing import List, Optional
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from pydantic import AnyUrl, Field
+from pydantic.v1 import AnyUrl, Field
 
 
 class SourceGCSStreamConfig(FileBasedStreamConfig):

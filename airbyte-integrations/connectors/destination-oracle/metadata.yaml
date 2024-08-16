@@ -8,7 +8,7 @@ data:
   icon: oracle.svg
   license: ELv2
   name: Oracle
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-oracle-strict-encrypt
       enabled: true
