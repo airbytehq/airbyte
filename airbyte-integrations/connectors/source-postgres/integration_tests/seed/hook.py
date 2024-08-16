@@ -10,9 +10,8 @@ from pathlib import Path
 from typing import List, Tuple
 
 import psycopg2
-from psycopg2 import extensions, sql
-
 import pytz
+from psycopg2 import extensions, sql
 
 catalog_write_file = "/connector/integration_tests/temp/configured_catalog_copy.json"
 catalog_source_file = "/connector/integration_tests/configured_catalog_template.json"
