@@ -3,9 +3,8 @@ from unittest.mock import Mock
 
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStream, SyncMode
 
-from pipelines.airbyte_ci.connectors.generate_erd_schema.dbml_assembler import DbmlAssembler, Source
-
-from tests.test_erd.builder import RelationshipBuilder
+from tests.builder import RelationshipBuilder
+from erd.dbml_assembler import DbmlAssembler, Source
 
 
 _A_STREAM_NAME = "a_stream_name"

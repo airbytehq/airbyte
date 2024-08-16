@@ -1,8 +1,7 @@
 from unittest import TestCase
 
-from pipelines.airbyte_ci.connectors.generate_erd_schema.relationships import Relationships, RelationshipsMerger
-from tests.test_erd.builder import RelationshipBuilder
-
+from tests.builder import RelationshipBuilder
+from erd.relationships import Relationships, RelationshipsMerger
 
 _A_STREAM_NAME = "a_stream_name"
 _A_COLUMN = "a_column"

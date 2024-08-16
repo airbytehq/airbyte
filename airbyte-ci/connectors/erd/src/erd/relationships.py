@@ -8,6 +8,7 @@ class Relationship(TypedDict):
     relations: dict[str, str]
     false_positives: NotRequired[dict[str, str]]
 
+
 Relationships = TypedDict("Relationships", {"streams": List[Relationship]})
 
 

@@ -9,7 +9,6 @@ from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.generate_erd.pipeline import run_connector_generate_erd_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.connectors.command import run_connector_pipeline
-from pipelines.helpers.connectors.format import verify_formatters
 
 
 @click.command(
@@ -33,7 +32,6 @@ from pipelines.helpers.connectors.format import verify_formatters
 )
 @click.pass_context
 async def generate_erd(ctx: click.Context, report: bool, skip_steps: List[str]) -> bool:
-    verify_formatters()
     return await run_connector_pipeline(
         ctx,
         "Generate ERD schema",

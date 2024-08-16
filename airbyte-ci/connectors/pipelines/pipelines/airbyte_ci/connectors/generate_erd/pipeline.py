@@ -8,30 +8,23 @@ import os
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
-import dpath
-import google.generativeai as genai
 
-from airbyte_protocol.models import AirbyteCatalog
-from dagger import Container
-from markdown_it import MarkdownIt
+from dagger import Container, Directory
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.connectors.generate_erd.dbml_assembler import Source, DbmlAssembler
-from pipelines.airbyte_ci.connectors.generate_erd.relationships import RelationshipsMerger, Relationships
 from pipelines.airbyte_ci.connectors.reports import Report
 from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.dagger.actions.python.poetry import with_poetry
 from pipelines.helpers.connectors.command import run_connector_steps
 from pipelines.helpers.execution.run_steps import STEP_TREE, StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pydbml.renderer.dbml.default import DefaultDBMLRenderer
 
 if TYPE_CHECKING:
     from anyio import Semaphore
 
 # TODO: pass secret in dagger?
 API_KEY = "API_KEY"
-genai.configure(api_key=API_KEY)
 
 # TODO: pass secret in dagger
 DBDOCS_TOKEN = "TOKEN"
@@ -43,32 +36,25 @@ def _get_erd_folder(code_directory: Path) -> Path:
         path.mkdir()
     return path
 
-def _get_discovered_catalog_file(code_directory: Path) -> Path:
-    return _get_erd_folder(code_directory) / "discovered_catalog.json"
-
-def _get_estimated_relationships_file(code_directory: Path) -> Path:
-    return _get_erd_folder(code_directory) / "estimated_relationships.json"
-
-def _get_confirmed_relationships_file(code_directory: Path) -> Path:
-    return _get_erd_folder(code_directory) / "confirmed_relationships.json"
-
 def _get_dbml_file(code_directory: Path) -> Path:
     return _get_erd_folder(code_directory) / "source.dbml"
 
 
-class GenerateErdSchema(Step):
+class GenerateDbml(Step):
     context: ConnectorContext
 
-    title = "Generate ERD schema using Gemini LLM"
+    title = "Generate DBML file"
 
-    def __init__(self, context: PipelineContext) -> None:
+    def __init__(self, context: PipelineContext, skip_relationship_generation: bool) -> None:
         super().__init__(context)
-        self._model = genai.GenerativeModel("gemini-1.5-flash")
+        self._skip_relationship_generation = skip_relationship_generation
 
     async def _run(self, connector_to_discover: Container) -> StepResult:
         connector = self.context.connector
         python_path = connector.code_directory
         file_path = Path(os.path.abspath(os.path.join(python_path)))
+
+        # TODO extract that in a method
         source_config_path_in_container = "/data/config.json"
         config_secret = open(file_path / "secrets" / "config.json").read()
         discover_output = (
@@ -78,12 +64,16 @@ class GenerateErdSchema(Step):
         )
         discovered_catalog = self._get_schema_from_discover_output(discover_output)
 
-        json.dump(discovered_catalog, open(_get_discovered_catalog_file(connector.code_directory), "w"), indent=4)
+        connector_directory = await self.context.get_connector_dir()
+        command = ["poetry", "run", "erd", "--source-path", "/source"]
+        if self._skip_relationship_generation:
+            command.append("--skip-llm-relationships")
 
-        normalized_catalog = self._normalize_schema_catalog(discovered_catalog)
-        estimated_relationships = self._get_relations_from_gemini(source_name=connector.name, catalog=normalized_catalog)
-
-        json.dump(estimated_relationships, open(_get_estimated_relationships_file(connector.code_directory), "w"), indent=4)
+        await (self._build_erd_container(connector_directory, discovered_catalog)
+           .with_exec(command)
+           .directory("/source/erd")
+           .export(str(_get_erd_folder(python_path)))
+       )
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
@@ -99,98 +89,18 @@ class GenerateErdSchema(Step):
                 return json.loads(line).get("catalog")
         raise ValueError("No catalog was found in output")
 
-    @staticmethod
-    def _normalize_schema_catalog(schema: dict) -> dict:
-        """
-        Foreign key cannot be of type object or array, therefore, we can remove these properties.
-        :param schema: json_schema in draft7
-        :return: json_schema in draft7 with TOP level properties only.
-        """
-        streams = schema["streams"]
-        for stream in streams:
-            to_rem = dpath.search(
-                stream["json_schema"]["properties"],
-                ["**"],
-                afilter=lambda x: isinstance(x, dict) and ("array" in str(x.get("type", "")) or "object" in str(x.get("type", ""))),
-            )
-            for key in to_rem:
-                stream["json_schema"]["properties"].pop(key)
-        return streams
-
-    def _get_relations_from_gemini(self, source_name: str, catalog: dict) -> dict:
-        """
-
-        :param source_name:
-        :param catalog:
-        :return: {"streams":[{'name': 'ads', 'relations': {'account_id': 'ad_account.id', 'campaign_id': 'campaigns.id', 'adset_id': 'ad_sets.id'}}, ...]}
-        """
-        system = "You are an Database developer in charge of communicating well to your users."
-
-        source_desc = """
-You are working on the {source_name} API service.
-
-The current JSON Schema format is as follows:
-{current_schema}, where "streams" has a list of streams, which represents database tables, and list of properties in each, which in turn, represent DB columns. Streams presented in list are the only available ones.
-Generate and add a `foreign_key` with reference for each field in top level of properties that is helpful in understanding what the data represents and how are streams related to each other. Pay attention to fields ends with '_id'.
-        """.format(
-            source_name=source_name, current_schema=catalog
-        )
-        task = """
-Please provide answer in the following format:
-{streams: [{"name": "<stream_name>", "relations": {"<foreign_key>": "<ref_table.column_name>"} }]}
-Pay extra attention that in <ref_table.column_name>" "ref_table" should be one of the list of streams, and "column_name" should be one of the property in respective reference stream.
-Limitations:
-- Not all tables should have relations
-- Reference should point to 1 table only.
-- table cannot reference on itself, on other words, e.g. `ad_account` cannot have relations with "ad_account" as a "ref_table"
-        """
-        response = self._model.generate_content(f"{system} {source_desc} {task}")
-        md = MarkdownIt("commonmark")
-        tokens = md.parse(response.text)
-        response_json = json.loads(tokens[0].content)
-        return response_json
-
-
-class GenerateDbmlSchema(Step):
-    context: ConnectorContext
-
-    title = "Generate DBML file from discovered catalog and erd_relation"
-
-    def __init__(self, context: PipelineContext) -> None:
-        super().__init__(context)
-
-    def _get_catalog(self, catalog_path: Path) -> AirbyteCatalog:
-        with open(catalog_path, "r") as file:
-            try:
-                return AirbyteCatalog.parse_obj(json.loads(file.read()))
-            except json.JSONDecodeError as error:
-                raise ValueError(f"Could not read json file {catalog_path}: {error}. Please ensure that it is a valid JSON.")
-
-    def _get_relationships(self, path: Path) -> Relationships:
-        if not path.exists():
-            return {"streams": []}
-
-        with open(path, "r") as file:
-            return json.load(file)  # type: ignore  # we assume the content of the file matches Relationships
-
-    async def _run(self, connector_to_discover: Container = None) -> StepResult:
-        connector = self.context.connector
-        python_path = connector.code_directory
-
-        catalog = self._get_catalog(_get_discovered_catalog_file(connector.code_directory))
-        source = Source(python_path)
-        confirmed_relationships = self._get_relationships(_get_confirmed_relationships_file(connector.code_directory))
-        estimated_relationships = self._get_relationships(_get_estimated_relationships_file(connector.code_directory))
-        database = DbmlAssembler().assemble(
-            source,
-            catalog,
-            RelationshipsMerger().merge(estimated_relationships, confirmed_relationships)
+    def _build_erd_container(self, connector_directory: Directory, discovered_catalog) -> Container:
+        """Create a container to run ERD generation."""
+        container = (
+            with_poetry(self.context)
+            .with_env_variable("GENAI_API_KEY", API_KEY)  # FIXME pass using context
+            .with_mounted_directory("/source", connector_directory)
+            .with_new_file("/source/erd/discovered_catalog.json", contents=json.dumps(discovered_catalog))
+            .with_mounted_directory("/app", self.context.erd_dir)
+            .with_workdir("/app")
         )
 
-        with open(_get_dbml_file(connector.code_directory), "w") as f:
-            f.write(DefaultDBMLRenderer.render_db(database))
-
-        return StepResult(step=self, status=StepStatus.SUCCESS)
+        return container.with_exec(["poetry", "lock", "--no-update"]).with_exec(["poetry", "install"])
 
 
 class UploadDbmlSchema(Step):
@@ -229,28 +139,16 @@ async def run_connector_generate_erd_pipeline(context: ConnectorContext, semapho
 
     steps_to_run.append([StepToRun(id=CONNECTOR_TEST_STEP_ID.BUILD, step=BuildConnectorImages(context))])
 
-    if CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS not in skip_steps:
-        steps_to_run.append(
-            [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS,
-                    step=GenerateErdSchema(context),
-                    args=lambda results: {"connector_to_discover": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
-                    depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
-                ),
-            ]
-        )
-
-    if CONNECTOR_TEST_STEP_ID.DBML_FILE not in skip_steps:
-        steps_to_run.append(
-            [
-                StepToRun(
-                    id=CONNECTOR_TEST_STEP_ID.DBML_FILE,
-                    step=GenerateDbmlSchema(context),
-                    depends_on=[CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS],
-                ),
-            ]
-        )
+    steps_to_run.append(
+        [
+            StepToRun(
+                id=CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS,
+                step=GenerateDbml(context, CONNECTOR_TEST_STEP_ID.LLM_RELATIONSHIPS in skip_steps),
+                args=lambda results: {"connector_to_discover": results[CONNECTOR_TEST_STEP_ID.BUILD].output[LOCAL_BUILD_PLATFORM]},
+                depends_on=[CONNECTOR_TEST_STEP_ID.BUILD],
+            ),
+        ]
+    )
 
     if CONNECTOR_TEST_STEP_ID.PUBLISH_ERD not in skip_steps:
         steps_to_run.append(

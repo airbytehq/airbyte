@@ -1,4 +1,4 @@
-from pipelines.airbyte_ci.connectors.generate_erd_schema.relationships import Relationship
+from erd.relationships import Relationship
 
 
 class RelationshipBuilder:

@@ -18,9 +18,6 @@ more-itertools = "^8.11.0"
 docker = "^7"
 semver = "^3"
 airbyte-protocol-models = "*"
-# In an ideal world, we would import the version of airbyte-ci for the connector airbyte-ci will interact with
-# Also note that the version that this will currently import is <2 because of the version clash with pydantic
-airbyte-cdk = "*"
 jinja2 = "^3.0.2"
 requests = "^2.31"
 airbyte-connectors-base-images = {path = "../base_images", develop = true}
@@ -43,8 +40,6 @@ pygithub = "^2.3.0"
 pydash = "6.0.2"
 python-slugify = ">=8.0.4"
 deepdiff = "^7.0.1"
-google-generativeai = "^0.7.2"
-pydbml = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "^1.2.2"

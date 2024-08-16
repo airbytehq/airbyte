@@ -9,7 +9,7 @@ from airbyte_protocol.models import AirbyteStream, AirbyteCatalog
 from pydbml import Database
 from pydbml.classes import Column, Index, Reference, Table
 
-from pipelines.airbyte_ci.connectors.generate_erd.relationships import Relationships
+from erd.relationships import Relationships
 
 
 class Source:
