@@ -29,7 +29,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -66,7 +66,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -103,7 +103,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -148,7 +148,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -193,7 +193,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -240,7 +240,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -296,7 +296,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -339,7 +339,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -384,7 +384,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -429,7 +429,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -472,7 +472,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -517,7 +517,7 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 500
-                    error_message: Something wrong with API side, Please recheck all ids
+                    error_message: Something wrong with API, Please recheck all ids
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
@@ -542,6 +542,51 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/team_goals"
+    list_comments:
+      type: DeclarativeStream
+      name: list_comments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: list/{{ stream_partition['list_id'] }}/comment
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 500
+                    error_message: Something wrong with API, Please recheck all ids
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - comments
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: list_id
+              stream:
+                $ref: "#/definitions/streams/list"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/list_comments"
   base_requester:
     type: HttpRequester
     url_base: https://api.clickup.com/api/v2/
@@ -563,6 +608,7 @@ streams:
   - $ref: "#/definitions/streams/team_custom_fields"
   - $ref: "#/definitions/streams/space_tags"
   - $ref: "#/definitions/streams/team_goals"
+  - $ref: "#/definitions/streams/list_comments"
 
 spec:
   type: Spec
@@ -604,6 +650,7 @@ metadata:
     team_custom_fields: true
     space_tags: true
     team_goals: true
+    list_comments: true
   yamlComponents:
     global:
       - authenticator
@@ -623,7 +670,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     list:
-      streamHash: 297e7e4e1ab2eea4cebe0ab4757e89f210489909
+      streamHash: e7a394b78d97097d82d3b6205f00a7776efcb249
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -687,6 +734,13 @@ metadata:
       primaryKeysAreUnique: true
     team_goals:
       streamHash: 921a14d155ca527219909c94a0db0bfdde3d0b14
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    list_comments:
+      streamHash: f568cc9cf963d318d3d9703388d19bd77e752496
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1500,5 +1554,68 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - id
+  list_comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      comment:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            text:
+              type:
+                - string
+                - "null"
+      comment_text:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      reactions:
+        type:
+          - array
+          - "null"
+      reply_count:
+        type:
+          - number
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          color:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          initials:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
     required:
       - id
