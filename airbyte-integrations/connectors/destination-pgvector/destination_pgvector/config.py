@@ -21,28 +21,15 @@ class PasswordBasedAuthorizationModel(BaseModel):
         title = "Credentials"
 
 
-# to-do - https://github.com/airbytehq/airbyte/issues/38007 - add Snowflake supported models to embedding options
-class SnowflakeCortexIndexingModel(BaseModel):
+class PGVectorIndexingModel(BaseModel):
+
+    # TODO: Compare and update to match `destination-postgres`
     host: str = Field(
         ...,
         title="Host",
         order=1,
         description="Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
         examples=["AIRBYTE_ACCOUNT"],
-    )
-    role: str = Field(
-        ...,
-        title="Role",
-        order=2,
-        description="Enter the role that you want to use to access Snowflake",
-        examples=["AIRBYTE_ROLE", "ACCOUNTADMIN"],
-    )
-    warehouse: str = Field(
-        ...,
-        title="Warehouse",
-        order=3,
-        description="Enter the name of the warehouse that you want to use as a compute cluster",
-        examples=["AIRBYTE_WAREHOUSE"],
     )
     database: str = Field(
         ...,
@@ -66,15 +53,16 @@ class SnowflakeCortexIndexingModel(BaseModel):
         examples=["AIRBYTE_USER"],
     )
 
+    # E.g. "credentials": {"password": "AIRBYTE_PASSWORD"}
     credentials: PasswordBasedAuthorizationModel
 
     class Config:
-        title = "Snowflake Connection"
+        title = "Postgres Connection"
         schema_extra = {
-            "description": "Snowflake can be used to store vector data and retrieve embeddings.",
+            "description": "Postgres can be used to store vector data and retrieve embeddings.",
             "group": "indexing",
         }
 
 
 class ConfigModel(VectorDBConfigModel):
-    indexing: SnowflakeCortexIndexingModel
+    indexing: PGVectorIndexingModel
