@@ -28,16 +28,14 @@ BATCH_SIZE = 150
 
 
 class DestinationPGVector(Destination):
-    sql_processor: postgres_processor.PostgresProcessor
+    sql_processor: pgvector_processor.PGVectorProcessor
 
     def _init_sql_processor(
         self, config: ConfigModel, configured_catalog: Optional[ConfiguredAirbyteCatalog] = None
-    ):
-        self.sql_processor = pgvector_processor.SnowflakeCortexSqlProcessor(
-            sql_config=pgvector_processor.SnowflakeCortexConfig(
+    ) -> None:
+        self.sql_processor = pgvector_processor.PGVectorProcessor(
+            sql_config=pgvector_processor.PostgresConfig(
                 host=config.indexing.host,
-                role=config.indexing.role,
-                warehouse=config.indexing.warehouse,
                 database=config.indexing.database,
                 schema_name=config.indexing.default_schema,
                 username=config.indexing.username,
@@ -61,8 +59,6 @@ class DestinationPGVector(Destination):
         yield from self.sql_processor.process_airbyte_messages_as_generator(
             messages=input_messages,
             write_strategy=WriteStrategy.AUTO,
-            # TODO: Ensure this setting is covered, then delete the commented-out line:
-            # omit_raw_text=parsed_config.omit_raw_text,
         )
 
     def check(self, logger: Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
@@ -79,7 +75,7 @@ class DestinationPGVector(Destination):
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.com/integrations/destinations/snowflake-cortex",
+            documentationUrl="https://docs.airbyte.com/integrations/destinations/pgvector",
             supportsIncremental=True,
             supported_destination_sync_modes=[
                 DestinationSyncMode.overwrite,
