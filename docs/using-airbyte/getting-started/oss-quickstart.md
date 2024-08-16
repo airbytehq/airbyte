@@ -194,6 +194,18 @@ As long as your Docker Desktop daemon is running in the background, you can use 
 
 If you quit Docker Desktop and want to return to your local Airbyte workspace, just start Docker Desktop again. Once Docker finishes restarting, you'll be able to access Airbyte's local installation as normal. 
 
+
+### Suggested Resources
+
+For the best performance, we suggest you run on a machine with 4 or more CPU's and at least 8 GB of memory. Currently
+`abctl` does support running on 2 cpus and 8 gb of ram with the `--low-resource-mode` flag. You can pass the low
+resource mode flag when install Airbyte with `abctl`:
+
+```shell
+abctl local install --low-resource-mode
+```
+
+
 ## 3: Move Data
 
 In the Building Connections section, you'll learn how to start moving data. Generally, there are three steps:
@@ -292,16 +304,6 @@ Ensure the security group configured for the EC2 Instance allows traffic in on t
 
 ```shell
 abctl local install --host [HOSTNAME]
-```
-
-### Suggested Resources
-
-For the best performance, we suggest you run on a machine with 4 or more CPU's and at least 8 GB of memory. Currently 
-`abctl` does support running on 2 cpus and 8 gb of ram with the `--low-resource-mode` flag. You can pass the low 
-resource mode flag when install Airbyte with `abctl`:
-
-```shell
-abctl local install --low-resource-mode
 ```
 
 ### Running over HTTP
