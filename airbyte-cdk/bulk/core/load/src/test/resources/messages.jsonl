@@ -1,0 +1,10 @@
+{"type": "RECORD","stream": {"name": "stream1"} }
+{"type": "RECORD","stream": {"name": "stream1"} }
+{"type": "RECORD","stream": {"name": "stream1"} }
+{"type": "RECORD","stream": {"name": "stream1"} }
+{"type": "RECORD","stream": {"name": "stream2"} }
+{"type": "RECORD","stream": {"name": "stream2"} }
+{"type": "RECORD","stream": {"name": "stream2"} }
+{"type": "RECORD","stream": {"name": "stream2"} }
+{"type": "STREAM_COMPLETE","stream": {"name": "stream1"} }
+{"type": "STREAM_COMPLETE","stream": {"name": "stream2"} }

@@ -31,7 +31,20 @@ abstract class DestinationTask {
     }
     open val concurrency: Concurrency? = null // null => always run
 
-    abstract fun execute(): DestinationTask
+    abstract suspend fun execute(): DestinationTask
+}
+
+abstract class TaskList: DestinationTask() {
+    abstract val tasks: List<DestinationTask>
+    private var index = 0
+
+    override suspend fun execute(): DestinationTask {
+        if (index < tasks.size) {
+            return tasks[index++]
+        } else {
+            return Done()
+        }
+    }
 }
 
 /**
@@ -39,7 +52,7 @@ abstract class DestinationTask {
  * Rather, it guards, fans out, or resource-counts other tasks.
  */
 abstract class ControlTask: DestinationTask() {
-    override fun execute(): DestinationTask {
+    override suspend fun execute(): DestinationTask {
         throw IllegalStateException("Control tasks should not be executed")
     }
 }
@@ -54,12 +67,10 @@ interface PerStream {
 /**
  * The implementing task will be provided with the reader end of
  * a queue for its stream.
+ *
+ * TODO: Drop this entirely
  */
-interface RecordConsumer: PerStream {
-    var payload: Iterable<DestinationRecord>?
-    var endOfStream: Boolean
-    var forceFlush: Boolean
-}
+interface RecordConsumer: PerStream
 
 /**
  * Control task that halts all task execution.
@@ -118,4 +129,7 @@ class Decrementing(
     val task: () -> DestinationTask
 ): ControlTask()
 
-
+/**
+ * The runner will discard this.
+ */
+class Noop(): ControlTask()

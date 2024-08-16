@@ -12,7 +12,7 @@ abstract class StandardDestination {
     abstract fun accumulateRecords(
         stream: Stream,
         accumulatorId: Int,
-        records: Iterable<DestinationRecord>,
+        records: Iterable<DestinationMessage.DestinationRecord>,
         endOfStream: Boolean = false,
         forceFlush: Boolean = false
     ): Batch?

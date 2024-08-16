@@ -7,6 +7,7 @@ import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 
 /**
  * Runs a DestinationTask state machine, either from an arbitrary initial task
@@ -27,8 +28,7 @@ class DestinationRunner(
         const val WAIT_TIME_MS = 500L
     }
 
-    private val catalog = Catalog() // TODO: from real catalog
-    private val recordQueue = FakeMessageQueue(catalog, 4, 2, 0.5)
+    private val catalog = DummyCatalog() // TODO: from real catalog
     private val streamComplete = mutableMapOf<Stream, Boolean>()
 
     private val queue = Channel<DestinationTask>(Channel.UNLIMITED)
@@ -46,9 +46,10 @@ class DestinationRunner(
     }
 
     suspend fun run() = coroutineScope {
-        log.info { "Starting DestinationRunner; enqueueing initial task: $initialTask" }
+        log.info { "Enqueueing initial task: $initialTask" }
         enqueue(initialTask)
 
+        log.info { "Entering main task loop" }
         var done = false
         while (!done) {
             // Wait if we're at max concurrency
@@ -58,12 +59,8 @@ class DestinationRunner(
             }
 
             // Get the next task
-            val task = queue.tryReceive().getOrNull()
-            if (task == null) {
-                log.debug { "No tasks enqueued; waiting $WAIT_TIME_MS ms" }
-                delay(WAIT_TIME_MS)
-                continue
-            }
+            val task = queue.receiveCatching().getOrNull()
+                ?: throw IllegalStateException("Task queue closed unexpectedly")
 
             /**
              * Handle control tasks.
@@ -127,6 +124,7 @@ class DestinationRunner(
                             enqueue(underlying)
                         } else {
                             log.info { "Re-enqueueing WhenAllComplete-guard for task: '${task.id}' == $count" }
+                            enqueue(task)
                         }
                     }
 
@@ -141,11 +139,16 @@ class DestinationRunner(
                         }
                     }
 
+                    is Noop -> log.info { "Received Noop task; discarding" }
+
                     is Done -> {
                         log.info { "Received terminating Done task; exiting" }
                         done = true
                     }
                 }
+                // Explicitly yield since we're not launching
+                // Otherwise this thread could block running tasks
+                yield()
                 continue
             }
 
@@ -185,29 +188,11 @@ class DestinationRunner(
             }
 
             /**
-             * Primer any record consumers with data from the message queue.
-             *
-             * NOTE: These semantics are definitely wrong. We're blocking
-             * the main loop to wait for data & paying queueing and dispatch
-             * costs potentially per record. We should just spawn one
-             * accumulator per stream x concurrency and hand them each the
-             * reader end of an async queue, and let them yield and re-enqueue
-             * whenever they finish a batch.
+             * TODO: Migrate the rest of this into the control flow semantics
              */
             var requeue = false
             if (task is RecordConsumer) {
-                val payload = recordQueue.take(task.stream)
-                if (payload.isEmpty()) {
-                    log.debug { "Deferring RecordConsumer $task for stream ${task.stream} due to empty queue" }
-                    enqueue(task)
-                    continue
-                }
-
-                task.payload = payload
-                task.endOfStream = recordQueue.streamComplete(task.stream)
-                task.forceFlush = false // TODO: From per-stream timer
-
-                if (!task.endOfStream) {
+                if (!MessageQueue.instance.isStreamComplete(task.stream)) {
                     requeue = true
                 } else {
                     streamComplete[task.stream] = true
@@ -219,7 +204,6 @@ class DestinationRunner(
                 nTasks.incrementAndGet()
                 log.info { "Executing task: $task" }
                 val nextTask = task.execute()
-                log.info { "Received next task: $nextTask" }
                 nTasks.decrementAndGet()
                 counters.forEach { it.decrementAndGet() }
                 enqueue(nextTask)

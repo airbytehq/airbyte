@@ -1,3 +1,8 @@
 package io.airbyte.cdk.write
 
-data class Stream(val name: String)
+import com.fasterxml.jackson.annotation.JsonProperty
+
+data class Stream(
+    @JsonProperty("name") val name: String,
+    @JsonProperty("namespace") val namespace: String? = null,
+)

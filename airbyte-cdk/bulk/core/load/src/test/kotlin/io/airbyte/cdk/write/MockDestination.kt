@@ -35,7 +35,7 @@ class MockDestination(
     override fun accumulateRecords(
         stream: Stream,
         accumulatorId: Int,
-        records: Iterable<DestinationRecord>,
+        records: Iterable<DestinationMessage.DestinationRecord>,
         endOfStream: Boolean,
         forceFlush: Boolean
     ): Batch? {

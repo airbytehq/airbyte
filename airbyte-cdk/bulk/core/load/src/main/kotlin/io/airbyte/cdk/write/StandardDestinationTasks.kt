@@ -1,5 +1,10 @@
 package io.airbyte.cdk.write
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.flow.fold
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.runInterruptible
+
 /**
  * These tasks together are sufficient to drive the StandardDestination lifecycle.
  */
@@ -7,10 +12,12 @@ package io.airbyte.cdk.write
 class DefaultSetup(
     private val destination: StandardDestination
 ): DestinationTask() {
-    override fun execute(): DestinationTask {
+    override suspend fun execute(): DestinationTask {
         destination.setup()
         return ForEachStream {
-            DefaultOpenStream(stream = it, destination)
+            Incrementing("open-stream") {
+                DefaultOpenStream(stream = it, destination)
+            }
         }
     }
 }
@@ -20,7 +27,7 @@ class DefaultOpenStream(
     private val destination: StandardDestination
 ): DestinationTask(), PerStream {
     override val concurrency: Concurrency? = Concurrency("open")
-    override fun execute(): DestinationTask {
+    override suspend fun execute(): DestinationTask {
         destination.openStream(stream)
         return ForEachAvailable {
             DefaultAccumulateRecords(stream, taskId = it, destination)
@@ -35,19 +42,45 @@ class DefaultAccumulateRecords(
 ): DestinationTask(), RecordConsumer, PerStream {
     override val concurrency: Concurrency? = Concurrency("accumulate")
 
-    override var payload: Iterable<DestinationRecord>? = null
-    override var endOfStream: Boolean = false
-    override var forceFlush: Boolean = false
+    private val queue = MessageQueue.instance
 
-    override fun execute(): DestinationTask {
-        val batch = destination.accumulateRecords(
-            stream, taskId, payload!!, endOfStream, forceFlush)
+    val log = KotlinLogging.logger {}
+
+    override suspend fun execute(): DestinationTask {
+        val batch =
+            queue.open(stream, taskId).fold(null as Batch?) { _, record ->
+                val result = when (record) {
+                    is DestinationMessage.DestinationRecord -> {
+                        log.info { "task: Accumulating record $record" }
+                        destination.accumulateRecords(
+                            stream, taskId, listOf(record), false, false
+                        )
+                    }
+                    is DestinationMessage.EndOfStream -> {
+                        log.info { "task: End of stream $stream" }
+                        destination.accumulateRecords(
+                            stream, taskId, emptyList(), true, false
+                        )
+                    }
+                    is DestinationMessage.TimeOut -> {
+                        log.info { "task: Timeout on stream $stream" }
+                        null
+                    }
+                }
+                if (result != null) {
+                    return@fold result
+                } else {
+                    null
+                }
+            }
+
+        // Currently the task will be re-enqueued automatically until EOS
         if (batch != null) {
             return Incrementing("batch:$stream") {
                 DefaultProcessBatch(stream, batch, destination)
             }
         } else {
-            return this
+            return Noop()
         }
     }
 }
@@ -58,7 +91,7 @@ class DefaultProcessBatch(
     private val destination: StandardDestination
 ): DestinationTask(), PerStream {
     override val concurrency: Concurrency? = Concurrency("batch")
-    override fun execute(): DestinationTask {
+    override suspend fun execute(): DestinationTask {
         val nextBatch = destination.processBatch(stream, batch)
         if (nextBatch != null) {
             return DefaultProcessBatch(stream, nextBatch, destination)
@@ -81,16 +114,22 @@ class DefaultCloseStream(
     private val destination: StandardDestination
 ): DestinationTask(), PerStream {
     override val concurrency: Concurrency? = Concurrency("close")
-    override fun execute(): DestinationTask {
+    override suspend fun execute(): DestinationTask {
         destination.closeStream(stream)
-        return DefaultTeardown(destination)
+        return Decrementing("open-stream") {
+                ExactlyOnce("teardown") {
+                    WhenAllComplete("open-stream") {
+                        DefaultTeardown(destination)
+                    }
+                }
+            }
     }
 }
 
 class DefaultTeardown(
     private val destination: StandardDestination
 ): DestinationTask() {
-    override fun execute(): DestinationTask {
+    override suspend fun execute(): DestinationTask {
         destination.teardown()
         return Done()
     }

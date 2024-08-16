@@ -3,6 +3,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.14.0'
     //implementation 'hu.webarticum:tree-printer:3.2.1'
 
+    implementation("com.lmax:disruptor:3.4.4") // High-performance concurrent queue
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
