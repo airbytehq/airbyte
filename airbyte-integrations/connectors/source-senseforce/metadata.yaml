@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 39de93cb-1511-473e-a673-5cbedb9436af
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-senseforce
   githubIssueLabel: source-senseforce
   icon: senseforce.svg
