@@ -231,6 +231,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.21 | 2024-08-17 | [44318](https://github.com/airbytehq/airbyte/pull/44318) | Update dependencies |
 | 2.4.20 | 2024-08-12 | [43834](https://github.com/airbytehq/airbyte/pull/43834) | Update dependencies |
 | 2.4.19 | 2024-08-10 | [43194](https://github.com/airbytehq/airbyte/pull/43194) | Update dependencies |
 | 2.4.18 | 2024-08-06 | [43326](https://github.com/airbytehq/airbyte/pull/43326) | Added missing `type` type for `customer_journey_summary` field for `Customer Journey Summary` stream schema |
