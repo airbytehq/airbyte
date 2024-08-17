@@ -33,7 +33,7 @@ Use the service account ID from above, grant read access to your target bucket. 
 - Enter your GCS bucket name to the `Bucket` field
 - Add a stream
   1.  Give a **Name** to the stream
-  2.  In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported format is **CSV**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+  2.  In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
   3.  Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
   4.  (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
 - Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
@@ -151,6 +151,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.6.0   | 2024-08-15 | [44015](https://github.com/airbytehq/airbyte/pull/44015) | Add support for all FileBasedSpec file types                            |
 | 0.5.0   | 2024-08-14 | [44070](https://github.com/airbytehq/airbyte/pull/44070) | Update CDK v4 and Python 3.10 dependencies                              |
 | 0.4.15 | 2024-08-12 | [43733](https://github.com/airbytehq/airbyte/pull/43733) | Update dependencies                                                     |
 | 0.4.14  | 2024-08-10 | [43512](https://github.com/airbytehq/airbyte/pull/43512) | Update dependencies                                                     |
