@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.5.0
+Stop support for incoming legacy state message format
+
 ## 4.4.2
 Move the @deprecated decorator to the class level.
 

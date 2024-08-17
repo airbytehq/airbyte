@@ -1,5 +1,12 @@
 # CDK Migration Guide
 
+## Upgrading to 4.5.0
+
+In this release, we are no longer supporting the legacy state format in favor of the current per-stream state
+format which has been running in production for over 2 years. The impacts to connectors should be minimal, but for
+the small number of connectors that instantiate their own `ConnectorStateManager`, the fix to upgrade to the latest
+version of the CDK is to stop passing the `stream_instance_map` parameter to the `ConnectorStateManager` constructor.
+
 ## Upgrading to 4.1.0
 We are unifying the `BackoffStrategy` interface as it currently differs from the Python CDK package to the declarative one. The different is that the interface will require the attempt_count to be passed.
 
