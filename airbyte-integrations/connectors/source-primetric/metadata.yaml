@@ -15,7 +15,8 @@ data:
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-05-30"
-        message: "The verison migrates the Primetric connector to the low-code framework
+        message:
+          "The verison migrates the Primetric connector to the low-code framework
           for greater maintainability. !! Important: The uuid field now have a string
           format (without 'format: uuid') for all streams"
   connectorBuildOptions:

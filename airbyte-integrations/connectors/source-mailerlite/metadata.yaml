@@ -20,7 +20,8 @@ data:
     breakingChanges:
       1.0.0:
         upgradeDeadline: "2024-06-30"
-        message: "The version migrates the MailerLite connector to the be compatible
+        message:
+          "The version migrates the MailerLite connector to the be compatible
           with the connector builder. Important: The forms_popup stream schema from
           API has a breaking change to schema['properties']['settings']['properties']['schedule'],
           field to contain booleans instead of strings, The forms_promotion stream

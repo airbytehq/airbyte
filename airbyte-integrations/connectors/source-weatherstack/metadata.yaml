@@ -21,7 +21,8 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: Version 1.0.0 introduces changes to the connection configuration.
+        message:
+          Version 1.0.0 introduces changes to the connection configuration.
           The `is_paid_account` config input is removed and streams unavailable to
           unpaid accounts will simply be empty when read.
         upgradeDeadline: "2024-08-20"

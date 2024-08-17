@@ -25,7 +25,8 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "The `dashboard` stream's endpoint has been updated due to the previous
+        message:
+          "The `dashboard` stream's endpoint has been updated due to the previous
           endpoint being deprecated by the service. The new version no longer returns
           the `creator` field. After upgrading, please reset the schema for the stream.
           Additionally, the destination may require updating to handle the updated
