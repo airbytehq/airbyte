@@ -7,11 +7,11 @@ data:
       - hub.docker.com
       - auth.docker.io
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.1@sha256:a8c0f0d32782957beef2c65bac98756b04fff2f3ffc4568a6676d3c83a422a5b
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3-dev.237dae36d4@sha256:9b9c3d514a021398c0ae27310a88114e6819a18f8987919a09850d44cf3d0cf3
   connectorSubtype: api
   connectorType: source
   definitionId: 72d405a3-56d8-499f-a571-667c03406e43
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-dockerhub
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   githubIssueLabel: source-dockerhub
