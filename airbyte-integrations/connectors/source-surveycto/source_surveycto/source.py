@@ -34,10 +34,12 @@ stream_json_schema = {
     },
 }
 
+
 class SurveyStream(HttpStream, ABC):
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any], form_id, schema, **kwargs):
+        self.form_id = None
         super().__init__()
 
         self.config = config
@@ -76,7 +78,8 @@ class SurveyctoStream(SurveyStream, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+        if self.cursor_field in value:
+            self._cursor_value = value[self.cursor_field]
 
     @property
     def name(self) -> str:
