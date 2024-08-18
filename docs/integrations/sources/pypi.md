@@ -31,6 +31,7 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 0.2.0 | 2024-08-14 | [44082](https://github.com/airbytehq/airbyte/pull/44082) | Refactor connector to manifest-only format |
 | 0.1.15 | 2024-08-10 | [43643](https://github.com/airbytehq/airbyte/pull/43643) | Update dependencies |
 | 0.1.14 | 2024-08-03 | [43137](https://github.com/airbytehq/airbyte/pull/43137) | Update dependencies |
