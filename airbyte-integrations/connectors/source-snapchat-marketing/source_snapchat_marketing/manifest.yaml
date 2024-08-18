@@ -19,8 +19,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            {{ stream_partition['organization_id'] if config['organization_ids']
-            else me/organizations }}
+            {{ 'me/organizations' if stream_partition['organization_id'] == 'me'
+            else 'organizations/' ~ stream_partition['organization_id'] }}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -40,7 +40,9 @@ definitions:
             stop_condition: '{{ not response.get("paging", {}).get("next_link", {}) }}'
         partition_router:
           type: ListPartitionRouter
-          values: "{{ config['organization_ids'] }}"
+          values: >-
+            {{ config['organization_ids'] if config['organization_ids'] else
+            ['me'] }}
           cursor_field: organization_id
       incremental_sync:
         type: DatetimeBasedCursor
@@ -72,9 +74,9 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: >-
-            {{ adaccounts/stream_partition['ad_account_id'] if
-            config['ad_account_ids'] else organizations/{{
-            stream_slice["organization_id"] }}/adaccounts }}
+            {{ 'organizations/' ~ stream_slice["organization_id"] ~
+            '/adaccounts' if stream_partition['ad_account_id'] == 'orgs' else
+            'adaccounts/' ~ stream_partition['ad_account_id'] }}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -94,7 +96,9 @@ definitions:
             stop_condition: '{{ not response.get("paging", {}).get("next_link", {}) }}'
         partition_router:
           - type: ListPartitionRouter
-            values: "{{ config['ad_account_ids'] }}"
+            values: >-
+              {{ config['ad_account_ids'] if config['ad_account_ids'] else
+              ['orgs'] }}
             cursor_field: ad_account_id
           - type: SubstreamPartitionRouter
             parent_stream_configs:
