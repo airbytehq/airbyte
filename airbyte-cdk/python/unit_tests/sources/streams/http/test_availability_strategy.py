@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import io
+import json
 import logging
 from typing import Any, Iterable, Mapping, Optional
 
@@ -81,7 +83,7 @@ def test_default_http_availability_strategy(
     http_stream = MockListHttpStream()
     response = requests.Response()
     response.status_code = status_code
-    response.raw = json_contents
+    response.raw = io.BytesIO(json.dumps(json_contents).encode('utf-8'))
     mocker.patch.object(requests.Session, "send", return_value=response)
 
     actual_is_available, reason = HttpAvailabilityStrategy().check_availability(http_stream, logger)

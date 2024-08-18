@@ -135,8 +135,11 @@ class TestSpec(BaseTest):
             pytest.skip(f"Skipping OAuth is default method test: {inputs.auth_default_method.bypass_reason}")
         return False
 
-    def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
+    def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: Optional[SecretDict]):
         """Check that config matches the actual schema from the spec call"""
+        if not connector_config:
+            pytest.skip("Config is not provided")
+
         # Getting rid of technical variables that start with an underscore
         config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
         try:
@@ -697,12 +700,12 @@ class TestDiscovery(BaseTest):
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
         assert len(duplicated_stream_names) == 0, f"Catalog should have uniquely named streams, duplicates are: {duplicated_stream_names}"
 
-    def duplicated_stream_names(self, streams) -> List[str]:
+    def duplicated_stream_names(self, streams) -> List[Tuple[str, str]]:
         """Counts number of times a stream appears in the catalog"""
         name_counts = dict()
         for stream in streams:
-            count = name_counts.get(stream.name, 0)
-            name_counts[stream.name] = count + 1
+            count = name_counts.get((stream.namespace, stream.name), 0)
+            name_counts[(stream.namespace, stream.name)] = count + 1
         return [k for k, v in name_counts.items() if v > 1]
 
     def test_streams_have_valid_json_schemas(self, discovered_catalog: Mapping[str, Any]):
@@ -882,6 +885,7 @@ def _extract_primary_key_value(record: Mapping[str, Any], primary_key: List[List
 
 
 @pytest.mark.default_timeout(TEN_MINUTES)
+@pytest.mark.usefixtures("final_teardown")
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):

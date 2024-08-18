@@ -3764,6 +3764,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
+          page_size: 50
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
@@ -9762,6 +9763,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
+          page_size: 50
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at
@@ -15719,6 +15721,7 @@ streams:
         pagination_strategy:
           type: PageIncrement
           start_from_page: 1
+          page_size: 50
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: created_at

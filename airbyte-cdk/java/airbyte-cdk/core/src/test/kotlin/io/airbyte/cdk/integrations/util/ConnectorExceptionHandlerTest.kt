@@ -95,6 +95,20 @@ internal class ConnectorExceptionHandlerTest {
         assertEquals(e3, result)
     }
 
+    @Test
+    fun `test checkErrorType() with ConfigErrorException`() {
+        val configError = ConfigErrorException(CONFIG_EXCEPTION_MESSAGE)
+        val actualResult = exceptionHandler.checkErrorType(configError, FailureType.CONFIG)
+        assertEquals(true, actualResult)
+    }
+
+    @Test
+    fun `test checkErrorType() with TransientErrorException`() {
+        val transientError = TransientErrorException(TRANSIENT_EXCEPTION_MESSAGE)
+        val actualResult = exceptionHandler.checkErrorType(transientError, FailureType.TRANSIENT)
+        assertEquals(true, actualResult)
+    }
+
     companion object {
         const val CONFIG_EXCEPTION_MESSAGE: String = "test config error message"
         const val TRANSIENT_EXCEPTION_MESSAGE: String = "test transient error message"

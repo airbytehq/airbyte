@@ -230,6 +230,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             name="invoices",
             path="invoices",
             use_cache=USE_CACHE,
+            expand_items=["data.discounts", "data.total_tax_amounts.tax_rate"],
             event_types=[
                 "invoice.created",
                 "invoice.deleted",

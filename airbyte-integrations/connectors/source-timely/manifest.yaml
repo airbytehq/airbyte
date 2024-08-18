@@ -1,0 +1,1924 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - events
+definitions:
+  streams:
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.timelyapp.com/1.1/
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['bearer_token'] }}"
+          path: "{{ config.account_id }}/events"
+          http_method: GET
+          request_parameters:
+            account_id: "{{ config.account_id }}"
+            since: "{{ config.start_date }}"
+            upto: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          request_headers:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 1000
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            billable:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the event is billable or not
+            billed:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the event has been billed or not
+            billed_at:
+              type:
+                - "null"
+                - string
+              airbyte_type: timestamp_with_timezone
+              description: Date and time when the event was billed
+              format: date-time
+            cost:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              description: The cost associated with the event
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - number
+                  description: The amount of the cost
+                formatted:
+                  type:
+                    - "null"
+                    - string
+                  description: The cost formatted as a string
+                fractional:
+                  type:
+                    - "null"
+                    - integer
+                  description: The fractional part of the cost
+            created_at:
+              type:
+                - "null"
+                - integer
+              description: Date and time when the event was created
+            created_from:
+              type:
+                - "null"
+                - string
+              description: Source from which the event was created
+            created_id:
+              type:
+                - "null"
+                - integer
+              description: ID of the creator
+            creator_id:
+              type:
+                - "null"
+                - integer
+              description: ID of the creator
+            day:
+              type:
+                - "null"
+                - string
+              description: Date of the event
+              format: date
+            deleted:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the event has been deleted
+            draft:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the event is in draft mode
+            duration:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              description: The duration of the event
+              properties:
+                correctedHours:
+                  type:
+                    - "null"
+                    - integer
+                  description: Corrected hours of the event duration
+                formatted:
+                  type:
+                    - "null"
+                    - string
+                  description: Duration formatted as a string
+                hours:
+                  type:
+                    - "null"
+                    - integer
+                  description: Hours component of the duration
+                minutes:
+                  type:
+                    - "null"
+                    - integer
+                  description: Minutes component of the duration
+                seconds:
+                  type:
+                    - "null"
+                    - integer
+                  description: Seconds component of the duration
+                total_hours:
+                  type:
+                    - "null"
+                    - number
+                  description: Total duration in hours
+                total_minutes:
+                  type:
+                    - "null"
+                    - integer
+                  description: Total duration in minutes
+                total_seconds:
+                  type:
+                    - "null"
+                    - integer
+                  description: Total duration in seconds
+            entry_ids:
+              type:
+                - "null"
+                - array
+              description: IDs related to the event entries
+              items:
+                type:
+                  - "null"
+                  - string
+                description: Array of entry IDs linked to the event
+            estimated:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the event is estimated
+            estimated_cost:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              description: The estimated cost of the event
+              properties:
+                amount:
+                  type:
+                    - "null"
+                    - number
+                  description: The estimated amount of the cost
+                formatted:
+                  type:
+                    - "null"
+                    - string
+                  description: The estimated cost formatted as a string
+                fractional:
+                  type:
+                    - "null"
+                    - integer
+                  description: The fractional part of the estimated cost
+            estimated_duration:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              description: The estimated duration of the event
+              properties:
+                formatted:
+                  type:
+                    - "null"
+                    - string
+                  description: Estimated duration formatted as a string
+                hours:
+                  type:
+                    - "null"
+                    - integer
+                  description: Estimated hours component of the duration
+                minutes:
+                  type:
+                    - "null"
+                    - integer
+                  description: Estimated minutes component of the duration
+                seconds:
+                  type:
+                    - "null"
+                    - integer
+                  description: Estimated seconds component of the duration
+                total_hours:
+                  type:
+                    - "null"
+                    - number
+                  description: Total estimated duration in hours
+                total_minutes:
+                  type:
+                    - "null"
+                    - integer
+                  description: Total estimated duration in minutes
+                total_seconds:
+                  type:
+                    - "null"
+                    - integer
+                  description: Total estimated duration in seconds
+            external_id:
+              type:
+                - "null"
+                - integer
+              description: External ID of the event
+            forecast_id:
+              type:
+                - "null"
+                - string
+              description: ID of the forecast associated with the event
+            from:
+              type:
+                - "null"
+                - string
+              airbyte_type: timestamp_with_timezone
+              description: Start date and time of the event
+              format: date-time
+            hour_rate:
+              type:
+                - "null"
+                - number
+              description: Hourly rate for the event
+            hour_rate_in_cents:
+              type:
+                - "null"
+                - number
+              description: Hourly rate in cents for the event
+            id:
+              type:
+                - "null"
+                - integer
+              description: ID of the event
+            invoice_id:
+              type:
+                - "null"
+                - string
+              description: ID of the invoice associated with the event
+            label_ids:
+              type:
+                - "null"
+                - array
+              description: IDs related to event labels
+              items:
+                type:
+                  - "null"
+                  - string
+                description: Array of label IDs associated with the event
+            locked:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the event is locked
+            locked_reason:
+              type:
+                - "null"
+                - string
+              description: Reason for locking the event
+            manage:
+              type:
+                - "null"
+                - boolean
+              description: Indicates whether the event is managed
+            note:
+              type:
+                - "null"
+                - string
+              description: Additional notes for the event
+            project:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              description: Information related to the project for the event
+              properties:
+                account_id:
+                  type:
+                    - "null"
+                    - integer
+                  description: ID of the account associated with the project
+                active:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Indicates whether the project is active
+                billable:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Indicates whether the project is billable
+                budget:
+                  type:
+                    - "null"
+                    - integer
+                  description: Budget allocated for the project
+                budget_calculation:
+                  type:
+                    - "null"
+                    - string
+                  description: Calculation method for project budget
+                budget_expired_on:
+                  type:
+                    - "null"
+                    - string
+                  description: Date on which the project budget expires
+                budget_percent:
+                  type:
+                    - "null"
+                    - number
+                  description: Percentage of budget utilized
+                budget_progress:
+                  type:
+                    - "null"
+                    - number
+                  description: Progress of budget utilization
+                budget_scope:
+                  type:
+                    - "null"
+                    - string
+                  description: Scope of the project budget
+                budget_type:
+                  type:
+                    - "null"
+                    - string
+                  description: Type of budget assigned to the project
+                client:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  description: Information about the client associated with the project
+                  properties:
+                    active:
+                      type:
+                        - "null"
+                        - boolean
+                      description: Indicates whether the client is active
+                    external_id:
+                      type:
+                        - "null"
+                        - string
+                      description: External ID of the client
+                    id:
+                      type:
+                        - "null"
+                        - integer
+                      description: ID of the client
+                    name:
+                      type:
+                        - "null"
+                        - string
+                      description: Name of the client
+                    updated_at:
+                      type:
+                        - "null"
+                        - string
+                      airbyte_type: timestamp_with_timezone
+                      description: Date and time of client update
+                      format: date-time
+                color:
+                  type:
+                    - "null"
+                    - string
+                  description: Color associated with the project
+                enable_labels:
+                  type:
+                    - "null"
+                    - string
+                  description: Indicates whether project labels are enabled
+                external_id:
+                  type:
+                    - "null"
+                    - string
+                  description: External ID of the project
+                has_recurrence:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Indicates whether the project has a recurrence
+                hour_rate:
+                  type:
+                    - "null"
+                    - number
+                  description: Hourly rate for the project
+                hour_rate_in_cents:
+                  type:
+                    - "null"
+                    - number
+                  description: Hourly rate in cents for the project
+                id:
+                  type:
+                    - "null"
+                    - integer
+                  description: ID of the project
+                invoice_by_budget:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Indicates whether invoicing is based on budget
+                label_ids:
+                  type:
+                    - "null"
+                    - array
+                  description: IDs related to project labels
+                  items:
+                    type:
+                      - "null"
+                      - string
+                    description: Array of label IDs associated with the project
+                labels:
+                  type:
+                    - "null"
+                    - array
+                  description: Labels associated with the project
+                  items:
+                    type:
+                      - "null"
+                      - string
+                    description: Array of labels associated with the project
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: Name of the project
+                rate_type:
+                  type:
+                    - "null"
+                    - string
+                  description: Type of rate for the project
+                required_label_ids:
+                  type:
+                    - "null"
+                    - array
+                  description: IDs of labels required for the project
+                  items:
+                    type:
+                      - "null"
+                      - string
+                    description: Array of required label IDs for the project
+                required_labels:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Indicates whether labels are required for the project
+                required_notes:
+                  type:
+                    - "null"
+                    - boolean
+                  description: Indicates whether notes are required for the project
+                updated_at:
+                  type:
+                    - "null"
+                    - integer
+                  description: Date and time of project update
+            sequence:
+              type:
+                - "null"
+                - integer
+              description: Sequence number of the event
+            state:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              description: State of the event
+            suggestion_id:
+              type:
+                - "null"
+                - integer
+              description: ID of the suggestion associated with the event
+            timer_started_on:
+              type:
+                - "null"
+                - integer
+              description: Date and time when the timer was started
+            timer_state:
+              type:
+                - "null"
+                - string
+              description: State of the timer for the event
+            timer_stopped_on:
+              type:
+                - "null"
+                - integer
+              description: Date and time when the timer was stopped
+            timestamps:
+              type:
+                - "null"
+                - array
+              description: Timestamps related to the event
+              items:
+                type:
+                  - "null"
+                  - string
+                description: Array of timestamps associated with the event
+            to:
+              type:
+                - "null"
+                - string
+              airbyte_type: timestamp_with_timezone
+              description: End date and time of the event
+              format: date-time
+            uid:
+              type:
+                - "null"
+                - string
+              description: Unique identifier of the event
+            updated_at:
+              type:
+                - "null"
+                - integer
+              description: Date and time when the event was last updated
+            updated_from:
+              type:
+                - "null"
+                - string
+              description: Source from which the event was last updated
+            updater_id:
+              type:
+                - "null"
+                - integer
+              description: ID of the user who last updated the event
+            user:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              description: Information about the user associated with the event
+              properties:
+                avatar:
+                  type:
+                    - "null"
+                    - object
+                  additionalProperties: true
+                  description: User's avatar information
+                  properties:
+                    large:
+                      type:
+                        - "null"
+                        - string
+                      description: URL of the large avatar image
+                    large_retina:
+                      type:
+                        - "null"
+                        - string
+                      description: URL of the large retina avatar image
+                    medium:
+                      type:
+                        - "null"
+                        - string
+                      description: URL of the medium avatar image
+                    medium_retina:
+                      type:
+                        - "null"
+                        - string
+                      description: URL of the medium retina avatar image
+                    timeline:
+                      type:
+                        - "null"
+                        - string
+                      description: URL of the timeline avatar image
+                email:
+                  type:
+                    - "null"
+                    - string
+                  description: Email address of the user
+                id:
+                  type:
+                    - "null"
+                    - integer
+                  description: ID of the user
+                name:
+                  type:
+                    - "null"
+                    - string
+                  description: Name of the user
+                updated_at:
+                  type:
+                    - "null"
+                    - string
+                  airbyte_type: timestamp_with_timezone
+                  description: Date and time of user update
+                  format: date-time
+            user_ids:
+              type:
+                - "null"
+                - array
+              description: IDs related to users associated with the event
+              items:
+                type:
+                  - "null"
+                  - string
+                description: Array of user IDs linked to the event
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.timelyapp.com/1.1/
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['bearer_token'] }}"
+streams:
+  - type: DeclarativeStream
+    name: events
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.timelyapp.com/1.1/
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['bearer_token'] }}"
+        path: "{{ config.account_id }}/events"
+        http_method: GET
+        request_parameters:
+          account_id: "{{ config.account_id }}"
+          since: "{{ config.start_date }}"
+          upto: "{{ now_utc().strftime('%Y-%m-%d') }}"
+        request_headers:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          page_size: 1000
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          billable:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the event is billable or not
+          billed:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the event has been billed or not
+          billed_at:
+            type:
+              - "null"
+              - string
+            airbyte_type: timestamp_with_timezone
+            description: Date and time when the event was billed
+            format: date-time
+          cost:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: The cost associated with the event
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+                description: The amount of the cost
+              formatted:
+                type:
+                  - "null"
+                  - string
+                description: The cost formatted as a string
+              fractional:
+                type:
+                  - "null"
+                  - integer
+                description: The fractional part of the cost
+          created_at:
+            type:
+              - "null"
+              - integer
+            description: Date and time when the event was created
+          created_from:
+            type:
+              - "null"
+              - string
+            description: Source from which the event was created
+          created_id:
+            type:
+              - "null"
+              - integer
+            description: ID of the creator
+          creator_id:
+            type:
+              - "null"
+              - integer
+            description: ID of the creator
+          day:
+            type:
+              - "null"
+              - string
+            description: Date of the event
+            format: date
+          deleted:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the event has been deleted
+          draft:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the event is in draft mode
+          duration:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: The duration of the event
+            properties:
+              correctedHours:
+                type:
+                  - "null"
+                  - integer
+                description: Corrected hours of the event duration
+              formatted:
+                type:
+                  - "null"
+                  - string
+                description: Duration formatted as a string
+              hours:
+                type:
+                  - "null"
+                  - integer
+                description: Hours component of the duration
+              minutes:
+                type:
+                  - "null"
+                  - integer
+                description: Minutes component of the duration
+              seconds:
+                type:
+                  - "null"
+                  - integer
+                description: Seconds component of the duration
+              total_hours:
+                type:
+                  - "null"
+                  - number
+                description: Total duration in hours
+              total_minutes:
+                type:
+                  - "null"
+                  - integer
+                description: Total duration in minutes
+              total_seconds:
+                type:
+                  - "null"
+                  - integer
+                description: Total duration in seconds
+          entry_ids:
+            type:
+              - "null"
+              - array
+            description: IDs related to the event entries
+            items:
+              type:
+                - "null"
+                - string
+              description: Array of entry IDs linked to the event
+          estimated:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the event is estimated
+          estimated_cost:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: The estimated cost of the event
+            properties:
+              amount:
+                type:
+                  - "null"
+                  - number
+                description: The estimated amount of the cost
+              formatted:
+                type:
+                  - "null"
+                  - string
+                description: The estimated cost formatted as a string
+              fractional:
+                type:
+                  - "null"
+                  - integer
+                description: The fractional part of the estimated cost
+          estimated_duration:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: The estimated duration of the event
+            properties:
+              formatted:
+                type:
+                  - "null"
+                  - string
+                description: Estimated duration formatted as a string
+              hours:
+                type:
+                  - "null"
+                  - integer
+                description: Estimated hours component of the duration
+              minutes:
+                type:
+                  - "null"
+                  - integer
+                description: Estimated minutes component of the duration
+              seconds:
+                type:
+                  - "null"
+                  - integer
+                description: Estimated seconds component of the duration
+              total_hours:
+                type:
+                  - "null"
+                  - number
+                description: Total estimated duration in hours
+              total_minutes:
+                type:
+                  - "null"
+                  - integer
+                description: Total estimated duration in minutes
+              total_seconds:
+                type:
+                  - "null"
+                  - integer
+                description: Total estimated duration in seconds
+          external_id:
+            type:
+              - "null"
+              - integer
+            description: External ID of the event
+          forecast_id:
+            type:
+              - "null"
+              - string
+            description: ID of the forecast associated with the event
+          from:
+            type:
+              - "null"
+              - string
+            airbyte_type: timestamp_with_timezone
+            description: Start date and time of the event
+            format: date-time
+          hour_rate:
+            type:
+              - "null"
+              - number
+            description: Hourly rate for the event
+          hour_rate_in_cents:
+            type:
+              - "null"
+              - number
+            description: Hourly rate in cents for the event
+          id:
+            type:
+              - "null"
+              - integer
+            description: ID of the event
+          invoice_id:
+            type:
+              - "null"
+              - string
+            description: ID of the invoice associated with the event
+          label_ids:
+            type:
+              - "null"
+              - array
+            description: IDs related to event labels
+            items:
+              type:
+                - "null"
+                - string
+              description: Array of label IDs associated with the event
+          locked:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the event is locked
+          locked_reason:
+            type:
+              - "null"
+              - string
+            description: Reason for locking the event
+          manage:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the event is managed
+          note:
+            type:
+              - "null"
+              - string
+            description: Additional notes for the event
+          project:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: Information related to the project for the event
+            properties:
+              account_id:
+                type:
+                  - "null"
+                  - integer
+                description: ID of the account associated with the project
+              active:
+                type:
+                  - "null"
+                  - boolean
+                description: Indicates whether the project is active
+              billable:
+                type:
+                  - "null"
+                  - boolean
+                description: Indicates whether the project is billable
+              budget:
+                type:
+                  - "null"
+                  - integer
+                description: Budget allocated for the project
+              budget_calculation:
+                type:
+                  - "null"
+                  - string
+                description: Calculation method for project budget
+              budget_expired_on:
+                type:
+                  - "null"
+                  - string
+                description: Date on which the project budget expires
+              budget_percent:
+                type:
+                  - "null"
+                  - number
+                description: Percentage of budget utilized
+              budget_progress:
+                type:
+                  - "null"
+                  - number
+                description: Progress of budget utilization
+              budget_scope:
+                type:
+                  - "null"
+                  - string
+                description: Scope of the project budget
+              budget_type:
+                type:
+                  - "null"
+                  - string
+                description: Type of budget assigned to the project
+              client:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                description: Information about the client associated with the project
+                properties:
+                  active:
+                    type:
+                      - "null"
+                      - boolean
+                    description: Indicates whether the client is active
+                  external_id:
+                    type:
+                      - "null"
+                      - string
+                    description: External ID of the client
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                    description: ID of the client
+                  name:
+                    type:
+                      - "null"
+                      - string
+                    description: Name of the client
+                  updated_at:
+                    type:
+                      - "null"
+                      - string
+                    airbyte_type: timestamp_with_timezone
+                    description: Date and time of client update
+                    format: date-time
+              color:
+                type:
+                  - "null"
+                  - string
+                description: Color associated with the project
+              enable_labels:
+                type:
+                  - "null"
+                  - string
+                description: Indicates whether project labels are enabled
+              external_id:
+                type:
+                  - "null"
+                  - string
+                description: External ID of the project
+              has_recurrence:
+                type:
+                  - "null"
+                  - boolean
+                description: Indicates whether the project has a recurrence
+              hour_rate:
+                type:
+                  - "null"
+                  - number
+                description: Hourly rate for the project
+              hour_rate_in_cents:
+                type:
+                  - "null"
+                  - number
+                description: Hourly rate in cents for the project
+              id:
+                type:
+                  - "null"
+                  - integer
+                description: ID of the project
+              invoice_by_budget:
+                type:
+                  - "null"
+                  - boolean
+                description: Indicates whether invoicing is based on budget
+              label_ids:
+                type:
+                  - "null"
+                  - array
+                description: IDs related to project labels
+                items:
+                  type:
+                    - "null"
+                    - string
+                  description: Array of label IDs associated with the project
+              labels:
+                type:
+                  - "null"
+                  - array
+                description: Labels associated with the project
+                items:
+                  type:
+                    - "null"
+                    - string
+                  description: Array of labels associated with the project
+              name:
+                type:
+                  - "null"
+                  - string
+                description: Name of the project
+              rate_type:
+                type:
+                  - "null"
+                  - string
+                description: Type of rate for the project
+              required_label_ids:
+                type:
+                  - "null"
+                  - array
+                description: IDs of labels required for the project
+                items:
+                  type:
+                    - "null"
+                    - string
+                  description: Array of required label IDs for the project
+              required_labels:
+                type:
+                  - "null"
+                  - boolean
+                description: Indicates whether labels are required for the project
+              required_notes:
+                type:
+                  - "null"
+                  - boolean
+                description: Indicates whether notes are required for the project
+              updated_at:
+                type:
+                  - "null"
+                  - integer
+                description: Date and time of project update
+          sequence:
+            type:
+              - "null"
+              - integer
+            description: Sequence number of the event
+          state:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: State of the event
+          suggestion_id:
+            type:
+              - "null"
+              - integer
+            description: ID of the suggestion associated with the event
+          timer_started_on:
+            type:
+              - "null"
+              - integer
+            description: Date and time when the timer was started
+          timer_state:
+            type:
+              - "null"
+              - string
+            description: State of the timer for the event
+          timer_stopped_on:
+            type:
+              - "null"
+              - integer
+            description: Date and time when the timer was stopped
+          timestamps:
+            type:
+              - "null"
+              - array
+            description: Timestamps related to the event
+            items:
+              type:
+                - "null"
+                - string
+              description: Array of timestamps associated with the event
+          to:
+            type:
+              - "null"
+              - string
+            airbyte_type: timestamp_with_timezone
+            description: End date and time of the event
+            format: date-time
+          uid:
+            type:
+              - "null"
+              - string
+            description: Unique identifier of the event
+          updated_at:
+            type:
+              - "null"
+              - integer
+            description: Date and time when the event was last updated
+          updated_from:
+            type:
+              - "null"
+              - string
+            description: Source from which the event was last updated
+          updater_id:
+            type:
+              - "null"
+              - integer
+            description: ID of the user who last updated the event
+          user:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: Information about the user associated with the event
+            properties:
+              avatar:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                description: User's avatar information
+                properties:
+                  large:
+                    type:
+                      - "null"
+                      - string
+                    description: URL of the large avatar image
+                  large_retina:
+                    type:
+                      - "null"
+                      - string
+                    description: URL of the large retina avatar image
+                  medium:
+                    type:
+                      - "null"
+                      - string
+                    description: URL of the medium avatar image
+                  medium_retina:
+                    type:
+                      - "null"
+                      - string
+                    description: URL of the medium retina avatar image
+                  timeline:
+                    type:
+                      - "null"
+                      - string
+                    description: URL of the timeline avatar image
+              email:
+                type:
+                  - "null"
+                  - string
+                description: Email address of the user
+              id:
+                type:
+                  - "null"
+                  - integer
+                description: ID of the user
+              name:
+                type:
+                  - "null"
+                  - string
+                description: Name of the user
+              updated_at:
+                type:
+                  - "null"
+                  - string
+                airbyte_type: timestamp_with_timezone
+                description: Date and time of user update
+                format: date-time
+          user_ids:
+            type:
+              - "null"
+              - array
+            description: IDs related to users associated with the event
+            items:
+              type:
+                - "null"
+                - string
+              description: Array of user IDs linked to the event
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - account_id
+      - bearer_token
+      - start_date
+    properties:
+      account_id:
+        type: string
+        title: account_id
+        description: Timely account id
+        order: 0
+      bearer_token:
+        type: string
+        title: Bearer token
+        description: Timely bearer token
+        order: 1
+      start_date:
+        type: string
+        title: startDate
+        description: start date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        example: "2022-05-06"
+        order: 2
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    events: false
+schemas:
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      billable:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the event is billable or not
+      billed:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the event has been billed or not
+      billed_at:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_with_timezone
+        description: Date and time when the event was billed
+        format: date-time
+      cost:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: The cost associated with the event
+        properties:
+          amount:
+            type:
+              - "null"
+              - number
+            description: The amount of the cost
+          formatted:
+            type:
+              - "null"
+              - string
+            description: The cost formatted as a string
+          fractional:
+            type:
+              - "null"
+              - integer
+            description: The fractional part of the cost
+      created_at:
+        type:
+          - "null"
+          - integer
+        description: Date and time when the event was created
+      created_from:
+        type:
+          - "null"
+          - string
+        description: Source from which the event was created
+      created_id:
+        type:
+          - "null"
+          - integer
+        description: ID of the creator
+      creator_id:
+        type:
+          - "null"
+          - integer
+        description: ID of the creator
+      day:
+        type:
+          - "null"
+          - string
+        description: Date of the event
+        format: date
+      deleted:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the event has been deleted
+      draft:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the event is in draft mode
+      duration:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: The duration of the event
+        properties:
+          correctedHours:
+            type:
+              - "null"
+              - integer
+            description: Corrected hours of the event duration
+          formatted:
+            type:
+              - "null"
+              - string
+            description: Duration formatted as a string
+          hours:
+            type:
+              - "null"
+              - integer
+            description: Hours component of the duration
+          minutes:
+            type:
+              - "null"
+              - integer
+            description: Minutes component of the duration
+          seconds:
+            type:
+              - "null"
+              - integer
+            description: Seconds component of the duration
+          total_hours:
+            type:
+              - "null"
+              - number
+            description: Total duration in hours
+          total_minutes:
+            type:
+              - "null"
+              - integer
+            description: Total duration in minutes
+          total_seconds:
+            type:
+              - "null"
+              - integer
+            description: Total duration in seconds
+      entry_ids:
+        type:
+          - "null"
+          - array
+        description: IDs related to the event entries
+        items:
+          type:
+            - "null"
+            - string
+          description: Array of entry IDs linked to the event
+      estimated:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the event is estimated
+      estimated_cost:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: The estimated cost of the event
+        properties:
+          amount:
+            type:
+              - "null"
+              - number
+            description: The estimated amount of the cost
+          formatted:
+            type:
+              - "null"
+              - string
+            description: The estimated cost formatted as a string
+          fractional:
+            type:
+              - "null"
+              - integer
+            description: The fractional part of the estimated cost
+      estimated_duration:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: The estimated duration of the event
+        properties:
+          formatted:
+            type:
+              - "null"
+              - string
+            description: Estimated duration formatted as a string
+          hours:
+            type:
+              - "null"
+              - integer
+            description: Estimated hours component of the duration
+          minutes:
+            type:
+              - "null"
+              - integer
+            description: Estimated minutes component of the duration
+          seconds:
+            type:
+              - "null"
+              - integer
+            description: Estimated seconds component of the duration
+          total_hours:
+            type:
+              - "null"
+              - number
+            description: Total estimated duration in hours
+          total_minutes:
+            type:
+              - "null"
+              - integer
+            description: Total estimated duration in minutes
+          total_seconds:
+            type:
+              - "null"
+              - integer
+            description: Total estimated duration in seconds
+      external_id:
+        type:
+          - "null"
+          - integer
+        description: External ID of the event
+      forecast_id:
+        type:
+          - "null"
+          - string
+        description: ID of the forecast associated with the event
+      from:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_with_timezone
+        description: Start date and time of the event
+        format: date-time
+      hour_rate:
+        type:
+          - "null"
+          - number
+        description: Hourly rate for the event
+      hour_rate_in_cents:
+        type:
+          - "null"
+          - number
+        description: Hourly rate in cents for the event
+      id:
+        type:
+          - "null"
+          - integer
+        description: ID of the event
+      invoice_id:
+        type:
+          - "null"
+          - string
+        description: ID of the invoice associated with the event
+      label_ids:
+        type:
+          - "null"
+          - array
+        description: IDs related to event labels
+        items:
+          type:
+            - "null"
+            - string
+          description: Array of label IDs associated with the event
+      locked:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the event is locked
+      locked_reason:
+        type:
+          - "null"
+          - string
+        description: Reason for locking the event
+      manage:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the event is managed
+      note:
+        type:
+          - "null"
+          - string
+        description: Additional notes for the event
+      project:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: Information related to the project for the event
+        properties:
+          account_id:
+            type:
+              - "null"
+              - integer
+            description: ID of the account associated with the project
+          active:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the project is active
+          billable:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the project is billable
+          budget:
+            type:
+              - "null"
+              - integer
+            description: Budget allocated for the project
+          budget_calculation:
+            type:
+              - "null"
+              - string
+            description: Calculation method for project budget
+          budget_expired_on:
+            type:
+              - "null"
+              - string
+            description: Date on which the project budget expires
+          budget_percent:
+            type:
+              - "null"
+              - number
+            description: Percentage of budget utilized
+          budget_progress:
+            type:
+              - "null"
+              - number
+            description: Progress of budget utilization
+          budget_scope:
+            type:
+              - "null"
+              - string
+            description: Scope of the project budget
+          budget_type:
+            type:
+              - "null"
+              - string
+            description: Type of budget assigned to the project
+          client:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: Information about the client associated with the project
+            properties:
+              active:
+                type:
+                  - "null"
+                  - boolean
+                description: Indicates whether the client is active
+              external_id:
+                type:
+                  - "null"
+                  - string
+                description: External ID of the client
+              id:
+                type:
+                  - "null"
+                  - integer
+                description: ID of the client
+              name:
+                type:
+                  - "null"
+                  - string
+                description: Name of the client
+              updated_at:
+                type:
+                  - "null"
+                  - string
+                airbyte_type: timestamp_with_timezone
+                description: Date and time of client update
+                format: date-time
+          color:
+            type:
+              - "null"
+              - string
+            description: Color associated with the project
+          enable_labels:
+            type:
+              - "null"
+              - string
+            description: Indicates whether project labels are enabled
+          external_id:
+            type:
+              - "null"
+              - string
+            description: External ID of the project
+          has_recurrence:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether the project has a recurrence
+          hour_rate:
+            type:
+              - "null"
+              - number
+            description: Hourly rate for the project
+          hour_rate_in_cents:
+            type:
+              - "null"
+              - number
+            description: Hourly rate in cents for the project
+          id:
+            type:
+              - "null"
+              - integer
+            description: ID of the project
+          invoice_by_budget:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether invoicing is based on budget
+          label_ids:
+            type:
+              - "null"
+              - array
+            description: IDs related to project labels
+            items:
+              type:
+                - "null"
+                - string
+              description: Array of label IDs associated with the project
+          labels:
+            type:
+              - "null"
+              - array
+            description: Labels associated with the project
+            items:
+              type:
+                - "null"
+                - string
+              description: Array of labels associated with the project
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of the project
+          rate_type:
+            type:
+              - "null"
+              - string
+            description: Type of rate for the project
+          required_label_ids:
+            type:
+              - "null"
+              - array
+            description: IDs of labels required for the project
+            items:
+              type:
+                - "null"
+                - string
+              description: Array of required label IDs for the project
+          required_labels:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether labels are required for the project
+          required_notes:
+            type:
+              - "null"
+              - boolean
+            description: Indicates whether notes are required for the project
+          updated_at:
+            type:
+              - "null"
+              - integer
+            description: Date and time of project update
+      sequence:
+        type:
+          - "null"
+          - integer
+        description: Sequence number of the event
+      state:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: State of the event
+      suggestion_id:
+        type:
+          - "null"
+          - integer
+        description: ID of the suggestion associated with the event
+      timer_started_on:
+        type:
+          - "null"
+          - integer
+        description: Date and time when the timer was started
+      timer_state:
+        type:
+          - "null"
+          - string
+        description: State of the timer for the event
+      timer_stopped_on:
+        type:
+          - "null"
+          - integer
+        description: Date and time when the timer was stopped
+      timestamps:
+        type:
+          - "null"
+          - array
+        description: Timestamps related to the event
+        items:
+          type:
+            - "null"
+            - string
+          description: Array of timestamps associated with the event
+      to:
+        type:
+          - "null"
+          - string
+        airbyte_type: timestamp_with_timezone
+        description: End date and time of the event
+        format: date-time
+      uid:
+        type:
+          - "null"
+          - string
+        description: Unique identifier of the event
+      updated_at:
+        type:
+          - "null"
+          - integer
+        description: Date and time when the event was last updated
+      updated_from:
+        type:
+          - "null"
+          - string
+        description: Source from which the event was last updated
+      updater_id:
+        type:
+          - "null"
+          - integer
+        description: ID of the user who last updated the event
+      user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        description: Information about the user associated with the event
+        properties:
+          avatar:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            description: User's avatar information
+            properties:
+              large:
+                type:
+                  - "null"
+                  - string
+                description: URL of the large avatar image
+              large_retina:
+                type:
+                  - "null"
+                  - string
+                description: URL of the large retina avatar image
+              medium:
+                type:
+                  - "null"
+                  - string
+                description: URL of the medium avatar image
+              medium_retina:
+                type:
+                  - "null"
+                  - string
+                description: URL of the medium retina avatar image
+              timeline:
+                type:
+                  - "null"
+                  - string
+                description: URL of the timeline avatar image
+          email:
+            type:
+              - "null"
+              - string
+            description: Email address of the user
+          id:
+            type:
+              - "null"
+              - integer
+            description: ID of the user
+          name:
+            type:
+              - "null"
+              - string
+            description: Name of the user
+          updated_at:
+            type:
+              - "null"
+              - string
+            airbyte_type: timestamp_with_timezone
+            description: Date and time of user update
+            format: date-time
+      user_ids:
+        type:
+          - "null"
+          - array
+        description: IDs related to users associated with the event
+        items:
+          type:
+            - "null"
+            - string
+          description: Array of user IDs linked to the event

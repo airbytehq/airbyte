@@ -83,10 +83,11 @@ def test_discovery_uniquely_named_streams():
             "json_schema": {"properties": {"created": {"type": "string"}}},
             "default_cursor_field": ["created"],
             "supported_sync_modes": ["full_refresh", "incremental"],
+            "namespace": "test_namespace",
         }
     )
     streams = [stream_a, stream_a]
-    assert t.duplicated_stream_names(streams) == ["test_stream"]
+    assert t.duplicated_stream_names(streams) == [("test_namespace", "test_stream")]
     streams.pop()
     assert len(t.duplicated_stream_names(streams)) == 0
 

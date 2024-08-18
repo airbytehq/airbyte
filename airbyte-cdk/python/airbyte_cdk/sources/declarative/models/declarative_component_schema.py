@@ -902,6 +902,12 @@ class WaitTimeFromHeader(BaseModel):
         examples=['([-+]?\\d+)'],
         title='Extraction Regex',
     )
+    max_waiting_time_in_seconds: Optional[float] = Field(
+        None,
+        description='Given the value extracted from the header is greater than this value, stop the stream.',
+        examples=[3600],
+        title='Max Waiting Time in Seconds',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -926,10 +932,6 @@ class WaitUntilTimeFromHeader(BaseModel):
         title='Extraction Regex',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
-class Decoder(BaseModel):
-    __root__: Any
 
 
 class AddedFieldDefinition(BaseModel):
@@ -1040,7 +1042,7 @@ class CursorPagination(BaseModel):
         ],
         title='Stop Condition',
     )
-    decoder: Optional[Decoder] = Field(
+    decoder: Optional[JsonDecoder] = Field(
         None,
         description='Component decoding the response so records can be extracted.',
         title='Decoder',
@@ -1300,6 +1302,10 @@ class DeclarativeSource(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(
         None,
         description='For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.',
+    )
+    description: Optional[str] = Field(
+        None,
+        description='A description of the connector. It will be presented on the Source documentation page.',
     )
 
 

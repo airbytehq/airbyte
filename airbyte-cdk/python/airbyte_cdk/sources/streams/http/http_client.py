@@ -281,9 +281,9 @@ class HttpClient:
         if error_resolution.response_action == ResponseAction.RATE_LIMITED:
             # TODO: Update to handle with message repository when concurrent message repository is ready
             reasons = [AirbyteStreamStatusReason(type=AirbyteStreamStatusReasonType.RATE_LIMITED)]
-            message = stream_status_as_airbyte_message(StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons).json(
-                exclude_unset=True
-            )
+            message = stream_status_as_airbyte_message(
+                StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons
+            ).model_dump_json(exclude_unset=True)
 
             # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
             # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the
@@ -292,7 +292,7 @@ class HttpClient:
             print(f"{message}\n", end="", flush=True)
 
         if error_resolution.response_action == ResponseAction.FAIL:
-            if response:
+            if response is not None:
                 error_message = f"'{request.method}' request to '{request.url}' failed with status code '{response.status_code}' and error message '{self._error_message_parser.parse_response_error_message(response)}'"
             else:
                 error_message = f"'{request.method}' request to '{request.url}' failed with exception: '{exc}'"
@@ -304,7 +304,7 @@ class HttpClient:
             )
 
         elif error_resolution.response_action == ResponseAction.IGNORE:
-            if response:
+            if response is not None:
                 log_message = (
                     f"Ignoring response for '{request.method}' request to '{request.url}' with response code '{response.status_code}'"
                 )
@@ -353,6 +353,10 @@ class HttpClient:
                 raise e
 
         return response  # type: ignore # will either return a valid response of type requests.Response or raise an exception
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def send_request(
         self,

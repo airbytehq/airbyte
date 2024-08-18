@@ -119,6 +119,14 @@
         "type": "integer",
         "minimum": 1,
         "default": 30
+      },
+      "page_size": {
+        "order": 9,
+        "title": "Page Size",
+        "description": "The number of records to fetch per request for the engage stream. Default is 1000. If you are experiencing long sync times with this stream, try increasing this value.",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1000
       }
     }
   }
