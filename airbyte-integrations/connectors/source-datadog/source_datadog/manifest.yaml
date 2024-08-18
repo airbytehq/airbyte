@@ -167,6 +167,19 @@ definitions:
             filter[query]: "{{ config['query'] }}"
           request_headers:
             DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Too many requests, retrying...
         record_selector:
           type: RecordSelector
           extractor:
