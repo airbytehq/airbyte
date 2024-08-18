@@ -32,6 +32,7 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 | Version | Date       | Pull Request                                              | Subject                                  |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 0.2.0 | 2024-08-14 | [44074](https://github.com/airbytehq/airbyte/pull/44074) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43864](https://github.com/airbytehq/airbyte/pull/43864) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43631](https://github.com/airbytehq/airbyte/pull/43631) | Update dependencies |
