@@ -162,12 +162,6 @@ def test_stream_slices_child_stream(requests_mock):
     slices = list(commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state))
     assert slices
 
-
-def test_availability_strategy():
-    commits = get_stream_by_name("commits", CONFIG)
-    assert not commits.availability_strategy
-
-
 def test_request_params():
     commits = get_stream_by_name("commits", CONFIG)
     assert commits.retriever.requester.get_request_params() == {"with_stats": "true"}

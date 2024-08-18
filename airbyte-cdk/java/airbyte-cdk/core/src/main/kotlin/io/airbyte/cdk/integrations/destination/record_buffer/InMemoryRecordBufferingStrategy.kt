@@ -41,7 +41,9 @@ class InMemoryRecordBufferingStrategy(
     @Throws(Exception::class)
     override fun addRecord(
         stream: AirbyteStreamNameNamespacePair,
-        message: AirbyteMessage
+        message: AirbyteMessage,
+        generationId: Long,
+        syncId: Long
     ): Optional<BufferFlushType> {
         var flushed: Optional<BufferFlushType> = Optional.empty()
 
@@ -62,10 +64,7 @@ class InMemoryRecordBufferingStrategy(
     }
 
     @Throws(Exception::class)
-    override fun flushSingleBuffer(
-        stream: AirbyteStreamNameNamespacePair,
-        buffer: SerializableBuffer
-    ) {
+    override fun flushSingleStream(stream: AirbyteStreamNameNamespacePair) {
         LOGGER.info {
             "Flushing single stream ${stream.name}: ${streamBuffer[stream]!!.size} records"
         }

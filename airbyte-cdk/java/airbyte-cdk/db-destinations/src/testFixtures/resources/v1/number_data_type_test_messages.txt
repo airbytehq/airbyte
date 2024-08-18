@@ -8,3 +8,6 @@
 {"type": "RECORD", "record": {"stream": "default_number_test", "emitted_at": 1602637589200, "data": { "data" : "0" }}}
 {"type": "RECORD", "record": {"stream": "default_number_test", "emitted_at": 1602637589300, "data": { "data" : "-12345.678" }}}
 {"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "int_test"}, "status": "COMPLETE"}, "emitted_at": 1602637589301}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "float_test"}, "status": "COMPLETE"}, "emitted_at": 1602637589301}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "default_number_test"}, "status": "COMPLETE"}, "emitted_at": 1602637589301}}

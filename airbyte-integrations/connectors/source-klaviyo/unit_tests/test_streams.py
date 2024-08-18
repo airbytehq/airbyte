@@ -10,14 +10,15 @@ from unittest.mock import patch
 import pendulum
 import pytest
 import requests
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
-from source_klaviyo.exceptions import KlaviyoBackoffError
 from source_klaviyo.source import SourceKlaviyo
 from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
 
+_ANY_ATTEMPT_COUNT = 123
 API_KEY = "some_key"
 START_DATE = pendulum.datetime(2020, 10, 10)
 CONFIG = {"api_key": API_KEY, "start_date": START_DATE}
@@ -135,14 +136,14 @@ class TestKlaviyoStream:
 
     @pytest.mark.parametrize(
         ("status_code", "retry_after", "expected_time"),
-        ((429, 30, 30.0), (429, None, None), (200, 30, None), (200, None, None)),
+        ((429, 30, 30.0), (429, None, None)),
     )
     def test_backoff_time(self, status_code, retry_after, expected_time):
         stream = SomeStream(api_key=API_KEY)
         response_mock = mock.MagicMock(spec=requests.Response)
         response_mock.status_code = status_code
         response_mock.headers = {"Retry-After": retry_after}
-        assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_time
+        assert stream.get_backoff_strategy().backoff_time(response_mock, _ANY_ATTEMPT_COUNT) == expected_time
 
     def test_backoff_time_large_retry_after(self):
         stream = SomeStream(api_key=API_KEY)
@@ -150,11 +151,10 @@ class TestKlaviyoStream:
         response_mock.status_code = 429
         retry_after = stream.max_time + 5
         response_mock.headers = {"Retry-After": retry_after}
-        with pytest.raises(KlaviyoBackoffError) as e:
-            stream.get_backoff_strategy().backoff_time(response_mock)
+        with pytest.raises(AirbyteTracedException) as e:
+            stream.get_backoff_strategy().backoff_time(response_mock, _ANY_ATTEMPT_COUNT)
         error_message = (
-            f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, "
-            "exit from stream."
+            "Rate limit wait time 605.0 is greater than max waiting time of 600 seconds. Stopping the stream..."
         )
         assert str(e.value) == error_message
 

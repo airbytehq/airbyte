@@ -88,7 +88,7 @@ class AbstractSource(Source, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[List[AirbyteStateMessage]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
         logger.info(f"Starting syncing {self.name}")
@@ -96,7 +96,7 @@ class AbstractSource(Source, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances = {s.name: s for s in self.streams(config)}
-        state_manager = ConnectorStateManager(stream_instance_map={s.stream.name: s.stream for s in catalog.streams}, state=state)
+        state_manager = ConnectorStateManager(state=state)
         self._stream_to_instance_map = stream_instances
 
         stream_name_to_exception: MutableMapping[str, AirbyteTracedException] = {}
@@ -213,6 +213,13 @@ class AbstractSource(Source, ABC):
 
         stream_name = configured_stream.stream.name
         stream_state = state_manager.get_stream_state(stream_name, stream_instance.namespace)
+
+        # This is a hack. Existing full refresh streams that are converted into resumable full refresh need to discard
+        # the state because the terminal state for a full refresh sync is not compatible with substream resumable full
+        # refresh state. This is only required when running live traffic regression testing since the platform normally
+        # handles whether to pass state
+        if stream_state == {"__ab_no_cursor_state_message": True}:
+            stream_state = {}
 
         if "state" in dir(stream_instance):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)

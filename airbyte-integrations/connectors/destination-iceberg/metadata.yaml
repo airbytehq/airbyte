@@ -7,7 +7,7 @@ data:
   githubIssueLabel: destination-iceberg
   license: MIT
   name: Apache Iceberg
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

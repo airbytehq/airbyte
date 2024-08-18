@@ -1,0 +1,53 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "every_time_type_test_1",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "datetime_unspecified": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "datetime_with_timezone": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "datetime_without_timezone": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "time_unspecified": {
+              "type": "string",
+              "format": "time"
+            },
+            "time_with_timezone": {
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_with_timezone"
+            },
+            "time_without_timezone": {
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_without_timezone"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [],
+      "generation_id": 10,
+      "minimum_generation_id": 10,
+      "sync_id": 999
+    }
+  ]
+}
