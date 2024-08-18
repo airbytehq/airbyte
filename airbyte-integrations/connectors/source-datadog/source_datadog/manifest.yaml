@@ -39,6 +39,7 @@ definitions:
             cursor_value: >-
               {{ last_record['meta']['page']['after'] if last_record else None
               }}
+            stop_condition: "{{ 'page' not in last_record['meta'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -197,6 +198,7 @@ definitions:
             cursor_value: >-
               {{ last_record['meta']['page']['after'] if last_record else None
               }}
+            stop_condition: "{{ 'page' not in last_record['meta'] }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: sync_date
