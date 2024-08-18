@@ -44,6 +44,7 @@ To connect a Typesense with HA, you can type multiple hosts on the host field us
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.19 | 2024-08-17 | [44339](https://github.com/airbytehq/airbyte/pull/44339) | Update dependencies |
 | 0.1.18 | 2024-08-10 | [43489](https://github.com/airbytehq/airbyte/pull/43489) | Update dependencies |
 | 0.1.17 | 2024-08-01 | [42868](https://github.com/airbytehq/airbyte/pull/42868) | Allows you to specify multiple hosts, separated by commas, to connect to Typesense with HA. |
 | 0.1.16 | 2024-08-03 | [43282](https://github.com/airbytehq/airbyte/pull/43282) | Update dependencies |

@@ -143,7 +143,7 @@ def pytest_configure(config: Config) -> None:
     config.stash[stash_keys.TEST_EVALUATION_MODE] = TestEvaluationMode(config.getoption("--test-evaluation-mode", "strict"))
 
     if config.stash[stash_keys.RUN_IN_AIRBYTE_CI]:
-        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(get_option_or_fail(config, "--should-read-with-state"))
+        config.stash[stash_keys.SHOULD_READ_WITH_STATE] = bool(config.getoption("--should-read-with-state"))
     elif _should_read_with_state := config.getoption("--should-read-with-state"):
         config.stash[stash_keys.SHOULD_READ_WITH_STATE] = _should_read_with_state
     else:
