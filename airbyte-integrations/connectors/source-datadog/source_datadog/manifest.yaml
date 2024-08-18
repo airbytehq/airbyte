@@ -356,7 +356,7 @@ definitions:
     url_base: https://api.{{ config['site'] }}/api/v1/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: DD-API-KEY
@@ -366,7 +366,7 @@ definitions:
     url_base: https://api.{{ config['site'] }}/api/v2/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: DD-API-KEY
