@@ -124,7 +124,6 @@ definitions:
           request_parameters:
             q: search
             search: "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
-
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
@@ -135,6 +134,14 @@ definitions:
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
             page_size: 500
@@ -164,7 +171,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/campaign_groups"
+          $ref: "#/schemas/campaigns"
     campaign_groups:
       type: DeclarativeStream
       name: campaign_groups
@@ -182,7 +189,6 @@ definitions:
           request_parameters:
             q: search
             search: "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
-
           request_headers:
             Linkedin-Version: "202404"
             X-Restli-Protocol-Version: 2.0.0
@@ -193,6 +199,14 @@ definitions:
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
             page_size: 500
@@ -269,6 +283,14 @@ definitions:
             class_name: source_linkedin_ads.components.LinkedInAdsRecordExtractor
         paginator:
           type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageSize
           pagination_strategy:
             type: CursorPagination
             page_size: 100
