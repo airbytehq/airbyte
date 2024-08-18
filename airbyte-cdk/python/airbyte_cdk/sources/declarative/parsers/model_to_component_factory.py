@@ -1196,7 +1196,13 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs: Any) -> WaitTimeFromHeaderBackoffStrategy:
-        return WaitTimeFromHeaderBackoffStrategy(header=model.header, parameters=model.parameters or {}, config=config, regex=model.regex)
+        return WaitTimeFromHeaderBackoffStrategy(
+            header=model.header,
+            parameters=model.parameters or {},
+            config=config,
+            regex=model.regex,
+            max_waiting_time_in_seconds=model.max_waiting_time_in_seconds if model.max_waiting_time_in_seconds is not None else None,
+        )
 
     @staticmethod
     def create_wait_until_time_from_header(

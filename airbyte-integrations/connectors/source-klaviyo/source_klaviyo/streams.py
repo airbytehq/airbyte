@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import CheckpointMixin, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -16,7 +17,6 @@ from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, Err
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from requests import Response
-from source_klaviyo.components.klaviyo_backoff_strategy import KlaviyoBackoffStrategy
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 from .exceptions import KlaviyoBackoffError
@@ -116,7 +116,7 @@ class KlaviyoStream(HttpStream, CheckpointMixin, ABC):
         return current_stream_state
 
     def get_backoff_strategy(self) -> BackoffStrategy:
-        return KlaviyoBackoffStrategy(max_time=self.max_time, name=self.name)
+        return WaitTimeFromHeaderBackoffStrategy(header="Retry-After", max_waiting_time_in_seconds=self.max_time, parameters={}, config={})
 
     def get_error_handler(self) -> ErrorHandler:
         return HttpStatusErrorHandler(logger=self.logger, error_mapping=DEFAULT_ERROR_MAPPING, max_retries=self.max_retries)

@@ -43,7 +43,6 @@ abstract class AbstractStreamOperation<DestinationState : MinimumDestinationStat
 
     init {
         val stream = destinationInitialStatus.streamConfig
-
         isTruncateSync =
             when (stream.minimumGenerationId) {
                 0L -> false

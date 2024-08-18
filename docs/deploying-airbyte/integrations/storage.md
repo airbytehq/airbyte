@@ -64,7 +64,7 @@ stringData:
 <Tabs >
 <TabItem value="S3" label="S3" default>
 
-Ensure you've already created a Kubernetes secret containing both your S3 access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `aws-s3-access-key-id` and `aws-s3-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#secrets).
+Ensure you've already created a Kubernetes secret containing both your S3 access key ID, and secret access key. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under the `s3-access-key-id` and `s3-secret-access-key` keys. Steps to configure these are in the above [prerequisites](#secrets).
 
 ```yaml
 global:

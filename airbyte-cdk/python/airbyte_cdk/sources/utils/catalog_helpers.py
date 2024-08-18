@@ -19,4 +19,4 @@ class CatalogHelper:
             stream.default_cursor_field = None
 
         # remove nulls
-        return AirbyteCatalog.parse_raw(coerced_catalog.json(exclude_unset=True, exclude_none=True))
+        return AirbyteCatalog.parse_raw(coerced_catalog.model_dump_json(exclude_unset=True, exclude_none=True))

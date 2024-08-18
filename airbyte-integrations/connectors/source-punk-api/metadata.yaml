@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-punk-api
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -27,6 +27,10 @@ data:
     ql: 100
   supportLevel: archived
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: punk-api_config_dev_null
+          id: 061efb1b-1c03-4d1e-b31a-aebcc85e3ecd
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PUNK-API__CREDS

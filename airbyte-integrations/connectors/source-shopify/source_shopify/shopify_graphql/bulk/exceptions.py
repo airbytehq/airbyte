@@ -52,6 +52,11 @@ class ShopifyBulkExceptions:
 
         failure_type: FailureType = FailureType.transient_error
 
+    class BulkJobRedirectToOtherShopError(BaseBulkException):
+        """Raised when the response contains another shop name"""
+
+        failure_type: FailureType = FailureType.transient_error
+
     class BulkJobConcurrentError(BaseBulkException):
         """Raised when failing the job after hitting too many BulkJobCreationFailedConcurrentError."""
 

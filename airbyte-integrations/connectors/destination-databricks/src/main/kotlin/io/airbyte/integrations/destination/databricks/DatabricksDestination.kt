@@ -18,6 +18,7 @@ import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.integrations.base.destination.operation.DefaultFlush
 import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
+import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.databricks.jdbc.DatabricksDestinationHandler
@@ -97,8 +98,33 @@ class DatabricksDestination : BaseConnector(), Destination {
                 syncId = 0
             )
 
+        // quick utility method to drop the airbyte_check_test_table table
+        // returns a connection status if there was an error, or null on success
+        fun dropCheckTable(): AirbyteConnectionStatus? {
+            val dropCheckTableStatement =
+                "DROP TABLE IF EXISTS `${connectorConfig.database}`.`${streamId.rawNamespace}`.`${streamId.rawName}`;"
+            try {
+                destinationHandler.execute(
+                    Sql.of(
+                        dropCheckTableStatement,
+                    ),
+                )
+            } catch (e: Exception) {
+                log.error(e) { "Failed to execute query $dropCheckTableStatement" }
+                return AirbyteConnectionStatus()
+                    .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                    .withMessage("Failed to execute $dropCheckTableStatement: ${e.message}")
+            }
+            return null
+        }
+
+        // Before we start, clean up any preexisting check table from a previous attempt.
+        dropCheckTable()?.let {
+            return it
+        }
+
         try {
-            storageOperations.prepareStage(streamId, DestinationSyncMode.OVERWRITE)
+            storageOperations.prepareStage(streamId, suffix = "")
         } catch (e: Exception) {
             log.error(e) { "Failed to prepare stage as part of CHECK" }
             return AirbyteConnectionStatus()
@@ -116,7 +142,7 @@ class DatabricksDestination : BaseConnector(), Destination {
                     System.currentTimeMillis()
                 )
                 it.flush()
-                storageOperations.writeToStage(streamConfig, writeBuffer)
+                storageOperations.writeToStage(streamConfig, suffix = "", writeBuffer)
             }
         } catch (e: Exception) {
             log.error(e) { "Failed to write to stage as part of CHECK" }
@@ -132,6 +158,13 @@ class DatabricksDestination : BaseConnector(), Destination {
             return AirbyteConnectionStatus()
                 .withStatus(AirbyteConnectionStatus.Status.FAILED)
                 .withMessage("Failed to cleanup stage")
+        }
+
+        // Clean up after ourselves.
+        // Not _strictly_ necessary since we do this at the start of `check`,
+        // but it's slightly nicer.
+        dropCheckTable()?.let {
+            return it
         }
 
         return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)

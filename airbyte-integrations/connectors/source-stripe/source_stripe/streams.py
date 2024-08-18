@@ -11,13 +11,15 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 
 import pendulum
 import requests
+from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from source_stripe.availability_strategy import StripeAvailabilityStrategy, StripeSubStreamAvailabilityStrategy
+from source_stripe.error_handlers import ParentIncrementalStripeSubStreamErrorHandler, StripeErrorHandler
+from source_stripe.error_mappings import PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
 
 STRIPE_API_VERSION = "2022-11-15"
 CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
@@ -92,9 +94,8 @@ class StripeStream(HttpStream, ABC):
     DEFAULT_SLICE_RANGE = 365
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeAvailabilityStrategy()
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return StripeErrorHandler(logger=self.logger)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -123,6 +124,9 @@ class StripeStream(HttpStream, ABC):
         if callable(self._extra_request_params):
             return self._extra_request_params(self, *args, **kwargs)
         return self._extra_request_params or {}
+
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return ExponentialBackoffStrategy(config={}, parameters={}, factor=1)
 
     @property
     def record_extractor(self) -> IRecordExtractor:
@@ -227,10 +231,10 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         cursor_field: str = "created",
         **kwargs,
     ):
+        self._cursor_field = cursor_field
         super().__init__(*args, **kwargs)
         self.lookback_window_days = lookback_window_days
         self.start_date_max_days_from_now = start_date_max_days_from_now
-        self._cursor_field = cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -443,8 +447,8 @@ class IncrementalStripeStream(StripeStream):
         event_types: Optional[List[str]] = None,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
         self._cursor_field = cursor_field
+        super().__init__(*args, **kwargs)
         created_cursor_stream = CreatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
@@ -514,10 +518,6 @@ class CustomerBalanceTransactions(StripeStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"customers/{stream_slice['id']}/balance_transactions"
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -558,12 +558,6 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
     def path(self, **kwargs) -> str:
         return "setup_attempts"
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        # we use the default http availability strategy here because parent stream may lack data in the incremental stream mode
-        # and this stream would be marked inaccessible which is not actually true
-        return HttpAvailabilityStrategy()
-
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -603,10 +597,6 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
         parent = StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **kwargs)
         super().__init__(*args, parent=parent, **kwargs)
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"accounts/{stream_slice['parent']['id']}/persons"
 
@@ -618,9 +608,7 @@ class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
 
 
 class StripeSubStream(StripeStream, HttpSubStream):
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
+    pass
 
 
 class StripeLazySubStream(StripeStream, HttpSubStream):
@@ -682,10 +670,6 @@ class StripeLazySubStream(StripeStream, HttpSubStream):
         super().__init__(*args, **kwargs)
         self._sub_items_attr = sub_items_attr
 
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return StripeSubStreamAvailabilityStrategy()
-
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
 
@@ -734,8 +718,8 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         response_filter: Optional[Callable] = None,
         **kwargs,
     ):
-        super().__init__(*args, **kwargs)
         self._cursor_field = cursor_field
+        super().__init__(*args, **kwargs)
         self.updated_cursor_incremental_stream = UpdatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
@@ -823,27 +807,7 @@ class ParentIncrementalStipeSubStream(StripeSubStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(current_stream_state.get(self.cursor_field, 0), latest_record[self.cursor_field])}
 
-    @property
-    def raise_on_http_errors(self) -> bool:
-        return False
-
-    def parse_response(self, response: requests.Response, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        if response.status_code == 200:
-            return super().parse_response(response, *args, **kwargs)
-        if response.status_code == 404:
-            # When running incremental sync with state, the returned parent object very likely will not contain sub-items
-            # as the events API does not support expandable items. Parent class will try getting sub-items from this object,
-            # then from its own API. In case there are no sub-items at all for this entity, API will raise 404 error.
-            self.logger.warning(
-                f"Data was not found for URL: {response.request.url}. "
-                "If this is a path for getting child attributes like /v1/checkout/sessions/<session_id>/line_items when running "
-                "the incremental sync, you may safely ignore this warning."
-            )
-            return []
-        response.raise_for_status()
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        # we use the default http availability strategy here because parent stream may lack data in the incremental stream mode
-        # and this stream would be marked inaccessible which is not actually true
-        return HttpAvailabilityStrategy()
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return ParentIncrementalStripeSubStreamErrorHandler(
+            logger=self.logger, error_mapping=PARENT_INCREMENTAL_STRIPE_SUB_STREAM_ERROR_MAPPING
+        )

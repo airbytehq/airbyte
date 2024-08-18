@@ -42,7 +42,7 @@ Once you've set up all the connection settings, click "Set up connection". You'v
 
 Once you've finished setting up the connection, you will be automatically redirected to a connection overview containing all the tools you need to keep track of your connection.
 
-![Connection dashboard](./assets/getting-started-status-page.png)
+![Connection dashboard](./assets/getting-started-connection-complete.png)
 
 Here's a basic overview of the tabs and their use:
 

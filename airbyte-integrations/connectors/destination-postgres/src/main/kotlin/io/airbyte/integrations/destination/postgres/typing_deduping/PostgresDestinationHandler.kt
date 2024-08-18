@@ -14,18 +14,21 @@ import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
+import io.airbyte.integrations.destination.postgres.PostgresGenerationHandler
 import org.jooq.SQLDialect
 
 class PostgresDestinationHandler(
     databaseName: String?,
     jdbcDatabase: JdbcDatabase,
-    rawTableSchema: String
+    rawTableSchema: String,
+    generationHandler: PostgresGenerationHandler,
 ) :
     JdbcDestinationHandler<PostgresState>(
         databaseName,
         jdbcDatabase,
         rawTableSchema,
-        SQLDialect.POSTGRES
+        SQLDialect.POSTGRES,
+        generationHandler = generationHandler
     ) {
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
         // This is mostly identical to the postgres implementation, but swaps jsonb to super
@@ -45,7 +48,9 @@ class PostgresDestinationHandler(
         return PostgresState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("isAirbyteMetaPresentInRaw") &&
-                json["isAirbyteMetaPresentInRaw"].asBoolean()
+                json["isAirbyteMetaPresentInRaw"].asBoolean(),
+            json.hasNonNull("isAirbyteGenerationIdPresent") &&
+                json["isAirbyteGenerationIdPresent"].asBoolean()
         )
     }
 
