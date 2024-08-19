@@ -60,7 +60,6 @@ class IncrementalCheckpointReader(CheckpointReader):
 
     def next(self) -> Optional[Mapping[str, Any]]:
         if self._has_slices:
-            # Directly try to get the next slice without handling StopIteration here
             next_slice = next(self._stream_slices, None)
             if next_slice is not None:
                 return next_slice
