@@ -20,7 +20,8 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import \
+    DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
@@ -104,32 +105,25 @@ class ManifestDeclarativeSource(DeclarativeSource):
     def _initialize_cache_for_parent_streams(stream_configs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         parent_streams = set()
 
-        for stream_config in stream_configs:
-            incremental_sync = stream_config.get("incremental_sync", {})
-            retriever = stream_config.get("retriever", {})
-            partition_router = retriever.get("partition_router", {})
+        def update_with_cache_parent_configs(parent_configs: list[dict[str, Any]]) -> None:
+            for parent_config in parent_configs:
+                parent_streams.add(parent_config["stream"]["name"])
+                parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
 
-            if "parent_stream" in incremental_sync:
-                parent_stream = incremental_sync["parent_stream"]
-                parent_streams.add(parent_stream["name"])
-                parent_stream["retriever"]["requester"]["use_cache"] = True
-            elif partition_router:
-                if isinstance(partition_router, dict) and "parent_stream_configs" in partition_router:
-                    for parent_config in partition_router["parent_stream_configs"]:
-                        parent_streams.add(parent_config["stream"]["name"])
-                        parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
+        for stream_config in stream_configs:
+            if stream_config.get("incremental_sync", {}).get("parent_stream"):
+                parent_streams.add(stream_config["incremental_sync"]["parent_stream"]["name"])
+                stream_config["incremental_sync"]["parent_stream"]["retriever"]["requester"]["use_cache"] = True
+
+            elif stream_config.get("retriever", {}).get("partition_router", {}):
+                partition_router = stream_config["retriever"]["partition_router"]
+
+                if isinstance(partition_router, dict) and partition_router.get("parent_stream_configs"):
+                    update_with_cache_parent_configs(partition_router["parent_stream_configs"])
                 elif isinstance(partition_router, list):
                     for router in partition_router:
-                        if "parent_stream_configs" in router:
-                            for parent_config in router["parent_stream_configs"]:
-                                parent_streams.add(parent_config["stream"]["name"])
-                                parent_config["stream"]["retriever"]["requester"]["use_cache"] = True
-
-        for stream_config in stream_configs:
-            if stream_config["name"] in parent_streams:
-                stream_config["retriever"]["requester"]["use_cache"] = True
-
-        return stream_configs
+                        if router.get("parent_stream_configs"):
+                            update_with_cache_parent_configs(router["parent_stream_configs"])
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
