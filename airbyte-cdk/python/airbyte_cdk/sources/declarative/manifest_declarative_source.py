@@ -125,6 +125,12 @@ class ManifestDeclarativeSource(DeclarativeSource):
                         if router.get("parent_stream_configs"):
                             update_with_cache_parent_configs(router["parent_stream_configs"])
 
+        for stream_config in stream_configs:
+            if stream_config["name"] in parent_streams:
+                stream_config["retriever"]["requester"]["use_cache"] = True
+
+        return stream_configs
+
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
         Returns the connector specification (spec) as defined in the Airbyte Protocol. The spec is an object describing the possible
