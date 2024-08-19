@@ -9,9 +9,11 @@ from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.types import Config
-from jinja2 import meta
+from jinja2 import meta, StrictUndefined
+from jinja2.environment import Template
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import SandboxedEnvironment
+from functools import cache
 
 
 class StreamPartitionAccessEnvironment(SandboxedEnvironment):
@@ -62,7 +64,7 @@ class JinjaInterpolation(Interpolation):
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
     def __init__(self) -> None:
-        self._environment = StreamPartitionAccessEnvironment()
+        self._environment = StreamPartitionAccessEnvironment(undefined=StrictUndefined)
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 
@@ -114,13 +116,17 @@ class JinjaInterpolation(Interpolation):
 
     def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
+            return self._compile(s).render(context)  # type: ignore # from_string is able to handle None
+        except UndefinedError:
             ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
-            if undeclared_not_in_context:
-                raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
-            return self._environment.from_string(s).render(context)  # type: ignore # from_string is able to handle None
+            raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is
             return s
+        
+    @cache
+    def _compile(self, s: Optional[str]) -> Template:
+        return self._environment.from_string(s)
