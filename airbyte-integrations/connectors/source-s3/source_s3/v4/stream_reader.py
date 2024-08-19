@@ -3,7 +3,7 @@
 #
 
 import logging
-from datetime import timezone, datetime
+from datetime import datetime, timezone
 from io import IOBase
 from os import getenv
 from typing import Iterable, List, Optional, Set
