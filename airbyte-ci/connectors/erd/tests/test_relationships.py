@@ -1,7 +1,9 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from unittest import TestCase
 
-from tests.builder import RelationshipBuilder
 from erd.relationships import Relationships, RelationshipsMerger
+from tests.builder import RelationshipBuilder
 
 _A_STREAM_NAME = "a_stream_name"
 _A_COLUMN = "a_column"
@@ -51,7 +53,7 @@ class RelationshipsMergerTest(TestCase):
                     "relations": {
                         _A_COLUMN: _A_TARGET,
                         _ANOTHER_COLUMN: _A_TARGET,
-                    }
+                    },
                 }
             ]
         }
@@ -68,7 +70,7 @@ class RelationshipsMergerTest(TestCase):
                     "name": "a_stream_name",
                     "relations": {
                         _A_COLUMN: _ANOTHER_TARGET,
-                    }
+                    },
                 }
             ]
         }

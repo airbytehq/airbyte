@@ -4,10 +4,9 @@
 from typing import List, Optional
 
 import asyncclick as click
-
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
 from pipelines.airbyte_ci.connectors.generate_erd.pipeline import run_connector_generate_erd_pipeline
-from pipelines.cli.click_decorators import click_merge_args_into_context_obj, click_ignore_unused_kwargs
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.cli.secrets import wrap_in_secret
 from pipelines.helpers.connectors.command import run_connector_pipeline

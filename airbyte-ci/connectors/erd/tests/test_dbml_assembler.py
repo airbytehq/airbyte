@@ -1,11 +1,11 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from unittest import TestCase
 from unittest.mock import Mock
 
 from airbyte_protocol.models import AirbyteCatalog, AirbyteStream, SyncMode
-
-from tests.builder import RelationshipBuilder
 from erd.dbml_assembler import DbmlAssembler, Source
-
+from tests.builder import RelationshipBuilder
 
 _A_STREAM_NAME = "a_stream_name"
 
@@ -18,11 +18,7 @@ class RelationshipsMergerTest(TestCase):
 
     def test_given_no_streams_then_database_is_empty(self) -> None:
         dbml = self._assembler.assemble(
-            self._source,
-            AirbyteCatalog(
-                streams=[]
-            ),
-            {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]}
+            self._source, AirbyteCatalog(streams=[]), {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]}
         )
         assert not dbml.tables
 
@@ -39,7 +35,7 @@ class RelationshipsMergerTest(TestCase):
                     )
                 ]
             ),
-            {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]}
+            {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]},
         )
         assert not dbml.tables
 
@@ -50,16 +46,18 @@ class RelationshipsMergerTest(TestCase):
                 streams=[
                     AirbyteStream(
                         name=_A_STREAM_NAME,
-                        json_schema={"properties": {
-                            "a_primary_key": {"type": ["null", "string"]},
-                            "an_integer": {"type": ["null", "number"]},
-                        }},
+                        json_schema={
+                            "properties": {
+                                "a_primary_key": {"type": ["null", "string"]},
+                                "an_integer": {"type": ["null", "number"]},
+                            }
+                        },
                         supported_sync_modes=[SyncMode.full_refresh],
                         source_defined_primary_key=[["a_primary_key"]],
                     )
                 ]
             ),
-            {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]}
+            {"streams": [RelationshipBuilder(_A_STREAM_NAME).build()]},
         )
         assert len(dbml.tables) == 1
         assert len(dbml.tables[0].columns) == 2

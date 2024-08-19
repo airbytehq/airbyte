@@ -1,15 +1,14 @@
-import yaml
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from typing import Set, List, Union
-
-from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from pathlib import Path
+from typing import List, Set, Union
 
-from airbyte_protocol.models import AirbyteStream, AirbyteCatalog
+import yaml
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+from airbyte_protocol.models import AirbyteCatalog, AirbyteStream
+from erd.relationships import Relationships
 from pydbml import Database
 from pydbml.classes import Column, Index, Reference, Table
-
-from erd.relationships import Relationships
 
 
 class Source:
@@ -38,7 +37,7 @@ class Source:
 
     def _get_streams_from_schemas_folder(self) -> Set[str]:
         schemas_folder = self._source_folder / self._source_folder.name.replace("-", "_") / "schemas"
-        return {p.name.replace(".json", "") for p in schemas_folder.iterdir() if p.is_file()}  if schemas_folder.exists() else set()
+        return {p.name.replace(".json", "") for p in schemas_folder.iterdir() if p.is_file()} if schemas_folder.exists() else set()
 
     def _get_manifest_path(self) -> Path:
         return self._source_folder / self._source_folder.name.replace("-", "_") / "manifest.yaml"
@@ -48,7 +47,6 @@ class Source:
 
 
 class DbmlAssembler:
-
     def assemble(self, source: Source, discovered_catalog: AirbyteCatalog, relationships: Relationships) -> Database:
         database = Database()
         for stream in discovered_catalog.streams:

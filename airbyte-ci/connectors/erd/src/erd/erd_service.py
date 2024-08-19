@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import copy
 import json
 from pathlib import Path
@@ -7,11 +9,10 @@ import click
 import dpath
 import google.generativeai as genai
 from airbyte_protocol.models import AirbyteCatalog
+from erd.dbml_assembler import DbmlAssembler, Source
+from erd.relationships import Relationships, RelationshipsMerger
 from markdown_it import MarkdownIt
 from pydbml.renderer.dbml.default import DefaultDBMLRenderer
-
-from erd.dbml_assembler import DbmlAssembler, Source
-from erd.relationships import RelationshipsMerger, Relationships
 
 
 class ErdService:
@@ -33,9 +34,8 @@ class ErdService:
             Source(self._source_path),
             self._get_catalog(),
             RelationshipsMerger().merge(
-                self._get_relationships(self._estimated_relationships_file),
-                self._get_relationships(self._confirmed_relationships_file)
-            )
+                self._get_relationships(self._estimated_relationships_file), self._get_relationships(self._confirmed_relationships_file)
+            ),
         )
 
         with open(self._erd_folder / "source.dbml", "w") as f:
@@ -105,7 +105,9 @@ Limitations:
             try:
                 return AirbyteCatalog.model_validate(json.loads(file.read()))
             except json.JSONDecodeError as error:
-                raise ValueError(f"Could not read json file {self._discovered_catalog_path}: {error}. Please ensure that it is a valid JSON.")
+                raise ValueError(
+                    f"Could not read json file {self._discovered_catalog_path}: {error}. Please ensure that it is a valid JSON."
+                )
 
     @property
     def _erd_folder(self) -> Path:
@@ -147,7 +149,7 @@ Limitations:
     type=bool,
     default=False,
     help="This will skip the generation of estimated relationships using LLM and assumes that the `estimated_relationships.json` exists. "
-         "This is good when there is no change in the schemas of the source.",
+    "This is good when there is no change in the schemas of the source.",
 )
 @click.option(
     "--source-path",

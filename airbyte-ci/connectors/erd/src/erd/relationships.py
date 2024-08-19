@@ -1,5 +1,8 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import copy
 from typing import List, Optional, TypedDict
+
 from typing_extensions import NotRequired
 
 
@@ -22,13 +25,15 @@ class RelationshipsMerger:
             else:
                 streams.append(estimated_stream)
 
-        already_processed_streams =  set(map(lambda relationship: relationship["name"], streams))
+        already_processed_streams = set(map(lambda relationship: relationship["name"], streams))
         for confirmed_stream in confirmed_relationships["streams"]:
             if confirmed_stream["name"] not in already_processed_streams:
-                streams.append({
-                    "name": confirmed_stream["name"],
-                    "relations": confirmed_stream["relations"],
-                })
+                streams.append(
+                    {
+                        "name": confirmed_stream["name"],
+                        "relations": confirmed_stream["relations"],
+                    }
+                )
         return {"streams": streams}
 
     def _merge_for_stream(self, estimated: Relationship, confirmed: Relationship) -> Relationship:

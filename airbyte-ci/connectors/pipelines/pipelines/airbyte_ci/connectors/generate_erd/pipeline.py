@@ -7,7 +7,6 @@ import json
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
-
 from dagger import Container, Directory
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.consts import CONNECTOR_TEST_STEP_ID
@@ -29,6 +28,7 @@ def _get_erd_folder(code_directory: Path) -> Path:
     if not path.exists():
         path.mkdir()
     return path
+
 
 def _get_dbml_file(code_directory: Path) -> Path:
     return _get_erd_folder(code_directory) / "source.dbml"
@@ -54,11 +54,12 @@ class GenerateDbml(Step):
         if self._skip_relationship_generation:
             command.append("--skip-llm-relationships")
 
-        await (self._build_erd_container(connector_directory, discovered_catalog)
-           .with_exec(command)
-           .directory("/source/erd")
-           .export(str(_get_erd_folder(self.context.connector.code_directory)))
-       )
+        await (
+            self._build_erd_container(connector_directory, discovered_catalog)
+            .with_exec(command)
+            .directory("/source/erd")
+            .export(str(_get_erd_folder(self.context.connector.code_directory)))
+        )
 
         return StepResult(step=self, status=StepStatus.SUCCESS)
 
@@ -93,10 +94,12 @@ class GenerateDbml(Step):
 
     def _build_erd_container(self, connector_directory: Directory, discovered_catalog: str) -> Container:
         """Create a container to run ERD generation."""
+        container = with_poetry(self.context)
+        if self.context.genai_api_key:
+            container = container.with_env_variable("GENAI_API_KEY", self.context.genai_api_key.value)
+
         container = (
-            with_poetry(self.context)
-            .with_env_variable("GENAI_API_KEY", self.context.genai_api_key.value)
-            .with_mounted_directory("/source", connector_directory)
+            container.with_mounted_directory("/source", connector_directory)
             .with_new_file("/source/erd/discovered_catalog.json", contents=discovered_catalog)
             .with_mounted_directory("/app", self.context.erd_dir)
             .with_workdir("/app")
@@ -113,9 +116,11 @@ class UploadDbmlSchema(Step):
     def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
 
-    async def _run(self, connector_to_discover: Container = None) -> StepResult:
+    async def _run(self, connector_to_discover: Container) -> StepResult:
         if not self.context.dbdocs_token:
-            raise ValueError("In order to publish to dbdocs, DBDOCS_TOKEN needs to be provided. Either pass the value or skip the publish step")
+            raise ValueError(
+                "In order to publish to dbdocs, DBDOCS_TOKEN needs to be provided. Either pass the value or skip the publish step"
+            )
 
         connector = self.context.connector
         source_dbml_content = open(_get_dbml_file(connector.code_directory)).read()
