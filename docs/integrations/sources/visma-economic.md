@@ -52,6 +52,7 @@ For more information about the api see the [E-conomic REST API Documentation](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 0.3.0 | 2024-08-14 | [44052](https://github.com/airbytehq/airbyte/pull/44052) | Refactor connector to manifest-only format |
 | 0.2.15 | 2024-08-10 | [43690](https://github.com/airbytehq/airbyte/pull/43690) | Update dependencies |
 | 0.2.14 | 2024-08-03 | [43165](https://github.com/airbytehq/airbyte/pull/43165) | Update dependencies |
