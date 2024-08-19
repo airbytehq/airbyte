@@ -64,6 +64,7 @@ class JinjaInterpolation(Interpolation):
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
     def __init__(self) -> None:
+        # StrictUndefined makes Jinja throw an exception, instead of returning None when undeclared variable is encountered
         self._environment = StreamPartitionAccessEnvironment(undefined=StrictUndefined)
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
@@ -117,7 +118,7 @@ class JinjaInterpolation(Interpolation):
     def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
             return self._compile(s).render(context)  # type: ignore # from_string is able to handle None
-        except UndefinedError:
+        except UndefinedError: # requires `undefined=StrictUndefined` in `self._environment`
             ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
@@ -129,4 +130,7 @@ class JinjaInterpolation(Interpolation):
         
     @cache
     def _compile(self, s: Optional[str]) -> Template:
+        """
+        Jinja in usual case caches compiled templates. But because we use `from_string` not a template loader, we not to take care of it ourselves.
+        """
         return self._environment.from_string(s)
