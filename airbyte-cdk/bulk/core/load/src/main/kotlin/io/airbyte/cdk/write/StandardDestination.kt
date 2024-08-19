@@ -8,13 +8,21 @@ abstract class StandardDestination {
     // Called once per stream before any records are processed
     open fun openStream(stream: Stream) {}
 
-    // Called continuously until end of stream
-    abstract fun accumulateRecords(
+    // Called periodically as data is available
+    // to get an accumulator that will be called
+    // continously per record until EOS or the data
+    // are no longer available.
+    abstract fun getRecordAccumulator(
         stream: Stream,
-        accumulatorId: Int,
-        records: Iterable<DestinationMessage.DestinationRecord>,
-        endOfStream: Boolean = false,
-        forceFlush: Boolean = false
+        shard: Int
+    ): (DestinationMessage.DestinationRecord) -> Batch?
+
+    // Called at least once, at the end of stream.
+    // May be called earlier by the framework, indicating
+    // a forced flush point (eg, every five minutes).
+    abstract fun flush(
+        stream: Stream,
+        endOfStream: Boolean = false
     ): Batch?
 
     // Called once per any method that returns a

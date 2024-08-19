@@ -51,11 +51,14 @@ class MessageQueue(
     /**
      * Open a flow for consuming. Consumption continues until
      *   * MAX_BYTE_SIZE_PER_STREAM is reached (from message.size)
-     *   * There is no available data for timeout milliseconds
-     *   * A flow can always be reopened and does not need to be closed
+     *   * There is no available new data for the configured timeout
+     *   * EOS is reached
+     * Under these conditions, the DestinationMessage will be null,
+     * and all subsequent calls will return null until the flow is
+     * reopened. After EOS, all reads will return null.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun open(stream: Stream, channel: Int = 0): Flow<DestinationMessage> = flow {
+    suspend fun open(stream: Stream, channel: Int = 0): Flow<DestinationMessage?> = flow {
         if (channel < 0 || channel >= nChannelsPerStream) {
             throw IllegalArgumentException("Invalid taskId: $channel")
         }
@@ -72,7 +75,7 @@ class MessageQueue(
 
             while (channels[stream]?.get(channel)?.isEmpty != false) {
                 if (totalWait >= consumerTimeoutMs) {
-                    emit(DestinationMessage.TimeOut)
+                    emit(null)
                     return@flow
                 }
                 delay(waitTimeMs)

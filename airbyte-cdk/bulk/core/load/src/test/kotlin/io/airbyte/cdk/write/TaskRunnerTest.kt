@@ -5,7 +5,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
-class DestinationRunnerTest {
+class TaskRunnerTest {
     val log = KotlinLogging.logger {}
 
     @Test
@@ -18,7 +18,7 @@ class DestinationRunnerTest {
         }
 
         val destination = MockDestination(2)
-        val runner = DestinationRunner(destination)
+        val runner = TaskRunner(destination)
         runner.run()
     }
 }

@@ -32,32 +32,38 @@ class MockDestination(
         log.info { "MockDestination::openStream($stream)" }
     }
 
-    override fun accumulateRecords(
+    override fun getRecordAccumulator(
         stream: Stream,
-        accumulatorId: Int,
-        records: Iterable<DestinationMessage.DestinationRecord>,
-        endOfStream: Boolean,
-        forceFlush: Boolean
-    ): Batch? {
-        log.info { "MockDestination::accumulateRecords($stream, $accumulatorId, eos=$endOfStream, flush=$forceFlush)" }
-        var count = accumulatedRecords.getOrPut(stream to accumulatorId) { 0 }
+        shard: Int
+    ): (DestinationMessage.DestinationRecord) -> Batch? {
         var processed = 0
-        records.forEach {
-             processed += 1
-            count += 1
-            log.info { "MockDestination::accumulateRecords($stream, $accumulatorId): accumulating record $processed(of $count total for this batch): $it" }
+        val count = accumulatedRecords.getOrPut(stream to shard) { 0 }
+        return { record ->
+            log.info { "MockDestination::accumulateRecords($stream, $shard)" }
+            processed += 1
+            count.inc()
+            log.info { "MockDestination::accumulateRecords($stream, $shard): accumulating record $processed(of $count total for this batch): $record" }
+            if (count % batchEvery == 0) {
+                accumulatedRecords.remove(stream to shard)
+                val batchIndex = batchIndex.getAndIncrement()
+                log.info { "Mockdestination::accumulateRecords($stream, $shard): emitting batch($batchIndex) of size $count" }
+                BatchStage1(batchIndex, "batch($batchIndex) of $count records")
+            } else {
+                null
+            }
         }
+    }
 
-        accumulatedRecords[stream to accumulatorId] = count
-        if (count % batchEvery == 0 || endOfStream || forceFlush) {
-            accumulatedRecords.remove(stream to accumulatorId)
+    override fun flush(stream: Stream, endOfStream: Boolean): Batch? {
+        log.info { "MockDestination::flush($stream, $endOfStream)" }
+        val shardCounts = accumulatedRecords.filterKeys { it.first == stream }.values.sum()
+        if (shardCounts > 0) {
             val batchIndex = batchIndex.getAndIncrement()
-            log.info { "Mockdestination::accumulateRecords($stream, $accumulatorId): emitting batch($batchIndex) of size $count" }
-            return BatchStage1(batchIndex, "batch($batchIndex) of $count records")
+            log.info { "MockDestination::flush($stream, $endOfStream): emitting batch($batchIndex) of size $shardCounts" }
+            return BatchStage1(batchIndex, "batch($batchIndex) of $shardCounts records")
+        } else {
+            return null
         }
-
-        log.info { "MockDestination::accumulateRecords($stream, $accumulatorId): not emitting batch (${count % batchEvery} / $batchEvery threshold)" }
-        return null
     }
 
     override fun processBatch(stream: Stream, batch: Batch): Batch? {

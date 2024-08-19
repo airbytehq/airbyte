@@ -33,8 +33,8 @@ class MessageQueueTest {
                         println("test1: received end of stream: $record")
                         return@collect
                     }
-                    is DestinationMessage.TimeOut -> {
-                        println("test1: timed out")
+                    null -> {
+                        println("test1: null")
                         return@collect
                     }
                 }
@@ -52,8 +52,8 @@ class MessageQueueTest {
                         println("test2: received end of stream: $record")
                         return@collect
                     }
-                    is DestinationMessage.TimeOut -> {
-                        println("test2: timed out")
+                    null -> {
+                        println("test2: null")
                         return@collect
                     }
                 }

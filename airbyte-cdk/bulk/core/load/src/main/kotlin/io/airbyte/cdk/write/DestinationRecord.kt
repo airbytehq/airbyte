@@ -16,5 +16,4 @@ sealed class DestinationMessage {
     ) : DestinationMessage()
 
     data class EndOfStream(val stream: Stream) : DestinationMessage()
-    data object TimeOut : DestinationMessage()
 }
