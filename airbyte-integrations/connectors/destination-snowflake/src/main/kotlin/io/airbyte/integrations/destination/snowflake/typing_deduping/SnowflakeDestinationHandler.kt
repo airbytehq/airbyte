@@ -678,7 +678,7 @@ class SnowflakeDestinationHandler(
         }
 
 
-        //TODO: This code is causing test cases to fail
+        //TODO: This code was causing test cases to fail
 
         //NEW CODE
         @Throws(SQLException::class)
@@ -715,13 +715,23 @@ class SnowflakeDestinationHandler(
                         showColumnsQuery,
                     )
 
-                    //LOGGER.info("showColumnsResult=" + showColumnsResult)
+                    println("showColumnsResult=" + showColumnsResult)
 
                     for (result in showColumnsResult) {
+
+                        println("Inside for loop: result=" + result)
+
                         val tableSchema = result["schema_name"].asText()
                         val tableName = result["table_name"].asText()
                         val columnName = result["column_name"].asText()
-                        val dataType = JSONObject(result["data_type"].asText()).getString("type")
+                        var dataType = JSONObject(result["data_type"].asText()).getString("type")
+
+                        //TODO: Remove code temporarily added to investigate test case failures
+                        //Note: This change has fixed two failing test cases
+                        if(dataType.equals("FIXED")) {
+                            dataType = "NUMBER"
+                        }
+
                         val isNullable = result["null?"].asText()
                         val tableDefinition =
                             existingTablesFromShowQuery
@@ -762,24 +772,72 @@ class SnowflakeDestinationHandler(
 
             }
 
-            println("println: existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
-            println("println: existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
+//            println("println: existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
+//            println("println: existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
+//
+//            println("println: existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
+//            println("println: existingTablesFromShowQuery=" + existingTablesFromShowQuery)
+//
+//
+//            LOGGER.info("existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
+//            LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
+//
+//            LOGGER.info("existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
+//            LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
 
-            println("println: existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
-            println("println: existingTablesFromShowQuery=" + existingTablesFromShowQuery)
+            val stringFromExistingTablesFromInfoSchema = printNestedMap(existingTablesFromInfoSchema, "existingTablesFromInfoSchema")
+            val stringFromExistingTablesFromShowQuery = printNestedMap(existingTablesFromShowQuery, "existingTablesFromShowQuery")
 
+            if( ! stringFromExistingTablesFromInfoSchema.equals(stringFromExistingTablesFromShowQuery)) {
+                println("ERROR: Output from string comparison of info schema and show command output does not match")
+                println("\n\nstringFromExistingTablesFromInfoSchema=\n" + stringFromExistingTablesFromInfoSchema)
+                println("\n\nstringFromExistingTablesFromShowQuery=\n" + stringFromExistingTablesFromShowQuery)
 
-            LOGGER.info("existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
-            LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
-
-            LOGGER.info("existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
-            LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
+            } else {
+                println("SUCCESS: Output from string comparison of info schema and show command output matched exactly")
+            }
 
             return existingTablesFromShowQuery
 
             //return existingTablesFromInfoSchema;
         }
 
+        fun printNestedMap(map: LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>,
+                     messagePrefix: String): String {
+
+            println("Inside printMap: messagePrefix=" + messagePrefix)
+
+            var output = " NestedMap: "
+
+            for ((outerKey, innerMap) in map) {
+                output = output + "Outer Key: $outerKey"
+                for ((innerKey, tableDefinition) in innerMap) {
+                    output = output + "  Inner Key: $innerKey"
+                    output = output + "    Table Name: $innerKey"
+                    output = output + "    Columns: " + printColumnMap(tableDefinition.columns)
+                }
+            }
+
+            return output
+        }
+
+        fun printColumnMap(map: LinkedHashMap<String, ColumnDefinition>): String {
+
+            var output = "Columns: {"
+
+            for ((columnName, columnDefinition) in map) {
+                output = output + " \ncolumnName: $columnName"
+                //println("columnDefinition: " + columnDefinition.toString())
+                output = output + " columnDefinition: ColumnDefinition(name='${columnDefinition.name}', type='${columnDefinition.type}', columnSize=${columnDefinition.columnSize}, isNullable=${columnDefinition.isNullable})"
+            }
+
+            output = output + " } //end of columns"
+
+            return output
+
+        }
+
     }
+
 
 }
