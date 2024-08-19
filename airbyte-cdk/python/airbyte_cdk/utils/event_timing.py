@@ -8,7 +8,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from operator import attrgetter
-from typing import Optional, Generator
+from typing import Generator, Optional
 
 logger = logging.getLogger("airbyte")
 
