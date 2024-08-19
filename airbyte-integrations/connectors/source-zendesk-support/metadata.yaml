@@ -46,7 +46,7 @@ data:
               - "ticket_metrics"
       4.0.0:
         message: "This version includes breaking changes to the `Tags` stream. The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream. Please see the migration guide for additional details."
-        upgradeDeadline: "2024-09-12"
+        upgradeDeadline: "2024-09-09"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
