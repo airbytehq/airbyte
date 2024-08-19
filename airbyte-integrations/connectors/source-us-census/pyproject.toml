@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.15"
+version = "0.2.0"
 name = "source-us-census"
 description = "Source implementation for Us Census."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,14 +16,13 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_us_census"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "0.80.0"
+python = "^3.10"
+airbyte-cdk = "^4.0.1"
 
 [tool.poetry.scripts]
 source-us-census = "source_us_census.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-responses = "^0.13"
-pytest-mock = "^3.6.1"
-pytest = "^6.1"
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"

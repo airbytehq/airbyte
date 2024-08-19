@@ -1,0 +1,25 @@
+[
+  {
+    "name": "EVENTS",
+    "namespace": "PUBLIC",
+    "metadata": {
+      "columns": {
+        "ID": "io.airbyte.cdk.jdbc.StringFieldType",
+        "TS": "io.airbyte.cdk.jdbc.OffsetDateTimeFieldType",
+        "MSG": "io.airbyte.cdk.jdbc.StringFieldType"
+      },
+      "primaryKeys": [["ID"]]
+    }
+  },
+  {
+    "name": "KV",
+    "namespace": "PUBLIC",
+    "metadata": {
+      "columns": {
+        "K": "io.airbyte.cdk.jdbc.IntFieldType",
+        "V": "io.airbyte.cdk.jdbc.StringFieldType"
+      },
+      "primaryKeys": [["K"]]
+    }
+  }
+]

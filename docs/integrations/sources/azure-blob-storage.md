@@ -1,6 +1,10 @@
 # Azure Blob Storage
 
-This page contains the setup guide and reference information for the Azure Blob Storage source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Azure Blob Storage](https://learn.microsoft.com/en-us/azure/?product=popular) source connector.
+
+</HideInUI>
 
 :::info
 Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Azure Blob Storage pricing guide](https://azure.microsoft.com/en-us/pricing/details/storage/blobs/).
@@ -60,25 +64,52 @@ Follow these steps to set up an IAM role:
 
 ### Step 2: Set up the Azure Blob Storage connector in Airbyte
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Azure Blob Storage** from the list of available sources.
-4. Enter the name of your Azure **Account**.
-5. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
-6. Log in and authorize the Azure Blob Storage account.
-7. Enter the name of the **Container** containing your files to replicate.
-8. Add a stream
+<!-- env:cloud -->
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Azure Blob Storage from the Source type dropdown.
+4. Enter a name for the Azure Blob Storage connector.
+5. Enter the name of your Azure **Account**.
+6. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
+7. Log in and authorize the Azure Blob Storage account.
+8. Enter the name of the **Container** containing your files to replicate.
+9. Add a stream
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional)—If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-9. (Optional) Enter the endpoint to use for the data replication.
-10. (Optional) Enter the desired start date from which to begin replicating data.
+10. (Optional) Enter the endpoint to use for the data replication.
+11. (Optional) Enter the desired start date from which to begin replicating data.
+<!-- /env:cloud -->
 
-## Supported Streams
+<!-- env:oss -->
+### For Airbyte Open Source:
 
-The Azure Blob Storage source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Azure Blob Storage from the Source type dropdown.
+4. Enter a name for the Azure Blob Storage connector.
+5. Enter the name of your Azure **Account**.
+6. Enter your Tenant ID and Click **Authenticate your Azure Blob Storage account**.
+7. Log in and authorize the Azure Blob Storage account.
+8. Enter the name of the **Container** containing your files to replicate.
+9. Add a stream
+   1. Write the **File Type**
+   2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+   3. Give a **Name** to the stream
+   4. (Optional)—If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
+   5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
+10. (Optional) Enter the endpoint to use for the data replication.
+11. (Optional) Enter the desired start date from which to begin replicating data.
+<!-- /env:oss -->
+
+## Supported sync modes
+
+The Azure Blob Storage source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 | Feature                                        | Supported? |
 | :--------------------------------------------- | :--------- |
@@ -88,6 +119,8 @@ The Azure Blob Storage source connector supports the following [sync modes](http
 | Replicate Multiple Files \(pattern matching\)  | Yes        |
 | Replicate Multiple Streams \(distinct tables\) | Yes        |
 | Namespaces                                     | No         |
+
+## Supported Streams
 
 ### File Compressions
 
