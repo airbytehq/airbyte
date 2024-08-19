@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import threading
 import time
-from typing import Any, Generator, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
@@ -27,25 +28,6 @@ class Timer:
         else:
             raise RuntimeError("Global substream cursor timer not started")
 
-    @property
-    def is_started(self) -> bool:
-        return self._start is not None
-
-
-class GlobalCursorStreamSlice(StreamSlice):
-    """
-    A stream slice that is used to track the state of substreams using a single global cursor.
-    This class has the additional `last_slice` field that is used to indicate if the stream slice is the last.
-    """
-
-    def __init__(self, *, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any], last_slice: bool = False) -> None:
-        super().__init__(partition=partition, cursor_slice=cursor_slice)
-        self._last_slice = last_slice
-
-    @property
-    def last_slice(self) -> bool:
-        return self._last_slice
-
 
 class GlobalSubstreamCursor(DeclarativeCursor):
     """
@@ -65,30 +47,42 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         self._stream_cursor = stream_cursor
         self._partition_router = partition_router
         self._timer = Timer()
+        self._lock = threading.Lock()
+        self._slice_semaphore = threading.Semaphore(0)  # Start with 0, indicating no slices being tracked
+        self._all_slices_yielded = False
         self._lookback_window: Optional[int] = None
 
-    def stream_slices(self) -> Iterable[GlobalCursorStreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
-        Generate stream slices and flag the last slice.
+        Generate stream slices and ensure that the last slice is flagged appropriately.
+        This method uses a semaphore to track the processing of slices and ensures
+        that `close_slice` is called only after all slices have been processed.
         """
+        previous_slice = None
 
-        def flag_last(generator: Generator[StreamSlice, None, None]) -> Generator[GlobalCursorStreamSlice, None, None]:
-            previous = None
-            for item in generator:
-                if previous is not None:
-                    yield previous
-                previous = item
-            if previous is not None:
-                yield GlobalCursorStreamSlice(partition=previous.partition, cursor_slice=previous.cursor_slice, last_slice=True)
-
-        self._timer.start()
-        slices = (
-            GlobalCursorStreamSlice(partition=partition, cursor_slice=cursor_slice)
+        slice_generator = (
+            StreamSlice(partition=partition, cursor_slice=cursor_slice)
             for partition in self._partition_router.stream_slices()
             for cursor_slice in self._stream_cursor.stream_slices()
         )
 
-        yield from flag_last(slices)
+        for slice in slice_generator:
+            if previous_slice is not None:
+                # Release the semaphore to indicate that a slice has been yielded
+                self._slice_semaphore.release()
+                yield previous_slice
+
+            # Store the current slice as the previous slice for the next iteration
+            previous_slice = slice
+
+        # After all slices have been generated, release the semaphore one final time
+        # and flag that all slices have been yielded
+        self._slice_semaphore.release()
+        self._all_slices_yielded = True
+
+        # Yield the last slice
+        if previous_slice is not None:
+            yield previous_slice
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -158,12 +152,10 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             stream_slice (StreamSlice): The stream slice to be closed.
             *args (Any): Additional arguments.
         """
-        if isinstance(stream_slice, GlobalCursorStreamSlice):
-            if stream_slice.last_slice:
-                self._lookback_window = self._timer.finish()
+        with self._lock:
+            self._slice_semaphore.acquire()
+            if self._all_slices_yielded and self._slice_semaphore._value == 0:
                 self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
-        else:
-            raise ValueError(f"Stream slice must be a GlobalCursorStreamSlice, got {type(stream_slice)}")
 
     def get_stream_state(self) -> StreamState:
         state: dict[str, Any] = {"state": self._stream_cursor.get_stream_state()}
