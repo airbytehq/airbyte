@@ -37,13 +37,11 @@ class StreamPartitionsCreatorUtils(
         }
         // Ensure that the JDBC fetchSize parameter value for this table is set.
         // Compute it using the sample.
-        if (ctx.transientFetchSize.get() == null) {
+        if (ctx.streamState.fetchSize == null) {
             val rowByteSizeSample: Sample<Long> =
                 sample.map { (_, rowByteSize: Long) -> rowByteSize }
-            val maxMemoryBytes: Long = Runtime.getRuntime().maxMemory()
-            val fetchSizeEstimator =
-                MemoryFetchSizeEstimator(maxMemoryBytes, ctx.configuration.maxConcurrency)
-            ctx.transientFetchSize.update { fetchSizeEstimator.apply(rowByteSizeSample) }
+            val fetchSizeEstimator = ctx.sharedState.jdbcFetchSizeEstimator()
+            ctx.streamState.fetchSize = fetchSizeEstimator.apply(rowByteSizeSample)
         }
         // Compute partition split boundaries.
         // First, check if splitting can or should be done, and exit if that isn't the case.
@@ -108,7 +106,8 @@ class StreamPartitionsCreatorUtils(
             // In both cases, there is nothing to be done.
             return null
         }
-        return ctx.transientCursorUpperBoundState.update { value }
+        ctx.streamState.cursorUpperBound = value
+        return value
     }
 
     /** Computes the partition split boundaries from the given sample. */

@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
@@ -38,22 +37,20 @@ data class CursorIncrementalCheckpoint(
 ) : CheckpointStreamState
 
 /** Serializes a [CheckpointStreamState] into an [OpaqueStateValue]. */
-fun CheckpointStreamState.opaqueStateValue(): OpaqueStateValue = Jsons.valueToTree(jsonValue())
-
-private fun CheckpointStreamState.jsonValue(): StreamStateJsonValue =
+fun CheckpointStreamState.opaqueStateValue(): OpaqueStateValue =
     when (this) {
-        SnapshotCompleted -> StreamStateJsonValue()
+        SnapshotCompleted -> DefaultJdbcStreamStateValue.snapshotCompleted
         is SnapshotCheckpoint ->
-            StreamStateJsonValue(
-                primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
-            )
+            DefaultJdbcStreamStateValue.snapshotCheckpoint(primaryKey, primaryKeyCheckpoint)
         is SnapshotWithCursorCheckpoint ->
-            StreamStateJsonValue(
-                primaryKey = primaryKey.map { it.id }.zip(primaryKeyCheckpoint).toMap(),
-                cursors = mapOf(cursor.id to cursorUpperBound),
+            DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                primaryKey,
+                primaryKeyCheckpoint,
+                cursor,
+                cursorUpperBound
             )
         is CursorIncrementalCheckpoint ->
-            StreamStateJsonValue(cursors = mapOf(cursor.id to cursorCheckpoint))
+            DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorCheckpoint)
     }
 
 /**
@@ -64,20 +61,10 @@ fun OpaqueStateValue?.checkpoint(ctx: StreamReadContext): CheckpointStreamState?
     if (this == null) {
         null
     } else {
-        Jsons.treeToValue(this, StreamStateJsonValue::class.java).checkpoint(ctx)
+        Jsons.treeToValue(this, DefaultJdbcStreamStateValue::class.java).checkpoint(ctx)
     }
 
-/**
- * [StreamStateJsonValue] is like [CheckpointStreamState] but configuration- and catalog-agnostic.
- * This is the object which is used for de/serializing Airbyte STATE message values from/to
- * [OpaqueStateValue]s.
- */
-data class StreamStateJsonValue(
-    @JsonProperty("primary_key") val primaryKey: Map<String, JsonNode> = mapOf(),
-    @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
-)
-
-private fun StreamStateJsonValue.checkpoint(ctx: StreamReadContext): CheckpointStreamState? {
+private fun DefaultJdbcStreamStateValue.checkpoint(ctx: StreamReadContext): CheckpointStreamState? {
     val pkMap: Map<Field, JsonNode> = run {
         if (primaryKey.isEmpty()) {
             return@run mapOf()

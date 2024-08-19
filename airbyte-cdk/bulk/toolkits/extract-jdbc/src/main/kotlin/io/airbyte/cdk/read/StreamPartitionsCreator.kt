@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.read.StreamPartitionReader.AcquiredResources
 import io.airbyte.protocol.models.v0.SyncMode
+import java.util.concurrent.atomic.AtomicReference
 
 /** Default implementation of [PartitionsCreator] for streams in JDBC sources. */
 class StreamPartitionsCreator(
@@ -56,17 +58,21 @@ class StreamPartitionsCreator(
         val throughputBytesPerSecond: Long = 10L * 1024L * 1024L,
     )
 
-    override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus =
+    val acquiredResources = AtomicReference<AcquiredResources>(null)
+    fun interface AcquiredResources : AutoCloseable
+
+    override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
         // Running this PartitionsCreator may not always involve JDBC queries.
         // In those cases, the semaphore will be released very soon after, so this is OK.
-        if (ctx.querySemaphore.tryAcquire()) {
-            PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
-        } else {
-            PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
-        }
+        val acquiredResources: AcquiredResources =
+            ctx.sharedState.tryAcquireResourcesForCreator()
+                ?: return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
+        this.acquiredResources.set(acquiredResources)
+        return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
+    }
 
     override fun releaseResources() {
-        ctx.querySemaphore.release()
+        acquiredResources.getAndSet(null)?.close()
     }
 
     override suspend fun run(): List<PartitionReader> =
@@ -194,7 +200,7 @@ fun CheckpointStreamState?.streamPartitionsCreatorInput(
                 cursorUpperBound,
             )
         is CursorIncrementalCheckpoint ->
-            when (val cursorUpperBound: JsonNode? = ctx.transientCursorUpperBoundState.get()) {
+            when (val cursorUpperBound: JsonNode? = ctx.streamState.cursorUpperBound) {
                 null ->
                     StreamPartitionsCreator.CursorIncrementalColdStart(
                         cursor,
