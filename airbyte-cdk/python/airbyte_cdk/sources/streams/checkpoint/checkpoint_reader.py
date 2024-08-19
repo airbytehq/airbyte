@@ -62,6 +62,9 @@ class IncrementalCheckpointReader(CheckpointReader):
         if self._has_slices:
             next_slice = next(self._stream_slices, None)
             if next_slice is not None:
+            # Set the state to None to avoid sending a duplicate state message at the end of a sync since the stream has already emitted the state at the end of each slice. 
+            # If we want to avoid this extra complexity, we can also just accept
+            # that every sync emits a final duplicate state```
                 return next_slice
             self._state = None
             return None
