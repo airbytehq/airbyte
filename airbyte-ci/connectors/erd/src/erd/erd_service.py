@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import Any
 
 import dpath
-import google.generativeai as genai
-from airbyte_protocol.models import AirbyteCatalog
+import google.generativeai as genai  # type: ignore  # missing library stubs or py.typed marker
+from airbyte_protocol.models import AirbyteCatalog  # type: ignore  # missing library stubs or py.typed marker
 from erd.dbml_assembler import DbmlAssembler, Source
 from erd.relationships import Relationships, RelationshipsMerger
 from markdown_it import MarkdownIt
-from pydbml.renderer.dbml.default import DefaultDBMLRenderer
+from pydbml.renderer.dbml.default import DefaultDBMLRenderer  # type: ignore  # missing library stubs or py.typed marker
 
 
 class ErdService:

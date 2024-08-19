@@ -23,6 +23,7 @@ google-generativeai = "^0.7.2"
 markdown-it-py = ">=2.2.0"
 pydbml = "^1.1.0"
 pytest = "^8.1.1"
+pyyaml = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.0"

@@ -5,10 +5,10 @@ from typing import List, Set, Union
 
 import yaml
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
-from airbyte_protocol.models import AirbyteCatalog, AirbyteStream
+from airbyte_protocol.models import AirbyteCatalog, AirbyteStream  # type: ignore  # missing library stubs or py.typed marker
 from erd.relationships import Relationships
-from pydbml import Database
-from pydbml.classes import Column, Index, Reference, Table
+from pydbml import Database  # type: ignore  # missing library stubs or py.typed marker
+from pydbml.classes import Column, Index, Reference, Table  # type: ignore  # missing library stubs or py.typed marker
 
 
 class Source:
