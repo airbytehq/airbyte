@@ -26,7 +26,7 @@ poetry install --with dev
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/clickup-api)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` inside `source_clickup_api/manifest.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
+See `integration_tests/sample_config.json` for a sample config file.
 
 
 ### Locally running the connector
