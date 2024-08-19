@@ -13,6 +13,9 @@ defaults:
 jobs:
   optimize:
     name: Optimize new code in this PR
+      # Only run codeflash if
+      # 1. The contributor is not codeflash. To avoid infinite loops
+      # 2. The pull request is not from a forked repository
     if: ${{ github.actor != 'codeflash-ai[bot]' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork != true}}
     runs-on: ubuntu-latest
     env:
