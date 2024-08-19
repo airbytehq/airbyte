@@ -7,7 +7,7 @@ import importlib
 import json
 import os
 import pkgutil
-from typing import Generator, Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
 
 import jsonref
 from airbyte_cdk.models import ConnectorSpecification, FailureType
@@ -48,26 +48,18 @@ def resolve_ref_links(obj: Any) -> Any:
         Any: JSON serializable object with references converted and without external dependencies.
     """
 
-    def gen_items(container: Any) -> Generator:
-        if isinstance(container, dict):
-            stack.extend(container.items())
-            return container.items()
-        elif isinstance(container, list):
-            stack.extend(enumerate(container))
-            return enumerate(container)
-        else:
-            return []
-
     stack = [obj]
     while stack:
         current = stack.pop()
         if isinstance(current, jsonref.JsonRef):
             resolved = current.__subject__
-            obj = gen_items(resolved)
             if isinstance(resolved, dict):
                 resolved.pop("definitions", None)
-        else:
-            gen_items(current)
+            stack.extend(resolved.items() if isinstance(resolved, dict) else enumerate(resolved) if isinstance(resolved, list) else [])
+        elif isinstance(current, dict):
+            stack.extend(current.items())
+        elif isinstance(current, list):
+            stack.extend(enumerate(current))
     return obj
 
 

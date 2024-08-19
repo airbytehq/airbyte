@@ -5,7 +5,7 @@
 import logging
 from abc import abstractmethod
 from json import JSONDecodeError
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum
@@ -74,7 +74,7 @@ class AbstractOauth2Authenticator(AuthBase):
 
         Override to define additional parameters
         """
-        base_payload = {
+        base_payload: MutableMapping[str, Any] = {
             "grant_type": self.get_grant_type(),
             "client_id": self.get_client_id(),
             "client_secret": self.get_client_secret(),
@@ -86,7 +86,6 @@ class AbstractOauth2Authenticator(AuthBase):
             base_payload["scopes"] = scopes
 
         extra_body = self.get_refresh_request_body()
-        # Merge dictionaries efficiently
         return {**extra_body, **base_payload} if extra_body else base_payload
 
     def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
