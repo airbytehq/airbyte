@@ -152,11 +152,11 @@ class AbstractSource(Source, ABC):
                         traced_exception = e
                         info_message = f"Stopping sync on error from stream {configured_stream.stream.name} because {self.name} does not support continuing syncs on error."
                     else:
-                        traced_exception = self._serialize_exception(stream_instance, stream_descriptor, e)
+                        traced_exception = self._serialize_exception(stream_descriptor, e, stream_instance=stream_instance)
                         info_message = f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}"
 
                     yield traced_exception.as_sanitized_airbyte_message(stream_descriptor=stream_descriptor)
-                    stream_name_to_exception[stream_instance.name] = traced_exception
+                    stream_name_to_exception[stream_instance.name] = traced_exception  # type: ignore # use configured_stream if stream_instance is None
                     if self.stop_sync_on_stream_failure:
                         logger.info(info_message)
                         break
@@ -178,8 +178,8 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     @staticmethod
-    def _serialize_exception(stream_instance: Stream, stream_descriptor: StreamDescriptor, e: Exception) -> AirbyteTracedException:
-        display_message = stream_instance.get_error_display_message(e)
+    def _serialize_exception(stream_descriptor: StreamDescriptor, e: Exception, stream_instance: Optional[Stream] = None) -> AirbyteTracedException:
+        display_message = stream_instance.get_error_display_message(e) if stream_instance else None
         if display_message:
             return AirbyteTracedException.from_exception(e, message=display_message, stream_descriptor=stream_descriptor)
         return AirbyteTracedException.from_exception(e, stream_descriptor=stream_descriptor)
