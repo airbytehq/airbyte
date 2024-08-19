@@ -146,12 +146,12 @@ class AbstractSource(Source, ABC):
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream.stream, AirbyteStreamStatus.INCOMPLETE)
 
+                    stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
+
                     if isinstance(e, AirbyteTracedException):
-                        stream_descriptor = StreamDescriptor(name=configured_stream.stream.name)
                         traced_exception = e
                         info_message = f"Stopping sync on error from stream {configured_stream.stream.name} because {self.name} does not support continuing syncs on error."
                     else:
-                        stream_descriptor = None
                         traced_exception = self._serialize_exception(stream_instance, configured_stream, e)
                         info_message = f"{self.name} does not support continuing syncs on error from stream {configured_stream.stream.name}"
 
