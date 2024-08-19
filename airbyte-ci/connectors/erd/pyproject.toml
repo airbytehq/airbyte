@@ -40,7 +40,8 @@ type_check = "mypy src --disallow-untyped-defs"
 pre-push = []
 
 [tool.poetry.scripts]
-erd = "erd.erd_service:main"
+erd = "erd.cli:main"
 
 [tool.airbyte_ci]
 python_versions = ["3.10"]
+poe_tasks = ["type_check", "test"]

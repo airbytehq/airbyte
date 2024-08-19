@@ -172,7 +172,7 @@ class ConnectorContext(PipelineContext):
         return self.get_repo_dir("airbyte-ci/connectors/live-tests")
 
     @property
-    def erd_dir(self) -> Directory:
+    def erd_package_dir(self) -> Directory:
         return self.get_repo_dir("airbyte-ci/connectors/erd")
 
     @property

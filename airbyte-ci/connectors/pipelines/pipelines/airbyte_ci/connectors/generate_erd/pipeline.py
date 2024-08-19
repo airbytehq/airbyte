@@ -30,10 +30,6 @@ def _get_erd_folder(code_directory: Path) -> Path:
     return path
 
 
-def _get_dbml_file(code_directory: Path) -> Path:
-    return _get_erd_folder(code_directory) / "source.dbml"
-
-
 class GenerateDbml(Step):
     context: ConnectorContext
 
@@ -54,14 +50,13 @@ class GenerateDbml(Step):
         if self._skip_relationship_generation:
             command.append("--skip-llm-relationships")
 
+        erd_directory = self._build_erd_container(connector_directory, discovered_catalog).with_exec(command).directory("/source/erd")
         await (
-            self._build_erd_container(connector_directory, discovered_catalog)
-            .with_exec(command)
-            .directory("/source/erd")
+            erd_directory
             .export(str(_get_erd_folder(self.context.connector.code_directory)))
         )
 
-        return StepResult(step=self, status=StepStatus.SUCCESS)
+        return StepResult(step=self, status=StepStatus.SUCCESS, output=erd_directory)
 
     async def _get_discovered_catalog(self, connector_to_discover: Container) -> str:
         source_config_path_in_container = "/data/config.json"
@@ -80,7 +75,9 @@ class GenerateDbml(Step):
         if not filtered_secrets:
             raise ValueError("Expecting at least one secret to match name `config.json`")
         elif len(filtered_secrets) > 1:
-            print(f"Expecting only one secret with name `config.json but got {len(filtered_secrets)}. Will take one randomly...")
+            self.logger.warning(
+                f"Expecting only one secret with name `config.json but got {len(filtered_secrets)}. Will take the first one in the list."
+            )
 
         return filtered_secrets[0]
 
@@ -96,12 +93,12 @@ class GenerateDbml(Step):
         """Create a container to run ERD generation."""
         container = with_poetry(self.context)
         if self.context.genai_api_key:
-            container = container.with_env_variable("GENAI_API_KEY", self.context.genai_api_key.value)
+            container = container.with_secret_variable("GENAI_API_KEY", self.context.genai_api_key.as_dagger_secret(self.dagger_client))
 
         container = (
             container.with_mounted_directory("/source", connector_directory)
             .with_new_file("/source/erd/discovered_catalog.json", contents=discovered_catalog)
-            .with_mounted_directory("/app", self.context.erd_dir)
+            .with_mounted_directory("/app", self.context.erd_package_dir)
             .with_workdir("/app")
         )
 
@@ -116,25 +113,22 @@ class UploadDbmlSchema(Step):
     def __init__(self, context: PipelineContext) -> None:
         super().__init__(context)
 
-    async def _run(self, connector_to_discover: Container) -> StepResult:
+    async def _run(self, erd_directory: Directory) -> StepResult:
         if not self.context.dbdocs_token:
             raise ValueError(
                 "In order to publish to dbdocs, DBDOCS_TOKEN needs to be provided. Either pass the value or skip the publish step"
             )
 
-        connector = self.context.connector
-        source_dbml_content = open(_get_dbml_file(connector.code_directory)).read()
-
-        dbdocs_container = await (
+        dbdocs_container = (
             self.dagger_client.container()
             .from_("node:lts-bullseye-slim")
             .with_exec(["npm", "install", "-g", "dbdocs"])
             .with_env_variable("DBDOCS_TOKEN", self.context.dbdocs_token.value)
             .with_workdir("/airbyte_dbdocs")
-            .with_new_file("/airbyte_dbdocs/dbdocs.dbml", contents=source_dbml_content)
+            .with_file("/airbyte_dbdocs/dbdocs.dbml", erd_directory.file("source.dbml"))
         )
 
-        db_docs_build = ["dbdocs", "build", "dbdocs.dbml", f"--project={connector.technical_name}"]
+        db_docs_build = ["dbdocs", "build", "dbdocs.dbml", f"--project={self.context.connector.technical_name}"]
         await dbdocs_container.with_exec(db_docs_build).stdout()
         # TODO: produce link to dbdocs in output logs
 
@@ -168,6 +162,7 @@ async def run_connector_generate_erd_pipeline(
                 StepToRun(
                     id=CONNECTOR_TEST_STEP_ID.PUBLISH_ERD,
                     step=UploadDbmlSchema(context),
+                    args=lambda results: {"erd_directory": results[CONNECTOR_TEST_STEP_ID.DBML_FILE].output},
                     depends_on=[CONNECTOR_TEST_STEP_ID.DBML_FILE],
                 ),
             ]

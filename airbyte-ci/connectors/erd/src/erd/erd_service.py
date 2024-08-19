@@ -3,9 +3,8 @@
 import copy
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-import click
 import dpath
 import google.generativeai as genai
 from airbyte_protocol.models import AirbyteCatalog
@@ -133,39 +132,3 @@ Limitations:
         Note: if this folder change, make sure to update the exported folder in the pipeline
         """
         return self._source_path / "erd" / "discovered_catalog.json"
-
-
-@click.command()
-@click.option(
-    "--genai-api-key",
-    help="API key for Gemini. Can be found at URL https://aistudio.google.com/app/apikey",
-    envvar="GENAI_API_KEY",
-    type=click.STRING,
-    required=False,
-)
-@click.option(
-    "--skip-llm-relationships",
-    is_flag=True,
-    type=bool,
-    default=False,
-    help="This will skip the generation of estimated relationships using LLM and assumes that the `estimated_relationships.json` exists. "
-    "This is good when there is no change in the schemas of the source.",
-)
-@click.option(
-    "--source-path",
-    help="Source folder path",
-    type=click.STRING,
-    required=True,
-)
-def main(genai_api_key: Optional[str], source_path: str, skip_llm_relationships: bool) -> None:
-    erd_service = ErdService(Path(source_path))
-    if not skip_llm_relationships:
-        if not genai_api_key:
-            raise ValueError("API key for Gemini is required")
-        genai.configure(api_key=genai_api_key)
-        erd_service.generate_estimated_relationships()
-    erd_service.write_dbml_file()
-
-
-if __name__ == "__main__":
-    main()
