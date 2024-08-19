@@ -274,20 +274,21 @@ class IterateUntilNull<T, U: AbstractDestinationTask<T?, *>>(
  * current task is complete.
  */
 class Join<T, U: AbstractDestinationTask<T, *>>(
-    private val underlying: () -> ControlTask<T, U>
+    private val underlying: () -> AbstractDestinationTask<T, *>
 ): ControlTask<T, AbstractDestinationTask.FromValue<T, T>>() {
     val taskCount = AtomicInteger(0)
 
     override suspend fun execute(): List<FromValue<T, T>> {
         val acquire = underlying().mapTask { task ->
-                Before({taskCount.incrementAndGet()}) {
+                Before({println("here ${taskCount.incrementAndGet()}")}) {
                     Do { task }
                 }
             }
         val thenReleaseAndWait = acquire.mapValue { value ->
             Before({
-                taskCount.decrementAndGet()
+                println("there: ${taskCount.decrementAndGet()}")
                 while (taskCount.get() > 0) {
+                    println("waiting...")
                     delay(100)
                 }
             }) {
@@ -346,7 +347,7 @@ class TaskList<T, U: AbstractDestinationTask<T, *>>(
             return emptyList()
         } else {
             val headGuarded = Join {
-                Do { tasks.first() }
+                tasks.first()
             }
             val withTail = headGuarded.mapValue { value ->
                 TaskSet(listOf(

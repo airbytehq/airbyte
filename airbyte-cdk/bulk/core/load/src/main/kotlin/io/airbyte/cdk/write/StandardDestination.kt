@@ -1,6 +1,12 @@
 package io.airbyte.cdk.write
 
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+import org.apache.mina.util.ConcurrentHashSet
+
 abstract class StandardDestination {
+    val openStreams: ConcurrentHashSet<Stream> = ConcurrentHashSet()
+    val openBatches: ConcurrentHashMap<Stream, AtomicInteger> = ConcurrentHashMap()
 
     // Called once before anything else
     open fun setup() {}

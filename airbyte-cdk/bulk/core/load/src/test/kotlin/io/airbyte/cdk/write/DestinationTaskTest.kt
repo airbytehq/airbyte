@@ -20,7 +20,7 @@ class DestinationTaskTest {
         val queueCloseTask = Execute { resultQueue.close() }.mapValue { _ -> Noop() }
         val tasks = TaskList(numberTasks + listOf(queueCloseTask))
 
-        val runner = TaskRunner(tasks)
+        val runner = DestinationRunner(tasks)
         launch { runner.run() }
         val results = resultQueue.consumeAsFlow().toList()
         assert(results == (0 until limit).toList())
@@ -43,7 +43,7 @@ class DestinationTaskTest {
             //resultQueue.close()
         }.mapValue { _ -> Noop() }
         val tasks = TaskList(listOf(replicatedTask, queueCloseTask))
-        val runner = TaskRunner(tasks)
+        val runner = DestinationRunner(tasks)
         launch { runner.run() }
         val results = resultQueue.consumeAsFlow().toList()
         println(results)
