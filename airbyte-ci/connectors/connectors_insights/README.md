@@ -56,6 +56,9 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.3.2
+Bugfix: Ignore CI on master report if it's not accessible.
+
 ### 0.3.1
 Skip manifest inferred insights when the connector does not have a `manifest.yaml` file.
 
