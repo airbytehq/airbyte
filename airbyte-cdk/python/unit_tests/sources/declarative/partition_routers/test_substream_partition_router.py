@@ -2,13 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from functools import partial
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pytest as pytest
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.incremental import ResumableFullRefreshCursor
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
+from airbyte_cdk.sources.declarative.incremental import ChildPartitionResumableFullRefreshCursor, ResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor, StreamSlice
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -729,3 +730,156 @@ def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_de
         if use_incremental_dependency:
             assert partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter]
         expected_counter += 1
+
+
+@pytest.mark.parametrize(
+    "use_incremental_dependency",
+    [
+        pytest.param(False, id="test_substream_resumable_full_refresh_stream_without_parent_checkpoint"),
+        pytest.param(True, id="test_substream_resumable_full_refresh_stream_with_use_incremental_dependency_for_parent_checkpoint"),
+    ]
+)
+def test_substream_using_resumable_full_refresh_parent_stream_slices(use_incremental_dependency):
+    mock_parent_slices = [
+        StreamSlice(cursor_slice={}, partition={}),
+        StreamSlice(cursor_slice={"next_page_token": 2}, partition={}),
+        StreamSlice(cursor_slice={"next_page_token": 3}, partition={}),
+    ]
+
+    expected_parent_slices = [
+        {"partition_field": "makoto_yuki", "parent_slice": {}},
+        {"partition_field": "yukari_takeba", "parent_slice": {}},
+        {"partition_field": "mitsuru_kirijo", "parent_slice": {}},
+        {"partition_field": "akihiko_sanada", "parent_slice": {}},
+        {"partition_field": "junpei_iori", "parent_slice": {}},
+        {"partition_field": "fuuka_yamagishi", "parent_slice": {}},
+    ]
+
+    expected_parent_state = [
+        {"next_page_token": 2},
+        {"next_page_token": 2},
+        {"next_page_token": 3},
+        {"next_page_token": 3},
+        {'__ab_full_refresh_sync_complete': True},
+        {'__ab_full_refresh_sync_complete': True},
+    ]
+
+    expected_substream_state = {
+        "states": [
+            {
+                "partition": {
+                    "parent_slice": {},
+                    "partition_field": "makoto_yuki"
+                },
+                "cursor": {
+                    "__ab_full_refresh_sync_complete": True
+                }
+            },
+            {
+                "partition": {
+                    "parent_slice": {},
+                    "partition_field": "yukari_takeba"
+                },
+                "cursor": {
+                    "__ab_full_refresh_sync_complete": True
+                }
+            },
+            {
+                "partition": {
+                    "parent_slice": {},
+                    "partition_field": "mitsuru_kirijo"
+                },
+                "cursor": {
+                    "__ab_full_refresh_sync_complete": True
+                }
+            },
+            {
+                "partition": {
+                    "parent_slice": {},
+                    "partition_field": "akihiko_sanada"
+                },
+                "cursor": {
+                    "__ab_full_refresh_sync_complete": True
+                }
+            },
+            {
+                "partition": {
+                    "parent_slice": {},
+                    "partition_field": "junpei_iori"
+                },
+                "cursor": {
+                    "__ab_full_refresh_sync_complete": True
+                }
+            },
+            {
+                "partition": {
+                    "parent_slice": {},
+                    "partition_field": "fuuka_yamagishi"
+                },
+                "cursor": {
+                    "__ab_full_refresh_sync_complete": True
+                }
+            }
+        ],
+        "parent_state": {
+            "persona_3_characters": {
+                "__ab_full_refresh_sync_complete": True
+            }
+        }
+    }
+
+    partition_router = SubstreamPartitionRouter(
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockResumableFullRefreshStream(
+                    slices=[StreamSlice(partition={}, cursor_slice={})],
+                    cursor=ResumableFullRefreshCursor(parameters={}),
+                    record_pages=[
+                        [
+                            Record(data={"id": "makoto_yuki"}, associated_slice=mock_parent_slices[0]),
+                            Record(data={"id": "yukari_takeba"}, associated_slice=mock_parent_slices[0]),
+                        ],
+                        [
+                            Record(data={"id": "mitsuru_kirijo"}, associated_slice=mock_parent_slices[1]),
+                            Record(data={"id": "akihiko_sanada"}, associated_slice=mock_parent_slices[1]),
+                        ],
+                        [
+                            Record(data={"id": "junpei_iori"}, associated_slice=mock_parent_slices[2]),
+                            Record(data={"id": "fuuka_yamagishi"}, associated_slice=mock_parent_slices[2]),
+                        ],
+                    ],
+                    name="persona_3_characters",
+                ),
+                incremental_dependency=use_incremental_dependency,
+                parent_key="id",
+                partition_field="partition_field",
+                parameters={},
+                config={},
+            )
+        ],
+        parameters={},
+        config={},
+    )
+
+    substream_cursor_slicer = PerPartitionCursor(
+        cursor_factory=CursorFactory(create_function=partial(ChildPartitionResumableFullRefreshCursor, {})),
+        partition_router=partition_router,
+    )
+
+    expected_counter = 0
+    for actual_slice in substream_cursor_slicer.stream_slices():
+        # close the substream slice
+        substream_cursor_slicer.close_slice(actual_slice)
+        # check the slice has been processed
+        assert actual_slice == expected_parent_slices[expected_counter]
+        # check for parent state
+        if use_incremental_dependency:
+            assert substream_cursor_slicer._partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter]
+        expected_counter += 1
+
+    # validate final state for closed substream slices
+    final_state = substream_cursor_slicer.get_stream_state()
+    if not use_incremental_dependency:
+        assert final_state["states"] == expected_substream_state["states"], "State for substreams is not valid!"
+    else:
+        assert final_state == expected_substream_state, "State for substreams with incremental dependency is not valid!"
