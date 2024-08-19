@@ -8,7 +8,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.commons.jackson.MoreMappers
 
 open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
-    private fun makeType(typeName: String, format: String?=null, airbyteType: String?=null): ObjectNode {
+    private fun makeType(
+        typeName: String,
+        format: String? = null,
+        airbyteType: String? = null
+    ): ObjectNode {
         val newSchema = MoreMappers.initMapper().createObjectNode()
         newSchema.put("type", typeName)
         if (format != null) {

@@ -83,12 +83,12 @@
       ]
     },
     "combined_type_alt": {
-      "oneOf":[
+      "oneOf": [
         {
-          "type":"integer"
+          "type": "integer"
         },
         {
-          "type":"string"
+          "type": "string"
         }
       ]
     },
