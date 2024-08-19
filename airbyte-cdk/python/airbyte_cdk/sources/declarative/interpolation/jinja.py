@@ -131,6 +131,6 @@ class JinjaInterpolation(Interpolation):
     @cache
     def _compile(self, s: Optional[str]) -> Template:
         """
-        Jinja in usual case caches compiled templates. But because we use `from_string` not a template loader, we not to take care of it ourselves.
+        We must cache the Jinja Template ourselves because we're using `from_string` instead of a template loader
         """
         return self._environment.from_string(s)
