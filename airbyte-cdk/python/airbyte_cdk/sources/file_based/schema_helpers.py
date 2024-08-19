@@ -167,7 +167,8 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
 
     The record conforms to the supplied schema iff:
     - All columns in the record are in the schema.
-    - For every column in the record, that column's type is equal to or narrower than the same column's type in the schema.
+    - For every column in the record, that column's type is equal to or narrower than the same column's
+      type in the schema.
     """
     schema_properties = schema.get("properties", {})
     schema_columns = schema_properties.keys()
