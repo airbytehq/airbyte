@@ -54,9 +54,12 @@ class GlobalSubstreamCursor(DeclarativeCursor):
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
-        Generate stream slices and ensure that the last slice is flagged appropriately.
-        This method uses a semaphore to track the processing of slices and ensures
-        that `close_slice` is called only after all slices have been processed.
+        Generates stream slices, ensuring the last slice is properly flagged and processed.
+
+        This method creates a sequence of stream slices by iterating over partitions and cursor slices.
+        It holds onto one slice in memory to set `_all_slices_yielded` to `True` before yielding the
+        final slice. A semaphore is used to track the processing of slices, ensuring that `close_slice`
+        is called only after all slices have been processed.
         """
         previous_slice = None
 
