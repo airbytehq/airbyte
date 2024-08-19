@@ -277,7 +277,7 @@ class EngagePaginationStrategy(PageIncrement):
 
     _total = 0
 
-    def next_page_token(self, response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
         """
         Determines page and subpage numbers for the `items` stream
 

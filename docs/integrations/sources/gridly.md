@@ -39,6 +39,7 @@ Gridly support version control, by default the `grid id` is the same to the `bra
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.1.14 | 2024-08-17 | [44320](https://github.com/airbytehq/airbyte/pull/44320) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43668](https://github.com/airbytehq/airbyte/pull/43668) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [42662](https://github.com/airbytehq/airbyte/pull/42662) | Update dependencies |
 | 0.1.11 | 2024-07-20 | [42173](https://github.com/airbytehq/airbyte/pull/42173) | Update dependencies |

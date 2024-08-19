@@ -279,6 +279,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.18.2
+
+Allow live tests with or without state in CI.
+
 ### 0.18.1
 
 Fix extra argument.
