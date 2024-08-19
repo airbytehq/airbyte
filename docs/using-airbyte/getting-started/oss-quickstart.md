@@ -205,6 +205,7 @@ resource mode flag when install Airbyte with `abctl`:
 abctl local install --low-resource-mode
 ```
 
+Follow this [Github discussion](https://github.com/airbytehq/airbyte/discussions/44391) to upvote and track progress towards supporting lower resource environments.
 
 ## 3: Move Data
 

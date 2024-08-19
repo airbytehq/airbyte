@@ -1044,7 +1044,10 @@ def _create_page(response_body):
                 _create_page({"rates": [{"ABC": 2, "partition": 1}], "_metadata": {"next": "next"}}),
             ),
             [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"ABC": 2, "partition": 1}],
-            [call({}, {"partition": "0"}, None), call({}, {"partition": "1"}, None)],
+            [
+                call({'states': []}, {"partition": "0"}, None),
+                call({'states': [{'partition': {'partition': '0'}, 'cursor': {'__ab_full_refresh_sync_complete': True}}]}, {"partition": "1"}, None),
+            ],
         ),
         (
             "test_with_pagination_and_partition_router",
@@ -1116,9 +1119,9 @@ def _create_page(response_body):
             ),
             [{"ABC": 0, "partition": 0}, {"AED": 1, "partition": 0}, {"USD": 3, "partition": 0}, {"ABC": 2, "partition": 1}],
             [
-                call({}, {"partition": "0"}, None),
-                call({}, {"partition": "0"}, {"next_page_token": "next"}),
-                call({}, {"partition": "1"}, None),
+                call({'states': []}, {"partition": "0"}, None),
+                call({'states': []}, {"partition": "0"}, {"next_page_token": "next"}),
+                call({'states': [{'partition': {'partition': '0'}, 'cursor': {'__ab_full_refresh_sync_complete': True}}]}, {'partition': '1'}, None),
             ],
         ),
     ],
@@ -1242,8 +1245,8 @@ def test_only_parent_streams_use_cache():
     assert not streams[1].retriever.requester.use_cache
 
     # Parent stream created for substream
-    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.name == "applications"
-    assert streams[1].retriever.stream_slicer.parent_stream_configs[0].stream.retriever.requester.use_cache
+    assert streams[1].retriever.stream_slicer._partition_router.parent_stream_configs[0].stream.name == "applications"
+    assert streams[1].retriever.stream_slicer._partition_router.parent_stream_configs[0].stream.retriever.requester.use_cache
 
     # Main stream without caching
     assert streams[2].name == "jobs"
