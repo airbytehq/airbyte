@@ -28,6 +28,7 @@ pyyaml = "^6.0"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.3.0"
 mypy = "^1.8.0"
+types-pyyaml = "^6.0.12.20240311"
 
 [tool.ruff.lint]
 select = ["I", "F"]
