@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                 | Subject                                                                                                                                                        |
 |:-----------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.44.14    | 2024-08-19 | [\#42503](https://github.com/airbytehq/airbyte/pull/42503)   | Destinations (refreshes) - correctly detect existing raw/final table of the correct generation during truncate sync                                            |
 | 0.44.13    | 2024-08-14 | [\#42579](https://github.com/airbytehq/airbyte/pull/42579)   | S3 destination - OVERWRITE: keep files until successful sync of same generationId                                                                              |
 | 0.44.5     | 2024-08-09 | [\#43374](https://github.com/airbytehq/airbyte/pull/43374)   | S3 destination V2 fields, conversion improvements, bugfixes                                                                                                    |
 | 0.44.4     | 2024-08-08 | [\#43410](https://github.com/airbytehq/airbyte/pull/43330)   | Better logs for counting info to state message.                                                                                                                |
