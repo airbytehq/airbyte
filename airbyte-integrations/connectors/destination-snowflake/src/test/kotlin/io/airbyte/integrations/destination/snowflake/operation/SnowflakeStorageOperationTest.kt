@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.snowflake.operation
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.util.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -116,7 +116,7 @@ class SnowflakeStorageOperationTest {
         val streamConfig =
             StreamConfig(
                 streamId,
-                DestinationSyncMode.OVERWRITE,
+                ImportType.APPEND,
                 listOf(),
                 Optional.empty(),
                 linkedMapOf(),

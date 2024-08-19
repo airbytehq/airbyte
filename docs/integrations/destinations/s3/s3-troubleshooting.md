@@ -2,6 +2,10 @@
 
 ## Connector Limitations
 
+### Encryption at rest
+
+[Server-Side encryption](https://docs.aws.amazon.com/AmazonS3/latest/userguide/specifying-s3-encryption.html) using S3 managed keys should work out of the box. We DO NOT support using [customer keys](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerSideEncryptionCustomerKeys.html) or KMS.
+
 ### Vendor-Specific Connector Limitations
 
 :::warning
