@@ -301,7 +301,6 @@ public class MongoDbStateManager implements SourceStateMessageProducer<Document>
     if (stream.getSyncMode() == INCREMENTAL) {
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       if (!streamPairToLastIdMap.containsKey(pair)) {
-        // fix me!
         var initialLastId = getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
         streamPairToLastIdMap.put(pair, initialLastId);
       }
