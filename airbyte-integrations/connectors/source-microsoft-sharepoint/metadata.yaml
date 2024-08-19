@@ -10,7 +10,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-microsoft-sharepoint
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:

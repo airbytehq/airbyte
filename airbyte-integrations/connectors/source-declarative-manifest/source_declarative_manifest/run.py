@@ -1,10 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
+
 import json
 import os
 import pkgutil
 import sys
+from pathlib import Path
 from typing import List
 
 from airbyte_cdk.connector import BaseConnector
@@ -36,7 +39,7 @@ class SourceLocalYaml(YamlDeclarativeSource):
 
 def _is_local_manifest_command(args: List[str]) -> bool:
     # Check for a local manifest.yaml file
-    return os.path.isfile("source_declarative_manifest/manifest.yaml")
+    return Path("/airbyte/integration_code/source_declarative_manifest/manifest.yaml").exists()
 
 
 def handle_command(args: List[str]) -> None:
