@@ -51,7 +51,7 @@ class SnowflakeDestinationHandler(
         databaseName,
         database,
         rawTableSchema,
-        SQLDialect.POSTGRES,
+        SQLDialect.POSTGRES
     ) {
     // Postgres is close enough to Snowflake SQL for our purposes.
     // We don't quote the database name in any queries, so just upcase it.
@@ -678,6 +678,7 @@ class SnowflakeDestinationHandler(
         }
 
 
+        //TODO: This code is causing test cases to fail
 
         //NEW CODE
         @Throws(SQLException::class)
@@ -745,6 +746,10 @@ class SnowflakeDestinationHandler(
 
                 LOGGER.error("SHOW command usage caused exception", e)
 
+                LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
+
+                LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
+
                 e.printStackTrace()
 
                 //TODO: Need to throw exceptionNot throwing exception during development
@@ -757,12 +762,22 @@ class SnowflakeDestinationHandler(
 
             }
 
+            println("println: existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
+            println("println: existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
+
+            println("println: existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
+            println("println: existingTablesFromShowQuery=" + existingTablesFromShowQuery)
+
+
+            LOGGER.info("existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
             LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
 
+            LOGGER.info("existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
             LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
 
-            return existingTablesFromShowQuery
+            //return existingTablesFromShowQuery
 
+            return existingTablesFromInfoSchema;
         }
 
     }
