@@ -147,6 +147,7 @@ class StreamPartitionsCreatorUtilsTest {
             StreamPartitionReader.CursorIncrementalInput(
                 cursor = k,
                 cursorLowerBound = Jsons.numberNode(1),
+                isLowerBoundIncluded = false,
                 cursorUpperBound = Jsons.numberNode(4),
             )
         val splits: List<Pair<List<JsonNode>?, List<JsonNode>?>> =

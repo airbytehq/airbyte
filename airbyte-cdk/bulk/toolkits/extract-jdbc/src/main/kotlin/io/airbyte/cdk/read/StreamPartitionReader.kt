@@ -37,6 +37,7 @@ class StreamPartitionReader(
     data class CursorIncrementalInput(
         val cursor: Field,
         val cursorLowerBound: JsonNode,
+        val isLowerBoundIncluded: Boolean,
         val cursorUpperBound: JsonNode,
     ) : Input
 
@@ -173,6 +174,7 @@ fun StreamPartitionReader.Input.querySpec(
                 stream,
                 checkpointColumns = primaryKey,
                 checkpointLowerBound = primaryKeyLowerBound,
+                isLowerBoundIncluded = false,
                 checkpointUpperBound = primaryKeyUpperBound,
                 isOrdered,
                 limit,
@@ -182,6 +184,7 @@ fun StreamPartitionReader.Input.querySpec(
                 stream,
                 checkpointColumns = primaryKey,
                 checkpointLowerBound = primaryKeyLowerBound,
+                isLowerBoundIncluded = false,
                 checkpointUpperBound = primaryKeyUpperBound,
                 isOrdered,
                 limit,
@@ -191,6 +194,7 @@ fun StreamPartitionReader.Input.querySpec(
                 stream,
                 checkpointColumns = listOf(cursor),
                 checkpointLowerBound = listOf(cursorLowerBound),
+                isLowerBoundIncluded = isLowerBoundIncluded,
                 checkpointUpperBound = listOf(cursorUpperBound),
                 isOrdered,
                 limit,
@@ -201,6 +205,7 @@ private fun querySpecForStreamPartitionReader(
     stream: Stream,
     checkpointColumns: List<Field>,
     checkpointLowerBound: List<JsonNode>?,
+    isLowerBoundIncluded: Boolean,
     checkpointUpperBound: List<JsonNode>?,
     isOrdered: Boolean,
     limit: Long?,
@@ -215,7 +220,12 @@ private fun querySpecForStreamPartitionReader(
         checkpointLowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
     val lowerBoundDisj: List<WhereClauseNode> =
         zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
-            val lastLeaf: WhereClauseLeafNode = Greater(gtCol, gtValue)
+            val lastLeaf: WhereClauseLeafNode =
+                if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
+                    GreaterOrEqual(gtCol, gtValue)
+                } else {
+                    Greater(gtCol, gtValue)
+                }
             And(
                 zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
                     Equal(eqCol, eqValue)
