@@ -57,65 +57,6 @@ class SnowflakeDestinationHandler(
     // We don't quote the database name in any queries, so just upcase it.
     private val databaseName = databaseName.uppercase(Locale.getDefault())
 
-
-    //TODO: Original code - kept for now to simplify testing, to be removed
-    /*
-    @Throws(SQLException::class)
-    private fun getFinalTableRowCount(
-        streamIds: List<StreamId>
-    ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
-
-        LOGGER.info("Entering getFinalTableRowCount");
-
-        val tableRowCounts = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-        // convert list stream to array
-        val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-        val names = streamIds.map { it.finalName }.toTypedArray()
-
-
-        // SHOW TABLES LIKE 'USERS_FINAL' IN SQL_GENERATOR_TEST_PNJAYGLBKN;
-
-        val query =
-            """
-                |SELECT table_schema, table_name, row_count
-                |FROM information_schema.tables
-                |WHERE table_catalog = ?
-                |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-                |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-            |""".trimMargin()
-
-        //Dedup the lists to make the snowflake IN clause more efficient
-//          val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
-//          val deduplicatedNames = names.toSet().toTypedArray()
-
-        val deduplicatedNamespaces = namespaces
-        val deduplicatedNames = names
-
-        val bindValues = arrayOf(databaseName) + deduplicatedNamespaces + deduplicatedNames
-
-        val results: List<JsonNode> = database.queryJsons(query, *bindValues)
-
-//        LOGGER.info("Inside getFinalTableRowCount, calling CacheManager.queryJsons with: \n query=" + query
-//            + "\n bindValues=" + bindValues)
-//
-//        //val results: List<JsonNode> = CacheManager.queryJsons(database, query, databaseName, namespaces, names)
-//
-//        val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
-
-
-        for (result in results) {
-            val tableSchema = result["TABLE_SCHEMA"].asText()
-            val tableName = result["TABLE_NAME"].asText()
-            val rowCount = result["ROW_COUNT"].asInt()
-            tableRowCounts
-                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
-                rowCount
-        }
-        return tableRowCounts
-    }
-
-    */
-
     @Throws(SQLException::class)
     private fun getFinalTableRowCount(
         streamIds: List<StreamId>
@@ -222,6 +163,7 @@ class SnowflakeDestinationHandler(
                     throw RuntimeException(e)
                 }
             }
+
         if (!tableExists) {
             return InitialRawTableStatus(
                 rawTableExists = false,
@@ -229,6 +171,7 @@ class SnowflakeDestinationHandler(
                 maxProcessedTimestamp = Optional.empty(),
             )
         }
+
         // Snowflake timestamps have nanosecond precision, so decrement by 1ns
         // And use two explicit queries because COALESCE doesn't short-circuit.
         // This first query tries to find the oldest raw record with loaded_at = NULL
@@ -274,6 +217,7 @@ class SnowflakeDestinationHandler(
                     )
                     .first(),
             )
+
         if (minUnloadedTimestamp.isPresent) {
             return InitialRawTableStatus(
                 rawTableExists = true,
@@ -615,11 +559,6 @@ class SnowflakeDestinationHandler(
             streamIds: List<StreamId>
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
-            LOGGER.info("Entering findExistingTables(...)");
-
-            //TODO: Remove the call to the original function added for testing
-            //val existingTablesFromInfoSchema = findExistingTables_ORIGINAL(database, databaseName, streamIds)
-
             val existingTablesFromShowQuery =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
 
@@ -642,19 +581,16 @@ class SnowflakeDestinationHandler(
                         showColumnsQuery,
                     )
 
-                    println("showColumnsResult=" + showColumnsResult)
-
                     for (result in showColumnsResult) {
-
-                        println("Inside for loop: result=" + result)
 
                         val tableSchema = result["schema_name"].asText()
                         val tableName = result["table_name"].asText()
                         val columnName = result["column_name"].asText()
                         var dataType = JSONObject(result["data_type"].asText()).getString("type")
 
-                        //TODO: Remove code temporarily added to investigate test case failures
-                        //Note: This change has fixed two failing test cases
+                        //TODO: Need to check if there are other datatype differences
+                        // between the original approach and the new approach with SHOW queries
+
                         if(dataType.equals("FIXED")) {
                             dataType = "NUMBER"
                         } else if(dataType.equals("REAL")) {
@@ -677,17 +613,13 @@ class SnowflakeDestinationHandler(
                             )
                     }
 
-                    LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-
                 }
 
             } catch (e: Exception) {
 
                 LOGGER.error("SHOW command usage caused exception", e)
 
-                //LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
-
-                LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
+                LOGGER.error("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
 
                 e.printStackTrace()
 
@@ -700,308 +632,10 @@ class SnowflakeDestinationHandler(
 
             }
 
-//            println("println: existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
-//            println("println: existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
-//
-//            println("println: existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
-//            println("println: existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-//
-//
-//            LOGGER.info("existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
-//            LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
-//
-//            LOGGER.info("existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
-//            LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-
-            /*
-            val stringFromExistingTablesFromInfoSchema = printNestedMap(existingTablesFromInfoSchema, "existingTablesFromInfoSchema")
-            val stringFromExistingTablesFromShowQuery = printNestedMap(existingTablesFromShowQuery, "existingTablesFromShowQuery")
-
-            if( ! stringFromExistingTablesFromInfoSchema.equals(stringFromExistingTablesFromShowQuery)) {
-
-                println("ERROR: Output from string comparison of info schema and show command output does not match")
-                println("\n\nstringFromExistingTablesFromInfoSchema=\n" + stringFromExistingTablesFromInfoSchema)
-                println("\n\nstringFromExistingTablesFromShowQuery=\n" + stringFromExistingTablesFromShowQuery)
-                findMismatchSubstring(stringFromExistingTablesFromInfoSchema, stringFromExistingTablesFromShowQuery)
-
-            } else {
-                println("SUCCESS: Output from string comparison of info schema and show command output matched exactly")
-            }
-
-
-             */
-
             return existingTablesFromShowQuery
 
-            //return existingTablesFromInfoSchema;
         }
-
-        //TODO: Remove code added for testing
-        fun findMismatchSubstring(str1: String, str2: String): String? {
-            val minLength = minOf(str1.length, str2.length)
-
-            // Find the index of the first mismatch
-            var mismatchIndex = -1
-            for (i in 0 until minLength) {
-                if (str1[i] != str2[i]) {
-                    mismatchIndex = i
-                    break
-                }
-            }
-
-            // If no mismatch was found within the common length, check if one string is longer
-            if (mismatchIndex == -1) {
-                if (str1.length != str2.length) {
-                    mismatchIndex = minLength
-                } else {
-                    // No mismatch and strings are of the same length
-                    return null
-                }
-            }
-
-            // Return the substring from the mismatch index in the first string
-            println("Mismatch in str1:" + str1.substring(mismatchIndex))
-            println("Mismatch in str2:" + str2.substring(mismatchIndex))
-
-            return str1.substring(mismatchIndex)
-        }
-
-
-        fun printNestedMap(map: LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>,
-                     messagePrefix: String): String {
-
-            println("Inside printMap: messagePrefix=" + messagePrefix)
-
-            var output = " NestedMap: "
-
-            for ((outerKey, innerMap) in map) {
-                output = output + "Outer Key: $outerKey"
-                for ((innerKey, tableDefinition) in innerMap) {
-                    output = output + "  Inner Key: $innerKey"
-                    output = output + "    Table Name: $innerKey"
-                    output = output + "    Columns: " + printColumnMap(tableDefinition.columns)
-                }
-            }
-
-            return output
-        }
-
-        fun printColumnMap(map: LinkedHashMap<String, ColumnDefinition>): String {
-
-            var output = "Columns: {"
-
-            for ((columnName, columnDefinition) in map) {
-                output = output + " \ncolumnName: $columnName"
-                //println("columnDefinition: " + columnDefinition.toString())
-                output = output + " columnDefinition: ColumnDefinition(name='${columnDefinition.name}', type='${columnDefinition.type}', columnSize=${columnDefinition.columnSize}, isNullable=${columnDefinition.isNullable})"
-            }
-
-            output = output + " } //end of columns"
-
-            return output
-
-        }
-
-
-
-        //TODO: Remove Original function, kept for now to simplify testing comparisons
-
-        //Original Code
-        @Throws(SQLException::class)
-        fun findExistingTables_ORIGINAL(
-            database: JdbcDatabase,
-            databaseName: String,
-            streamIds: List<StreamId>
-        ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
-
-            println("Entering findExistingTables(...)");
-
-            val existingTables = LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-            // convert list stream to array
-            val namespaces = streamIds.map { it.finalNamespace }.toTypedArray()
-            val names = streamIds.map { it.finalName }.toTypedArray()
-            val query =
-                """
-    |SELECT table_schema, table_name, column_name, data_type, is_nullable
-    |FROM information_schema.columns
-    |WHERE table_catalog = ?
-    |AND table_schema IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-    |AND table_name IN (${IntRange(1, streamIds.size).joinToString { "?" }})
-    |ORDER BY table_schema, table_name, ordinal_position;
-    |""".trimMargin()
-
-            //            //Dedup the lists to make the snowflake IN clause more efficient
-            //            val deduplicatedNamespaces = namespaces.toSet().toTypedArray()
-            //            val deduplicatedNames = names.toSet().toTypedArray()
-
-
-            //TODO: Temporarily setting same values for testing
-            val deduplicatedNamespaces = namespaces
-            val deduplicatedNames = names
-
-            val bindValues =
-                arrayOf(databaseName.uppercase(Locale.getDefault())) + deduplicatedNamespaces + deduplicatedNames
-
-//            val bindValues =
-//                arrayOf(databaseName.uppercase(Locale.getDefault())) + namespaces + names
-
-            val results: List<JsonNode> = database.queryJsons(query, *bindValues)
-
-//            LOGGER.info("Inside findExistingTables, calling CacheManager.queryJsons with: \n query=" + query
-//                + "\n bindValues=" + bindValues)
-//
-//            val results: List<JsonNode> = CacheManager.queryJsons(database, query, *bindValues)
-
-            for (result in results) {
-                val tableSchema = result["TABLE_SCHEMA"].asText()
-                val tableName = result["TABLE_NAME"].asText()
-                val columnName = result["COLUMN_NAME"].asText()
-                val dataType = result["DATA_TYPE"].asText()
-                val isNullable = result["IS_NULLABLE"].asText()
-                val tableDefinition =
-                    existingTables
-                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
-                        .computeIfAbsent(tableName) { _: String? ->
-                            TableDefinition(LinkedHashMap())
-                        }
-                tableDefinition.columns[columnName] =
-                    ColumnDefinition(columnName, dataType, 0, fromIsNullableIsoString(isNullable))
-            }
-            return existingTables
-        }
-
-
-
-        //TODO: Remove extra function added for debugging
-        @Throws(SQLException::class)
-        fun findExistingTables_NEW_CODE_FOR_FINAL_VERSION(
-            database: JdbcDatabase,
-            databaseName: String,
-            streamIds: List<StreamId>
-        ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
-
-            LOGGER.info("Entering findExistingTables(...)");
-
-            //TODO: Remove the call to the original function added for testing
-            //val existingTablesFromInfoSchema = findExistingTables_ORIGINAL(database, databaseName, streamIds)
-
-            val existingTablesFromShowQuery =
-                LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-
-            try {
-
-                for (stream in streamIds) {
-
-                    val showColumnsQuery =
-                        String.format(
-
-                            """
-                                SHOW COLUMNS IN TABLE %s.%s.%s;
-                            """.trimIndent(),
-                            databaseName,
-                            stream.finalNamespace,
-                            stream.finalName,
-                        )
-
-                    val showColumnsResult: List<JsonNode> = database.queryJsons(
-                        showColumnsQuery,
-                    )
-
-                    println("showColumnsResult=" + showColumnsResult)
-
-                    for (result in showColumnsResult) {
-
-                        println("Inside for loop: result=" + result)
-
-                        val tableSchema = result["schema_name"].asText()
-                        val tableName = result["table_name"].asText()
-                        val columnName = result["column_name"].asText()
-                        var dataType = JSONObject(result["data_type"].asText()).getString("type")
-
-                        //TODO: Remove code temporarily added to investigate test case failures
-                        //Note: This change has fixed two failing test cases
-                        if(dataType.equals("FIXED")) {
-                            dataType = "NUMBER"
-                        }
-
-                        val isNullable = result["null?"].asText()
-                        val tableDefinition =
-                            existingTablesFromShowQuery
-                                .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }
-                                .computeIfAbsent(tableName) { _: String? ->
-                                    TableDefinition(LinkedHashMap())
-                                }
-                        tableDefinition.columns[columnName] =
-                            ColumnDefinition(
-                                columnName,
-                                dataType,
-                                0,
-                                fromIsNullableSnowflakeString(isNullable),
-                            )
-                    }
-
-                    LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-
-                }
-
-            } catch (e: Exception) {
-
-                LOGGER.error("SHOW command usage caused exception", e)
-
-                //LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
-
-                LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-
-                e.printStackTrace()
-
-                //TODO: Need to throw exceptionNot throwing exception during development
-                // Negative tests fail because the schema does not exist but the SHOW table throws error
-                // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-                // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
-
-                //throw e
-
-            }
-
-//            println("println: existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
-//            println("println: existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
-//
-//            println("println: existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
-//            println("println: existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-//
-//
-//            LOGGER.info("existingTablesFromInfoSchema.size=" + existingTablesFromInfoSchema.size)
-//            LOGGER.info("existingTablesFromInfoSchema=" + existingTablesFromInfoSchema)
-//
-//            LOGGER.info("existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
-//            LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-
-            /*
-            val stringFromExistingTablesFromInfoSchema = printNestedMap(existingTablesFromInfoSchema, "existingTablesFromInfoSchema")
-            val stringFromExistingTablesFromShowQuery = printNestedMap(existingTablesFromShowQuery, "existingTablesFromShowQuery")
-
-            if( ! stringFromExistingTablesFromInfoSchema.equals(stringFromExistingTablesFromShowQuery)) {
-                println("ERROR: Output from string comparison of info schema and show command output does not match")
-                println("\n\nstringFromExistingTablesFromInfoSchema=\n" + stringFromExistingTablesFromInfoSchema)
-                println("\n\nstringFromExistingTablesFromShowQuery=\n" + stringFromExistingTablesFromShowQuery)
-
-            } else {
-                println("SUCCESS: Output from string comparison of info schema and show command output matched exactly")
-            }
-
-
-             */
-
-            return existingTablesFromShowQuery
-
-            //return existingTablesFromInfoSchema;
-
-        }
-
-
 
     }
-
 
 }
