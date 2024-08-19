@@ -3,11 +3,12 @@
  */
 package io.airbyte.cdk.integrations.destination.record_buffer
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.*
 import java.nio.file.Files
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class FileBuffer : BufferStorage {
     private val fileExtension: String
@@ -71,12 +72,11 @@ class FileBuffer : BufferStorage {
 
     @Throws(IOException::class)
     override fun deleteFile() {
-        LOGGER.info("Deleting tempFile data {}", filename)
+        LOGGER.info { "Deleting tempFile data $filename" }
         Files.deleteIfExists(file.toPath())
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(FileBuffer::class.java)
 
         /*
          * We limit number of stream being buffered simultaneously anyway (limit how many files are

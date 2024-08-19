@@ -39,7 +39,6 @@ _Screenshot taken from [Airbyte Cloud](https://cloud.airbyte.com/signup)_.
 - Create connectors in minutes with our [no-code Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or [low-code CDK](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview).
 - Explore popular use cases in our [tutorials](https://airbyte.com/tutorials).
 - Orchestrate Airbyte syncs with [Airflow](https://docs.airbyte.com/operator-guides/using-the-airflow-airbyte-operator), [Prefect](https://docs.airbyte.com/operator-guides/using-prefect-task), [Dagster](https://docs.airbyte.com/operator-guides/using-dagster-integration), [Kestra](https://docs.airbyte.com/operator-guides/using-kestra-plugin) or the [Airbyte API](https://reference.airbyte.com/reference/start).
-- Easily transform loaded data with [SQL](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-sql) or [dbt](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-dbt).
 
 Try it out yourself with our [demo app](https://demo.airbyte.io/), visit our [full documentation](https://docs.airbyte.com/) and learn more about [recent announcements](https://airbyte.com/blog-categories/company-updates). See our [registry](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html) for a full list of connectors already available in Airbyte or Airbyte Cloud.
 

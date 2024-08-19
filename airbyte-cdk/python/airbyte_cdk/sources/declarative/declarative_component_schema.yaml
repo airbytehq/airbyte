@@ -21,6 +21,7 @@ properties:
       "$ref": "#/definitions/DeclarativeStream"
   version:
     type: string
+    description: The version of the Airbyte CDK used to build and test the source.
   schemas:
     "$ref": "#/definitions/Schemas"
   definitions:
@@ -31,6 +32,9 @@ properties:
     type: object
     description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
     additionalProperties: true
+  description:
+    type: string
+    description: A description of the connector. It will be presented on the Source documentation page.
 additionalProperties: false
 definitions:
   AddedFieldDefinition:
@@ -718,6 +722,7 @@ definitions:
         description: |
           The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`
             * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
@@ -751,6 +756,7 @@ definitions:
           - "%Y-%m-%d"
           - "%s"
           - "%ms"
+          - "%s_as_float"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -800,6 +806,15 @@ definitions:
         title: Whether the target API is formatted as a data feed
         description: A data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.
         type: boolean
+      is_client_side_incremental:
+        title: Whether the target API does not support filtering and returns all data (the cursor filters records in the client instead of the API side)
+        description: If the target API endpoint does not take cursor values to filter records and returns all records anyway, the connector with this cursor will filter out records locally, and only emit new records from the last sync, hence incremental. This means that all records would be read from the API, but only new records will be emitted to the destination.
+        type: boolean
+      is_compare_strictly:
+        title: Whether to skip requests if the start time equals the end time
+        description: Set to True if the target API does not accept queries where the start time equal the end time.
+        type: boolean
+        default: False
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
@@ -1283,8 +1298,10 @@ definitions:
           - ["data", "*", "record"]
       decoder:
         title: Decoder
-        description: Component decoding the response so records can be extracted.
-        "$ref": "#/definitions/JsonDecoder"
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1545,7 +1562,6 @@ definitions:
     type: object
     required:
       - type
-      - action
     properties:
       type:
         type: string
@@ -1559,11 +1575,25 @@ definitions:
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
         examples:
           - SUCCESS
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
+      failure_type:
+        title: Failure Type
+        description: Failure type of traced exception if a response matches the filter.
+        type: string
+        enum:
+          - system_error
+          - config_error
+          - transient_error
+        examples:
+          - system_error
+          - config_error
+          - transient_error
       error_message:
         title: Error Message
         description: Error Message to display if the response matches the filter.
@@ -1645,6 +1675,26 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
+  JsonlDecoder:
+    title: JSONL Decoder
+    description: Use this if the response consists of JSON objects separated by new lines (`\n`) in JSONL format.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [JsonlDecoder]
+  IterableDecoder:
+    title: Iterable Decoder
+    description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap each row into a JSON object with the `record` key.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [IterableDecoder]
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -1712,6 +1762,7 @@ definitions:
         description: |
           Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%s_as_float**: Epoch unix timestamp in seconds as float with microsecond precision - `1686218963.123456`
             * **%ms**: Epoch unix timestamp - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
@@ -2004,6 +2055,11 @@ definitions:
         title: Request Option
         description: A request option describing where the parent key value should be injected into and under what field name if applicable.
         "$ref": "#/definitions/RequestOption"
+      incremental_dependency:
+        title: Incremental Dependency
+        description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -2275,6 +2331,13 @@ definitions:
                 - "$ref": "#/definitions/CustomPartitionRouter"
                 - "$ref": "#/definitions/ListPartitionRouter"
                 - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2358,6 +2421,12 @@ definitions:
         type: string
         examples:
           - "([-+]?\\d+)"
+      max_waiting_time_in_seconds:
+        title: Max Waiting Time in Seconds
+        description: Given the value extracted from the header is greater than this value, stop the stream.
+        type: number
+        examples:
+          - 3600
       $parameters:
         type: object
         additionalProperties: true
@@ -2548,11 +2617,13 @@ interpolation:
       description: Converts a datetime or a datetime-string to the specified format.
       arguments:
         datetime: The datetime object or a string to convert. If datetime is a string, it must be formatted as ISO8601.
-        format: The datetime format
+        format: The datetime format.
+        input_format: (optional) The datetime format in the case it is an string.
       return_type: str
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ', '%a, %d %b %Y %H:%M:%S %z') }}"
   filters:
     - title: Hash
       description: Convert the specified value to a hashed string.
@@ -2583,3 +2654,10 @@ interpolation:
       examples:
         - '{{ 1 | string }} -> "1"'
         - '{{ ["hello", "world" | string }} -> "["hello", "world"]"'
+    - title: Regex Search
+      description: Match the input string against a regular expression and return the first match.
+      arguments:
+        regex: The regular expression to search for. It must include a capture group.
+      return_type: str
+      examples:
+        - '{{ "goodbye, cruel world" | regex_search("goodbye,\s(.*)$") }} -> "cruel world"'

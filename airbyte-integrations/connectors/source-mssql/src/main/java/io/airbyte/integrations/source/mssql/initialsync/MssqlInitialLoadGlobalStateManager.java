@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadGlobalStateManager.class);
-  private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
   private StateManager stateManager;
   private final CdcState initialCdcState;
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
@@ -30,6 +29,7 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
 
   // No special handling for resumable full refresh streams. We will report the cursor as it is.
   private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
+  private Set<AirbyteStreamNameNamespacePair> nonResumableFullRefreshStreams;
 
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
@@ -60,16 +60,21 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
                            final ConfiguredAirbyteCatalog catalog) {
     this.streamsThatHaveCompletedSnapshot = new HashSet<>();
     this.resumableFullRefreshStreams = new HashSet<>();
+    this.nonResumableFullRefreshStreams = new HashSet<>();
+
     catalog.getStreams().forEach(configuredAirbyteStream -> {
+      var pairInStream =
+          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace());
       if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
           && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-        this.streamsThatHaveCompletedSnapshot.add(
-            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+        this.streamsThatHaveCompletedSnapshot.add(pairInStream);
       }
-      if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
-          && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        this.resumableFullRefreshStreams.add(
-            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+      if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+        if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)) {
+          this.resumableFullRefreshStreams.add(pairInStream);
+        } else {
+          this.nonResumableFullRefreshStreams.add(pairInStream);
+        }
       }
     });
   }
@@ -84,7 +89,9 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
 
     resumableFullRefreshStreams.forEach(stream -> {
       var ocStatus = getOrderedColumnLoadStatus(stream);
-      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
+      if (ocStatus != null) {
+        streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
+      }
     });
 
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
@@ -128,14 +135,15 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
     });
 
+    nonResumableFullRefreshStreams.forEach(stream -> {
+      streamStates.add(new AirbyteStreamState()
+          .withStreamDescriptor(
+              new StreamDescriptor().withName(stream.getName()).withNamespace(stream.getNamespace())));
+    });
+
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(generateGlobalState(streamStates));
-  }
-
-  @Override
-  public OrderedColumnInfo getOrderedColumnInfo(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColInfo.get(pair);
   }
 
   private DbStreamState getFinalState(final AirbyteStreamNameNamespacePair pair) {

@@ -3,16 +3,16 @@
 #
 
 import copy
+import logging
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
 from source_mixpanel.streams import Export
 
 from .utils import command_check, get_url_to_mock, setup_response
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 @pytest.fixture
@@ -135,6 +135,7 @@ def test_streams_string_date(requests_mock, config_raw):
                 "select_properties_by_default": True,
                 "region": "EU",
                 "date_window_size": 10,
+                "page_size": 1000
             },
             True,
             None,
@@ -142,9 +143,9 @@ def test_streams_string_date(requests_mock, config_raw):
     ),
 )
 def test_config_validation(config, success, expected_error_message, requests_mock):
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1}])
-    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1}])
-    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1}])
+    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
+    requests_mock.get("https://mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
+    requests_mock.get("https://eu.mixpanel.com/api/2.0/cohorts/list", status_code=200, json=[{'a': 1, 'created':'2021-02-11T00:00:00Z'}])
     try:
         is_success, message = SourceMixpanel().check_connection(None, config)
     except AirbyteTracedException as e:

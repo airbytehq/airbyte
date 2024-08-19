@@ -6,6 +6,7 @@ import copy
 import json
 import os
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional, Tuple, Union
 
 import orchestrator.hacks as HACKS
@@ -25,15 +26,27 @@ from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
 from orchestrator.utils.blob_helpers import yaml_blob_to_dict
-from orchestrator.utils.dagster_helpers import OutputDataFrame
-from orchestrator.utils.object_helpers import deep_copy_params, default_none_to_dict
+from orchestrator.utils.object_helpers import CaseInsensitveKeys, deep_copy_params, default_none_to_dict
 from pydantic import BaseModel, ValidationError
 from pydash.objects import get, set_with
 
-PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
-TaggedRegistryEntry = Tuple[str, PolymorphicRegistryEntry]
-
 GROUP_NAME = "registry_entry"
+
+# TYPES
+
+
+class ConnectorTypes(str, Enum, metaclass=CaseInsensitveKeys):
+    SOURCE = "source"
+    DESTINATION = "destination"
+
+
+class ConnectorTypePrimaryKey(str, Enum, metaclass=CaseInsensitveKeys):
+    SOURCE = "sourceDefinitionId"
+    DESTINATION = "destinationDefinitionId"
+
+
+PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
+TaggedRegistryEntry = Tuple[ConnectorTypes, PolymorphicRegistryEntry]
 
 metadata_partitions_def = DynamicPartitionsDefinition(name="metadata")
 
@@ -109,7 +122,7 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
     Returns:
         dict: The metadata data field with the overrides applied.
     """
-    override_registry = metadata_data["registries"][override_registry_key]
+    override_registry = metadata_data["registryOverrides"][override_registry_key]
     del override_registry["enabled"]
 
     # remove any None values from the override registry
@@ -194,8 +207,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     """Convert the metadata definition to a registry entry.
 
     Args:
-        metadata_definition (dict): The metadata definition.
-        connector_type (str): One of "source" or "destination".
+        metadata_entry (LatestMetadataEntry): The metadata definition.
         override_registry_key (str): The key of the registry to override the metadata with.
 
     Returns:
@@ -209,7 +221,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
     overridden_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
 
     # remove fields that are not needed in the registry
-    del overridden_metadata_data["registries"]
+    del overridden_metadata_data["registryOverrides"]
     del overridden_metadata_data["connectorType"]
 
     # rename field connectorSubtype to sourceType
@@ -256,14 +268,14 @@ def read_registry_entry_blob(registry_entry_blob: storage.Blob) -> TaggedRegistr
     connector_type, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_dict)
     registry_entry = ConnectorModel.parse_obj(registry_entry_dict)
 
-    return registry_entry, connector_type
+    return connector_type, registry_entry
 
 
 def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegistryEntry:
-    if registry_entry.get("sourceDefinitionId"):
-        return ("source", ConnectorRegistrySourceDefinition)
-    elif registry_entry.get("destinationDefinitionId"):
-        return ("destination", ConnectorRegistryDestinationDefinition)
+    if registry_entry.get(ConnectorTypePrimaryKey.SOURCE.value):
+        return (ConnectorTypes.SOURCE, ConnectorRegistrySourceDefinition)
+    elif registry_entry.get(ConnectorTypePrimaryKey.DESTINATION.value):
+        return (ConnectorTypes.DESTINATION, ConnectorRegistryDestinationDefinition)
     else:
         raise Exception("Could not determine connector type from registry entry")
 
@@ -358,8 +370,8 @@ def get_registry_status_lists(registry_entry: LatestMetadataEntry) -> Tuple[List
     """
     metadata_data_dict = registry_entry.metadata_definition.dict()
 
-    # get data.registries fiield, handling the case where it is not present or none
-    registries_field = get(metadata_data_dict, "data.registries") or {}
+    # get data.registryOverrides fiield, handling the case where it is not present or none
+    registries_field = get(metadata_data_dict, "data.registryOverrides") or {}
 
     # registries is a dict of registry_name -> {enabled: bool}
     all_enabled_registries = [

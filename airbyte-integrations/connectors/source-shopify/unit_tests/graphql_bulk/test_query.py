@@ -4,7 +4,7 @@
 
 
 import pytest
-from graphql_query import Argument, Field, Operation, Query
+from graphql_query import Argument, Field, InlineFragment, Operation, Query
 from source_shopify.shopify_graphql.bulk.query import (
     InventoryLevel,
     MetafieldCustomer,
@@ -99,7 +99,7 @@ def test_bulk_query_cancel() -> None:
     ],
     ids=["simple query with filter and sort"]
 )
-def test_base_build_query(query_name, fields, filter_field, start, end, expected) -> None:
+def test_base_build_query(basic_config, query_name, fields, filter_field, start, end, expected) -> None:
     """
     Expected result rendered:
     '''
@@ -116,8 +116,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
     '''
     """
     
-    
-    builder = ShopifyBulkQuery(shop_id=0)
+    builder = ShopifyBulkQuery(basic_config)
     filter_query = f"{filter_field}:>'{start}' AND {filter_field}:<='{end}'"
     built_query = builder.build(query_name, fields, filter_query)
     assert expected.render() == built_query.render()
@@ -154,15 +153,74 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                 type="",
                 queries=[
                     Query(
-                        name='products', 
+                        name="products",
                         arguments=[
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
-                            Argument(name="sortKey", value="UPDATED_AT"),    
-                        ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename','id',Field(name="images", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])]
+                            Argument(name="sortKey", value="UPDATED_AT"),
+                        ],
+                        fields=[
+                            Field(
+                                name="edges",
+                                fields=[
+                                    Field(
+                                        name="node",
+                                        fields=[
+                                            "__typename",
+                                            "id",
+                                            Field(
+                                                name="media",
+                                                fields=[
+                                                    Field(
+                                                        name="edges",
+                                                        fields=[
+                                                            Field(
+                                                                name="node",
+                                                                fields=[
+                                                                    "__typename",
+                                                                    "id",
+                                                                    InlineFragment(
+                                                                        type="MediaImage",
+                                                                        fields=[
+                                                                            Field(
+                                                                                name="metafields",
+                                                                                fields=[
+                                                                                    Field(
+                                                                                        name="edges",
+                                                                                        fields=[
+                                                                                            Field(
+                                                                                                name="node",
+                                                                                                fields=[
+                                                                                                    "__typename",
+                                                                                                    "id",
+                                                                                                    "namespace",
+                                                                                                    "value",
+                                                                                                    "key",
+                                                                                                    "description",
+                                                                                                    "createdAt",
+                                                                                                    "updatedAt",
+                                                                                                    "type",
+                                                                                                ]
+                                                                                            )
+                                                                                        ]
+                                                                                    )
+                                                                                ]
+                                                                            )
+                                                                        ]
+                                                                    )
+                                                                ]
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
                     )
                 ]
-            ),
+            )
         ),
         (
             InventoryLevel,
@@ -187,7 +245,7 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                         fields=[
                                             '__typename',
                                             'id',
-                                            Query(
+                                            Field(
                                                 name="inventoryLevels", 
                                                 arguments=[
                                                     Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
@@ -201,9 +259,23 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
                                                                 fields=[
                                                                   "__typename",
                                                                   "id",
-                                                                  Field(name="available"),
-                                                                  Field(name="item", fields=[Field(name="id", alias="inventory_item_id")]),
-                                                                  Field(name="updatedAt")
+                                                                  "canDeactivate",
+                                                                  "createdAt",
+                                                                  "deactivationAlert",
+                                                                  "updatedAt",
+                                                                  Field(name="item", fields=[Field(name="inventoryHistoryUrl", alias="inventory_history_url"), Field(name="id", alias="inventory_item_id"), Field(name="locationsCount", alias="locations_count", fields=["count"])]),
+                                                                  Field(
+                                                                        name="quantities", 
+                                                                        arguments=[
+                                                                            Argument(name="names", value=['"available"', '"incoming"', '"committed"', '"damaged"', '"on_hand"', '"quality_control"', '"reserved"', '"safety_stock"'])
+                                                                        ], 
+                                                                        fields=[
+                                                                            "id",
+                                                                            "name",
+                                                                            "quantity",
+                                                                            "updatedAt",
+                                                                        ],
+                                                                    )
                                                                 ]
                                                             )
                                                         ]
@@ -226,6 +298,6 @@ def test_base_build_query(query_name, fields, filter_field, start, end, expected
         "InventoryLevel query",
     ]
 )
-def test_bulk_query(query_class, filter_field, start, end, expected) -> None:
-    stream = query_class(shop_id=0)
+def test_bulk_query(basic_config, query_class, filter_field, start, end, expected) -> None:
+    stream = query_class(basic_config)
     assert stream.get(filter_field, start, end) == expected.render()

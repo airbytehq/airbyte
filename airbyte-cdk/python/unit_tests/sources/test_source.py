@@ -5,12 +5,10 @@
 import json
 import logging
 import tempfile
-from collections import defaultdict
 from contextlib import nullcontext as does_not_raise
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pytest
-import requests
 from airbyte_cdk.models import (
     AirbyteGlobalState,
     AirbyteStateBlob,
@@ -24,8 +22,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_cdk.sources.streams.http.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pydantic import ValidationError
 
@@ -77,7 +74,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    return ConfiguredAirbyteCatalog.model_validate(configured_catalog)
 
 
 @pytest.fixture
@@ -94,6 +91,12 @@ def abstract_source(mocker):
         @property
         def cursor_field(self) -> Union[str, List[str]]:
             return ["updated_at"]
+
+        def get_backoff_strategy(self):
+            return None
+
+        def get_error_handler(self):
+            return None
 
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
@@ -239,15 +242,8 @@ def abstract_source(mocker):
             does_not_raise(),
             id="test_incoming_global_state",
         ),
-        pytest.param(
-            {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
-            {"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}},
-            does_not_raise(),
-            id="test_incoming_legacy_state",
-        ),
-        pytest.param([], defaultdict(dict, {}), does_not_raise(), id="test_empty_incoming_stream_state"),
-        pytest.param(None, defaultdict(dict, {}), does_not_raise(), id="test_none_incoming_state"),
-        pytest.param({}, defaultdict(dict, {}), does_not_raise(), id="test_empty_incoming_legacy_state"),
+        pytest.param([], [], does_not_raise(), id="test_empty_incoming_stream_state"),
+        pytest.param(None, [], does_not_raise(), id="test_none_incoming_state"),
         pytest.param(
             [
                 {
@@ -291,12 +287,6 @@ def abstract_source(mocker):
             pytest.raises(ValidationError),
             id="test_invalid_global_state_streams_not_list",
         ),
-        pytest.param(
-            [{"type": "LEGACY", "not": "something"}],
-            None,
-            pytest.raises(ValueError),
-            id="test_invalid_state_message_has_no_stream_global_or_data",
-        ),
     ],
 )
 def test_read_state(source, incoming_state, expected_state, expected_error):
@@ -316,24 +306,9 @@ def test_read_invalid_state(source):
             source.read_state(state_file.name)
 
 
-def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
-    expected_state = [
-        AirbyteStateMessage(
-            type=AirbyteStateType.LEGACY, data={"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}
-        )
-    ]
-    source = MockAbstractSource()
-    with tempfile.NamedTemporaryFile("w") as state_file:
-        state_file.write(json.dumps({"movies": {"created_at": "2009-07-19"}, "directors": {"id": "villeneuve_denis"}}))
-        state_file.flush()
-        actual = source.read_state(state_file.name)
-        assert actual == expected_state
-
-
 @pytest.mark.parametrize(
     "source, expected_state",
     [
-        pytest.param(MockSource(), {}, id="test_source_implementing_read_returns_legacy_format"),
         pytest.param(MockAbstractSource(), [], id="test_source_not_implementing_read_returns_per_stream_format"),
     ],
 )
@@ -452,6 +427,8 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     SLICE_DEBUG_LOG_COUNT = 1
     TRACE_STATUS_COUNT = 3
     STATE_COUNT = 1
+    # Read operation has an extra get_json_schema call when filtering invalid fields
+    GET_JSON_SCHEMA_COUNT_WHEN_FILTERING = 1
     logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
@@ -461,8 +438,8 @@ def test_source_config_no_transform(mocker, abstract_source, catalog):
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 * (5 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT)
     assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 5
-    assert non_http_stream.get_json_schema.call_count == 5
+    assert http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
+    assert non_http_stream.get_json_schema.call_count == 5 + GET_JSON_SCHEMA_COUNT_WHEN_FILTERING
 
 
 def test_source_config_transform(mocker, abstract_source, catalog):
@@ -496,208 +473,3 @@ def test_source_config_transform_and_no_transform(mocker, abstract_source, catal
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 + SLICE_DEBUG_LOG_COUNT + TRACE_STATUS_COUNT + STATE_COUNT
     assert [r.record.data for r in records if r.type == Type.RECORD] == [{"value": "23"}, {"value": 23}]
-
-
-def test_read_default_http_availability_strategy_stream_available(catalog, mocker):
-    mocker.patch.multiple(HttpStream, __abstractmethods__=set())
-    mocker.patch.multiple(Stream, __abstractmethods__=set())
-
-    class MockHttpStream(mocker.MagicMock, HttpStream):
-        url_base = "http://example.com"
-        path = "/dummy/path"
-        get_json_schema = mocker.MagicMock()
-
-        @property
-        def cursor_field(self) -> Union[str, List[str]]:
-            return ["updated_at"]
-
-        def __init__(self, *args, **kvargs):
-            mocker.MagicMock.__init__(self)
-            HttpStream.__init__(self, *args, kvargs)
-            self.read_records = mocker.MagicMock()
-
-        @property
-        def state(self) -> MutableMapping[str, Any]:
-            return self._state
-
-        @state.setter
-        def state(self, value: MutableMapping[str, Any]) -> None:
-            self._state = value
-
-    class MockStream(mocker.MagicMock, Stream):
-        page_size = None
-        get_json_schema = mocker.MagicMock()
-
-        def __init__(self, *args, **kvargs):
-            mocker.MagicMock.__init__(self)
-            self.read_records = mocker.MagicMock()
-
-    streams = [MockHttpStream(), MockStream()]
-    http_stream, non_http_stream = streams
-    assert isinstance(http_stream, HttpStream)
-    assert not isinstance(non_http_stream, HttpStream)
-
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
-    assert non_http_stream.availability_strategy is None
-
-    # Add an extra record for the default HttpAvailabilityStrategy to pull from
-    # during the try: next(records) check, since we are mocking the return value
-    # and not re-creating the generator like we would during actual reading
-    http_stream.read_records.return_value = iter([{"value": "test"}] + [{}] * 3)
-    non_http_stream.read_records.return_value = iter([{}] * 3)
-
-    source = MockAbstractSource(streams=streams)
-    logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
-    records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
-    # 3 for http stream, 3 for non http stream, 1 for state message for each stream (2x)  and 3 for stream status messages for each stream (2x)
-    assert len(records) == 3 + 3 + 1 + 1 + 3 + 3
-    assert http_stream.read_records.called
-    assert non_http_stream.read_records.called
-
-
-def test_read_default_http_availability_strategy_stream_unavailable(catalog, mocker, caplog):
-    mocker.patch.multiple(Stream, __abstractmethods__=set())
-
-    class MockHttpStream(HttpStream):
-        url_base = "https://test_base_url.com"
-        primary_key = ""
-
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.resp_counter = 1
-
-        def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-            return None
-
-        def path(self, **kwargs) -> str:
-            return ""
-
-        def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-            stub_response = {"data": self.resp_counter}
-            self.resp_counter += 1
-            yield stub_response
-
-    class MockStream(mocker.MagicMock, Stream):
-        page_size = None
-        get_json_schema = mocker.MagicMock()
-
-        def __init__(self, *args, **kvargs):
-            mocker.MagicMock.__init__(self)
-            self.read_records = mocker.MagicMock()
-
-    streams = [MockHttpStream(), MockStream()]
-    http_stream, non_http_stream = streams
-    assert isinstance(http_stream, HttpStream)
-    assert not isinstance(non_http_stream, HttpStream)
-
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
-    assert non_http_stream.availability_strategy is None
-
-    # Don't set anything for read_records return value for HttpStream, since
-    # it should be skipped due to the stream being unavailable
-    non_http_stream.read_records.return_value = iter([{}] * 3)
-
-    # Patch HTTP request to stream endpoint to make it unavailable
-    req = requests.Response()
-    req.status_code = 403
-    mocker.patch.object(requests.Session, "send", return_value=req)
-
-    source = MockAbstractSource(streams=streams)
-    logger = logging.getLogger("test_read_default_http_availability_strategy_stream_unavailable")
-    with caplog.at_level(logging.WARNING):
-        records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
-
-    # 0 for http stream, 3 for non http stream, 1 for non http stream state message and 3 status trace messages
-    assert len(records) == 0 + 3 + 1 + 3
-    assert non_http_stream.read_records.called
-    expected_logs = [
-        f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
-        f"Unable to read {http_stream.name} stream.",
-        "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
-    ]
-    for message in expected_logs:
-        assert message in caplog.text
-
-
-def test_read_default_http_availability_strategy_parent_stream_unavailable(catalog, mocker, caplog):
-    """Test default availability strategy if error happens during slice extraction (reading of parent stream)"""
-    mocker.patch.multiple(Stream, __abstractmethods__=set())
-
-    class MockHttpParentStream(HttpStream):
-        url_base = "https://test_base_url.com"
-        primary_key = ""
-
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.resp_counter = 1
-
-        def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-            return None
-
-        def path(self, **kwargs) -> str:
-            return ""
-
-        def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-            stub_response = {"data": self.resp_counter}
-            self.resp_counter += 1
-            yield stub_response
-
-    class MockHttpStream(HttpSubStream):
-        url_base = "https://test_base_url.com"
-        primary_key = ""
-
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.resp_counter = 1
-
-        def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-            return None
-
-        def path(self, **kwargs) -> str:
-            return ""
-
-        def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-            stub_response = {"data": self.resp_counter}
-            self.resp_counter += 1
-            yield stub_response
-
-    http_stream = MockHttpStream(parent=MockHttpParentStream())
-    streams = [http_stream]
-    assert isinstance(http_stream, HttpSubStream)
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
-
-    # Patch HTTP request to stream endpoint to make it unavailable
-    req = requests.Response()
-    req.status_code = 403
-    mocker.patch.object(requests.Session, "send", return_value=req)
-
-    source = MockAbstractSource(streams=streams)
-    logger = logging.getLogger("test_read_default_http_availability_strategy_parent_stream_unavailable")
-    configured_catalog = {
-        "streams": [
-            {
-                "stream": {
-                    "name": "mock_http_stream",
-                    "json_schema": {"type": "object", "properties": {"k": "v"}},
-                    "supported_sync_modes": ["full_refresh"],
-                },
-                "destination_sync_mode": "overwrite",
-                "sync_mode": "full_refresh",
-            }
-        ]
-    }
-    catalog = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
-    with caplog.at_level(logging.WARNING):
-        records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
-
-    # 0 for http stream, 3 for non http stream and 3 status trace messages
-    assert len(records) == 0
-    expected_logs = [
-        f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
-        f"Unable to get slices for {http_stream.name} stream, because of error in parent stream",
-        "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
-    ]
-    for message in expected_logs:
-        assert message in caplog.text

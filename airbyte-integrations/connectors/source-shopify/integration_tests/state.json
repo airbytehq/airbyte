@@ -2,10 +2,16 @@
   "customers": {
     "updated_at": "2023-07-11T13:07:45-07:00"
   },
+  "customer_journey_summary": {
+    "updated_at": "2023-04-24T18:00:10+00:00"
+  },
   "orders": {
     "deleted": {
       "deleted_at": ""
     },
+    "updated_at": "2023-04-24T11:00:10-07:00"
+  },
+  "order_agreements": {
     "updated_at": "2023-04-24T11:00:10-07:00"
   },
   "draft_orders": {
@@ -45,13 +51,7 @@
     "created_at": "2022-10-10T06:21:53-07:00"
   },
   "order_risks": {
-    "orders": {
-      "updated_at": "2023-04-24T07:03:06-07:00",
-      "deleted": {
-        "deleted_at": ""
-      }
-    },
-    "id": 6446736474301
+    "updated_at": "2023-04-24T18:00:10+00:00"
   },
   "transactions": {
     "orders": {

@@ -12,5 +12,5 @@ fun interface CheckAndRemoveRecordWriter {
      * of the new file where the record will be sent will be returned.
      */
     @Throws(Exception::class)
-    fun apply(stream: AirbyteStreamNameNamespacePair?, stagingFileName: String?): String?
+    fun apply(stream: AirbyteStreamNameNamespacePair, stagingFileName: String?): String?
 }

@@ -21,7 +21,8 @@ dependencies {
 
     // Re-export dependencies for gcs-destinations.
     api 'com.amazonaws:aws-java-sdk-s3:1.12.647'
-    api ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    api 'com.amazonaws:aws-java-sdk-sts:1.12.647'
+    api ('com.github.airbytehq:json-avro-converter:1.1.3') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
     api 'com.github.alexmojaki:s3-stream-upload:2.2.4'
     api 'org.apache.avro:avro:1.11.3'
     api 'org.apache.commons:commons-csv:1.10.0'

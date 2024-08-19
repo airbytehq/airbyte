@@ -11,6 +11,27 @@
 - Make sure to read our [CDC docs](../../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
 - Our CDC implementation uses at least once delivery for all change records.
 
+### Vendor-Specific Connector Limitations
+
+:::warning
+
+Not all implementations or deployments of a database will be the same. This section lists specific limitations and known issues with the connector based on _how_ or
+_where_ it is deployed.
+
+:::
+
+#### Digital Ocean MySQL
+
+Digital Ocean's managed MySQL servers, by default, will clear the binary logs periodically, outside of the replication settings within the MySQL server.. Contact Digital Ocean support to disable this feature if you wish to use CDC replication with Airbyte.
+
+#### PlanetScale
+
+Planetscale has a maximum number of records per query set to 100K by default. Airbyte typically queries in batches of 500K for faster replication.
+
+#### MariaDB
+
+MariaDB is a fork of MySQL that adds many new features. The MySQL source connector is compatible with MariaDB, but there may be some limitations, specifically around CDC replication. If you encounter errors with CDC replication, please switch to other replication methods, which may be more compatible with MariaDB.
+
 ## Troubleshooting
 
 ### Common Config Errors

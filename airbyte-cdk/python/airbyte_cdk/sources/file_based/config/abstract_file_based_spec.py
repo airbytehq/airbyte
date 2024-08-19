@@ -6,10 +6,10 @@ import copy
 from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
-import dpath.util
+import dpath
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic.v1 import AnyUrl, BaseModel, Field
 
 
 class AbstractFileBasedSpec(BaseModel):
@@ -57,7 +57,7 @@ class AbstractFileBasedSpec(BaseModel):
     @staticmethod
     def remove_discriminator(schema: Dict[str, Any]) -> None:
         """pydantic adds "discriminator" to the schema for oneOfs, which is not treated right by the platform as we inline all references"""
-        dpath.util.delete(schema, "properties/**/discriminator")
+        dpath.delete(schema, "properties/**/discriminator")
 
     @staticmethod
     def replace_enum_allOf_and_anyOf(schema: Dict[str, Any]) -> Dict[str, Any]:

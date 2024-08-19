@@ -56,3 +56,25 @@ def test_offset_increment_paginator_strategy_initial_token(inject_on_first_reque
     paginator_strategy = OffsetIncrement(page_size=20, parameters={}, config={}, inject_on_first_request=inject_on_first_request)
 
     assert paginator_strategy.initial_token == expected_initial_token
+
+
+@pytest.mark.parametrize(
+    "reset_value, expected_initial_token, expected_error",
+    [
+        pytest.param(25, 25, None, id="test_reset_with_offset_value"),
+        pytest.param(None, 0, None, id="test_reset_with_default"),
+        pytest.param("Nope", None, ValueError, id="test_reset_with_invalid_value"),
+    ],
+)
+def test_offset_increment_reset(reset_value, expected_initial_token, expected_error):
+    paginator_strategy = OffsetIncrement(page_size=20, parameters={}, config={}, inject_on_first_request=True)
+
+    if expected_error:
+        with pytest.raises(expected_error):
+            paginator_strategy.reset(reset_value=reset_value)
+    else:
+        if reset_value is None:
+            paginator_strategy.reset()
+        else:
+            paginator_strategy.reset(reset_value=reset_value)
+        assert paginator_strategy.initial_token == expected_initial_token

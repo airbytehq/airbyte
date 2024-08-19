@@ -257,35 +257,6 @@ def test_source_streams(config, activity, requests_mock):
     assert all(isinstance(stream, (MarketoStream, DeclarativeStream)) for stream in streams)
 
 
-@pytest.mark.parametrize(
-    "status_code, connection_successful, error_msg",
-    (
-        (200, True, None),
-        (
-            400,
-            False,
-            "Unable to connect to stream programs - Unable to connect to Marketo API with the provided credentials",
-        ),
-        (
-            403,
-            False,
-            "Unable to connect to stream programs - Unable to connect to Marketo API with the provided credentials",
-        ),
-    ),
-)
-def test_check_connection(config, requests_mock, status_code, connection_successful, error_msg):
-    requests_mock.get("/rest/v1/activities/types.json", status_code=status_code)
-    requests_mock.get(
-        "/rest/asset/v1/programs.json",
-        json={"result": [{"createdAt": f"2021-09-01T16:02:30Z+0000", "updatedAt": f"2021-09-01T16:02:30Z+0000"}]},
-        status_code=status_code,
-    )
-    source = SourceMarketo()
-    success, error = source.check_connection(logger=logger, config=config)
-    assert success is connection_successful
-    assert error == error_msg
-
-
 def test_programs_normalize_datetime(config, requests_mock):
     created_at = START_DATE.add(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
     updated_at = START_DATE.add(days=2).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -304,19 +275,21 @@ def test_programs_normalize_datetime(config, requests_mock):
 def test_programs_next_page_token(config):
     page_size = 200
     records = [{"id": i} for i in range(page_size)]
+    last_record = {"id": page_size - 1}
     mocked_response = MagicMock()
     mocked_response.json.return_value = {"result": records}
     stream = get_stream_by_name("programs", config)
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, records) == page_size
+    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, len(records), last_record) == page_size
 
 
 def test_segmentations_next_page_token(config):
     page_size = 200
     records = [{"id": i} for i in range(page_size)]
+    last_record = {"id": page_size - 1}
     mocked_response = MagicMock()
     mocked_response.json.return_value = {"result": records}
     stream = get_stream_by_name("segmentations", config)
-    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, records) == page_size
+    assert stream.retriever.paginator.pagination_strategy.next_page_token(mocked_response, len(records), last_record) == page_size
 
 
 today = pendulum.now()

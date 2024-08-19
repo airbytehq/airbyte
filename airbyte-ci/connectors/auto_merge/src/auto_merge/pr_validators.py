@@ -36,7 +36,12 @@ def head_commit_passes_all_required_checks(
     head_commit: GithubCommit, pr: PullRequest, required_checks: set[str]
 ) -> Tuple[bool, Optional[str]]:
     successful_status_contexts = [commit_status.context for commit_status in head_commit.get_statuses() if commit_status.state == "success"]
-    successful_check_runs = [check_run.name for check_run in head_commit.get_check_runs() if check_run.conclusion == "success"]
+    successful_check_runs = [
+        check_run.name
+        for check_run in head_commit.get_check_runs()
+        # Github considers a required check as passing if it has a conclusion of "success" or "skipped"
+        if check_run.conclusion == "success" or check_run.conclusion == "skipped"
+    ]
     successful_contexts = set(successful_status_contexts + successful_check_runs)
     if not required_checks.issubset(successful_contexts):
         return False, "not all required checks passed"

@@ -1,11 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import logging
 import pendulum
 from itertools import product
 from typing import Any, List, Mapping, Optional, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -98,7 +98,7 @@ class SourceBingAds(AbstractSource):
     Source implementation of Bing Ads API. Fetches advertising data from accounts
     """
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             # end_date must be equal or after start_date
             if "reports_end_date" in config and "reports_start_date" in config:

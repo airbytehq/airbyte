@@ -30,7 +30,13 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
             datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
         ),
         (
-            "test_parse_timestamp",
+            "test_parse_timestamp_as_float",
+            "1675092508.873709",
+            "%s_as_float",
+            datetime.datetime(2023, 1, 30, 15, 28, 28, 873709, tzinfo=datetime.timezone.utc),
+        ),
+        (
+            "test_parse_ms_timestamp",
             "1609459200001",
             "%ms",
             datetime.datetime(2021, 1, 1, 0, 0, 0, 1000, tzinfo=datetime.timezone.utc),
@@ -49,6 +55,7 @@ def test_parse_date(test_name, input_date, date_format, expected_output_date):
     [
         ("test_format_timestamp", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%s", "1609459200"),
         ("test_format_timestamp_ms", datetime.datetime(2021, 1, 1, 0, 0, 0, 1000, tzinfo=datetime.timezone.utc), "%ms", "1609459200001"),
+        ("test_format_timestamp_as_float", datetime.datetime(2023, 1, 30, 15, 28, 28, 873709, tzinfo=datetime.timezone.utc), "%s_as_float", "1675092508.873709"),
         ("test_format_string", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y-%m-%d", "2021-01-01"),
         ("test_format_to_number", datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc), "%Y%m%d", "20210101"),
     ],

@@ -44,7 +44,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
+from pydantic.v1.error_wrappers import ValidationError
 
 DEFAULT_CONCURRENCY = 100
 MAX_CONCURRENCY = 100
@@ -61,7 +61,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         spec_class: Type[AbstractFileBasedSpec],
         catalog: Optional[ConfiguredAirbyteCatalog],
         config: Optional[Mapping[str, Any]],
-        state: Optional[MutableMapping[str, Any]],
+        state: Optional[List[AirbyteStateMessage]],
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
@@ -144,10 +144,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         """
 
         if self.catalog:
-            state_manager = ConnectorStateManager(
-                stream_instance_map={s.stream.name: s.stream for s in self.catalog.streams},
-                state=self.state,
-            )
+            state_manager = ConnectorStateManager(state=self.state)
         else:
             # During `check` operations we don't have a catalog so cannot create a state manager.
             # Since the state manager is only required for incremental syncs, this is fine.

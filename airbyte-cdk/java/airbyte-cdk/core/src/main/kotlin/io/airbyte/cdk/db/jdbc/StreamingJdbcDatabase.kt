@@ -7,6 +7,7 @@ import com.google.errorprone.annotations.MustBeClosed
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations
 import io.airbyte.cdk.db.jdbc.streaming.JdbcStreamingQueryConfig
 import io.airbyte.commons.functional.CheckedFunction
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.*
 import java.util.Spliterators.AbstractSpliterator
 import java.util.function.Consumer
@@ -14,8 +15,8 @@ import java.util.function.Supplier
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import javax.sql.DataSource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 /**
  * This database allows a developer to specify a [JdbcStreamingQueryConfig]. This allows the
@@ -46,8 +47,8 @@ class StreamingJdbcDatabase(
     @MustBeClosed
     @Throws(SQLException::class)
     override fun <T> unsafeQuery(
-        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException?>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException?>
+        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
+        recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
         try {
             val connection = dataSource.connection
@@ -79,7 +80,7 @@ class StreamingJdbcDatabase(
      */
     protected fun <T> toUnsafeStream(
         resultSet: ResultSet,
-        mapper: CheckedFunction<ResultSet, T, SQLException?>,
+        mapper: CheckedFunction<ResultSet, T, SQLException>,
         streamingConfig: JdbcStreamingQueryConfig
     ): Stream<T> {
         return StreamSupport.stream(
@@ -95,7 +96,7 @@ class StreamingJdbcDatabase(
                         action.accept(dataRow)
                         return true
                     } catch (e: SQLException) {
-                        LOGGER.error("SQLState: {}, Message: {}", e.sqlState, e.message)
+                        LOGGER.error { "SQLState: ${e.sqlState}, Message: ${e.message}" }
                         streamException = e
                         isStreamFailed = true
                         throw RuntimeException(e)
@@ -104,9 +105,5 @@ class StreamingJdbcDatabase(
             },
             false
         )
-    }
-
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(StreamingJdbcDatabase::class.java)
     }
 }

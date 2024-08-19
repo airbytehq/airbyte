@@ -5,7 +5,6 @@ package io.airbyte.workers.internal
 
 import com.google.common.base.Charsets
 import com.google.common.base.Preconditions
-import io.airbyte.cdk.extensions.TestContext
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.io.LineGobbler
 import io.airbyte.commons.json.Jsons
@@ -19,6 +18,7 @@ import io.airbyte.workers.TestHarnessUtils
 import io.airbyte.workers.WorkerConstants
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.process.IntegrationLauncher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
@@ -32,8 +32,8 @@ import kotlin.collections.Map
 import kotlin.collections.Set
 import kotlin.collections.contains
 import kotlin.collections.setOf
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultAirbyteDestination
 @JvmOverloads
@@ -49,7 +49,7 @@ constructor(
 
     private var destinationProcess: Process? = null
     private var writer: AirbyteMessageBufferedWriter? = null
-    private var messageIterator: Iterator<AirbyteMessage?>? = null
+    private var messageIterator: Iterator<AirbyteMessage>? = null
 
     private var exitValueIsSet = false
     override val exitValue: Int
@@ -86,7 +86,7 @@ constructor(
         // stdout logs are logged elsewhere since stdout also contains data
         LineGobbler.gobble(
             destinationProcess!!.errorStream,
-            { msg: String? -> LOGGER.error(msg) },
+            { msg: String -> LOGGER.error(msg) },
             "airbyte-destination",
             createContainerLogMdcBuilder()
         )
@@ -179,15 +179,11 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(DefaultAirbyteDestination::class.java)
-        fun createContainerLogMdcBuilder(): MdcScope.Builder {
-            val currentTest = TestContext.CURRENT_TEST_NAME.get()
-            val logPrefix =
-                if (currentTest == null) "destination" else "destination(${currentTest})"
-            return MdcScope.Builder()
-                .setLogPrefix(logPrefix)
+
+        fun createContainerLogMdcBuilder(): MdcScope.Builder =
+            MdcScope.Builder()
+                .setLogPrefix("destination")
                 .setPrefixColor(LoggingHelper.Color.YELLOW_BACKGROUND)
-        }
         val IGNORED_EXIT_CODES: Set<Int> =
             setOf(
                 0, // Normal exit

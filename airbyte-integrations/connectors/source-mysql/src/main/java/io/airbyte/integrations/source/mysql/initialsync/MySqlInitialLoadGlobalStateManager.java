@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
-import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -41,6 +40,9 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
   // No special handling for resumable full refresh streams. We will report the cursor as it is.
   private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
 
+  // non ResumableFullRefreshStreams do not have any state. We only report count for them.
+  private Set<AirbyteStreamNameNamespacePair> nonResumableFullRefreshStreams;
+
   private final boolean savedOffsetStillPresentOnServer;
   private final ConfiguredAirbyteCatalog catalog;
   private final CdcState defaultCdcState;
@@ -66,16 +68,21 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
                            final ConfiguredAirbyteCatalog catalog) {
     this.streamsThatHaveCompletedSnapshot = new HashSet<>();
     this.resumableFullRefreshStreams = new HashSet<>();
+    this.nonResumableFullRefreshStreams = new HashSet<>();
+
     catalog.getStreams().forEach(configuredAirbyteStream -> {
+      var pairInStream =
+          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace());
       if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
           && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-        this.streamsThatHaveCompletedSnapshot.add(
-            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+        this.streamsThatHaveCompletedSnapshot.add(pairInStream);
       }
-      if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
-          && configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        this.resumableFullRefreshStreams.add(
-            new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()));
+      if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+        if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)) {
+          this.resumableFullRefreshStreams.add(pairInStream);
+        } else {
+          this.nonResumableFullRefreshStreams.add(pairInStream);
+        }
       }
     });
   }
@@ -104,7 +111,9 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
 
     resumableFullRefreshStreams.forEach(stream -> {
       var pkStatus = getPrimaryKeyLoadStatus(stream);
-      streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
+      if (pkStatus != null) {
+        streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
+      }
     });
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       AirbyteStreamNameNamespacePair pair =
@@ -137,14 +146,15 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
       streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
     });
 
+    nonResumableFullRefreshStreams.forEach(stream -> {
+      streamStates.add(new AirbyteStreamState()
+          .withStreamDescriptor(
+              new StreamDescriptor().withName(stream.getName()).withNamespace(stream.getNamespace())));
+    });
+
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(generateGlobalState(streamStates));
-  }
-
-  @Override
-  public PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    return pairToPrimaryKeyLoadStatus.get(pair);
   }
 
   @Override

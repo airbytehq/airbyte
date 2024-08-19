@@ -229,7 +229,7 @@ class CollectionContents(WebflowStream):
         """
 
         collection_id = self.collection_id
-        schema_stream = CollectionSchema(authenticator=self.authenticator, collection_id=collection_id)
+        schema_stream = CollectionSchema(authenticator=self._session.auth, collection_id=collection_id)
         schema_records = schema_stream.read_records(sync_mode="full_refresh")
 
         # each record corresponds to a property in the json schema. So we loop over each of these properties

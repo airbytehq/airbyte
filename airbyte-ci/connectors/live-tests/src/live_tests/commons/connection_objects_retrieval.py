@@ -10,6 +10,7 @@ from typing import Dict, Optional, Set
 import rich
 from connection_retriever import ConnectionObject, retrieve_objects  # type: ignore
 from connection_retriever.errors import NotPermittedError  # type: ignore
+from live_tests.commons.models import ConnectionSubset
 
 from .models import AirbyteCatalog, Command, ConfiguredAirbyteCatalog, ConnectionObjects, SecretDict
 
@@ -92,8 +93,10 @@ def get_connection_objects(
     retrieval_reason: Optional[str],
     fail_if_missing_objects: bool = True,
     connector_image: Optional[str] = None,
+    connector_version: Optional[str] = None,
     auto_select_connection: bool = False,
     selected_streams: Optional[set[str]] = None,
+    connection_subset: ConnectionSubset = ConnectionSubset.SANDBOXES,
 ) -> ConnectionObjects:
     """This function retrieves the connection objects values.
     It checks that the required objects are available and raises a UsageError if they are not.
@@ -109,8 +112,10 @@ def get_connection_objects(
         retrieval_reason (Optional[str]): The reason to access the connection objects.
         fail_if_missing_objects (bool, optional): Whether to raise a ValueError if a required object is missing. Defaults to True.
         connector_image (Optional[str]): The image name for the connector under test.
+        connector_version (Optional[str]): The version for the connector under test.
         auto_select_connection (bool, optional): Whether to automatically select a connection if no connection id is passed. Defaults to False.
         selected_streams (Optional[Set[str]]): The set of selected streams to use when auto selecting a connection.
+        connection_subset (ConnectionSubset): The subset of connections to select from.
     Raises:
         click.UsageError: If a required object is missing for the command.
         click.UsageError: If a retrieval reason is missing when passing a connection id.
@@ -137,12 +142,14 @@ def get_connection_objects(
             requested_objects,
             retrieval_reason=retrieval_reason,
             source_docker_repository=connector_image,
+            source_docker_image_tag=connector_version,
             prompt_for_connection_selection=False,
             selected_streams=selected_streams,
             connection_id=connection_id,
             custom_config=custom_config,
             custom_configured_catalog=custom_configured_catalog,
             custom_state=custom_state,
+            connection_subset=connection_subset,
         )
 
     else:
@@ -151,11 +158,13 @@ def get_connection_objects(
                 requested_objects,
                 retrieval_reason=retrieval_reason,
                 source_docker_repository=connector_image,
+                source_docker_image_tag=connector_version,
                 prompt_for_connection_selection=not is_ci,
                 selected_streams=selected_streams,
                 custom_config=custom_config,
                 custom_configured_catalog=custom_configured_catalog,
                 custom_state=custom_state,
+                connection_subset=connection_subset,
             )
 
         else:
@@ -187,21 +196,25 @@ def _get_connection_objects_from_retrieved_objects(
     requested_objects: Set[ConnectionObject],
     retrieval_reason: str,
     source_docker_repository: str,
+    source_docker_image_tag: str,
     prompt_for_connection_selection: bool,
     selected_streams: Optional[Set[str]],
     connection_id: Optional[str] = None,
     custom_config: Optional[Dict] = None,
     custom_configured_catalog: Optional[ConfiguredAirbyteCatalog] = None,
     custom_state: Optional[Dict] = None,
+    connection_subset: ConnectionSubset = ConnectionSubset.SANDBOXES,
 ):
     LOGGER.info("Retrieving connection objects from the database...")
     connection_id, retrieved_objects = retrieve_objects(
         requested_objects,
         retrieval_reason=retrieval_reason,
         source_docker_repository=source_docker_repository,
+        source_docker_image_tag=source_docker_image_tag,
         prompt_for_connection_selection=prompt_for_connection_selection,
         with_streams=selected_streams,
         connection_id=connection_id,
+        connection_subset=connection_subset,
     )
 
     retrieved_source_config = parse_config(retrieved_objects.get(ConnectionObject.SOURCE_CONFIG))
