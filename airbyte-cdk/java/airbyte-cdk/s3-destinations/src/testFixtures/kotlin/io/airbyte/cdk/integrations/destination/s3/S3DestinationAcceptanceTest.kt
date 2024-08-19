@@ -41,7 +41,7 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.junit.jupiter.api.Assumptions.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 
 private val LOGGER = KotlinLogging.logger {}
@@ -386,7 +386,7 @@ protected constructor(
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair3.second,
-            firstSyncMessages + secondSyncMessages + thirdSyncMessages,
+            firstSyncMessages + secondSyncMessages,
             defaultSchema
         )
     }
@@ -447,10 +447,9 @@ protected constructor(
                 catalogPair.first,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
             )
-        try {
-            runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
-            fail { "Should not succeed the sync when Trace message is INCOMPLETE" }
-        } catch (_: TestHarnessException) {}
+        assertThrows<TestHarnessException>(
+            "Should not succeed the sync when Trace message is INCOMPLETE"
+        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false) }
 
         // Run second sync with the same messages from the previous failed sync.
         val secondSyncMessages = getSyncMessagesFixture2()
@@ -461,6 +460,62 @@ protected constructor(
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair.second,
             firstSyncMessages + secondSyncMessages,
+            defaultSchema
+        )
+    }
+
+    /** Test runs 2 failed syncs and verifies the previous sync objects are not cleaned up. */
+    @Test
+    fun testOverwriteSyncMultipleFailedGenerationsFilesPreserved() {
+        assumeTrue(
+            implementsOverwrite(),
+            "Destination's spec.json does not support overwrite sync mode."
+        )
+        val config = getConfig()
+
+        // Run first failed attempt of same generation
+        val catalogPair =
+            getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 42, 12, 12)
+        val firstSyncMessages: List<AirbyteMessage> =
+            getFirstSyncMessagesFixture1(
+                catalogPair.first,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+            )
+        assertThrows<TestHarnessException>(
+            "Should not succeed the sync when Trace message is INCOMPLETE"
+        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false) }
+
+        // Run second failed attempt of same generation
+        val catalogPair2 =
+            getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 43, 12, 12)
+        val secondSyncMessages =
+            getFirstSyncMessagesFixture1(
+                catalogPair2.first,
+                AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE
+            )
+
+        assertThrows<TestHarnessException>(
+            "Should not succeed the sync when Trace message is INCOMPLETE"
+        ) { runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false) }
+
+        // Verify our delayed delete logic creates no data downtime.
+        val defaultSchema = getDefaultSchema(config)
+        retrieveRawRecordsAndAssertSameMessages(
+            catalogPair.second,
+            firstSyncMessages + secondSyncMessages,
+            defaultSchema
+        )
+
+        // Run a successful sync with incremented generationId, This should nuke all old generation
+        // files which were preserved.
+        val catalogPair3 =
+            getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 43, 13, 13)
+        val thirdSyncMessages = getSyncMessagesFixture2()
+        runSyncAndVerifyStateOutput(config, thirdSyncMessages, catalogPair3.first, false)
+
+        retrieveRawRecordsAndAssertSameMessages(
+            catalogPair.second,
+            thirdSyncMessages,
             defaultSchema
         )
     }

@@ -6,7 +6,7 @@ This source can sync data from [N8n](https://docs.n8n.io/api/). At present this 
 
 ## This Source Supports the Following Streams
 
-- [execitions](https://docs.n8n.io/api/api-reference/#tag/Execution/paths/~1executions/get)
+- [executions](https://docs.n8n.io/api/api-reference/#tag/Execution/paths/~1executions/get)
 
 ### Features
 
@@ -32,6 +32,7 @@ You need a n8n instance or use cloud version
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.1.14 | 2024-08-17 | [44314](https://github.com/airbytehq/airbyte/pull/44314) | Update dependencies |
 | 0.1.13 | 2024-08-12 | [43862](https://github.com/airbytehq/airbyte/pull/43862) | Update dependencies |
 | 0.1.12 | 2024-08-10 | [43499](https://github.com/airbytehq/airbyte/pull/43499) | Update dependencies |
 | 0.1.11 | 2024-08-03 | [43170](https://github.com/airbytehq/airbyte/pull/43170) | Update dependencies |

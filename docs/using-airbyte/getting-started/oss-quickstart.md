@@ -194,6 +194,18 @@ As long as your Docker Desktop daemon is running in the background, you can use 
 
 If you quit Docker Desktop and want to return to your local Airbyte workspace, just start Docker Desktop again. Once Docker finishes restarting, you'll be able to access Airbyte's local installation as normal. 
 
+
+### Suggested Resources
+
+For the best performance, we suggest you run on a machine with 4 or more CPU's and at least 8 GB of memory. Currently
+`abctl` does support running on 2 cpus and 8 gb of ram with the `--low-resource-mode` flag. You can pass the low
+resource mode flag when install Airbyte with `abctl`:
+
+```shell
+abctl local install --low-resource-mode
+```
+
+
 ## 3: Move Data
 
 In the Building Connections section, you'll learn how to start moving data. Generally, there are three steps:
@@ -294,24 +306,15 @@ Ensure the security group configured for the EC2 Instance allows traffic in on t
 abctl local install --host [HOSTNAME]
 ```
 
-### Editing the Ingress
+### Running over HTTP
 
-:::note
-The latest versions of `abctl` support a `--host` flag replacing the need to manually modify the ingress rules.
+Airbyte suggest that you secure your instance of Airbyte using TLS. Running over plain HTTP allows attackers to see your
+password over clear text. If you understand the risk and would still like to run Airbyte over HTTP, you must set 
+Secure Cookies to false. You can do this with `abctl` by passing the `--insecure-cookies` flag to `abctl`:
 
-For example, if you are hosting Airbyte on the FDQN of `airbyte.company.example`, you would execute the following command:
-`abctl local install --host airbyte.company.example`
-:::
-
-By default `abctl` will install and Nginx Ingress and set the host name to `localhost`. You will need to edit this to
-match the host name that you have deployed Airbyte to. To do this you will need to have the `kubectl` command installed
-on your EC2 Instance and available on your path.
-
-If you do not already have the CLI tool kubectl installed, please [follow these instructions to install](https://kubernetes.io/docs/tasks/tools/).
-
-Then you can run `kubectl edit ingress -n airbyte-abctl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig` and edit the `host`
-key under the spec.rules section of the Ingress definition. The host should match the FQDN name that you are trying to
-host Airbyte at, for example: `airbyte.company.example`.
+```shell
+abctl local install --host [HOSTNAME] --insecure-cookies
+```
 
 ## Uninstalling
 

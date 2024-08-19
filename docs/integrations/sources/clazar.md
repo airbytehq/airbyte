@@ -112,6 +112,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.2.6 | 2024-08-17 | [44217](https://github.com/airbytehq/airbyte/pull/44217) | Update dependencies |
 | 0.2.5 | 2024-08-12 | [43768](https://github.com/airbytehq/airbyte/pull/43768) | Update dependencies |
 | 0.2.4 | 2024-08-05 | [42851](https://github.com/airbytehq/airbyte/pull/42851) | Updated schema of Analytics AWS opportunities table |
 | 0.2.3 | 2024-08-03 | [43155](https://github.com/airbytehq/airbyte/pull/43155) | Update dependencies |

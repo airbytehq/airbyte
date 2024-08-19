@@ -39,6 +39,7 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.14 | 2024-08-17 | [44348](https://github.com/airbytehq/airbyte/pull/44348) | Update dependencies |
 | 0.2.13 | 2024-08-12 | [43760](https://github.com/airbytehq/airbyte/pull/43760) | Update dependencies |
 | 0.2.12 | 2024-08-10 | [43576](https://github.com/airbytehq/airbyte/pull/43576) | Update dependencies |
 | 0.2.11 | 2024-08-03 | [43262](https://github.com/airbytehq/airbyte/pull/43262) | Update dependencies |
