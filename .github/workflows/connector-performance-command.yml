@@ -83,6 +83,11 @@ on:
         description: "Whether to report the performance test results to Datadog."
         required: false
         default: "false"
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
+
 jobs:
   uuid:
     name: "Custom UUID of workflow run"

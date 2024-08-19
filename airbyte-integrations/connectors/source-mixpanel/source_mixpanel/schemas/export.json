@@ -3,247 +3,326 @@
   "type": "object",
   "properties": {
     "event": {
+      "description": "Event type captured",
       "type": ["null", "string"]
     },
     "distinct_id": {
+      "description": "Unique identifier for the event",
       "type": ["null", "string"]
     },
     "insert_id": {
+      "description": "Unique insertion identifier",
       "type": ["null", "string"]
     },
     "time": {
+      "description": "Timestamp of the event",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "browser": {
+      "description": "User's browser information",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Date and time of creation",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "User's email address",
       "type": ["null", "string"]
     },
     "first_name": {
+      "description": "User's first name",
       "type": ["null", "string"]
     },
     "last_name": {
+      "description": "User's last name",
       "type": ["null", "string"]
     },
     "initial_referrer": {
+      "description": "Initial referrer of the event",
       "type": ["null", "string"]
     },
     "os": {
+      "description": "User's operating system information",
       "type": ["null", "string"]
     },
     "Abandon Cart Count": {
+      "description": "Number of times a user abandoned their shopping cart without completing a purchase",
       "type": ["null", "integer"]
     },
     "Account Created Count": {
+      "description": "Number of new accounts created",
       "type": ["null", "integer"]
     },
     "Add To Cart Count": {
+      "description": "Number of times an item was added to the shopping cart",
       "type": ["null", "integer"]
     },
     "Affiliate": {
+      "description": "Indicates if the user was referred by an affiliate",
       "type": ["null", "string"]
     },
     "Browse Count": {
+      "description": "Number of times a user browsed products",
       "type": ["null", "string"]
     },
     "Browse Filter": {
+      "description": "Items filtered during browsing",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "array"]
       }
     },
     "Campaign Name": {
+      "description": "Name of the marketing campaign",
       "type": ["null", "string"]
     },
     "Campaign Source": {
+      "description": "Source of the marketing campaign",
       "type": ["null", "string"]
     },
     "Card Type": {
+      "description": "Type of payment card used",
       "type": ["null", "string"]
     },
     "Cart Items": {
+      "description": "Items in the shopping cart",
       "type": ["null", "string"]
     },
     "Cart Size": {
+      "description": "Size of the shopping cart",
       "type": ["null", "string"]
     },
     "Cart Size (# of Items)": {
+      "description": "Number of items in the shopping cart",
       "type": ["null", "integer"]
     },
     "Cart Value": {
+      "description": "Total value of items in the shopping cart",
       "type": ["null", "integer"]
     },
     "Complete Purchase Count": {
+      "description": "Number of completed purchases",
       "type": ["null", "integer"]
     },
     "Coupon": {
+      "description": "Indicates if a coupon was used",
       "type": ["null", "string"]
     },
     "Coupon Count Used": {
+      "description": "Number of times a coupon was used",
       "type": ["null", "integer"]
     },
     "Date of Last Item Detail View": {
+      "description": "Date of the last detailed view of an item",
       "type": ["null", "string"]
     },
     "Delivery Day": {
+      "description": "Day of delivery scheduled",
       "type": ["null", "string"]
     },
     "Delivery Fee": {
+      "description": "Fee charged for delivery",
       "type": ["null", "integer"]
     },
     "Delivery Fees": {
+      "description": "Breakdown of delivery fees",
       "type": ["null", "integer"]
     },
     "Delivery Method": {
+      "description": "Selected delivery method",
       "type": ["null", "string"]
     },
     "Delivery Method Added Count": {
+      "description": "Number of times a delivery method was added during checkout",
       "type": ["null", "integer"]
     },
     "Gender": {
+      "description": "Gender of the user",
       "type": ["null", "string"]
     },
     "Item Category": {
+      "description": "Category of the viewed/item in cart",
       "type": ["null", "string"]
     },
     "Item Cost": {
+      "description": "Cost of the item",
       "type": ["null", "integer"]
     },
     "Item Detail Page Count": {
+      "description": "Number of times an item detail page was viewed",
       "type": ["null", "integer"]
     },
     "Item Name": {
+      "description": "Name of the item",
       "type": ["null", "string"]
     },
     "Item Rating": {
+      "description": "Rating given to the item",
       "type": ["null", "integer"]
     },
     "Items in Browse": {
+      "description": "Items viewed during browsing",
       "type": ["null", "integer"]
     },
     "Landing Page Loaded Count": {
+      "description": "Number of times landing page loaded",
       "type": ["null", "integer"]
     },
     "Last Cart Abandonment": {
+      "description": "Date of the last cart abandonment",
       "type": ["null", "string"]
     },
     "Last Event": {
+      "description": "Type of last event tracked",
       "type": ["null", "string"]
     },
     "Last Purchase": {
+      "description": "Date of the last completed purchase",
       "type": ["null", "string"]
     },
     "Last Search": {
+      "description": "Last search term used",
       "type": ["null", "string"]
     },
     "Marketing A/B Test": {
+      "description": "Indicates participation in a marketing A/B test",
       "type": ["null", "string"]
     },
     "Misc Fee": {
+      "description": "Additional miscellaneous fee",
       "type": ["null", "integer"]
     },
     "Misc Fees": {
+      "description": "Breakdown of miscellaneous fees",
       "type": ["null", "integer"]
     },
     "Number of Cards Added": {
+      "description": "Number of payment cards added",
       "type": ["null", "integer"]
     },
     "Number of Cart Abandons": {
+      "description": "Total number of cart abandonments",
       "type": ["null", "integer"]
     },
     "Number of Item Details Viewed": {
+      "description": "Total number of item detail views",
       "type": ["null", "integer"]
     },
     "Number of Purchases": {
+      "description": "Total number of purchases",
       "type": ["null", "integer"]
     },
     "Number of Searches": {
+      "description": "Total number of search queries performed",
       "type": ["null", "integer"]
     },
     "Page Version": {
+      "description": "Version of the web page viewed",
       "type": ["null", "string"]
     },
     "Payment Method Added Count": {
+      "description": "Number of times a payment method was added during checkout",
       "type": ["null", "integer"]
     },
     "Platform": {
+      "description": "Operating platform used",
       "type": ["null", "string"]
     },
     "Registration Date": {
+      "description": "Date of user registration",
       "type": ["null", "string"]
     },
     "Registration Method": {
+      "description": "Method used for user registration",
       "type": ["null", "string"]
     },
     "Review Payment Count": {
+      "description": "Number of payment reviews performed",
       "type": ["null", "integer"]
     },
     "Search Count": {
+      "description": "Total number of search actions",
       "type": ["null", "integer"]
     },
     "Search Page": {
+      "description": "Page where search was performed",
       "type": ["null", "string"]
     },
     "Search Results Count": {
+      "description": "Number of search results displayed",
       "type": ["null", "integer"]
     },
     "Search Term": {
+      "description": "Search term used",
       "type": ["null", "string"]
     },
     "Suggested Item": {
+      "description": "Items suggested to the user",
       "type": ["null", "boolean"]
     },
     "Total Charge": {
+      "description": "Total charge incurred",
       "type": ["null", "integer"]
     },
     "UTM_Medium": {
+      "description": "Medium specified in UTM tracking",
       "type": ["null", "string"]
     },
     "UTM_Term": {
+      "description": "Term specified in UTM tracking",
       "type": ["null", "string"]
     },
     "UTM_source": {
+      "description": "Source specified in UTM tracking",
       "type": ["null", "string"]
     },
     "Within Checkout Process": {
+      "description": "Indicates if the event occurred within the checkout process",
       "type": ["null", "boolean"]
     },
     "mp_lib": {
+      "description": "Library used to capture data",
       "type": ["null", "string"]
     },
     "labels": {
+      "description": "Labels associated with the event",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "sampling_factor": {
+      "description": "Sampling rate used for data collection",
       "type": ["null", "integer"]
     },
     "dataset": {
+      "description": "Name of the dataset",
       "type": ["null", "string"]
     },
     "Referred by": {
+      "description": "Source of user referral",
       "type": ["null", "string"]
     },
     "import": {
+      "description": "Indicates if the event/data was imported",
       "type": ["null", "boolean"]
     },
     "URL": {
+      "description": "URL of the event",
       "type": ["null", "string"]
     },
     "mp_api_timestamp_ms": {
+      "description": "Timestamp of API data retrieval",
       "type": ["null", "string"]
     },
     "mp_api_endpoint": {
+      "description": "API endpoint through which the data was captured",
       "type": ["null", "string"]
     },
     "mp_processing_time_ms": {
+      "description": "Processing time in milliseconds by Mixpanel",
       "type": ["null", "string"]
     }
   }

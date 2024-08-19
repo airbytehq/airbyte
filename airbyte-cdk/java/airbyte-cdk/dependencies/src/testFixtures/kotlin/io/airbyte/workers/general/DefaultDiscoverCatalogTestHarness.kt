@@ -8,7 +8,6 @@ import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBod
 import io.airbyte.commons.io.LineGobbler
 import io.airbyte.commons.json.Jsons
 import io.airbyte.configoss.ConnectorJobOutput
-import io.airbyte.configoss.FailureReason
 import io.airbyte.configoss.StandardDiscoverCatalogInput
 import io.airbyte.protocol.models.AirbyteCatalog
 import io.airbyte.protocol.models.AirbyteMessage
@@ -20,11 +19,12 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.internal.AirbyteStreamFactory
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory
 import io.airbyte.workers.process.IntegrationLauncher
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.util.*
 import kotlin.concurrent.Volatile
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class DefaultDiscoverCatalogTestHarness
 @JvmOverloads
@@ -34,7 +34,7 @@ constructor(
     private val connectorConfigUpdater: ConnectorConfigUpdater,
     private val streamFactory: AirbyteStreamFactory = DefaultAirbyteStreamFactory()
 ) : DiscoverCatalogTestHarness {
-    @Volatile private var process: Process? = null
+    @Volatile private lateinit var process: Process
 
     @Throws(TestHarnessException::class)
     override fun run(
@@ -54,21 +54,20 @@ constructor(
                 ConnectorJobOutput()
                     .withOutputType(ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID)
 
-            LineGobbler.gobble(process!!.errorStream, { msg: String? -> LOGGER.error(msg) })
+            LineGobbler.gobble(process.errorStream, { msg: String -> LOGGER.error(msg) })
 
             val messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30)
 
             val catalog =
                 messagesByType
-                    .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())!!
-                    .stream()
-                    .map { obj: AirbyteMessage? -> obj!!.catalog }
-                    .findFirst()
+                    .getOrDefault(AirbyteMessage.Type.CATALOG, ArrayList())
+                    .map { obj: AirbyteMessage -> obj.catalog }
+                    .firstOrNull()
 
             val optionalConfigMsg =
                 TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType)
             if (
-                optionalConfigMsg!!.isPresent &&
+                optionalConfigMsg.isPresent &&
                     TestHarnessUtils.getDidControlMessageChangeConfig(
                         inputConfig,
                         optionalConfigMsg.get()
@@ -86,23 +85,21 @@ constructor(
                     ConnectorJobOutput.OutputType.DISCOVER_CATALOG_ID,
                     messagesByType
                 )
-            failureReason!!.ifPresent { failureReason: FailureReason? ->
-                jobOutput.failureReason = failureReason
-            }
+            failureReason.ifPresent { jobOutput.failureReason = it }
 
-            val exitCode = process!!.exitValue()
+            val exitCode = process.exitValue()
             if (exitCode != 0) {
                 LOGGER.warn("Discover job subprocess finished with exit codee {}", exitCode)
             }
 
-            if (catalog.isPresent) {
+            if (catalog != null) {
                 val result =
                     AirbyteApiClient.retryWithJitter(
                         {
                             airbyteApiClient.sourceApi.writeDiscoverCatalogResult(
                                 buildSourceDiscoverSchemaWriteRequestBody(
                                     discoverSchemaInput,
-                                    catalog.get()
+                                    catalog
                                 )
                             )
                         },
@@ -144,8 +141,6 @@ constructor(
     }
 
     companion object {
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(DefaultDiscoverCatalogTestHarness::class.java)
         private const val WRITE_DISCOVER_CATALOG_LOGS_TAG = "call to write discover schema result"
     }
 }

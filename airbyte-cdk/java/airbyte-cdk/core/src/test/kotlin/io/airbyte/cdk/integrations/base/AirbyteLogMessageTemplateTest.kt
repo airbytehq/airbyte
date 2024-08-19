@@ -37,13 +37,13 @@ class AirbyteLogMessageTemplateTest {
         // produced by code and assert that it matches the expected format.
         loggerContext = Configurator.initialize(null, "log4j2.xml")
 
-        val configuration = loggerContext.getConfiguration()
+        val configuration = loggerContext.configuration
         rootLoggerConfig = configuration.getLoggerConfig("")
 
         outputContent = ByteArrayOutputStream()
         outputStreamAppender =
             OutputStreamAppender.createAppender(
-                rootLoggerConfig.getAppenders()[CONSOLE_JSON_APPENDER]!!.layout,
+                rootLoggerConfig.appenders[CONSOLE_JSON_APPENDER]!!.layout,
                 null,
                 outputContent,
                 OUTPUT_STREAM_APPENDER,
@@ -58,19 +58,19 @@ class AirbyteLogMessageTemplateTest {
 
     @AfterEach
     fun closeLogger() {
-        outputStreamAppender!!.stop()
-        rootLoggerConfig!!.removeAppender(OUTPUT_STREAM_APPENDER)
-        loggerContext!!.close()
+        outputStreamAppender.stop()
+        rootLoggerConfig.removeAppender(OUTPUT_STREAM_APPENDER)
+        loggerContext.close()
     }
 
     @Test
     @Throws(IOException::class)
     fun testAirbyteLogMessageFormat() {
         getLogger()
-        logger!!.info("hello")
+        logger.info("hello")
 
-        outputContent!!.flush()
-        val logMessage = outputContent!!.toString(StandardCharsets.UTF_8)
+        outputContent.flush()
+        val logMessage = outputContent.toString(StandardCharsets.UTF_8)
         val airbyteMessage = validateLogIsAirbyteMessage(logMessage)
         val airbyteLogMessage = validateAirbyteMessageIsLog(airbyteMessage)
 
@@ -113,9 +113,9 @@ class AirbyteLogMessageTemplateTest {
         for (i in 0 until stringRepetitions) {
             sb.append("abcd")
         }
-        logger!!.info(sb.toString(), RuntimeException("aaaaa bbbbbb ccccccc dddddd"))
-        outputContent!!.flush()
-        val logMessage = outputContent!!.toString(StandardCharsets.UTF_8)
+        logger.info(sb.toString(), RuntimeException("aaaaa bbbbbb ccccccc dddddd"))
+        outputContent.flush()
+        val logMessage = outputContent.toString(StandardCharsets.UTF_8)
 
         val airbyteMessage = validateLogIsAirbyteMessage(logMessage)
         val airbyteLogMessage = validateAirbyteMessageIsLog(airbyteMessage)

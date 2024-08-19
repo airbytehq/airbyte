@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-pagerduty
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:
@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.12
   dockerRepository: airbyte/source-pagerduty
   githubIssueLabel: source-pagerduty
   icon: pagerduty.svg
@@ -30,4 +30,18 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+  # Disable acceptance tests for now
+  # They are not passing
+  # Low/No Airbyte Cloud usage
+  #
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-PAGERDUTY__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

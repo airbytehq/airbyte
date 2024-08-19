@@ -111,8 +111,8 @@ def test_add_file(files_to_add: List[RemoteFile], expected_start_time: List[date
 
     for index, f in enumerate(files_to_add):
         cursor.add_file(f)
-        assert expected_start_time[index] == cursor._compute_start_time()
-    assert expected_state_dict == cursor.get_state()
+        assert cursor._compute_start_time() == expected_start_time[index]
+    assert cursor.get_state() == expected_state_dict
 
 
 @pytest.mark.parametrize(
