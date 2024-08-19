@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.13"
+version = "0.2.0"
 name = "source-clickup-api"
 description = "Source implementation for clickup-api."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -15,8 +15,8 @@ repository = "https://github.com/airbytehq/airbyte"
 packages = [ { include = "source_clickup_api" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = "^3.10,<3.12"
+airbyte-cdk = "^4"
 
 [tool.poetry.scripts]
 source-clickup-api = "source_clickup_api.run:run"
