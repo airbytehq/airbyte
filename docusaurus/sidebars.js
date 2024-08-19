@@ -565,11 +565,16 @@ module.exports = {
         },
       ],
     },
-    "operator-guides/upgrading-airbyte",
     {
-      type: "doc",
-      label: "Managing Connector Updates",
-      id: "managing-airbyte/connector-updates",
+      type: "category",
+      label: "Upgrading Airbyte",
+      link: {
+        type: "doc",
+        id: "operator-guides/upgrading-airbyte",
+      },
+      items: [
+        "operator-guides/managing-airbyte/connector-updates"
+      ],
     },
     {
       type: "category",
