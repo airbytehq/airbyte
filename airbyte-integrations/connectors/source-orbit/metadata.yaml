@@ -6,11 +6,11 @@ data:
     hosts:
       - "*"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.1@sha256:775f3f28381e2bb18d84ecccd35624b3de6f2cf62fb481fe7809091435f8eb26
   connectorSubtype: api
   connectorType: source
   definitionId: 95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a
-  dockerImageTag: 0.3.16
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-orbit
   documentationUrl: https://docs.airbyte.com/integrations/sources/orbit
   githubIssueLabel: source-orbit
@@ -26,12 +26,12 @@ data:
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-orbit
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

@@ -48,6 +48,7 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.0 | 2024-08-19 | [44410](https://github.com/airbytehq/airbyte/pull/44410) | Refactor connector to manifest-only format |
 | 0.3.16 | 2024-08-17 | [44330](https://github.com/airbytehq/airbyte/pull/44330) | Update dependencies |
 | 0.3.15 | 2024-08-10 | [43697](https://github.com/airbytehq/airbyte/pull/43697) | Update dependencies |
 | 0.3.14 | 2024-08-03 | [43188](https://github.com/airbytehq/airbyte/pull/43188) | Update dependencies |
