@@ -43,8 +43,7 @@ In addition to connection configuration settings, you apply the following specif
 | Stream Setting | Description             |
 | --------- | ----------- |
 | [Stream selection](/using-airbyte/configuring-schema.md) | Determine if the stream syncs to your destination     |
-
-| [Sync mode](/using-airbyte/core-concepts/sync-modes/README) | Configure how Airbyte reads data from the source and writes it     |
+| [Sync mode](/using-airbyte/core-concepts/sync-modes/README.md) | Configure how Airbyte reads data from the source and writes it     |
 | [Cursor selection](/using-airbyte/configuring-schema.md) | Select what field the stream uses to incrementally read from the source     |
 | [Primary key selection](/using-airbyte/configuring-schema.md) | Select what field the stream uses to determine uniqueness of a record     |
-| [Field selection](/using-airbyte/configuring-schema.md) | (Optional) Disable a partial set of fields Airbyte should not sync to the destination     |
+| [Field selection](/using-airbyte/configuring-schema.md) | (Optional) Disable a partial set of fields Airbyte should not sync to the destination     | 
