@@ -28,7 +28,7 @@ acceptance_tests:
               bypass_reason: ignore changing value in full_refresh of acceptance-tests
   spec:
     tests:
-      - spec_path: source_clickup_api/spec.yaml
+      - spec_path: manifest.yaml
         timeout_seconds: 1200
   incremental:
     bypass_reason: "Incremental syncs are not supported on this connector."
