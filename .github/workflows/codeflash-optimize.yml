@@ -13,7 +13,7 @@ defaults:
 jobs:
   optimize:
     name: Optimize new code in this PR
-    if: ${{ github.actor != 'codeflash-ai[bot]' }}
+    if: ${{ github.actor != 'codeflash-ai[bot]' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork != true}}
     runs-on: ubuntu-latest
     env:
       CODEFLASH_API_KEY: ${{ secrets.CODEFLASH_API_KEY }}
