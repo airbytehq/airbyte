@@ -39,13 +39,10 @@ class JsonFileLoader:
 
 
 def resolve_ref_links(obj: Any) -> Any:
-    """Resolve jsonref.JsonRef objects in a JSON schema and convert to JSON serializable dict.
-
-    Args:
-        obj (Any): The JSON schema object with ref field resolved.
-
-    Returns:
-        Any: JSON serializable object with references converted and without external dependencies.
+    """
+    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+    :param obj - jsonschema object with ref field resolved.
+    :return JSON serializable object with references without external dependencies.
     """
 
     stack = [obj]
