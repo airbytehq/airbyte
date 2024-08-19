@@ -118,6 +118,12 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
         schema["type"].elements().forEach {
             val newTypeObj = MoreMappers.initMapper().createObjectNode()
             newTypeObj.put("type", it.asText())
+            // Denormalize the (non-type) properties from the parent onto each type
+            schema.fields().forEach { (key, value) ->
+                if (key != "type") {
+                    newTypeObj.set<ObjectNode>(key, value as ObjectNode)
+                }
+            }
 
             val newOption = mapSchema(newTypeObj)
             newOptions.add(newOption)

@@ -240,7 +240,9 @@ enum class AirbyteJsonSchemaType {
                     }
                     .toList()
             if (matching.isEmpty()) {
-                throw IllegalArgumentException("Union type does not match any options")
+                throw IllegalArgumentException(
+                    "Union type ${value::class}(value redacted) does not match any options: $optionsAsList"
+                )
             }
             return matching.first()
         }
