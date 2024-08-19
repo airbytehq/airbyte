@@ -33,8 +33,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
-            stop_condition: "{{ not headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -59,15 +59,15 @@ definitions:
               - "*"
           record_filter:
             type: RecordFilter
-            condition: "{{ record.name == \"schedule\" }}"
+            condition: '{{ record.name == "schedule" }}'
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
-            stop_condition: "{{ not headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -116,8 +116,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
-            stop_condition: "{{ not headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -156,8 +156,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
-            stop_condition: "{{ not headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -166,7 +166,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -199,8 +199,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
-            stop_condition: "{{ not headers.get(\"link\", {}).get(\"next\", {}).get(\"url\", {}) }}"
+            cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", {}) }}'
+            stop_condition: '{{ not headers.get("link", {}).get("next", {}).get("url", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -209,7 +209,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -223,12 +223,12 @@ definitions:
       type: OAuthAuthenticator
       refresh_request_body:
         type: refresh
-        refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
+        refresh_token: '{{ config["client_refresh_token_2"] }}'
       token_refresh_endpoint: https://launchpad.37signals.com/authorization/token
       grant_type: refresh_token
-      client_id: "{{ config[\"client_id\"] }}"
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
+      client_id: '{{ config["client_id"] }}'
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token_2"] }}'
 
 streams:
   - $ref: "#/definitions/streams/projects"
