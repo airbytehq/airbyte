@@ -29,7 +29,7 @@ class InterpolatedString:
         self._interpolation = JinjaInterpolation()
         self._parameters = parameters
         # indicates whether passed string is just a plain string, not Jinja template
-        # This allows for optimisation, but we do not know it yet at this stage
+        # This allows for optimization, but we do not know it yet at this stage
         self._is_plain_string = None
 
     def eval(self, config: Config, **kwargs: Any) -> Any:
