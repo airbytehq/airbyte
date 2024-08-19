@@ -3,19 +3,19 @@
 #
 
 from abc import ABC
+from datetime import timedelta
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
-from datetime import timedelta
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler, HttpStatusErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction, FailureType, ErrorResolution
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 from requests.auth import AuthBase
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3/"
@@ -71,10 +71,7 @@ class GoogleSearchConsole(HttpStream, ABC):
 
     def get_error_handler(self) -> ErrorHandler:
         return HttpStatusErrorHandler(
-            logger=self.logger,
-            error_mapping=DEFAULT_ERROR_MAPPING,
-            max_retries=self.max_retries,
-            max_time=timedelta(seconds=self.max_time)
+            logger=self.logger, error_mapping=DEFAULT_ERROR_MAPPING, max_retries=self.max_retries, max_time=timedelta(seconds=self.max_time)
         )
 
 

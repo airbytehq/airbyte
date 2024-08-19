@@ -9,8 +9,8 @@ from urllib.parse import quote_plus
 import pytest
 import requests
 from airbyte_cdk.models import AirbyteConnectionStatus, Status, SyncMode
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest_lazyfixture import lazy_fixture
 from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
