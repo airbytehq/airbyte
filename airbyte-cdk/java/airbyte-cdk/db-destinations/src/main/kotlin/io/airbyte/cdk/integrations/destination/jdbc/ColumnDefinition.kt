@@ -22,4 +22,9 @@ class ColumnDefinition(name: String, type: String, columnSize: Int, isNullable: 
         this.columnSize = columnSize
         this.isNullable = isNullable
     }
+
+    override fun toString(): String {
+        return "ColumnDefinition(name='$name', type='$type', columnSize=$columnSize, isNullable=$isNullable)"
+    }
+
 }

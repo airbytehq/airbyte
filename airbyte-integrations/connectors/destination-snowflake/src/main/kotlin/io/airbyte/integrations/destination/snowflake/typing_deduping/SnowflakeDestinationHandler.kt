@@ -775,9 +775,9 @@ class SnowflakeDestinationHandler(
             LOGGER.info("existingTablesFromShowQuery.size=" + existingTablesFromShowQuery.size)
             LOGGER.info("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
 
-            //return existingTablesFromShowQuery
+            return existingTablesFromShowQuery
 
-            return existingTablesFromInfoSchema;
+            //return existingTablesFromInfoSchema;
         }
 
     }
