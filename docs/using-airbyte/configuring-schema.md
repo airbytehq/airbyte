@@ -26,11 +26,25 @@ To modify which streams are enabled:
 Use the toggle "Hide disabled streams" to quickly view all enabled streams or all disabled streams. 
 ::: 
 
+## Modify Stream Names
+To modify the stream name in the destination, use the connection-wide setting **Stream prefix**. Entering text here prepends the same text to each stream name in the destination, allowing for you to easily differentiate between streams of the same name in your destination.
+
+By default, Airbyte does not add any text to the **Stream prefix**. Streams without a **Stream Prefix** are synced to the destination with the same table name found in the source. As an example: 
+
+| Source stream name | Stream Prefix | Destination stream name |
+|--|--|--|
+| Accounts |  | Accounts |
+| Accounts | salesforce_ | salesforce_accounts |
+
+Airbyte does not allow for the renaming of individual streams at this time. 
+
 ## Select Sync Mode
 
 Each stream syncs using a specific sync mode. The sync mode tells Airbyte how the data should be synced, and what shape it will take. 
 
 To learn more about sync modes, see our [Sync Mode documentation](/using-airbyte/core-concepts/sync-modes/). 
+
+![Select Sync Mode](./assets/select-sync-mode.png)
 
 During connection creation, Airbyte will ask how you would like data to be synced to the destination, and automatically select a sync mode for each stream depending on your input. 
 
@@ -43,8 +57,6 @@ Cursors and Primary Keys that are defined by the source are automatically select
 :::
 
 To modify a cursor or primary key for a stream:
-
-![Select Sync Mode](./assets/select-sync-mode.png)
 
 1. Click on a specific stream that is enabled.
 
