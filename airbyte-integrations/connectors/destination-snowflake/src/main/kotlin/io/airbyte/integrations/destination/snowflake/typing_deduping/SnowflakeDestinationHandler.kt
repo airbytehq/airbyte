@@ -639,3 +639,4 @@ class SnowflakeDestinationHandler(
     }
 
 }
+
