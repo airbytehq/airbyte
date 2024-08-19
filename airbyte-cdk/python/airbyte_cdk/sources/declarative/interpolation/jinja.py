@@ -3,17 +3,17 @@
 #
 
 import ast
+from functools import cache
 from typing import Any, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.types import Config
-from jinja2 import meta, StrictUndefined
+from jinja2 import StrictUndefined, meta
 from jinja2.environment import Template
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import SandboxedEnvironment
-from functools import cache
 
 
 class StreamPartitionAccessEnvironment(SandboxedEnvironment):
@@ -118,7 +118,7 @@ class JinjaInterpolation(Interpolation):
     def _eval(self, s: Optional[str], context: Mapping[str, Any]) -> Optional[str]:
         try:
             return self._compile(s).render(context)  # type: ignore # from_string is able to handle None
-        except UndefinedError: # requires `undefined=StrictUndefined` in `self._environment`
+        except UndefinedError:  # requires `undefined=StrictUndefined` in `self._environment`
             ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
@@ -127,7 +127,7 @@ class JinjaInterpolation(Interpolation):
             # The string is a static value, not a jinja template
             # It can be returned as is
             return s
-        
+
     @cache
     def _compile(self, s: Optional[str]) -> Template:
         """
