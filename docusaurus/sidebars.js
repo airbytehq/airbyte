@@ -532,9 +532,9 @@ module.exports = {
       items: [
         "cloud/managing-airbyte-cloud/review-connection-status",
         "cloud/managing-airbyte-cloud/review-connection-timeline",
-        "operator-guides/browsing-output-logs",
-        "operator-guides/clear",
         "operator-guides/refreshes",
+        "operator-guides/clear",
+        "operator-guides/browsing-output-logs",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
