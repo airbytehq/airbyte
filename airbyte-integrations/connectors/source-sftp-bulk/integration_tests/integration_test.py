@@ -59,6 +59,18 @@ def test_get_files_pattern_json_new_separator(configured_catalog: ConfiguredAirb
     assert len(output.records) == 3
 
 
+def test_get_all_files_excel_xlsx(configured_catalog: ConfiguredAirbyteCatalog, config_password_all_excel_xlsx: Mapping[str, Any]):
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_password_all_excel_xlsx, state=None)
+    output = read(source=source, config=config_password_all_excel_xlsx, catalog=configured_catalog)
+    assert len(output.records) == 2
+
+
+def test_get_all_files_excel_xls(configured_catalog: ConfiguredAirbyteCatalog, config_password_all_excel_xls: Mapping[str, Any]):
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_password_all_excel_xls, state=None)
+    output = read(source=source, config=config_password_all_excel_xls, catalog=configured_catalog)
+    assert len(output.records) == 1
+
+
 def test_get_files_pattern_no_match_json(configured_catalog: ConfiguredAirbyteCatalog, config_password_all_jsonl: Mapping[str, Any]):
     config_with_wrong_glob_pattern = deepcopy(config_password_all_jsonl)
     config_with_wrong_glob_pattern["streams"][0]["globs"] = ["**/not_existed_file.jsonl"]

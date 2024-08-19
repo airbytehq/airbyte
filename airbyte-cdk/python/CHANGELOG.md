@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.5.1
+Added support for RFR for Full-Refresh Substreams
+
+## 4.5.0
+Stop support for incoming legacy state message format
+
+## 4.4.2
+Move the @deprecated decorator to the class level.
+
+## 4.4.1
+Added test utils for integration tests
+
 ## 4.4.0
 file-based cdk: add excel file type support
 
