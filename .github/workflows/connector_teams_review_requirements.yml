@@ -19,7 +19,7 @@ jobs:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
-    if: ${{ github.event.pull_request.head.repo.fork == false && github.event.pull_request.draft == false }}
+    if: ${{ github.event.pull_request.draft == false }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -45,6 +45,6 @@ jobs:
         uses: Automattic/action-required-review@v3
         with:
           status: ${{ steps.get-mandatory-reviewers.outputs.MANDATORY_REVIEWERS  }}
-          token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           request-reviews: true
           requirements-file: .github/connector_org_review_requirements.yaml
