@@ -1,4 +1,4 @@
-name: Codeflash
+name: Run Codeflash on CDK PR
 
 on:
   pull_request:
