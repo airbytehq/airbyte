@@ -426,7 +426,7 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2022-10-01T00:00:00Z"
-        default: 2024-12-01T00:00:00Z
+        default: "2024-12-01T00:00:00Z"
       site:
         type: string
         description: The site where Datadog data resides in.
@@ -451,7 +451,7 @@ spec:
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
           - "2022-10-01T00:00:00Z"
-        default: 2024-01-01T00:00:00Z
+        default: "2024-01-01T00:00:00Z"
       max_records_per_request:
         type: integer
         description: Maximum number of records to collect per request.
