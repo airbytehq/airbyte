@@ -4,7 +4,6 @@
 package io.airbyte.integrations.base.destination.typing_deduping
 
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 
@@ -44,8 +43,7 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
         LOGGER.info {
             "Checking whether v1 raw table ${v1RawTable.tableName} in dataset ${v1RawTable.namespace} exists"
         }
-        val syncModeNeedsMigration =
-            isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode)
+        val syncModeNeedsMigration = isMigrationRequiredForSyncMode(streamConfig)
         val noValidV2RawTableExists = !doesValidV2RawTableAlreadyExist(streamConfig)
         val aValidV1RawTableExists =
             doesValidV1RawTableExist(v1RawTable.namespace, v1RawTable.tableName)
@@ -139,8 +137,8 @@ abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> : Destination
      * @param destinationSyncMode destination sync mode
      * @return whether this is full refresh overwrite
      */
-    private fun isMigrationRequiredForSyncMode(destinationSyncMode: DestinationSyncMode?): Boolean {
-        return DestinationSyncMode.OVERWRITE != destinationSyncMode
+    private fun isMigrationRequiredForSyncMode(streamConfig: StreamConfig): Boolean {
+        return streamConfig.minimumGenerationId == 0L
     }
 
     /**

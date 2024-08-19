@@ -1,3 +1,7 @@
+---
+products: oss-community, oss-enterprise
+---
+
 # Managing Connector Updates in Airbyte
 
 While maintaining an Airbyte instance, you'll need to manage connector updates. These are essential for improved functionality, reliability, and compatibility over time. Our team and community contributors are dedicated to maintaining up-to-date connectors. Reasons for updates can be broadly categorized into bug fixes, new features, and changes that impact the user experience or the functionality of the connector.
@@ -28,16 +32,15 @@ Each connector's changelog details its update history. You can find it in the [c
 ### Airbyte Cloud
 **Minor and Patch Updates:** These are applied automatically and immediately to your instance. You don't need to take any action.
 
-**Major Updates:** These are opt-in. You'll receive notifications about major updates and have a deadline to apply them. If you choose not to opt-in by the deadline, any syncs using the affected connector will be paused to prevent compatibility issues.
+**Major Updates:** These are opt-in during a specified timeframe to give you a window to prepare for the change. Airbyte will alert you of a new major version that includes a breaking change, but continue to sync until the cutoff date for upgrade. If you choose not to opt-in by the deadline, any syncs using the affected connector will be paused to prevent compatibility issues. Examples of major version changes are listed in our [breaking change documentation]./using-airbyte/schema-change-management#resolving-breaking-changes)
 
-Updates involving a breaking change will be called out in the UI. The example below shows a prompt that you might see if a connector needs upgrading. Note there is a deadline associated with this upgrade and a link to further guidance on completing the upgrade. 
+Updates involving a breaking change will be called out in the UI. The example below shows a prompt that you might see if a connector has passed its cutoff date for upgrade. 
 
-![Upgrade Path](../release_notes/assets/airbyte_destinations_v2_upgrade_prompt.png)
-
+![Upgrade Path](assets/connector-version-banner.png)
 
 ## Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
 
-It's good practice to ensure that you are using an updated version of Airbyte when updating connections. 
+Airbyte recommends using an updated version of Airbyte when updating connections. 
 
 **All Updates (Major, Minor, Patch):** These are opt-in via the settings page. You'll see a badge in the sidebar indicating available updates.
 

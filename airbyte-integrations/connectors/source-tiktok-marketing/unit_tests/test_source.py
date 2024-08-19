@@ -60,6 +60,5 @@ def test_source_check_connection_failed(config, requests_mock):
     )
     logger_mock = MagicMock()
     assert SourceTiktokMarketing().check_connection(logger_mock, config) == (
-        False, "Unable to connect to stream advertisers - Access token is incorrect or has been revoked."
+        False, "Access token is incorrect or has been revoked."
     )
-

@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
-import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -112,7 +111,9 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
 
     resumableFullRefreshStreams.forEach(stream -> {
       var pkStatus = getPrimaryKeyLoadStatus(stream);
-      streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
+      if (pkStatus != null) {
+        streamStates.add(getAirbyteStreamState(stream, (Jsons.jsonNode(pkStatus))));
+      }
     });
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       AirbyteStreamNameNamespacePair pair =
@@ -154,11 +155,6 @@ public class MySqlInitialLoadGlobalStateManager extends MySqlInitialLoadStateMan
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(generateGlobalState(streamStates));
-  }
-
-  @Override
-  public PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair) {
-    return pairToPrimaryKeyLoadStatus.get(pair);
   }
 
   @Override

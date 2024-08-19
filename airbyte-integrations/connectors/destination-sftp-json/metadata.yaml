@@ -8,7 +8,7 @@ data:
   icon: sftp.svg
   license: MIT
   name: SFTP-JSON
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -16,6 +16,7 @@ than that, there are integrations point that are annoying to integrate with usin
 
 import json
 import logging
+import re
 import tempfile
 import traceback
 from io import StringIO
@@ -115,6 +116,14 @@ class EntrypointOutput:
     def _get_trace_message_by_trace_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
         return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
 
+    def is_in_logs(self, pattern: str) -> bool:
+        """Check if any log message case-insensitive matches the pattern."""
+        return any(re.search(pattern, entry.log.message, flags=re.IGNORECASE) for entry in self.logs)
+
+    def is_not_in_logs(self, pattern: str) -> bool:
+        """Check if no log message matches the case-insensitive pattern."""
+        return not self.is_in_logs(pattern)
+
 
 def _run_command(source: Source, args: List[str], expecting_exception: bool = False) -> EntrypointOutput:
     log_capture_buffer = StringIO()
@@ -179,7 +188,7 @@ def read(
     with tempfile.TemporaryDirectory() as tmp_directory:
         tmp_directory_path = Path(tmp_directory)
         config_file = make_file(tmp_directory_path / "config.json", config)
-        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.json())
+        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.model_dump_json())
         args = [
             "read",
             "--config",
@@ -191,7 +200,9 @@ def read(
             args.extend(
                 [
                     "--state",
-                    make_file(tmp_directory_path / "state.json", f"[{','.join([stream_state.json() for stream_state in state])}]"),
+                    make_file(
+                        tmp_directory_path / "state.json", f"[{','.join([stream_state.model_dump_json() for stream_state in state])}]"
+                    ),
                 ]
             )
 

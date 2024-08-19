@@ -12,7 +12,7 @@ To following databases are supported:
 - [Milvus](https://docs.airbyte.com/integrations/destinations/milvus)
 - [Chroma](https://docs.airbyte.com/integrations/destinations/chroma)
 - [Qdrant](https://docs.airbyte.com/integrations/destinations/qdrant)
-  :::
+:::
 
 ## Overview
 

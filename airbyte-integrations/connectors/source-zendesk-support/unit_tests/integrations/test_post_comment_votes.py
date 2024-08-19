@@ -209,7 +209,7 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob.parse_obj({"updated_at": post_comment_votes["updated_at"]})
+        assert output.most_recent_state.stream_state == AirbyteStateBlob.model_validate({"updated_at": post_comment_votes["updated_at"]})
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker):
@@ -217,30 +217,6 @@ class TestPostsCommentsStreamIncremental(TestCase):
         A normal incremental sync with state and pagination
         """
         api_token_authenticator = self._get_authenticator(self._config)
-
-        # Ticket Forms mock. Will be the same for check availability and read requests
-        _ = given_ticket_forms(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
-
-        # Posts mock for check availability request
-        posts_record_builder = given_posts(http_mocker, string_to_datetime(self._config["start_date"]), api_token_authenticator)
-        post = posts_record_builder.build()
-
-        # Post comment mock for check availability request
-        post_comments_record_builder = given_post_comments(
-            http_mocker, string_to_datetime(self._config["start_date"]), post["id"], api_token_authenticator
-        )
-        post_comment = post_comments_record_builder.build()
-
-        # Post comment votes mock for check availability request
-        http_mocker.get(
-            PostCommentVotesRequestBuilder.post_comment_votes_endpoint(api_token_authenticator, post["id"], post_comment["id"])
-            .with_start_time(self._config["start_date"])
-            .with_page_size(100)
-            .build(),
-            PostCommentVotesResponseBuilder.post_comment_votes_response()
-            .with_record(PostCommentVotesRecordBuilder.post_commetn_votes_record())
-            .build(),
-        )
 
         state_start_date = pendulum.parse(self._config["start_date"]).add(years=1)
         first_page_record_updated_at = state_start_date.add(months=1)
@@ -291,4 +267,4 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 2
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob.parse_obj({"updated_at": datetime_to_string(last_page_record_updated_at)})
+        assert output.most_recent_state.stream_state == AirbyteStateBlob.model_validate({"updated_at": datetime_to_string(last_page_record_updated_at)})

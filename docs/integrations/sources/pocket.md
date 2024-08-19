@@ -57,6 +57,12 @@ curl --insecure -X POST -H 'Content-Type: application/json' -H 'X-Accept: applic
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.13 | 2024-08-10 | [43116](https://github.com/airbytehq/airbyte/pull/43116) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42775](https://github.com/airbytehq/airbyte/pull/42775) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42385](https://github.com/airbytehq/airbyte/pull/42385) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41923](https://github.com/airbytehq/airbyte/pull/41923) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41457](https://github.com/airbytehq/airbyte/pull/41457) | Update dependencies |
+| 0.1.8 | 2024-07-09 | [41294](https://github.com/airbytehq/airbyte/pull/41294) | Update dependencies |
 | 0.1.7 | 2024-07-06 | [41001](https://github.com/airbytehq/airbyte/pull/41001) | Update dependencies |
 | 0.1.6 | 2024-06-25 | [40308](https://github.com/airbytehq/airbyte/pull/40308) | Update dependencies |
 | 0.1.5 | 2024-06-22 | [39957](https://github.com/airbytehq/airbyte/pull/39957) | Update dependencies |

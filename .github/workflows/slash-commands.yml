@@ -27,6 +27,7 @@ jobs:
             test-performance
             publish-java-cdk
             connector-performance
+            approve-regression-tests
           static-args: |
             repo=${{ steps.getref.outputs.repo }}
             gitref=${{ steps.getref.outputs.ref }}

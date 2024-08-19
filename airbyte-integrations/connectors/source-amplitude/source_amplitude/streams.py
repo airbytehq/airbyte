@@ -15,35 +15,11 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 
 LOGGER = logging.getLogger("airbyte")
-
-HTTP_ERROR_CODES = {
-    400: {
-        "msg": "The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.",
-        "lvl": "ERROR",
-    },
-    404: {
-        "msg": "No data collected",
-        "lvl": "WARN",
-    },
-    504: {
-        "msg": "The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.",
-        "lvl": "ERROR",
-    },
-}
-
-
-def error_msg_from_status(status: int = None):
-    if status:
-        level = HTTP_ERROR_CODES[status]["lvl"]
-        message = HTTP_ERROR_CODES[status]["msg"]
-        if level == "ERROR":
-            LOGGER.error(message)
-        elif level == "WARN":
-            LOGGER.warning(message)
-        else:
-            LOGGER.error(f"Unknown error occured: code {status}")
 
 
 class Events(HttpStream, CheckpointMixin):
@@ -131,7 +107,7 @@ class Events(HttpStream, CheckpointMixin):
         except zipfile.BadZipFile as e:
             self.logger.exception(e)
             self.logger.error(
-                f"Received an invalid zip file in response to URL: {response.request.url}."
+                f"Received an invalid zip file in response to URL: {response.request.url}. "
                 f"The size of the response body is: {len(response.content)}"
             )
             return []
@@ -178,22 +154,13 @@ class Events(HttpStream, CheckpointMixin):
         end = pendulum.parse(stream_slice["end"])
         if start > end:
             yield from []
-        # sometimes the API throws a 404 error for not obvious reasons, we have to handle it and log it.
-        # for example, if there is no data from the specified time period, a 404 exception is thrown
-        # https://developers.amplitude.com/docs/export-api#status-codes
         try:
             self.logger.info(f"Fetching {self.name} time range: {start.strftime('%Y-%m-%dT%H')} - {end.strftime('%Y-%m-%dT%H')}")
             for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
                 self.state = self._get_updated_state(self.state, record)
                 yield record
-        except requests.exceptions.HTTPError as error:
-            status = error.response.status_code
-            if status in HTTP_ERROR_CODES.keys():
-                error_msg_from_status(status)
-                yield from []
-            else:
-                self.logger.error(f"Error during syncing {self.name} stream - {error}")
-                raise
+        except requests.exceptions.HTTPError as e:
+            self.logger.error(f"Error during syncing {self.name} stream - {e}")
 
     def request_params(self, stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         params = self.base_params
@@ -206,3 +173,29 @@ class Events(HttpStream, CheckpointMixin):
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/export"
+
+    def get_error_handler(self) -> ErrorHandler:
+        # Error status code mapping from Amplitude documentation: https://amplitude.com/docs/apis/analytics/export#status-codes
+        error_mapping = DEFAULT_ERROR_MAPPING | {
+            400: ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message="The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB. Provide a shorter 'request_time_range' interval.",
+            ),
+            403: ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message="Access denied due to lack of permission or invalid API/Secret key or wrong data region.",
+            ),
+            404: ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="No data available for the time range requested.",
+            ),
+            504: ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.config_error,
+                error_message="The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export",
+            ),
+        }
+        return HttpStatusErrorHandler(logger=LOGGER, error_mapping=error_mapping)

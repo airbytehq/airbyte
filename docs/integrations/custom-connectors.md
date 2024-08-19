@@ -20,6 +20,11 @@ It's easy to code your own connectors on Airbyte. Here is a link to instruct on 
 
 While the guides in the link above are specific to the languages used most frequently to write integrations, **Airbyte connectors can be written in any language**. Please reach out to us if you'd like help developing connectors in other languages.
 
+:::caution
+If you don't use one of the official development options, remember to set the `AIRBYTE_ENTRYPOINT` environment variable to your Docker image's entrypoint!
+Otherwise, your connector will not run correctly.
+:::
+
 ## Adding your connectors in the UI
 
 There are only 3 easy steps to do that:

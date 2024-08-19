@@ -1,0 +1,1254 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - survey_responses
+definitions:
+  streams:
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.delighted.com/v1/
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['nothing'] }}"
+          path: people.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        name: people
+        path: people.json
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: until
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1W
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            created_at:
+              type: integer
+              description: Date and time when the person was created in the system
+            email:
+              type:
+                - "null"
+                - string
+              description: Email address of the person
+            id:
+              type: string
+              description: Unique identifier for the person record
+            last_responded_at:
+              type:
+                - integer
+                - "null"
+              description: Date and time when the person last responded to a survey
+            last_sent_at:
+              type:
+                - integer
+                - "null"
+              description: Date and time when the last survey was sent to the person
+            name:
+              type:
+                - "null"
+                - string
+              description: Full name of the person
+            next_survey_scheduled_at:
+              type:
+                - integer
+                - "null"
+              description: >-
+                Date and time when the next survey is scheduled to be sent to the
+                person
+            phone_number:
+              type:
+                - "null"
+                - string
+              description: Phone number of the person
+          additionalProperties: true
+    unsubscribes:
+      type: DeclarativeStream
+      name: unsubscribes
+      primary_key:
+        - person_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.delighted.com/v1/
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['nothing'] }}"
+          path: unsubscribes.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: unsubscribed_at
+        name: unsubscribes
+        path: unsubscribes.json
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: until
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1W
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            email:
+              type: string
+              description: The email address of the subscriber who unsubscribed.
+            name:
+              type:
+                - "null"
+                - string
+              description: The name of the subscriber who unsubscribed, if available.
+            person_id:
+              type: string
+              description: An identifier for the subscriber in the system.
+            unsubscribed_at:
+              type: integer
+              description: The date and time when the subscriber unsubscribed.
+          additionalProperties: true
+    bounces:
+      type: DeclarativeStream
+      name: bounces
+      primary_key:
+        - person_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.delighted.com/v1/
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['nothing'] }}"
+          path: bounces.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: bounced_at
+        name: bounces
+        path: bounces.json
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: since
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: until
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1W
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            bounced_at:
+              type: integer
+              description: The timestamp when the email bounced.
+            email:
+              type: string
+              description: The email address that experienced the bounce.
+            name:
+              type:
+                - "null"
+                - string
+              description: The name associated with the bounced email, if available.
+            person_id:
+              type: string
+              description:
+                The unique identifier of the person related to the bounced
+                email.
+          additionalProperties: true
+    survey_responses:
+      type: DeclarativeStream
+      name: survey_responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.delighted.com/v1/
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_key'] }}"
+            password: "{{ config['nothing'] }}"
+          path: survey_responses.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        name: survey_responses
+        path: survey_responses.json
+        cursor_datetime_formats:
+          - "%s"
+        datetime_format: "%s"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: updated_until
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P1W
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-04/schema#
+          properties:
+            additional_answers:
+              type:
+                - array
+                - "null"
+              description: Information on additional answers provided in the survey
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the additional answer
+                  question:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        description: >-
+                          Type of question (free response, scale, select many, select
+                          one)
+                      id:
+                        type: string
+                        description: Unique identifier for the question
+                      text:
+                        type: string
+                        description: Text of the question
+                  value:
+                    type: object
+                    description: Value provided for the question
+                    properties:
+                      free_response:
+                        type:
+                          - "null"
+                          - string
+                        description: Free response answer
+                      scale:
+                        type:
+                          - "null"
+                          - integer
+                        description: Scale response value
+                      select_many:
+                        type:
+                          - array
+                          - "null"
+                        description: Select multiple choice response
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              description: Unique identifier for the choice
+                            text:
+                              type: string
+                              description: Text of the choice
+                      select_one:
+                        type:
+                          - object
+                          - "null"
+                        description: Select single choice response
+                        properties:
+                          id:
+                            type: string
+                            description: Unique identifier for the choice
+                          text:
+                            type: string
+                            description: Text of the choice
+            comment:
+              type:
+                - "null"
+                - string
+              description: Additional comments provided in the survey response
+            created_at:
+              type: integer
+              description: Timestamp of when the survey response was created
+            id:
+              type: string
+              description: Unique identifier for the survey response
+            notes:
+              type: array
+              description: Additional notes associated with the survey response
+              items:
+                description: Individual note for the survey response
+            permalink:
+              type: string
+              description: Permanent link to access the survey response
+            person:
+              type: string
+              description: Information about the person who responded to the survey
+            person_properties:
+              type:
+                - object
+                - "null"
+              description: Additional properties associated with the person
+              properties:
+                Delighted Browser:
+                  type:
+                    - "null"
+                    - string
+                  description: Browser used by the person
+                Delighted Device Type:
+                  type:
+                    - "null"
+                    - string
+                  description: Type of device used by the person
+                Delighted Operating System:
+                  type:
+                    - "null"
+                    - string
+                  description: Operating system of the device used by the person
+                Delighted Source:
+                  type:
+                    - "null"
+                    - string
+                  description: Source from where the survey was accessed
+            score:
+              type: integer
+              description: Score associated with the survey response
+            survey_type:
+              type: string
+              description: Type of survey conducted
+            tags:
+              type: array
+              description: Tags associated with the survey response
+              items:
+                description: Individual tag for the survey response
+            updated_at:
+              type:
+                - "null"
+                - integer
+              description: Timestamp of when the survey response was last updated
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.delighted.com/v1/
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['nothing'] }}"
+streams:
+  - type: DeclarativeStream
+    name: people
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.delighted.com/v1/
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['nothing'] }}"
+        path: people.json
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ headers['link']['next']['url'] }}"
+          stop_condition: "{{ 'next' not in headers['link'] }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: created_at
+      name: people
+      path: people.json
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: until
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1W
+      cursor_granularity: PT1S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          created_at:
+            type: integer
+            description: Date and time when the person was created in the system
+          email:
+            type:
+              - "null"
+              - string
+            description: Email address of the person
+          id:
+            type: string
+            description: Unique identifier for the person record
+          last_responded_at:
+            type:
+              - integer
+              - "null"
+            description: Date and time when the person last responded to a survey
+          last_sent_at:
+            type:
+              - integer
+              - "null"
+            description: Date and time when the last survey was sent to the person
+          name:
+            type:
+              - "null"
+              - string
+            description: Full name of the person
+          next_survey_scheduled_at:
+            type:
+              - integer
+              - "null"
+            description: >-
+              Date and time when the next survey is scheduled to be sent to the
+              person
+          phone_number:
+            type:
+              - "null"
+              - string
+            description: Phone number of the person
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: unsubscribes
+    primary_key:
+      - person_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.delighted.com/v1/
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['nothing'] }}"
+        path: unsubscribes.json
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: unsubscribed_at
+      name: unsubscribes
+      path: unsubscribes.json
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: until
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1W
+      cursor_granularity: PT1S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          email:
+            type: string
+            description: The email address of the subscriber who unsubscribed.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name of the subscriber who unsubscribed, if available.
+          person_id:
+            type: string
+            description: An identifier for the subscriber in the system.
+          unsubscribed_at:
+            type: integer
+            description: The date and time when the subscriber unsubscribed.
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: bounces
+    primary_key:
+      - person_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.delighted.com/v1/
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['nothing'] }}"
+        path: bounces.json
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: bounced_at
+      name: bounces
+      path: bounces.json
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_time_option:
+        type: RequestOption
+        field_name: since
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: until
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1W
+      cursor_granularity: PT1S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          bounced_at:
+            type: integer
+            description: The timestamp when the email bounced.
+          email:
+            type: string
+            description: The email address that experienced the bounce.
+          name:
+            type:
+              - "null"
+              - string
+            description: The name associated with the bounced email, if available.
+          person_id:
+            type: string
+            description:
+              The unique identifier of the person related to the bounced
+              email.
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: survey_responses
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.delighted.com/v1/
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['nothing'] }}"
+        path: survey_responses.json
+        http_method: GET
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              backoff_strategies:
+                - type: WaitTimeFromHeader
+                  header: Retry-After
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      name: survey_responses
+      path: survey_responses.json
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['since'], '%Y-%m-%d %H:%M:%S') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: updated_until
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: P1W
+      cursor_granularity: PT1S
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-04/schema#
+        properties:
+          additional_answers:
+            type:
+              - array
+              - "null"
+            description: Information on additional answers provided in the survey
+            items:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: Unique identifier for the additional answer
+                question:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      description: >-
+                        Type of question (free response, scale, select many, select
+                        one)
+                    id:
+                      type: string
+                      description: Unique identifier for the question
+                    text:
+                      type: string
+                      description: Text of the question
+                value:
+                  type: object
+                  description: Value provided for the question
+                  properties:
+                    free_response:
+                      type:
+                        - "null"
+                        - string
+                      description: Free response answer
+                    scale:
+                      type:
+                        - "null"
+                        - integer
+                      description: Scale response value
+                    select_many:
+                      type:
+                        - array
+                        - "null"
+                      description: Select multiple choice response
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            description: Unique identifier for the choice
+                          text:
+                            type: string
+                            description: Text of the choice
+                    select_one:
+                      type:
+                        - object
+                        - "null"
+                      description: Select single choice response
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the choice
+                        text:
+                          type: string
+                          description: Text of the choice
+          comment:
+            type:
+              - "null"
+              - string
+            description: Additional comments provided in the survey response
+          created_at:
+            type: integer
+            description: Timestamp of when the survey response was created
+          id:
+            type: string
+            description: Unique identifier for the survey response
+          notes:
+            type: array
+            description: Additional notes associated with the survey response
+            items:
+              description: Individual note for the survey response
+          permalink:
+            type: string
+            description: Permanent link to access the survey response
+          person:
+            type: string
+            description: Information about the person who responded to the survey
+          person_properties:
+            type:
+              - object
+              - "null"
+            description: Additional properties associated with the person
+            properties:
+              Delighted Browser:
+                type:
+                  - "null"
+                  - string
+                description: Browser used by the person
+              Delighted Device Type:
+                type:
+                  - "null"
+                  - string
+                description: Type of device used by the person
+              Delighted Operating System:
+                type:
+                  - "null"
+                  - string
+                description: Operating system of the device used by the person
+              Delighted Source:
+                type:
+                  - "null"
+                  - string
+                description: Source from where the survey was accessed
+          score:
+            type: integer
+            description: Score associated with the survey response
+          survey_type:
+            type: string
+            description: Type of survey conducted
+          tags:
+            type: array
+            description: Tags associated with the survey response
+            items:
+              description: Individual tag for the survey response
+          updated_at:
+            type:
+              - "null"
+              - integer
+            description: Timestamp of when the survey response was last updated
+        additionalProperties: true
+spec:
+  type: Spec
+  documentation_url: https://docsurl.com
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Delighted Spec
+    type: object
+    required:
+      - since
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        title: Delighted API Key
+        type: string
+        description: A Delighted API key.
+        airbyte_secret: true
+        order: 0
+      since:
+        title: Replication Start Date
+        type: string
+        description: The date from which you'd like to replicate the data
+        examples:
+          - "2022-05-30T04:50:23Z"
+          - "2022-05-30 04:50:23"
+        pattern: "^\\d{4}-\\d{2}-\\d{2}[T ]\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z?$"
+        order: 1
+        format: date-time
+metadata:
+  autoImportSchema:
+    people: false
+    unsubscribes: false
+    bounces: false
+    survey_responses: false
+schemas:
+  people:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      created_at:
+        type: integer
+        description: Date and time when the person was created in the system
+      email:
+        type:
+          - "null"
+          - string
+        description: Email address of the person
+      id:
+        type: string
+        description: Unique identifier for the person record
+      last_responded_at:
+        type:
+          - integer
+          - "null"
+        description: Date and time when the person last responded to a survey
+      last_sent_at:
+        type:
+          - integer
+          - "null"
+        description: Date and time when the last survey was sent to the person
+      name:
+        type:
+          - "null"
+          - string
+        description: Full name of the person
+      next_survey_scheduled_at:
+        type:
+          - integer
+          - "null"
+        description: >-
+          Date and time when the next survey is scheduled to be sent to the
+          person
+      phone_number:
+        type:
+          - "null"
+          - string
+        description: Phone number of the person
+    additionalProperties: true
+  unsubscribes:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      email:
+        type: string
+        description: The email address of the subscriber who unsubscribed.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name of the subscriber who unsubscribed, if available.
+      person_id:
+        type: string
+        description: An identifier for the subscriber in the system.
+      unsubscribed_at:
+        type: integer
+        description: The date and time when the subscriber unsubscribed.
+    additionalProperties: true
+  bounces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      bounced_at:
+        type: integer
+        description: The timestamp when the email bounced.
+      email:
+        type: string
+        description: The email address that experienced the bounce.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name associated with the bounced email, if available.
+      person_id:
+        type: string
+        description: The unique identifier of the person related to the bounced email.
+    additionalProperties: true
+  survey_responses:
+    type: object
+    $schema: http://json-schema.org/draft-04/schema#
+    properties:
+      additional_answers:
+        type:
+          - array
+          - "null"
+        description: Information on additional answers provided in the survey
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the additional answer
+            question:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: >-
+                    Type of question (free response, scale, select many, select
+                    one)
+                id:
+                  type: string
+                  description: Unique identifier for the question
+                text:
+                  type: string
+                  description: Text of the question
+            value:
+              type: object
+              description: Value provided for the question
+              properties:
+                free_response:
+                  type:
+                    - "null"
+                    - string
+                  description: Free response answer
+                scale:
+                  type:
+                    - "null"
+                    - integer
+                  description: Scale response value
+                select_many:
+                  type:
+                    - array
+                    - "null"
+                  description: Select multiple choice response
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Unique identifier for the choice
+                      text:
+                        type: string
+                        description: Text of the choice
+                select_one:
+                  type:
+                    - object
+                    - "null"
+                  description: Select single choice response
+                  properties:
+                    id:
+                      type: string
+                      description: Unique identifier for the choice
+                    text:
+                      type: string
+                      description: Text of the choice
+      comment:
+        type:
+          - "null"
+          - string
+        description: Additional comments provided in the survey response
+      created_at:
+        type: integer
+        description: Timestamp of when the survey response was created
+      id:
+        type: string
+        description: Unique identifier for the survey response
+      notes:
+        type: array
+        description: Additional notes associated with the survey response
+        items:
+          description: Individual note for the survey response
+      permalink:
+        type: string
+        description: Permanent link to access the survey response
+      person:
+        type: string
+        description: Information about the person who responded to the survey
+      person_properties:
+        type:
+          - object
+          - "null"
+        description: Additional properties associated with the person
+        properties:
+          Delighted Browser:
+            type:
+              - "null"
+              - string
+            description: Browser used by the person
+          Delighted Device Type:
+            type:
+              - "null"
+              - string
+            description: Type of device used by the person
+          Delighted Operating System:
+            type:
+              - "null"
+              - string
+            description: Operating system of the device used by the person
+          Delighted Source:
+            type:
+              - "null"
+              - string
+            description: Source from where the survey was accessed
+      score:
+        type: integer
+        description: Score associated with the survey response
+      survey_type:
+        type: string
+        description: Type of survey conducted
+      tags:
+        type: array
+        description: Tags associated with the survey response
+        items:
+          description: Individual tag for the survey response
+      updated_at:
+        type:
+          - "null"
+          - integer
+        description: Timestamp of when the survey response was last updated
+    additionalProperties: true

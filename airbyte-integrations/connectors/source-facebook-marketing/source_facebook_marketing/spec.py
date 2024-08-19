@@ -199,10 +199,9 @@ class ConnectorConfig(BaseConfig):
         airbyte_secret=True,
     )
 
-    credentials: Optional[Union[OAuthCredentials, ServiceAccountCredentials]] = Field(
+    credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication",
         description="Credentials for connecting to the Facebook Marketing API",
-        discriminator="auth_type",
         type="object",
     )
 

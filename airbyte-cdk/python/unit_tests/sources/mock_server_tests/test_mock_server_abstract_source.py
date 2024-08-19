@@ -242,15 +242,24 @@ class FullRefreshStreamTest(TestCase):
         assert len(actual_messages.state_messages) == 1
         validate_message_order([Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
 
     @HttpMocker()
-    def test_full_refresh_with_slices(self, http_mocker):
+    def test_substream_resumable_full_refresh_with_parent_slices(self, http_mocker):
         start_datetime = _NOW - timedelta(days=14)
         config = {
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
+
+        expected_first_substream_per_stream_state = [
+            {'partition': {'divide_category': 'dukes'}, 'cursor': {'__ab_full_refresh_sync_complete': True}},
+        ]
+
+        expected_second_substream_per_stream_state = [
+            {'partition': {'divide_category': 'dukes'}, 'cursor': {'__ab_full_refresh_sync_complete': True}},
+            {'partition': {'divide_category': 'mentats'}, 'cursor': {'__ab_full_refresh_sync_complete': True}},
+        ]
 
         http_mocker.get(
             _create_dividers_request().with_category("dukes").build(),
@@ -267,11 +276,12 @@ class FullRefreshStreamTest(TestCase):
 
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("dividers"))
         assert len(actual_messages.records) == 4
-        assert len(actual_messages.state_messages) == 1
-        validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
-        assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
-        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 4.0
+        assert len(actual_messages.state_messages) == 2
+        validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(states=expected_first_substream_per_stream_state)
+        assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
+        assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(states=expected_second_substream_per_stream_state)
+        assert actual_messages.state_messages[1].state.sourceStats.recordCount == 2.0
 
 
 @freezegun.freeze_time(_NOW)
@@ -383,12 +393,6 @@ class IncrementalStreamTest(TestCase):
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
-        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
-        )
-
         last_record_date_1 = (_NOW - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
         http_mocker.get(
             _create_legacies_request().with_start_date(_NOW - timedelta(days=1)).with_end_date(_NOW).build(),
@@ -412,14 +416,6 @@ class IncrementalStreamTest(TestCase):
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
 
-        last_record_date_0 = (start_datetime + timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
-        http_mocker.get(
-            _create_legacies_request().with_start_date(start_datetime).with_end_date(start_datetime + timedelta(days=7)).build(),
-            _create_response().with_record(record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
-                record=_create_record("legacies").with_cursor(last_record_date_0)).with_record(
-                record=_create_record("legacies").with_cursor(last_record_date_0)).build(),
-        )
-
         last_record_date_1 = _NOW.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         incoming_state = AirbyteStateBlob(created_at=last_record_date_1)
@@ -441,6 +437,15 @@ class MultipleStreamTest(TestCase):
         config = {
             "start_date": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
         }
+
+        expected_first_substream_per_stream_state = [
+            {'partition': {'divide_category': 'dukes'}, 'cursor': {'__ab_full_refresh_sync_complete': True}},
+        ]
+
+        expected_second_substream_per_stream_state = [
+            {'partition': {'divide_category': 'dukes'}, 'cursor': {'__ab_full_refresh_sync_complete': True}},
+            {'partition': {'divide_category': 'mentats'}, 'cursor': {'__ab_full_refresh_sync_complete': True}},
+        ]
 
         # Mocks for users full refresh stream
         http_mocker.get(
@@ -480,7 +485,7 @@ class MultipleStreamTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("dividers"))
 
         assert len(actual_messages.records) == 11
-        assert len(actual_messages.state_messages) == 4
+        assert len(actual_messages.state_messages) == 5
         validate_message_order([
             Type.RECORD,
             Type.RECORD,
@@ -494,12 +499,13 @@ class MultipleStreamTest(TestCase):
             Type.STATE,
             Type.RECORD,
             Type.RECORD,
+            Type.STATE,
             Type.RECORD,
             Type.RECORD,
             Type.STATE
         ], actual_messages.records_and_state_messages)
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "users"
-        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+        assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(__ab_full_refresh_sync_complete=True)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "planets"
         assert actual_messages.state_messages[1].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_0)
@@ -508,5 +514,8 @@ class MultipleStreamTest(TestCase):
         assert actual_messages.state_messages[2].state.stream.stream_state == AirbyteStateBlob(created_at=last_record_date_1)
         assert actual_messages.state_messages[2].state.sourceStats.recordCount == 2.0
         assert actual_messages.state_messages[3].state.stream.stream_descriptor.name == "dividers"
-        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
-        assert actual_messages.state_messages[3].state.sourceStats.recordCount == 4.0
+        assert actual_messages.state_messages[3].state.stream.stream_state == AirbyteStateBlob(states=expected_first_substream_per_stream_state)
+        assert actual_messages.state_messages[3].state.sourceStats.recordCount == 2.0
+        assert actual_messages.state_messages[4].state.stream.stream_descriptor.name == "dividers"
+        assert actual_messages.state_messages[4].state.stream.stream_state == AirbyteStateBlob(states=expected_second_substream_per_stream_state)
+        assert actual_messages.state_messages[4].state.sourceStats.recordCount == 2.0

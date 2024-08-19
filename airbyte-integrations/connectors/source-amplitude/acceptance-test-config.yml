@@ -27,8 +27,6 @@ acceptance_tests:
             bypass_reason: "This stream is empty due to free subscription plan for the sandbox."
           - name: "annotations"
             bypass_reason: "This stream is empty due to free subscription plan for the sandbox."
-          - name: "average_session_length"
-            bypass_reason: "No data in the sandbox."
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no

@@ -13,12 +13,14 @@ import io.airbyte.integrations.base.destination.typing_deduping.migrators.Minimu
 class DatabricksStreamOperationFactory(private val storageOperations: DatabricksStorageOperation) :
     StreamOperationFactory<MinimumDestinationState.Impl> {
     override fun createInstance(
-        destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>
+        destinationInitialStatus: DestinationInitialStatus<MinimumDestinationState.Impl>,
+        disableTypeDedupe: Boolean,
     ): StreamOperation<MinimumDestinationState.Impl> {
         return DatabricksStreamOperation(
             storageOperations,
             destinationInitialStatus,
-            FileUploadFormat.CSV
+            FileUploadFormat.CSV,
+            disableTypeDedupe,
         )
     }
 }

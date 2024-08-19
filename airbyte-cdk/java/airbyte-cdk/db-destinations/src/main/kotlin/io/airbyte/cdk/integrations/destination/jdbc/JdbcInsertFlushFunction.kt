@@ -11,13 +11,17 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.util.stream.Stream
 
 class JdbcInsertFlushFunction(
+    private val defaultNamespace: String,
     private val recordWriter: RecordWriter<PartialAirbyteMessage>,
     override val optimalBatchSizeBytes: Long
 ) : DestinationFlushFunction {
     @Throws(Exception::class)
     override fun flush(streamDescriptor: StreamDescriptor, stream: Stream<PartialAirbyteMessage>) {
         recordWriter.accept(
-            AirbyteStreamNameNamespacePair(streamDescriptor.name, streamDescriptor.namespace),
+            AirbyteStreamNameNamespacePair(
+                streamDescriptor.name,
+                streamDescriptor.namespace ?: defaultNamespace
+            ),
             stream.toList()
         )
     }

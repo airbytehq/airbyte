@@ -77,6 +77,7 @@ Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have
 
 | Version | Date       | Pull Request                                             | Subject                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.1.8 | 2024-07-09 | [41098](https://github.com/airbytehq/airbyte/pull/41098) | Update dependencies |
 | 0.1.7 | 2024-07-06 | [40944](https://github.com/airbytehq/airbyte/pull/40944) | Update dependencies |
 | 0.1.6 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
 | 0.1.5 | 2024-06-25 | [40323](https://github.com/airbytehq/airbyte/pull/40323) | Update dependencies |

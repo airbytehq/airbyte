@@ -60,6 +60,24 @@ _A_STATE = [
     )
 ]
 
+_A_PER_PARTITION_STATE = [
+    AirbyteStateMessage(
+        type="STREAM",
+        stream=AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name=_stream_name),
+            stream_state={
+                "states": [
+                    {
+                        "partition": {"key": "value"},
+                        "cursor": {"item_id": 0},
+                    },
+                ],
+                "parent_state": {},
+            }
+        )
+    )
+]
+
 MANIFEST = {
     "version": "0.30.3",
     "definitions": {
@@ -505,7 +523,7 @@ def test_config_update():
         return_value=refresh_request_response,
     ):
         output = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, TestReadLimits()
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_PER_PARTITION_STATE, TestReadLimits()
         )
         assert output.record.data["latest_config_update"]
 
@@ -565,13 +583,23 @@ def test_read_returns_error_response(mock_from_exception):
 def test_handle_429_response():
     response = _create_429_page_response({"result": [{"error": "too many requests"}], "_metadata": {"next": "next"}})
 
+    # Add backoff strategy to avoid default endless backoff loop
+    TEST_READ_CONFIG["__injected_declarative_manifest"]['definitions']['retriever']['requester']['error_handler'] = {
+        "backoff_strategies": [
+            {
+                "type": "ConstantBackoffStrategy",
+                "backoff_time_in_seconds": 5
+            }
+        ]
+    }
+
     config = TEST_READ_CONFIG
     limits = TestReadLimits()
     source = create_source(config, limits)
 
     with patch("requests.Session.send", return_value=response) as mock_send:
         response = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_PER_PARTITION_STATE, limits
         )
 
         mock_send.assert_called_once()
@@ -757,7 +785,7 @@ def test_read_source(mock_http_stream):
 
     source = create_source(config, limits)
 
-    output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
+    output_data = read_stream(source, config, catalog, _A_PER_PARTITION_STATE, limits).record.data
     slices = output_data["slices"]
 
     assert len(slices) == max_slices
@@ -802,7 +830,7 @@ def test_read_source_single_page_single_slice(mock_http_stream):
 
     source = create_source(config, limits)
 
-    output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
+    output_data = read_stream(source, config, catalog, _A_PER_PARTITION_STATE, limits).record.data
     slices = output_data["slices"]
 
     assert len(slices) == max_slices
@@ -858,7 +886,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
     source = create_source(config, limits)
 
     with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
-        output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
+        output_data = read_stream(source, config, catalog, _A_PER_PARTITION_STATE, limits).record.data
         if expected_error:
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]
@@ -916,7 +944,7 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
     source = create_source(config, limits)
 
     with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
-        output_data = read_stream(source, config, catalog, _A_STATE, limits).record.data
+        output_data = read_stream(source, config, catalog, _A_PER_PARTITION_STATE, limits).record.data
         if expected_error:
             assert len(output_data["logs"]) > 0, "Expected at least one log message with the expected error"
             error_message = output_data["logs"][0]

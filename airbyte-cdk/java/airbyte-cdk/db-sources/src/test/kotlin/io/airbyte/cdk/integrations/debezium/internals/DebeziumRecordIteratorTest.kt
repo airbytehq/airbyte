@@ -12,6 +12,8 @@ import java.util.*
 import org.apache.kafka.connect.source.SourceRecord
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.mockito.Mockito.mock
 
 class DebeziumRecordIteratorTest {
@@ -61,10 +63,6 @@ class DebeziumRecordIteratorTest {
                     override fun destination(): String? {
                         return null
                     }
-
-                    fun sourceRecord(): SourceRecord {
-                        return sourceRecord
-                    }
                 },
             )
 
@@ -75,5 +73,49 @@ class DebeziumRecordIteratorTest {
         val mapper: ObjectMapper = ObjectMapper()
         val testConfig = "{\"is_test\": true}"
         return mapper.readTree(testConfig)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "c, true",
+        "u, true",
+        "d, true",
+        "r, true",
+        "t, true",
+        "m, false",
+        "badVal, false",
+        "'', false",
+    )
+    fun handledEventTypesTest(op: String, handled: Boolean) {
+        Assertions.assertEquals(
+            handled,
+            DebeziumRecordIterator.isEventTypeHandled(
+                ChangeEventWithMetadata(
+                    object : ChangeEvent<String?, String?> {
+
+                        private val sourceRecord =
+                            SourceRecord(
+                                null,
+                                Collections.singletonMap("lsn", 358824993496L),
+                                null,
+                                null,
+                                null,
+                            )
+
+                        override fun key(): String? {
+                            return ""
+                        }
+
+                        override fun value(): String {
+                            return "{\"op\":\"$op\", \"source\": {\"snapshot\": \"false\"}}"
+                        }
+
+                        override fun destination(): String? {
+                            return null
+                        }
+                    }
+                )
+            )
+        )
     }
 }
