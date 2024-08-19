@@ -573,7 +573,7 @@ module.exports = {
         id: "operator-guides/upgrading-airbyte",
       },
       items: [
-        "operator-guides/managing-airbyte/connector-updates"
+        "/managing-airbyte/connector-updates"
       ],
     },
     {
