@@ -75,7 +75,10 @@ class SubstreamResumableFullRefreshCursor(Cursor):
         pass
 
     def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
-        self._per_partition_state[self._to_partition_key(stream_slice.partition)] = { "partition": stream_slice.partition, "cursor": FULL_REFRESH_COMPLETE_STATE}
+        self._per_partition_state[self._to_partition_key(stream_slice.partition)] = {
+            "partition": stream_slice.partition,
+            "cursor": FULL_REFRESH_COMPLETE_STATE,
+        }
 
     def should_be_synced(self, record: Record) -> bool:
         """
