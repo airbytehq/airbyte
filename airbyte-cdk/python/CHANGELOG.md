@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.5.2
+CDK: refactor error handling in abstract source
+
+## 4.5.1
+Added support for RFR for Full-Refresh Substreams
+
 ## 4.5.0
 Stop support for incoming legacy state message format
 
