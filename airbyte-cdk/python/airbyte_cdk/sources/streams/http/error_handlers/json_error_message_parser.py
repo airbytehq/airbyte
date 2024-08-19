@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from typing import Optional
 
 import requests
@@ -32,7 +31,7 @@ class JsonErrorMessageParser(ErrorMessageParser):
                 or value.get("reason")
                 or value.get("status_message")
             )
-            return self._try_get_error(new_value) or json.dumps(value)
+            return self._try_get_error(new_value)
         return None
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
