@@ -460,6 +460,7 @@ const connectionConfigurations = {
         "using-airbyte/core-concepts/sync-modes/incremental-append",
         "using-airbyte/core-concepts/sync-modes/full-refresh-append",
         "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+        "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
       ],
     },
   ],
