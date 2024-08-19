@@ -15,13 +15,10 @@ from airbyte_cdk.sources.declarative.parsers.component_constructor import Compon
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class WaitUntilTimeFromHeaderBackoffStrategy(
-    BackoffStrategy, ComponentConstructor[WaitUntilTimeFromHeaderModel, WaitUntilTimeFromHeaderModel]
-):
+class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor[WaitUntilTimeFromHeaderModel]):
     """
     Extract time at which we can retry the request from response header
     and wait for the difference between now and that time
@@ -43,7 +40,7 @@ class WaitUntilTimeFromHeaderBackoffStrategy(
         cls,
         model: WaitUntilTimeFromHeaderModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

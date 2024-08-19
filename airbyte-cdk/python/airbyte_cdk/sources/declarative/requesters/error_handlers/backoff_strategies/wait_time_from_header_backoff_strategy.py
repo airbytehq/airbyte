@@ -15,11 +15,10 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy 
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-from pydantic import BaseModel
 
 
 @dataclass
-class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor[WaitTimeFromHeaderModel, WaitTimeFromHeaderModel]):
+class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor[WaitTimeFromHeaderModel]):
     """
     Extract wait time from http header
 
@@ -40,7 +39,7 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, ComponentConstructor[Wa
         cls,
         model: WaitTimeFromHeaderModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

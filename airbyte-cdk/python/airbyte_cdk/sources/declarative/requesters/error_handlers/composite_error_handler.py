@@ -7,7 +7,6 @@ from typing import Any, Callable, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, ErrorResolution, ResponseAction
@@ -15,9 +14,7 @@ from airbyte_cdk.sources.types import Config
 
 
 @dataclass
-class CompositeErrorHandler(
-    ErrorHandler, ComponentConstructor[CompositeErrorHandlerModel, Union[CompositeErrorHandlerModel, DefaultErrorHandlerModel]]
-):
+class CompositeErrorHandler(ErrorHandler, ComponentConstructor[CompositeErrorHandlerModel]):
     """
     Error handler that sequentially iterates over a list of `ErrorHandler`s
 
@@ -49,7 +46,7 @@ class CompositeErrorHandler(
         cls,
         model: CompositeErrorHandlerModel,
         config: Config,
-        dependency_constructor: Callable[[Union[CompositeErrorHandlerModel, DefaultErrorHandlerModel], Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

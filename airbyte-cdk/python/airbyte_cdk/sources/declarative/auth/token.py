@@ -21,11 +21,10 @@ from airbyte_cdk.sources.declarative.parsers.component_constructor import Compon
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config
 from cachetools import TTLCache, cached
-from pydantic.v1 import BaseModel
 
 
 @dataclass
-class ApiKeyAuthenticator(DeclarativeAuthenticator, ComponentConstructor[ApiKeyAuthenticatorModel, ApiKeyAuthenticatorModel]):
+class ApiKeyAuthenticator(DeclarativeAuthenticator, ComponentConstructor[ApiKeyAuthenticatorModel]):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent.
 
@@ -54,7 +53,7 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator, ComponentConstructor[ApiKeyA
         cls,
         model: ApiKeyAuthenticatorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         token_provider: Optional[TokenProvider] = None,
         **kwargs: Any,
@@ -142,7 +141,7 @@ class BearerAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
         cls,
         model: BearerAuthenticatorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         token_provider: Optional[TokenProvider] = None,
         **kwargs: Any,
@@ -192,7 +191,7 @@ class BasicHttpAuthenticator(DeclarativeAuthenticator, ComponentConstructor):
         cls,
         model: BasicHttpAuthenticatorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -294,7 +293,7 @@ class LegacySessionTokenAuthenticator(DeclarativeAuthenticator, ComponentConstru
         model: LegacySessionTokenAuthenticatorModel,
         config: Config,
         url_base: str,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Optional[Mapping[str, Any]]:

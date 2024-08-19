@@ -14,11 +14,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.types import Config, Record
-from pydantic import BaseModel
 
 
 @dataclass
-class CursorPaginationStrategy(PaginationStrategy, ComponentConstructor[CursorPaginationModel, CursorPaginationModel]):
+class CursorPaginationStrategy(PaginationStrategy, ComponentConstructor[CursorPaginationModel]):
     """
     Pagination strategy that evaluates an interpolated string to define the next page token
 
@@ -36,7 +35,7 @@ class CursorPaginationStrategy(PaginationStrategy, ComponentConstructor[CursorPa
         model: CursorPaginationModel,
         config: Config,
         decoder: Decoder,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

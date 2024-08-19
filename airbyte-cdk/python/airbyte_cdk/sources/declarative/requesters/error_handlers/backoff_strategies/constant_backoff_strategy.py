@@ -11,11 +11,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class ConstantBackoffStrategy(BackoffStrategy, ComponentConstructor[ConstantBackoffStrategyModel, ConstantBackoffStrategyModel]):
+class ConstantBackoffStrategy(BackoffStrategy, ComponentConstructor[ConstantBackoffStrategyModel]):
     """
     Backoff strategy with a constant backoff interval
 
@@ -32,7 +31,7 @@ class ConstantBackoffStrategy(BackoffStrategy, ComponentConstructor[ConstantBack
         cls,
         model: ConstantBackoffStrategyModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

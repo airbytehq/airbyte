@@ -15,11 +15,10 @@ from airbyte_cdk.sources.streams.http.error_handlers import JsonErrorMessagePars
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class HttpResponseFilter(ComponentConstructor[HttpResponseFilterModel, HttpResponseFilterModel]):
+class HttpResponseFilter(ComponentConstructor[HttpResponseFilterModel]):
     """
     Filter to select a response based on its HTTP status code, error message or a predicate.
     If a response matches the filter, the response action, failure_type, and error message are returned as an ErrorResolution object.
@@ -49,7 +48,7 @@ class HttpResponseFilter(ComponentConstructor[HttpResponseFilterModel, HttpRespo
         cls,
         model: HttpResponseFilterModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

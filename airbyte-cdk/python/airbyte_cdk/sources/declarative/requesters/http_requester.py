@@ -25,11 +25,10 @@ from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
-from pydantic import BaseModel
 
 
 @dataclass
-class HttpRequester(Requester, ComponentConstructor[HttpRequesterModel, HttpRequesterModel]):
+class HttpRequester(Requester, ComponentConstructor[HttpRequesterModel]):
     """
     Default implementation of a Requester
 
@@ -69,7 +68,7 @@ class HttpRequester(Requester, ComponentConstructor[HttpRequesterModel, HttpRequ
         config: Config,
         decoder: Decoder,
         name: str,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

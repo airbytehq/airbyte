@@ -13,11 +13,10 @@ from airbyte_cdk.sources.declarative.parsers.component_constructor import Compon
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class CheckStream(ConnectionChecker, ComponentConstructor[CheckStreamModel, CheckStreamModel]):
+class CheckStream(ConnectionChecker, ComponentConstructor[CheckStreamModel]):
     """
     Checks the connections by checking availability of one or many streams selected by the developer
 
@@ -33,7 +32,7 @@ class CheckStream(ConnectionChecker, ComponentConstructor[CheckStreamModel, Chec
         cls,
         model: CheckStreamModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

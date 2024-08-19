@@ -10,13 +10,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition, StopConditionPaginationStrategyDecorator
@@ -30,17 +24,7 @@ from pydantic import BaseModel
 @dataclass
 class DefaultPaginator(
     Paginator,
-    ComponentConstructor[
-        DefaultPaginatorModel,
-        Union[
-            RequestOptionModel,
-            JsonDecoderModel,
-            PageIncrementModel,
-            OffsetIncrementModel,
-            CursorPaginationModel,
-            CustomPaginationStrategyModel,
-        ],
-    ],
+    ComponentConstructor[DefaultPaginatorModel],
 ):
     """
     Default paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
@@ -123,7 +107,7 @@ class DefaultPaginator(
         cls,
         model: DefaultPaginatorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         *,
         url_base: str,
@@ -142,7 +126,7 @@ class DefaultPaginator(
 
         page_size_option = dependency_constructor(model=model.page_size_option, config=config) if model.page_size_option else None
         page_token_option = dependency_constructor(model=model.page_token_option, config=config) if model.page_token_option else None
-        pagination_strategy = dependency_constructor(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
+        pagination_strategy = dependency_constructor(model.pagination_strategy, config, decoder=decoder_to_use)
         if cursor_used_for_stop_condition:
             pagination_strategy = StopConditionPaginationStrategyDecorator(
                 pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
@@ -162,7 +146,7 @@ class DefaultPaginator(
         cls,
         model: BaseModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]],
         **kwargs,
     ) -> ComponentConstructor:

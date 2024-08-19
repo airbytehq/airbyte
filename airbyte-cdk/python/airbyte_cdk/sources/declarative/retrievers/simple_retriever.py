@@ -33,7 +33,7 @@ FULL_REFRESH_SYNC_COMPLETE_KEY = "__ab_full_refresh_sync_complete"
 
 
 @dataclass
-class SimpleRetriever(Retriever, ComponentConstructor[SimpleRetrieverModel, BaseModel]):
+class SimpleRetriever(Retriever, ComponentConstructor[SimpleRetrieverModel]):
     """
     Retrieves records by synchronously sending requests to fetch records.
 
@@ -77,7 +77,7 @@ class SimpleRetriever(Retriever, ComponentConstructor[SimpleRetrieverModel, Base
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         stop_condition_on_cursor: bool = False,
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
@@ -131,7 +131,7 @@ class SimpleRetriever(Retriever, ComponentConstructor[SimpleRetrieverModel, Base
         cls,
         model: BaseModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]],
         **kwargs,
     ) -> ComponentConstructor:

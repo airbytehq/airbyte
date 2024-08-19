@@ -11,11 +11,10 @@ from airbyte_cdk.sources.declarative.parsers.component_constructor import Compon
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from pydantic import BaseModel
 
 
 @dataclass
-class ListPartitionRouter(PartitionRouter, ComponentConstructor[ListPartitionRouterModel, ListPartitionRouterModel]):
+class ListPartitionRouter(PartitionRouter, ComponentConstructor[ListPartitionRouterModel]):
     """
     Partition router that iterates over the values of a list
     If values is a string, then evaluate it as literal and assert the resulting literal is a list
@@ -38,7 +37,7 @@ class ListPartitionRouter(PartitionRouter, ComponentConstructor[ListPartitionRou
         cls,
         model: ListPartitionRouterModel,
         config: Config,
-        dependency_constructor: Optional[Callable[[BaseModel, Config], Any]],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]],
         **kwargs: Any,
     ) -> Mapping[str, Any]:

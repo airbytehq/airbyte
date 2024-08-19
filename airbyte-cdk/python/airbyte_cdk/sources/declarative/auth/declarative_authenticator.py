@@ -31,7 +31,7 @@ class DeclarativeAuthenticator(AbstractHeaderAuthenticator):
 
 
 @dataclass
-class NoAuth(DeclarativeAuthenticator, ComponentConstructor[NoAuthModel, NoAuthModel]):
+class NoAuth(DeclarativeAuthenticator, ComponentConstructor[NoAuthModel]):
     parameters: InitVar[Mapping[str, Any]]
 
     @classmethod
@@ -39,7 +39,7 @@ class NoAuth(DeclarativeAuthenticator, ComponentConstructor[NoAuthModel, NoAuthM
         cls,
         model: NoAuthModel,
         config: Config,
-        dependency_constructor: Callable[[NoAuthModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

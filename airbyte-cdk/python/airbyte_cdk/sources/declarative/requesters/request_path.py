@@ -11,7 +11,7 @@ from airbyte_cdk.sources.types import Config
 
 
 @dataclass
-class RequestPath(ComponentConstructor[RequestPathModel, RequestPathModel]):
+class RequestPath(ComponentConstructor[RequestPathModel]):
     """
     Describes that a component value should be inserted into the path
     """
@@ -23,7 +23,7 @@ class RequestPath(ComponentConstructor[RequestPathModel, RequestPathModel]):
         cls,
         model: RequestPathModel,
         config: Config,
-        dependency_constructor: Callable[[RequestPathModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

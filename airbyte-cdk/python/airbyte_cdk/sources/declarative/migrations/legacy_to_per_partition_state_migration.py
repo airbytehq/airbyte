@@ -15,16 +15,13 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 def _is_already_migrated(stream_state: Mapping[str, Any]) -> bool:
     return "states" in stream_state
 
 
-class LegacyToPerPartitionStateMigration(
-    StateMigration, ComponentConstructor[LegacyToPerPartitionStateMigrationModel, LegacyToPerPartitionStateMigrationModel]
-):
+class LegacyToPerPartitionStateMigration(StateMigration, ComponentConstructor[LegacyToPerPartitionStateMigrationModel]):
     """
     Transforms the input state for per-partitioned streams from the legacy format to the low-code format.
     The cursor field and partition ID fields are automatically extracted from the stream's DatetimebasedCursor and SubstreamPartitionRouter.
@@ -47,7 +44,7 @@ class LegacyToPerPartitionStateMigration(
         model: LegacyToPerPartitionStateMigrationModel,
         config: Config,
         declarative_stream: DeclarativeStreamModel,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

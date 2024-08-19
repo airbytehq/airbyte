@@ -17,7 +17,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 class JwtAlgorithm(str):
@@ -42,7 +41,7 @@ class JwtAlgorithm(str):
 
 
 @dataclass
-class JwtAuthenticator(DeclarativeAuthenticator, ComponentConstructor[JwtAuthenticatorModel, JwtAuthenticatorModel]):
+class JwtAuthenticator(DeclarativeAuthenticator, ComponentConstructor[JwtAuthenticatorModel]):
     """
     Generates a JSON Web Token (JWT) based on a declarative connector configuration file. The generated token is attached to each request via the Authorization header.
 
@@ -84,7 +83,7 @@ class JwtAuthenticator(DeclarativeAuthenticator, ComponentConstructor[JwtAuthent
         cls,
         model: JwtAuthenticatorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

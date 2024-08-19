@@ -12,7 +12,7 @@ from airbyte_cdk.sources.types import Config
 
 
 @dataclass
-class InlineSchemaLoader(SchemaLoader, ComponentConstructor[InlineSchemaLoaderModel, InlineSchemaLoaderModel]):
+class InlineSchemaLoader(SchemaLoader, ComponentConstructor[InlineSchemaLoaderModel]):
     """Describes a stream's schema"""
 
     schema: Dict[str, Any]
@@ -23,7 +23,7 @@ class InlineSchemaLoader(SchemaLoader, ComponentConstructor[InlineSchemaLoaderMo
         cls,
         model: InlineSchemaLoaderModel,
         config: Config,
-        dependency_constructor: Callable[[InlineSchemaLoaderModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

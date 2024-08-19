@@ -13,11 +13,10 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_fil
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy, ErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import DEFAULT_ERROR_RESOLUTION, SUCCESS_RESOLUTION, ErrorResolution
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class DefaultErrorHandler(ErrorHandler, ComponentConstructor[DefaultErrorHandlerModel, DefaultErrorHandlerModel]):
+class DefaultErrorHandler(ErrorHandler, ComponentConstructor[DefaultErrorHandlerModel]):
     """
     Default error handler.
 
@@ -101,7 +100,7 @@ class DefaultErrorHandler(ErrorHandler, ComponentConstructor[DefaultErrorHandler
         cls,
         model: DefaultErrorHandlerModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.decoders import Decoder
@@ -11,16 +11,11 @@ from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelecto
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
 from airbyte_cdk.sources.declarative.models import SchemaNormalization
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordFilter as CustomRecordFilterModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordFilter as RecordFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordSelector as RecordSelectorModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from pydantic import BaseModel
 
 SCHEMA_TRANSFORMER_TYPE_MAPPING = {
     SchemaNormalization.None_: TransformConfig.NoTransform,
@@ -31,9 +26,7 @@ SCHEMA_TRANSFORMER_TYPE_MAPPING = {
 @dataclass
 class RecordSelector(
     HttpSelector,
-    ComponentConstructor[
-        RecordSelectorModel, Union[RecordFilterModel, CustomRecordFilterModel, DpathExtractorModel, CustomRecordExtractorModel]
-    ],
+    ComponentConstructor[RecordSelectorModel],
 ):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
@@ -58,7 +51,7 @@ class RecordSelector(
         cls,
         model: RecordSelectorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         *,
         decoder: Optional[Decoder] = None,

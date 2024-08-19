@@ -15,7 +15,7 @@ from airbyte_cdk.sources.types import Config, FieldPointer, StreamSlice, StreamS
 
 
 @dataclass
-class RemoveFields(RecordTransformation, ComponentConstructor[RemoveFieldsModel, RemoveFieldsModel]):
+class RemoveFields(RecordTransformation, ComponentConstructor[RemoveFieldsModel]):
     """
     A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
@@ -50,7 +50,7 @@ class RemoveFields(RecordTransformation, ComponentConstructor[RemoveFieldsModel,
         cls,
         model: RemoveFieldsModel,
         config: Config,
-        dependency_constructor: Callable[[RemoveFieldsModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

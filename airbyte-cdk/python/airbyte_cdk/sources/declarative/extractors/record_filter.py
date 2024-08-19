@@ -10,11 +10,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import I
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordFilter as RecordFilterModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
-from pydantic import BaseModel
 
 
 @dataclass
-class RecordFilter(ComponentConstructor[RecordFilterModel, RecordFilterModel]):
+class RecordFilter(ComponentConstructor[RecordFilterModel]):
     """
     Filter applied on a list of Records
 
@@ -31,7 +30,7 @@ class RecordFilter(ComponentConstructor[RecordFilterModel, RecordFilterModel]):
         cls,
         model: RecordFilterModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

@@ -14,7 +14,6 @@ from airbyte_cdk.sources.declarative.parsers.component_constructor import Compon
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from pydantic import BaseModel
 
 
 def _default_file_path() -> str:
@@ -33,7 +32,7 @@ def _default_file_path() -> str:
 
 
 @dataclass
-class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, ComponentConstructor[JsonFileSchemaLoaderModel, JsonFileSchemaLoaderModel]):
+class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, ComponentConstructor[JsonFileSchemaLoaderModel]):
     """
     Loads the schema from a json file
 
@@ -53,7 +52,7 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, ComponentConstruc
         cls,
         model: JsonFileSchemaLoaderModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

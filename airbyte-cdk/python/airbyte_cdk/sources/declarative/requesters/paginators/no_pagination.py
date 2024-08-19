@@ -13,7 +13,7 @@ from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass
-class NoPagination(Paginator, ComponentConstructor[NoPaginationModel, NoPaginationModel]):
+class NoPagination(Paginator, ComponentConstructor[NoPaginationModel]):
     """
     Pagination implementation that never returns a next page.
     """
@@ -25,7 +25,7 @@ class NoPagination(Paginator, ComponentConstructor[NoPaginationModel, NoPaginati
         cls,
         model: NoPaginationModel,
         config: Config,
-        dependency_constructor: Callable[[NoPaginationModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

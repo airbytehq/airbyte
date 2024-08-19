@@ -15,13 +15,10 @@ from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.types import Config
-from pydantic import BaseModel
 
 
 @dataclass
-class DeclarativeOauth2Authenticator(
-    AbstractOauth2Authenticator, DeclarativeAuthenticator, ComponentConstructor[OAuthAuthenticatorModel, OAuthAuthenticatorModel]
-):
+class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAuthenticator, ComponentConstructor[OAuthAuthenticatorModel]):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
     a declarative connector configuration file. Credentials can be defined explicitly or via interpolation
@@ -66,7 +63,7 @@ class DeclarativeOauth2Authenticator(
         cls,
         model: OAuthAuthenticatorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -177,7 +174,7 @@ class DeclarativeOauth2Authenticator(
 class DeclarativeSingleUseRefreshTokenOauth2Authenticator(
     SingleUseRefreshTokenOauth2Authenticator,
     DeclarativeAuthenticator,
-    ComponentConstructor[OAuthAuthenticatorModel, OAuthAuthenticatorModel],
+    ComponentConstructor[OAuthAuthenticatorModel],
 ):
     """
     Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
@@ -188,7 +185,7 @@ class DeclarativeSingleUseRefreshTokenOauth2Authenticator(
         cls,
         model: OAuthAuthenticatorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

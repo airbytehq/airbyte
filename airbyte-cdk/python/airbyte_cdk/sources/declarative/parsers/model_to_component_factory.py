@@ -156,7 +156,7 @@ class ModelToComponentFactory:
         }
 
     def _init_mappings(self) -> None:
-        self.MODEL_TO_COMPONENT: Dict[Type[BaseModel], Union[Type[ComponentConstructor], Callable[[BaseModel, Mapping[str, Any]], Any]]] = {
+        self.MODEL_TO_COMPONENT: Dict[Type[BaseModel], Union[Type[ComponentConstructor], Callable[..., Any]]] = {
             AddedFieldDefinitionModel: AddedFieldDefinition,
             AddFieldsModel: AddFields,
             ApiKeyAuthenticatorModel: ApiKeyAuthenticator,
@@ -245,7 +245,7 @@ class ModelToComponentFactory:
             raise ValueError(f"Expected {model_type.__name__} component, but received {declarative_component_model.__class__.__name__}")
         return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
 
-    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs: Any) -> ComponentConstructor[BaseModel, BaseModel]:
+    def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs: Any) -> ComponentConstructor[BaseModel]:
         if model.__class__ not in self.MODEL_TO_COMPONENT:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
 
@@ -255,7 +255,7 @@ class ModelToComponentFactory:
 
         if inspect.isclass(component) and issubclass(component, ComponentConstructor):
             # Default components flow
-            component_instance: ComponentConstructor[BaseModel, BaseModel] = component.build(
+            component_instance: ComponentConstructor[BaseModel] = component.build(
                 model=model,
                 config=config,
                 dependency_constructor=self._create_component_from_model,
@@ -436,12 +436,13 @@ class ModelToComponentFactory:
                 # generically in create_custom_component(). This block allows developers to specify extra arguments in $parameters that
                 # are needed by a component and could not be shared.
                 model_constructor = self.MODEL_TO_COMPONENT.get(parsed_model.__class__)
+                if inspect.isclass(model_constructor):
+                    model_constructor = model_constructor.resolve_dependencies
                 constructor_kwargs = inspect.getfullargspec(model_constructor).kwonlyargs
                 model_parameters = model_value.get("$parameters", {})
                 matching_parameters = {kwarg: model_parameters[kwarg] for kwarg in constructor_kwargs if kwarg in model_parameters}
                 return self._create_component_from_model(model=parsed_model, config=config, **matching_parameters)
             except TypeError as error:
-                raise error
                 missing_parameters = self._extract_missing_parameters(error)
                 if missing_parameters:
                     raise ValueError(

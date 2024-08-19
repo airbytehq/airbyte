@@ -24,7 +24,7 @@ class RequestOptionType(Enum):
 
 
 @dataclass
-class RequestOption(ComponentConstructor[RequestOptionModel, RequestOptionModel]):
+class RequestOption(ComponentConstructor[RequestOptionModel]):
     """
     Describes an option to set on a request
 
@@ -42,7 +42,7 @@ class RequestOption(ComponentConstructor[RequestOptionModel, RequestOptionModel]
         cls,
         model: RequestOptionModel,
         config: Config,
-        dependency_constructor: Callable[[RequestOptionModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

@@ -11,11 +11,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.types import Config, Record
-from pydantic import BaseModel
 
 
 @dataclass
-class PageIncrement(PaginationStrategy, ComponentConstructor[PageIncrementModel, PageIncrementModel]):
+class PageIncrement(PaginationStrategy, ComponentConstructor[PageIncrementModel]):
     """
     Pagination strategy that returns the number of pages reads so far and returns it as the next page token
 
@@ -35,7 +34,7 @@ class PageIncrement(PaginationStrategy, ComponentConstructor[PageIncrementModel,
         cls,
         model: PageIncrementModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

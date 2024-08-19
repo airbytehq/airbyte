@@ -9,22 +9,19 @@ import dpath
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ParentStreamConfig as ParentStreamConfigModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.parsers.component_constructor import ComponentConstructor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
-from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
 @dataclass
-class ParentStreamConfig(ComponentConstructor[ParentStreamConfigModel, Union[DeclarativeStreamModel, RequestOptionModel]]):
+class ParentStreamConfig(ComponentConstructor[ParentStreamConfigModel]):
     """
     Describes how to create a stream slice from a parent stream
 
@@ -48,7 +45,7 @@ class ParentStreamConfig(ComponentConstructor[ParentStreamConfigModel, Union[Dec
         cls,
         model: ParentStreamConfigModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

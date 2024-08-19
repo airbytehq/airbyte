@@ -16,7 +16,7 @@ D = TypeVar("D", bound=BaseModel)
 
 
 @dataclass
-class Spec(ComponentConstructor[SpecModel, SpecModel]):
+class Spec(ComponentConstructor[SpecModel]):
     """
     Returns a connection specification made up of information about the connector and how it can be configured
 
@@ -35,7 +35,7 @@ class Spec(ComponentConstructor[SpecModel, SpecModel]):
         cls,
         model: SpecModel,
         config: Config,
-        dependency_constructor: Callable[[SpecModel, Mapping[str, Any], Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

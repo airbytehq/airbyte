@@ -18,11 +18,10 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from isodate import Duration, parse_duration
-from pydantic import BaseModel
 
 
 @dataclass
-class DatetimeBasedCursor(DeclarativeCursor, ComponentConstructor[DatetimeBasedCursorModel, DatetimeBasedCursorModel]):
+class DatetimeBasedCursor(DeclarativeCursor, ComponentConstructor[DatetimeBasedCursorModel]):
     """
     Slices the stream over a datetime range and create a state with format {<cursor_field>: <datetime> }
 
@@ -78,7 +77,7 @@ class DatetimeBasedCursor(DeclarativeCursor, ComponentConstructor[DatetimeBasedC
         cls,
         model: DatetimeBasedCursorModel,
         config: Config,
-        dependency_constructor: Callable[[BaseModel, Config], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:

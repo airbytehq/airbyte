@@ -19,7 +19,7 @@ logger = logging.getLogger("airbyte")
 
 
 @dataclass
-class JsonDecoder(Decoder, ComponentConstructor[JsonDecoderModel, JsonDecoderModel]):
+class JsonDecoder(Decoder, ComponentConstructor[JsonDecoderModel]):
     """
     Decoder strategy that returns the json-encoded content of a response, if any.
     """
@@ -31,7 +31,7 @@ class JsonDecoder(Decoder, ComponentConstructor[JsonDecoderModel, JsonDecoderMod
         cls,
         model: JsonDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[JsonDecoderModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -58,7 +58,7 @@ class JsonDecoder(Decoder, ComponentConstructor[JsonDecoderModel, JsonDecoderMod
 
 
 @dataclass
-class IterableDecoder(Decoder, ComponentConstructor[IterableDecoderModel, IterableDecoderModel]):
+class IterableDecoder(Decoder, ComponentConstructor[IterableDecoderModel]):
     """
     Decoder strategy that returns the string content of the response, if any.
     """
@@ -70,7 +70,7 @@ class IterableDecoder(Decoder, ComponentConstructor[IterableDecoderModel, Iterab
         cls,
         model: IterableDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[IterableDecoderModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
@@ -85,7 +85,7 @@ class IterableDecoder(Decoder, ComponentConstructor[IterableDecoderModel, Iterab
 
 
 @dataclass
-class JsonlDecoder(Decoder, ComponentConstructor[JsonlDecoderModel, JsonlDecoderModel]):
+class JsonlDecoder(Decoder, ComponentConstructor[JsonlDecoderModel]):
     """
     Decoder strategy that returns the json-encoded content of the response, if any.
     """
@@ -97,7 +97,7 @@ class JsonlDecoder(Decoder, ComponentConstructor[JsonlDecoderModel, JsonlDecoder
         cls,
         model: JsonlDecoderModel,
         config: Config,
-        dependency_constructor: Callable[[JsonlDecoderModel, Config, Any], Any],
+        dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
