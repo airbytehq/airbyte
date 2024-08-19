@@ -156,10 +156,15 @@ const destinationS3 = {
   },
   items: [
     {
+       type: "doc",
+       label: "Migration Guide",
+       id: "integrations/destinations/s3-migrations",
+    },
+    {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
-    },
+    }
   ],
 };
 
@@ -528,7 +533,7 @@ module.exports = {
       label: "Managing Syncs",
       items: [
         "cloud/managing-airbyte-cloud/review-connection-status",
-        "cloud/managing-airbyte-cloud/review-sync-history",
+        "cloud/managing-airbyte-cloud/review-connection-timeline",
         "operator-guides/browsing-output-logs",
         "operator-guides/clear",
         "operator-guides/refreshes",
@@ -625,6 +630,7 @@ module.exports = {
       type: "category",
       label: "Integrating with Airbyte",
       items: [
+        "using-airbyte/configuring-api-access",
         "operator-guides/using-the-airflow-airbyte-operator",
         "operator-guides/using-prefect-task",
         "operator-guides/using-dagster-integration",
@@ -688,6 +694,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/july_2024",
         "release_notes/june_2024",
         "release_notes/may_2024",
         "release_notes/april_2024",

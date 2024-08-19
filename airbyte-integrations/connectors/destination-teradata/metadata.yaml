@@ -8,7 +8,7 @@ data:
   icon: teradata.svg
   license: MIT
   name: Teradata Vantage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import dagger
 from pipelines.airbyte_ci.format.consts import CACHE_MOUNT_PATH, DEFAULT_FORMAT_IGNORE_LIST, REPO_MOUNT_PATH, WARM_UP_INCLUSIONS, Formatter
-from pipelines.consts import GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
+from pipelines.consts import AIRBYTE_SUBMODULE_DIR_NAME, GO_IMAGE, MAVEN_IMAGE, NODE_IMAGE, PYTHON_3_10_IMAGE
 from pipelines.helpers import cache_keys
 from pipelines.helpers.utils import sh_dash_c
 
@@ -69,26 +69,32 @@ def build_container(
     return container
 
 
+def warmup_directory(dagger_client: dagger.Client, formatter: Formatter) -> Union[dagger.Directory, None]:
+    """Creates a Dagger directory which includes the warmup files for the given Formatter."""
+    include = WARM_UP_INCLUSIONS.get(formatter)
+    if not include:
+        return None
+    include = include + [f"{AIRBYTE_SUBMODULE_DIR_NAME}/{i}" for i in include]
+    return dagger_client.host().directory(".", include=include, exclude=DEFAULT_FORMAT_IGNORE_LIST)
+
+
 def format_java_container(dagger_client: dagger.Client, java_code: dagger.Directory) -> dagger.Container:
     """
     Create a Maven container with spotless installed with mounted code to format and a cache volume.
     We warm up the container cache with the spotless configuration and dependencies.
     """
-    warmup_dir = dagger_client.host().directory(
-        ".",
-        include=WARM_UP_INCLUSIONS[Formatter.JAVA],
-        exclude=DEFAULT_FORMAT_IGNORE_LIST,
-    )
     return build_container(
         dagger_client,
         base_image=MAVEN_IMAGE,
-        warmup_dir=warmup_dir,
+        warmup_dir=warmup_directory(dagger_client, Formatter.JAVA),
         install_commands=[
             # Run maven before mounting the sources to download all its dependencies.
             # Dagger will cache the resulting layer to minimize the downloads.
             # The go-offline goal purportedly downloads all dependencies.
             # This isn't quite the case, we still need to add spotless goals.
             "mvn -f spotless-maven-pom.xml"
+            " --errors"
+            " --batch-mode"
             " org.apache.maven.plugins:maven-dependency-plugin:3.6.1:go-offline"
             " spotless:apply"
             " spotless:check"
@@ -111,13 +117,12 @@ def format_js_container(dagger_client: dagger.Client, js_code: dagger.Directory,
 
 def format_license_container(dagger_client: dagger.Client, license_code: dagger.Directory) -> dagger.Container:
     """Create a Go container with addlicense installed with mounted code to format."""
-    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.LICENSE], exclude=DEFAULT_FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,
         base_image=GO_IMAGE,
         dir_to_format=license_code,
         install_commands=["go get -u github.com/google/addlicense"],
-        warmup_dir=warmup_dir,
+        warmup_dir=warmup_directory(dagger_client, Formatter.LICENSE),
     )
 
 
@@ -127,8 +132,6 @@ def format_python_container(
     """Create a Python container with pipx and the global pyproject.toml installed with mounted code to format and a cache volume.
     We warm up the container with the pyproject.toml and poetry.lock files to not repeat the pyproject.toml installation.
     """
-
-    warmup_dir = dagger_client.host().directory(".", include=WARM_UP_INCLUSIONS[Formatter.PYTHON], exclude=DEFAULT_FORMAT_IGNORE_LIST)
     return build_container(
         dagger_client,
         base_image=PYTHON_3_10_IMAGE,
@@ -140,7 +143,7 @@ def format_python_container(
             "poetry install --no-root",
         ],
         dir_to_format=python_code,
-        warmup_dir=warmup_dir,
+        warmup_dir=warmup_directory(dagger_client, Formatter.PYTHON),
         # Namespacing the cache volume by black version is likely overkill:
         # Black already manages cache directories by version internally.
         # https://github.com/psf/black/blob/e4ae213f06050e7f76ebcf01578c002e412dafdc/src/black/cache.py#L42

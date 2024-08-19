@@ -166,13 +166,13 @@ def test_job_state_completed(auth_config) -> None:
     "job_response, error_type, expected",
     [
         ("bulk_job_completed_response", None, "bulk-123456789.jsonl"),
-        ("bulk_job_failed_response", ShopifyBulkExceptions.BulkJobFailed, "exited with FAILED"),
+        ("bulk_job_failed_with_partial_url_response", None, "bulk-123456789.jsonl"),
         ("bulk_job_timeout_response", ShopifyBulkExceptions.BulkJobTimout, "exited with TIMEOUT"),
         ("bulk_job_access_denied_response", ShopifyBulkExceptions.BulkJobAccessDenied, "exited with ACCESS_DENIED"),
     ],
     ids=[
         "completed",
-        "failed",
+        "failed with partial result",
         "timeout",
         "access_denied",
     ],
@@ -186,7 +186,9 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
     # mocking the response for STATUS CHECKS
     requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
     test_job_status_response = requests.post(stream.job_manager.base_url)
-    job_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
+    full_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("url")
+    partial_result_url = test_job_status_response.json().get("data", {}).get("node", {}).get("partialDataUrl")
+    job_result_url = full_result_url if full_result_url else partial_result_url
     if error_type:
         with pytest.raises(error_type) as error:
             list(stream.job_manager.job_get_results())
@@ -197,9 +199,33 @@ def test_job_check_for_completion(mocker, request, requests_mock, job_response, 
             requests_mock.get(job_result_url, json=request.getfixturevalue(job_response))
         mocker.patch("source_shopify.shopify_graphql.bulk.record.ShopifyBulkRecord.read_file", return_value=[])
         stream.job_manager._job_check_state()
-        assert expected == stream.job_manager._job_result_filename    
+        assert expected == stream.job_manager._job_result_filename
+        
+        
+@pytest.mark.parametrize(
+    "job_response, error_type, expected",
+    [
+        ("bulk_job_failed_with_partial_url_response", ShopifyBulkExceptions.BulkJobFailed, "exited with FAILED"),
+    ],
+    ids=[
+        "failed",
+    ],
+)
+def test_job_failed_for_stream_with_no_bulk_checkpointing(mocker, request, requests_mock, job_response, error_type, expected, auth_config) -> None:
+    stream = InventoryLevels(auth_config)
+    # modify the sleep time for the test
+    stream.job_manager._concurrent_max_retry = 1
+    stream.job_manager._concurrent_interval = 1
+    stream.job_manager._job_check_interval = 1
+    # mocking the response for STATUS CHECKS
+    requests_mock.post(stream.job_manager.base_url, json=request.getfixturevalue(job_response))
+    with pytest.raises(error_type) as error:
+        # the test should raise an Error and make the stream `INCOMPLETE`,
+        # another attempt will be taken with the new sync attempt.
+        list(stream.job_manager.job_get_results())
+    assert expected in repr(error.value)
 
-    
+
 @pytest.mark.parametrize(
     "job_response, job_state, error_type, max_retry, expected_msg, call_count_expected",
     [

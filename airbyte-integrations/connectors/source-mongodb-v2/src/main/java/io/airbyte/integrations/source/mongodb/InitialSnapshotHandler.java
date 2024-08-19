@@ -24,6 +24,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +53,9 @@ public class InitialSnapshotHandler {
                                                                   final MongoDatabase database,
                                                                   final MongoDbSourceConfig config,
                                                                   final boolean decorateWithStartedStatus,
-                                                                  final boolean decorateWithCompletedStatus) {
+                                                                  final boolean decorateWithCompletedStatus,
+                                                                  final Instant emittedAt,
+                                                                  final Optional<Duration> cdcInitialLoadTimeout) {
     final boolean isEnforceSchema = config.getEnforceSchema();
     final var checkpointInterval = config.getCheckpointInterval();
     final String MULTIPLE_ID_TYPES_ANALYTICS_MESSAGE_KEY = "db-sources-mongo-multiple-id-types";
@@ -85,7 +89,7 @@ public class InitialSnapshotHandler {
 
           final Optional<CollectionStatistics> collectionStatistics = MongoUtil.getCollectionStatistics(database, airbyteStream);
           final var recordIterator = new MongoDbInitialLoadRecordIterator(collection, fields, existingState, isEnforceSchema,
-              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream));
+              MongoUtil.getChunkSizeForCollection(collectionStatistics, airbyteStream), emittedAt, cdcInitialLoadTimeout);
           final var stateIterator =
               new SourceStateIterator<>(recordIterator, airbyteStream, stateManager, new StateEmitFrequency(checkpointInterval,
                   MongoConstants.CHECKPOINT_DURATION));

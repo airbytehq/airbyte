@@ -86,6 +86,12 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
 )
+from unit_tests.sources.file_based.scenarios.excel_scenarios import (
+    excel_all_types_scenario,
+    multiple_excel_combine_schema_scenario,
+    multiple_streams_excel_scenario,
+    single_excel_scenario,
+)
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
     multi_csv_include_missing_files_within_history_range,
@@ -232,6 +238,10 @@ discover_success_scenarios = [
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
     avro_file_with_double_as_number_scenario,
+    excel_all_types_scenario,
+    multiple_excel_combine_schema_scenario,
+    multiple_streams_excel_scenario,
+    single_excel_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
     parquet_with_invalid_config_scenario,
@@ -299,6 +309,7 @@ check_scenarios = [
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     valid_single_stream_user_input_schema_scenario,
     single_avro_scenario,
+    single_excel_scenario,
     earlier_csv_scenario,
     csv_no_files_scenario,
 ]

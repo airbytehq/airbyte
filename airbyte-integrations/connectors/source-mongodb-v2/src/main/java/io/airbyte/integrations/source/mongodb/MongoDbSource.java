@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,7 +185,9 @@ public class MongoDbSource extends BaseConnector implements Source {
         mongoClient.getDatabase(sourceConfig.getDatabaseName()),
         sourceConfig,
         true,
-        true);
+        true,
+        emmitedAt,
+        Optional.empty());
 
     return fullRefreshIterators;
   }

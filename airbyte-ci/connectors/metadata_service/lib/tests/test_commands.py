@@ -8,10 +8,16 @@ import pytest
 from click.testing import CliRunner
 from metadata_service import commands
 from metadata_service.gcs_upload import MetadataUploadInfo, UploadedFile
-from metadata_service.validators.metadata_validator import ValidatorOptions
+from metadata_service.validators.metadata_validator import ValidatorOptions, validate_docker_image_tag_is_not_decremented
 from pydantic import BaseModel, ValidationError, error_wrappers
 from test_gcs_upload import stub_is_image_on_docker_hub
 
+NOT_TEST_VALIDATORS = [
+    # Not testing validate_docker_image_tag_is_not_decremented as its tested independently in test_validators
+    validate_docker_image_tag_is_not_decremented
+]
+
+PATCHED_VALIDATORS = [v for v in commands.PRE_UPLOAD_VALIDATORS if v not in NOT_TEST_VALIDATORS]
 
 # TEST VALIDATE COMMAND
 def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
@@ -19,7 +25,7 @@ def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
 
     # Mock dockerhub for base image checks
     mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
-
+    mocker.patch("metadata_service.commands.PRE_UPLOAD_VALIDATORS", PATCHED_VALIDATORS)
     assert len(valid_metadata_yaml_files) > 0, "No files found"
 
     for file_path in valid_metadata_yaml_files:
@@ -31,6 +37,7 @@ def test_invalid_metadata_yaml_files(mocker, invalid_metadata_yaml_files, tmp_pa
     runner = CliRunner()
 
     mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
+    mocker.patch("metadata_service.commands.PRE_UPLOAD_VALIDATORS", PATCHED_VALIDATORS)
 
     assert len(invalid_metadata_yaml_files) > 0, "No files found"
 

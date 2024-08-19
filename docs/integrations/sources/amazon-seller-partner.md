@@ -61,7 +61,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 7. For `Start Date`, enter the date in `YYYY-MM-DD` format. The data added on and after this date will be replicated. This field is optional - if not provided or older than 2 years ago from today, the date 2 years ago from today will be used.
 8. For `End Date`, enter the date in `YYYY-MM-DD` format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 9. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-10. Click `Set up source`.
+10. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+11. Click `Set up source`.
 
 <!-- /env:cloud -->
 
@@ -76,7 +77,8 @@ To pass the check for Seller and Vendor accounts, you must have access to the [O
 5. For Start Date, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. This field is optional - if not provided, the date 2 years ago from today will be used.
 6. For End Date, enter the date in YYYY-MM-DD format. Any data after this date will not be replicated. This field is optional - if not provided, today's date will be used.
 7. You can specify report options for each stream using **Report Options** section. Available options can be found in corresponding category [here](https://developer-docs.amazon.com/sp-api/docs/report-type-values).
-8. Click `Set up source`.
+8. For `Wait between requests to avoid fatal statuses in reports`, enable if you want to use wating time between requests to avoid fatal statuses in report based streams.
+9. Click `Set up source`.
 
 <!-- /env:oss -->
 
@@ -171,6 +173,44 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 | `array`                  | `array`      |
 | `object`                 | `object`     |
 
+## Limitations & Troubleshooting
+
+### Failed to retrieve the report
+
+```
+Failed to retrieve the report 'YOUR_REPORT_NAME' for period 2024-01-01T12:01:15Z-2024-01-15T12:01:14Z. 
+This will be read during the next sync. Report ID: YOUR_REPORT_ID. Error: Failed to retrieve the report result document.
+```
+
+Requesting reports via Amazon Seller Partner API can lead to failed syncs with error above "Failed to retrieve the report...".
+
+One of the reasons why users face this issue is that report requests were made too often. 
+
+**Solution 1:**
+
+To overcome it you can force use sleeping between requests to avoid fatal statuses while requesting reports.
+
+Steps:
+1. Go to the Set Up page of the connector.
+2. Open optional section.
+3. Enable `Wait between requests to avoid fatal statuses in reports` toggle.
+
+Disadvantages of this approach is that syncs with waiting between requests are much slower than without it. So it is better to create a separate connection only for stream that usually fails with "Failed to retrieve the report..." error. This will help you to avoid affecting streams that worked as expected.
+
+:::note
+
+For now the waiting logic only work for the following streams:
+- GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
+- GET_AFN_INVENTORY_DATA
+- GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
+
+:::
+
+**Solution 2:**
+
+Create a separate connection for streams which usually fail with error above "Failed to retrieve the report..." and disable sync of these streams in the first connection with streams which don't fail because of the error. Adjust the sync time of these two connection to do not overlap. It's recommended to have a time break between syncs in the connections.
+
+
 ## Changelog
 
 <details>
@@ -178,6 +218,8 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.1 | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739) | Update dependencies |
+| 4.4.0 | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052) | Add waiting between requests logic to avoid failed report requests |
 | 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
 | 4.3.10 | 2024-07-10 | [41345](https://github.com/airbytehq/airbyte/pull/41345) | Update dependencies |
 | 4.3.9 | 2024-07-09 | [41158](https://github.com/airbytehq/airbyte/pull/41158) | Update dependencies |

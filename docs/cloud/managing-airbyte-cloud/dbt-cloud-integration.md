@@ -30,6 +30,6 @@ Generate a [service token](https://docs.getdbt.com/docs/dbt-cloud-apis/service-t
 
 1. Click **Connections** and select the connection you want to add a dbt transformation to. Go to the **Transformation** tab and click **+ Add transformation**. 
 
-2. Select the transformation from the dropdown and click **Save changes**. The transformation will run after the subsequent syncs until you remove it. You can repeat these steps to add additional transformations for a connection.
+2. Select the dbt job from the dropdown and click **Save changes**. The dbt job will run after the subsequent syncs until you remove it. You can repeat these steps to add additional transformations for a connection.
 
 3. To remove a transformation, click **X** on the transformation and click **Save changes**.
