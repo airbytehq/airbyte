@@ -5,7 +5,7 @@
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `account_id` | `number` | Account ID.  |  |
-| `start_date` | `string` | Start date.  |  |
+| `start_date` | `string` | Start date — used in incremental syncs. No records before that start date will be synced.  |  |
 | `client_id` | `string` | Client ID.  |  |
 | `client_secret` | `string` | Client secret.  |  |
 | `client_refresh_token_2` | `string` | Refresh token.  |  |
