@@ -322,7 +322,7 @@ streams:
           count: 500
           options:
             include_original_description: true
-            days_requested: 730
+            days_requested: "{{config['days_requested']}}"
           client_id: "{{config['client_id']}}"
           access_token: "{{config['access_token']}}"
       record_selector:
