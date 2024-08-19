@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-google-search-console
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

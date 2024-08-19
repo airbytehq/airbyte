@@ -7,7 +7,13 @@ import TabItem from '@theme/TabItem';
 
 # Secret Management
 
-Airbyte's default behavior is to store connector secrets on your configured database. Airbyte recommends storing connector secrets in an external secret manager. The currently supported Secret managers are: AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault. Upon creating a new connector, secrets (e.g. OAuth tokens, database passwords) will be written to and read from the configured Secrets manager.
+Secrets are sensitive information that should be kept confidential to protect the security and integrity of your instance.
+
+:::info
+Airbyte's default behavior is to store connector secrets on your configured database. This will be stored in plain-text and not encrypted.
+:::
+
+Airbyte **highly recommends** storing connector secrets in an external secret manager to ensure secrets are not exposed. The currently supported Secret managers are: AWS Secrets Manager, Google Secrets Manager or Hashicorp Vault. Upon creating a new connector, secrets (e.g. OAuth tokens, database passwords) will be written to and read from the configured Secrets manager.
 
 ## Secrets
 

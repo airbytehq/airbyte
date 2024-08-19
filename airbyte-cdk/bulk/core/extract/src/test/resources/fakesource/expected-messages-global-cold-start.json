@@ -1,0 +1,185 @@
+[
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "KV",
+          "namespace": "PUBLIC"
+        },
+        "status": "STARTED"
+      }
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "status": "STARTED"
+      }
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "KV",
+      "data": {
+        "K": 1,
+        "V": "foo"
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "KV",
+      "data": {
+        "K": 2,
+        "V": "bar"
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "KV",
+      "data": {
+        "K": 3,
+        "V": null
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "GLOBAL",
+      "global": {
+        "stream_states": [
+          {
+            "stream_descriptor": {
+              "name": "KV",
+              "namespace": "PUBLIC"
+            },
+            "stream_state": {
+              "primary_key": {},
+              "cursors": {}
+            }
+          }
+        ]
+      },
+      "sourceStats": {
+        "recordCount": 3.0
+      }
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "EVENTS",
+      "data": {
+        "ID": "zESZAjDaXqjE0wJzLlv86Q==",
+        "TS": "2024-04-29T00:00:00.000000-04:00",
+        "MSG": "bar"
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "EVENTS",
+      "data": {
+        "ID": "3VWqE0Hrb7TV5BOEP2wN+g==",
+        "TS": "2024-04-30T00:00:00.000000-04:00",
+        "MSG": null
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "GLOBAL",
+      "global": {
+        "stream_states": [
+          {
+            "stream_descriptor": {
+              "name": "KV",
+              "namespace": "PUBLIC"
+            },
+            "stream_state": {
+              "primary_key": {},
+              "cursors": {}
+            }
+          }
+        ]
+      },
+      "sourceStats": {
+        "recordCount": 0.0
+      }
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "primary_key": {},
+          "cursors": {}
+        }
+      },
+      "sourceStats": {
+        "recordCount": 2.0
+      }
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "KV",
+          "namespace": "PUBLIC"
+        },
+        "status": "COMPLETE"
+      }
+    }
+  },
+  {
+    "type": "TRACE",
+    "trace": {
+      "type": "STREAM_STATUS",
+      "emitted_at": 3.1336416e12,
+      "stream_status": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "status": "COMPLETE"
+      }
+    }
+  }
+]

@@ -1975,7 +1975,7 @@ class TestCreateTransformations:
                 "values": "{{config['repos']}}",
                 "cursor_field": "a_key",
             },
-            ListPartitionRouter,
+            PerPartitionCursor,
             id="test_create_simple_retriever_with_partition_router",
         ),
         pytest.param(
