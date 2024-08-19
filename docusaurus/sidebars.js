@@ -446,10 +446,8 @@ const connectionConfigurations = {
   items: [
     "using-airbyte/core-concepts/sync-schedules",
     "using-airbyte/core-concepts/namespaces",
-    {
-      type: "doc",
-      id: "using-airbyte/schema-change-management",
-    },
+    "using-airbyte/configuring-schema",
+    "using-airbyte/schema-change-management",
     {
       type: "category",
       label: "Sync Modes",

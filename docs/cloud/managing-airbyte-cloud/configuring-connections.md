@@ -16,7 +16,7 @@ To configure these settings:
 
 2. Click the **Settings** tab.
 
-3. Click the **Configuration** dropdown to expand the options.
+3. Click the **Advanced seetings** dropdown to display all settings.
 
 :::note
 
@@ -29,18 +29,18 @@ You can configure the following settings:
 | Setting                                                                                       | Description                                                            |
 | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | Connection Name                                                                               | A custom name for your connection                                      |
-| [Schedule Type](/using-airbyte/core-concepts/sync-schedules.md)                               | How often data syncs (can be scheduled, cron, API-triggered or manual) |
-| [Destination Namespace](/using-airbyte/core-concepts/namespaces.md)                           | Where the replicated data is written to in the destination             |
-| Destination Stream Prefix                                                                     | A prefix added to each table name in the destination                   |
-| [Detect and propagate schema changes](using-airbyte/schema-change-management.md) | How Airbyte handles schema changes in the source                       |
-| [Connection Data Residency](/cloud/managing-airbyte-cloud/manage-data-residency.md)           | Where data will be processed (Cloud only)                              |
+| [Schedule Type](/using-airbyte/core-concepts/sync-schedules.md)                               | Configure how often data syncs (can be scheduled, cron, or manually triggered) |
+| [Destination Namespace](/using-airbyte/core-concepts/namespaces.md)                           | Determines where the replicated data is written to in the destination             |
+| Destination Stream Prefix                                                                     | (Optional) Adds a prefix to each table name in the destination                   |
+| [Detect and propagate schema changes](using-airbyte/schema-change-management.md) | Set how Airbyte handles schema changes in the source                       |
+| [Connection Data Residency](/cloud/managing-airbyte-cloud/manage-data-residency.md)           | Determines where data will be processed (Cloud only)                              |
 
 ## Modify Streams
 
 On the "Schema" tab, you choose which streams to sync and how they are loaded to the destination.
 
 :::info
-A connection's schema consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream, there can be one or many fields or columns.
+A connection's schema consists of one or many streams. Each stream is most commonly associated with a database table or an API endpoint. Within a stream, there are typically several fields or columns.
 :::
 
 To modify streams, click **Connections** and then click the connection you want to change. Click the **Schema** tab to see all the streams Airbyte can sync. To modify an individual stream:
