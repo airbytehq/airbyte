@@ -10,8 +10,8 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
-import io.airbyte.cdk.exceptions.ConfigErrorException
 import io.micronaut.context.annotation.ConfigurationProperties
 
 /** Union type for SSH tunnel method configuration in connector configurations. */

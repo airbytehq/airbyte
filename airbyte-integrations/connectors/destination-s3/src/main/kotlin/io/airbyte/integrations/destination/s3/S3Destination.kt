@@ -10,7 +10,7 @@ import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider
 
 open class S3Destination : BaseS3Destination {
-    constructor()
+    constructor() : super(nThreads = 2, memoryRatio = 0.5)
 
     @VisibleForTesting
     constructor(

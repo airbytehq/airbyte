@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 2.4.19
+  dockerImageTag: 2.4.21
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   githubIssueLabel: source-shopify
@@ -23,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-shopify
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

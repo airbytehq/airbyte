@@ -9,7 +9,7 @@ import com.deblock.jsondiff.matcher.StrictJsonArrayPartialMatcher
 import com.deblock.jsondiff.matcher.StrictJsonObjectPartialMatcher
 import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
 import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
-import io.airbyte.cdk.consumers.BufferingOutputConsumer
+import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteCatalog
