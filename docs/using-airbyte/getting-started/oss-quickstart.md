@@ -188,7 +188,7 @@ Credentials:
 
 Use the value in the password field to authenticate to your new Airbyte instance.
 
-You can set your email and password with the `credentials` command using `abtl`. To set your email you can run:
+You can set your email and password with the `credentials` command using `abctl`. To set your email you can run:
 
 ```shell
 abctl local credentials --email user@company.example
