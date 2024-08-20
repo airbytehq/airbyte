@@ -67,7 +67,7 @@ class JdbcMetadataQuerier(
             }
             log.info { "Discovered ${allTables.size} table(s) in schemas ${config.schemas}." }
             return@lazy allTables.toList().sortedBy {
-                "${it.catalog ?: ""}.${it.schema!!}.${it.name}.${it.type}"
+                "${it.catalog ?: ""}.${it.schema ?: ""}.${it.name}.${it.type}"
             }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
