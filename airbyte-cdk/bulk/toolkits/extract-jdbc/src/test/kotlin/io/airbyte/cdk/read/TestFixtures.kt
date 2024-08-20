@@ -8,14 +8,64 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.command.JdbcSourceConfiguration
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.jdbc.LocalDateFieldType
+import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.SyncMode
 import java.time.Duration
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions
 
 object TestFixtures {
+
+    val id = Field("id", IntFieldType)
+    val ts = Field("ts", LocalDateFieldType)
+    val msg = Field("msg", StringFieldType)
+
+    fun stream(
+        withPK: Boolean = true,
+        withCursor: Boolean = true,
+    ) =
+        Stream(
+            name = "events",
+            namespace = "test",
+            fields = listOf(id, ts, msg),
+            configuredSyncMode = if (withCursor) SyncMode.INCREMENTAL else SyncMode.FULL_REFRESH,
+            configuredPrimaryKey = listOf(id).takeIf { withPK },
+            configuredCursor = ts.takeIf { withCursor },
+        )
+
+    fun opaqueStateValue(
+        pk: Int? = null,
+        cursor: LocalDate? = null,
+    ): OpaqueStateValue =
+        Jsons.readTree(
+            listOf(
+                    """"primary_key":""" + if (pk == null) "{}" else """{"${id.id}":$pk }""",
+                    """"cursors":""" + if (cursor == null) "{}" else """{"${ts.id}":"$cursor"} """,
+                )
+                .joinToString(",", "{", "}")
+        )
+
+    fun record(
+        pk: Int? = null,
+        cursor: LocalDate? = null,
+    ): ObjectNode =
+        Jsons.readTree(
+            listOfNotNull(
+                    """ "${id.id}" : $pk """.takeIf { pk != null },
+                    """ "${ts.id}" : "$cursor" """.takeIf { cursor != null },
+                )
+                .joinToString(",", "{", "}")
+        ) as ObjectNode
 
     fun sharedState(
         global: Boolean = false,
@@ -48,6 +98,20 @@ object TestFixtures {
             estimatedFieldOverheadBytes,
             maxMemoryBytesForTesting,
         )
+
+    fun DefaultJdbcSharedState.factory() =
+        DefaultJdbcPartitionFactory(
+            this,
+            BufferingCatalogValidationFailureHandler(),
+            MockSelectQueryGenerator
+        )
+
+    fun DefaultJdbcPartitionFactory.assertFailures(vararg failures: CatalogValidationFailure) {
+        Assertions.assertIterableEquals(
+            failures.toList(),
+            (handler as BufferingCatalogValidationFailureHandler).get(),
+        )
+    }
 
     fun SelectQuery.assertQueryEquals(expected: SelectQuerySpec) {
         Assertions.assertEquals(expected.toString(), this.sql)
@@ -117,5 +181,10 @@ object TestFixtures {
             expectedParameters,
             rows.map { Jsons.readTree(it) as ObjectNode },
         )
+    }
+
+    object MockSelectQueryGenerator : SelectQueryGenerator {
+        override fun generate(ast: SelectQuerySpec): SelectQuery =
+            SelectQuery(ast.toString(), listOf(), listOf())
     }
 }

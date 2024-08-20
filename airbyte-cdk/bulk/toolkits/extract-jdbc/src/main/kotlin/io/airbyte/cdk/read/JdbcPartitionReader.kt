@@ -4,7 +4,6 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -15,56 +14,24 @@ import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
-sealed class JdbcPartitionReader(
-    val streamState: JdbcStreamState<*>,
-    val input: Input,
+sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
+    val partition: P,
 ) : PartitionReader {
+
+    val streamState: JdbcStreamState<*> = partition.streamState
     val stream: Stream = streamState.stream
     val sharedState: JdbcSharedState = streamState.sharedState
     val outputConsumer: OutputConsumer = sharedState.outputConsumer
     val selectQuerier: SelectQuerier = sharedState.selectQuerier
 
-    sealed interface Input {
-        val resumable: Boolean
-    }
-
-    data class SnapshotInput(
-        val primaryKey: List<Field>,
-        val primaryKeyLowerBound: List<JsonNode>?,
-        val primaryKeyUpperBound: List<JsonNode>?,
-    ) : Input {
-        override val resumable: Boolean
-            get() = primaryKey.isNotEmpty()
-    }
-
-    data class SnapshotWithCursorInput(
-        val primaryKey: List<Field>,
-        val primaryKeyLowerBound: List<JsonNode>?,
-        val primaryKeyUpperBound: List<JsonNode>?,
-        val cursor: Field,
-        val cursorUpperBound: JsonNode,
-    ) : Input {
-        override val resumable: Boolean
-            get() = primaryKey.isNotEmpty()
-    }
-
-    data class CursorIncrementalInput(
-        val cursor: Field,
-        val cursorLowerBound: JsonNode,
-        val isLowerBoundIncluded: Boolean,
-        val cursorUpperBound: JsonNode,
-    ) : Input {
-        override val resumable: Boolean
-            get() = true
-    }
-
     private val acquiredResources = AtomicReference<AcquiredResources>()
 
+    /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         val acquiredResources: AcquiredResources =
-            sharedState.tryAcquireResourcesForReader()
+            partition.tryAcquireResourcesForReader()
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
@@ -90,27 +57,18 @@ sealed class JdbcPartitionReader(
     }
 }
 
-/** JDBC implementation of [PartitionReader] which reads the [input] in its entirety. */
-class JdbcNonResumablePartitionReader(
-    val selectQueryGenerator: SelectQueryGenerator,
-    streamState: JdbcStreamState<*>,
-    input: Input,
-) : JdbcPartitionReader(streamState, input) {
+/** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
+class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
+    partition: P,
+) : JdbcPartitionReader<P>(partition) {
 
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
 
     override suspend fun run() {
-        val querySpec: SelectQuerySpec =
-            input.querySpec(
-                stream,
-                isOrdered = false,
-                limit = null,
-            )
-        val query: SelectQuery = selectQueryGenerator.generate(querySpec.optimize())
         selectQuerier
             .executeQuery(
-                q = query,
+                q = partition.nonResumableQuery,
                 parameters = SelectQuerier.Parameters(streamState.fetchSize),
             )
             .use { result: SelectQuerier.Result ->
@@ -127,19 +85,17 @@ class JdbcNonResumablePartitionReader(
         if (!runComplete.get()) throw RuntimeException("cannot checkpoint non-resumable read")
         // The run method executed to completion without a LIMIT clause.
         // This implies that the partition boundary has been reached.
-        return PartitionReadCheckpoint(input.checkpoint().opaqueStateValue(), numRecords.get())
+        return PartitionReadCheckpoint(partition.completeState, numRecords.get())
     }
 }
 
 /**
- * JDBC implementation of [PartitionReader] which reads as much as possible of the [input], in
+ * JDBC implementation of [PartitionReader] which reads as much as possible of the [partition], in
  * order, before timing out.
  */
-class JdbcResumablePartitionReader(
-    val selectQueryGenerator: SelectQueryGenerator,
-    streamState: JdbcStreamState<*>,
-    input: Input,
-) : JdbcPartitionReader(streamState, input) {
+class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
+    partition: P,
+) : JdbcPartitionReader<P>(partition) {
 
     val incumbentLimit = AtomicLong()
     val numRecords = AtomicLong()
@@ -150,16 +106,9 @@ class JdbcResumablePartitionReader(
         val fetchSize: Int = streamState.fetchSizeOrDefault
         val limit: Long = streamState.limit
         incumbentLimit.set(limit)
-        val querySpec: SelectQuerySpec =
-            input.querySpec(
-                stream,
-                isOrdered = true,
-                limit = limit,
-            )
-        val query: SelectQuery = selectQueryGenerator.generate(querySpec.optimize())
         selectQuerier
             .executeQuery(
-                q = query,
+                q = partition.resumableQuery(limit),
                 parameters = SelectQuerier.Parameters(fetchSize),
             )
             .use { result: SelectQuerier.Result ->
@@ -178,7 +127,7 @@ class JdbcResumablePartitionReader(
     override fun checkpoint(): PartitionReadCheckpoint {
         if (runComplete.get() && numRecords.get() < streamState.limit) {
             // The run method executed to completion with a LIMIT clause which was not reached.
-            return PartitionReadCheckpoint(input.checkpoint().opaqueStateValue(), numRecords.get())
+            return PartitionReadCheckpoint(partition.completeState, numRecords.get())
         }
         // The run method ended because of either the LIMIT or the timeout.
         // Adjust the LIMIT value so that it grows or shrinks to try to fit the timeout.
@@ -194,146 +143,7 @@ class JdbcResumablePartitionReader(
                 streamState.updateLimitState { it.down }
             }
         }
-        val checkpointState: OpaqueStateValue =
-            input.checkpoint(lastRecord.get()!!).opaqueStateValue()
+        val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get()!!)
         return PartitionReadCheckpoint(checkpointState, numRecords.get())
-    }
-}
-
-/** Converts a [JdbcPartitionReader.Input] into a [SelectQuerySpec]. */
-fun JdbcPartitionReader.Input.querySpec(
-    stream: Stream,
-    isOrdered: Boolean,
-    limit: Long?,
-): SelectQuerySpec =
-    when (this) {
-        is JdbcPartitionReader.SnapshotInput ->
-            querySpecForStreamPartitionReader(
-                stream,
-                checkpointColumns = primaryKey,
-                checkpointLowerBound = primaryKeyLowerBound,
-                isLowerBoundIncluded = false,
-                checkpointUpperBound = primaryKeyUpperBound,
-                isOrdered,
-                limit,
-            )
-        is JdbcPartitionReader.SnapshotWithCursorInput ->
-            querySpecForStreamPartitionReader(
-                stream,
-                checkpointColumns = primaryKey,
-                checkpointLowerBound = primaryKeyLowerBound,
-                isLowerBoundIncluded = false,
-                checkpointUpperBound = primaryKeyUpperBound,
-                isOrdered,
-                limit,
-            )
-        is JdbcPartitionReader.CursorIncrementalInput ->
-            querySpecForStreamPartitionReader(
-                stream,
-                checkpointColumns = listOf(cursor),
-                checkpointLowerBound = listOf(cursorLowerBound),
-                isLowerBoundIncluded = isLowerBoundIncluded,
-                checkpointUpperBound = listOf(cursorUpperBound),
-                isOrdered,
-                limit,
-            )
-    }
-
-private fun querySpecForStreamPartitionReader(
-    stream: Stream,
-    checkpointColumns: List<Field>,
-    checkpointLowerBound: List<JsonNode>?,
-    isLowerBoundIncluded: Boolean,
-    checkpointUpperBound: List<JsonNode>?,
-    isOrdered: Boolean,
-    limit: Long?,
-): SelectQuerySpec {
-    val selectColumns: List<Field> =
-        if (isOrdered) {
-            stream.fields + checkpointColumns
-        } else {
-            stream.fields
-        }
-    val zippedLowerBound: List<Pair<Field, JsonNode>> =
-        checkpointLowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
-    val lowerBoundDisj: List<WhereClauseNode> =
-        zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
-            val lastLeaf: WhereClauseLeafNode =
-                if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
-                    GreaterOrEqual(gtCol, gtValue)
-                } else {
-                    Greater(gtCol, gtValue)
-                }
-            And(
-                zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
-                    Equal(eqCol, eqValue)
-                } + listOf(lastLeaf),
-            )
-        }
-    val zippedUpperBound: List<Pair<Field, JsonNode>> =
-        checkpointUpperBound?.let { checkpointColumns.zip(it) } ?: listOf()
-    val upperBoundDisj: List<WhereClauseNode> =
-        zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
-            val lastLeaf: WhereClauseLeafNode =
-                if (idx < zippedUpperBound.size - 1) {
-                    Lesser(leqCol, leqValue)
-                } else {
-                    LesserOrEqual(leqCol, leqValue)
-                }
-            And(
-                zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
-                    Equal(eqCol, eqValue)
-                } + listOf(lastLeaf),
-            )
-        }
-    return SelectQuerySpec(
-        SelectColumns(selectColumns),
-        From(stream.name, stream.namespace),
-        Where(And(Or(lowerBoundDisj), Or(upperBoundDisj))),
-        if (isOrdered) OrderBy(checkpointColumns) else NoOrderBy,
-        if (limit == null) NoLimit else Limit(limit),
-    )
-}
-
-/**
- * Generates a [CheckpointStreamState] using the [JdbcPartitionReader.Input] initial state and, if
- * provided, the last record read by the [JdbcPartitionReader]. When not provided, the partition is
- * presumed to have been read in its entirety.
- */
-fun JdbcPartitionReader.Input.checkpoint(row: ObjectNode? = null): CheckpointStreamState {
-    fun getRowValue(field: Field): JsonNode = row?.get(field.id) ?: Jsons.nullNode()
-    return when (this) {
-        is JdbcPartitionReader.SnapshotInput ->
-            if (row != null) {
-                SnapshotCheckpoint(primaryKey, primaryKey.map(::getRowValue))
-            } else if (primaryKeyUpperBound != null) {
-                SnapshotCheckpoint(primaryKey, primaryKeyUpperBound)
-            } else {
-                SnapshotCompleted
-            }
-        is JdbcPartitionReader.SnapshotWithCursorInput ->
-            if (row != null) {
-                SnapshotWithCursorCheckpoint(
-                    primaryKey,
-                    primaryKey.map(::getRowValue),
-                    cursor,
-                    cursorUpperBound,
-                )
-            } else if (primaryKeyUpperBound != null) {
-                SnapshotWithCursorCheckpoint(
-                    primaryKey,
-                    primaryKeyUpperBound,
-                    cursor,
-                    cursorUpperBound,
-                )
-            } else {
-                CursorIncrementalCheckpoint(cursor, cursorUpperBound)
-            }
-        is JdbcPartitionReader.CursorIncrementalInput ->
-            if (row == null) {
-                CursorIncrementalCheckpoint(cursor, cursorUpperBound)
-            } else {
-                CursorIncrementalCheckpoint(cursor, getRowValue(cursor))
-            }
     }
 }
