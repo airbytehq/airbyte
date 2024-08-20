@@ -95,6 +95,7 @@ class StreamPartitionsCreator(
                 StreamPartitionReader.CursorIncrementalInput(
                         cursor = cursor,
                         cursorLowerBound = cursorLowerBound,
+                        isLowerBoundIncluded = true,
                         cursorUpperBound = utils.computeCursorUpperBound(cursor) ?: return listOf(),
                     )
                     .split()
@@ -118,6 +119,7 @@ class StreamPartitionsCreator(
                 StreamPartitionReader.CursorIncrementalInput(
                         cursor = cursor,
                         cursorLowerBound = cursorLowerBound,
+                        isLowerBoundIncluded = true,
                         cursorUpperBound = cursorUpperBound,
                     )
                     .split()
@@ -137,8 +139,14 @@ class StreamPartitionsCreator(
 
     fun StreamPartitionReader.CursorIncrementalInput.split():
         List<StreamPartitionReader.CursorIncrementalInput> =
-        utils.split(this, listOf(cursorLowerBound), listOf(cursorUpperBound)).map { (lb, ub) ->
-            copy(cursorLowerBound = lb!!.first(), cursorUpperBound = ub!!.first())
+        utils.split(this, listOf(cursorLowerBound), listOf(cursorUpperBound)).mapIndexed {
+            idx: Int,
+            (lb, ub) ->
+            copy(
+                cursorLowerBound = lb!!.first(),
+                isLowerBoundIncluded = idx == 0,
+                cursorUpperBound = ub!!.first(),
+            )
         }
 
     private val utils = StreamPartitionsCreatorUtils(ctx, parameters)
