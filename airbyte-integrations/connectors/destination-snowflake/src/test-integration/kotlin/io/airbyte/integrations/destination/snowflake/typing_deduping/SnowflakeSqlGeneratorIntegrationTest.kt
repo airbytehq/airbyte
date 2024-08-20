@@ -309,6 +309,7 @@ class SnowflakeSqlGeneratorIntegrationTest : BaseSqlGeneratorIntegrationTest<Sno
                     """
         SELECT column_name, data_type, numeric_precision, numeric_scale
         FROM information_schema.columns
+        /* query created from SnowflakeSqlGeneratorIntegrationTest */ 
         WHERE table_catalog = ?
           AND table_schema = ?
           AND table_name = ?

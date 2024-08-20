@@ -97,7 +97,7 @@ def get_table_structure(connection: Connection) -> Dict[str, List[Tuple]]:
     column_mapping = defaultdict(list)
     cursor = connection.cursor()
     cursor.execute(
-        "SELECT table_name, column_name, data_type, is_nullable FROM information_schema.columns "
+        "SELECT table_name, column_name, data_type, is_nullable FROM information_schema.columns /* query created from database.py */ "
         "WHERE table_name NOT IN (SELECT table_name FROM information_schema.tables WHERE table_type IN ('EXTERNAL', 'CATALOG'))"
     )
     for t_name, c_name, c_type, nullable in cursor.fetchall():

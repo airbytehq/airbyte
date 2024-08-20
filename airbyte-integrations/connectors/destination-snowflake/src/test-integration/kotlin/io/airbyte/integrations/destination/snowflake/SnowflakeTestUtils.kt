@@ -49,6 +49,7 @@ object SnowflakeTestUtils {
                     """
         SELECT column_name, data_type
         FROM information_schema.columns
+        /* query created from SnowflakeTestUtils */ 
         WHERE table_catalog = ?
           AND table_schema = ?
           AND table_name = ?
