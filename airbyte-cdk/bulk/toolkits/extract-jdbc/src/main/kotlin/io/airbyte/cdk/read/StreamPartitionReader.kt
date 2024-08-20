@@ -3,8 +3,9 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.read.StreamPartitionsCreator.AcquiredResources
+import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import java.util.concurrent.atomic.AtomicBoolean
@@ -13,19 +14,28 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ensureActive
 
-/** Default implementation of [PartitionReader] for streams in JDBC sources. */
-class StreamPartitionReader(
-    val ctx: StreamReadContext,
+/** Base class for JDBC implementations of [PartitionReader]. */
+sealed class StreamPartitionReader(
+    val streamState: JdbcStreamState<*>,
     val input: Input,
-    val parameters: Parameters,
 ) : PartitionReader {
-    sealed interface Input
+    val stream: Stream = streamState.stream
+    val sharedState: JdbcSharedState = streamState.sharedState
+    val outputConsumer: OutputConsumer = sharedState.outputConsumer
+    val selectQuerier: SelectQuerier = sharedState.selectQuerier
+
+    sealed interface Input {
+        val resumable: Boolean
+    }
 
     data class SnapshotInput(
         val primaryKey: List<Field>,
         val primaryKeyLowerBound: List<JsonNode>?,
         val primaryKeyUpperBound: List<JsonNode>?,
-    ) : Input
+    ) : Input {
+        override val resumable: Boolean
+            get() = primaryKey.isNotEmpty()
+    }
 
     data class SnapshotWithCursorInput(
         val primaryKey: List<Field>,
@@ -33,132 +43,161 @@ class StreamPartitionReader(
         val primaryKeyUpperBound: List<JsonNode>?,
         val cursor: Field,
         val cursorUpperBound: JsonNode,
-    ) : Input
+    ) : Input {
+        override val resumable: Boolean
+            get() = primaryKey.isNotEmpty()
+    }
 
     data class CursorIncrementalInput(
         val cursor: Field,
         val cursorLowerBound: JsonNode,
         val isLowerBoundIncluded: Boolean,
         val cursorUpperBound: JsonNode,
-    ) : Input
+    ) : Input {
+        override val resumable: Boolean
+            get() = true
+    }
 
-    data class Parameters(
-        val preferResumable: Boolean,
-    )
+    private val acquiredResources = AtomicReference<AcquiredResources>()
 
     fun interface AcquiredResources : AutoCloseable
 
-    val acquiredResources = AtomicReference<AcquiredResources>(null)
-
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         val acquiredResources: AcquiredResources =
-            ctx.sharedState.tryAcquireResourcesForReader()
+            sharedState.tryAcquireResourcesForReader()
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
         return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
+    fun out(record: ObjectNode) {
+        val recordMessageData: ObjectNode = Jsons.objectNode()
+        for (fieldName in streamFieldNames) {
+            recordMessageData.set<JsonNode>(fieldName, record[fieldName] ?: Jsons.nullNode())
+        }
+        outputConsumer.accept(
+            AirbyteRecordMessage()
+                .withStream(stream.name)
+                .withNamespace(stream.namespace)
+                .withData(recordMessageData),
+        )
+    }
+
+    val streamFieldNames: List<String> = stream.fields.map { it.id }
+
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
     }
+}
 
-    val resumable: Boolean =
-        parameters.preferResumable &&
-            when (input) {
-                is SnapshotInput -> input.primaryKey.isNotEmpty()
-                is SnapshotWithCursorInput -> input.primaryKey.isNotEmpty()
-                is CursorIncrementalInput -> true
+/** JDBC implementation of [PartitionReader] which reads the [input] in its entirety. */
+class StreamNonResumablePartitionReader(
+    val selectQueryGenerator: SelectQueryGenerator,
+    streamState: JdbcStreamState<*>,
+    input: Input,
+) : StreamPartitionReader(streamState, input) {
+
+    val runComplete = AtomicBoolean(false)
+    val numRecords = AtomicLong()
+
+    override suspend fun run() {
+        val querySpec: SelectQuerySpec =
+            input.querySpec(
+                stream,
+                isOrdered = false,
+                limit = null,
+            )
+        val query: SelectQuery = selectQueryGenerator.generate(querySpec.optimize())
+        selectQuerier
+            .executeQuery(
+                q = query,
+                parameters = SelectQuerier.Parameters(streamState.fetchSize),
+            )
+            .use { result: SelectQuerier.Result ->
+                for (record in result) {
+                    out(record)
+                    numRecords.incrementAndGet()
+                }
             }
+        runComplete.set(true)
+    }
 
-    val incumbentTransientState = AtomicReference<TransientState>()
+    override fun checkpoint(): PartitionReadCheckpoint {
+        // Sanity check.
+        if (!runComplete.get()) throw RuntimeException("cannot checkpoint non-resumable read")
+        // The run method executed to completion without a LIMIT clause.
+        // This implies that the partition boundary has been reached.
+        return PartitionReadCheckpoint(input.checkpoint().opaqueStateValue(), numRecords.get())
+    }
+}
+
+/**
+ * JDBC implementation of [PartitionReader] which reads as much as possible of the [input], in
+ * order, before timing out.
+ */
+class StreamResumablePartitionReader(
+    val selectQueryGenerator: SelectQueryGenerator,
+    streamState: JdbcStreamState<*>,
+    input: Input,
+) : StreamPartitionReader(streamState, input) {
+
+    val incumbentLimit = AtomicLong()
     val numRecords = AtomicLong()
     val lastRecord = AtomicReference<ObjectNode?>(null)
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
-        // Store the transient state at the start of the run for use in checkpoint().
-        val transientState =
-            TransientState(ctx.streamState.limit, ctx.streamState.fetchSizeOrDefault)
-        incumbentTransientState.set(transientState)
-        // Build the query.
+        val fetchSize: Int = streamState.fetchSizeOrDefault
+        val limit: Long = streamState.limit
+        incumbentLimit.set(limit)
         val querySpec: SelectQuerySpec =
             input.querySpec(
-                ctx.stream,
-                isOrdered = resumable,
-                limit = transientState.limit.takeIf { resumable },
+                stream,
+                isOrdered = true,
+                limit = limit,
             )
-        val query: SelectQuery = ctx.selectQueryGenerator.generate(querySpec.optimize())
-        val streamFieldNames: List<String> = ctx.stream.fields.map { it.id }
-        val querierParameters = SelectQuerier.Parameters(fetchSize = transientState.fetchSize)
-        // Execute the query.
-        ctx.selectQuerier.executeQuery(query, querierParameters).use { result: SelectQuerier.Result
-            ->
-            for (record in result) {
-                val dataRecord: JsonNode =
-                    Jsons.objectNode().apply {
-                        for (fieldName in streamFieldNames) {
-                            set<JsonNode>(fieldName, record[fieldName] ?: Jsons.nullNode())
-                        }
+        val query: SelectQuery = selectQueryGenerator.generate(querySpec.optimize())
+        selectQuerier
+            .executeQuery(
+                q = query,
+                parameters = SelectQuerier.Parameters(fetchSize),
+            )
+            .use { result: SelectQuerier.Result ->
+                for (record in result) {
+                    out(record)
+                    lastRecord.set(record)
+                    // Check activity periodically to handle timeout.
+                    if (numRecords.incrementAndGet() % fetchSize == 0L) {
+                        coroutineContext.ensureActive()
                     }
-                ctx.outputConsumer.accept(
-                    AirbyteRecordMessage()
-                        .withStream(ctx.stream.name)
-                        .withNamespace(ctx.stream.namespace)
-                        .withData(dataRecord),
-                )
-                lastRecord.set(record)
-                numRecords.incrementAndGet()
-                // If progress can be checkpointed at any time,
-                // check activity periodically to handle timeout.
-                if (!resumable) continue
-                if (numRecords.get() % transientState.fetchSize != 0L) continue
-                coroutineContext.ensureActive()
+                }
             }
-        }
         runComplete.set(true)
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
-        val checkpointState: CheckpointStreamState
-        val transientState: TransientState = incumbentTransientState.get()
-        if (!runComplete.get()) {
-            // Sanity check.
-            if (!resumable) throw RuntimeException("cannot checkpoint non-resumable read")
-            // The run method execution was interrupted.
-            checkpointState = input.checkpoint(lastRecord.get())
-            // Decrease the limit clause for the next PartitionReader, because it's too big.
-            // If it had been smaller then run might have completed in time.
-            if (transientState.limit <= ctx.streamState.limit) {
-                ctx.streamState.updateLimitState { it.down }
-            }
-        } else if (resumable) {
-            // The run method executed to completion with a LIMIT clause.
-            // The partition boundary may or may not have been reached.
-            // If the number of records read is less than the LIMIT clause,
-            // then it certainly has.
-            checkpointState =
-                if (numRecords.get() < transientState.limit) {
-                    input.checkpoint()
-                } else {
-                    input.checkpoint(lastRecord.get())
-                }
-            // Increase the limit clause for the next PartitionReader, because it's too small.
-            // If it had been bigger then run might have executed for longer.
-            if (ctx.streamState.limit <= transientState.limit) {
-                ctx.streamState.updateLimitState { it.up }
-            }
-        } else {
-            // The run method executed to completion without a LIMIT clause.
-            // This implies that the partition boundary has been reached.
-            checkpointState = input.checkpoint()
+        if (runComplete.get() && numRecords.get() < streamState.limit) {
+            // The run method executed to completion with a LIMIT clause which was not reached.
+            return PartitionReadCheckpoint(input.checkpoint().opaqueStateValue(), numRecords.get())
         }
-        return PartitionReadCheckpoint(checkpointState.opaqueStateValue(), numRecords.get())
+        // The run method ended because of either the LIMIT or the timeout.
+        // Adjust the LIMIT value so that it grows or shrinks to try to fit the timeout.
+        if (incumbentLimit.get() > 0L) {
+            if (runComplete.get() && streamState.limit <= incumbentLimit.get()) {
+                // Increase the limit clause for the next PartitionReader, because it's too small.
+                // If it had been bigger then run might have executed for longer.
+                streamState.updateLimitState { it.up }
+            }
+            if (!runComplete.get() && incumbentLimit.get() <= streamState.limit) {
+                // Decrease the limit clause for the next PartitionReader, because it's too big.
+                // If it had been smaller then run might have completed in time.
+                streamState.updateLimitState { it.down }
+            }
+        }
+        val checkpointState: OpaqueStateValue =
+            input.checkpoint(lastRecord.get()!!).opaqueStateValue()
+        return PartitionReadCheckpoint(checkpointState, numRecords.get())
     }
-
-    inner class TransientState(
-        val limit: Long,
-        val fetchSize: Int,
-    )
 }
 
 /** Converts a [StreamPartitionReader.Input] into a [SelectQuerySpec]. */

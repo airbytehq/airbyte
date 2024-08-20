@@ -2,20 +2,33 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.read.StreamPartitionReader.AcquiredResources
+import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.ResetStream
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.SyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.random.Random
 
-/** Default implementation of [PartitionsCreator] for streams in JDBC sources. */
-class StreamPartitionsCreator(
-    val ctx: StreamReadContext,
+/** Base class for JDBC implementations of [PartitionsCreator]. */
+sealed class StreamPartitionsCreator(
+    val selectQueryGenerator: SelectQueryGenerator,
+    val streamState: JdbcStreamState<*>,
     val input: Input,
-    val parameters: Parameters,
-    val readerParameters: StreamPartitionReader.Parameters,
 ) : PartitionsCreator {
+    private val log = KotlinLogging.logger {}
+
+    val stream: Stream = streamState.stream
+    val sharedState: JdbcSharedState = streamState.sharedState
+    val outputConsumer: OutputConsumer = sharedState.outputConsumer
+    val selectQuerier: SelectQuerier = sharedState.selectQuerier
+
     sealed interface Input
 
     data object NoStart : Input
@@ -58,25 +71,23 @@ class StreamPartitionsCreator(
         val throughputBytesPerSecond: Long = 10L * 1024L * 1024L,
     )
 
-    val acquiredResources = AtomicReference<AcquiredResources>(null)
+    private val acquiredResources = AtomicReference<AcquiredResources>()
+
+    /** Calling [close] releases the resources acquired for the [StreamPartitionsCreator]. */
     fun interface AcquiredResources : AutoCloseable
 
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
-        // Running this PartitionsCreator may not always involve JDBC queries.
-        // In those cases, the semaphore will be released very soon after, so this is OK.
         val acquiredResources: AcquiredResources =
-            ctx.sharedState.tryAcquireResourcesForCreator()
+            sharedState.tryAcquireResourcesForCreator()
                 ?: return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
         return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
-    override fun releaseResources() {
-        acquiredResources.getAndSet(null)?.close()
-    }
-
     override suspend fun run(): List<PartitionReader> =
-        input.partitionReaderInputs().map { StreamPartitionReader(ctx, it, readerParameters) }
+        input.partitionReaderInputs().map { createReader(it) }
+
+    abstract fun createReader(input: StreamPartitionReader.Input): StreamPartitionReader
 
     fun Input.partitionReaderInputs(): List<StreamPartitionReader.Input> {
         return when (this) {
@@ -94,7 +105,7 @@ class StreamPartitionsCreator(
                         primaryKeyLowerBound = null,
                         primaryKeyUpperBound = null,
                         cursor = cursor,
-                        cursorUpperBound = utils.computeCursorUpperBound(cursor) ?: return listOf(),
+                        cursorUpperBound = ensureCursorUpperBound(cursor) ?: return listOf(),
                     )
                     .split()
             is CursorIncrementalColdStart ->
@@ -102,7 +113,7 @@ class StreamPartitionsCreator(
                         cursor = cursor,
                         cursorLowerBound = cursorLowerBound,
                         isLowerBoundIncluded = true,
-                        cursorUpperBound = utils.computeCursorUpperBound(cursor) ?: return listOf(),
+                        cursorUpperBound = ensureCursorUpperBound(cursor) ?: return listOf(),
                     )
                     .split()
             is SnapshotWarmStart ->
@@ -133,19 +144,19 @@ class StreamPartitionsCreator(
     }
 
     fun StreamPartitionReader.SnapshotInput.split(): List<StreamPartitionReader.SnapshotInput> =
-        utils.split(this, primaryKeyLowerBound, primaryKeyUpperBound).map { (lb, ub) ->
+        split(this, primaryKeyLowerBound, primaryKeyUpperBound).map { (lb, ub) ->
             copy(primaryKeyLowerBound = lb, primaryKeyUpperBound = ub)
         }
 
     fun StreamPartitionReader.SnapshotWithCursorInput.split():
         List<StreamPartitionReader.SnapshotWithCursorInput> =
-        utils.split(this, primaryKeyLowerBound, primaryKeyUpperBound).map { (lb, ub) ->
+        split(this, primaryKeyLowerBound, primaryKeyUpperBound).map { (lb, ub) ->
             copy(primaryKeyLowerBound = lb, primaryKeyUpperBound = ub)
         }
 
     fun StreamPartitionReader.CursorIncrementalInput.split():
         List<StreamPartitionReader.CursorIncrementalInput> =
-        utils.split(this, listOf(cursorLowerBound), listOf(cursorUpperBound)).mapIndexed {
+        split(this, listOf(cursorLowerBound), listOf(cursorUpperBound)).mapIndexed {
             idx: Int,
             (lb, ub) ->
             copy(
@@ -155,31 +166,231 @@ class StreamPartitionsCreator(
             )
         }
 
-    private val utils = StreamPartitionsCreatorUtils(ctx, parameters)
+    abstract fun split(
+        input: StreamPartitionReader.Input,
+        globalLowerBound: List<JsonNode>?,
+        globalUpperBound: List<JsonNode>?,
+    ): List<Pair<List<JsonNode>?, List<JsonNode>?>>
+
+    override fun releaseResources() {
+        acquiredResources.getAndSet(null)?.close()
+    }
+
+    fun ensureCursorUpperBound(cursor: Field): JsonNode? {
+        if (streamState.cursorUpperBound != null) {
+            return streamState.cursorUpperBound
+        }
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumnMaxValue(cursor),
+                From(stream.name, stream.namespace),
+            )
+        val cursorUpperBoundQuery: SelectQuery = selectQueryGenerator.generate(querySpec.optimize())
+        log.info { "Querying maximum cursor column value." }
+        val record: ObjectNode? =
+            selectQuerier.executeQuery(cursorUpperBoundQuery).use {
+                if (it.hasNext()) it.next() else null
+            }
+        val cursorUpperBound: JsonNode? = record?.fields()?.asSequence()?.firstOrNull()?.value
+        if (cursorUpperBound == null) {
+            streamState.cursorUpperBound = Jsons.nullNode()
+            log.warn { "No cursor column value found in '${stream.label}'." }
+            return null
+        }
+        streamState.cursorUpperBound = cursorUpperBound
+        if (cursorUpperBound.isNull) {
+            log.warn { "Maximum cursor column value in '${stream.label}' is NULL." }
+            return null
+        }
+        log.info { "Maximum cursor column value in '${stream.label}' is '$cursorUpperBound'." }
+        return cursorUpperBound
+    }
+
+    /** Collects a sample of rows in the unsplit partition. */
+    fun <T> collectSample(
+        querySpec: SelectQuerySpec,
+        recordMapper: (ObjectNode) -> T,
+    ): Sample<T> {
+        val values = mutableListOf<T>()
+        var previousWeight = 0L
+        for (sampleRateInvPow2 in listOf(16, 8, 0)) {
+            val sampleRateInv: Long = 1L shl sampleRateInvPow2
+            log.info { "Sampling stream '${stream.label}' at rate 1 / $sampleRateInv." }
+            // First, try sampling the table at a rate of one every 2^16 = 65_536 rows.
+            // If that's not enough to produce the desired number of sampled rows (1024 by default)
+            // then try sampling at a higher rate of one every 2^8 = 256 rows.
+            // If that's still not enough, don't sample at all.
+            values.clear()
+            val fromSample =
+                FromSample(
+                    stream.name,
+                    stream.namespace,
+                    sampleRateInvPow2,
+                    sharedState.maxSampleSize,
+                )
+            val sampledQuerySpec: SelectQuerySpec = querySpec.copy(from = fromSample)
+            val samplingQuery: SelectQuery =
+                selectQueryGenerator.generate(sampledQuerySpec.optimize())
+            selectQuerier.executeQuery(samplingQuery).use {
+                for (record in it) {
+                    values.add(recordMapper(record))
+                }
+            }
+            if (values.size < sharedState.maxSampleSize) {
+                previousWeight = sampleRateInv * values.size / sharedState.maxSampleSize
+                continue
+            }
+            val kind: Sample.Kind =
+                when (sampleRateInvPow2) {
+                    16 -> Sample.Kind.LARGE
+                    8 -> Sample.Kind.MEDIUM
+                    else -> Sample.Kind.SMALL
+                }
+            log.info { "Sampled ${values.size} rows in ${kind.name} stream '${stream.label}'." }
+            return Sample(values, kind, previousWeight.coerceAtLeast(sampleRateInv))
+        }
+        val kind: Sample.Kind = if (values.isEmpty()) Sample.Kind.EMPTY else Sample.Kind.TINY
+        log.info { "Sampled ${values.size} rows in ${kind.name} stream '${stream.label}'." }
+        return Sample(values, kind, if (values.isEmpty()) 0L else 1L)
+    }
+}
+
+/** Sequential JDBC implementation of [PartitionsCreator]. */
+class StreamSequentialPartitionsCreator(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: JdbcStreamState<*>,
+    input: Input,
+) : StreamPartitionsCreator(selectQueryGenerator, streamState, input) {
+    private val log = KotlinLogging.logger {}
+
+    override fun createReader(input: StreamPartitionReader.Input): StreamPartitionReader {
+        // Handle edge case where the partition cannot be split.
+        if (!input.resumable) {
+            log.warn {
+                "Table cannot be read by sequential partition reader because it cannot be split."
+            }
+            return StreamNonResumablePartitionReader(selectQueryGenerator, streamState, input)
+        }
+        // Happy path.
+        log.info { "Table will be read by sequential partition reader(s)." }
+        return StreamResumablePartitionReader(selectQueryGenerator, streamState, input)
+    }
+
+    override fun split(
+        input: StreamPartitionReader.Input,
+        globalLowerBound: List<JsonNode>?,
+        globalUpperBound: List<JsonNode>?
+    ): List<Pair<List<JsonNode>?, List<JsonNode>?>> {
+        return listOf(globalLowerBound to globalUpperBound)
+    }
+}
+
+/** Concurrent JDBC implementation of [PartitionsCreator]. */
+class StreamConcurrentPartitionsCreator(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: JdbcStreamState<*>,
+    input: Input,
+) : StreamPartitionsCreator(selectQueryGenerator, streamState, input) {
+    private val log = KotlinLogging.logger {}
+
+    override fun createReader(input: StreamPartitionReader.Input): StreamPartitionReader =
+        StreamNonResumablePartitionReader(selectQueryGenerator, streamState, input)
+
+    override fun split(
+        input: StreamPartitionReader.Input,
+        globalLowerBound: List<JsonNode>?,
+        globalUpperBound: List<JsonNode>?
+    ): List<Pair<List<JsonNode>?, List<JsonNode>?>> {
+        // Handle edge case where the table can't be sampled.
+        if (!sharedState.withSampling) {
+            log.warn {
+                "Table cannot be read by concurrent partition readers because it cannot be sampled."
+            }
+            // TODO: adaptive fetchSize computation?
+            return listOf(globalLowerBound to globalUpperBound)
+        }
+        // Sample the table for partition split boundaries and for record byte sizes.
+        val unsplitQuerySpec: SelectQuerySpec =
+            input.querySpec(stream, isOrdered = true, limit = null)
+        val checkpointColumns: List<Field> = (unsplitQuerySpec.orderBy as OrderBy).columns
+        val sample: Sample<Pair<List<JsonNode>, Long>> =
+            collectSample(unsplitQuerySpec) { record: ObjectNode ->
+                val checkpointValues: List<JsonNode> =
+                    checkpointColumns.map { record[it.id] ?: Jsons.nullNode() }
+                val rowByteSize: Long = sharedState.rowByteSizeEstimator().apply(record)
+                checkpointValues to rowByteSize
+            }
+        if (sample.kind == Sample.Kind.EMPTY) {
+            log.info { "Sampling query found that the table was empty." }
+            return listOf()
+        }
+        val rowByteSizeSample: Sample<Long> = sample.map { (_, rowByteSize: Long) -> rowByteSize }
+        streamState.fetchSize = sharedState.jdbcFetchSizeEstimator().apply(rowByteSizeSample)
+        val expectedTableByteSize: Long = rowByteSizeSample.sampledValues.sum() * sample.valueWeight
+        log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
+        // Handle edge case where the table can't be split.
+        if (!input.resumable) {
+            log.warn {
+                "Table cannot be read by concurrent partition readers because it cannot be split."
+            }
+            return listOf(globalLowerBound to globalUpperBound)
+        }
+        // Happy path.
+        log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
+        val secondarySamplingRate: Double =
+            if (expectedTableByteSize <= sharedState.targetPartitionByteSize) {
+                0.0
+            } else {
+                val expectedPartitionByteSize: Long =
+                    expectedTableByteSize / sharedState.maxSampleSize
+                if (expectedPartitionByteSize < sharedState.targetPartitionByteSize) {
+                    expectedPartitionByteSize.toDouble() / sharedState.targetPartitionByteSize
+                } else {
+                    1.0
+                }
+            }
+        val random = Random(expectedTableByteSize) // RNG output is repeatable.
+        val innerSplitBoundaries: List<List<JsonNode>> =
+            sample.sampledValues
+                .filter { random.nextDouble() < secondarySamplingRate }
+                .map { (splitBoundary: List<JsonNode>, _) -> splitBoundary }
+                .distinct()
+        log.info {
+            "Table will be read by ${innerSplitBoundaries.size + 1} concurrent partition reader(s)."
+        }
+        val lbs: List<List<JsonNode>?> = listOf(globalLowerBound) + innerSplitBoundaries
+        val ubs: List<List<JsonNode>?> = innerSplitBoundaries + listOf(globalUpperBound)
+        return lbs.zip(ubs)
+    }
 }
 
 /** Converts a nullable [OpaqueStateValue] into an input for [StreamPartitionsCreator]. */
 fun OpaqueStateValue?.streamPartitionsCreatorInput(
-    ctx: StreamReadContext,
+    handler: CatalogValidationFailureHandler,
+    streamState: JdbcStreamState<*>,
 ): StreamPartitionsCreator.Input {
-    val checkpoint: CheckpointStreamState? = checkpoint(ctx)
+    val checkpoint: CheckpointStreamState? = checkpoint(handler, streamState)
     if (checkpoint == null && this != null) {
-        ctx.resetStream()
+        handler.accept(ResetStream(streamState.stream.name, streamState.stream.namespace))
+        streamState.reset()
     }
-    return checkpoint.streamPartitionsCreatorInput(ctx)
+    return checkpoint.streamPartitionsCreatorInput(streamState)
 }
 
 /** Converts a nullable [CheckpointStreamState] into an input for [StreamPartitionsCreator]. */
 fun CheckpointStreamState?.streamPartitionsCreatorInput(
-    ctx: StreamReadContext,
+    streamState: JdbcStreamState<*>,
 ): StreamPartitionsCreator.Input {
+    val stream: Stream = streamState.stream
+    val sharedState: JdbcSharedState = streamState.sharedState
+    val configuration: JdbcSourceConfiguration = sharedState.configuration
     if (this == null) {
-        val pkChosenFromCatalog: List<Field> = ctx.stream.configuredPrimaryKey ?: listOf()
-        if (ctx.stream.configuredSyncMode == SyncMode.FULL_REFRESH || ctx.configuration.global) {
+        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        if (stream.configuredSyncMode == SyncMode.FULL_REFRESH || configuration.global) {
             return StreamPartitionsCreator.SnapshotColdStart(pkChosenFromCatalog)
         }
         val cursorChosenFromCatalog: Field =
-            ctx.stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
         return StreamPartitionsCreator.SnapshotWithCursorColdStart(
             pkChosenFromCatalog,
             cursorChosenFromCatalog,
@@ -200,7 +411,7 @@ fun CheckpointStreamState?.streamPartitionsCreatorInput(
                 cursorUpperBound,
             )
         is CursorIncrementalCheckpoint ->
-            when (val cursorUpperBound: JsonNode? = ctx.streamState.cursorUpperBound) {
+            when (val cursorUpperBound: JsonNode? = streamState.cursorUpperBound) {
                 null ->
                     StreamPartitionsCreator.CursorIncrementalColdStart(
                         cursor,

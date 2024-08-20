@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.util.Jsons
@@ -55,28 +56,33 @@ fun CheckpointStreamState.opaqueStateValue(): OpaqueStateValue =
 
 /**
  * Deserializes a nullable [OpaqueStateValue] into a nullable [CheckpointStreamState] based on the
- * current [StreamReadContext], which contains the configuration and the catalog.
+ * current [JdbcStreamState], which contains the configuration and the catalog.
  */
-fun OpaqueStateValue?.checkpoint(ctx: StreamReadContext): CheckpointStreamState? =
+fun OpaqueStateValue?.checkpoint(
+    handler: CatalogValidationFailureHandler,
+    streamState: JdbcStreamState<*>,
+): CheckpointStreamState? =
     if (this == null) {
         null
     } else {
-        Jsons.treeToValue(this, DefaultJdbcStreamStateValue::class.java).checkpoint(ctx)
+        Jsons.treeToValue(this, DefaultJdbcStreamStateValue::class.java)
+            .checkpoint(handler, streamState)
     }
 
-private fun DefaultJdbcStreamStateValue.checkpoint(ctx: StreamReadContext): CheckpointStreamState? {
+private fun DefaultJdbcStreamStateValue.checkpoint(
+    handler: CatalogValidationFailureHandler,
+    streamState: JdbcStreamState<*>,
+): CheckpointStreamState? {
+    val sharedState: JdbcSharedState = streamState.sharedState
+    val stream: Stream = streamState.stream
     val pkMap: Map<Field, JsonNode> = run {
         if (primaryKey.isEmpty()) {
             return@run mapOf()
         }
-        val pk: List<Field> = ctx.stream.configuredPrimaryKey ?: listOf()
+        val pk: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (primaryKey.keys != pk.map { it.id }.toSet()) {
-            ctx.handler.accept(
-                InvalidPrimaryKey(
-                    ctx.stream.name,
-                    ctx.stream.namespace,
-                    primaryKey.keys.toList(),
-                ),
+            handler.accept(
+                InvalidPrimaryKey(stream.name, stream.namespace, primaryKey.keys.toList()),
             )
             return null
         }
@@ -87,23 +93,27 @@ private fun DefaultJdbcStreamStateValue.checkpoint(ctx: StreamReadContext): Chec
             return@run null
         }
         if (cursors.size > 1) {
-            ctx.handler.accept(
-                InvalidCursor(ctx.stream.name, ctx.stream.namespace, cursors.keys.toString()),
+            handler.accept(
+                InvalidCursor(
+                    streamState.stream.name,
+                    streamState.stream.namespace,
+                    cursors.keys.toString()
+                ),
             )
             return null
         }
         val cursorLabel: String = cursors.keys.first()
-        val cursor: FieldOrMetaField? = ctx.stream.fields.find { it.id == cursorLabel }
+        val cursor: FieldOrMetaField? = stream.fields.find { it.id == cursorLabel }
         if (cursor !is Field) {
-            ctx.handler.accept(
-                InvalidCursor(ctx.stream.name, ctx.stream.namespace, cursorLabel),
+            handler.accept(
+                InvalidCursor(stream.name, stream.namespace, cursorLabel),
             )
             return null
         }
         cursor to cursors[cursorLabel]!!
     }
     val isCursorBasedIncremental: Boolean =
-        ctx.stream.configuredSyncMode == SyncMode.INCREMENTAL && !ctx.configuration.global
+        stream.configuredSyncMode == SyncMode.INCREMENTAL && !sharedState.configuration.global
 
     return if (cursorPair == null) {
         if (isCursorBasedIncremental) {
