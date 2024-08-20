@@ -89,6 +89,7 @@ jobs:
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          CODEFLASH_API_KEY: ${{ secrets.CODEFLASH_API_KEY }}
           subcommand: "test --modified"
 
       - name: Run poe tasks for requested internal packages [WORKFLOW DISPATCH]
@@ -106,4 +107,5 @@ jobs:
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          CODEFLASH_API_KEY: ${{ secrets.CODEFLASH_API_KEY }}
           subcommand: "test ${{ inputs.airbyte_ci_subcommand}}"
