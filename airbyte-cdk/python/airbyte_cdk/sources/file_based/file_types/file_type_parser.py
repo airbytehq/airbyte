@@ -76,6 +76,7 @@ class FileTypeParser(ABC):
         """
         ...
 
+    @abstractmethod
     def parse_records_to_dataframes(
         self,
         config: FileBasedStreamConfig,
