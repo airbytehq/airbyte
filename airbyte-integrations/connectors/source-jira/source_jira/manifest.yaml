@@ -1089,7 +1089,7 @@ definitions:
     $ref: "#/definitions/incremental_stream"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      global_parent_cursor: true
+      global_substream_cursor: true
       is_client_side_incremental: true
 
   # https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
