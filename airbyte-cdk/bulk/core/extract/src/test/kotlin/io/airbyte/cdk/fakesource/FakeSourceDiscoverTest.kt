@@ -33,6 +33,7 @@ class FakeSourceDiscoverTest {
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.readTree(EVENTS_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedCursor(false)
                 .withSourceDefinedPrimaryKey(listOf(listOf("ID")))
                 .withIsResumable(true)
         val kv =
@@ -41,6 +42,7 @@ class FakeSourceDiscoverTest {
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.readTree(KV_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedCursor(false)
                 .withSourceDefinedPrimaryKey(listOf(listOf("K")))
                 .withIsResumable(true)
         val expected = AirbyteCatalog().withStreams(listOf(events, kv))
@@ -60,6 +62,7 @@ class FakeSourceDiscoverTest {
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.readTree(EVENTS_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedCursor(false)
                 .withSourceDefinedPrimaryKey(listOf(listOf("ID")))
                 .withIsResumable(true)
         val kv =
@@ -68,6 +71,7 @@ class FakeSourceDiscoverTest {
                 .withNamespace("PUBLIC")
                 .withJsonSchema(Jsons.readTree(KV_SCHEMA))
                 .withSupportedSyncModes(listOf(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedCursor(false)
                 .withSourceDefinedPrimaryKey(listOf(listOf("K")))
                 .withIsResumable(true)
         val expected = AirbyteCatalog().withStreams(listOf(events, kv))
