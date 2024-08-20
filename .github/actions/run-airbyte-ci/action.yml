@@ -76,6 +76,9 @@ inputs:
   s3_build_cache_secret_key:
     description: "Gradle S3 Build Cache AWS secret key"
     required: false
+  codeflash_api_key:
+    description: "Codeflash API key"
+    required: false
   airbyte_ci_binary_url:
     description: "URL to airbyte-ci binary"
     required: false
