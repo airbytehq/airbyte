@@ -106,6 +106,15 @@ class PublishConnectorContext(ConnectorContext):
         else:
             return metadata_tag
 
+    @property
+    def should_send_slack_message(self) -> bool:
+        should_send = super().should_send_slack_message
+        if not should_send:
+            return False
+        if self.pre_release:
+            return False
+        return True
+
     def get_slack_channels(self) -> List[str]:
         if self.state in [ContextState.FAILURE, ContextState.ERROR]:
             return [PUBLISH_UPDATES_SLACK_CHANNEL, PUBLISH_FAILURE_SLACK_CHANNEL]

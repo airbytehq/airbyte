@@ -12,7 +12,7 @@ import sys
 import tempfile
 from collections import defaultdict
 from functools import wraps
-from typing import Any, DefaultDict, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -154,9 +154,7 @@ class AirbyteEntrypoint(object):
         yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
-    def read(
-        self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: Union[list[Any], MutableMapping[str, Any]]
-    ) -> Iterable[AirbyteMessage]:
+    def read(self, source_spec: ConnectorSpecification, config: TConfig, catalog: Any, state: list[Any]) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)

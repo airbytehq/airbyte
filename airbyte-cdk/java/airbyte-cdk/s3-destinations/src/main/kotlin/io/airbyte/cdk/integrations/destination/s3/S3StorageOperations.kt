@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.regex.Pattern
 import kotlin.Comparator
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrNull
 import org.apache.commons.io.FilenameUtils
 import org.joda.time.DateTime
 
@@ -295,9 +297,13 @@ open class S3StorageOperations(
         cleanUpBucketObject(objectPath, listOf())
     }
 
-    private fun listObjects(objectPath: String): ObjectListing {
+    private fun forObjectsByPage(
+        objectPath: String,
+        maxKeysPerPage: Int = 1000,
+        pageConsumer: (List<S3ObjectSummary>) -> Unit
+    ) {
         val bucket: String = s3Config.bucketName!!
-        val objects: ObjectListing =
+        var objects: ObjectListing =
             s3Client.listObjects(
                 ListObjectsRequest()
                     .withBucketName(bucket)
@@ -305,9 +311,18 @@ open class S3StorageOperations(
                         objectPath,
                     ) // pathFormat may use subdirectories under the objectPath to organize files
                     // so we need to recursively list them and filter files matching the pathFormat
-                    .withDelimiter(""),
+                    .withDelimiter("")
+                    .withMaxKeys(maxKeysPerPage),
             )
-        return objects
+        while (objects.objectSummaries.size > 0) {
+            pageConsumer(objects.objectSummaries)
+            if (objects.isTruncated) {
+                logger.info { "Retrieving next page of objects with maxSize: ${objects.maxKeys}" }
+                objects = s3Client.listNextBatchOfObjects(objects)
+            } else {
+                break
+            }
+        }
     }
 
     override fun cleanUpBucketObject(
@@ -317,12 +332,11 @@ open class S3StorageOperations(
         pathFormat: String
     ) {
         val bucket: String = s3Config.bucketName!!
-        var objects: ObjectListing = listObjects(objectPath)
         val regexFormat: Pattern =
             Pattern.compile(getRegexFormat(namespace, streamName, pathFormat))
-        while (objects.objectSummaries.size > 0) {
+        forObjectsByPage(objectPath) { objectSummaries ->
             val keysToDelete: List<DeleteObjectsRequest.KeyVersion> =
-                objects.objectSummaries
+                objectSummaries
                     .filter { obj: S3ObjectSummary ->
                         regexFormat
                             .matcher(
@@ -340,11 +354,6 @@ open class S3StorageOperations(
             logger.info {
                 "Storage bucket $objectPath has been cleaned-up (${keysToDelete.size} objects matching $regexFormat were deleted)..."
             }
-            if (objects.isTruncated) {
-                objects = s3Client.listNextBatchOfObjects(objects)
-            } else {
-                break
-            }
         }
     }
 
@@ -354,8 +363,18 @@ open class S3StorageOperations(
         objectPath: String,
         pathFormat: String
     ): Long? {
+        return getStageGenerationInternal(namespace, streamName, objectPath, pathFormat)
+    }
+
+    // Intentionally public for using smaller page size in Integration Tests
+    fun getStageGenerationInternal(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String,
+        maxKeysPerPage: Int = 1000
+    ): Long? {
         val bucket: String = s3Config.bucketName!!
-        var objects: ObjectListing = listObjects(objectPath)
         val regexFormat: Pattern =
             Pattern.compile(getRegexFormat(namespace, streamName, pathFormat))
         val descendingComparator: Comparator<S3ObjectSummary> =
@@ -368,9 +387,9 @@ open class S3StorageOperations(
         // Maintaining a local maxima across pages and sorting at the end to get global maxima
         // of last modified object to retrieve the object metadata header.
         // Note: This logic will fall apart if the path format is changed between syncs
-        while (objects.objectSummaries.size > 0) {
+        forObjectsByPage(objectPath, maxKeysPerPage) { objectSummaries ->
             val matchedObjects =
-                objects.objectSummaries
+                objectSummaries
                     .filter { obj: S3ObjectSummary -> regexFormat.matcher(obj.key).matches() }
                     .sortedWith(descendingComparator)
             if (matchedObjects.isNotEmpty()) {
@@ -383,30 +402,29 @@ open class S3StorageOperations(
                     lastModifiedObject = localMaximaLastModified
                 }
             }
-            if (objects.isTruncated) {
-                objects = s3Client.listNextBatchOfObjects(objects)
-            } else {
-                break
-            }
         }
+
         if (lastModifiedObject == null) {
             // Nothing to retrieve, fallback to null genId behavior
             return null
         }
-        // val lastModifiedObject = maxLastModifiedObjects.sortedWith(descendingComparator).first()
-        val objectMetadata = s3Client.getObjectMetadata(bucket, lastModifiedObject.key)
+        // If genId is missing or not parseable we return null
+        return getGenerationIdFromMetadata(bucket, lastModifiedObject!!.key).getOrNull()
+    }
+
+    private fun getGenerationIdFromMetadata(bucket: String, key: String): Optional<Long> {
+        val objectMetadata = s3Client.getObjectMetadata(bucket, key)
         try {
             val generationId = objectMetadata.getUserMetaDataOf(GENERATION_ID_USER_META_KEY)
             if (!generationId.isNullOrBlank()) {
-                return generationId.toLong()
+                return Optional.of(generationId.toLong())
             }
         } catch (nfe: NumberFormatException) {
             logger.warn {
-                "$GENERATION_ID_USER_META_KEY object metadata found in object ${lastModifiedObject.key} is not a number"
+                "$GENERATION_ID_USER_META_KEY object metadata found in object $key is not a number"
             }
         }
-        // If genId is missing or not parseable we return null
-        return null
+        return Optional.empty<Long>()
     }
 
     fun getRegexFormat(namespace: String?, streamName: String, pathFormat: String): String {
@@ -458,6 +476,95 @@ open class S3StorageOperations(
                 break
             }
         }
+    }
+
+    override fun listExistingObjects(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String,
+        currentGenerationId: Long?
+    ): List<String> {
+        val regexFormat: Pattern =
+            Pattern.compile(getRegexFormat(namespace, streamName, pathFormat))
+        var keys = listOf<S3ObjectSummary>()
+
+        forObjectsByPage(objectPath) { objectSummaries ->
+            keys =
+                keys +
+                    objectSummaries.filter { obj: S3ObjectSummary ->
+                        regexFormat
+                            .matcher(
+                                obj.key,
+                            )
+                            .matches()
+                    }
+        }
+
+        if (currentGenerationId != null) {
+            keys = filterObjectsByGenerationLessThan(keys, currentGenerationId)
+        }
+
+        return keys.map { obj: S3ObjectSummary -> obj.key }
+    }
+
+    private fun filterObjectsByGenerationLessThan(
+        keyList: List<S3ObjectSummary>,
+        maxGenerationId: Long
+    ): List<S3ObjectSummary> {
+        val bucket = s3Config.bucketName!!
+        // Sort the list by lastModified first
+        val sortedList =
+            keyList.sortedWith(
+                Comparator.comparingLong { o: S3ObjectSummary -> o.lastModified.time }
+            )
+        if (sortedList.isEmpty()) return listOf()
+
+        var low = 0
+        var high = sortedList.size - 1
+
+        // For comparison purposes we can assume that anything with null genId is to be provided in
+        // the sliced list
+        val lowGenId = getGenerationIdFromMetadata(bucket, sortedList[low].key).getOrDefault(-1L)
+        val highGenId = getGenerationIdFromMetadata(bucket, sortedList[high].key).getOrDefault(-1L)
+
+        // We have data to filter from previous generations only if highestGenId is equal to
+        // provided
+        // genId and lowGenId is less that the provided genId
+        if (highGenId == maxGenerationId) {
+            if (lowGenId < maxGenerationId) {
+                logger.info { "Filtering files from previous generation" }
+                // modified binary search to find the index where low crosses high and use the
+                // inclusive
+                // index as
+                // the point to slice
+                while (low <= high) {
+                    // right shift by 1 is midpoint between 2 integers
+                    val mid = (low + high).ushr(1)
+                    val genIdToFind =
+                        getGenerationIdFromMetadata(bucket, sortedList[mid].key).getOrDefault(-1L)
+                    if (genIdToFind < maxGenerationId) {
+                        low = mid + 1
+                    } else {
+                        high = mid - 1
+                    }
+                }
+                // high shouldn't overflow because we already guard by checking
+                // if the object at high has same genId as provided
+                return keyList.subList(0, high + 1)
+            } else {
+                // Skip all since lowGenId is also of current generation
+                // There is already a guard in the caller but don't assume that here.
+                return listOf()
+            }
+        }
+
+        return keyList
+    }
+
+    override fun cleanUpObjects(keysToDelete: List<String>) {
+        val bucket: String? = s3Config.bucketName
+        cleanUpObjects(bucket, keysToDelete.map { DeleteObjectsRequest.KeyVersion(it) })
     }
 
     protected open fun cleanUpObjects(

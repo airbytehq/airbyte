@@ -155,6 +155,7 @@ STEPS_TO_PATCH = [
     (publish_pipeline, "PullConnectorImageFromRegistry"),
     (publish_pipeline.steps, "run_connector_build"),
     (publish_pipeline, "CheckPythonRegistryPackageDoesNotExist"),
+    (publish_pipeline, "UploadSbom"),
 ]
 
 
@@ -203,9 +204,11 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
     run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
-    # ensure spec always succeeds
+    # ensure spec and sbom upload always succeeds
     run_upload_spec_to_cache = publish_pipeline.UploadSpecToCache.return_value.run
     run_upload_spec_to_cache.return_value = mocker.Mock(status=StepStatus.SUCCESS)
+    run_upload_sbom = publish_pipeline.UploadSbom.return_value.run
+    run_upload_sbom.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
     run_check_connector_image_does_not_exist = publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run
     run_check_connector_image_does_not_exist.return_value = mocker.Mock(status=check_image_exists_status)
@@ -219,7 +222,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
 
     # Check that nothing else is called
     for module, to_mock in STEPS_TO_PATCH:
-        if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache"]:
+        if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache", "UploadSbom"]:
             getattr(module, to_mock).return_value.run.assert_not_called()
 
     if check_image_exists_status is StepStatus.SKIPPED:
@@ -231,6 +234,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
                 run_metadata_validation.return_value,
                 run_check_connector_image_does_not_exist.return_value,
                 run_upload_spec_to_cache.return_value,
+                run_upload_sbom.return_value,
                 run_metadata_upload.return_value,
             ]
         )
