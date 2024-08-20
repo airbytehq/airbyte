@@ -464,6 +464,7 @@ class SnowflakeDestinationHandler(
                             streamConfig.id.asPair(),
                             toDestinationState(emptyObject()),
                         )
+
                     return@map DestinationInitialStatus<SnowflakeState>(
                         streamConfig,
                         isFinalTablePresent,
