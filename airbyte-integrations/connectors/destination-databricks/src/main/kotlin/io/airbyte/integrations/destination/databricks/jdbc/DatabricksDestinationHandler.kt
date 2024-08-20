@@ -138,7 +138,6 @@ class DatabricksDestinationHandler(
             """
             |SELECT table_schema, table_name, column_name, data_type, is_nullable
             |FROM ${databaseName.lowercase()}.information_schema.columns
-            |/* query created from DatabricksDestinationHandler */
             |WHERE
             |   table_catalog = ?
             |   AND table_schema IN ($paramHolder)
