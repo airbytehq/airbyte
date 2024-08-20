@@ -28,6 +28,40 @@
     }
   },
   {
+    "type": "RECORD",
+    "record": {
+      "namespace": "PUBLIC",
+      "stream": "EVENTS",
+      "data": {
+        "ID": "3VWqE0Hrb7TV5BOEP2wN+g==",
+        "TS": "2024-04-30T00:00:00.000000-04:00",
+        "MSG": null
+      },
+      "emitted_at": 3133641600000
+    }
+  },
+  {
+    "type": "STATE",
+    "state": {
+      "type": "STREAM",
+      "stream": {
+        "stream_descriptor": {
+          "name": "EVENTS",
+          "namespace": "PUBLIC"
+        },
+        "stream_state": {
+          "primary_key": {},
+          "cursors": {
+            "TS": "2024-04-30T00:00:00.000000-04:00"
+          }
+        }
+      },
+      "sourceStats": {
+        "recordCount": 2.0
+      }
+    }
+  },
+  {
     "type": "TRACE",
     "trace": {
       "type": "STREAM_STATUS",
