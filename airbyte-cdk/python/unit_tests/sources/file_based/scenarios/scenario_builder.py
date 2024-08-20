@@ -192,7 +192,7 @@ class TestScenarioBuilder(Generic[SourceType]):
         if self.source_builder is None:
             raise ValueError("source_builder is not set")
         if self._incremental_scenario_config and self._incremental_scenario_config.input_state:
-            state = [AirbyteStateMessage.parse_obj(s) for s in self._incremental_scenario_config.input_state]
+            state = [AirbyteStateMessage(s) for s in self._incremental_scenario_config.input_state]
         else:
             state = None
         source = self.source_builder.build(

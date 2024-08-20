@@ -423,7 +423,7 @@ def _as_state(stream_name: str = "", per_stream_state: Dict[str, Any] = None):
         state=AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
+                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(per_stream_state)
             ),
         ),
     )
@@ -618,7 +618,7 @@ class TestIncrementalRead:
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(old_state)
+                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob(old_state)
                     ),
                 ),
             ]
@@ -928,13 +928,13 @@ class TestIncrementalRead:
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(state)
+                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob(state)
                     ),
                 ),
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob.parse_obj(state)
+                        stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob(state)
                     ),
                 ),
             ]
@@ -1246,7 +1246,7 @@ class TestIncrementalRead:
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(initial_state)
+                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(initial_state)
                 ),
             ),
         ]
@@ -1367,7 +1367,7 @@ class TestResumableFullRefreshRead:
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s1"),
-                    stream_state=AirbyteStateBlob.parse_obj({"page": 10}),
+                    stream_state=AirbyteStateBlob({"page": 10}),
                 ),
             )
         ]
@@ -1494,14 +1494,14 @@ class TestResumableFullRefreshRead:
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s1"),
-                    stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_sync_complete": True}),
+                    stream_state=AirbyteStateBlob({"__ab_full_refresh_sync_complete": True}),
                 ),
             ),
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s2"),
-                    stream_state=AirbyteStateBlob.parse_obj({"page": 10}),
+                    stream_state=AirbyteStateBlob({"page": 10}),
                 ),
             )
         ]

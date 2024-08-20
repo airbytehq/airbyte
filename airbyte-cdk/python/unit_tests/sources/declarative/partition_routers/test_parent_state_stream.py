@@ -349,7 +349,7 @@ def _run_read(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj(
+                        stream_state=AirbyteStateBlob(
                             {
                                 "parent_state": {
                                     "post_comments": {
@@ -534,7 +534,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj(
+                        stream_state=AirbyteStateBlob(
                             {
                                 # This should not happen since parent state is disabled, but I've added this to validate that and
                                 # incoming parent_state is ignored when the parent stream's incremental_dependency is disabled
