@@ -27,6 +27,9 @@ class Source:
             with open(self._get_manifest_path()) as manifest_file:
                 resolved_manifest = ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(manifest_file))
             for stream in resolved_manifest["streams"]:
+                if "schema_loader" not in stream:
+                    # stream is assumed to have `DefaultSchemaLoader` which will show in the schemas folder so we can skip
+                    continue
                 if stream["schema_loader"]["type"] == "InlineSchemaLoader":
                     name = stream["name"] if "name" in stream else stream.get("$parameters").get("name", None)
                     if not name:
