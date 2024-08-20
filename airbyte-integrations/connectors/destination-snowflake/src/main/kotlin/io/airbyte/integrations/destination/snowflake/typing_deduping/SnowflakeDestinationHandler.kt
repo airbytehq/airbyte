@@ -27,6 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
@@ -57,7 +58,7 @@ class SnowflakeDestinationHandler(
                     namespace: String,
                     name: String
                 ): Long? {
-                    return null
+                    throw NotImplementedError()
                 }
             }
     ) {
@@ -421,6 +422,12 @@ class SnowflakeDestinationHandler(
                             streamConfig.id.asPair(),
                             toDestinationState(emptyObject())
                         )
+                    val finalTableGenerationId =
+                        if (isFinalTablePresent && !isFinalTableEmpty) {
+                            getFinalTableGenerationId(streamConfig.id)
+                        } else {
+                            null
+                        }
                     return@map DestinationInitialStatus<SnowflakeState>(
                         streamConfig,
                         isFinalTablePresent,
@@ -429,7 +436,11 @@ class SnowflakeDestinationHandler(
                         isSchemaMismatch,
                         isFinalTableEmpty,
                         destinationState,
-                        finalTableGenerationId = null,
+                        finalTableGenerationId = finalTableGenerationId,
+                        // I think the temp final table gen is always null?
+                        // since the only time we T+D into the temp table
+                        // is when we're committing the sync anyway
+                        // (i.e. we'll immediately rename it to the real table)
                         finalTempTableGenerationId = null,
                     )
                 } catch (e: Exception) {
@@ -437,6 +448,44 @@ class SnowflakeDestinationHandler(
                 }
             }
             .collect(Collectors.toList())
+    }
+
+    /**
+     * Query the final table to find the generation ID of any record. Assumes that the table exists
+     * and is nonempty.
+     */
+    private fun getFinalTableGenerationId(streamId: StreamId): Long? {
+        val tableExistsWithGenerationId =
+            jdbcDatabase.executeMetadataQuery {
+                // Find a column named _airbyte_generation_id
+                // in the relevant table.
+                val resultSet =
+                    it.getColumns(
+                        databaseName,
+                        streamId.finalNamespace,
+                        streamId.finalName,
+                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()
+                    )
+                // Check if there were any such columns.
+                resultSet.next()
+            }
+        // The table doesn't exist, or exists but doesn't have generation id
+        if (!tableExistsWithGenerationId) {
+            return null
+        }
+
+        return jdbcDatabase
+            .queryJsons(
+                """
+                SELECT ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()}
+                FROM ${streamId.finalNamespace(QUOTE)}.${streamId.finalName(QUOTE)}
+                LIMIT 1
+                """.trimIndent(),
+            )
+            .first()
+            .get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase())
+            ?.asLong()
+            ?: 0
     }
 
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
