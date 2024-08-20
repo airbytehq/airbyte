@@ -25,11 +25,10 @@ definitions:
         field_name: "{{ response['meta']['per_page'] }}"
       pagination_strategy:
         type: "PageIncrement"
-        page_size: 5
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"
-        field_name: "{{ response['meta']['page'] }}"
+        field_name: "{{ response['meta']['current_page'] + 1 }}"
 
   calls_stream:
     type: DeclarativeStream
