@@ -21,11 +21,11 @@ CRM_STREAMS = (
     ("deals_web_analytics", "deals", "deal", ["contacts", "companies", "line_items"]),
     ("companies_web_analytics", "companies", "company", ["contacts"]),
     ("contacts_web_analytics", "contacts", "contact", ["contacts", "companies"]),
-    ("engagements_calls_web_analytics", "engagements_calls", "calls", ["contacts", "deal", "company", "tickets"]),
-    ("engagements_emails_web_analytics", "engagements_emails", "emails", ["contacts", "deal", "company", "tickets"]),
-    ("engagements_meetings_web_analytics", "engagements_meetings", "meetings", ["contacts", "deal", "company", "tickets"]),
-    ("engagements_notes_web_analytics", "engagements_notes", "notes", ["contacts", "deal", "company", "tickets"]),
-    ("engagements_tasks_web_analytics", "engagements_tasks", "tasks", ["contacts", "deal", "company", "tickets"]),
+    ("engagements_calls_web_analytics", "engagements_calls", "calls", ["contacts", "deals", "companies", "tickets"]),
+    ("engagements_emails_web_analytics", "engagements_emails", "emails", ["contacts", "deals", "companies", "tickets"]),
+    ("engagements_meetings_web_analytics", "engagements_meetings", "meetings", ["contacts", "deals", "companies", "tickets"]),
+    ("engagements_notes_web_analytics", "engagements_notes", "notes", ["contacts", "deals", "companies", "tickets"]),
+    ("engagements_tasks_web_analytics", "engagements_tasks", "tasks", ["contacts", "deals", "companies", "tickets"]),
 )
 
 CRM_INCREMENTAL_STREAMS = (

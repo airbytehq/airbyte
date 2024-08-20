@@ -789,7 +789,8 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-|---------| ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.33.0  | [#44377](https://github.com/airbytehq/airbyte/pull/44377)  | Upload connector SBOM to metadata service bucket on publish.                                                                 |
 | 4.32.5  | [#44173](https://github.com/airbytehq/airbyte/pull/44173)  | Bug fix for live tests' --should-read-with-state handling.                                                                   |
 | 4.32.4  | [#44025](https://github.com/airbytehq/airbyte/pull/44025)  | Ignore third party connectors on `publish`.                                                                                  |
 | 4.32.3  | [#44118](https://github.com/airbytehq/airbyte/pull/44118)  | Improve error handling in live tests.                                                                                        |
