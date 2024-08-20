@@ -2351,7 +2351,7 @@ et-xmlfile = "*"
 name = "orjson"
 version = "3.10.7"
 description = "Fast, correct Python JSON library supporting dataclasses, datetimes, and numpy"
-optional = true
+optional = false
 python-versions = ">=3.8"
 files = [
     {file = "orjson-3.10.7-cp310-cp310-macosx_10_15_x86_64.macosx_11_0_arm64.macosx_10_15_universal2.whl", hash = "sha256:74f4544f5a6405b90da8ea724d15ac9c36da4d72a738c64685003337401f5c12"},
@@ -4719,4 +4719,4 @@ vector-db-based = ["cohere", "langchain", "openai", "tiktoken"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "04b17eb55f11bb4968ccacef9046046f921e8735bb9fd3b0dea32c3686039ca8"
+content-hash = "448e812830056269c635eacfb193fa016b3952ecf4447b536c6c200472b17c58"
