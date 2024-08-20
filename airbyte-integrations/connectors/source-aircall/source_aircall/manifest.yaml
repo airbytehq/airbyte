@@ -28,7 +28,7 @@ definitions:
       page_token_option:
         type: "RequestOption"
         inject_into: "request_parameter"
-        field_name: "{{ response['meta']['current_page'] + 1 }}"
+        field_name: "page"
 
   calls_stream:
     type: DeclarativeStream
