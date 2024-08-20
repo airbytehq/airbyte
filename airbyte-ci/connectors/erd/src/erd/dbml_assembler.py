@@ -12,8 +12,9 @@ from pydbml.classes import Column, Index, Reference, Table  # type: ignore  # mi
 
 
 class Source:
-    def __init__(self, source_folder: Path) -> None:
+    def __init__(self, source_folder: Path, source_technical_name: str) -> None:
         self._source_folder = source_folder
+        self._source_technical_name = source_technical_name
 
     def is_dynamic(self, stream_name: str) -> bool:
         """
@@ -36,11 +37,11 @@ class Source:
         return stream_name not in manifest_static_streams | self._get_streams_from_schemas_folder()
 
     def _get_streams_from_schemas_folder(self) -> Set[str]:
-        schemas_folder = self._source_folder / self._source_folder.name.replace("-", "_") / "schemas"
+        schemas_folder = self._source_folder / self._source_technical_name.replace("-", "_") / "schemas"
         return {p.name.replace(".json", "") for p in schemas_folder.iterdir() if p.is_file()} if schemas_folder.exists() else set()
 
     def _get_manifest_path(self) -> Path:
-        return self._source_folder / self._source_folder.name.replace("-", "_") / "manifest.yaml"
+        return self._source_folder / self._source_technical_name.replace("-", "_") / "manifest.yaml"
 
     def _has_manifest(self) -> bool:
         return self._get_manifest_path().exists()
@@ -101,9 +102,9 @@ class DbmlAssembler:
                     continue
 
                 try:
-                    target_table_name, target_column_name = relationship.split(".")
+                    target_table_name, target_column_name = relationship.split(".", 1)  # we support the field names having dots but not stream name hence we split on the first dot only
                 except ValueError as exception:
-                    raise ValueError("If 'too many values to unpack', relationship to nested fields is not supported") from exception
+                    raise ValueError(f"Could not handle relationship {relationship}") from exception
 
                 if source.is_dynamic(target_table_name):
                     print(f"Skipping relationship as target stream {target_table_name} is dynamic")

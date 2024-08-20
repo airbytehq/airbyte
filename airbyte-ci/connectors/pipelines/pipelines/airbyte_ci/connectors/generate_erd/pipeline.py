@@ -46,7 +46,7 @@ class GenerateDbml(Step):
         discovered_catalog = await self._get_discovered_catalog(connector_to_discover)
 
         connector_directory = await self.context.get_connector_dir()
-        command = ["poetry", "run", "erd", "--source-path", "/source"]
+        command = ["poetry", "run", "erd", "--source-path", "/source", "--source-technical-name", self.context.connector.technical_name]
         if self._skip_relationship_generation:
             command.append("--skip-llm-relationships")
 

@@ -21,7 +21,7 @@ poetry install
 Pre-requisites:
 * Env variable `GENAI_API_KEY`. Can be found at URL https://aistudio.google.com/app/apikey
 
-`poetry run erd --source-path <source path>`
+`poetry run erd --source-path <source path> --source-technical-name <for example, 'source-facebook-marketing'>`
 
 The script supports the option to ignore the LLM generation by passing parameter `--skip-llm-relationships`
 

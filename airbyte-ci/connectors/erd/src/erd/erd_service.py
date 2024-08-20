@@ -15,7 +15,8 @@ from pydbml.renderer.dbml.default import DefaultDBMLRenderer  # type: ignore  # 
 
 
 class ErdService:
-    def __init__(self, source_path: Path) -> None:
+    def __init__(self, source_technical_name: str, source_path: Path) -> None:
+        self._source_technical_name = source_technical_name
         self._source_path = source_path
         self._model = genai.GenerativeModel("gemini-1.5-flash")
 
@@ -30,7 +31,7 @@ class ErdService:
 
     def write_dbml_file(self) -> None:
         database = DbmlAssembler().assemble(
-            Source(self._source_path),
+            Source(self._source_path, self._source_technical_name),
             self._get_catalog(),
             RelationshipsMerger().merge(
                 self._get_relationships(self._estimated_relationships_file), self._get_relationships(self._confirmed_relationships_file)
