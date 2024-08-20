@@ -655,6 +655,59 @@ Do it just for a few connectors:
 You can also set or set/change the title or body of the PR:
 `airbyte-ci connectors --name source-aha --name source-quickbooks pull-request -m "upgrading connectors" -b ci_update/round2 --title "New title" --body "full body\n\ngoes here"`
 
+### <a id="connectors-list-command"></a>`connectors generate-erd` command
+
+Generates a couple of files and publish a new ERD to dbdocs. The generated files are:
+* `<source code_directory>/erd/discovered_catalog.json`: the catalog used to generate the estimated relations and the dbml file
+* `<source code_directory>/erd/estimated_relationships.json`: the output of the LLM trying to figure out the relationships between the different streams
+* `<source code_directory>/erd/source.dbml`: the file used the upload the ERDs to dbdocs
+
+Pre-requisites:
+* The config file use to discover the catalog should be available in `<source code_directory>/secrets/config.json`
+
+#### Create initial diagram workflow or on connector's schema change
+
+Steps
+* Ensure the pre-requisites mentioned above are met
+* Run `DBDOCS_TOKEN=<token> GENAI_API_KEY=<api key> airbyte-ci connectors --name=<source name> generate-erd`
+* Create a PR with files `<source code_directory>/erd/estimated_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
+
+Expected Outcome
+* The diagram is available in dbdocs
+* `<source code_directory>/erd/estimated_relationships.json` and `<source code_directory>/erd/source.dbml` are updated on master
+
+#### On manual validation
+
+Steps
+* If not exists, create file `<source code_directory>/erd/confirmed_relationships.json` with the following format and add:
+  * `relations` describes the relationships that we know exist
+  * `false_positives` describes the relationships the LLM found that we know do not exist
+```
+{
+    "streams": [
+        {
+            "name": <stream_name>,
+            "relations": {
+                <stream_name property>: "<target stream>.<target stream column>"
+            }
+            "false_positives": {
+                <stream_name property>: "<target stream>.<target stream column>"
+            }
+        },
+        <...>
+    ]
+}
+```
+* Ensure the pre-requisites mentioned above are met
+* Run `DBDOCS_TOKEN=<token> airbyte-ci connectors --name=<source name> generate-erd -x llm_relationships`
+* Create a PR with files `<source code_directory>/erd/confirmed_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
+
+#### Options
+
+| Option           | Required | Default | Mapped environment variable | Description                                                 |
+|------------------|----------| ------- |-----------------------------|-------------------------------------------------------------|
+| `--skip-step/-x` | False    |         |                             | Skip steps by id e.g. `-x llm_relationships -x publish_erd` |
+
 ### <a id="format-subgroup"></a>`format` command subgroup
 
 Available commands:
