@@ -34,6 +34,7 @@ import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromNode
 import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
+import io.airbyte.cdk.read.GreaterOrEqual
 import io.airbyte.cdk.read.Lesser
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
@@ -148,6 +149,7 @@ class FakeSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGen
             is And -> conj.map { it.sql() }.joinToString(") AND (", "(", ")")
             is Or -> disj.map { it.sql() }.joinToString(") OR (", "(", ")")
             is Equal -> "${column.id} = ?"
+            is GreaterOrEqual -> "${column.id} >= ?"
             is Greater -> "${column.id} > ?"
             is LesserOrEqual -> "${column.id} <= ?"
             is Lesser -> "${column.id} < ?"
