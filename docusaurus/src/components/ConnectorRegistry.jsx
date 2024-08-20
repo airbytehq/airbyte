@@ -55,6 +55,7 @@ export default function ConnectorRegistry({ type }) {
             <th>OSS</th>
             <th>Cloud</th>
             <th>Docker Image</th>
+            <th>SBOM</th>
           </tr>
         </thead>
         <tbody>
@@ -97,6 +98,13 @@ export default function ConnectorRegistry({ type }) {
                       {connector.dockerRepository_oss}:
                       {connector.dockerImageTag_oss}
                     </code>
+                  </small>
+                </td>
+                <td>
+                  <small>
+                    {connector.generated_oss?.sbomUrl ? (
+                      <a target="_blank" href={connector.generated_oss.sbomUrl}>SPDX JSON</a>
+                    ) : "No SBOM"}
                   </small>
                 </td>
               </tr>
