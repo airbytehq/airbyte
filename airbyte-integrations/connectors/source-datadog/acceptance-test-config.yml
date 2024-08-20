@@ -27,8 +27,6 @@ acceptance_tests:
             bypass_reason: Sandbox account can't seed this stream
           - name: service_level_objectives
             bypass_reason: Sandbox account can't seed this stream
-          - name: logs
-            bypass_reason: Sandbox account can't seed this stream
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
