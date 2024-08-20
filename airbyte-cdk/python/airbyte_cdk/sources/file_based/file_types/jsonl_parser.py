@@ -8,7 +8,7 @@ from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
 import polars as pl
 
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -80,10 +80,10 @@ class JsonlParser(FileTypeParser):
         be updated in the future to return an iterator with multiple DataFrames.
         """
         match config.bulk_mode:
-            case "LAZY_BULK":
+            case BulkMode.LAZY:
                 # Define the lazy dataframe but don't load it into memory.
                 yield pl.scan_ndjson(file.local_path)
-            case "INMEM_BULK":
+            case BulkMode.INMEM:
                 # Load the entire file into memory.
                 # In the future, we may avoid memory overflow by
                 # forcing a match batch size and returning an iterator
