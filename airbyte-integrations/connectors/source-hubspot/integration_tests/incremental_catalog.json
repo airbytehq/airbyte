@@ -62,7 +62,7 @@
     },
     {
       "stream": {
-        "name": "deal_split",
+        "name": "deal_splits",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
