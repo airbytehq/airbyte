@@ -24,7 +24,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-afterburner'
     implementation 'com.networknt:json-schema-validator:1.4.0'
     implementation 'info.picocli:picocli:4.7.6'
-    implementation 'io.micronaut.picocli:micronaut-picocli:5.2.0'
+    implementation 'io.micronaut.picocli:micronaut-picocli:5.5.0'
     implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
     implementation 'org.apache.commons:commons-lang3:3.14.0'
     implementation 'org.apache.logging.log4j:log4j-api'
@@ -32,9 +32,7 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl'
     implementation 'org.apache.logging.log4j:log4j-slf4j2-impl'
     implementation 'org.apache.logging.log4j:log4j-layout-template-json:2.17.2'
-    implementation 'org.bouncycastle:bcpkix-jdk18on:1.77'
     implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
-    implementation 'org.bouncycastle:bctls-jdk18on:1.77'
 
     runtimeOnly 'com.google.guava:guava:33.2.0-jre'
     runtimeOnly 'org.apache.commons:commons-compress:1.26.1'
@@ -47,8 +45,8 @@ dependencies {
     testFixturesApi('org.testcontainers:testcontainers') {
         exclude group: 'org.apache.commons', module: 'commons-compress'
     }
-    testFixturesApi 'io.micronaut.test:micronaut-test-core:4.2.1'
-    testFixturesApi 'io.micronaut.test:micronaut-test-junit5:4.2.1'
+    testFixturesApi 'io.micronaut.test:micronaut-test-core:4.5.0'
+    testFixturesApi 'io.micronaut.test:micronaut-test-junit5:4.5.0'
     testFixturesApi 'com.h2database:h2:2.2.224'
     testFixturesApi 'io.github.deblockt:json-diff:1.0.1'
 }
