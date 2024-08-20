@@ -9,7 +9,7 @@ from typing import Any, Mapping, Optional, Tuple
 
 from orjson import orjson
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteMessageSerializer
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteMessageSerializer, Type, Level
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 LOGGING_CONFIG = {
@@ -44,11 +44,11 @@ class AirbyteLogFormatter(logging.Formatter):
 
     # Transforming Python log levels to Airbyte protocol log levels
     level_mapping = {
-        logging.FATAL: "FATAL",
-        logging.ERROR: "ERROR",
-        logging.WARNING: "WARN",
-        logging.INFO: "INFO",
-        logging.DEBUG: "DEBUG",
+        logging.FATAL:Level.FATAL,
+        logging.ERROR: Level.ERROR,
+        logging.WARNING: Level.WARN,
+        logging.INFO: Level.INFO,
+        logging.DEBUG: Level.DEBUG,
     }
 
     def format(self, record: logging.LogRecord) -> str:
@@ -61,7 +61,7 @@ class AirbyteLogFormatter(logging.Formatter):
         else:
             message = super().format(record)
             message = filter_secrets(message)
-            log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
+            log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=airbyte_level, message=message))
             return orjson.dumps(AirbyteMessageSerializer.dump(log_message)).decode()
 
 
