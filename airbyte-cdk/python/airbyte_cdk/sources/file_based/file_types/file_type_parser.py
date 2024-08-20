@@ -83,7 +83,7 @@ class FileTypeParser(ABC):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
-    ) -> Iterable[pd.Dataframe]:
+    ) -> Iterable[pd.DataFrame]:
         """
         Parse records and emit as iterable of Pandas DataFrames.
         """
