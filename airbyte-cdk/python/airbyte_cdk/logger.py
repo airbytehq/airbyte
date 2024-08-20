@@ -7,6 +7,8 @@ import logging
 import logging.config
 from typing import Any, Mapping, Optional, Tuple
 
+from orjson import orjson
+
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteMessageSerializer
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
@@ -60,7 +62,7 @@ class AirbyteLogFormatter(logging.Formatter):
             message = super().format(record)
             message = filter_secrets(message)
             log_message = AirbyteMessage(type="LOG", log=AirbyteLogMessage(level=airbyte_level, message=message))
-            return str(AirbyteMessageSerializer.dump(log_message))
+            return orjson.dumps(AirbyteMessageSerializer.dump(log_message)).decode()
 
 
     @staticmethod

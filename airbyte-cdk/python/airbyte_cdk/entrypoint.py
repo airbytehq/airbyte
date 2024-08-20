@@ -15,6 +15,7 @@ from functools import wraps
 from typing import Any, DefaultDict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
+from orjson import orjson
 import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -199,7 +200,7 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
-        return str(AirbyteMessageSerializer.dump(airbyte_message))
+        return orjson.dumps(AirbyteMessageSerializer.dump(airbyte_message)).decode()
 
     @classmethod
     def extract_state(cls, args: List[str]) -> Optional[Any]:

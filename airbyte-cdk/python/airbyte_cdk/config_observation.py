@@ -10,7 +10,9 @@ import time
 from copy import copy
 from typing import Any, List, MutableMapping
 
-from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type
+from orjson import orjson
+
+from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type, AirbyteMessageSerializer
 
 
 class ObservedDict(dict):  # type: ignore # disallow_any_generics is set to True, and dict is equivalent to dict[Any]
@@ -76,7 +78,7 @@ def emit_configuration_as_airbyte_control_message(config: MutableMapping[str, An
     See the airbyte_cdk.sources.message package
     """
     airbyte_message = create_connector_config_control_message(config)
-    print(airbyte_message.model_dump_json(exclude_unset=True))
+    print(orjson.dumps(AirbyteMessageSerializer.dump(airbyte_message)).decode())
 
 
 def create_connector_config_control_message(config: MutableMapping[str, Any]) -> AirbyteMessage:

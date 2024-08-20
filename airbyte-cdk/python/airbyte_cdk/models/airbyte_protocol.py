@@ -14,9 +14,14 @@ from typing import Mapping
 class AirbyteStateBlob:
     kwargs: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, kwargs):
-        self.__dict__.update(kwargs)
-
+    # def __post_init__(self, kwargs):
+    #     self.__dict__.update(kwargs)
+    def __init__(self, *args, **kwargs):
+        # Set any attribute passed in through kwargs
+        for arg in args:
+            self.__dict__.update(arg)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
