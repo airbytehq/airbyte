@@ -3,23 +3,22 @@ package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.command.SourceConfiguration
 
-/** A very thin abstraction around JDBC metadata queries. */
+/** An abstraction for a catalog discovery session. */
 interface MetadataQuerier : AutoCloseable {
-    /**
-     * Queries the information_schema for all table names in the schemas specified by the connector
-     * configuration.
-     */
+
+    /** Returns all available namespaces. */
     fun streamNamespaces(): List<String>
 
+    /** Returns all available stream names in the given namespace. */
     fun streamNames(streamNamespace: String?): List<String>
 
-    /** Executes a SELECT * on the table, discards the results, and extracts all column metadata. */
+    /** Returns all available fields in the given stream. */
     fun fields(
         streamName: String,
         streamNamespace: String?,
     ): List<Field>
 
-    /** Queries the information_schema for any primary key on the given table. */
+    /** Returns the primary key for the given stream, if it exists; empty list otherwise. */
     fun primaryKey(
         streamName: String,
         streamNamespace: String?,
