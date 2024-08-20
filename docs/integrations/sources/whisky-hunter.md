@@ -38,6 +38,7 @@ There is no published rate limit. However, since this data updates infrequently,
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 0.2.0 | 2024-08-14 | [44045](https://github.com/airbytehq/airbyte/pull/44045) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43793](https://github.com/airbytehq/airbyte/pull/43793) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43553](https://github.com/airbytehq/airbyte/pull/43553) | Update dependencies |

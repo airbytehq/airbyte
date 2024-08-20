@@ -84,15 +84,22 @@ enum class AirbyteJsonSchemaType {
 
             val type = schema["type"]
             if (type != null) {
-                if (type.isArray && type.size() > 1) {
+                val typeArray =
+                    if (type.isArray) {
+                        type.elements().asSequence().filter { it.asText() != "null" }.toList()
+                    } else {
+                        listOf(type)
+                    }
+
+                if (typeArray.size > 1) {
                     return COMBINED
                 }
 
                 val typeStr =
-                    if (type.isArray) {
-                        type[0].asText()
+                    if (typeArray.isEmpty()) {
+                        "null"
                     } else {
-                        type.asText()
+                        typeArray[0].asText()
                     }
 
                 val format = schema["format"]?.asText()
@@ -233,7 +240,9 @@ enum class AirbyteJsonSchemaType {
                     }
                     .toList()
             if (matching.isEmpty()) {
-                throw IllegalArgumentException("Union type does not match any options")
+                throw IllegalArgumentException(
+                    "Union type ${value::class}(value redacted) does not match any options: $optionsAsList"
+                )
             }
             return matching.first()
         }

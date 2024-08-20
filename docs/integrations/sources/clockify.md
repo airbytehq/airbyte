@@ -9,6 +9,7 @@ The Airbyte Source for [Clockify](https://clockify.me)
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 0.4.0 | 2024-08-15 | [44166](https://github.com/airbytehq/airbyte/pull/44166) | Refactor connector to manifest-only format |
 | 0.3.13 | 2024-08-10 | [42817](https://github.com/airbytehq/airbyte/pull/42817) | Update dependencies |
 | 0.3.12 | 2024-07-20 | [42197](https://github.com/airbytehq/airbyte/pull/42197) | Update dependencies |
