@@ -116,7 +116,7 @@ codeflash = {cmd = "poetry run codeflash", help = "Run codeflash to check code q
 python_versions = ["3.10", "3.11"]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
-poe_tasks = ["check-ci", "codeflash]
+poe_tasks = ["check-ci", "codeflash"]
 mount_docker_socket = true
 
 [tool.codeflash]
