@@ -105,7 +105,9 @@ class DbmlAssembler:
                     continue
 
                 try:
-                    target_table_name, target_column_name = relationship.split(".", 1)  # we support the field names having dots but not stream name hence we split on the first dot only
+                    target_table_name, target_column_name = relationship.split(
+                        ".", 1
+                    )  # we support the field names having dots but not stream name hence we split on the first dot only
                 except ValueError as exception:
                     raise ValueError(f"Could not handle relationship {relationship}") from exception
 
