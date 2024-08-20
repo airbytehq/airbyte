@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_s3"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = "^3.9,<3.12"
 pytz = "==2024.1"
 wcmatch = "==8.4"
 python-snappy = "==0.6.1"
@@ -29,9 +29,8 @@ urllib3 = "<2"
 source-s3 = "source_s3.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
-path = "../../../airbyte-cdk/python"
-develop = true
 extras = [ "file-based",]
+version = "^3"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
@@ -43,4 +42,4 @@ moto = "==4.2.14"
 docker = "^7.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-pandas = "^2.0.3"
+pandas = "==2.0.3"
