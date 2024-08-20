@@ -15,7 +15,7 @@ import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.ensureActive
 
 /** Base class for JDBC implementations of [PartitionReader]. */
-sealed class StreamPartitionReader(
+sealed class JdbcPartitionReader(
     val streamState: JdbcStreamState<*>,
     val input: Input,
 ) : PartitionReader {
@@ -91,11 +91,11 @@ sealed class StreamPartitionReader(
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [input] in its entirety. */
-class StreamNonResumablePartitionReader(
+class JdbcNonResumablePartitionReader(
     val selectQueryGenerator: SelectQueryGenerator,
     streamState: JdbcStreamState<*>,
     input: Input,
-) : StreamPartitionReader(streamState, input) {
+) : JdbcPartitionReader(streamState, input) {
 
     val runComplete = AtomicBoolean(false)
     val numRecords = AtomicLong()
@@ -135,11 +135,11 @@ class StreamNonResumablePartitionReader(
  * JDBC implementation of [PartitionReader] which reads as much as possible of the [input], in
  * order, before timing out.
  */
-class StreamResumablePartitionReader(
+class JdbcResumablePartitionReader(
     val selectQueryGenerator: SelectQueryGenerator,
     streamState: JdbcStreamState<*>,
     input: Input,
-) : StreamPartitionReader(streamState, input) {
+) : JdbcPartitionReader(streamState, input) {
 
     val incumbentLimit = AtomicLong()
     val numRecords = AtomicLong()
@@ -200,14 +200,14 @@ class StreamResumablePartitionReader(
     }
 }
 
-/** Converts a [StreamPartitionReader.Input] into a [SelectQuerySpec]. */
-fun StreamPartitionReader.Input.querySpec(
+/** Converts a [JdbcPartitionReader.Input] into a [SelectQuerySpec]. */
+fun JdbcPartitionReader.Input.querySpec(
     stream: Stream,
     isOrdered: Boolean,
     limit: Long?,
 ): SelectQuerySpec =
     when (this) {
-        is StreamPartitionReader.SnapshotInput ->
+        is JdbcPartitionReader.SnapshotInput ->
             querySpecForStreamPartitionReader(
                 stream,
                 checkpointColumns = primaryKey,
@@ -217,7 +217,7 @@ fun StreamPartitionReader.Input.querySpec(
                 isOrdered,
                 limit,
             )
-        is StreamPartitionReader.SnapshotWithCursorInput ->
+        is JdbcPartitionReader.SnapshotWithCursorInput ->
             querySpecForStreamPartitionReader(
                 stream,
                 checkpointColumns = primaryKey,
@@ -227,7 +227,7 @@ fun StreamPartitionReader.Input.querySpec(
                 isOrdered,
                 limit,
             )
-        is StreamPartitionReader.CursorIncrementalInput ->
+        is JdbcPartitionReader.CursorIncrementalInput ->
             querySpecForStreamPartitionReader(
                 stream,
                 checkpointColumns = listOf(cursor),
@@ -296,14 +296,14 @@ private fun querySpecForStreamPartitionReader(
 }
 
 /**
- * Generates a [CheckpointStreamState] using the [StreamPartitionReader.Input] initial state and, if
- * provided, the last record read by the [StreamPartitionReader]. When not provided, the partition
- * is presumed to have been read in its entirety.
+ * Generates a [CheckpointStreamState] using the [JdbcPartitionReader.Input] initial state and, if
+ * provided, the last record read by the [JdbcPartitionReader]. When not provided, the partition is
+ * presumed to have been read in its entirety.
  */
-fun StreamPartitionReader.Input.checkpoint(row: ObjectNode? = null): CheckpointStreamState {
+fun JdbcPartitionReader.Input.checkpoint(row: ObjectNode? = null): CheckpointStreamState {
     fun getRowValue(field: Field): JsonNode = row?.get(field.id) ?: Jsons.nullNode()
     return when (this) {
-        is StreamPartitionReader.SnapshotInput ->
+        is JdbcPartitionReader.SnapshotInput ->
             if (row != null) {
                 SnapshotCheckpoint(primaryKey, primaryKey.map(::getRowValue))
             } else if (primaryKeyUpperBound != null) {
@@ -311,7 +311,7 @@ fun StreamPartitionReader.Input.checkpoint(row: ObjectNode? = null): CheckpointS
             } else {
                 SnapshotCompleted
             }
-        is StreamPartitionReader.SnapshotWithCursorInput ->
+        is JdbcPartitionReader.SnapshotWithCursorInput ->
             if (row != null) {
                 SnapshotWithCursorCheckpoint(
                     primaryKey,
@@ -329,7 +329,7 @@ fun StreamPartitionReader.Input.checkpoint(row: ObjectNode? = null): CheckpointS
             } else {
                 CursorIncrementalCheckpoint(cursor, cursorUpperBound)
             }
-        is StreamPartitionReader.CursorIncrementalInput ->
+        is JdbcPartitionReader.CursorIncrementalInput ->
             if (row == null) {
                 CursorIncrementalCheckpoint(cursor, cursorUpperBound)
             } else {

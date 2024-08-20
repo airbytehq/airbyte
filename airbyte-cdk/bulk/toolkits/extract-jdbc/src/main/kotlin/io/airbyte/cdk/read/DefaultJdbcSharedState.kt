@@ -67,16 +67,16 @@ class DefaultJdbcSharedState(
 
     internal val semaphore = Semaphore(configuration.maxConcurrency)
 
-    override fun tryAcquireResourcesForCreator(): StreamPartitionsCreator.AcquiredResources? =
+    override fun tryAcquireResourcesForCreator(): JdbcPartitionsCreator.AcquiredResources? =
         if (semaphore.tryAcquire()) {
-            StreamPartitionsCreator.AcquiredResources { semaphore.release() }
+            JdbcPartitionsCreator.AcquiredResources { semaphore.release() }
         } else {
             null
         }
 
-    override fun tryAcquireResourcesForReader(): StreamPartitionReader.AcquiredResources? =
+    override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? =
         if (semaphore.tryAcquire()) {
-            StreamPartitionReader.AcquiredResources { semaphore.release() }
+            JdbcPartitionReader.AcquiredResources { semaphore.release() }
         } else {
             null
         }

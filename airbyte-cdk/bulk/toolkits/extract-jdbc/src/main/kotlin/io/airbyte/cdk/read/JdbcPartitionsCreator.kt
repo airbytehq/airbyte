@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.random.Random
 
 /** Base class for JDBC implementations of [PartitionsCreator]. */
-sealed class StreamPartitionsCreator(
+sealed class JdbcPartitionsCreator(
     val selectQueryGenerator: SelectQueryGenerator,
     val streamState: JdbcStreamState<*>,
     val input: Input,
@@ -73,7 +73,7 @@ sealed class StreamPartitionsCreator(
 
     private val acquiredResources = AtomicReference<AcquiredResources>()
 
-    /** Calling [close] releases the resources acquired for the [StreamPartitionsCreator]. */
+    /** Calling [close] releases the resources acquired for the [JdbcPartitionsCreator]. */
     fun interface AcquiredResources : AutoCloseable
 
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
@@ -87,20 +87,20 @@ sealed class StreamPartitionsCreator(
     override suspend fun run(): List<PartitionReader> =
         input.partitionReaderInputs().map { createReader(it) }
 
-    abstract fun createReader(input: StreamPartitionReader.Input): StreamPartitionReader
+    abstract fun createReader(input: JdbcPartitionReader.Input): JdbcPartitionReader
 
-    fun Input.partitionReaderInputs(): List<StreamPartitionReader.Input> {
+    fun Input.partitionReaderInputs(): List<JdbcPartitionReader.Input> {
         return when (this) {
             is NoStart -> listOf()
             is SnapshotColdStart ->
-                StreamPartitionReader.SnapshotInput(
+                JdbcPartitionReader.SnapshotInput(
                         primaryKey = primaryKey,
                         primaryKeyLowerBound = null,
                         primaryKeyUpperBound = null,
                     )
                     .split()
             is SnapshotWithCursorColdStart ->
-                StreamPartitionReader.SnapshotWithCursorInput(
+                JdbcPartitionReader.SnapshotWithCursorInput(
                         primaryKey = primaryKey,
                         primaryKeyLowerBound = null,
                         primaryKeyUpperBound = null,
@@ -109,7 +109,7 @@ sealed class StreamPartitionsCreator(
                     )
                     .split()
             is CursorIncrementalColdStart ->
-                StreamPartitionReader.CursorIncrementalInput(
+                JdbcPartitionReader.CursorIncrementalInput(
                         cursor = cursor,
                         cursorLowerBound = cursorLowerBound,
                         isLowerBoundIncluded = true,
@@ -117,14 +117,14 @@ sealed class StreamPartitionsCreator(
                     )
                     .split()
             is SnapshotWarmStart ->
-                StreamPartitionReader.SnapshotInput(
+                JdbcPartitionReader.SnapshotInput(
                         primaryKey = primaryKey,
                         primaryKeyLowerBound = primaryKeyLowerBound,
                         primaryKeyUpperBound = null,
                     )
                     .split()
             is SnapshotWithCursorWarmStart ->
-                StreamPartitionReader.SnapshotWithCursorInput(
+                JdbcPartitionReader.SnapshotWithCursorInput(
                         primaryKey = primaryKey,
                         primaryKeyLowerBound = primaryKeyLowerBound,
                         primaryKeyUpperBound = null,
@@ -133,7 +133,7 @@ sealed class StreamPartitionsCreator(
                     )
                     .split()
             is CursorIncrementalWarmStart ->
-                StreamPartitionReader.CursorIncrementalInput(
+                JdbcPartitionReader.CursorIncrementalInput(
                         cursor = cursor,
                         cursorLowerBound = cursorLowerBound,
                         isLowerBoundIncluded = true,
@@ -143,19 +143,19 @@ sealed class StreamPartitionsCreator(
         }
     }
 
-    fun StreamPartitionReader.SnapshotInput.split(): List<StreamPartitionReader.SnapshotInput> =
+    fun JdbcPartitionReader.SnapshotInput.split(): List<JdbcPartitionReader.SnapshotInput> =
         split(this, primaryKeyLowerBound, primaryKeyUpperBound).map { (lb, ub) ->
             copy(primaryKeyLowerBound = lb, primaryKeyUpperBound = ub)
         }
 
-    fun StreamPartitionReader.SnapshotWithCursorInput.split():
-        List<StreamPartitionReader.SnapshotWithCursorInput> =
+    fun JdbcPartitionReader.SnapshotWithCursorInput.split():
+        List<JdbcPartitionReader.SnapshotWithCursorInput> =
         split(this, primaryKeyLowerBound, primaryKeyUpperBound).map { (lb, ub) ->
             copy(primaryKeyLowerBound = lb, primaryKeyUpperBound = ub)
         }
 
-    fun StreamPartitionReader.CursorIncrementalInput.split():
-        List<StreamPartitionReader.CursorIncrementalInput> =
+    fun JdbcPartitionReader.CursorIncrementalInput.split():
+        List<JdbcPartitionReader.CursorIncrementalInput> =
         split(this, listOf(cursorLowerBound), listOf(cursorUpperBound)).mapIndexed {
             idx: Int,
             (lb, ub) ->
@@ -167,7 +167,7 @@ sealed class StreamPartitionsCreator(
         }
 
     abstract fun split(
-        input: StreamPartitionReader.Input,
+        input: JdbcPartitionReader.Input,
         globalLowerBound: List<JsonNode>?,
         globalUpperBound: List<JsonNode>?,
     ): List<Pair<List<JsonNode>?, List<JsonNode>?>>
@@ -256,28 +256,28 @@ sealed class StreamPartitionsCreator(
 }
 
 /** Sequential JDBC implementation of [PartitionsCreator]. */
-class StreamSequentialPartitionsCreator(
+class JdbcSequentialPartitionsCreator(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: JdbcStreamState<*>,
     input: Input,
-) : StreamPartitionsCreator(selectQueryGenerator, streamState, input) {
+) : JdbcPartitionsCreator(selectQueryGenerator, streamState, input) {
     private val log = KotlinLogging.logger {}
 
-    override fun createReader(input: StreamPartitionReader.Input): StreamPartitionReader {
+    override fun createReader(input: JdbcPartitionReader.Input): JdbcPartitionReader {
         // Handle edge case where the partition cannot be split.
         if (!input.resumable) {
             log.warn {
                 "Table cannot be read by sequential partition reader because it cannot be split."
             }
-            return StreamNonResumablePartitionReader(selectQueryGenerator, streamState, input)
+            return JdbcNonResumablePartitionReader(selectQueryGenerator, streamState, input)
         }
         // Happy path.
         log.info { "Table will be read by sequential partition reader(s)." }
-        return StreamResumablePartitionReader(selectQueryGenerator, streamState, input)
+        return JdbcResumablePartitionReader(selectQueryGenerator, streamState, input)
     }
 
     override fun split(
-        input: StreamPartitionReader.Input,
+        input: JdbcPartitionReader.Input,
         globalLowerBound: List<JsonNode>?,
         globalUpperBound: List<JsonNode>?
     ): List<Pair<List<JsonNode>?, List<JsonNode>?>> {
@@ -286,18 +286,18 @@ class StreamSequentialPartitionsCreator(
 }
 
 /** Concurrent JDBC implementation of [PartitionsCreator]. */
-class StreamConcurrentPartitionsCreator(
+class JdbcConcurrentPartitionsCreator(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: JdbcStreamState<*>,
     input: Input,
-) : StreamPartitionsCreator(selectQueryGenerator, streamState, input) {
+) : JdbcPartitionsCreator(selectQueryGenerator, streamState, input) {
     private val log = KotlinLogging.logger {}
 
-    override fun createReader(input: StreamPartitionReader.Input): StreamPartitionReader =
-        StreamNonResumablePartitionReader(selectQueryGenerator, streamState, input)
+    override fun createReader(input: JdbcPartitionReader.Input): JdbcPartitionReader =
+        JdbcNonResumablePartitionReader(selectQueryGenerator, streamState, input)
 
     override fun split(
-        input: StreamPartitionReader.Input,
+        input: JdbcPartitionReader.Input,
         globalLowerBound: List<JsonNode>?,
         globalUpperBound: List<JsonNode>?
     ): List<Pair<List<JsonNode>?, List<JsonNode>?>> {
@@ -364,11 +364,11 @@ class StreamConcurrentPartitionsCreator(
     }
 }
 
-/** Converts a nullable [OpaqueStateValue] into an input for [StreamPartitionsCreator]. */
+/** Converts a nullable [OpaqueStateValue] into an input for [JdbcPartitionsCreator]. */
 fun OpaqueStateValue?.streamPartitionsCreatorInput(
     handler: CatalogValidationFailureHandler,
     streamState: JdbcStreamState<*>,
-): StreamPartitionsCreator.Input {
+): JdbcPartitionsCreator.Input {
     val checkpoint: CheckpointStreamState? = checkpoint(handler, streamState)
     if (checkpoint == null && this != null) {
         handler.accept(ResetStream(streamState.stream.name, streamState.stream.namespace))
@@ -377,34 +377,34 @@ fun OpaqueStateValue?.streamPartitionsCreatorInput(
     return checkpoint.streamPartitionsCreatorInput(streamState)
 }
 
-/** Converts a nullable [CheckpointStreamState] into an input for [StreamPartitionsCreator]. */
+/** Converts a nullable [CheckpointStreamState] into an input for [JdbcPartitionsCreator]. */
 fun CheckpointStreamState?.streamPartitionsCreatorInput(
     streamState: JdbcStreamState<*>,
-): StreamPartitionsCreator.Input {
+): JdbcPartitionsCreator.Input {
     val stream: Stream = streamState.stream
     val sharedState: JdbcSharedState = streamState.sharedState
     val configuration: JdbcSourceConfiguration = sharedState.configuration
     if (this == null) {
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (stream.configuredSyncMode == SyncMode.FULL_REFRESH || configuration.global) {
-            return StreamPartitionsCreator.SnapshotColdStart(pkChosenFromCatalog)
+            return JdbcPartitionsCreator.SnapshotColdStart(pkChosenFromCatalog)
         }
         val cursorChosenFromCatalog: Field =
             stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
-        return StreamPartitionsCreator.SnapshotWithCursorColdStart(
+        return JdbcPartitionsCreator.SnapshotWithCursorColdStart(
             pkChosenFromCatalog,
             cursorChosenFromCatalog,
         )
     }
     return when (this) {
-        SnapshotCompleted -> StreamPartitionsCreator.NoStart
+        SnapshotCompleted -> JdbcPartitionsCreator.NoStart
         is SnapshotCheckpoint ->
-            StreamPartitionsCreator.SnapshotWarmStart(
+            JdbcPartitionsCreator.SnapshotWarmStart(
                 primaryKey,
                 primaryKeyCheckpoint,
             )
         is SnapshotWithCursorCheckpoint ->
-            StreamPartitionsCreator.SnapshotWithCursorWarmStart(
+            JdbcPartitionsCreator.SnapshotWithCursorWarmStart(
                 primaryKey,
                 primaryKeyCheckpoint,
                 cursor,
@@ -413,15 +413,15 @@ fun CheckpointStreamState?.streamPartitionsCreatorInput(
         is CursorIncrementalCheckpoint ->
             when (val cursorUpperBound: JsonNode? = streamState.cursorUpperBound) {
                 null ->
-                    StreamPartitionsCreator.CursorIncrementalColdStart(
+                    JdbcPartitionsCreator.CursorIncrementalColdStart(
                         cursor,
                         cursorCheckpoint,
                     )
                 else ->
                     if (cursorCheckpoint == cursorUpperBound) {
-                        StreamPartitionsCreator.NoStart
+                        JdbcPartitionsCreator.NoStart
                     } else {
-                        StreamPartitionsCreator.CursorIncrementalWarmStart(
+                        JdbcPartitionsCreator.CursorIncrementalWarmStart(
                             cursor,
                             cursorCheckpoint,
                             cursorUpperBound,

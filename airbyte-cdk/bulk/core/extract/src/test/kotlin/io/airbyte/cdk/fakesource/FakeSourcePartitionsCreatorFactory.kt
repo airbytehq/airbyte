@@ -5,13 +5,13 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.CreateNoPartitions
 import io.airbyte.cdk.read.Feed
 import io.airbyte.cdk.read.Global
+import io.airbyte.cdk.read.JdbcSequentialPartitionsCreator
 import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreatorFactory
 import io.airbyte.cdk.read.StateQuerier
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamReadContextManager
-import io.airbyte.cdk.read.StreamSequentialPartitionsCreator
 import io.airbyte.cdk.read.streamPartitionsCreatorInput
 import jakarta.inject.Singleton
 
@@ -28,7 +28,7 @@ class FakeSourcePartitionsCreatorFactory(
             is Global -> CreateNoPartitions
             is Stream -> {
                 val streamState: JdbcStreamState<*> = streamReadContextManager[feed]
-                StreamSequentialPartitionsCreator(
+                JdbcSequentialPartitionsCreator(
                     streamReadContextManager.selectQueryGenerator,
                     streamState,
                     opaqueStateValue.streamPartitionsCreatorInput(
