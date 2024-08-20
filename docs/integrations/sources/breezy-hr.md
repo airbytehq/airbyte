@@ -11,7 +11,6 @@ An Airbyte source for Breezy applicant tracking system.
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | positions |  | No pagination | ✅ |  ❌  |
-
 | candidates |  | No pagination | ✅ |  ❌  |
 
 | pipelines |  | No pagination | ✅ |  ❌  |
