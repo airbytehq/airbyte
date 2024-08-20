@@ -19,7 +19,7 @@ import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import AirbyteMessage, FailureType, Status, Type
+from airbyte_cdk.models import AirbyteMessage, FailureType, Status, Type, AirbyteMessageSerializer
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats, ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
@@ -29,7 +29,6 @@ from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import PreparedRequest, Response, Session
-from orjson import orjson
 logger = init_logger("airbyte")
 
 VALID_URL_SCHEMES = ["https"]
@@ -200,7 +199,7 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
-        return orjson.dumps(airbyte_message).decode()
+        return str(AirbyteMessageSerializer.dump(airbyte_message))
 
     @classmethod
     def extract_state(cls, args: List[str]) -> Optional[Any]:

@@ -44,6 +44,7 @@ from .airbyte_protocol import (
     SyncMode,
     TraceType,
     Type,
+AirbyteMessageSerializer
 )
 from .well_known_types import (
     BinaryData,

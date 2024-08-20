@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import serpyco_rs
 from airbyte_protocol_dataclasses.models import *
 
 
@@ -19,3 +19,5 @@ class AirbyteStateBlob:
 
 
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
+
+AirbyteMessageSerializer = serpyco_rs.Serializer(AirbyteMessage, omit_none=True)
