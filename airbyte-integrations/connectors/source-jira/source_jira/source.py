@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarat
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
+from pydantic import ValidationError
 from requests.exceptions import InvalidURL
 
 from .streams import IssueComments, IssueFields, Issues, IssueWorklogs, PullRequests
