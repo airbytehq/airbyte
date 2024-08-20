@@ -26,7 +26,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
-import io.airbyte.integrations.destination.snowflake.caching.CacheManager
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import java.sql.Connection
 import java.sql.DatabaseMetaData
