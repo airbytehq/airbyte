@@ -12,7 +12,6 @@ An Airbyte source for Breezy applicant tracking system.
 |-------------|-------------|------------|---------------------|----------------------|
 | positions |  | No pagination | ✅ |  ❌  |
 | candidates |  | No pagination | ✅ |  ❌  |
-
 | pipelines |  | No pagination | ✅ |  ❌  |
 
 
