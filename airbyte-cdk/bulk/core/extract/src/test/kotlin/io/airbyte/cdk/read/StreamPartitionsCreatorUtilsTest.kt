@@ -14,7 +14,6 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.read.MemoryFetchSizeEstimator.Companion.DEFAULT_FETCH_SIZE
 import io.airbyte.cdk.read.Sample.Kind
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.SyncMode
@@ -100,28 +99,12 @@ class StreamPartitionsCreatorUtilsTest {
     }
 
     @Test
-    fun testMemoryFetchSizeEstimator() {
-        Assertions.assertEquals(
-            14000,
-            MemoryFetchSizeEstimator(700_000, 1).apply(Sample(listOf(10, 20, 30), Kind.SMALL, 0L)),
-        )
-        Assertions.assertEquals(
-            7000,
-            MemoryFetchSizeEstimator(700_000, 2).apply(Sample(listOf(10, 20, 30), Kind.SMALL, 0L)),
-        )
-        Assertions.assertEquals(
-            DEFAULT_FETCH_SIZE,
-            MemoryFetchSizeEstimator(700_000, 2).apply(Sample(listOf(), Kind.MEDIUM, 0L)),
-        )
-    }
-
-    @Test
     fun testCursorUpperBound() {
         val utils: StreamPartitionsCreatorUtils = createUtils(testParameters)
         utils.computeCursorUpperBound(k)
         Assertions.assertEquals(
             "5",
-            utils.ctx.transientCursorUpperBoundState.get()?.toString(),
+            utils.ctx.streamState.cursorUpperBound?.toString(),
         )
     }
 
@@ -166,13 +149,26 @@ class StreamPartitionsCreatorUtilsTest {
                 timeout = "PT1S"
             }
         val config: FakeSourceConfiguration = FakeSourceConfigurationFactory().make(configPojo)
+        val sharedState =
+            DefaultJdbcSharedState(
+                config,
+                BufferingOutputConsumer(TestClockFactory().fixed()),
+                JdbcSelectQuerier(JdbcConnectionFactory(config)),
+                withSampling = true,
+                maxSampleSize = 1024,
+                expectedThroughputBytesPerSecond = 10 * 1024 * 1024,
+                minFetchSize = 10,
+                defaultFetchSize = 1_000,
+                maxFetchSize = 10_000_000,
+                memoryCapacityRatio = 0.6,
+                estimatedRecordOverheadBytes = 16,
+                estimatedFieldOverheadBytes = 16,
+            )
         val ctxManager =
             StreamReadContextManager(
-                config,
+                sharedState,
                 BufferingCatalogValidationFailureHandler(),
                 FakeSourceOperations(),
-                JdbcSelectQuerier(JdbcConnectionFactory(config)),
-                BufferingOutputConsumer(TestClockFactory().fixed()),
             )
         val ctx = ctxManager[stream]
         ctx.resetStream()

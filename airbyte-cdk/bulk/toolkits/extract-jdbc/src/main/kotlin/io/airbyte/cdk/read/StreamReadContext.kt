@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.OutputConsumer
@@ -10,8 +9,6 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import java.util.concurrent.atomic.AtomicReference
-import kotlinx.coroutines.sync.Semaphore
 
 /**
  * A [StreamReadContextManager] may be injected in a [io.airbyte.cdk.read.PartitionsCreatorFactory]
@@ -26,64 +23,55 @@ import kotlinx.coroutines.sync.Semaphore
  */
 @Singleton
 class StreamReadContextManager(
-    val configuration: JdbcSourceConfiguration,
+    val sharedState: JdbcSharedState,
     val handler: CatalogValidationFailureHandler,
     val selectQueryGenerator: SelectQueryGenerator,
-    val selectQuerier: SelectQuerier,
-    val outputConsumer: OutputConsumer,
 ) {
+
+    val configuration: JdbcSourceConfiguration
+        get() = sharedState.configuration
+
+    val outputConsumer: OutputConsumer
+        get() = sharedState.outputConsumer
+
+    val selectQuerier: SelectQuerier
+        get() = sharedState.selectQuerier
+
     private val map: ConcurrentMap<AirbyteStreamNameNamespacePair, StreamReadContext> =
         ConcurrentHashMap()
-
-    private val globalSemaphore = Semaphore(configuration.maxConcurrency)
 
     operator fun get(stream: Stream): StreamReadContext =
         map.getOrPut(stream.namePair) {
             StreamReadContext(
-                configuration,
                 handler,
                 selectQueryGenerator,
-                selectQuerier,
-                globalSemaphore,
-                outputConsumer,
-                stream,
+                DefaultJdbcStreamState(sharedState as DefaultJdbcSharedState, stream),
             )
         }
 }
 
 class StreamReadContext(
-    val configuration: JdbcSourceConfiguration,
     val handler: CatalogValidationFailureHandler,
     val selectQueryGenerator: SelectQueryGenerator,
-    val selectQuerier: SelectQuerier,
-    val querySemaphore: Semaphore,
-    val outputConsumer: OutputConsumer,
-    val stream: Stream,
+    val streamState: JdbcStreamState<*>,
 ) {
-    val transientLimitState: TransientState<LimitState> = TransientState(LimitState.minimum)
+    val sharedState: JdbcSharedState
+        get() = streamState.sharedState
 
-    val transientCursorUpperBoundState: TransientState<JsonNode?> = TransientState(null)
+    val stream: Stream
+        get() = streamState.stream
 
-    val transientFetchSize: TransientState<Int?> = TransientState(null)
+    val configuration: JdbcSourceConfiguration
+        get() = sharedState.configuration
+
+    val outputConsumer: OutputConsumer
+        get() = sharedState.outputConsumer
+
+    val selectQuerier: SelectQuerier
+        get() = sharedState.selectQuerier
 
     fun resetStream() {
         handler.accept(ResetStream(stream.name, stream.namespace))
-        transientLimitState.reset()
-        transientCursorUpperBoundState.reset()
-        transientFetchSize.reset()
+        streamState.reset()
     }
-}
-
-class TransientState<T>(
-    val initialState: T,
-) {
-    private val ref: AtomicReference<T> = AtomicReference(initialState)
-
-    fun get(): T = ref.get()
-
-    fun reset() {
-        ref.set(initialState)
-    }
-
-    fun update(fn: (T) -> T): T = ref.updateAndGet(fn)
 }

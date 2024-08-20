@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.read.StreamPartitionsCreator.AcquiredResources
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import java.util.concurrent.atomic.AtomicBoolean
@@ -45,15 +46,20 @@ class StreamPartitionReader(
         val preferResumable: Boolean,
     )
 
-    override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus =
-        if (ctx.querySemaphore.tryAcquire()) {
-            PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
-        } else {
-            PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
-        }
+    fun interface AcquiredResources : AutoCloseable
+
+    val acquiredResources = AtomicReference<AcquiredResources>(null)
+
+    override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
+        val acquiredResources: AcquiredResources =
+            ctx.sharedState.tryAcquireResourcesForReader()
+                ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
+        this.acquiredResources.set(acquiredResources)
+        return PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN
+    }
 
     override fun releaseResources() {
-        ctx.querySemaphore.release()
+        acquiredResources.getAndSet(null)?.close()
     }
 
     val resumable: Boolean =
@@ -72,7 +78,7 @@ class StreamPartitionReader(
     override suspend fun run() {
         // Store the transient state at the start of the run for use in checkpoint().
         val transientState =
-            TransientState(ctx.transientLimitState.get(), ctx.transientFetchSize.get())
+            TransientState(ctx.streamState.limit, ctx.streamState.fetchSizeOrDefault)
         incumbentTransientState.set(transientState)
         // Build the query.
         val querySpec: SelectQuerySpec =
@@ -105,7 +111,7 @@ class StreamPartitionReader(
                 // If progress can be checkpointed at any time,
                 // check activity periodically to handle timeout.
                 if (!resumable) continue
-                if (numRecords.get() % transientState.fetchSizeOrLowerBound != 0L) continue
+                if (numRecords.get() % transientState.fetchSize != 0L) continue
                 coroutineContext.ensureActive()
             }
         }
@@ -122,8 +128,8 @@ class StreamPartitionReader(
             checkpointState = input.checkpoint(lastRecord.get())
             // Decrease the limit clause for the next PartitionReader, because it's too big.
             // If it had been smaller then run might have completed in time.
-            ctx.transientLimitState.update {
-                if (transientState.limitState.current <= it.current) it.down else it
+            if (transientState.limit <= ctx.streamState.limit) {
+                ctx.streamState.updateLimitState { it.down }
             }
         } else if (resumable) {
             // The run method executed to completion with a LIMIT clause.
@@ -138,8 +144,8 @@ class StreamPartitionReader(
                 }
             // Increase the limit clause for the next PartitionReader, because it's too small.
             // If it had been bigger then run might have executed for longer.
-            ctx.transientLimitState.update {
-                if (it.current <= transientState.limitState.current) it.up else it
+            if (ctx.streamState.limit <= transientState.limit) {
+                ctx.streamState.updateLimitState { it.up }
             }
         } else {
             // The run method executed to completion without a LIMIT clause.
@@ -150,16 +156,9 @@ class StreamPartitionReader(
     }
 
     inner class TransientState(
-        val limitState: LimitState,
-        val fetchSize: Int?,
-    ) {
-        val fetchSizeOrLowerBound: Int
-            get() = fetchSize ?: MemoryFetchSizeEstimator.FETCH_SIZE_LOWER_BOUND
-
-        /** Value to use for the LIMIT clause, if applicable. */
-        val limit: Long
-            get() = fetchSizeOrLowerBound * limitState.current
-    }
+        val limit: Long,
+        val fetchSize: Int,
+    )
 }
 
 /** Converts a [StreamPartitionReader.Input] into a [SelectQuerySpec]. */
