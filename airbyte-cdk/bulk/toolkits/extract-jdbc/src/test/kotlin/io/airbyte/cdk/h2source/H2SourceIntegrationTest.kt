@@ -1,5 +1,5 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.cdk.fakesource
+package io.airbyte.cdk.h2source
 
 import io.airbyte.cdk.command.SyncsTestFixture
 import io.airbyte.cdk.h2.H2TestFixture
@@ -10,16 +10,16 @@ import java.sql.Statement
 import org.junit.jupiter.api.Test
 import org.testcontainers.Testcontainers
 
-class FakeSourceIntegrationTest {
+class H2SourceIntegrationTest {
     @Test
     fun testSpec() {
-        SyncsTestFixture.testSpec("fakesource/expected-spec.json")
+        SyncsTestFixture.testSpec("h2source/expected-spec.json")
     }
 
     @Test
     fun testCheckFailBadConfig() {
         SyncsTestFixture.testCheck(
-            FakeSourceConfigurationJsonObject().apply {
+            H2SourceConfigurationJsonObject().apply {
                 port = -1
                 database = ""
             },
@@ -31,7 +31,7 @@ class FakeSourceIntegrationTest {
     fun testCheckFailNoDatabase() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                FakeSourceConfigurationJsonObject().apply {
+                H2SourceConfigurationJsonObject().apply {
                     port = h2.port
                     database = h2.database + "_garbage"
                 }
@@ -43,7 +43,7 @@ class FakeSourceIntegrationTest {
     fun testCheckFailNoTables() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                FakeSourceConfigurationJsonObject().apply {
+                H2SourceConfigurationJsonObject().apply {
                     port = h2.port
                     database = h2.database
                 }
@@ -56,7 +56,7 @@ class FakeSourceIntegrationTest {
         H2TestFixture().use { h2: H2TestFixture ->
             h2.createConnection().use(Companion::prelude)
             val configPojo =
-                FakeSourceConfigurationJsonObject().apply {
+                H2SourceConfigurationJsonObject().apply {
                     port = h2.port
                     database = h2.database
                 }
@@ -71,7 +71,7 @@ class FakeSourceIntegrationTest {
             Testcontainers.exposeHostPorts(h2.port)
             SshBastionContainer(tunnelingToHostPort = h2.port).use { ssh: SshBastionContainer ->
                 val configPojo =
-                    FakeSourceConfigurationJsonObject().apply {
+                    H2SourceConfigurationJsonObject().apply {
                         host =
                             DOCKER_HOST_FROM_WITHIN_CONTAINER // required only because of container
                         port = h2.port
@@ -90,11 +90,11 @@ class FakeSourceIntegrationTest {
         H2TestFixture().use { h2: H2TestFixture ->
             h2.createConnection().use(Companion::prelude)
             val configPojo =
-                FakeSourceConfigurationJsonObject().apply {
+                H2SourceConfigurationJsonObject().apply {
                     port = h2.port
                     database = h2.database
                 }
-            SyncsTestFixture.testDiscover(configPojo, "fakesource/expected-cursor-catalog.json")
+            SyncsTestFixture.testDiscover(configPojo, "h2source/expected-cursor-catalog.json")
         }
     }
 
@@ -102,7 +102,7 @@ class FakeSourceIntegrationTest {
     fun testReadGlobal() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                FakeSourceConfigurationJsonObject().apply {
+                H2SourceConfigurationJsonObject().apply {
                     port = h2.port
                     database = h2.database
                     setCursorMethodValue(CdcCursor)
@@ -112,10 +112,10 @@ class FakeSourceIntegrationTest {
                 configPojo,
                 h2::createConnection,
                 Companion::prelude,
-                "fakesource/expected-cdc-catalog.json",
-                "fakesource/cdc-catalog.json",
+                "h2source/expected-cdc-catalog.json",
+                "h2source/cdc-catalog.json",
                 SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "fakesource/expected-messages-global-cold-start.json",
+                    "h2source/expected-messages-global-cold-start.json",
                 ),
             )
         }
@@ -125,7 +125,7 @@ class FakeSourceIntegrationTest {
     fun testReadStreams() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
-                FakeSourceConfigurationJsonObject().apply {
+                H2SourceConfigurationJsonObject().apply {
                     port = h2.port
                     database = h2.database
                     resumablePreferred = true
@@ -134,13 +134,13 @@ class FakeSourceIntegrationTest {
                 configPojo,
                 h2::createConnection,
                 Companion::prelude,
-                "fakesource/expected-cursor-catalog.json",
-                "fakesource/cursor-catalog.json",
+                "h2source/expected-cursor-catalog.json",
+                "h2source/cursor-catalog.json",
                 SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "fakesource/expected-messages-stream-cold-start.json",
+                    "h2source/expected-messages-stream-cold-start.json",
                 ),
                 SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "fakesource/expected-messages-stream-warm-start.json",
+                    "h2source/expected-messages-stream-warm-start.json",
                 ),
             )
         }

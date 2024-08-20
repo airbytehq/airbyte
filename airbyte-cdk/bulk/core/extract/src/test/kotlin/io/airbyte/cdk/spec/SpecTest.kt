@@ -1,5 +1,5 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.cdk.fakesource
+package io.airbyte.cdk.spec
 
 import com.deblock.jsondiff.DiffGenerator
 import com.deblock.jsondiff.diff.JsonDiff
@@ -11,7 +11,6 @@ import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
 import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.spec.SpecOperation
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.micronaut.context.annotation.Property
@@ -23,7 +22,7 @@ import org.junit.jupiter.api.Test
 @MicronautTest(environments = ["source"], rebuildContext = true)
 @Property(name = Operation.PROPERTY, value = "spec")
 @Property(name = "airbyte.connector.metadata.documentation-url", value = "https://docs.airbyte.com")
-class FakeSourceSpecTest {
+class SpecTest {
     @Inject lateinit var specOperation: SpecOperation
 
     @Inject lateinit var outputConsumer: BufferingOutputConsumer

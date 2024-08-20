@@ -1,8 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.cdk.fakesource
+package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.discover.DiscoverOperation
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteCatalog
@@ -16,7 +15,7 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["source"], rebuildContext = true)
 @Property(name = Operation.PROPERTY, value = "discover")
-class FakeSourceDiscoverTest {
+class DiscoverTest {
     @Inject lateinit var discoverOperation: DiscoverOperation
 
     @Inject lateinit var outputConsumer: BufferingOutputConsumer
@@ -25,7 +24,7 @@ class FakeSourceDiscoverTest {
     @Property(name = "airbyte.connector.config.host", value = "localhost")
     @Property(name = "airbyte.connector.config.database", value = "testdb")
     @Property(name = "airbyte.connector.config.cursor", value = "user_defined")
-    @Property(name = "metadata.resource", value = "fakesource/metadata-valid.json")
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
     fun testCursorBasedIncremental() {
         val events =
             AirbyteStream()
@@ -54,7 +53,7 @@ class FakeSourceDiscoverTest {
     @Property(name = "airbyte.connector.config.host", value = "localhost")
     @Property(name = "airbyte.connector.config.database", value = "testdb")
     @Property(name = "airbyte.connector.config.cursor", value = "cdc")
-    @Property(name = "metadata.resource", value = "fakesource/metadata-valid.json")
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
     fun testCdcIncremental() {
         val events =
             AirbyteStream()

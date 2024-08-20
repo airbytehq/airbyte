@@ -1,5 +1,5 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.cdk.fakesource
+package io.airbyte.cdk.h2source
 
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
@@ -62,11 +62,11 @@ import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.sql.JDBCType
 
-/** Stateless connector-specific logic for [FakeSource]. */
+/** Stateless connector-specific logic for [H2Source]. */
 @Singleton
 @Requires(env = [Environment.TEST])
 @Secondary
-class FakeSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
+class H2SourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGenerator {
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =
         when (c.type.jdbcType) {
             JDBCType.BIT,
@@ -181,7 +181,7 @@ class FakeSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGen
             is Or -> disj.flatMap { it.bindings() }
             is WhereClauseLeafNode -> {
                 val type = column.type as LosslessJdbcFieldType<*, *>
-                listOf(io.airbyte.cdk.read.SelectQuery.Binding(bindingValue, type))
+                listOf(SelectQuery.Binding(bindingValue, type))
             }
         }
 }

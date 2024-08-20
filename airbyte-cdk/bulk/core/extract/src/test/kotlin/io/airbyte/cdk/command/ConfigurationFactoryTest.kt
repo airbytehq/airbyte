@@ -1,7 +1,8 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.cdk.fakesource
+package io.airbyte.cdk.command
 
-import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.fakesource.FakeSourceConfiguration
+import io.airbyte.cdk.fakesource.UserDefinedCursor
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.micronaut.context.annotation.Property
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(rebuildContext = true)
-class FakeSourceConfigurationTest {
+class ConfigurationFactoryTest {
     @Inject lateinit var actual: SourceConfiguration
 
     @Test
@@ -39,10 +40,7 @@ class FakeSourceConfigurationTest {
                 sshTunnel = SshPasswordAuthTunnelMethod("localhost", 22, "sshuser", "secret"),
                 sshConnectionOptions =
                     SshConnectionOptions(1_000.milliseconds, 2_000.milliseconds, Duration.ZERO),
-                jdbcUrlFmt = "jdbc:h2:tcp://%s:%d/mem:testdb",
-                schemas = setOf("PUBLIC", "TESTSCHEMA"),
                 cursor = UserDefinedCursor,
-                resumablePreferred = true,
                 maxConcurrency = 1,
                 checkpointTargetInterval = java.time.Duration.ofDays(100L),
             )

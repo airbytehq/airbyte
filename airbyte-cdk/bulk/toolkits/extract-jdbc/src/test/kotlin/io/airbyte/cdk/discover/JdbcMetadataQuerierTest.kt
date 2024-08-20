@@ -1,11 +1,11 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
-import io.airbyte.cdk.fakesource.FakeSourceConfiguration
-import io.airbyte.cdk.fakesource.FakeSourceConfigurationFactory
-import io.airbyte.cdk.fakesource.FakeSourceConfigurationJsonObject
-import io.airbyte.cdk.fakesource.FakeSourceOperations
 import io.airbyte.cdk.h2.H2TestFixture
+import io.airbyte.cdk.h2source.H2SourceConfiguration
+import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
+import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
+import io.airbyte.cdk.h2source.H2SourceOperations
 import java.sql.JDBCType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -17,16 +17,16 @@ class JdbcMetadataQuerierTest {
         h2.execute("CREATE TABLE kv (k INT PRIMARY KEY, v VARCHAR(60))")
     }
 
-    val factory = JdbcMetadataQuerier.Factory(FakeSourceOperations(), FakeSourceOperations())
+    val factory = JdbcMetadataQuerier.Factory(H2SourceOperations(), H2SourceOperations())
 
     @Test
     fun test() {
         val configPojo =
-            FakeSourceConfigurationJsonObject().apply {
+            H2SourceConfigurationJsonObject().apply {
                 port = h2.port
                 database = h2.database
             }
-        val config: FakeSourceConfiguration = FakeSourceConfigurationFactory().make(configPojo)
+        val config: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
         factory.session(config).use { mdq: MetadataQuerier ->
             Assertions.assertEquals(listOf("PUBLIC"), mdq.streamNamespaces())
             Assertions.assertEquals(listOf("KV"), mdq.streamNames("PUBLIC"))

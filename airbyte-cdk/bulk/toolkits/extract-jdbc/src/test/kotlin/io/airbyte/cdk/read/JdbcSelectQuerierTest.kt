@@ -3,10 +3,10 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.fakesource.FakeSourceConfiguration
-import io.airbyte.cdk.fakesource.FakeSourceConfigurationFactory
-import io.airbyte.cdk.fakesource.FakeSourceConfigurationJsonObject
 import io.airbyte.cdk.h2.H2TestFixture
+import io.airbyte.cdk.h2source.H2SourceConfiguration
+import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
+import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -79,12 +79,12 @@ class JdbcSelectQuerierTest {
         q: SelectQuery,
         vararg expected: String,
     ) {
-        val configPojo: FakeSourceConfigurationJsonObject =
-            FakeSourceConfigurationJsonObject().apply {
+        val configPojo: H2SourceConfigurationJsonObject =
+            H2SourceConfigurationJsonObject().apply {
                 port = h2.port
                 database = h2.database
             }
-        val config: FakeSourceConfiguration = FakeSourceConfigurationFactory().make(configPojo)
+        val config: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
         val querier: SelectQuerier = JdbcSelectQuerier(JdbcConnectionFactory(config))
         val actual: List<ObjectNode> = querier.executeQuery(q).use { it.asSequence().toList() }
         Assertions.assertIterableEquals(expected.toList().map(Jsons::readTree), actual)

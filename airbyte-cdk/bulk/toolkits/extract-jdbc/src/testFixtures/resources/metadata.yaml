@@ -1,0 +1,6 @@
+---
+data:
+  dockerRepository: "airbyte/h2-source"
+  documentationUrl: "https://docs.airbyte.com"
+  jdbc:
+    mode: sequential

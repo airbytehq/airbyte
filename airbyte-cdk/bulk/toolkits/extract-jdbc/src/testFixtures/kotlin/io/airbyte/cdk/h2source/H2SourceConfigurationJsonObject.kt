@@ -1,5 +1,5 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.cdk.fakesource
+package io.airbyte.cdk.h2source
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
@@ -16,6 +16,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationJsonObjectBase
@@ -26,7 +27,7 @@ import io.micronaut.context.annotation.ConfigurationProperties
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-/** [ConfigurationJsonObjectBase] implementation for a fake source. */
+/** [ConfigurationJsonObjectBase] implementation for [H2Source]. */
 @JsonSchemaTitle("Test Source Spec")
 @JsonPropertyOrder(
     value =
@@ -42,7 +43,8 @@ import jakarta.inject.Singleton
 @Singleton
 @Secondary
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
-class FakeSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class H2SourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")

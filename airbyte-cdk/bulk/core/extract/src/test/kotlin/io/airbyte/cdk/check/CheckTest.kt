@@ -1,8 +1,8 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.cdk.fakesource
+package io.airbyte.cdk.check
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.check.CheckOperation
+import io.airbyte.cdk.fakesource.FakeSourceConfigurationJsonObject
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.micronaut.context.annotation.Property
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["source"], rebuildContext = true)
 @Property(name = Operation.PROPERTY, value = "check")
-class FakeSourceCheckTest {
+class CheckTest {
     @Inject lateinit var checkOperation: CheckOperation<FakeSourceConfigurationJsonObject>
 
     @Inject lateinit var outputConsumer: BufferingOutputConsumer
@@ -22,6 +22,7 @@ class FakeSourceCheckTest {
     @Property(name = "airbyte.connector.config.host", value = "localhost")
     @Property(name = "airbyte.connector.config.port", value = "-1")
     @Property(name = "airbyte.connector.config.database", value = "testdb")
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
     fun testConfigBadPort() {
         assertFailed(" must have a minimum value of 0".toRegex())
     }
@@ -29,7 +30,7 @@ class FakeSourceCheckTest {
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
     @Property(name = "airbyte.connector.config.database", value = "testdb")
-    @Property(name = "metadata.resource", value = "fakesource/metadata-valid.json")
+    @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
     fun testSuccess() {
         assertSucceeded()
     }
@@ -37,7 +38,7 @@ class FakeSourceCheckTest {
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
     @Property(name = "airbyte.connector.config.database", value = "testdb")
-    @Property(name = "metadata.resource", value = "fakesource/metadata-empty.json")
+    @Property(name = "metadata.resource", value = "discover/metadata-empty.json")
     fun testBadSchema() {
         assertFailed("Discovered zero tables".toRegex())
     }
@@ -45,7 +46,7 @@ class FakeSourceCheckTest {
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
     @Property(name = "airbyte.connector.config.database", value = "testdb")
-    @Property(name = "metadata.resource", value = "fakesource/metadata-column-query-fails.json")
+    @Property(name = "metadata.resource", value = "discover/metadata-column-query-fails.json")
     fun testBadTables() {
         assertFailed("Unable to query any of the [0-9]+ discovered table".toRegex())
     }

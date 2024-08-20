@@ -6,16 +6,17 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "MSG": {
-              "type": "string"
-            },
             "ID": {
-              "type": "string"
+              "type": "string",
+              "contentEncoding": "base64"
             },
             "TS": {
               "type": "string",
               "format": "date-time",
               "airbyte_type": "timestamp_with_timezone"
+            },
+            "MSG": {
+              "type": "string"
             }
           }
         },
@@ -37,12 +38,12 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "V": {
-              "type": "string"
-            },
             "K": {
               "type": "number",
               "airbyte_type": "integer"
+            },
+            "V": {
+              "type": "string"
             }
           }
         },
