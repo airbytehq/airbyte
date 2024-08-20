@@ -32,7 +32,6 @@ dependencies {
 
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
-
     implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
 
     implementation 'mysql:mysql-connector-java:8.0.30'

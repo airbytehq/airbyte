@@ -41,32 +41,8 @@ class MysqlSourceMetadataQuerier(
             .map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
     }
 
-    override val memoizedTableNames: List<TableName> by lazy {
-        log.info { "Querying table names for catalog discovery." }
-        try {
-            val allTables = mutableSetOf<TableName>()
-            val dbmd: DatabaseMetaData = base.conn.metaData
-            for (schema in base.config.schemas + base.config.schemas.map { it.uppercase() }) {
-                dbmd.getTables(schema, schema, null, null).use { rs: ResultSet ->
-                    while (rs.next()) {
-                        allTables.add(
-                            TableName(
-                                catalog = rs.getString("TABLE_CAT"),
-                                schema = rs.getString("TABLE_SCHEM"),
-                                name = rs.getString("TABLE_NAME"),
-                                type = rs.getString("TABLE_TYPE") ?: "",
-                            ),
-                        )
-                    }
-                }
-            }
-            log.info { "Discovered ${allTables.size} table(s) in schemas ${base.config.schemas}." }
-            return@lazy allTables.toList().sortedBy {
-                "${it.catalog ?: ""}.${it.schema!!}.${it.name}.${it.type}"
-            }
-        } catch (e: Exception) {
-            throw RuntimeException("Table name discovery query failed: ${e.message}", e)
-        }
+    override fun queryTableSchema(schema: String) : ResultSet {
+        return base.conn.metaData.getTables(schema, schema, null, null)
     }
 
     val allUDTsByFQName: Map<String, UserDefinedType> by lazy {

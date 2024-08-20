@@ -2,6 +2,7 @@
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.command.SourceConfiguration
+import java.sql.ResultSet
 
 /** A very thin abstraction around JDBC metadata queries. */
 interface MetadataQuerier : AutoCloseable {
@@ -30,4 +31,5 @@ interface MetadataQuerier : AutoCloseable {
         /** An implementation might open a connection to build a [MetadataQuerier] instance. */
         fun session(config: T): MetadataQuerier
     }
+    fun queryTableSchema(schema: String) : ResultSet
 }
