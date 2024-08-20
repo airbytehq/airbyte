@@ -52,6 +52,9 @@ class S3ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceTes
                 AirbyteCatalog::class.java
             )
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
         val messages: List<AirbyteMessage> =
             readResource(
                     DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(

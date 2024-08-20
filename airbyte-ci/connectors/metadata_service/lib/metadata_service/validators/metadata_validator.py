@@ -8,7 +8,7 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import semver
 import yaml
-from metadata_service.docker_hub import is_image_on_docker_hub
+from metadata_service.docker_hub import get_latest_version_on_dockerhub, is_image_on_docker_hub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
 from pydash.objects import get
@@ -175,6 +175,28 @@ def validate_pypi_only_for_python(
     return True, None
 
 
+def validate_docker_image_tag_is_not_decremented(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    docker_image_name = get(metadata_definition, "data.dockerRepository")
+    if not docker_image_name:
+        return False, "The dockerRepository field is not set"
+    docker_image_tag = get(metadata_definition, "data.dockerImageTag")
+    if not docker_image_tag:
+        return False, "The dockerImageTag field is not set."
+    latest_released_version = get_latest_version_on_dockerhub(docker_image_name)
+    # This is happening when the connector has never been released to DockerHub
+    if not latest_released_version:
+        return True, None
+    if docker_image_tag == latest_released_version:
+        return True, None
+    current_semver_version = semver.Version.parse(docker_image_tag)
+    latest_released_semver_version = semver.Version.parse(latest_released_version)
+    if current_semver_version < latest_released_semver_version:
+        return False, f"The dockerImageTag value can't be decremented: it should be equal to or above {latest_released_version}."
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
@@ -182,6 +204,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_docs_path_exists,
     validate_metadata_base_images_in_dockerhub,
     validate_pypi_only_for_python,
+    validate_docker_image_tag_is_not_decremented,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

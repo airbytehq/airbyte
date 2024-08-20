@@ -528,7 +528,7 @@ module.exports = {
       label: "Managing Syncs",
       items: [
         "cloud/managing-airbyte-cloud/review-connection-status",
-        "cloud/managing-airbyte-cloud/review-sync-history",
+        "cloud/managing-airbyte-cloud/review-connection-timeline",
         "operator-guides/browsing-output-logs",
         "operator-guides/clear",
         "operator-guides/refreshes",
@@ -688,6 +688,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/july_2024",
         "release_notes/june_2024",
         "release_notes/may_2024",
         "release_notes/april_2024",

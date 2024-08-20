@@ -22,7 +22,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6babfc42-c734-4ef6-a817-6eca15f0f9b7
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-everhour
   githubIssueLabel: source-everhour
   icon: everhour.svg

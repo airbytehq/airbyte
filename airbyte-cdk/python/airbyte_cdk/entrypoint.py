@@ -24,7 +24,7 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats, ConnectorSpec
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
-from airbyte_cdk.utils import is_cloud_environment, message_utils
+from airbyte_cdk.utils import PrintBuffer, is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -232,10 +232,11 @@ class AirbyteEntrypoint(object):
 def launch(source: Source, args: List[str]) -> None:
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
-    for message in source_entrypoint.run(parsed_args):
-        # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
-        # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
-        print(f"{message}\n", end="", flush=True)
+    with PrintBuffer():
+        for message in source_entrypoint.run(parsed_args):
+            # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
+            # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
+            print(f"{message}\n", end="", flush=True)
 
 
 def _init_internal_request_filter() -> None:

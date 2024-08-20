@@ -31,6 +31,7 @@ Try not to make a lot of requests (thousands) in a short amount of time (minutes
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.1.14 | 2024-08-03 | [43137](https://github.com/airbytehq/airbyte/pull/43137) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42790](https://github.com/airbytehq/airbyte/pull/42790) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42210](https://github.com/airbytehq/airbyte/pull/42210) | Update dependencies |
 | 0.1.11 | 2024-07-13 | [41844](https://github.com/airbytehq/airbyte/pull/41844) | Update dependencies |

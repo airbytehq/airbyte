@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 87c58f70-6f7a-4f70-aba5-bab1a458f5ba
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-wikipedia-pageviews
   githubIssueLabel: source-wikipedia-pageviews
   icon: wikipedia-pageviews.svg

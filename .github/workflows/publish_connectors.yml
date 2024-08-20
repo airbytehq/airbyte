@@ -44,6 +44,7 @@ jobs:
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --metadata-changes-only publish --main-release"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
+          max_attempts: 2
 
       - name: Publish connectors [manual]
         id: publish-connectors
@@ -66,6 +67,7 @@ jobs:
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
           airbyte_ci_binary_url: ${{ github.event.inputs.airbyte_ci_binary_url }}
+          max_attempts: 2
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure

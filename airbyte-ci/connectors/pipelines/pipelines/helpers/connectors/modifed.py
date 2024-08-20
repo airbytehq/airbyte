@@ -27,7 +27,7 @@ def _find_modified_connectors(
     modified_connectors = set()
 
     for connector in all_connectors:
-        if Path(file_path).is_relative_to(Path(connector.code_directory)):
+        if Path(file_path).is_relative_to(Path(connector.code_directory)) or file_path == connector.documentation_file_path:
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
             modified_connectors.add(connector)
 

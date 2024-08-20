@@ -220,7 +220,7 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
-
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
     result = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert "definitionId" not in result
     assert "test-id" == result[expected_id_field]
@@ -235,6 +235,7 @@ def test_tombstone_custom_public_set():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["tombstone"] is False
@@ -251,6 +252,7 @@ def test_fields_deletion():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert "registries" not in result
@@ -283,6 +285,7 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.file_path = f"metadata/{expected_docker_image_tag}/metadata.yaml"
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     registry_entry = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert registry_entry["dockerImageTag"] == expected_docker_image_tag
@@ -308,6 +311,7 @@ def test_source_type_extraction():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["sourceType"] == "database"
@@ -322,6 +326,7 @@ def test_support_level_default():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["supportLevel"] == "community"
@@ -344,6 +349,7 @@ def test_migration_documentation_url_default():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     expected_top_migration_documentation_url = "test-doc-url-migrations"
     expected_version_migration_documentation_url = "test-doc-url-migrations#1.0.0"
@@ -373,6 +379,7 @@ def test_breaking_changes_migration_documentation_url():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["releases"]["migrationDocumentationUrl"] == "test-migration-doc-url"
@@ -388,6 +395,7 @@ def test_icon_url():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["iconUrl"] == "test-icon-url"

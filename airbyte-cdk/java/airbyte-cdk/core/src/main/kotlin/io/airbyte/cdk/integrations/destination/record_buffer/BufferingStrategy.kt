@@ -32,9 +32,8 @@ interface BufferingStrategy : AutoCloseable {
         message: AirbyteMessage
     ): Optional<BufferFlushType>
 
-    /** Flush buffered messages in a buffer from a particular stream */
-    @Throws(Exception::class)
-    fun flushSingleBuffer(stream: AirbyteStreamNameNamespacePair, buffer: SerializableBuffer)
+    /** Flush the buffered messages from a single stream */
+    @Throws(Exception::class) fun flushSingleStream(stream: AirbyteStreamNameNamespacePair)
 
     /** Flush all buffers that were buffering message data so far. */
     @Throws(Exception::class) fun flushAllBuffers()
