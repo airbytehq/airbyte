@@ -23,13 +23,19 @@ class PasswordBasedAuthorizationModel(BaseModel):
 
 class PGVectorIndexingModel(BaseModel):
 
-    # TODO: Compare and update to match `destination-postgres`
     host: str = Field(
         ...,
         title="Host",
         order=1,
-        description="Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
+        description="Enter the account name you want to use to access the database.",
         examples=["AIRBYTE_ACCOUNT"],
+    )
+    port: int = Field(
+        ...,
+        title="Port",
+        order=2,
+        description= "Enter the port you want to use to access the database",
+        examples=["5432"],
     )
     database: str = Field(
         ...,

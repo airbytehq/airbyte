@@ -9,8 +9,8 @@ from airbyte.strategies import WriteStrategy
 import logging
 from airbyte_cdk.models import ConnectorSpecification, Status
 
-from destination_snowflake_cortex.config import ConfigModel
-from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
+from destination_pgvector.config import ConfigModel
+from destination_pgvector.destination import DestinationPGVector
 
 
 class TestDestinationSnowflakeCortex(unittest.TestCase):
@@ -20,8 +20,7 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
             "embedding": {"mode": "openai", "openai_key": "mykey"},
             "indexing": {
                 "host": "MYACCOUNT",
-                "role": "MYUSERNAME",
-                "warehouse": "MYWAREHOUSE",
+                "port": 5432,
                 "database": "MYDATABASE",
                 "default_schema": "MYSCHEMA",
                 "username": "MYUSERNAME",
@@ -32,48 +31,48 @@ class TestDestinationSnowflakeCortex(unittest.TestCase):
         self.logger = logging.getLogger("airbyte")
 
     def test_spec(self):
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         result = destination.spec()
 
         self.assertIsInstance(result, ConnectorSpecification)
 
-    @patch("destination_snowflake_cortex.cortex_processor.SnowflakeCortexSqlProcessor")
-    def test_check(self, MockedSnowflakeCortexSqlProcessor):
+    @patch("destination_pgvector.pgvector_processor.PGVectorProcessor")
+    def test_check(self, MockedPGVectorProcessor):
         mock_processor = Mock()
-        MockedSnowflakeCortexSqlProcessor.return_value = mock_processor
+        MockedPGVectorProcessor.return_value = mock_processor
 
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         result = destination.check(self.logger, self.config)
 
         self.assertEqual(result.status, Status.SUCCEEDED)
         mock_processor.sql_config.connect.assert_called_once()
 
-    @patch("destination_snowflake_cortex.cortex_processor.SnowflakeCortexSqlProcessor")
-    def test_check_with_errors(self, MockedSnowflakeCortexSqlProcessor):
+    @patch("destination_pgvector.pgvector_processor.PGVectorProcessor")
+    def test_check_with_errors(self, MockedPGVectorProcessor):
         mock_processor = Mock()
-        MockedSnowflakeCortexSqlProcessor.return_value = mock_processor
+        MockedPGVectorProcessor.return_value = mock_processor
 
         indexer_error_message = "Indexer Error"
         mock_processor.sql_config.connect.side_effect = Exception(indexer_error_message)
 
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         result = destination.check(self.logger, self.config)
         self.assertEqual(result.status, Status.FAILED)
         mock_processor.sql_config.connect.assert_called_once()
 
-    @patch("destination_snowflake_cortex.cortex_processor.SnowflakeCortexSqlProcessor")
+    @patch("destination_pgvector.pgvector_processor.PGVectorProcessor")
     def test_write(
         self,
-        MockedSnowflakeCortexProcessor,
+        MockedPGVectorProcessor,
     ):
         mock_processor = Mock()
-        MockedSnowflakeCortexProcessor.return_value = mock_processor
+        MockedPGVectorProcessor.return_value = mock_processor
         mock_processor.process_airbyte_messages_as_generator.return_value = []
 
         configured_catalog = MagicMock()
         input_messages = []
 
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         list(destination.write(self.config, configured_catalog, input_messages))
 
         mock_processor.process_airbyte_messages_as_generator.assert_called_once_with(

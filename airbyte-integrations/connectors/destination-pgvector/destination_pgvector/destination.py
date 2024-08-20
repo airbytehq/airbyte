@@ -36,6 +36,7 @@ class DestinationPGVector(Destination):
         self.sql_processor = pgvector_processor.PGVectorProcessor(
             sql_config=pgvector_processor.PostgresConfig(
                 host=config.indexing.host,
+                port=config.indexing.port,
                 database=config.indexing.database,
                 schema_name=config.indexing.default_schema,
                 username=config.indexing.username,
