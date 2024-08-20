@@ -54,6 +54,9 @@ This source is capable of syncing the following core streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.0 | 2024-08-15 | [44156](https://github.com/airbytehq/airbyte/pull/44156) | Refactor connector to manifest-only format |
+| 0.2.19 | 2024-08-10 | [43583](https://github.com/airbytehq/airbyte/pull/43583) | Update dependencies |
 | 0.2.18 | 2024-08-03 | [43169](https://github.com/airbytehq/airbyte/pull/43169) | Update dependencies |
 | 0.2.17 | 2024-07-27 | [42824](https://github.com/airbytehq/airbyte/pull/42824) | Update dependencies |
 | 0.2.16 | 2024-07-20 | [42272](https://github.com/airbytehq/airbyte/pull/42272) | Update dependencies |

@@ -19,6 +19,12 @@ from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
 GROUP_NAME = "github"
 TOOLING_TEAM_SLACK_TEAM_ID = "S077R8636CV"
+# We give 6 hours for the metadata to be updated
+# This is an empirical value that we can adjust if needed
+# When our auto-merge pipeline runs it can merge hundreds of up-to-date PRs following.
+# Given our current publish concurrency of 10 runners, it can take up to 6 hours to publish all the connectors.
+# A shorter grace period could lead to false positives in stale metadata detection.
+PUBLISH_GRACE_PERIOD = datetime.timedelta(hours=int(os.getenv("PUBLISH_GRACE_PERIOD_HOURS", 6)))
 
 
 def _get_md5_of_github_file(context: OpExecutionContext, github_connector_repo: Repository, path: str) -> str:
@@ -84,6 +90,9 @@ def github_metadata_definitions(context):
     for metadata_file in github_connectors_metadata_files:
         metadata_raw = _get_content_of_github_file(context, github_connector_repo, metadata_file["path"])
         metadata_dict = yaml.safe_load(metadata_raw.decoded_content)
+        if metadata_dict.get("data").get("supportLevel") == "archived":
+            print(f"Skipping archived connector: {metadata_dict.get('data').get('dockerRepository')}")
+            continue
         metadata_definitions.append(
             LatestMetadataEntry(
                 metadata_definition=MetadataDefinition.parse_obj(metadata_dict), last_modified=metadata_file["last_modified"]
@@ -113,7 +122,7 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, m
         if metadata_entry.metadata_definition.data.supportLevel
         != "archived"  # We give a 2 hour grace period for the metadata to be updated
         and datetime.datetime.strptime(metadata_entry.last_modified, "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=datetime.timezone.utc)
-        > now - datetime.timedelta(hours=2)
+        < now - PUBLISH_GRACE_PERIOD
     }
 
     stale_connectors = []
@@ -127,22 +136,22 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, m
     stale_connectors_df = pd.DataFrame(stale_connectors)
 
     # If any stale files exist, report to slack
-    channel = os.getenv("STALE_REPORT_CHANNEL")
+    stale_report_channel = os.getenv("STALE_REPORT_CHANNEL")
+    publish_update_channel = os.getenv("PUBLISH_UPDATE_CHANNEL")
     any_stale = len(stale_connectors_df) > 0
-    if channel:
-        if any_stale:
-            stale_report_md = stale_connectors_df.to_markdown(index=False)
-            send_slack_message(context, channel, f"🚨 Stale metadata detected! (cc. <!subteam^{TOOLING_TEAM_SLACK_TEAM_ID}>)")
-            send_slack_message(context, channel, stale_report_md, enable_code_block_wrapping=True)
-        else:
-            message = textwrap.dedent(
-                f"""
-            Analyzed {len(latest_versions_on_github)} metadata files on our master branch and {len(latest_versions_on_gcs)} latest metadata files hosted in GCS.
-            All dockerImageTag value on master match the latest metadata files on GCS.
-            No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
-            """
-            )
-            send_slack_message(context, channel, message)
+    if any_stale and stale_report_channel:
+        stale_report_md = stale_connectors_df.to_markdown(index=False)
+        send_slack_message(context, stale_report_channel, f"🚨 Stale metadata detected! (cc. <!subteam^{TOOLING_TEAM_SLACK_TEAM_ID}>)")
+        send_slack_message(context, stale_report_channel, stale_report_md, enable_code_block_wrapping=True)
+    if not any_stale and publish_update_channel:
+        message = textwrap.dedent(
+            f"""
+        Analyzed {len(latest_versions_on_github)} metadata files on our master branch and {len(latest_versions_on_gcs)} latest metadata files hosted in GCS.
+        All dockerImageTag value on master match the latest metadata files on GCS.
+        No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
+        """
+        )
+        send_slack_message(context, publish_update_channel, message)
     return output_dataframe(stale_connectors_df)
 
 

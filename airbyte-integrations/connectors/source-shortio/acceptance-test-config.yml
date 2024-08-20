@@ -4,7 +4,7 @@ connector_image: airbyte/source-shortio:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_shortio/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -25,7 +25,9 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
   incremental:
-    bypass_reason: "Last record is duplicated for test_two_sequential_reads since greater or equal is used"
+    bypass_reason:
+      "Last record is duplicated for test_two_sequential_reads since
+      greater or equal is used"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

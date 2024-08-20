@@ -5,11 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.consumers.BufferingOutputConsumer
-import io.airbyte.cdk.source.PartitionReadCheckpoint
-import io.airbyte.cdk.source.PartitionReader
-import io.airbyte.cdk.source.PartitionsCreator
-import io.airbyte.cdk.source.PartitionsCreatorFactory
+import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
