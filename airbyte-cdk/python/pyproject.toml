@@ -62,7 +62,6 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
 pytz = "2024.1"
-orjson = "^3.10.0"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"
@@ -102,7 +101,6 @@ unit-test-with-cov = {cmd = "pytest -s unit_tests -c pytest.ini --cov=airbyte_cd
 check-lockfile = {cmd = "poetry check", help = "Check the poetry lock file."}
 check-local = {sequence = ["lint", "type-check", "check-lockfile", "unit-test-with-cov"], help = "Lint all code, type-check modified files, and run unit tests."}
 check-ci = {sequence = ["check-lockfile", "build", "lint", "unit-test-with-cov"], help = "Build the package, lint and run unit tests. Does not include type-checking."}
-codeflash = {cmd = "poetry run codeflash"}
 
 # Build and check
 pre-push = {sequence = ["build", "check-local"], help = "Run all build and check tasks."}
@@ -111,5 +109,5 @@ pre-push = {sequence = ["build", "check-local"], help = "Run all build and check
 python_versions = ["3.10", "3.11"]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
-poe_tasks = ["check-ci", "codeflash"]
+poe_tasks = ["check-ci"]
 mount_docker_socket = true
