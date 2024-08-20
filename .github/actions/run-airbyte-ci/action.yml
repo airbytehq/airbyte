@@ -149,6 +149,7 @@ runs:
         SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
         SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
+        CODEFLASH_API_KEY: ${{ inputs.codeflash_api_key }}
       with:
         shell: bash
         max_attempts: ${{ inputs.max_attempts }}
