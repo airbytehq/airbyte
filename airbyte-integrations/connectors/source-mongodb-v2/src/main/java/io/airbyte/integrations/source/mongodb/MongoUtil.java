@@ -131,15 +131,28 @@ public class MongoUtil {
                                                       final String databaseName,
                                                       final Integer sampleSize,
                                                       final boolean isSchemaEnforced,
-                                                      final List<String> collections) {
+                                                      final List<String> collections,
+                                                      final JsonNode schemas) {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
-
     if ( collections != null && !collections.isEmpty() ) {
       authorizedCollections.removeIf(c -> !collections.contains(c));
     }
 
+    final Map<String, JsonNode> collectionSchemas = new HashMap<>();
+    if (schemas != null) {
+      if (!isSchemaEnforced) {
+        throw new ConfigErrorException("Schemas are only supported in Schema Enforced mode");
+      }
+      schemas.fields().forEachRemaining(field -> {
+        collectionSchemas.put(field.getKey(), field.getValue());
+      });
+    }
+
     return authorizedCollections.parallelStream()
-        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced))
+        .map(collectionName -> {
+            JsonNode collectionSchema = collectionSchemas.get(collectionName);
+            return discoverFields(collectionName, mongoClient, databaseName, sampleSize, isSchemaEnforced, collectionSchema);
+        })
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toList());
@@ -266,6 +279,26 @@ public class MongoUtil {
   }
 
   /**
+   * Parses a JsonNode representing a field into a Field object.
+   *
+   * @param fieldNode The JsonNode representing the field.
+   * @return The parsed Field object.
+   */
+  private static Field parseFieldNode(final JsonNode fieldNode) {
+    final String fieldName = fieldNode.get("name").asText();
+    final JsonSchemaType fieldType = convertToSchemaType(fieldNode.get("type").asText());
+    if (fieldNode.has("subfields") && fieldNode.get("subfields").isArray()) {
+      final List<Field> subFields = new ArrayList<>();
+      for (JsonNode subFieldNode : fieldNode.get("subfields")) {
+        subFields.add(parseFieldNode(subFieldNode));
+      }
+      return new MongoField(fieldName, fieldType, subFields);
+    } else {
+      return new MongoField(fieldName, fieldType);
+    }
+  }
+
+  /**
    * Discovers the fields available to the stream.
    *
    * @param collectionName The name of the collection associated with the stream (stream name).
@@ -275,6 +308,7 @@ public class MongoUtil {
    *        unique fields for a collection
    * @param isSchemaEnforced True if the connector is running in schema mode, false if running in
    *        schemaless (packed) mode
+   * @param schema The schema to use for the stream.
    * @return The {@link AirbyteStream} that contains the discovered fields or an empty
    *         {@link Optional} if the underlying collection is empty.
    */
@@ -282,14 +316,23 @@ public class MongoUtil {
                                                         final MongoClient mongoClient,
                                                         final String databaseName,
                                                         final Integer sampleSize,
-                                                        final boolean isSchemaEnforced) {
+                                                        final boolean isSchemaEnforced,
+                                                        final JsonNode schema) {
     /*
      * Fetch the keys/types from the first N documents and the last N documents from the collection.
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
      */
     final Set<Field> discoveredFields;
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-    if (isSchemaEnforced) {
+    if (schema != null) {
+      discoveredFields = new HashSet<>();
+      if (schema.has("fields") && schema.get("fields").isArray()) {
+        for (JsonNode fieldNode : schema.get("fields")) {
+          Field field = parseFieldNode(fieldNode);
+          discoveredFields.add(field);
+        }
+      }
+    } else if (isSchemaEnforced) {
       discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
     } else {
       // In schemaless mode, we only sample one record as we're only interested in the _id field (which

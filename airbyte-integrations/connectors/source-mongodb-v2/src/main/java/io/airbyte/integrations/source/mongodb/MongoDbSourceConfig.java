@@ -14,6 +14,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISC
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_INITIAL_RECORD_WAITING_TIME_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.COLLECTIONS_INCLUSION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INITIAL_RECORD_WAITING_TIME_SEC;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.INVALID_CDC_CURSOR_POSITION_PROPERTY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
@@ -21,6 +22,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.RESYNC_DATA_
 import static io.airbyte.integrations.source.mongodb.MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Collections;
 import java.util.ArrayList;
@@ -109,6 +111,34 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
       }
 
     return collections;
+  }
+
+  public boolean hasSchema() {
+    ObjectMapper objectmapper = new ObjectMapper();
+    JsonNode schema;
+    if (rawConfig.has(SCHEMA_CONFIGURATION_KEY) && rawConfig.get(SCHEMA_CONFIGURATION_KEY).asText().length() > 0) {
+      try {
+        schema = objectmapper.readTree(rawConfig.get(SCHEMA_CONFIGURATION_KEY).asText());
+        if (schema.fields().hasNext()) {
+          return true;
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("Error reading schema", e);
+      } 
+    } 
+    return false;
+  }
+
+  public JsonNode getSchema() {
+    if (!hasSchema()) {
+      return null;
+    }
+    ObjectMapper objectmapper = new ObjectMapper();
+    try {
+      return objectmapper.readTree(rawConfig.get(SCHEMA_CONFIGURATION_KEY).asText());
+    } catch (Exception e) {
+      throw new RuntimeException("Error reading schema", e);
+    }
   }
 
   public Integer getInitialWaitingTimeSeconds() {
