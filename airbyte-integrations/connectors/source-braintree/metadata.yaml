@@ -16,7 +16,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-braintree
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

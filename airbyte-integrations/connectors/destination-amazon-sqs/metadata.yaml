@@ -8,7 +8,7 @@ data:
   icon: awssqs.svg
   license: MIT
   name: Amazon SQS
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

@@ -182,10 +182,10 @@ def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOp
         return metadata_dict
 
     # replace any dockerImageTag references with the actual tag
-    # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
+    # this includes metadata.data.dockerImageTag, metadata.data.registryOverrides[].dockerImageTag
     # where registries is a dictionary of registry name to registry object
     metadata_dict["data"]["dockerImageTag"] = validator_opts.prerelease_tag
-    for registry in get(metadata_dict, "data.registries", {}).values():
+    for registry in get(metadata_dict, "data.registryOverrides", {}).values():
         if "dockerImageTag" in registry:
             registry["dockerImageTag"] = validator_opts.prerelease_tag
 

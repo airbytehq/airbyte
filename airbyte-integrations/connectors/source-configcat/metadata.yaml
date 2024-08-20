@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4fd7565c-8b99-439b-80d0-2d965e1d958c
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   dockerRepository: airbyte/source-configcat
   githubIssueLabel: source-configcat
   icon: configcat.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-configcat
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
