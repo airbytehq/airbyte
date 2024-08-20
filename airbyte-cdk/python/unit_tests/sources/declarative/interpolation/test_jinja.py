@@ -20,6 +20,13 @@ def test_get_value_from_config():
     assert val == "2022-01-01"
 
 
+def test_get_missing_value_from_config():
+    s = "{{ config['date'] }}"
+    config = {}
+    val = interpolation.eval(s, config)
+    assert val is None
+
+
 @pytest.mark.parametrize(
     "valid_types, expected_value",
     [
@@ -40,6 +47,14 @@ def test_get_value_from_stream_slice():
     stream_slice = {"date": "2020-09-09"}
     val = interpolation.eval(s, config, **{"stream_slice": stream_slice})
     assert val == "2020-09-09"
+
+
+def test_get_missing_value_from_stream_slice():
+    s = "{{ stream_slice['date'] }}"
+    config = {"date": "2022-01-01"}
+    stream_slice = {}
+    val = interpolation.eval(s, config, **{"stream_slice": stream_slice})
+    assert val is None
 
 
 def test_get_value_from_a_list_of_mappings():
