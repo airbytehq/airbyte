@@ -4,13 +4,13 @@
 
 import ast
 from functools import cache
-from typing import Any, AsyncIterator, Iterator, Mapping, Optional, Tuple, Type
+from typing import Any, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.types import Config
-from jinja2 import StrictUndefined, meta
+from jinja2 import meta
 from jinja2.environment import Template
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import SandboxedEnvironment
@@ -64,7 +64,6 @@ class JinjaInterpolation(Interpolation):
     RESTRICTED_BUILTIN_FUNCTIONS = ["range"]  # The range function can cause very expensive computations
 
     def __init__(self) -> None:
-        # StrictUndefined makes Jinja throw an exception, instead of returning None when undeclared variable is encountered
         self._environment = StreamPartitionAccessEnvironment()
         self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
@@ -127,15 +126,13 @@ class JinjaInterpolation(Interpolation):
             # It can be returned as is
             return s
 
-
     @cache
-    def _find_undeclared_variables(self, s:Optional[str]) -> Template:
+    def _find_undeclared_variables(self, s: Optional[str]) -> Template:
         """
         Find undeclared variables and cache them
         """
-        ast = self._environment.parse(s) # type: ignore # parse is able to handle None
+        ast = self._environment.parse(s)  # type: ignore # parse is able to handle None
         return meta.find_undeclared_variables(ast)
-
 
     @cache
     def _compile(self, s: Optional[str]) -> Template:
