@@ -6,6 +6,7 @@ import threading
 import time
 from typing import Any, Iterable, Mapping, Optional, Union
 
+from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
@@ -43,7 +44,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     - When using the `incremental_dependency` option, the sync will progress through parent records, preventing the sync from getting infinitely stuck. However, it is crucial to understand the requirements for both the `global_substream_cursor` and `incremental_dependency` options to avoid data loss.
     """
 
-    def __init__(self, stream_cursor: DeclarativeCursor, partition_router: PartitionRouter):
+    def __init__(self, stream_cursor: DatetimeBasedCursor, partition_router: PartitionRouter):
         self._stream_cursor = stream_cursor
         self._partition_router = partition_router
         self._timer = Timer()
@@ -60,6 +61,12 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         It holds onto one slice in memory to set `_all_slices_yielded` to `True` before yielding the
         final slice. A semaphore is used to track the processing of slices, ensuring that `close_slice`
         is called only after all slices have been processed.
+
+        We expect the following events:
+        * Yields all the slices except the last one. At this point, `close_slice` won't actually close the global slice as `self._all_slices_yielded == False`
+        * Release the semaphore one last time before setting `self._all_slices_yielded = True`. This will cause `close_slice` to know about all the slices before we indicate that all slices have been yielded so the left side of `if self._all_slices_yielded and self._slice_semaphore._value == 0` will be false if not everything is closed
+        * Setting `self._all_slices_yielded = True`. We do that before actually yielding the last slice as the caller of `stream_slices` might stop iterating at any point and hence the code after `yield` might not be executed
+        * Yield the last slice. At that point, once there are as many slices yielded as closes, the global slice will be closed too
         """
         previous_slice = None
 
