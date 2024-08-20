@@ -44,6 +44,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.sources.utils.discover_error_handler import AbstractDiscoverErrorHandler
+from airbyte_cdk.sources.file_based.file_based_discovery_error_handler import FileBasedDiscoverErrorHandler
 from pydantic.v1.error_wrappers import ValidationError
 
 DEFAULT_CONCURRENCY = 100
@@ -93,6 +95,9 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         if self._message_repository is None:
             self._message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[self.logger.level]))
         return self._message_repository
+
+    def discover_error_handler(self) -> AbstractDiscoverErrorHandler:
+        return FileBasedDiscoverErrorHandler()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """

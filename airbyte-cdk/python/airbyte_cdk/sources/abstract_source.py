@@ -32,6 +32,7 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger, SliceLogger
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.sources.utils.discover_error_handler import AbstractDiscoverErrorHandler, DefaultDiscoverErrorHandler
 
 _default_message_repository = InMemoryMessageRepository()
 
@@ -67,11 +68,24 @@ class AbstractSource(Source, ABC):
     _stream_to_instance_map: Dict[str, Stream] = {}
     _slice_logger: SliceLogger = DebugSliceLogger()
 
+    def discover_error_handler() -> AbstractDiscoverErrorHandler:
+        return DefaultDiscoverErrorHandler()
+
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
         """
-        streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
+        # streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
+        streams = []
+        for stream in self.streams(config=config):
+            try:
+                streams.append(stream.as_airbyte_stream())
+            except Exception as e:
+                self.discover_error_handler().handle_discover_error(stream.logger, e, stream)
+
+        if not streams:
+            raise Exception("No streams were discovered in the source. Please check the source configuration.")
+
         return AirbyteCatalog(streams=streams)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
