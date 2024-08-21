@@ -68,7 +68,7 @@ In addition, in the connector UI you define two set of fields for this connector
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
-| 0.2.19  | 2024-08-22 | [](https://github.com/airbytehq/airbyte/pull/) | Update test dependencies                                     |
+| 0.2.19  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
 | 0.2.18  | 2024-08-17 | [44310](https://github.com/airbytehq/airbyte/pull/44310) | Update dependencies |
 | 0.2.17  | 2024-08-12 | [43858](https://github.com/airbytehq/airbyte/pull/43858) | Update dependencies |
 | 0.2.16  | 2024-08-10 | [43494](https://github.com/airbytehq/airbyte/pull/43494) | Update dependencies |

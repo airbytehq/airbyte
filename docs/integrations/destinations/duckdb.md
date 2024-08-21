@@ -116,7 +116,7 @@ This error may indicate that you are connecting with a `0.10.x` DuckDB client (a
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                                                                                                                                                                                                |
 |:--------| :--------- | :-------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.16  | 2024-08-22 | [](https://github.com/airbytehq/airbyte/pull/) | Update test dependencies                                     |
+| 0.4.16  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
 | 0.4.15  | 2024-08-17 | [44215](https://github.com/airbytehq/airbyte/pull/44215) | Update dependencies |
 | 0.4.14  | 2024-08-12 | [43755](https://github.com/airbytehq/airbyte/pull/43755) | Update dependencies |
 | 0.4.13  | 2024-08-10 | [43536](https://github.com/airbytehq/airbyte/pull/43536) | Update dependencies |
