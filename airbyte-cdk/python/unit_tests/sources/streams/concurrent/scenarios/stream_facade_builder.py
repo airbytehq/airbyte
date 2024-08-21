@@ -1,18 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import concurrent
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import (
-    AirbyteStateMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    DestinationSyncMode,
-    SyncMode,
-)
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
@@ -59,7 +53,6 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(
-            stream_instance_map={s.name: AirbyteStream(name=s.name, namespace=None, json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]) for s in self._streams},
             state=self._state,
         )  # The input values into the AirbyteStream are dummy values; the connector state manager only uses `name` and `namespace`
 

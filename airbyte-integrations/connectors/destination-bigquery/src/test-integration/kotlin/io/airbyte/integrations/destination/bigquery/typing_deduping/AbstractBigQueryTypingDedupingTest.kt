@@ -290,6 +290,65 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
         }
     }
 
+    @Test
+    fun testGenerationIdMigrationForOverwrite() {
+        // First sync
+        val catalog1 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(41L)
+                            .withGenerationId(42L)
+                            .withMinimumGenerationId(0L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
+                )
+        val messages1 = readMessages("dat/sync1_messages.jsonl")
+        runSync(
+            catalog1,
+            messages1,
+            "airbyte/destination-bigquery:2.4.20",
+            // Old connector version can't handle TRACE messages; disable the
+            // stream status message
+            streamStatus = null,
+        )
+
+        // Second sync
+        val catalog2 =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withSyncId(42L)
+                            .withGenerationId(43L)
+                            .withMinimumGenerationId(43L)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(SCHEMA),
+                            ),
+                    ),
+                )
+        val messages2 = readMessages("dat/sync2_messages.jsonl")
+        runSync(catalog2, messages2)
+
+        val expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_overwrite_raw.jsonl")
+        val expectedFinalRecords2 =
+            readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
+        verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
     protected open val rawDataset: String
         /**
          * Subclasses using a config with a nonstandard raw table dataset should override this
