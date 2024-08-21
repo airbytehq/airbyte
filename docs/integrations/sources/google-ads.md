@@ -247,10 +247,6 @@ For incremental streams, data is synced up to the previous day using your Google
 
 Primary keys are chosen to uniquely identify records within streams. In this selection, we considered the scope of ID uniqueness as detailed in [the Google Ads API structure documentation](https://developers.google.com/google-ads/api/docs/concepts/api-structure#object_ids). This approach guarantees that each record remains unique across various scopes and contexts. Moreover, in the Google Ads API, segmentation is crucial for dissecting performance data. As pointed out in [the Google Ads support documentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation), segments offer a granular insight into data based on specific criteria, like device type or click interactions.
 
-### Entity-Relationship Diagram (ERD)
-To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
-[![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-google-ads?view=relationships)
-
 ## Custom Query: Understanding Google Ads Query Language
 
 Additional streams for Google Ads can be dynamically created using custom queries.
