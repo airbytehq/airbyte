@@ -55,7 +55,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """State setter, accept state serialized by state getter."""
         self._cursor.set_initial_state(value)
 
-    @property  # type: ignore
+    @property  # type: ignore # no suitable parent cursor type
     def cursor(self) -> Optional[AbstractFileBasedCursor]:
         return self._cursor
 
@@ -179,6 +179,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 exception=AirbyteTracedException(exception=config_exception),
                 failure_type=FailureType.config_error,
             )
+        except EncodingError as encoding_error:
+            raise AirbyteTracedException(
+                internal_message="File encoding does not match configuration.",
+                message=FileBasedSourceError.ENCODING_ERROR.value,
+                exception=encoding_error,
+                failure_type=FailureType.config_error,
+            )
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
@@ -280,12 +287,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 try:
                     base_schema = merge_schemas(base_schema, task.result())
                 except EncodingError as encoding_error:
-                    raise AirbyteTracedException(
-                        internal_message="File encoding does not match configuration.",
-                        message=FileBasedSourceError.ENCODING_ERROR.value,
-                        exception=encoding_error,
-                        failure_type=FailureType.config_error,
-                    )
+                    raise encoding_error
                 except Exception as exc:
                     self.logger.error(f"An error occurred inferring the schema. \n {traceback.format_exc()}", exc_info=exc)
 
