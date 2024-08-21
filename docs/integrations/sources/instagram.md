@@ -102,6 +102,10 @@ the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). 
 related to Instagram Ads, use the Facebook Marketing source.
 :::
 
+### Entity-Relationship Diagram (ERD)
+To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
+[![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-instagram?view=relationships)
+
 ## Data type map
 
 AirbyteRecords are required to conform to

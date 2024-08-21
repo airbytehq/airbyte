@@ -210,9 +210,13 @@ Account Impression Performance Report: composite pk - [AccountName, AccountNumbe
 
 Note: These are just examples, and you should consider your own data and needs in order to correctly define the primary key.
 
-See more info about user-defined pk [here](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key).
+See more info about user-defined primary key [here](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped#user-defined-primary-key).
 
 :::
+
+### Entity-Relationship Diagram (ERD)
+To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
+[![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-bing-ads?view=relationships)
 
 ### Custom Reports
 

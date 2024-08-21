@@ -200,6 +200,10 @@ The HubSpot source connector supports the following streams:
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 
+### Entity-Relationship Diagram (ERD)
+To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
+[![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-hubspot?view=relationships)
+
 ### Notes on the `property_history` streams
 
 `Property_history` streams can be synced using an `Incremental` sync mode, which uses a cursor timestamp to determine which records have been updated since the previous sync. Within these streams, some fields types (ex. `CALCULATED` type) will always have a cursor timstamp that mirrors the time of the latest sync. This results in each sync including many more records than were necessarily changed since the previous sync.

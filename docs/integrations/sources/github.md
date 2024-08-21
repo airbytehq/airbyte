@@ -138,6 +138,10 @@ This connector outputs the following incremental streams:
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
+### Entity-Relationship Diagram (ERD)
+To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
+[![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-github?view=relationships)
+
 ### Notes
 
 1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the listed above streams are pure incremental meaning that they:

@@ -146,6 +146,10 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
 <!-- /env:oss -->
 
+### Entity-Relationship Diagram (ERD)
+To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
+[![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-amazon-seller-partner?view=relationships)
+
 ## Report options
 
 Report options can be assigned on a per-stream basis that alter the behavior when generating a report.
