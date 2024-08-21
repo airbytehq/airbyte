@@ -61,7 +61,7 @@ class PerPartitionCursor(DeclarativeCursor):
     Therefore, we need to manage state per partition.
     """
 
-    DEFAULT_MAX_PARTITIONS_NUMBER = 5
+    DEFAULT_MAX_PARTITIONS_NUMBER = 10000
     _NO_STATE: Mapping[str, Any] = {}
     _NO_CURSOR_STATE: Mapping[str, Any] = {}
     _KEY = 0
