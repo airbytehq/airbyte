@@ -334,7 +334,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.3.0   | 2024-08-21 | [x](https://github.com/airbytehq/airbyte/pull/x) | Add `Leads` stream |
+| 4.3.0   | 2024-08-21 | [44481](https://github.com/airbytehq/airbyte/pull/44481) | Add `Leads` stream |
 | 4.2.15  | 2024-08-08 | [43381](https://github.com/airbytehq/airbyte/pull/43381) | Fix associations retrieval for Engagements streams (calls, meetings, notes, tasks, emails) in Incremental with existing state |
 | 4.2.14  | 2024-07-27 | [42688](https://github.com/airbytehq/airbyte/pull/42688) | Update dependencies |
 | 4.2.13  | 2024-07-20 | [42264](https://github.com/airbytehq/airbyte/pull/42264) | Update dependencies |
