@@ -8,6 +8,8 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag.isDestinationV2
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -20,7 +22,10 @@ import org.apache.commons.lang3.StringUtils
 import org.postgresql.copy.CopyManager
 import org.postgresql.core.BaseConnection
 
-class PostgresSqlOperations : JdbcSqlOperations() {
+val LOGGER = KotlinLogging.logger {}
+
+class PostgresSqlOperations(useDropCascade: Boolean) : JdbcSqlOperations() {
+    private val dropTableQualifier: String = if (useDropCascade) "CASCADE" else ""
     override fun postCreateTableQueries(schemaName: String?, tableName: String?): List<String> {
         return if (isDestinationV2) {
             java.util.List.of( // the raw_id index _could_ be unique (since raw_id is a UUID)
@@ -63,36 +68,23 @@ class PostgresSqlOperations : JdbcSqlOperations() {
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?
+        tableName: String?,
+        syncId: Long,
+        generationId: Long
     ) {
         insertRecordsInternal(
             database,
             records,
             schemaName,
             tableName,
+            syncId,
+            generationId,
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
             JavaBaseConstants.COLUMN_NAME_DATA,
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
             JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-            JavaBaseConstants.COLUMN_NAME_AB_META
-        )
-    }
-
-    @Throws(SQLException::class)
-    public override fun insertRecordsInternal(
-        database: JdbcDatabase,
-        records: List<PartialAirbyteMessage>,
-        schemaName: String?,
-        tmpTableName: String?
-    ) {
-        insertRecordsInternal(
-            database,
-            records,
-            schemaName,
-            tmpTableName,
-            JavaBaseConstants.COLUMN_NAME_AB_ID,
-            JavaBaseConstants.COLUMN_NAME_DATA,
-            JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+            JavaBaseConstants.COLUMN_NAME_AB_META,
+            JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID
         )
     }
 
@@ -102,11 +94,14 @@ class PostgresSqlOperations : JdbcSqlOperations() {
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
         tmpTableName: String?,
+        syncId: Long,
+        generationId: Long,
         vararg columnNames: String
     ) {
         if (records.isEmpty()) {
             return
         }
+        LOGGER.info { "preparing records to insert. generationId=$generationId, syncId=$syncId" }
         // Explicitly passing column order to avoid order mismatches between CREATE TABLE and COPY
         // statement
         val orderedColumnNames = StringUtils.join(columnNames, ", ")
@@ -114,7 +109,7 @@ class PostgresSqlOperations : JdbcSqlOperations() {
             var tmpFile: File? = null
             try {
                 tmpFile = Files.createTempFile("$tmpTableName-", ".tmp").toFile()
-                writeBatchToFile(tmpFile, records)
+                writeBatchToFile(tmpFile, records, syncId, generationId)
 
                 val copyManager = CopyManager(connection.unwrap(BaseConnection::class.java))
                 val sql =
@@ -124,6 +119,7 @@ class PostgresSqlOperations : JdbcSqlOperations() {
                         tmpTableName,
                         orderedColumnNames
                     )
+                LOGGER.info { "executing COPY command: $sql" }
                 val bufferedReader = BufferedReader(FileReader(tmpFile, StandardCharsets.UTF_8))
                 copyManager.copyIn(sql, bufferedReader)
             } catch (e: Exception) {
@@ -138,5 +134,16 @@ class PostgresSqlOperations : JdbcSqlOperations() {
                 }
             }
         }
+        LOGGER.info { "COPY command completed sucessfully" }
+    }
+
+    override fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String) {
+        val tmpName = rawName + AbstractStreamOperation.TMP_TABLE_SUFFIX
+        database.executeWithinTransaction(
+            listOf(
+                "DROP TABLE $rawNamespace.$rawName $dropTableQualifier",
+                "ALTER TABLE $rawNamespace.$tmpName RENAME TO $rawName"
+            )
+        )
     }
 }

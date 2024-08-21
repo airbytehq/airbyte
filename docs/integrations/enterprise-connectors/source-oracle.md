@@ -1,5 +1,10 @@
 # Source Oracle
 
+:::info
+Airbyte Enterprise Connectors are a selection of premium connectors available exclusively for Airbyte Self-Managed Enterprise and Airbyte Teams customers. These connectors, built and maintained by the Airbyte team, provide enhanced capabilities and support for critical enterprise systems. To learn more about enterprise connectors, please [talk to our sales team](https://airbyte.com/company/talk-to-sales).
+:::
+
+
 Airbyte's incubating Oracle enterprise source connector offers the following features:
 
 - Incremental as well as Full Refresh
@@ -10,7 +15,7 @@ Airbyte's incubating Oracle enterprise source connector offers the following fea
   [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing)
   and chunking of database reads.
 
-> ⚠️ **Please note the required minimum platform version is v0.58.0 for this connector.**
+The required minimum platform version is v0.58.0 for this connector.
 
 ## Features
 

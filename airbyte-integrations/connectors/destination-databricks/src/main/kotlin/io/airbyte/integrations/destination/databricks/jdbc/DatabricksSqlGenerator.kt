@@ -102,10 +102,16 @@ class DatabricksSqlGenerator(
     }
 
     // Start: Functions scattered over other classes needed for T+D
-    fun createRawTable(streamId: StreamId): Sql {
+    fun createRawTable(streamId: StreamId, suffix: String, replace: Boolean): Sql {
+        val createStatement =
+            if (replace) {
+                "CREATE OR REPLACE TABLE"
+            } else {
+                "CREATE TABLE IF NOT EXISTS"
+            }
         return Sql.of(
             """
-                CREATE TABLE IF NOT EXISTS $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName} (
+                $createStatement $unityCatalogName.${streamId.rawNamespace}.${streamId.rawName}$suffix (
                     $AB_RAW_ID STRING,
                     $AB_EXTRACTED_AT TIMESTAMP,
                     $AB_LOADED_AT TIMESTAMP,

@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
@@ -27,6 +28,7 @@ import io.airbyte.protocol.models.v0.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +60,13 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
-        final String databaseName = sourceConfig.getDatabaseName();
+        if (!checkOplogReadAccess(mongoClient)) {
+          return new AirbyteConnectionStatus()
+              .withMessage("User does not have read access to the oplog.rs collection in database local, which is required by CDC.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
+        }
 
+        final String databaseName = sourceConfig.getDatabaseName();
         if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
           /*
            * Perform the authorized collections check before the cluster type check. The MongoDB Java driver
@@ -169,6 +176,21 @@ public class MongoDbSource extends BaseConnector implements Source {
     return MongoConnectionUtils.createMongoClient(config);
   }
 
+  protected boolean checkOplogReadAccess(final MongoClient mongoClient) {
+    try {
+      MongoDatabase localDb = mongoClient.getDatabase("local");
+      localDb.getCollection("oplog.rs").find().first();
+      LOGGER.info("User has read access to the oplog.rs collection.");
+      return true;
+    } catch (MongoCommandException | MongoSecurityException e) {
+      LOGGER.error("User does not have read access to the oplog.rs collection.", e);
+      return false;
+    } catch (Exception e) {
+      LOGGER.error("An error occurred while checking read access to the oplog.rs collection.", e);
+      return false;
+    }
+  }
+
   List<AutoCloseableIterator<AirbyteMessage>> createFullRefreshIterators(final MongoDbSourceConfig sourceConfig,
                                                                          final MongoClient mongoClient,
                                                                          final List<ConfiguredAirbyteStream> streams,
@@ -184,7 +206,9 @@ public class MongoDbSource extends BaseConnector implements Source {
         mongoClient.getDatabase(sourceConfig.getDatabaseName()),
         sourceConfig,
         true,
-        true);
+        true,
+        emmitedAt,
+        Optional.empty());
 
     return fullRefreshIterators;
   }

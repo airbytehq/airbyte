@@ -1,5 +1,41 @@
 # Changelog
 
+## 4.5.2
+CDK: refactor error handling in abstract source
+
+## 4.5.1
+Added support for RFR for Full-Refresh Substreams
+
+## 4.5.0
+Stop support for incoming legacy state message format
+
+## 4.4.2
+Move the @deprecated decorator to the class level.
+
+## 4.4.1
+Added test utils for integration tests
+
+## 4.4.0
+file-based cdk: add excel file type support
+
+## 4.3.3
+Have better fallback error message on HTTP error
+
+## 4.3.2
+Ensure at least one element returned by decoder
+
+## 4.3.1
+resumable full refresh: fix issue when live traffic regression tests pass state to connector
+
+## 4.3.0
+Add PrintBuffer to emit records in batches
+
+## 4.2.0
+Resumable full refresh: Add SubstreamResumableFullRefreshCursor to Python CDK to allow connectors to allow checkpointing on parent records
+
+## 4.1.0
+Align BackoffStrategy interfaces to take attempt_count as a full-fledge parameter
+
 ## 4.0.2
 Add ability to stop stream when retry-after is greater than a duration
 

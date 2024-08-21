@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.9.0
+
+Add support for using `manifest.yaml` as a spec input.
+
 ## 3.8.6
 
 Allow a final teardown command to be run after all tests.

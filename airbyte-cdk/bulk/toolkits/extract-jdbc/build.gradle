@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
+
+    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
+    testFixturesImplementation 'com.h2database:h2:2.2.224'
+    testFixturesImplementation 'org.apache.commons:commons-lang3:3.14.0'
+}
