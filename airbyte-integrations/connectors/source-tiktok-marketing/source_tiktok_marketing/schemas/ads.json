@@ -191,7 +191,7 @@
     },
     "page_id": {
       "description": "The unique identifier of the page",
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "creative_authorized": {
       "description": "Indicates if the creative is authorized",
