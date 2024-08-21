@@ -31,13 +31,18 @@ class IterableStream(HttpStream, ABC):
     # to prevent 429 error on other streams
     ignore_further_slices = False
 
-    url_base = "https://api.iterable.com/api/"
     primary_key = "id"
 
     def __init__(self, authenticator):
         self._cred = authenticator
         self._slice_retry = 0
         super().__init__(authenticator)
+
+    @property
+    def url_base(self) -> str:
+        if self._region.upper() == "EU":
+            return "https://api.eu.iterable.com/api/"
+        return "https://api.iterable.com/api/"
 
     @property
     def retry_factor(self) -> int:

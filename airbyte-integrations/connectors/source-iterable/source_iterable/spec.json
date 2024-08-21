@@ -21,6 +21,14 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "order": 1,
         "format": "date-time"
+      },
+      "region": {
+        "type": "string",
+        "title": "Region",
+        "description": "Select the Iterable API region (US or EU)",
+        "enum": ["US", "EU"],
+        "default": "US",
+        "order": 2
       }
     }
   }
