@@ -44,13 +44,23 @@ import org.json.JSONObject
 class SnowflakeDestinationHandler(
     databaseName: String,
     private val database: JdbcDatabase,
-    rawTableSchema: String
+    rawTableSchema: String,
 ) :
     JdbcDestinationHandler<SnowflakeState>(
         databaseName,
         database,
         rawTableSchema,
-        SQLDialect.POSTGRES
+        SQLDialect.POSTGRES,
+        generationHandler =
+            object : JdbcGenerationHandler {
+                override fun getGenerationIdInTable(
+                    database: JdbcDatabase,
+                    namespace: String,
+                    name: String
+                ): Long? {
+                    throw NotImplementedError()
+                }
+            }
     ) {
     // Postgres is close enough to Snowflake SQL for our purposes.
     // We don't quote the database name in any queries, so just upcase it.
@@ -136,7 +146,7 @@ class SnowflakeDestinationHandler(
                 LOGGER.info(
                     "Retrieving table from Db metadata: {} {}",
                     id.rawNamespace,
-                    rawTableName,
+                    rawTableName
                 )
                 try {
                     val rs =
@@ -144,7 +154,7 @@ class SnowflakeDestinationHandler(
                             databaseName,
                             id.rawNamespace,
                             rawTableName,
-                            null,
+                            null
                         )
                     // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
                     // interpreted as uppercase
@@ -154,7 +164,7 @@ class SnowflakeDestinationHandler(
                             databaseName,
                             id.rawNamespace.uppercase(),
                             rawTableName.uppercase(),
-                            null,
+                            null
                         )
                     rs.next() || rsUppercase.next()
                 } catch (e: SQLException) {
@@ -167,7 +177,7 @@ class SnowflakeDestinationHandler(
             return InitialRawTableStatus(
                 rawTableExists = false,
                 hasUnprocessedRecords = false,
-                maxProcessedTimestamp = Optional.empty(),
+                maxProcessedTimestamp = Optional.empty()
             )
         }
 
@@ -185,44 +195,40 @@ class SnowflakeDestinationHandler(
                                     StringSubstitutor(
                                         java.util.Map.of(
                                             "raw_table",
-                                            id.rawTableId(
-                                                SnowflakeSqlGenerator.QUOTE,
-                                                suffix,
-                                            ),
-                                        ),
-                                    )
+                                            id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                            )
+                                        )
                                         .replace(
                                             """
-        WITH MIN_TS AS (
-          SELECT TIMESTAMPADD(NANOSECOND, -1,
-            MIN(TIMESTAMPADD(
-              HOUR,
-              EXTRACT(timezone_hour from "_airbyte_extracted_at"),
-                TIMESTAMPADD(
-                  MINUTE,
-                  EXTRACT(timezone_minute from "_airbyte_extracted_at"),
-                  CONVERT_TIMEZONE('UTC', "_airbyte_extracted_at")
-                )
-            ))) AS MIN_TIMESTAMP
-          FROM ${'$'}{raw_table}
-          WHERE "_airbyte_loaded_at" IS NULL
-        ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
-        
-        """.trimIndent(),
-                                        ),
+                WITH MIN_TS AS (
+                  SELECT TIMESTAMPADD(NANOSECOND, -1,
+                    MIN(TIMESTAMPADD(
+                      HOUR,
+                      EXTRACT(timezone_hour from "_airbyte_extracted_at"),
+                        TIMESTAMPADD(
+                          MINUTE,
+                          EXTRACT(timezone_minute from "_airbyte_extracted_at"),
+                          CONVERT_TIMEZONE('UTC', "_airbyte_extracted_at")
+                        )
+                    ))) AS MIN_TIMESTAMP
+                  FROM ${'$'}{raw_table}
+                  WHERE "_airbyte_loaded_at" IS NULL
+                ) SELECT TO_VARCHAR(MIN_TIMESTAMP,'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MIN_TIMESTAMP_UTC from MIN_TS;
+                
+                """.trimIndent()
+                                        )
                                 )
                         }, // The query will always return exactly one record, so use .get(0)
-                        { record: ResultSet -> record.getString("MIN_TIMESTAMP_UTC") },
+                        { record: ResultSet -> record.getString("MIN_TIMESTAMP_UTC") }
                     )
                     .first(),
             )
-
         if (minUnloadedTimestamp.isPresent) {
             return InitialRawTableStatus(
                 rawTableExists = true,
                 hasUnprocessedRecords = true,
                 maxProcessedTimestamp =
-                minUnloadedTimestamp.map { text: String? -> Instant.parse(text) },
+                minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
             )
         }
 
@@ -243,43 +249,40 @@ class SnowflakeDestinationHandler(
                                 .createStatement()
                                 .executeQuery(
                                     StringSubstitutor(
-                                        java.util.Map.of(
-                                            "raw_table",
-                                            id.rawTableId(
-                                                SnowflakeSqlGenerator.QUOTE,
-                                                suffix,
-                                            ),
-                                        ),
-                                    )
+                                            java.util.Map.of(
+                                                "raw_table",
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                            )
+                                        )
                                         .replace(
                                             """
-        WITH MAX_TS AS (
-          SELECT MAX("_airbyte_extracted_at")
-          AS MAX_TIMESTAMP
-          FROM ${'$'}{raw_table}
-        ) SELECT TO_VARCHAR(
-          TIMESTAMPADD(
-            HOUR,
-            EXTRACT(timezone_hour from MAX_TIMESTAMP),
-            TIMESTAMPADD(
-              MINUTE,
-              EXTRACT(timezone_minute from MAX_TIMESTAMP),
-              CONVERT_TIMEZONE('UTC', MAX_TIMESTAMP)
-            )
-        ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
-        
-        """.trimIndent(),
-                                        ),
+                WITH MAX_TS AS (
+                  SELECT MAX("_airbyte_extracted_at")
+                  AS MAX_TIMESTAMP
+                  FROM ${'$'}{raw_table}
+                ) SELECT TO_VARCHAR(
+                  TIMESTAMPADD(
+                    HOUR,
+                    EXTRACT(timezone_hour from MAX_TIMESTAMP),
+                    TIMESTAMPADD(
+                      MINUTE,
+                      EXTRACT(timezone_minute from MAX_TIMESTAMP),
+                      CONVERT_TIMEZONE('UTC', MAX_TIMESTAMP)
+                    )
+                ),'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM') as MAX_TIMESTAMP_UTC from MAX_TS;
+                
+                """.trimIndent()
+                                        )
                                 )
                         },
-                        { record: ResultSet -> record.getString("MAX_TIMESTAMP_UTC") },
+                        { record: ResultSet -> record.getString("MAX_TIMESTAMP_UTC") }
                     )
-                    .first(),
+                    .first()
             )
         return InitialRawTableStatus(
             rawTableExists = true,
             hasUnprocessedRecords = false,
-            maxProcessedTimestamp = maxTimestamp.map { text: String? -> Instant.parse(text) },
+            maxProcessedTimestamp = maxTimestamp.map { text: String? -> Instant.parse(text) }
         )
     }
 
@@ -315,7 +318,7 @@ class SnowflakeDestinationHandler(
                 "Sql {}-{} completed in {} ms",
                 queryId,
                 transactionId,
-                System.currentTimeMillis() - startTime,
+                System.currentTimeMillis() - startTime
             )
         }
     }
@@ -330,7 +333,7 @@ class SnowflakeDestinationHandler(
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.uppercase(Locale.getDefault())
         return existingTable.columns.containsKey(abRawIdColumnName) &&
             toJdbcTypeName(AirbyteProtocolType.STRING) ==
-            existingTable.columns[abRawIdColumnName]!!.type
+                existingTable.columns[abRawIdColumnName]!!.type
     }
 
     override fun isAirbyteExtractedAtColumnMatch(existingTable: TableDefinition): Boolean {
@@ -338,7 +341,7 @@ class SnowflakeDestinationHandler(
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.uppercase(Locale.getDefault())
         return existingTable.columns.containsKey(abExtractedAtColumnName) &&
             toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE) ==
-            existingTable.columns[abExtractedAtColumnName]!!.type
+                existingTable.columns[abExtractedAtColumnName]!!.type
     }
 
     override fun isAirbyteMetaColumnMatch(existingTable: TableDefinition): Boolean {
@@ -353,7 +356,7 @@ class SnowflakeDestinationHandler(
             JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase(Locale.getDefault())
         return existingTable.columns.containsKey(abGenerationIdColumnName) &&
             toJdbcTypeName(AirbyteProtocolType.INTEGER) ==
-            existingTable.columns[abGenerationIdColumnName]!!.type
+                existingTable.columns[abGenerationIdColumnName]!!.type
     }
 
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
@@ -367,9 +370,9 @@ class SnowflakeDestinationHandler(
         // TODO: Unify this using name transformer or something.
         if (
             !isAirbyteRawIdColumnMatch(existingTable) ||
-            !isAirbyteExtractedAtColumnMatch(existingTable) ||
-            !isAirbyteMetaColumnMatch(existingTable) ||
-            !isAirbyteGenerationIdColumnMatch(existingTable)
+                !isAirbyteExtractedAtColumnMatch(existingTable) ||
+                !isAirbyteMetaColumnMatch(existingTable) ||
+                !isAirbyteGenerationIdColumnMatch(existingTable)
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
             // soft-reset
@@ -388,7 +391,7 @@ class SnowflakeDestinationHandler(
                     },
                     { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
                         obj.putAll(m!!)
-                    },
+                    }
                 )
 
         // Filter out Meta columns since they don't exist in stream config.
@@ -402,13 +405,14 @@ class SnowflakeDestinationHandler(
                 }
                 .collect(
                     { LinkedHashMap() },
-                    { map: LinkedHashMap<String, String>,
-                      column: Map.Entry<String, ColumnDefinition> ->
+                    {
+                        map: LinkedHashMap<String, String>,
+                        column: Map.Entry<String, ColumnDefinition> ->
                         map[column.key] = column.value.type
                     },
                     { obj: LinkedHashMap<String, String>, m: LinkedHashMap<String, String>? ->
                         obj.putAll(m!!)
-                    },
+                    }
                 )
         // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
         val hasPksWithNonNullConstraint =
@@ -424,15 +428,11 @@ class SnowflakeDestinationHandler(
     override fun gatherInitialState(
         streamConfigs: List<StreamConfig>
     ): List<DestinationInitialStatus<SnowflakeState>> {
-        val destinationStates = super.getAllDestinationStates()
+        val destinationStates = getAllDestinationStates()
 
         val streamIds = streamConfigs.map(StreamConfig::id).toList()
-
-        LOGGER.info("Entering gatherInitialState(...)");
-
         val existingTables = findExistingTables(database, databaseName, streamIds)
         val tableRowCounts = getFinalTableRowCount(streamIds)
-
         return streamConfigs
             .stream()
             .map { streamConfig: StreamConfig ->
@@ -457,14 +457,19 @@ class SnowflakeDestinationHandler(
                     val tempRawTableState =
                         getInitialRawTableState(
                             streamConfig.id,
-                            AbstractStreamOperation.TMP_TABLE_SUFFIX,
+                            AbstractStreamOperation.TMP_TABLE_SUFFIX
                         )
                     val destinationState =
                         destinationStates.getOrDefault(
                             streamConfig.id.asPair(),
-                            toDestinationState(emptyObject()),
+                            toDestinationState(emptyObject())
                         )
-
+                    val finalTableGenerationId =
+                        if (isFinalTablePresent && !isFinalTableEmpty) {
+                            getFinalTableGenerationId(streamConfig.id)
+                        } else {
+                            null
+                        }
                     return@map DestinationInitialStatus<SnowflakeState>(
                         streamConfig,
                         isFinalTablePresent,
@@ -473,12 +478,56 @@ class SnowflakeDestinationHandler(
                         isSchemaMismatch,
                         isFinalTableEmpty,
                         destinationState,
+                        finalTableGenerationId = finalTableGenerationId,
+                        // I think the temp final table gen is always null?
+                        // since the only time we T+D into the temp table
+                        // is when we're committing the sync anyway
+                        // (i.e. we'll immediately rename it to the real table)
+                        finalTempTableGenerationId = null,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
                 }
             }
             .collect(Collectors.toList())
+    }
+
+    /**
+     * Query the final table to find the generation ID of any record. Assumes that the table exists
+     * and is nonempty.
+     */
+    private fun getFinalTableGenerationId(streamId: StreamId): Long? {
+        val tableExistsWithGenerationId =
+            jdbcDatabase.executeMetadataQuery {
+                // Find a column named _airbyte_generation_id
+                // in the relevant table.
+                val resultSet =
+                    it.getColumns(
+                        databaseName,
+                        streamId.finalNamespace,
+                        streamId.finalName,
+                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()
+                    )
+                // Check if there were any such columns.
+                resultSet.next()
+            }
+        // The table doesn't exist, or exists but doesn't have generation id
+        if (!tableExistsWithGenerationId) {
+            return null
+        }
+
+        return jdbcDatabase
+            .queryJsons(
+                """
+                SELECT ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()}
+                FROM ${streamId.finalNamespace(QUOTE)}.${streamId.finalName(QUOTE)}
+                LIMIT 1
+                """.trimIndent(),
+            )
+            .first()
+            .get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase())
+            ?.asLong()
+            ?: 0
     }
 
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
@@ -502,7 +551,7 @@ class SnowflakeDestinationHandler(
         return SnowflakeState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("airbyteMetaPresentInRaw") &&
-                json["airbyteMetaPresentInRaw"].asBoolean(),
+                json["airbyteMetaPresentInRaw"].asBoolean()
         )
     }
 
@@ -539,9 +588,17 @@ class SnowflakeDestinationHandler(
     }
 
     fun query(sql: String): List<JsonNode> {
-
         return database.queryJsons(sql)
+    }
 
+    override fun getDeleteStatesSql(destinationStates: Map<StreamId, SnowflakeState>): String {
+        if (Math.random() < 0.01) {
+            LOGGER.info("actually deleting states")
+            return super.getDeleteStatesSql(destinationStates)
+        } else {
+            LOGGER.info("skipping state deletion")
+            return "SELECT 1" // We still need to send a valid SQL query.
+        }
     }
 
     companion object {
