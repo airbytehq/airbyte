@@ -364,3 +364,15 @@ This function:
 - Prints the report to the console
 - Uploads the report to remote storage if we're in CI
 - Updates the per connector commit status check
+
+## How to add task to a task
+To add a task to an existing Python project (eg the Python CDK),
+1. Define the task command (`codeflash = {cmd = "poetry run codeflash", help = "Run codeflash to check code quality."}`)
+2. Add the task to the list of poe_tasks (`poe_tasks = ["check-ci", "codeflash"]`)
+3. Define the environment variables that `required_environment_variables = ["CODEFLASH_API_KEY"]`
+4. Add the secret to the [repository's environment secrets](https://github.com/airbytehq/airbyte/settings/secrets/actions)
+5. Add the environment variable as input to the airbyte-ci Github action ([example](https://github.com/airbytehq/airbyte/pull/44427/files#diff-ce432ff29f2547c1bfdfd6d8080fc9798498b6a7bcf12c1206c9a82592b3e461R79-R81))
+6. Update the airbyte-ci Github action to pass to environment variable to the airbyte-ci runner ([example](https://github.com/airbytehq/airbyte/pull/44427/files#diff-ce432ff29f2547c1bfdfd6d8080fc9798498b6a7bcf12c1206c9a82592b3e461R155))
+7. Update the airbyte-ci-tests Github action to pass the secret as an input the to airbyte-ci action ([example](https://github.com/airbytehq/airbyte/pull/44427/files#diff-264f93156267ad623b4ce4baa3ce7419066186caf8fc67cae6881760c4c2eb67R92))
+
+You can use [this PR](https://github.com/airbytehq/airbyte/pull/44427/) as reference.
