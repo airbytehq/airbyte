@@ -3,9 +3,8 @@
 #
 
 import logging
-from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
 from collections import OrderedDict
-
+from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
