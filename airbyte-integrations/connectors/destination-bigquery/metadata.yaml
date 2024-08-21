@@ -14,8 +14,10 @@ data:
   name: BigQuery
   registryOverrides:
     cloud:
+      dockerImageTag: 2.8.6
       enabled: true
     oss:
+      dockerImageTag: 2.8.6
       enabled: true
   releaseStage: generally_available
   releases:

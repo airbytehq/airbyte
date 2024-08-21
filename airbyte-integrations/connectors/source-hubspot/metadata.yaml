@@ -24,6 +24,7 @@ data:
       packageName: airbyte-source-hubspot
   registryOverrides:
     cloud:
+      dockerImageTag: 4.2.15
       enabled: true
     oss:
       enabled: true
