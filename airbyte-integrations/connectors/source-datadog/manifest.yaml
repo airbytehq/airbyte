@@ -1,4 +1,4 @@
-version: 4.3.2
+version: 4.3.0
 
 type: DeclarativeSource
 
@@ -620,7 +620,9 @@ schemas:
             type:
               - string
               - "null"
-            description: Name of the application or service generating Audit Logs events.
+            description:
+              Name of the application or service generating Audit Logs
+              events.
           tags:
             type:
               - array
@@ -815,7 +817,9 @@ schemas:
         type:
           - boolean
           - "null"
-        description: If the first recovery notification during a downtime should be muted.
+        description:
+          If the first recovery notification during a downtime should be
+          muted.
         readOnly: true
       notify_end_states:
         type:
@@ -1021,7 +1025,9 @@ schemas:
             type:
               - string
               - "null"
-            description: A summary of the impact customers experienced during the incident.
+            description:
+              A summary of the impact customers experienced during the
+              incident.
           customer_impact_start:
             type:
               - string
@@ -1167,7 +1173,9 @@ schemas:
         type:
           - object
           - "null"
-        description: JSON object containing all log attributes and their associated values.
+        description:
+          JSON object containing all log attributes and their associated
+          values.
         additionalProperties: true
         properties:
           attributes:
@@ -1190,7 +1198,9 @@ schemas:
             type:
               - string
               - "null"
-            description: The name of the application or service generating the log events.
+            description:
+              The name of the application or service generating the log
+              events.
           status:
             type:
               - string
