@@ -31,9 +31,9 @@
             },
             "globs": {
               "title": "Globs",
+              "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
               "default": ["**"],
               "order": 1,
-              "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
               "type": "array",
               "items": {
                 "type": "string"
@@ -53,8 +53,8 @@
             "primary_key": {
               "title": "Primary Key",
               "description": "The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key.",
-              "type": "string",
-              "airbyte_hidden": true
+              "airbyte_hidden": true,
+              "type": "string"
             },
             "days_to_sync_if_history_is_full": {
               "title": "Days To Sync If History Is Full",
@@ -229,6 +229,12 @@
                         "type": "string"
                       },
                       "uniqueItems": true
+                    },
+                    "ignore_errors_on_fields_mismatch": {
+                      "title": "Ignore errors on field mismatch",
+                      "description": "Whether to ignore errors that occur when the number of fields in the CSV does not match the number of columns in the schema.",
+                      "default": false,
+                      "type": "boolean"
                     }
                   },
                   "required": ["filetype"]
@@ -276,20 +282,20 @@
                       "type": "string"
                     },
                     "skip_unprocessable_files": {
-                      "type": "boolean",
-                      "default": true,
                       "title": "Skip Unprocessable Files",
                       "description": "If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",
-                      "always_show": true
+                      "default": true,
+                      "always_show": true,
+                      "type": "boolean"
                     },
                     "strategy": {
-                      "type": "string",
+                      "title": "Parsing Strategy",
+                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf",
+                      "default": "auto",
                       "always_show": true,
                       "order": 0,
-                      "default": "auto",
-                      "title": "Parsing Strategy",
                       "enum": ["auto", "fast", "ocr_only", "hi_res"],
-                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf"
+                      "type": "string"
                     },
                     "processing": {
                       "title": "Processing",

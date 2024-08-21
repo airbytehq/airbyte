@@ -110,6 +110,7 @@ definitions:
         fields:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
+            value_type: "string"
 
   incident_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
@@ -148,6 +149,7 @@ definitions:
         fields:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
+            value_type: "string"
 
   maintenance_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"

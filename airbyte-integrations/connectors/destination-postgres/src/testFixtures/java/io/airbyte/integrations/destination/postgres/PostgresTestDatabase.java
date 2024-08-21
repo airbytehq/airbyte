@@ -190,9 +190,9 @@ public class PostgresTestDatabase extends
           .with("is_test", true)
           .with("replication_method", Jsons.jsonNode(ImmutableMap.builder()
               .put("method", "CDC")
-              .put("replication_slot", testDatabase.getReplicationSlotName())
-              .put("publication", testDatabase.getPublicationName())
-              .put("initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
+              .put("replication_slot", getTestDatabase().getReplicationSlotName())
+              .put("publication", getTestDatabase().getPublicationName())
+              .put("initial_waiting_seconds", ConfigBuilder.DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
               .put("lsn_commit_behaviour", LsnCommitBehaviour)
               .build()));
     }

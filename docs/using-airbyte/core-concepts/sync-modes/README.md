@@ -12,13 +12,16 @@ A sync mode governs how Airbyte reads from a source and writes to a destination.
       - Method 2: Using change data capture. Only supported by some sources. See [CDC](../../../understanding-airbyte/cdc.md) for more info.
    2. Full Refresh: Read everything in the source.
 2. The second part of the sync mode name denotes how the destination connector writes data. This is not affected by how the source connector produced the data:
-   1. Overwrite: Overwrite by first deleting existing data in the destination.
+   1. Overwrite: Overwrite by replacing pre-existing data in the destination.
    2. Append: Write by adding data to existing tables in the destination.
-   3. Deduped History: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is produced by de-duplicating the intermediate ones using a primary key.
+   3. Append Deduped: Write by first adding data to existing tables in the destination to keep a history of changes. The final table is 
+      produced by de-duplicating the intermediate ones using a primary key.
+   4. Overwrite Deduped: Overwrite by replacing pre-existing data in the destination and deduplicate the final data using a primary key.
 
 A sync mode is a combination of a source and destination mode together. The UI exposes the following options, whenever both source and destination connectors are capable to support it for the corresponding stream:
 
-- [Incremental Append + Deduped](./incremental-append-deduped.md): Sync new records from stream and append data in destination, also provides a de-duplicated view mirroring the state of the stream in the source.
-- [Full Refresh Overwrite](./full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
-- [Full Refresh Append](./full-refresh-append.md): Sync the whole stream and append data in destination.
 - [Incremental Append](./incremental-append.md): Sync new records from stream and append data in destination.
+- [Incremental Append + Deduped](./incremental-append-deduped.md): Sync new records from stream and append data in destination, also provides a de-duplicated view mirroring the state of the stream in the source.
+- [Full Refresh Append](./full-refresh-append.md): Sync the whole stream and append data in destination.
+- [Full Refresh Overwrite](./full-refresh-overwrite.md): Sync the whole stream and replace data in destination by overwriting it.
+- [Full Refresh Overwrite + Deduped](./full-refresh-overwrite-deduped.md): Sync the whole stream and replace data in destination by overwriting it, also de-duplicate the data.

@@ -8,14 +8,14 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.3
   dockerRepository: airbyte/source-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   githubIssueLabel: source-snowflake
   icon: snowflake.svg
   license: ELv2
   name: Snowflake
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -24,4 +24,30 @@ data:
   supportLevel: community
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS
+          fileName: config_auth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SNOWFLAKE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SNOWFLAKE_OAUTH__CREDS
+          fileName: config_auth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SNOWFLAKE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

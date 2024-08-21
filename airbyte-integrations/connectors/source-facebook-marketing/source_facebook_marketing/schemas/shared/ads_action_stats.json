@@ -32,6 +32,9 @@
       },
       "value": {
         "type": ["null", "number"]
+      },
+      "lead": {
+        "type": ["null", "number"]
       }
     }
   }

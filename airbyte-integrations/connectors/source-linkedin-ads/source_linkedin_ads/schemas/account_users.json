@@ -5,20 +5,25 @@
   "additionalProperties": true,
   "properties": {
     "account": {
+      "description": "The account associated with the user",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The date and time when the user account was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModified": {
+      "description": "The date and time when the user account was last modified",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "role": {
+      "description": "The role assigned to the user in the account",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "The user details including name, email, etc.",
       "type": ["null", "string"]
     }
   }

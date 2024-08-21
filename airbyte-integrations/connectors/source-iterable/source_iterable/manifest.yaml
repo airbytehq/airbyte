@@ -1,0 +1,450 @@
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Iterable Spec
+    type: object
+    required:
+      - start_date
+      - api_key
+    additionalProperties: true
+    properties:
+      api_key:
+        type: "string"
+        title: "API Key"
+        description: >-
+          Iterable API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/iterable\">docs</a> 
+          for more information on how to obtain this key.
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: "string"
+        title: "Start Date"
+        description: >-
+          The date from which you'd like to replicate data for Iterable, in the format YYYY-MM-DDT00:00:00Z. 
+          All data generated after this date will be replicated.
+        examples: ["2021-04-01T00:00:00Z"]
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+        format: "date-time"
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - lists
+streams:
+  - name: lists
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: lists
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - lists
+      partition_router: []
+    primary_key:
+      - id
+  - name: list_users
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: IterableDecoder
+      paginator:
+        type: NoPagination
+      requester:
+        path: lists/getUsers
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              request_option:
+                inject_into: request_parameter
+                type: RequestOption
+                field_name: listId
+              partition_field: list_id
+              stream:
+                type: DeclarativeStream
+                name: lists
+                primary_key:
+                  - id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.iterable.com/api/
+                    path: lists
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: Api-Key
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - lists
+                  paginator:
+                    type: NoPagination
+                  partition_router: []
+    primary_key:
+      - listId
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - listId
+            value: "{{ stream_slice.list_id }}"
+          - path:
+              - email
+            value: "{{ record.record }}"
+      - type: RemoveFields
+        field_pointers:
+          - - record
+  - name: campaigns
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: campaigns
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - campaigns
+      partition_router: []
+    primary_key:
+      - id
+  - name: channels
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: channels
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - channels
+      partition_router: []
+    primary_key:
+      - id
+  - name: message_types
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: messageTypes
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - messageTypes
+      partition_router: []
+    primary_key:
+      - id
+  - name: metadata
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: metadata
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      partition_router: []
+    primary_key: []
+  - name: users
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonlDecoder
+      paginator:
+        type: NoPagination
+      requester:
+        path: export/data.json
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_headers: {}
+        request_body_json: {}
+        request_parameters:
+          stream: "True"
+          dataTypeName: user
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router: []
+    primary_key: []
+    incremental_sync:
+      step: P90D
+      type: DatetimeBasedCursor
+      cursor_field: profileUpdatedAt
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['end_date'] if config['end_date'] else now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      end_time_option:
+        type: RequestOption
+        field_name: endDateTime
+        inject_into: request_parameter
+      start_time_option:
+        type: RequestOption
+        field_name: startDateTime
+        inject_into: request_parameter
+      cursor_granularity: PT1S
+      cursor_datetime_formats:
+        - "%Y-%m-%d %H:%M:%S %z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+  - name: events
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonlDecoder
+      requester:
+        type: HttpRequester
+        url_base: https://api.iterable.com/api/
+        path: export/userEvents
+        http_method: GET
+        request_parameters:
+          includeCustomEvents: "true"
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Api-Key
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          class_name: source_iterable.components.EventsRecordExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: record
+              request_option:
+                inject_into: request_parameter
+                type: RequestOption
+                field_name: email
+              partition_field: email
+              stream:
+                name: list_users
+                type: DeclarativeStream
+                retriever:
+                  type: SimpleRetriever
+                  decoder:
+                    type: IterableDecoder
+                  paginator:
+                    type: NoPagination
+                  requester:
+                    path: lists/getUsers
+                    type: HttpRequester
+                    url_base: https://api.iterable.com/api/
+                    http_method: GET
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: Api-Key
+                        inject_into: header
+                    request_headers: {}
+                    request_body_json: {}
+                    request_parameters: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  partition_router:
+                    - type: SubstreamPartitionRouter
+                      parent_stream_configs:
+                        - type: ParentStreamConfig
+                          parent_key: id
+                          request_option:
+                            inject_into: request_parameter
+                            type: RequestOption
+                            field_name: listId
+                          partition_field: list_id
+                          stream:
+                            type: DeclarativeStream
+                            name: lists
+                            primary_key:
+                              - id
+                            retriever:
+                              type: SimpleRetriever
+                              requester:
+                                type: HttpRequester
+                                url_base: https://api.iterable.com/api/
+                                path: lists
+                                http_method: GET
+                                request_parameters: {}
+                                request_headers: {}
+                                authenticator:
+                                  type: ApiKeyAuthenticator
+                                  api_token: "{{ config['api_key'] }}"
+                                  inject_into:
+                                    type: RequestOption
+                                    field_name: Api-Key
+                                    inject_into: header
+                                request_body_json: {}
+                              record_selector:
+                                type: RecordSelector
+                                extractor:
+                                  type: DpathExtractor
+                                  field_path:
+                                    - lists
+                              paginator:
+                                type: NoPagination
+                              partition_router: []
+                primary_key:
+                  - id
+                transformations:
+                  - type: AddFields
+                    fields:
+                      - path:
+                          - list_id
+                        value: "{{ stream_slice.list_id }}"
+version: 0.65.0
+metadata:
+  autoImportSchema:
+    users: false
+    lists: false
+    channels: false
+    metadata: false
+    campaigns: false
+    message_types: false

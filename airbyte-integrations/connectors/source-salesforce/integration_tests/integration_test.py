@@ -7,11 +7,13 @@ import json
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 
 import pendulum
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_protocol.models import ConfiguredAirbyteCatalog
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
@@ -19,6 +21,10 @@ HERE = Path(__file__).parent
 
 NOTE_CONTENT = "It's the note for integration test"
 UPDATED_NOTE_CONTENT = "It's the updated note for integration test"
+
+_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CONFIG = {}
+_ANY_STATE = {}
 
 
 @pytest.fixture(scope="module")
@@ -34,6 +40,10 @@ def sf(input_sandbox_config):
     return sf
 
 
+def _authentication_headers(salesforce: Salesforce) -> Dict[str, str]:
+    return {"Authorization": f"Bearer {salesforce.access_token}"}
+
+
 @pytest.fixture(scope="module")
 def stream_name():
     return "ContentNote"
@@ -41,7 +51,7 @@ def stream_name():
 
 @pytest.fixture(scope="module")
 def stream(input_sandbox_config, stream_name, sf):
-    return SourceSalesforce.generate_streams(input_sandbox_config, {stream_name: None}, sf)[0]
+    return SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE).generate_streams(input_sandbox_config, {stream_name: None}, sf)[0]._legacy_stream
 
 
 def _encode_content(text):
@@ -70,8 +80,8 @@ def get_stream_state():
     return {"LastModifiedDate": pendulum.now(tz="UTC").add(days=-1).isoformat(timespec="milliseconds")}
 
 
-def test_update_for_deleted_record(stream):
-    headers = stream.authenticator.get_auth_header()
+def test_update_for_deleted_record(stream, sf):
+    headers = _authentication_headers(sf)
     stream_state = get_stream_state()
     time.sleep(1)
     response = create_note(stream, headers)
@@ -133,8 +143,8 @@ def test_update_for_deleted_record(stream):
     assert response.status_code == 404, "Expected an update to a deleted note to return 404"
 
 
-def test_deleted_record(stream):
-    headers = stream.authenticator.get_auth_header()
+def test_deleted_record(stream, sf):
+    headers = _authentication_headers(sf)
     response = create_note(stream, headers)
     assert response.status_code == 201, "Note was note created"
 
