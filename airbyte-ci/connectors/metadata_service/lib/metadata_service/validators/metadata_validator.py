@@ -200,7 +200,8 @@ def validate_docker_image_tag_is_not_decremented(
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
-    validate_major_version_bump_has_breaking_change_entry,
+    # Disabled as we want to allow major version bumps without breaking changes entry for non-reversible changes that require no action from the user
+    # validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
     validate_metadata_base_images_in_dockerhub,
     validate_pypi_only_for_python,
