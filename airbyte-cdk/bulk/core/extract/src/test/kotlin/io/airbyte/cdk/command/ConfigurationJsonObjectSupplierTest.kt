@@ -21,7 +21,7 @@ class ConfigurationJsonObjectSupplierTest {
     @Test
     fun testSchema() {
         Assertions.assertEquals(FakeSourceConfigurationJsonObject::class.java, supplier.javaClass)
-        val expected: String = ResourceUtils.readResource("command/expected-schema.json")
+        val expected: String = ResourceUtils.readResource("fakesource/expected-schema.json")
         Assertions.assertEquals(Jsons.readTree(expected), supplier.jsonSchema)
     }
 
