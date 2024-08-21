@@ -13,6 +13,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, L
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
+    EncodingError,
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
@@ -172,7 +173,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         try:
             schema = self._get_raw_json_schema()
         except InvalidSchemaError as config_exception:
-            self.logger.exception(FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value, exc_info=config_exception)
             raise AirbyteTracedException(
                 internal_message="Please check the logged errors for more information.",
                 message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value,
@@ -279,6 +279,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             for task in done:
                 try:
                     base_schema = merge_schemas(base_schema, task.result())
+                except EncodingError as encoding_error:
+                    raise AirbyteTracedException(
+                        internal_message="File encoding does not match configuration.",
+                        message=FileBasedSourceError.ENCODING_ERROR.value,
+                        exception=encoding_error,
+                        failure_type=FailureType.config_error,
+                    )
                 except Exception as exc:
                     self.logger.error(f"An error occurred inferring the schema. \n {traceback.format_exc()}", exc_info=exc)
 
@@ -287,6 +294,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     async def _infer_file_schema(self, file: RemoteFile) -> SchemaType:
         try:
             return await self.get_parser().infer_schema(self.config, file, self.stream_reader, self.logger)
+        except EncodingError as encoding_error:
+            raise encoding_error
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
