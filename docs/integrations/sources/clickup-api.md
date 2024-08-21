@@ -11,9 +11,17 @@ This source is capable of syncing the following streams:
 - [`user`](https://clickup.com/api/clickupreference/operation/GetAuthorizedUser/)
 - [`teams`](https://clickup.com/api/clickupreference/operation/GetAuthorizedTeams/)
 - [`spaces`](https://clickup.com/api/clickupreference/operation/GetSpaces/)
+- [`space_tags`](https://clickup.com/api/clickupreference/operation/GetSpaceTags/)
 - [`folders`](https://clickup.com/api/clickupreference/operation/GetFolders/)
 - [`lists`](https://clickup.com/api/clickupreference/operation/GetLists/)
+- [`list_custom_fields`](https://clickup.com/api/clickupreference/operation/GetAccessibleCustomFields/)
+- [`list_comments`](https://clickup.com/api/clickupreference/operation/GetAccessibleCustomFields/)
 - [`tasks`](https://clickup.com/api/clickupreference/operation/GetTasks)
+- [`time_tracking`](https://clickup.com/api/clickupreference/operation/Gettrackedtime/)
+- [`time_tracking_tags`](https://clickup.com/api/clickupreference/operation/Getalltagsfromtimeentries/)
+- [`team_goals`](https://clickup.com/api/clickupreference/operation/GetGoals/)
+- [`team_custom_fields`](https://clickup.com/api/clickupreference/operation/getTeamAvailableFields/)
+
 
 ### Features
 
@@ -38,15 +46,7 @@ The following fields are required fields for the connector to work:
 
 - `api_token`: Your ClickUp API Token.
 
-Here are some optional fields for different streams:
-
-- `team_id`: Your team ID in your ClickUp workspace. It is required for `space` stream.
-
-- `space_id`: Your space ID in your ClickUp workspace. It is required for `folder` stream.
-
-- `folder_id`: Your folder ID in your ClickUp space. It is required for `list` stream.
-
-- `list_id`: Your list ID in your folder of space. It is required for `task` stream.
+Here are some optional fields:
 
 - `Include Closed Tasks`: Toggle to include or exclude closed tasks. By default, they are excluded.
 
@@ -57,6 +57,8 @@ Here are some optional fields for different streams:
 
 | Version | Date       | Pull Request                                             | Subject                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.3.0 | 2024-08-19 | [44430](https://github.com/airbytehq/airbyte/pull/44430) | Refactor connector to manifest-only format |
+| 0.2.0 | 2024-08-19 | [44180](https://github.com/airbytehq/airbyte/pull/44180) | Add `time_tracking`, `time_tracking_tags`, `team_goals`, `space_tags`, `team_custom_fields`, `list_custom_fields`, `list_comments`, Parent ids passed from responses, Add error handlers |
 | 0.1.13 | 2024-08-17 | [44237](https://github.com/airbytehq/airbyte/pull/44237) | Update dependencies |
 | 0.1.12 | 2024-08-12 | [43844](https://github.com/airbytehq/airbyte/pull/43844) | Update dependencies |
 | 0.1.11 | 2024-08-10 | [43065](https://github.com/airbytehq/airbyte/pull/43065) | Update dependencies |

@@ -9,7 +9,7 @@ data:
       - https://sandbox.sellingpartnerapi-na.amazon.com
   ab_internal:
     ql: 400
-    sl: 200
+    sl: 300
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api

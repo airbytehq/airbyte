@@ -163,6 +163,24 @@
     },
     "combined_nulls": {
       "type": "null"
+    },
+    "compact_union": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "integer"
+        }
+      ]
     }
   }
 }

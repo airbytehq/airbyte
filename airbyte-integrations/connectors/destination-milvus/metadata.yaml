@@ -35,7 +35,7 @@ data:
     - language:python
     - cdk:python
   ab_internal:
-    sl: 200
+    sl: 300
     ql: 300
   supportLevel: certified
   connectorTestSuitesOptions:
