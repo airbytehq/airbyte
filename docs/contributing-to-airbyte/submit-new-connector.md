@@ -6,9 +6,10 @@ You can contribute a new low-code API Connector in Connector Builder. They're th
 
 To contribute a new connector in Connector Builder:
 1. Build the connector in Connector Builder. [Read this guide to get started](../connector-development/connector-builder-ui/overview.md).
-2. Press "Contribute" button.
+2. When you're happy with the connector, press the **Publish -> Contribute to Marketplace** button.
 3. You'll be prompted for a connector description and your Github Access Token.
-4. Builder will make a new pull request on your behalf automatically.
+4. Builder will make a new pull request on your behalf automatically!
+5. Airbyte Marketplace team will review the PR.
 
 ## Custom Python CDK or Java CDK connectors
 
