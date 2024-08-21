@@ -2,8 +2,7 @@
 package io.airbyte.cdk
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.consumers.OutputConsumer
-import io.airbyte.cdk.operation.Operation
+import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.ApmTraceUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Value

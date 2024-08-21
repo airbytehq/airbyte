@@ -11,3 +11,6 @@ properties:
     "$ref": SourceFileInfo.yaml
   metrics:
     "$ref": ConnectorMetrics.yaml
+  sbomUrl:
+    type: string
+    description: URL to the SBOM file

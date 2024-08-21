@@ -128,6 +128,7 @@ class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
     metrics: Optional[ConnectorMetrics] = None
+    sbomUrl: Optional[str] = Field(None, description="URL to the SBOM file")
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -205,6 +206,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     maxSecondsBetweenMessages: Optional[int] = Field(
         None, description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach"
     )
+    erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
     releases: Optional[ConnectorReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     generated: Optional[GeneratedFields] = None

@@ -156,10 +156,15 @@ const destinationS3 = {
   },
   items: [
     {
+       type: "doc",
+       label: "Migration Guide",
+       id: "integrations/destinations/s3-migrations",
+    },
+    {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
-    },
+    }
   ],
 };
 
@@ -625,6 +630,7 @@ module.exports = {
       type: "category",
       label: "Integrating with Airbyte",
       items: [
+        "using-airbyte/configuring-api-access",
         "operator-guides/using-the-airflow-airbyte-operator",
         "operator-guides/using-prefect-task",
         "operator-guides/using-dagster-integration",

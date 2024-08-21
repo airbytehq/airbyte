@@ -1,10 +1,10 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
-import io.airbyte.cdk.exceptions.ConfigErrorException
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.fakesource.FakeSourceConfigurationJsonObject
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
-import io.airbyte.cdk.test.source.FakeSourceConfigurationJsonObject
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.micronaut.context.annotation.Property
@@ -21,7 +21,7 @@ class ConfigurationJsonObjectSupplierTest {
     @Test
     fun testSchema() {
         Assertions.assertEquals(FakeSourceConfigurationJsonObject::class.java, supplier.javaClass)
-        val expected: String = ResourceUtils.readResource("command/expected-schema.json")
+        val expected: String = ResourceUtils.readResource("fakesource/expected-schema.json")
         Assertions.assertEquals(Jsons.readTree(expected), supplier.jsonSchema)
     }
 

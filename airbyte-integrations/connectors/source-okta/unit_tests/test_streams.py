@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.sources.streams import Stream
-from source_okta.custom_authenticators import CustomBearerAuthenticator, CustomOauth2Authenticator
+from source_okta.components import CustomBearerAuthenticator, CustomOauth2Authenticator
 from source_okta.source import SourceOkta
 
 

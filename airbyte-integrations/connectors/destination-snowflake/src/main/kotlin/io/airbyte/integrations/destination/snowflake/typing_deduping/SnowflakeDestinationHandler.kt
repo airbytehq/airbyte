@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.commons.json.Jsons.emptyObject
@@ -27,6 +28,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet

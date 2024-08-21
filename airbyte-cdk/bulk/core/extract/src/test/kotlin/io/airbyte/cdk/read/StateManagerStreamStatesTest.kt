@@ -4,10 +4,10 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.consumers.BufferingCatalogValidationFailureHandler
-import io.airbyte.cdk.consumers.CatalogValidationFailure
-import io.airbyte.cdk.consumers.StreamHasNoFields
-import io.airbyte.cdk.consumers.StreamNotFound
+import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
+import io.airbyte.cdk.output.CatalogValidationFailure
+import io.airbyte.cdk.output.StreamHasNoFields
+import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 @Property(name = "airbyte.connector.config.host", value = "localhost")
 @Property(name = "airbyte.connector.config.database", value = "testdb")
 @Property(name = "airbyte.connector.config.cursor.cursor_method", value = "user_defined")
-@Property(name = "metadata.resource", value = "read/metadata.json")
+@Property(name = "metadata.resource", value = "discover/metadata-valid.json")
 class StateManagerStreamStatesTest {
     @Inject lateinit var config: SourceConfiguration
 

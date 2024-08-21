@@ -2,7 +2,7 @@
 package io.airbyte.cdk.command
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.exceptions.ConfigErrorException
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteGlobalState

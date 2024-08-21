@@ -20,7 +20,7 @@ data:
   icon: google-analytics.svg
   license: Elv2
   name: Google Analytics (Universal Analytics)
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

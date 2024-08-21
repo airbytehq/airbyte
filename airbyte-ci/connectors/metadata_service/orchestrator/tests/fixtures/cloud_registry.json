@@ -9109,6 +9109,7 @@
       "custom": false,
       "releaseStage": "generally_available",
       "protocolVersion": "0.2.0",
+      "erdUrl": "https://dbdocs.io/maximec5e237b90b/source-facebook-marketing",
       "allowedHosts": {
         "hosts": ["graph.facebook.com"]
       }

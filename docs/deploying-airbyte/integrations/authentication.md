@@ -101,3 +101,28 @@ kubectl apply -f secret.yaml -n <YOUR_NAMESPACE>
 ```
 
 You may need to restart the airbyte-server pod for the changes to take effect.
+
+## Cookie Security Settings
+
+### Disabling Secure Cookies
+For users running Airbyte on a non-localhost domain without HTTPS, secure cookies cannot be set. To disable secure cookies, update your `values.yaml` file with the following snippet:
+
+```yaml
+global:
+  auth:
+    cookieSecureSetting: "false"
+```
+This setting should only be used if HTTPS is not available, as it reduces security by allowing cookies to be transmitted over non-secure connections.
+
+### Modifying Cookie SameSite Setting
+By default, Airbyte uses a `cookieSameSiteSetting` of `"Strict"`. If you need to allow cookies to be sent in a cross-site context, you can change this setting to `"None"`. Update your `values.yaml` file with the following:
+
+```yaml
+global:
+  auth:
+    cookieSameSiteSetting: "None"
+```
+
+Note: Setting `cookieSameSiteSetting` to `"None"` may be necessary for certain integrations but should be used cautiously as it can make your application more susceptible to CSRF attacks. Make sure other security measures are in place if you configure this setting.
+
+These changes will take effect the next time you deploy Airbyte using your updated `values.yaml` file.
