@@ -16,7 +16,7 @@ class JsonRecordTransformerTest {
     @Test
     fun testRecordNoopTransformation() {
         // Load resource file complex_records.json
-        val schema = javaClass.getResource("/avro/complex_schema.json")?.readText()
+        val schema = javaClass.getResource("/avro/complex_schema_in.json")?.readText()
         val records = javaClass.getResource("/avro/complex_records.json")?.readText()
         val jsonSchema = MoreMappers.initMapper().readTree(schema)
         val jsonRecords = MoreMappers.initMapper().readTree(records)

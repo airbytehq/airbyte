@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 3.0.1
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -44,6 +44,13 @@ data:
           - scopeType: stream
             impactedScopes:
               - "ticket_metrics"
+      4.0.0:
+        message: "This version includes breaking changes to the `Tags` stream. The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream. Please see the migration guide for additional details."
+        upgradeDeadline: "2024-09-09"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "tags"
   suggestedStreams:
     streams:
       - brands
