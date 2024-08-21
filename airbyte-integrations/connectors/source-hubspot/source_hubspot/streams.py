@@ -1187,7 +1187,8 @@ class CRMSearchStream(IncrementalStream, ABC):
                     stream_state=stream_state,
                     stream_slice=stream_slice,
                 )
-                records = self._read_associations(records)
+                if self.associations:
+                    records = self._read_associations(records)
             else:
                 records, raw_response = self._read_stream_records(
                     stream_slice=stream_slice,
