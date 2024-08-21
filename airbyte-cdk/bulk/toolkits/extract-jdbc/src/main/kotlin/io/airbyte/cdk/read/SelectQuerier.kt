@@ -71,12 +71,17 @@ class JdbcSelectQuerier(
 
         var isReady = false
         var hasNext = false
+        var hasLoggedResultsReceived = false
 
         override fun hasNext(): Boolean {
             // hasNext() is idempotent
             if (isReady) return hasNext
             // Advance to the next row to become ready again.
             hasNext = rs!!.next()
+            if (!hasLoggedResultsReceived) {
+                log.info { "Received results from server." }
+                hasLoggedResultsReceived = true
+            }
             if (!hasNext) {
                 close()
             }
@@ -107,7 +112,10 @@ class JdbcSelectQuerier(
             isReady = true
             hasNext = false
             try {
-                rs?.close()
+                if (rs != null) {
+                    log.info { "Closing ${q.sql}" }
+                    rs!!.close()
+                }
             } finally {
                 rs = null
                 try {

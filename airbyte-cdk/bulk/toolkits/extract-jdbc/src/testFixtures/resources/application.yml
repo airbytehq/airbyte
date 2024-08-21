@@ -1,0 +1,6 @@
+---
+airbyte:
+  connector:
+    extract:
+      jdbc:
+        mode: sequential

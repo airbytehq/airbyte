@@ -56,6 +56,9 @@ This CLI is currently running nightly in GitHub Actions. The workflow can be fou
 
 ## Changelog
 
+### 0.3.3
+Use SBOM from the connector registry (SPDX format) instead of generating SBOM in the connector insights.
+
 ### 0.3.2
 Bugfix: Ignore CI on master report if it's not accessible.
 

@@ -14,8 +14,10 @@ data:
   name: Snowflake
   registryOverrides:
     cloud:
+      dockerImageTag: 3.11.7
       enabled: true
     oss:
+      dockerImageTag: 3.11.7
       enabled: true
   releaseStage: generally_available
   releases:
