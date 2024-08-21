@@ -5,60 +5,76 @@
   "additionalProperties": true,
   "properties": {
     "runSchedule": {
+      "description": "Schedule for running the campaign group.",
       "type": ["null", "object"],
       "properties": {
         "start": {
+          "description": "The start date and time of the campaign group run schedule.",
           "type": ["null", "integer"]
         },
         "end": {
+          "description": "The end date and time of the campaign group run schedule.",
           "type": ["null", "integer"]
         }
       }
     },
     "created": {
+      "description": "The date and time when the campaign group was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "lastModified": {
+      "description": "The date and time when the campaign group was last modified.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "Name of the campaign group.",
       "type": ["null", "string"]
     },
     "test": {
+      "description": "Indicates if the campaign group is a test campaign.",
       "type": ["null", "boolean"]
     },
     "totalBudget": {
+      "description": "Total budget allocated for the campaign group.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
+          "description": "The total budget amount.",
           "type": ["null", "string"]
         },
         "currencyCode": {
+          "description": "The currency code of the total budget.",
           "type": ["null", "string"]
         }
       }
     },
     "servingStatuses": {
+      "description": "List of serving statuses for the campaign group.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "backfilled": {
+      "description": "Indicates if the campaign group was backfilled.",
       "type": ["null", "boolean"]
     },
     "id": {
+      "description": "Unique identifier for the campaign group.",
       "type": ["null", "integer"]
     },
     "account": {
+      "description": "The account associated with the campaign group.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the campaign group.",
       "type": ["null", "string"]
     },
     "allowedCampaignTypes": {
+      "description": "List of campaign types allowed for this campaign group.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]

@@ -38,11 +38,11 @@ def test_migrate_a_valid_legacy_state_to_per_partition():
     expected_state = {
         "states": [
             {
-                "partition": {"id": "13506132"},
+                "partition": {"parent_id": "13506132"},
                 "cursor": {"last_changed": "2022-12-27T08:34:39+00:00"}
             },
             {
-                "partition": {"id": "14351124"},
+                "partition": {"parent_id": "14351124"},
                 "cursor": {"last_changed": "2022-12-27T08:35:39+00:00"}
             },
         ]

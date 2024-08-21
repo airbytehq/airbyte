@@ -5,7 +5,7 @@
 package io.airbyte.cdk.integrations.destination.s3.template
 
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer
-import io.airbyte.cdk.integrations.destination.s3.S3Format
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import java.sql.Timestamp
 import java.util.Objects
 
@@ -21,7 +21,7 @@ internal constructor(
     val fileNamePattern: String?,
     val fileExtension: String?,
     val partId: String?,
-    val s3Format: S3Format?,
+    val fileUploadFormat: FileUploadFormat?,
     val timestamp: Timestamp?,
     val customSuffix: String?
 ) {
@@ -31,7 +31,7 @@ internal constructor(
         private var fileNamePattern: String? = null
         private var fileExtension: String? = null
         private var partId: String? = null
-        private var s3Format: S3Format? = null
+        private var fileUploadFormat: FileUploadFormat? = null
         private var timestamp: Timestamp? = null
         private var customSuffix: String? = null
 
@@ -62,8 +62,10 @@ internal constructor(
             return this
         }
 
-        fun s3Format(s3Format: S3Format?): S3FilenameTemplateParameterObjectBuilder {
-            this.s3Format = s3Format
+        fun s3Format(
+            fileUploadFormat: FileUploadFormat?
+        ): S3FilenameTemplateParameterObjectBuilder {
+            this.fileUploadFormat = fileUploadFormat
             return this
         }
 
@@ -84,7 +86,7 @@ internal constructor(
                 fileNamePattern,
                 fileExtension,
                 partId,
-                s3Format,
+                fileUploadFormat,
                 timestamp,
                 customSuffix,
             )
@@ -102,7 +104,7 @@ internal constructor(
                 ", partId=" +
                 this.partId +
                 ", s3Format=" +
-                this.s3Format +
+                this.fileUploadFormat +
                 ", timestamp=" +
                 this.timestamp +
                 ", customSuffix=" +
@@ -124,7 +126,7 @@ internal constructor(
             fileNamePattern == that.fileNamePattern &&
             fileExtension == that.fileExtension &&
             partId == that.partId &&
-            s3Format == that.s3Format &&
+            fileUploadFormat == that.fileUploadFormat &&
             timestamp == that.timestamp &&
             customSuffix == that.customSuffix
     }
@@ -136,7 +138,7 @@ internal constructor(
             fileNamePattern,
             fileExtension,
             partId,
-            s3Format,
+            fileUploadFormat,
             timestamp,
             customSuffix,
         )

@@ -195,6 +195,13 @@ _uuid_value = uuid.uuid4()
             None,
             id="test_local_timestamp_micros",
         ),
+        pytest.param(
+            _default_avro_format,
+            {"type": "string", "logicalType": "invalid-logical-type"},
+            None,
+            ValueError,
+            id="test_invalid_logical_type",
+        ),
     ],
 )
 def test_convert_primitive_avro_type_to_json(avro_format, avro_type, expected_json_type, expected_error):

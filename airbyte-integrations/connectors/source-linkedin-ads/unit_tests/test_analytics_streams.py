@@ -81,10 +81,10 @@ def test_chunk_analytics_fields():
     with "dateRange" field presented in each chunk.
     """
     expected_output = [
-        ["field_1", "base_field_1", "field_2", "dateRange"],
-        ["base_field_2", "field_3", "field_4", "dateRange"],
-        ["field_5", "field_6", "field_7", "dateRange"],
-        ["field_8", "dateRange"],
+        ["field_1", "base_field_1", "field_2", "dateRange", "pivotValues"],
+        ["base_field_2", "field_3", "field_4", "dateRange", "pivotValues"],
+        ["field_5", "field_6", "field_7", "dateRange", "pivotValues"],
+        ["field_8", "dateRange", "pivotValues"],
     ]
 
     assert list(LinkedInAdsAnalyticsStream.chunk_analytics_fields(TEST_ANALYTICS_FIELDS, TEST_FIELDS_CHUNK_SIZE)) == expected_output

@@ -42,8 +42,8 @@ class StatusHistoryDetails(BaseModel):
 
 
 class SubscriptionDetails(BaseModel):
-    billing_period_end_date: Optional[datetime]
-    billing_period_start_date: Optional[datetime]
+    billing_period_end_date: Optional[date]
+    billing_period_start_date: Optional[date]
 
 
 class Transaction(BaseModel):

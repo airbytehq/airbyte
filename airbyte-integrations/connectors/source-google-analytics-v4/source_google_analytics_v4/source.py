@@ -533,8 +533,8 @@ class GoogleAnalyticsServiceOauth2Authenticator(Oauth2Authenticator):
 class TestStreamConnection(GoogleAnalyticsV4Stream):
     """
     Test the connectivity and permissions to read the data from the stream.
-    Because of the nature of the connector, the streams are created dynamicaly.
-    We declare the static stream like this to be able to test out the prmissions to read the particular view_id."""
+    Because of the nature of the connector, the streams are created dynamically.
+    We declare the static stream like this to be able to test out the permissions to read the particular view_id."""
 
     page_size = 1
 
@@ -552,7 +552,11 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
 
     def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping]:
         res = response.json()
-        return res.get("reports", {})[0].get("data")
+        try:
+            return res.get("reports", [])[0].get("data")
+        except IndexError:
+            self.logger.warning(f"No reports in response: {res}")
+            return []
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):

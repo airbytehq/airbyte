@@ -10,6 +10,7 @@ import sys
 import pytest
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteLogMessage, AirbyteMessage, AirbyteTraceMessage
+from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
@@ -23,6 +24,13 @@ def test_given_exception_not_traced_exception_when_assemble_uncaught_exception_t
     exception = ValueError("any error")
     assembled_exception = assemble_uncaught_exception(type(exception), exception)
     assert isinstance(assembled_exception, AirbyteTracedException)
+
+
+def test_given_exception_with_display_message_when_assemble_uncaught_exception_then_internal_message_contains_display_message():
+    display_message = "some display message"
+    exception = ExceptionWithDisplayMessage(display_message)
+    assembled_exception = assemble_uncaught_exception(type(exception), exception)
+    assert display_message in assembled_exception.internal_message
 
 
 def test_uncaught_exception_handler():

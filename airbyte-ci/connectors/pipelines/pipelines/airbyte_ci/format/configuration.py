@@ -30,7 +30,7 @@ FORMATTERS_CONFIGURATIONS: List[FormatConfiguration] = [
         Formatter.JAVA,
         ["**/*.java", "**/*.kt", "**/*.gradle"],
         format_java_container,
-        ["mvn -f spotless-maven-pom.xml spotless:apply clean"],
+        ["mvn -f spotless-maven-pom.xml --errors --batch-mode spotless:apply clean"],
     ),
     # Run prettier on all json and yaml files.
     FormatConfiguration(
@@ -51,6 +51,6 @@ FORMATTERS_CONFIGURATIONS: List[FormatConfiguration] = [
         Formatter.PYTHON,
         ["**/*.py"],
         format_python_container,
-        ["poetry run isort --settings-file pyproject.toml .", "poetry run black --config pyproject.toml ."],
+        ["poetry run poe format"],
     ),
 ]

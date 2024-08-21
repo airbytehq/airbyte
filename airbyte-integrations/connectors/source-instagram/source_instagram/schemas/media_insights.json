@@ -2,45 +2,75 @@
   "type": "object",
   "properties": {
     "business_account_id": {
+      "description": "The unique identifier of the Instagram business account associated with the media.",
       "type": ["null", "string"]
     },
     "page_id": {
+      "description": "The unique identifier of the Instagram page where the media is posted.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the media.",
       "type": ["null", "string"]
     },
     "ig_reels_avg_watch_time": {
+      "description": "The average watch time of Instagram Reels videos in milliseconds.",
       "type": ["null", "number"]
     },
     "ig_reels_video_view_total_time": {
+      "description": "The total watch time of Instagram Reels videos in milliseconds.",
       "type": ["null", "number"]
     },
     "impressions": {
+      "description": "The number of times the media has been displayed to users.",
       "type": ["null", "integer"]
     },
     "reach": {
+      "description": "The number of unique users who have seen the media.",
       "type": ["null", "integer"]
     },
     "saved": {
+      "description": "The number of times users have saved the media.",
       "type": ["null", "integer"]
     },
     "video_views": {
+      "description": "The total number of views on video media.",
       "type": ["null", "integer"]
     },
     "comments": {
+      "description": "The number of comments received on the media.",
       "type": ["null", "integer"]
     },
     "likes": {
+      "description": "The number of likes received on the media.",
       "type": ["null", "integer"]
     },
     "shares": {
+      "description": "The number of times the media has been shared.",
       "type": ["null", "integer"]
     },
     "total_interactions": {
+      "description": "The total number of interactions (likes, comments, shares) on the media.",
       "type": ["null", "integer"]
     },
     "plays": {
+      "description": "The number of times the media has been played.",
+      "type": ["null", "integer"]
+    },
+    "ig_reels_aggregated_all_plays_count": {
+      "description": "The number of times of Instagram Reels gets reproduced after an impression is counted.",
+      "type": ["null", "integer"]
+    },
+    "clips_replays_count": {
+      "description": "The number of times the reel gets reproduced again.",
+      "type": ["null", "integer"]
+    },
+    "follows": {
+      "description": "The number of accounts that started to follow the profile.",
+      "type": ["null", "integer"]
+    },
+    "profile_visits": {
+      "description": "The number of times the profile has been visited.",
       "type": ["null", "integer"]
     }
   }

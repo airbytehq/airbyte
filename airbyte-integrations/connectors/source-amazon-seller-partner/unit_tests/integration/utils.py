@@ -53,6 +53,7 @@ def get_stream_by_name(stream_name: str, config_: Mapping[str, Any]) -> Stream:
 
 def find_template(resource: str, execution_folder: str, template_format: Optional[str] = "csv") -> str:
     response_template_filepath = str(
+        # FIXME: the below function should be replaced with the public version after next CDK release
         _get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.{template_format}"
     )
     with open(response_template_filepath, "r") as template_file:

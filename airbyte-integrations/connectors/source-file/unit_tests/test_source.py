@@ -64,6 +64,31 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
     assert stream.json_schema == expected_schema
 
 
+def test_zipped_csv_with_utf16_encoding(absolute_path, test_files):
+    config_local_zipped_csv_utf16 = {
+        "dataset_name": "AAA",
+        "format": "csv",
+        "reader_options": '{"encoding":"utf_16", "parse_dates": ["header5"]}',
+        "url": f"{absolute_path}/{test_files}/test_utf16.csv.zip",
+        "provider": {"storage": "local"},
+    }
+    expected_schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+            "header1": {"type": ["string", "null"]},
+            "header2": {"type": ["number", "null"]},
+            "header3": {"type": ["number", "null"]},
+            "header4": {"type": ["boolean", "null"]},
+            "header5": {"type": ["string", "null"], "format": "date-time"},
+        },
+        "type": "object",
+    }
+
+    catalog = SourceFile().discover(logger=logger, config=config_local_zipped_csv_utf16)
+    stream = next(iter(catalog.streams))
+    assert stream.json_schema == expected_schema
+
+
 def get_catalog(properties):
     return ConfiguredAirbyteCatalog(
         streams=[

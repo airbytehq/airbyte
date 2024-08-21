@@ -13,6 +13,6 @@ import com.fasterxml.jackson.databind.JsonNode
  * accidentally closing a shared resource.
  */
 open class AbstractDatabase {
-    @JvmField var sourceConfig: JsonNode? = null
-    @JvmField var databaseConfig: JsonNode? = null
+    var sourceConfig: JsonNode? = null
+    var databaseConfig: JsonNode? = null
 }

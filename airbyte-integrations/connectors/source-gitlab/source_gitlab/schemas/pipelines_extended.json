@@ -3,97 +3,126 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the pipeline",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Internal ID of the pipeline",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "ID of the project associated with the pipeline",
       "type": ["null", "integer"]
     },
     "sha": {
+      "description": "The commit SHA of the current state triggering the pipeline",
       "type": ["null", "string"]
     },
     "source": {
+      "description": "Source that triggered the pipeline (e.g., push, webhook)",
       "type": ["null", "string"]
     },
     "ref": {
+      "description": "Branch or tag name for which the pipeline was triggered",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Current status of the pipeline (e.g., running, success, failed)",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the pipeline was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when pipeline information was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "web_url": {
+      "description": "URL to view the pipeline details on the web interface",
       "type": ["null", "string"]
     },
     "before_sha": {
+      "description": "The commit SHA of the previous state before the pipeline was triggered",
       "type": ["null", "string"]
     },
     "tag": {
+      "description": "Boolean indicating if the pipeline was triggered by a tag",
       "type": ["null", "boolean"]
     },
     "yaml_errors": {
+      "description": "Any errors encountered in the pipeline configuration YAML",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "Details of the user associated with the pipeline",
       "type": "object",
       "properties": {
         "id": {
+          "description": "Unique identifier of the user",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the user",
           "type": ["null", "string"]
         },
         "username": {
+          "description": "Username of the user",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "State of the user account (e.g., active, blocked)",
           "type": ["null", "string"]
         },
         "avatar_url": {
+          "description": "URL of the user's avatar",
           "type": ["null", "string"]
         },
         "web_url": {
+          "description": "URL to the user's profile",
           "type": ["null", "string"]
         },
         "locked": {
+          "description": "Boolean indicating if the user account is locked",
           "type": ["null", "boolean"]
         }
       }
     },
     "started_at": {
+      "description": "The date and time when the pipeline execution started",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "finished_at": {
+      "description": "The date and time when the pipeline execution was finished",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "committed_at": {
+      "description": "The date and time when the commit was made",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "duration": {
+      "description": "The total duration of the pipeline execution in seconds",
       "type": ["null", "integer"]
     },
     "queued_duration": {
+      "description": "The duration the pipeline spent in the queue before execution",
       "type": ["null", "number", "string"]
     },
     "coverage": {
+      "description": "The code coverage percentage achieved in the pipeline",
       "type": ["null", "number", "string"]
     },
     "detailed_status": {
+      "description": "Detailed status of the pipeline execution",
       "type": ["null", "object"]
     },
     "name": {
+      "description": "Name of the pipeline",
       "type": ["null", "string"]
     }
   }

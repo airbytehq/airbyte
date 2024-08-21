@@ -501,6 +501,25 @@ class CsvReaderTest(unittest.TestCase):
             next(data_generator)
         assert new_dialect not in csv.list_dialects()
 
+    def test_parse_field_size_larger_than_default_python_maximum(self) -> None:
+        # The field size for the csv module will be set as a side-effect of initializing the CsvParser class.
+        assert csv.field_size_limit() == 2**31
+        long_string = 130 * 1024 * "a"
+        assert len(long_string.encode("utf-8")) > (128 * 1024)
+        self._stream_reader.open_file.return_value = (
+            CsvFileBuilder()
+            .with_data(
+                [
+                    "header1,header2",
+                    f'1,"{long_string}"',
+                ]
+            )
+            .build()
+        )
+
+        data_generator = self._read_data()
+        assert list(data_generator) == [{"header1": "1", "header2": long_string}]
+
     def _read_data(self) -> Generator[Dict[str, str], None, None]:
         data_generator = self._csv_reader.read_data(
             self._config,

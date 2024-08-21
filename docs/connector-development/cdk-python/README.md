@@ -33,7 +33,7 @@ offers helpers specific for creating Airbyte source connectors for:
 This document is a general introduction to the CDK. Readers should have basic familiarity with the
 [Airbyte Specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/) before proceeding.
 
-If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to 
+If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to
 [the Connector Development section of our Airbyte Forum](https://github.com/airbytehq/airbyte/discussions) to
 inquire further!
 
@@ -50,7 +50,7 @@ cd airbyte-integrations/connector-templates/generator
 Next, find all `TODO`s in the generated project directory. They're accompanied by comments explaining what you'll
 need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
 
-Additionally, you can follow [this tutorial](../tutorials/cdk-tutorial-python-http/getting-started.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
+Additionally, you can follow [this tutorial](../tutorials/custom-python-connector/0-getting-started.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
 
 ### Concepts & Documentation
 
@@ -72,7 +72,7 @@ Airbyte recommends using the CDK template generator to develop with the CDK. The
 
 For tips on useful Python knowledge, see the [Python Concepts](python-concepts.md) page.
 
-You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http/getting-started.md)
+You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/custom-python-connector/0-getting-started.md)
 
 ### Example Connectors
 
