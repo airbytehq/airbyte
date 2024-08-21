@@ -19,7 +19,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-youtube-analytics
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

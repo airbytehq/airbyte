@@ -8,7 +8,7 @@ data:
   icon: googlepubsub.svg
   license: MIT
   name: Google PubSub
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

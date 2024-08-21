@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Set, Tuple, List, Callable
+    from typing import Callable, List, Set, Tuple
+
     from dagger import Container
 
 from connector_ops.utils import METADATA_FILE_NAME, Connector  # type: ignore

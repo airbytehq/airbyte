@@ -342,11 +342,92 @@ definitions:
             type:
               - "null"
               - object
+  events_list_stream:
+    type: DeclarativeStream
+    name: events_list
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: /2/events/list
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          autohidden:
+            type:
+              - boolean
+              - "null"
+          clusters_hidden:
+            type:
+              - boolean
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          flow_hidden:
+            type:
+              - boolean
+              - "null"
+          hidden:
+            type:
+              - boolean
+              - "null"
+          id:
+            type: number
+          in_waitroom:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          non_active:
+            type:
+              - boolean
+              - "null"
+          timeline_hidden:
+            type:
+              - boolean
+              - number
+              - "null"
+          totals:
+            type:
+              - number
+              - "null"
+          totals_delta:
+            type:
+              - number
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
 streams:
   - "#/definitions/annotations_stream"
   - "#/definitions/cohorts_stream"
   - "#/definitions/average_session_length_stream"
   - "#/definitions/active_users_stream"
+  - "#/definitions/events_list_stream"
 
 check:
   stream_names:
