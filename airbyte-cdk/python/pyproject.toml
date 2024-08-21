@@ -117,7 +117,7 @@ python_versions = ["3.10", "3.11"]
 optional_poetry_groups = ["dev"]
 poetry_extras = ["file-based", "sphinx-docs", "vector-db-based"]
 poe_tasks = ["check-ci", "codeflash"]
-required_environment_variables = ["CODEFLASH_API_KEY"]
+required_environment_variables = ["CODEFLASH_API_KEY", "CODEFLASH_PR_NUMBER"]
 mount_docker_socket = true
 
 [tool.codeflash]
